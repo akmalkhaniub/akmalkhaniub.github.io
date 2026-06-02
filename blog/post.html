@@ -102,6 +102,38 @@
     .article-body a:hover {
       color: var(--accent-blue);
     }
+
+    /* Repo Badges */
+    .article-body a.repo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: var(--text-primary);
+      padding: 0.15rem 0.55rem;
+      border-radius: 6px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95em;
+      transition: var(--transition-smooth);
+    }
+
+    .article-body a.repo-link i {
+      color: var(--text-primary);
+      font-size: 1.05em;
+      transition: var(--transition-smooth);
+    }
+
+    .article-body a.repo-link:hover {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    .article-body a.repo-link:hover i {
+      color: #ffffff;
+    }
     
     .article-body h2 {
       font-size: 1.75rem;
@@ -392,7 +424,12 @@
   <!-- Mermaid.js for drawing diagrams -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
   <script>
-    mermaid.initialize({ startOnLoad: false, theme: 'default' });
+    mermaid.initialize({ 
+      startOnLoad: false, 
+      theme: 'neutral',
+      securityLevel: 'loose',
+      flowchart: { useMaxWidth: false, htmlLabels: true }
+    });
   </script>
 
   <!-- JS loader logic -->
@@ -476,6 +513,39 @@
             return `<div class="mermaid">${codeText}</div>`;
           }
           return `<pre><code class="language-${langName || 'plaintext'}">${codeText}</code></pre>`;
+        };
+
+        // Custom link renderer to badge GitHub repository links
+        customRenderer.link = function(token) {
+          let href = '';
+          let title = '';
+          let text = '';
+          
+          if (typeof token === 'object' && token !== null) {
+            href = token.href || '';
+            title = token.title || '';
+            text = token.text || '';
+          } else {
+            href = arguments[0] || '';
+            title = arguments[1] || '';
+            text = arguments[2] || '';
+          }
+          
+          const isGithub = href.includes('github.com');
+          const titleAttr = title ? ` title="${title}"` : '';
+          const targetAttr = ' target="_blank" rel="noopener"';
+          
+          if (isGithub) {
+            return `<a href="${href}"${titleAttr}${targetAttr} class="repo-link"><i class="fa-brands fa-github"></i> ${text}</a>`;
+          }
+          
+          // For regular external links, open in new tab
+          const isExternal = href.startsWith('http://') || href.startsWith('https://');
+          if (isExternal) {
+            return `<a href="${href}"${titleAttr}${targetAttr}>${text}</a>`;
+          }
+          
+          return `<a href="${href}"${titleAttr}>${text}</a>`;
         };
         
         let htmlContent;
