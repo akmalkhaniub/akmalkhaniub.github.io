@@ -373,15 +373,32 @@
         const mdText = await markdownResponse.text();
 
         // 3. Render markdown with a custom code renderer to intercept Mermaid
-        const renderer = new marked.Renderer();
-        renderer.code = function(code, lang) {
-          if (lang === 'mermaid') {
-            return `<div class="mermaid">${code}</div>`;
+        const customRenderer = new marked.Renderer();
+        customRenderer.code = function(token) {
+          let codeText = '';
+          let langName = '';
+          
+          if (typeof token === 'object' && token !== null) {
+            codeText = token.text || token.code || '';
+            langName = token.lang || '';
+          } else {
+            codeText = arguments[0] || '';
+            langName = arguments[1] || '';
           }
-          return `<pre><code class="language-${lang || 'plaintext'}">${code}</code></pre>`;
+          
+          if (langName === 'mermaid') {
+            return `<div class="mermaid">${codeText}</div>`;
+          }
+          return `<pre><code class="language-${langName || 'plaintext'}">${codeText}</code></pre>`;
         };
         
-        const htmlContent = marked.parse(mdText, { renderer, headerIds: true, mangle: false });
+        let htmlContent;
+        if (typeof marked.use === 'function') {
+          marked.use({ renderer: customRenderer });
+          htmlContent = marked.parse(mdText, { headerIds: true, mangle: false });
+        } else {
+          htmlContent = marked.parse(mdText, { renderer: customRenderer, headerIds: true, mangle: false });
+        }
         document.getElementById('post-content').innerHTML = htmlContent;
 
         // 4. Initialize Mermaid Diagrams dynamically
@@ -394,7 +411,13 @@
         }
  
         // 5. Highlight code blocks with Prism
-        Prism.highlightAll();
+        if (window.Prism) {
+          try {
+            Prism.highlightAll();
+          } catch (pErr) {
+            console.error('Prism highlighting error:', pErr);
+          }
+        }
 
       } catch (err) {
         console.error('Error loading article:', err);
