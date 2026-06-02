@@ -38,7 +38,7 @@ graph TD
 
 ## 1. Mathematical Accuracy: Enforcing Currency Precision
 
-Computers represent floats in binary (base 2). Because numbers like `0.1` cannot be represented exactly in binary, computations like `0.1 + 0.2` return `0.30000000000000004`. 
+Computers represent floats in binary (base 2), which makes it impossible to store numbers like `0.1` exactly. This results in precision anomalies (e.g., `0.1 + 0.2` returning `0.30000000000000004` instead of exactly `0.3`). 
 
 In payroll calculation, these errors add up fast. To enforce absolute accuracy, the engine uses Python's `Decimal` type, quantizing every calculation to exactly two decimal places (pence/cents) using `ROUND_HALF_UP` rounding.
 

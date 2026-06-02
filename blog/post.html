@@ -192,6 +192,39 @@
       overflow-x: auto;
     }
     
+    /* Copy Code Button */
+    .copy-code-btn {
+      position: absolute;
+      top: 0.75rem;
+      right: 1.25rem;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.75);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: var(--font-body);
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      z-index: 10;
+    }
+    
+    .copy-code-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      border-color: var(--accent-cyan);
+    }
+    
+    .copy-code-btn.copied {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #10b981;
+      color: #10b981;
+    }
+    
     /* Scroll progress bar */
     #progress-container {
       position: fixed;
@@ -283,6 +316,11 @@
     </article>
 
   </main>
+
+  <!-- Lightbox Modal for zooming figures -->
+  <div id="zoom-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out;">
+    <div id="zoom-content" style="max-width: 90%; max-height: 90%; display: flex; justify-content: center; align-items: center; overflow: auto; background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.55);"></div>
+  </div>
 
   <!-- Footer -->
   <footer>
@@ -417,6 +455,91 @@
           } catch (pErr) {
             console.error('Prism highlighting error:', pErr);
           }
+        }
+
+        // 6. Add Copy Buttons to code blocks dynamically
+        document.querySelectorAll('.article-body pre').forEach(preBlock => {
+          const codeEl = preBlock.querySelector('code');
+          if (!codeEl) return;
+          
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'copy-code-btn';
+          copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+          
+          copyBtn.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(codeEl.innerText);
+              copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+              copyBtn.classList.add('copied');
+              setTimeout(() => {
+                copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                copyBtn.classList.remove('copied');
+              }, 2000);
+            } catch (err) {
+              console.error('Failed to copy text: ', err);
+            }
+          });
+          
+          preBlock.appendChild(copyBtn);
+        });
+
+        // 7. Lightbox Zoom functionality for figures (images and Mermaid SVG diagrams)
+        const zoomModal = document.getElementById('zoom-modal');
+        const zoomContent = document.getElementById('zoom-content');
+        
+        if (zoomModal && zoomContent) {
+          // Close zoom modal on click
+          zoomModal.addEventListener('click', () => {
+            zoomModal.style.display = 'none';
+            zoomContent.innerHTML = '';
+          });
+          
+          // Delegate click event inside post content
+          document.getElementById('post-content').addEventListener('click', (e) => {
+            // Case 1: Image element
+            if (e.target.tagName === 'IMG') {
+              e.preventDefault();
+              const imgClone = e.target.cloneNode();
+              imgClone.style.maxWidth = '100%';
+              imgClone.style.maxHeight = '100%';
+              imgClone.style.borderRadius = '8px';
+              imgClone.style.cursor = 'default';
+              imgClone.addEventListener('click', (ev) => ev.stopPropagation());
+              
+              zoomContent.innerHTML = '';
+              zoomContent.appendChild(imgClone);
+              zoomContent.style.background = 'transparent';
+              zoomContent.style.padding = '0';
+              zoomModal.style.display = 'flex';
+            }
+            
+            // Case 2: Mermaid diagram
+            const mermaidBlock = e.target.closest('.mermaid');
+            if (mermaidBlock && !e.target.closest('.mermaid svg button')) {
+              e.preventDefault();
+              const svgContent = mermaidBlock.innerHTML;
+              
+              zoomContent.innerHTML = svgContent;
+              zoomContent.style.background = 'white';
+              zoomContent.style.padding = '2rem';
+              
+              const svgEl = zoomContent.querySelector('svg');
+              if (svgEl) {
+                svgEl.style.maxWidth = '100%';
+                svgEl.style.height = 'auto';
+                svgEl.style.maxHeight = '80vh';
+              }
+              
+              zoomModal.style.display = 'flex';
+            }
+          });
+          
+          // Apply cursor pointer style on hover
+          document.getElementById('post-content').addEventListener('mouseover', (e) => {
+            if (e.target.tagName === 'IMG' || e.target.closest('.mermaid')) {
+              e.target.style.cursor = 'zoom-in';
+            }
+          });
         }
 
       } catch (err) {
