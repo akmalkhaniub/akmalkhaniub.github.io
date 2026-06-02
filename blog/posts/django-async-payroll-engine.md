@@ -19,22 +19,19 @@ When an administrator triggers a new monthly payroll run:
 3. The celery worker pulls the task and processes the calculation inside an isolated database transaction.
 4. Once completed, a fan-out task is dispatched, triggering dozens of separate, concurrent PDF compilers.
 
-```
-[ Django API ] ──(Trigger Run)──> [ Redis Queue ]
-                                       │
-                                (Celery Worker)
-                                       │
-                         [ process_payroll_run() ]
-                         (ACID Transaction & lock)
-                                       │
-                                (Update Status)
-                                       │
-                              (Dispatch Fan-Out)
-                                       │
-                   ┌───────────────────┼───────────────────┐
-                   ▼                   ▼                   ▼
-             [ Celery PDF ]      [ Celery PDF ]      [ Celery PDF ]
-             (Worker - 1)        (Worker - 2)        (Worker - 3)
+```mermaid
+graph TD
+    A[Django API] -->|1. Trigger Run| B(Redis Queue)
+    B -->|2. Pull Task| C(Celery Worker)
+    C -->|3. Calculate & Lock Row| D[Database]
+    C -->|4. Update Status to Completed| D
+    C -->|5. Dispatch Fan-Out| B
+    B -->|6. Parallel Invoices| E[Celery PDF Worker 1]
+    B -->|6. Parallel Invoices| F[Celery PDF Worker 2]
+    B -->|6. Parallel Invoices| G[Celery PDF Worker 3]
+    E -->|7. Upload Pay Statement| H[(Persistent Media Storage)]
+    F -->|7. Upload Pay Statement| H
+    G -->|7. Upload Pay Statement| H
 ```
 
 ---

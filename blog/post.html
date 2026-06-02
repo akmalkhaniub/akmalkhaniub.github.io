@@ -150,19 +150,46 @@
     
     /* Pre / Code block styles */
     .article-body pre {
+      position: relative;
       background: #1e293b !important; /* Force slate-800 */
       border-radius: 12px;
-      padding: 1.25rem !important;
+      padding: 2.5rem 1.25rem 1.25rem !important; /* Top padding for window buttons */
       margin: 1.75rem 0;
       overflow-x: auto;
       border: 1px solid rgba(148, 163, 184, 0.1);
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
     }
     
+    /* macOS-style window dots */
+    .article-body pre::before {
+      content: '';
+      position: absolute;
+      top: 0.85rem;
+      left: 1.25rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444; /* Red */
+      box-shadow: 18px 0 0 #f59e0b, 36px 0 0 #10b981; /* Yellow and Green */
+    }
+    
     .article-body pre code {
       font-family: Consolas, Monaco, 'Andale Mono', monospace;
       font-size: 0.9em;
       line-height: 1.5;
+    }
+    
+    /* Mermaid diagram container */
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      margin: 2rem 0;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-card);
+      overflow-x: auto;
     }
     
     /* Scroll progress bar */
@@ -275,6 +302,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  
+  <!-- Mermaid.js for drawing diagrams -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: false, theme: 'default' });
+  </script>
 
   <!-- JS loader logic -->
   <script>
@@ -339,17 +372,28 @@
         if (!markdownResponse.ok) throw new Error('Failed to fetch article content');
         const mdText = await markdownResponse.text();
 
-        // 3. Render markdown
-        // Customize marked options if needed
-        marked.setOptions({
-          headerIds: true,
-          mangle: false
-        });
+        // 3. Render markdown with a custom code renderer to intercept Mermaid
+        const renderer = new marked.Renderer();
+        renderer.code = function(code, lang) {
+          if (lang === 'mermaid') {
+            return `<div class="mermaid">${code}</div>`;
+          }
+          return `<pre><code class="language-${lang || 'plaintext'}">${code}</code></pre>`;
+        };
         
-        const htmlContent = marked.parse(mdText);
+        const htmlContent = marked.parse(mdText, { renderer, headerIds: true, mangle: false });
         document.getElementById('post-content').innerHTML = htmlContent;
 
-        // 4. Highlight code blocks with Prism
+        // 4. Initialize Mermaid Diagrams dynamically
+        if (window.mermaid) {
+          try {
+            mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+          } catch (mErr) {
+            console.error('Mermaid render error:', mErr);
+          }
+        }
+ 
+        // 5. Highlight code blocks with Prism
         Prism.highlightAll();
 
       } catch (err) {
