@@ -1,4 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Theme Toggle (Dark / Light Mode)
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeToggleIcon = themeToggle.querySelector('i');
+  
+  // Load saved theme or default to light
+  const currentTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  
+  if (currentTheme === 'dark') {
+    themeToggleIcon.className = 'fa-solid fa-sun';
+  } else {
+    themeToggleIcon.className = 'fa-solid fa-moon';
+  }
+
+  themeToggle.addEventListener('click', () => {
+    let theme = 'light';
+    if (document.documentElement.getAttribute('data-theme') === 'light') {
+      theme = 'dark';
+      themeToggleIcon.className = 'fa-solid fa-sun';
+    } else {
+      themeToggleIcon.className = 'fa-solid fa-moon';
+    }
+    
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  });
+
   // Mobile Navigation Toggle
   const mobileToggle = document.getElementById('mobile-toggle');
   const navMenu = document.querySelector('nav');
