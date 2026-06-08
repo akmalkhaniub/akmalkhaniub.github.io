@@ -1,3 +1,10 @@
+# Agentic RAG: Scaling LLMs with Active Retrieval and Self-Correction
+
+> ### 📖 Article Overview
+> * **What this article is about:** This article introduces Agentic RAG as an advanced architecture that transforms LLMs from passive context recipients into active coordinators of the retrieval process.
+> * **Why it matters:** Agentic RAG addresses critical limitations of standard RAG, such as semantic bottlenecks and hallucination propagation, enabling more robust and scalable AI systems for complex enterprise data.
+> * **What we synthesized:** We explore the Agentic RAG loop, review cutting-edge research on hierarchical interfaces and logical retrieval, and provide a practical TypeScript implementation of a routing agent.
+
 In standard Retrieval-Augmented Generation (RAG) setups, the retrieval process is completely passive. The user submits a query, a vector database runs a cosine similarity match in a single shot, and the raw text chunks are stuffed into the model's context window.
 
 This passive paradigm suffers from two major limitations:
@@ -149,6 +156,17 @@ export async function agenticRetrieveAndAnswer(userQuery: string): Promise<strin
 * [ ] **Define Hierarchical Tools**: Ensure your agent has access to low-level text search (keyword matching), high-level semantics (vector similarity), and specific document section reading (chunk read).
 * [ ] **Implement Loop Escape Gates**: Always cap agentic retrieval loops (max 3-5 iterations) to prevent infinite token-consuming lookup cycles if query data simply does not exist.
 * [ ] **Enforce Read-Only Database Credentials**: When allowing agents to generate logical queries (SQL/NoSQL) directly, run them against read-only replicas to avoid prompt injection data deletion.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Agentic RAG represents a significant evolution in how LLMs interact with data, moving beyond passive retrieval to active, intelligent coordination.
+1. **Active Coordination & Tool Use**: Agentic RAG empowers LLMs to actively steer retrieval, utilizing diverse tools (semantic, logical, keyword) and dynamically refining queries based on relevance feedback. This contrasts sharply with the single-shot, passive nature of traditional RAG.
+2. **Hierarchical & Logical Retrieval**: Emerging research highlights the importance of allowing agents to choose retrieval granularity (keyword, semantic, chunk read) and formulate structured logical queries, moving beyond sole reliance on vector embeddings for more precise and cost-effective data access.
+3. **Robustness & Grounding**: The iterative loop of relevance grading, query rewriting, and hallucination verification in Agentic RAG significantly enhances the system's ability to provide accurate, grounded answers, mitigating the risks of irrelevant chunks and fabricated responses.
+
+*Takeaway: Embracing agentic patterns is crucial for building scalable, reliable, and intelligent AI systems capable of navigating complex enterprise data landscapes.*
 
 ---
 

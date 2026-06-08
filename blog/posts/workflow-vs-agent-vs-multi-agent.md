@@ -1,3 +1,8 @@
+> ### 📖 Article Overview
+> * **What this article is about:** This article clarifies the distinctions between LLM workflows, single-agent loops, and multi-agent systems to establish a clear spectrum of autonomy.
+> * **Why it matters:** Failing to choose the correct architecture leads to over-engineered, slow, expensive, and difficult-to-verify AI systems.
+> * **What we synthesized:** We synthesized a decision matrix and architectural guardrails to help developers select the most efficient and predictable design pattern for their tasks.
+
 In the rush to adopt generative artificial intelligence, vocabulary has been the first casualty. Marketing decks call simple API wrappers "agents," and developers refer to basic loops as "multi-agent networks." 
 
 This lack of terminological precision isn't just a semantic issue; it is a design hazard. When developers fail to distinguish between workflows, agents, and multi-agent systems, they build architectures that are over-engineered, slow, expensive, and difficult to verify.
@@ -96,6 +101,17 @@ Before building a multi-agent system, walk through this decision path to avoid o
 *   [ ] **Autonomy Audit**: Do you have a programmatic escape hatch to break infinite agent loops after a set number of iterations (e.g., max 5 turns)?
 *   [ ] **Routing Review**: Can your router LLM be replaced by a regex, string match, or semantic vector distance check to save tokens and latency?
 *   [ ] **State Sanity Check**: Are you persisting agent state at every step using database-backed checkpointers (e.g., Postgres JSONB)?
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Navigating the spectrum of AI autonomy requires balancing flexibility with predictability to build production-grade systems.
+1. **Match Complexity to Architecture:** Do not default to complex multi-agent systems when a deterministic LLM workflow or a single-agent loop can achieve the same result faster and cheaper.
+2. **Enforce Strict Guardrails:** Always implement programmatic escape hatches, state persistence, and cost-effective routing to prevent runaway agent loops and high latency.
+3. **Design for Predictability:** Keep execution paths as deterministic as possible, reserving autonomous agent loops only for highly variable tasks that require trial-and-error.
+
+*Takeaway:* Build the simplest system possible that reliably solves the problem, reserving high autonomy only for tasks that truly demand it.
 
 ---
 

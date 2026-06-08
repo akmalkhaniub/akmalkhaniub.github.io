@@ -4,6 +4,11 @@ To build reliable systems, we must treat agent roles as strict **software interf
 
 This article reviews the principles of structured role design for multi-agent applications.
 
+> ### 📖 Article Overview
+> * **What this article is about:** This article discusses the pitfalls of fuzzy agent roles in multi-agent systems and introduces principles for structured role design.
+> * **Why it matters:** Fuzzy roles lead to cognitive duplication, wasted tokens, and unreliable system behavior, impacting performance and development costs.
+> * **What we synthesized:** We synthesized key rules for defining strict input/output schemas, enforcing the Single Responsibility Principle, and restricting tool access to build robust agent systems.
+
 ---
 
 ## The Hazards of Fuzzy Roles
@@ -62,6 +67,17 @@ If an agent needs more than 3 tools to execute its task, its scope is too broad.
 *   [ ] **Strict Prompts**: Remove generic words like "help," "assist," or "smart" from system instructions. Replace them with operational verbs: "extract," "query," "generate," "validate."
 *   [ ] **Interface Validation**: Enforce Pydantic schema contracts on all messages exchanged between agent nodes.
 *   [ ] **Isolation Audit**: Ensure worker agents do not have visibility into the global plan, limiting their attention strictly to their assigned sub-tasks.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Building robust multi-agent systems hinges on meticulously defined agent roles and communication protocols.
+1.  **Fuzzy Roles Lead to System Drift:** Undefined or overlapping agent responsibilities result in "cognitive duplication," context contamination, infinite communication loops, and tool list bloat, severely impacting system reliability and efficiency.
+2.  **Structured Roles are Essential Interfaces:** Treating agent roles as strict software interfaces with defined scopes, tool permissions, and communication contracts, much like a specialized kitchen, is crucial for preventing these issues and ensuring predictable behavior.
+3.  **Implement Strict Design Principles:** Adhering to rules like defining strict input/output schema contracts, enforcing the Single Responsibility Principle, and restricting tool lists to a maximum of three tools per agent are fundamental for creating focused, accurate, and maintainable agent systems.
+
+*Takeaway: Clear, bounded agent roles with strict interfaces are the bedrock of reliable and scalable multi-agent applications.*
 
 ---
 

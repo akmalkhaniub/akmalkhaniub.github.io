@@ -1,3 +1,12 @@
+# Multi-Agent Design Patterns
+
+> ### 📖 Article Overview
+> * **What this article is about:** This article defines and compares nine core multi-agent architectural patterns, detailing when to use them, their real-world analogies, and their failure modes.
+> * **Why it matters:** Selecting the wrong multi-agent pattern can lead to massive latency, excessive token costs, or system deadlocks, directly impacting system performance and budget.
+> * **What we synthesized:** We synthesized these nine patterns into a clear selection checklist and mapped their performance tradeoffs based on recent benchmarking data to help engineers choose the optimal architecture.
+
+---
+
 Multi-agent design is a library of patterns. Selecting the wrong pattern results in massive latency, excessive token costs, or system deadlock.
 
 For each pattern, this article defines what it is, when to use it, the real-world organizational analogy, and its typical failure modes. These architectures are designed to help you organize multiple LLM nodes into cohesive software systems, as referenced in our public [agentic-apps-portfolio](https://github.com/akmalkhaniub/agentic-apps-portfolio) monorepo.
@@ -78,6 +87,17 @@ The golden rule: **Start with sequential pipelines or supervisor-worker. Only mo
 *   [ ] **Define the Predictability Factor**: If the workflow is 100% predictable, use a **Sequential Pipeline**.
 *   [ ] **Identify High-Risk Gates**: Place a **Human-in-the-Loop Breakpoint** before any action that mutates external databases or executes financial transactions.
 *   [ ] **Audit the Loop Breaks**: If using **Evaluator-Optimizer** or **Debate**, implement a hard limit on iteration turns (e.g., maximum 3 turns) to control costs.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Designing robust multi-agent systems requires balancing reasoning capabilities against latency and cost.
+1. **Start Simple:** Begin with predictable sequential pipelines or supervisor-worker patterns before escalating to complex, decentralized architectures like swarms or debates.
+2. **Implement Guardrails:** Always integrate Human-in-the-Loop breakpoints for high-risk actions and enforce strict iteration limits on refinement loops to prevent runaway token costs.
+3. **Match Architecture to Task:** Leverage empirical performance data to align your system's complexity with the actual reasoning demands of your domain.
+
+*Takeaway:* *The most effective multi-agent system is the simplest one that reliably solves the problem without unnecessary coordination overhead.*
 
 ---
 

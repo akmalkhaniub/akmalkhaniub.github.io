@@ -1,3 +1,10 @@
+> ### 📖 Article Overview
+> * **What this article is about:** This article explains how to overcome LLM confirmation bias by separating generation from verification using the Validator Agent Pattern.
+> * **Why it matters:** Relying on a single agent for both generation and self-evaluation leads to bug-ridden deployments, whereas a dedicated validation layer ensures reliable, secure, and cost-effective AI outputs.
+> * **What we synthesized:** We synthesized a two-layer validation architecture that combines deterministic programmatic checks with LLM-as-a-judge model validators, governed by a strict verification contract.
+
+---
+
 In software engineering, letting developers run their own manual QA on their code without testing standards is a known path to bug-ridden deployments. Yet, in generative AI systems, developers routinely instruct a single agent to write code and verify its correctness in the same context window.
 
 This self-evaluation pattern fails because Large Language Models suffer from a systemic **confirmation bias**. Once a model outputs a generation, it tends to read past its own bugs in subsequent steps, declaring its own work "valid."
@@ -61,6 +68,17 @@ This critique is piped back to the Worker, which runs again with the critique as
 *   [ ] **Strict Pipeline Sequence**: Always run programmatic checks (linters, test suites) *first*. If a test fails, terminate or loop back immediately without calling the expensive validator model.
 *   [ ] **Model Decoupling**: If the Worker uses Claude Opus, use a faster, cheaper model (like Claude Sonnet or GPT-4o-mini) for the validator node to optimize latency and costs.
 *   [ ] **Loop Escape Valve**: Enforce a hard ceiling on the critique loop (maximum 3 iterations). If the worker cannot satisfy the validator after 3 turns, escalate to a **Human-in-the-Loop breakpoint**.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Implementing a robust validation architecture is essential for transitioning generative AI agents from experimental prototypes to production-ready systems.
+1. **Overcoming Confirmation Bias:** LLMs suffer from systemic confirmation bias and cannot reliably evaluate their own outputs in the same context window. Separating the worker and validator roles is critical for accuracy.
+2. **Two-Layer Validation Pipeline:** Always run fast, cost-effective programmatic checks (like syntax parsers and test suites) before routing outputs to more expensive model-based LLM-as-a-judge validators.
+3. **Strict Verification Contracts:** Define clear structural, functional, and safety bounds for outputs, and enforce a loop escape valve to prevent infinite critique loops and optimize latency.
+
+*Takeaway: Decoupling generation from verification is the key to eliminating LLM confirmation bias and building highly reliable, self-correcting agentic workflows.*
 
 ---
 

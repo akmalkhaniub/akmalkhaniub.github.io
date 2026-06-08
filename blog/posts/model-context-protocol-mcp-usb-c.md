@@ -1,4 +1,13 @@
-In the early days of building AI applications, developers wrote custom API wrappers for every new tool they integrated. If you wanted an LLM to read files, search the web, and run SQL queries, you had to write custom glue code to translate the model's text outputs into specific API calls. 
+---
+# The Model Context Protocol: Building a Secure Database Runner Server
+
+> ### 📖 Article Overview
+> * **What this article is about:** This article introduces the Model Context Protocol (MCP) as a solution for standardized AI tool integration and demonstrates building a secure PostgreSQL database runner server using its TypeScript SDK.
+> * **Why it matters:** MCP eliminates the need for custom API wrappers and model-specific tool definitions, significantly streamlining AI application development, improving modularity, and enhancing security for tool execution.
+> * **What we synthesized:** We reviewed MCP's client-server architecture, walked through a practical TypeScript implementation for a secure database tool, and highlighted critical security best practices for deploying such services.
+
+---
+In the early days of building AI applications, developers wrote custom API wrappers for every new tool they integrated. If you wanted an LLM to read files, search the web, and run SQL queries, you had to write custom glue code to translate the model's text outputs into specific API calls.
 
 If you swapped models (e.g., from GPT-4 to Claude 3.5), you often had to rewrite your tool definitions and parsing logic from scratch.
 
@@ -143,6 +152,17 @@ Exposing tools to an LLM introduces prompt injection vectors. An attacker can wr
 * **Least Privilege Database Credentials**: Always connect the MCP server using a read-only database user account. Restrict write/update permissions to block data mutation.
 * **SQL Query Sanitization**: Validate the SQL commands within the MCP server code, checking against an allowlist of statements before executing them.
 * **Network Isolation**: Run MCP servers in sandboxed container environments (like Docker) with minimal internet access to prevent outbound command-and-control requests if a model is compromised.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+The Model Context Protocol (MCP) marks a significant advancement in AI application development by standardizing how large language models interact with external tools and data.
+1. **Standardized Tooling for AI:** MCP acts as a universal interface, akin to USB-C, for AI models to securely access and execute external tools and resources, eliminating the previous need for custom, model-specific API wrappers and parsing logic. This standardization greatly simplifies the integration of diverse tools like databases, file systems, and external APIs into AI applications, making them more modular and interoperable across different LLM engines.
+2. **Secure Client-Server Decoupling:** MCP's client-server architecture ensures that LLMs never directly execute system commands, instead issuing structured JSON-RPC requests to a local server responsible for secure tool execution. This decoupling enhances security by isolating the LLM from direct system access and allows for robust validation and sanitization of tool inputs, as demonstrated by the PostgreSQL server's SQL query gate.
+3. **Practical Implementation with Robust Security:** Building an MCP server, as shown with the TypeScript PostgreSQL example, is straightforward, but requires diligent security measures to prevent prompt injection and unauthorized access. Implementing least privilege database credentials, rigorous SQL query sanitization, and network isolation within sandboxed environments are crucial steps to harden MCP-enabled tools against potential vulnerabilities.
+
+*Takeaway: MCP empowers developers to build more secure, modular, and interoperable AI applications by providing a standardized protocol for tool interaction.*
 
 ---
 

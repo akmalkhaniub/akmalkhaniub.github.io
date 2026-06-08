@@ -1,3 +1,10 @@
+> ### 📖 Article Overview
+> * **What this article is about:** This article provides a comprehensive migration guide detailing the critical breaking changes when upgrading from Next.js 14 to Next.js 15.
+> * **Why it matters:** Understanding these architectural shifts prevents production-breaking compilation errors, broken component references, and unexpected database load spikes caused by new caching defaults.
+> * **What we synthesized:** We mapped out the top 5 migration gotchas—covering caching defaults, asynchronous dynamic APIs, React 19 ref passing, ESLint 9 flat configs, and Server Action security—complete with actionable code comparisons and a migration checklist.
+
+---
+
 Upgrading your framework is rarely as simple as running `npm install next@latest`. 
 
 While Next.js 15 introduces massive performance improvements (thanks to stable **Turbopack** and the **React Compiler**), it also ships with several fundamental breaking changes. 
@@ -171,6 +178,17 @@ export async function updateTaskStatus(rawInput: unknown) {
 * [ ] **Audit Fetch Headers**: Audit every standard `fetch()` call across your layout tree. Explicitly declare `cache: 'force-cache'` or `next: { revalidate: X }` where data is static.
 * [ ] **Clean ref Warnings**: Inspect custom UI code elements and refactor `forwardRef` to standard props.
 * [ ] **Upgrade ESLint Rules**: Convert old `.eslintrc.json` configurations to `eslint.config.js` before executing build runs in your CI/CD pipeline.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Upgrading to Next.js 15 unlocks powerful features like Turbopack and the React Compiler, but it requires a careful, deliberate migration strategy to avoid production issues.
+1. **Explicit Caching is Essential:** Because Next.js 15 defaults to uncached operations, you must manually audit and opt back into caching to protect your database from sudden traffic spikes.
+2. **Embrace Asynchronous APIs:** Dynamic request parameters and headers are now asynchronous, requiring you to update your page and layout components to properly await these values.
+3. **Streamline Component and Config Patterns:** React 19 simplifies ref passing by deprecating `forwardRef`, while ESLint 9 introduces flat configuration files, both requiring minor but widespread refactoring across your codebase.
+
+*Takeaway: A successful migration to Next.js 15 relies on proactive code audits, automated codemods, and explicit caching declarations to ensure a seamless, high-performance transition.*
 
 ---
 

@@ -1,3 +1,8 @@
+> ### 📖 Article Overview
+> * **What this article is about:** This article explains how to build a production-ready RAG pipeline by combining semantic vector search (`pgvector`) and lexical keyword search (PostgreSQL `tsvector`) with Reciprocal Rank Fusion (RRF) and Cross-Encoder reranking.
+> * **Why it matters:** Moving beyond simple vector similarity prevents production failures caused by short, keyword-dense queries or long, noisy contexts, significantly improving retrieval accuracy and LLM response quality.
+> * **What we synthesized:** We demonstrated how to implement a complete hybrid search and reranking pipeline directly within PostgreSQL, avoiding the operational complexity of external vector databases while maintaining high performance.
+
 The standard tutorial for Retrieval-Augmented Generation (RAG) is deceptively simple: chunk a few text files, generate vector embeddings, throw them into a vector database, and perform a Cosine Similarity search on the user's query.
 
 When you deploy this setup to production, however, it quickly falls apart.
@@ -111,6 +116,17 @@ LIMIT 20;
 * **Chunking Strategies**: Never chunk text arbitrarily by character count. Use semantic layout-aware chunking (splitting on headings, tables, or markdown structural breaks) to keep related context blocks whole.
 * **Metadata Tagging**: Annotate chunks with metadata tags (e.g., `facility_id`, `audit_year`, `billing_code`). Restrict searches using SQL `WHERE` clauses (e.g., `WHERE facility_id = X`) *before* executing vector matches to narrow the search space.
 * **Lost-in-the-Middle Mitigation**: LLM context windows suffer from recall degradation in the middle of long prompts. Always place the most critical retrieved chunks at the very beginning and very end of your context window.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Transitioning from basic vector search to a hybrid retrieval and reranking pipeline is essential for deploying robust, production-grade RAG systems.
+1. **Hybrid Search Combines Strengths:** Merging semantic vector search with lexical keyword search ensures the system handles both conceptual queries and exact keyword matches effectively.
+2. **PostgreSQL Simplifies Architecture:** Using `pgvector` and native full-text search within a single PostgreSQL database eliminates the overhead of managing separate vector databases.
+3. **Reranking Filters Noise:** Applying a Cross-Encoder reranker after Reciprocal Rank Fusion (RRF) ensures only the most contextually relevant chunks reach the LLM, mitigating "lost-in-the-middle" issues.
+
+*Takeaway:* *Production-ready RAG requires a multi-layered retrieval strategy that balances semantic depth, keyword precision, and deep-learning reranking.*
 
 ---
 

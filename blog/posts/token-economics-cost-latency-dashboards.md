@@ -1,3 +1,8 @@
+> ### 📖 Article Overview
+> * **What this article is about:** This article explores how to optimize multi-agent LLM systems using Context Engineering for prompt caching and Token Economics Telemetry.
+> * **Why it matters:** Unoptimized agentic workflows incur exponential API costs and latency spikes, making strict token tracking and cache-friendly prompt design critical for sustainable, enterprise-grade AI deployment.
+> * **What we synthesized:** We synthesized a complete telemetry and cost-routing pipeline, prefix caching rules for maximizing hit rates, and a Node.js middleware implementation to track and log real-time token metrics.
+
 When deploying large-scale Generative AI applications, API costs and latency compound exponentially. In a multi-agent system, agents repeatedly pass long conversations, document contexts, and tool definitions back and forth. This "agentic tax" can quickly run up thousands of dollars in cloud API fees and slow system response times to an crawl.
 
 To operate enterprise-grade AI products sustainably, we must transition from basic prompt templates to strict **Context Engineering** and **Token Economics Telemetry**. 
@@ -136,6 +141,17 @@ async function logLLMUsage({ agentName, model, durationMs, ttftMs, usage }) {
 * **P99 Latency Audits**: Drill down into which specific agents run long-running loops or experience deep prefill delays.
 * **Cache-Hit Ratio (CHR)**: Track `(cached_tokens / input_tokens) * 100`. Strive to keep CHR above 70% for system prompts.
 * **Direct Cost Allocation**: Assign dollar figures to specific departments or features (e.g., "Research Agent" vs. "Summarizer Agent") to isolate run-away agent loops.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Optimizing agentic workflows requires shifting from simple prompt construction to rigorous token management and observability.
+1. **Context Engineering is Critical:** Structuring prompts with static system instructions and tool definitions at the prefix ensures high prompt cache hit rates, reducing input costs by up to 90%.
+2. **Telemetry Enables Accountability:** Implementing a middleware wrapper to capture latency, TTFT, and cached token metrics allows teams to attribute costs directly to specific agents and identify runaway loops.
+3. **Observability Drives Optimization:** Real-time dashboards tracking Cache-Hit Ratio (CHR) and P99 latency provide the actionable insights needed to continuously refine agent performance and maintain budget control.
+
+*Takeaway:* *By treating tokens as a core economic resource, enterprises can scale multi-agent systems sustainably without compromising on performance or cost.*
 
 ---
 
