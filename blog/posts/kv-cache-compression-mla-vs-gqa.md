@@ -1,3 +1,12 @@
+# Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)
+
+> ### 📖 Article Overview
+> * **What this article is about:** An analysis of Key-Value (KV) cache compression methods, comparing low-rank Multi-head Latent Attention (MLA, used in DeepSeek V3/R1) against Grouped-Query Attention (GQA, used in Meta LLaMA-3).
+> * **Why it matters:** LLM serving throughput is bounded by memory bandwidth. Storing the historical keys and values of concurrent active users consumes massive amounts of VRAM, limiting concurrency.
+> * **What we synthesized:** GQA groups heads to reduce cache footprint by 8x with minimal information loss. MLA projects keys and values into a compressed latent vector space to achieve a 14x (93%) cache reduction, significantly boosting server throughput but adding mathematical projection overhead.
+
+---
+
 The primary bottleneck in serving large language models is not compute capability—it is memory bandwidth. 
 
 When generating text, the model must store the Key-Value (KV) tensors of all past tokens in GPU memory. This is called the **KV Cache**. For a 70B parameter model processing a 32K context window, the KV Cache for a single user request can consume over **12GB of VRAM**, severely limiting the number of concurrent requests a server can process.
@@ -143,6 +152,17 @@ deepseekProfiler.profileCluster(100, 32768);
 
 * **vLLM PagedAttention**: Always deploy KV Cache configurations inside dynamic paging engines (like vLLM PagedAttention) to prevent fragmentation crashes.
 * **Prefill Decoupling**: Separate prefill instances (which compute KV tensors) from decoding instances (which iterate token generation) to prevent latency spikes during high-concurrency request bursts.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Optimizing memory utilization during token decoding is the key to scaling LLM deployments:
+1. **The Concurrency Revolution:** DeepSeek's MLA demonstrates that low-rank compression of keys and values allows a single server to handle up to 10x more concurrent users, drastically lowering hosting costs.
+2. **Compute vs. Memory Trade-off:** GQA is mathematically simpler and universally supported by serving frameworks, making it the choice for general deployments. MLA trades additional GPU matrix projections (FLOPs) for high VRAM compression.
+3. **Deploy with Paging:** Regardless of the attention optimization selected, combining compression with block-allocation schemes (like PagedAttention) is necessary to eliminate cache fragmentation.
+
+*Takeaway:* Choose GQA for out-of-the-box framework compatibility; choose MLA to maximize active concurrent user densities.
 
 ---
 

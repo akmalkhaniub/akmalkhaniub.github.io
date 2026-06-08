@@ -1,3 +1,12 @@
+# State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes
+
+> ### 📖 Article Overview
+> * **What this article is about:** A technical comparison between quadratic-time Self-Attention (used in standard Transformers) and linear-time State Space Models (SSMs like Mamba-2) for long-sequence tasks.
+> * **Why it matters:** As prompt contexts scale into millions of tokens, the $O(N^2)$ VRAM memory footprint of standard attention becomes unsustainable, causing hardware crashes.
+> * **What we synthesized:** State Space Models (SSMs) provide linear memory scaling and high token throughput by collapsing context history into a constant-size state. However, they struggle with high-fidelity factual recall ("needle-in-a-haystack") and exact copying tasks compared to attention.
+
+---
+
 The self-attention mechanism is both the secret to the Transformer's reasoning power and its biggest engineering limitation. 
 
 Self-attention computes a relationship matrix comparing every token in a prompt to every other token. This creates a **quadratic complexity bottleneck**: doubling your input context length increases the computational load and VRAM memory footprint by **four times ($O(N^2)$)**.
@@ -114,6 +123,17 @@ class SelectiveScanSSM(nn.Module):
 
 * **Hybrid Architectures**: For tasks requiring both long context and exact recall, use hybrid models (like Jamba) that interleave Transformer attention layers (for retrieval) with Mamba SSM layers (for context scaling).
 * **PII/Key Anchoring**: When passing document datasets to SSMs, place key facts or lookup terms at the very beginning of the prompt to maximize the model's initial state activation.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Breaking the attention memory barrier is essential for the next generation of long-context applications:
+1. **Linear Scaling is Real:** Mamba and other selective state space architectures offer a concrete pathway to processing millions of tokens without linear GPU cluster expansions.
+2. **The Recall Trade-off:** Do not replace attention wholesale if your application requires 100% factual accuracy in document searches. SSMs suffer from information decay over long distances.
+3. **The Rise of Hybrids:** Modern architectures (like Jamba) are moving toward hybrid designs—combining attention layers (for exact recall) with recurrent SSM layers (for context efficiency).
+
+*Takeaway:* Choose your architecture based on your sequence memory bounds vs. your precise factual recall requirements.
 
 ---
 

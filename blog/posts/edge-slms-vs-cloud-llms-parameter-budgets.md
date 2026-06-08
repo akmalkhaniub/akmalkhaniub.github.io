@@ -1,3 +1,12 @@
+# Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets
+
+> ### 📖 Article Overview
+> * **What this article is about:** An engineering trade-off comparison between running Small Language Models (SLMs like Gemma 2 or Phi-4) locally on the edge vs. querying large cloud-scale APIs (like Claude 3.5 Sonnet or GPT-4o).
+> * **Why it matters:** Defaulting to cloud APIs for simple LLM tasks is a major source of cost, latency, and security issues. Designing a hybrid routing architecture allows teams to achieve production efficiency.
+> * **What we synthesized:** Local SLMs offer sub-second latency, zero token costs, and absolute data privacy, but lack deep reasoning and have limited contexts. Cloud LLMs offer state-of-the-art logic and massive context windows, but suffer from high latency, recurring costs, and PII leakage risks.
+
+---
+
 For years, the gold standard of large language model (LLM) engineering was simple: bigger is better. Trillion-parameter dense models (like GPT-4) dominated benchmarks, leading developers to route every single text extraction, summary, or query through cloud-hosted APIs.
 
 In 2026, this approach is increasingly seen as an architectural anti-pattern. 
@@ -143,6 +152,17 @@ export async function executeRouter(query: string): Promise<string> {
 * [ ] **Local Quantization checks**: Validate that local machines have sufficient unified memory or dedicated VRAM (minimum 8GB for 7B-9B models) to hold quantized GGUF weights.
 * [ ] **Network State listeners**: Integrate offline network state listeners (`navigator.onLine` in web clients) to force local SLM execution if cellular network connectivity drops.
 * [ ] **Strict PII Scanners**: Implement local regex scanners to detect SSNs or phone numbers in inputs, forcing local routing even if the query requires complex reasoning.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+Optimizing the parameter budget is the most critical design pattern for high-performance, cost-sensitive AI systems:
+1. **Match Scale to Need:** Standard text processing and parsing are highly suited for local SLMs like Phi-4 or Gemma 2. Do not pay cloud markup or accept network round-trip overhead for basic classifications.
+2. **Implement Guardrails:** A hybrid model works only when supported by deterministic filters (network detection, regex-based PII scans, and length analyzers) checking queries before dispatch.
+3. **Decouple Privacy:** Edge models guarantee data containment, making them the primary option for systems handling PII in healthcare, finance, or secure environments.
+
+*Takeaway:* Production-grade architecture does not rely on the largest model available—it selects the narrowest model that can execute the task reliably.
 
 ---
 

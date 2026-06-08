@@ -1,3 +1,12 @@
+# System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling
+
+> ### 📖 Article Overview
+> * **What this article is about:** An analysis of the transition from pre-training scaling laws (dense scaling during training) to inference-time scaling (System 2 reasoning loops like OpenAI o1 or DeepSeek R1).
+> * **Why it matters:** System 2 models scale reasoning capability dynamically at runtime, changing how we budget for latency and compute costs in real-world applications.
+> * **What we synthesized:** While reasoning scaling achieves extreme accuracy on complex logical tasks (math, coding, science), it introduces significant user-facing latency and inflates token billing via hidden reasoning tokens.
+
+---
+
 In the first years of the generative AI boom, the industry was governed by **Pre-training Scaling Laws**. As established by Kaplan et al. (2020), model performance scaled predictably with parameter counts, dataset tokens, and training compute. To build a smarter model, you spent millions pre-training a larger dense network.
 
 By 2025–2026, the paradigm has shifted. We have hit the limits of high-quality human text data, forcing a transition to **Inference-Time Scaling (System 2 Thinking)**.
@@ -111,6 +120,17 @@ async function logReasoningUsage(userId, query, responsePayload) {
 * [ ] **Separate Thinking Token Budgets**: Always set a `max_completion_tokens` limit on reasoning calls to prevent the model from entering long, expensive self-critique loops.
 * [ ] **Implement Client-Side Loading UI**: Replace standard typing indicators with a thinking log or progress bar showing the user that the model is actively reasoning in the background.
 * [ ] **Cache Routing**: Route simple factual queries to System 1 models (like Claude Haiku or GPT-4o-mini) to save cost and latency.
+
+---
+
+## 🏁 Conclusion & Key Takeaways
+
+The shift from training-time scaling to inference-time scaling marks a major milestone in AI architecture:
+1. **Reasoning on Demand:** System 2 models allow us to trade runtime compute (latency and cost) for task accuracy. Complex math and competitive programming no longer require giant pre-trained weights.
+2. **The Hidden Billing Trap:** Tracking "thinking tokens" is mandatory. Because reasoning models consume massive internal token loops before returning user-facing data, middleware layers must inspect execution headers to prevent billing surprises.
+3. **Hybrid Orchestration:** Routing queries based on their cognitive demand is key. General questions should bypass System 2 loops entirely, reserving high-latency reasoning for deep logic puzzles.
+
+*Takeaway:* Scalable AI development is transitioning from prompt hacks to token economics auditing.
 
 ---
 
