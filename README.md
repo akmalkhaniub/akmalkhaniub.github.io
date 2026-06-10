@@ -1,5 +1,10 @@
 # Akmal Khan — Professional Portfolio Website 🚀
 
+<p align="left">
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square" alt="PRs Welcome">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License MIT">
+</p>
+
 This repository hosts the source code for my professional portfolio website: **[akmalkhaniub.github.io](https://akmalkhaniub.github.io)**.
 
 It is a modern, Bento Grid-style site built with semantic HTML5, custom CSS variables, and vanilla JavaScript — plus a fully **pre-rendered static blog** for maximum SEO.
