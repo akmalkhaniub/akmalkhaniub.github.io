@@ -152,6 +152,8 @@ ${jsonLd}
           <li><a href="../#about" class="nav-link">About</a></li>
           <li><a href="../#skills" class="nav-link">Skills</a></li>
           <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
           <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
           <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
         </ul>
@@ -285,6 +287,8 @@ const today = new Date().toISOString().split('T')[0];
 const urls = [
   { loc: `${SITE}/`, lastmod: today, priority: '1.0' },
   { loc: `${SITE}/blog/`, lastmod: today, priority: '0.8' },
+  { loc: `${SITE}/certifications.html`, lastmod: today, priority: '0.7' },
+  { loc: `${SITE}/publications.html`, lastmod: today, priority: '0.7' },
   ...sortedPosts.map((p) => ({
     loc: `${SITE}/blog/${p.slug}.html`,
     lastmod: toISO(p.date) || today,
@@ -327,7 +331,6 @@ ${rssItems}
 </rss>
 `;
 writeFileSync(join(ROOT, 'feed.xml'), rss);
-
 console.log(`Built ${built}/${posts.length} posts, sitemap.xml, feed.xml`);
 if (failures.length) {
   console.error('Failures:\n  ' + failures.join('\n  '));
