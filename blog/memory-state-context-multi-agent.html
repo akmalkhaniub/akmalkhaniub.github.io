@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory, State, and Context in Multi-Agent Apps | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Designing multi-tiered agent memory: separating ephemeral task states, shared databases, and long-term user profile vector context.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/memory-state-context-multi-agent.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/memory-state-context-multi-agent.html">
+  <meta property="og:title" content="Memory, State, and Context in Multi-Agent Apps">
+  <meta property="og:description" content="Designing multi-tiered agent memory: separating ephemeral task states, shared databases, and long-term user profile vector context.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-02">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Memory, State, and Context in Multi-Agent Apps">
+  <meta name="twitter:description" content="Designing multi-tiered agent memory: separating ephemeral task states, shared databases, and long-term user profile vector context.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Memory, State, and Context in Multi-Agent Apps",
+  "description": "Designing multi-tiered agent memory: separating ephemeral task states, shared databases, and long-term user profile vector context.",
+  "url": "https://akmalkhaniub.github.io/blog/memory-state-context-multi-agent.html",
+  "datePublished": "2026-06-02",
+  "keywords": "AI Agents, Memory, Vector DB",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/memory-state-context-multi-agent.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Memory, State, and Context in Multi-Agent Apps</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 3, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 6 min read</span>
+              <div class="article-tags"><span class="project-badge">AI Agents</span><span class="project-badge">Memory</span><span class="project-badge">Vector DB</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Designing a Multi-Tiered Memory Architecture for Production-Grade LLM Agents</h1>
+<blockquote>
+<h3>📖 Article Overview</h3>
+<ul>
+<li><strong>What this article is about:</strong> Designing robust memory architectures for multi-agent LLM systems.</li>
+<li><strong>Why it matters:</strong> Prevents context contamination, improves agent coordination, and enables production-grade applications.</li>
+<li><strong>What we synthesized:</strong> A three-tiered memory model, strict context isolation principles, and an architectural checklist for reliable agentic systems.</li>
+</ul>
+</blockquote>
+<p>In single-prompt LLM applications, memory is simple: you append messages to a linear array and feed it back into the context window.</p>
+<p>In multi-agent systems, this naive memory model fails. If 5 specialized agents are writing code, auditing databases, and running tests, compiling <em>every</em> step&#39;s trace into a single shared context window results in <strong>context contamination</strong>, prompt confusion, and bloated token costs.</p>
+<p>To build production-grade agentic applications, you must design a <strong>Multi-Tiered Memory Architecture</strong>.</p>
+<hr>
+<h2>The Tiers of Agent Memory</h2>
+<p>A reliable multi-agent system divides memory into three distinct tiers, separating short-term task states from long-term database memory:</p>
+<div class="mermaid">graph TD
+    subgraph Context [1. Ephemeral Task State]
+        Thread[Current Node Thread History]
+    end
+    subgraph SharedState [2. Shared Session Database]
+        PG[(PostgreSQL JSONB / Redis)]
+    end
+    subgraph LongTerm [3. Semantic Memory]
+        Vector[(pgvector / Knowledge Graphs)]
+    end
+    
+    Thread &lt;--&gt; SharedState
+    SharedState &lt;--&gt; LongTerm</div>
+<h3>1. Ephemeral Task State (Local Context)</h3>
+<ul>
+<li><strong>What it is</strong>: The immediate, message-by-message chat history inside an active agent node&#39;s context window.</li>
+<li><strong>Lifecycle</strong>: Cleared when the agent node completes its current subtask and returns its JSON output.</li>
+<li><strong>Scope</strong>: Private to that specific agent node (e.g., the researcher&#39;s local context is not seen by the code compiler).</li>
+</ul>
+<h3>2. Shared Session Database (Blackboard / Global State)</h3>
+<ul>
+<li><strong>What it is</strong>: A centralized database table (typically PostgreSQL JSONB or Redis) storing key variables, compiled drafts, and active plans for the entire user session.</li>
+<li><strong>Lifecycle</strong>: Persisted across the entire task execution lifecycle (enabling task resumption and audit logging).</li>
+<li><strong>Scope</strong>: Read and written by supervisors or specialized router nodes, which selectively dispatch segments of this state to worker nodes.</li>
+</ul>
+<h3>3. Semantic Memory (Long-Term Vector Context)</h3>
+<ul>
+<li><strong>What it is</strong>: Vector embeddings of past user interactions, successful code outputs, and corporate knowledge bases.</li>
+<li><strong>Lifecycle</strong>: Permanent.</li>
+<li><strong>Scope</strong>: Queried via similarity search (e.g., using <code>pgvector</code>) to inject historical context (e.g., &quot;how this user preferred to format reports last month&quot;) into the active session.</li>
+</ul>
+<hr>
+<h2>Memory Contamination and Context Isolation</h2>
+<p>The biggest issue in multi-agent memory is <strong>Memory Contamination</strong>. If Worker B receives the entire raw conversation between the User and Worker A, it will read past the relevant instruction, leading to attention dispersion.</p>
+<p>To prevent this, enforce <strong>Strict Context Isolation</strong>:</p>
+<ul>
+<li><strong>Decoupled Worker Prompts</strong>: Worker prompts should only receive the specific subtask instructions and the minimum context needed to execute them (e.g., the database schema, but not the user&#39;s previous complaints).</li>
+<li><strong>Read-Only Tools</strong>: Specialized retrieval agents should have read-only access to long-term memory vector databases to retrieve relevant context on-demand, rather than dumping the entire dataset into the prompt initially.</li>
+</ul>
+<hr>
+<h2>📋 Memory Architecture Checklist</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Database-Backed Checkpointing</strong>: Use database checkpointers (e.g., LangGraph Postgres checkpointer) to persist session state at every node transition. This ensures your agents can resume execution seamlessly after a crash.</li>
+<li><input disabled="" type="checkbox"> <strong>Token Budget Filters</strong>: Implement prompt compressors or token filters to prune message histories inside worker nodes, keeping ephemeral contexts under 2,000 tokens.</li>
+<li><input disabled="" type="checkbox"> <strong>Audit Logging</strong>: Write every agent input, output, tool call, and cost trace to a permanent audit database (e.g., PostgreSQL) for compliance and regression analysis.</li>
+</ul>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Building sophisticated multi-agent LLM applications demands a deliberate approach to memory management beyond simple linear context.</p>
+<ol>
+<li><strong>Multi-Tiered Memory Architecture:</strong> Implement a Multi-Tiered Memory Architecture, separating ephemeral task state, shared session data, and long-term semantic memory to optimize context relevance and reduce token costs.</li>
+<li><strong>Strict Context Isolation:</strong> Enforce strict context isolation by providing agents only the minimum necessary information for their subtask, preventing memory contamination and improving focus.</li>
+<li><strong>Robustness &amp; Auditability:</strong> Integrate database-backed checkpointing, token budget filters, and comprehensive audit logging to ensure system resilience, cost efficiency, and compliance.</li>
+</ol>
+<p><em>Takeaway: A well-designed memory architecture is fundamental for scalable, reliable, and performant multi-agent LLM applications.</em></p>
+<hr>
+<h2>📚 References &amp; Further Reading</h2>
+<ul>
+<li><strong>Theory of Mind in MAS</strong>: <em>Evaluating Theory of Mind and Internal Beliefs in LLM-Based Multi-Agent Systems</em> (February 2026). Analyzes how structured belief-state tables and memory layers improve coordination accuracy. <a href="https://arxiv.org/abs/2602.09432" target="_blank" rel="noopener">arXiv:2602.09432</a> (Needs verification)</li>
+<li><strong>MemGPT Research</strong>: Packer et al., 2023. <em>MemGPT: Towards LLMs as Operating Systems</em>. Introduces OS-style virtual memory management for LLM context windows. <a href="https://arxiv.org/abs/2310.08560" target="_blank" rel="noopener">arXiv:2310.08560</a></li>
+<li><strong>LangGraph Persistence</strong>: <a href="https://langchain-ai.github.io/langgraph/concepts/persistence/" target="_blank" rel="noopener">LangGraph Persistence &amp; Memory Guide</a> (2024). Details database-backed state checkpointing.</li>
+</ul>
+<p><em>To explore complete code implementations of all 17 agent microservices in a single monorepo, check out the public <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a> repository.</em></p>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fmemory-state-context-multi-agent.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Memory%2C%20State%2C%20and%20Context%20in%20Multi-Agent%20Apps&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fmemory-state-context-multi-agent.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>

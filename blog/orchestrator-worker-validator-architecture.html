@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator | Akmal Khan Tech Blog</title>
+  <meta name="description" content="A deep dive into decoupled worker contexts and validator contracts that eliminate LLM self-evaluation bias and stabilize production AI systems.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/orchestrator-worker-validator-architecture.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/orchestrator-worker-validator-architecture.html">
+  <meta property="og:title" content="The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator">
+  <meta property="og:description" content="A deep dive into decoupled worker contexts and validator contracts that eliminate LLM self-evaluation bias and stabilize production AI systems.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-05-27">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator">
+  <meta name="twitter:description" content="A deep dive into decoupled worker contexts and validator contracts that eliminate LLM self-evaluation bias and stabilize production AI systems.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator",
+  "description": "A deep dive into decoupled worker contexts and validator contracts that eliminate LLM self-evaluation bias and stabilize production AI systems.",
+  "url": "https://akmalkhaniub.github.io/blog/orchestrator-worker-validator-architecture.html",
+  "datePublished": "2026-05-27",
+  "keywords": "AI Agents, Validation, Software Engineering",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/orchestrator-worker-validator-architecture.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> May 28, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 6 min read</span>
+              <div class="article-tags"><span class="project-badge">AI Agents</span><span class="project-badge">Validation</span><span class="project-badge">Software Engineering</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Breaking the Self-Review Loop: The Orchestrator-Worker-Validator Pattern</h1>
+<blockquote>
+<h3>📖 Article Overview</h3>
+<ul>
+<li><strong>What this article is about:</strong> This article analyzes the failure modes of single-LLM self-review loops and details the 3-tier Orchestrator-Worker-Validator architecture designed to solve them.</li>
+<li><strong>Why it matters:</strong> Separating agentic labor prevents cognitive bias in LLMs, reduces token costs, secures systems against prompt injection, and guarantees reliable code execution in production.</li>
+<li><strong>What we synthesized:</strong> We synthesized the core mechanics of the Orchestrator-Worker-Validator loop, key implementation rules for context isolation, and strategies for combining rule-based and model-based validation.</li>
+</ul>
+</blockquote>
+<p>One of the most persistent failure modes in early agent deployments is the <strong>Self-Review Loop</strong>. Developers write a prompt that instructs a single LLM to:</p>
+<ol>
+<li>Write a Python script.</li>
+<li>Read the script it just wrote.</li>
+<li>Fix any errors in the script.</li>
+</ol>
+<p>In production, this pattern routinely fails. Large Language Models exhibit a cognitive bias analogous to human <strong>sunk cost bias</strong>: once a model generates an output, its subsequent self-inspections tend to confirm its original assumptions. If the model made a logical error in step 1, it will likely read past that same error in step 2, declaring its own work &quot;valid.&quot;</p>
+<p>To build reliable systems, we must separate the labor. We do this by implementing a 3-tier architecture: <strong>Orchestrator, Worker, and Validator</strong>.</p>
+<p>This pattern, popularized by enterprise AI engineering teams like Factory, structures agentic execution as a strict software pipeline.</p>
+<hr>
+<h2>The Three-Tier Architecture Loop</h2>
+<div class="mermaid">graph TD
+    UserReq[User Goal / Issue] --&gt;|1. Request| Orch[Orchestrator Agent]
+    Orch --&gt;|2. Create Plan &amp; Verification Contract| Worker[Worker Agent]
+    Worker --&gt;|3. Produce Execution / Code| Val[Validator Agent]
+    
+    subgraph Validation Gate [Validation Gate]
+        Val --&gt;|4. Run Verification Suite| VerifyCheck{Passes Contract?}
+    end
+    
+    VerifyCheck --&gt;|No: Generate Critique| Worker
+    VerifyCheck --&gt;|Yes: Commit Code| Finish[Approved Output]
+
+    style ValidationGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
+    style Finish fill:#f0fdf4,stroke:#16a34a,stroke-width:2px</div>
+<h3>1. The Orchestrator (The Planner)</h3>
+<p>The user request enters the Orchestrator. The Orchestrator&#39;s role is strictly cognitive planning, not code execution. It:</p>
+<ul>
+<li>Analyzes the goal.</li>
+<li>Queries metadata directories to identify files or databases that need modification.</li>
+<li>Generates a discrete, step-by-step execution plan.</li>
+<li><strong>Drafts the Verification Contract</strong>: The contract outlines the expected variables, required imports, validation scripts, or schema checks that the final output must satisfy.</li>
+</ul>
+<h3>2. The Worker (The Executer)</h3>
+<p>The Worker receives a task card from the Orchestrator. </p>
+<ul>
+<li><strong>Context Isolation</strong>: The Worker does <em>not</em> see the global plan, other worker logs, or system instructions. It is given a narrow context window, a clean list of 1–2 tools (e.g., read/write file), and the task contract.</li>
+<li><strong>Why this matters</strong>: Context isolation prevents prompt injection attacks (where external data compromises the agent) and minimizes token costs. It also ensures the model has high focus on the exact code task at hand.</li>
+</ul>
+<h3>3. The Validator (The Inspector)</h3>
+<p>The Validator takes the Worker&#39;s output and matches it against the Verification Contract.</p>
+<ul>
+<li><strong>Independent Context</strong>: The Validator has no visibility into the worker&#39;s execution path or thought log. It only evaluates the final artifact.</li>
+<li><strong>Verification Methods</strong>:<ul>
+<li><em>Rule-Based Validation</em>: Running code linters, compilers, and test suites (e.g., Pytest, Jest).</li>
+<li><em>Model-Based Validation</em>: Utilizing a separate, smaller LLM prompt with a strict QA grading rubric (LLM-as-judge).</li>
+</ul>
+</li>
+<li><strong>Feedback loop</strong>: If the validation fails, the Validator compiles a list of specific errors (e.g., &quot;Line 43 failed compilation with SyntaxError&quot;) and redirects the card back to the Worker. The Worker runs again with the critique as additional input.</li>
+</ul>
+<hr>
+<h2>📋 Architectural Rules for Production Builders</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Strict Context Partitioning</strong>: Ensure your Worker and Validator prompts do <em>not</em> share system instructions, variable memory, or history files.</li>
+<li><input disabled="" type="checkbox"> <strong>Rule-Based Precedence</strong>: Always execute programmatic validation (tests, compilers, regex schema checks) <em>before</em> invoking LLM-as-judge validators. Save tokens and ensure 100% accuracy on structural checks.</li>
+<li><input disabled="" type="checkbox"> <strong>Termination Escape Valve</strong>: Set a strict threshold on the Worker-Validator critique loop (e.g., if a worker fails validation 3 times, pause execution and alert a human supervisor).</li>
+</ul>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Adopting a structured multi-agent architecture is the key to overcoming the inherent cognitive biases of single-LLM systems.</p>
+<ol>
+<li><strong>Deconstruct the Self-Review Loop:</strong> LLMs cannot reliably grade their own work due to confirmation bias, making a separate Validator agent essential for objective quality control.</li>
+<li><strong>Isolate Context for Security and Focus:</strong> Restricting the Worker&#39;s context window minimizes token overhead, prevents prompt injection, and ensures high-fidelity task execution.</li>
+<li><strong>Prioritize Programmatic Validation:</strong> Run deterministic, rule-based checks like compilers and unit tests before calling LLM-as-judge evaluators to save API costs and guarantee structural correctness.</li>
+</ol>
+<p><em>Takeaway:</em> <em>To build production-grade AI agents, replace single-model self-correction with a strict, multi-agent pipeline of isolated planners, executors, and validators.</em></p>
+<hr>
+<h2>📚 References &amp; Further Reading</h2>
+<ul>
+<li><strong>Factory.ai Architecture Blog</strong>: <em>The Multi-Agent Architecture That Ships</em>. Luke Alvoeiro details the separation of planning, execution, and validation in automated software development squads. <em>(Technical Case Study)</em></li>
+<li><strong>Reflexion Paper</strong>: Shinn et al., 2023. <em>Reflexion: Language Agents with Active Generative Feedback</em>. Explains the mathematical and systemic benefit of separate critic models in agentic loops. <a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">Link</a></li>
+<li><strong>LLM-as-a-Judge</strong>: Zheng et al., 2023. <em>Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</em>. Analyzes the systematic biases and optimal setups for utilizing model evaluators. <a href="https://arxiv.org/abs/2306.05685" target="_blank" rel="noopener">Link</a></li>
+</ul>
+<p><em>To explore complete code implementations of all 17 agent microservices in a single monorepo, check out the public <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a> repository.</em></p>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Forchestrator-worker-validator-architecture.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=The%20Multi-Agent%20Architecture%20That%20Actually%20Ships%3A%20Orchestrator%20%E2%86%92%20Worker%20%E2%86%92%20Validator&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Forchestrator-worker-validator-architecture.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>

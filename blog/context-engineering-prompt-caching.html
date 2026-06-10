@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to build an intelligent MCP gateway that tracks token budgets, intercepts redundant queries, and implements Redis semantic caching to optimize latency and cost.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/context-engineering-prompt-caching.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/context-engineering-prompt-caching.html">
+  <meta property="og:title" content="Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization">
+  <meta property="og:description" content="How to build an intelligent MCP gateway that tracks token budgets, intercepts redundant queries, and implements Redis semantic caching to optimize latency and cost.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-07">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization">
+  <meta name="twitter:description" content="How to build an intelligent MCP gateway that tracks token budgets, intercepts redundant queries, and implements Redis semantic caching to optimize latency and cost.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Advanced Context Engineering: Semantic Prompt Caching & Token Optimization",
+  "description": "How to build an intelligent MCP gateway that tracks token budgets, intercepts redundant queries, and implements Redis semantic caching to optimize latency and cost.",
+  "url": "https://akmalkhaniub.github.io/blog/context-engineering-prompt-caching.html",
+  "datePublished": "2026-06-07",
+  "keywords": "MCP, Redis, TypeScript, Optimization",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/context-engineering-prompt-caching.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 8, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 7 min read</span>
+              <div class="article-tags"><span class="project-badge">MCP</span><span class="project-badge">Redis</span><span class="project-badge">TypeScript</span><span class="project-badge">Optimization</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization</h1>
+<blockquote>
+<h3>📖 Article Overview</h3>
+<ul>
+<li><strong>What this article is about:</strong> An engineering guide on how to design and build an intelligent Model Context Protocol (MCP) gateway that tracks token usage, prunes redundant context, and implements a semantic vector cache in Redis to reduce inference costs and latency.</li>
+<li><strong>Why it matters:</strong> While modern LLM context windows span millions of tokens, submitting large codebase folders, logs, or databases on every single turn is highly inefficient, expensive, and slow. Token optimization and semantic caching are essential to making agentic applications production-viable.</li>
+<li><strong>What we synthesized:</strong> We analyzed the performance trade-offs of exact matching vs. semantic matching, token budget limits, and context pruning, illustrating the approach with a Node.js/TypeScript middleware implementation that queries Redis vectors, linking to your asynchronous payroll system <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</li>
+</ul>
+</blockquote>
+<hr>
+<p>In our previous post, <a href="post.html?post=context-engineering-ephemeral-sandboxing">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking</a>, we discussed how to isolate untrusted agent tools within temporary sandboxes to safeguard host machines. </p>
+<p>But execution security is only half the battle when building production-grade agents. The other critical challenge is <strong>resource management</strong>. If your agent queries an MCP resource containing a massive payroll database or codebase repository, sending those thousands of lines of code back and forth to the LLM on every agent cycle will quickly consume your token budget, hit API rate limits, and slow down user response times to a crawl.</p>
+<p>To build responsive, cost-effective agents, we need to optimize our context window using two powerful techniques: <strong>Semantic Prompt Caching</strong> to skip model calls for redundant queries, and <strong>Dynamic Context Pruning</strong> to keep our prompt payloads lean.</p>
+<hr>
+<h2>🎨 The Semantic Cache &amp; Context Optimization Lifecycle</h2>
+<p>Below is the execution flow of an optimized MCP gateway that intercepts incoming prompt frames, computes semantic embeddings, runs similarity searches against a Redis cache, and dynamically prunes prompt components before executing LLM requests.</p>
+<div class="mermaid">graph TD
+    classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
+    classDef cache fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+    classDef llm fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
+    classDef db fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
+
+    User[User Prompt / Agent Task] --&gt;|1. Request| Gateway[Context Gateway Proxy]
+    Gateway --&gt;|2. Generate Embedding| Embedder[Embeddings API / text-embedding-004]
+    
+    Embedder --&gt;|3. Query Vector Index| RedisVec[(Redis Vector Cache)]
+    RedisVec --&gt;|4. Similarity Match| MatchCheck{Cosine Similarity &gt; 0.92?}
+    
+    MatchCheck --&gt;|Yes: Cache Hit| ReturnCached[Retrieve Cached LLM Output]
+    ReturnCached --&gt;|Fast Path / ~50ms| Gateway
+    
+    MatchCheck --&gt;|No: Cache Miss| TokenCheck{Payload Size &gt; Token Budget?}
+    
+    TokenCheck --&gt;|Yes| ContextPruner[Prune Context / Summarize Logs]
+    TokenCheck --&gt;|No| PromptAssembler[Assemble Prompt Bundle]
+    
+    ContextPruner --&gt; PromptAssembler
+    PromptAssembler --&gt;|5. Run Inference| LLM[LLM / Gemini 1.5 Pro]
+    
+    LLM --&gt;|6. Return Output| SaveCache[Store Prompt Embedding &amp; LLM Output]
+    SaveCache --&gt;|Write Async| RedisVec
+    SaveCache --&gt; Gateway
+    
+    Gateway --&gt;|7. Return Response| User
+
+    class User start;
+    class Gateway,Embedder,MatchCheck,TokenCheck,ContextPruner,PromptAssembler cache;
+    class ReturnCached,SaveCache db;
+    class LLM llm;
+    
+    style RedisVec fill:#f0fdf4,stroke:#22c55e,stroke-width:2px;</div>
+<hr>
+<h2>🔍 Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h3>1. Semantic Prompt Caching</h3>
+<p>Instead of checking for exact string matches (which fails if a user changes a single character or punctuation mark), we generate vector embeddings of incoming prompts and search for highly similar vectors (using cosine similarity) in a vector database.</p>
+<ul>
+<li><strong>What&#39;s Good (The Pros)</strong>:<ul>
+<li><em>Dramatic Latency Reduction</em>: A cache hit resolves in <strong>50ms to 100ms</strong> compared to the <strong>1,500ms to 5,000ms</strong> required for a full LLM generation.</li>
+<li><em>Substantial Cost Savings</em>: Vector database lookups cost a fraction of a cent, whereas processing large contexts with LLM APIs incurs high input and output token fees.</li>
+<li><em>Resilience to Minor Edits</em>: Matches queries with equivalent semantic intent (e.g., <em>&quot;How do I compute payroll deductions?&quot;</em> vs. <em>&quot;Explain payroll deduction calculations&quot;</em>).</li>
+</ul>
+</li>
+<li><strong>What&#39;s Not (The Cons)</strong>:<ul>
+<li><em>Risk of Stale Answers</em>: If the underlying context or source data changes (such as payroll updates in <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>), the cache might serve an outdated answer until it is explicitly invalidated.</li>
+<li><em>Embeddings Overhead</em>: Generates an additional network hop to the embeddings model for every query, adding 50–150ms to cache misses.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3>2. Context Pruning &amp; Dynamic Truncation</h3>
+<p>Analyzing the prompt payload size before dispatching it, and using summarization or token-importance ranking to remove irrelevant lines.</p>
+<ul>
+<li><strong>What&#39;s Good (The Pros)</strong>:<ul>
+<li><em>Rate Limit Protection</em>: Prevents agents from hitting API rate limits or crashing on excessively large token requests.</li>
+<li><em>Attention Focus</em>: Models attention performs better on shorter, highly relevant contexts (combating the &quot;lost in the middle&quot; phenomenon).</li>
+</ul>
+</li>
+<li><strong>What&#39;s Not (The Cons)</strong>:<ul>
+<li><em>Information Loss</em>: Aggressive truncation may accidentally throw away vital code blocks or edge-case log lines needed by the agent.</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>💻 Implementing a Semantic Redis Cache in TypeScript</h2>
+<p>Here is a TypeScript implementation of an MCP context gateway middleware that uses Redis Vector Search to cache and retrieve agent prompts based on cosine similarity. This design follows the modular data structures seen in the asynchronous calculations of <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</p>
+<pre><code class="language-typescript">// semantic_cache.ts
+import { Redis } from 'ioredis';
+import { GoogleGenAI } from '@google/generative-ai';
+
+interface CacheResult {
+  hit: boolean;
+  content: string;
+}
+
+export class SemanticCacheManager {
+  private redis: Redis;
+  private ai: GoogleGenAI;
+  private indexName = 'idx:prompt_cache';
+  private similarityThreshold = 0.92; // Cosine similarity limit
+
+  constructor(redisUrl: string, apiKey: string) {
+    this.redis = new Redis(redisUrl);
+    this.ai = new GoogleGenAI({ apiKey });
+  }
+
+  /**
+   * Generates a 768-dimension vector embedding using Gemini's text-embedding model.
+   */
+  private async getEmbedding(text: string): Promise&lt;number[]&gt; {
+    const model = this.ai.getGenerativeModel({ model: 'text-embedding-004' });
+    const result = await model.embedContent(text);
+    return result.embedding.values;
+  }
+
+  /**
+   * Helper to convert a float array to a Buffer for Redis vector ingestion.
+   */
+  private float32Buffer(vector: number[]): Buffer {
+    return Buffer.from(new Float32Array(vector).buffer);
+  }
+
+  /**
+   * Check if a semantically similar prompt exists in the cache.
+   */
+  public async checkCache(prompt: string): Promise&lt;CacheResult&gt; {
+    try {
+      const embedding = await this.getEmbedding(prompt);
+      const vectorBuffer = this.float32Buffer(embedding);
+
+      // Perform RediSearch KNN (K-Nearest Neighbors) vector search
+      // FT.SEARCH idx:prompt_cache &quot;*=&gt;[KNN 1 @prompt_vector $vec_param AS score]&quot; 
+      // PARAMS 2 vec_param &lt;vector&gt; DIALECT 2
+      const query = `*=&gt;[KNN 1 @prompt_vector $vec_param AS score]`;
+      const searchResult = await this.redis.call(
+        'FT.SEARCH',
+        this.indexName,
+        query,
+        'PARAMS', '2', 'vec_param', vectorBuffer,
+        'SORTBY', 'score', 'ASC',
+        'RETURN', '2', 'response_text', 'score',
+        'DIALECT', '2'
+      ) as any[];
+
+      // RediSearch response format: [total_results, document_id_1, [field_1, val_1, ...]]
+      if (!searchResult || searchResult[0] === 0) {
+        return { hit: false, content: '' };
+      }
+
+      const fields = searchResult[2];
+      let responseText = '';
+      let distance = 1.0;
+
+      for (let i = 0; i &lt; fields.length; i += 2) {
+        if (fields[i] === 'response_text') responseText = fields[i + 1];
+        if (fields[i] === 'score') distance = parseFloat(fields[i + 1]);
+      }
+
+      // Convert distance to cosine similarity (Redis Flat/COSINE distance is 1 - similarity)
+      const similarity = 1 - distance;
+      if (similarity &gt;= this.similarityThreshold) {
+        return { hit: true, content: responseText };
+      }
+    } catch (error) {
+      console.error('Semantic cache lookup failed:', error);
+    }
+    
+    return { hit: false, content: '' };
+  }
+
+  /**
+   * Save a newly generated prompt and response into the semantic vector cache.
+   */
+  public async setCache(prompt: string, response: string): Promise&lt;void&gt; {
+    try {
+      const embedding = await this.getEmbedding(prompt);
+      const vectorBuffer = this.float32Buffer(embedding);
+      const docId = `cache:${Date.now()}`;
+
+      // Store embedding vector and actual text response
+      await this.redis.hset(
+        docId,
+        'prompt_text', prompt,
+        'response_text', response,
+        'prompt_vector', vectorBuffer
+      );
+    } catch (error) {
+      console.error('Failed to write to semantic cache:', error);
+    }
+  }
+}</code></pre>
+<hr>
+<h2>📋 Context Budget Optimization Checklist</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Cache Invalidation on Write</strong>: Ensure your cache keys are linked to data version hashes. If a resource changes (e.g., code modifications or payroll runs), purge the corresponding cache entries.</li>
+<li><input disabled="" type="checkbox"> <strong>Local Embeddings for Speed</strong>: Consider running a lightweight local embeddings model (like <code>all-MiniLM-L6-v2</code>) in your gateway to eliminate the network latency of external embeddings APIs.</li>
+<li><input disabled="" type="checkbox"> <strong>Tiered Caching</strong>: Combine exact matching (fast MD5 string hashes in Redis, ~1ms) with semantic matching (vector search, ~50ms) to bypass embedding generation for identical queries.</li>
+</ul>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Optimal context engineering ensures that agent systems scale sustainably:</p>
+<ol>
+<li><strong>Reduce Before Requesting:</strong> Do not treat the context window as a dumping ground. Always check token size constraints and summarize histories where possible.</li>
+<li><strong>Vectors as Gatekeepers:</strong> Use semantic vector caches (e.g. using Redis or pgvector) to intercept similar queries, saving money and achieving near-instant response times.</li>
+<li><strong>Keep State Versioned:</strong> Prevent stale cache delivery by mapping vector keys to content version hashes so that data writes invalidate outdated prompts.</li>
+</ol>
+<p><em>Takeaway:</em> The fastest and cheapest LLM call is the one that you never have to make.</p>
+<hr>
+<h2>📚 References &amp; Further Reading</h2>
+<ul>
+<li><strong>Redis Vector Library</strong>: Redis Developer Documentation. <em>Vector Similarity Search (VSS) with RediSearch</em>. <a href="https://redis.io/docs/latest/develop/interact/search-and-query/vector-search/" target="_blank" rel="noopener">Redis Vector Search</a>.</li>
+<li><strong>LLM Context Limits</strong>: Anthropic Research. <em>Designing Prompts for Large Context Windows</em>. <a href="https://www.anthropic.com/research" target="_blank" rel="noopener">Anthropic Blog</a>.</li>
+</ul>
+<p><em>For examples of high-concurrency computation pipelines and transaction synchronization, examine the codebase of the <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a> repository.</em></p>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fcontext-engineering-prompt-caching.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Advanced%20Context%20Engineering%3A%20Semantic%20Prompt%20Caching%20%26%20Token%20Optimization&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fcontext-engineering-prompt-caching.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>

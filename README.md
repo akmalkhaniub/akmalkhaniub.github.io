@@ -2,35 +2,52 @@
 
 This repository hosts the source code for my professional portfolio website: **[akmalkhaniub.github.io](https://akmalkhaniub.github.io)**.
 
-It is designed as a modern, high-fidelity, Bento Grid-style landing page built with semantic HTML5, custom CSS variables, and fluid JavaScript interactions.
+It is a modern, Bento Grid-style site built with semantic HTML5, custom CSS variables, and vanilla JavaScript — plus a fully **pre-rendered static blog** for maximum SEO.
 
 ## 🏗️ Structure & Key Features
 - **Profile Hero:** Overview of my experience as a Senior Staff Engineer focusing on AI-Powered Platforms.
-- **GitHub Stats Integration:** Live telemetry showing contributions and streaks.
-- **Core Principles & Technical Stack:** A comprehensive listing of AI/RAG, backend, frontend, and cloud/database competencies.
-- **Featured Projects:** Highlights of core projects (Studio OS, Ops MCP Suite, Rota Manager, Django Payroll, etc.) linking to their respective source code.
-- **Bento Blog Feed:** Modern bento layout showing recent articles and deep dives.
-- **Responsive Design:** Completely optimized for mobile, tablet, and desktop screens with custom CSS breakpoints.
+- **Featured Projects:** Highlights of core projects linking to their source code.
+- **Static Blog:** 38+ technical deep-dives, pre-rendered to static HTML pages with full Open Graph / Twitter Card / JSON-LD metadata.
+- **SEO:** `sitemap.xml`, `feed.xml` (RSS), `robots.txt`, canonical URLs, and structured data on every page.
+- **Dark/Light Theme:** Persistent theme toggle with theme-aware GitHub stats.
+- **Responsive Design:** Optimized for mobile, tablet, and desktop.
 
-## 🛠️ Technology Stack
-- **HTML5:** Semantic architecture for SEO and screen-reader accessibility.
-- **Vanilla CSS3:** Custom CSS variables for theme management, flexbox/grid layout systems, and smooth keyframe animations.
-- **JavaScript (ES6):** Vanilla JS for DOM traversal, scroll spying, and responsive mobile nav toggle.
-- **FontAwesome:** Scalable vector icons.
-- **Google Fonts:** Outfit (headings) and Inter (body).
-
-## 🚀 Running Locally
-You don't need any build steps to run this project! Simply open `index.html` in your browser, or use a local static server:
-
-```bash
-# Using Python
-python -m http.server 8000
-
-# Using Node.js (npx)
-npx serve .
+## 📁 Layout
+```
+index.html          Landing page
+style.css           Global design system (light/dark themes)
+shared.js           Shared behavior (theme toggle, mobile nav)
+app.js              Home page behavior (scroll spy, featured article)
+blog/
+  index.html        Blog index (search + listing)
+  posts.json        Blog post registry (metadata)
+  posts/*.md        Article sources (Markdown)
+  <slug>.html       Generated static article pages (do not edit by hand)
+  article.css/.js   Shared article page assets
+scripts/
+  build-blog.js     Static site generator for the blog
 ```
 
-Open your browser to `http://localhost:8000` (or the port specified by your server).
+## ✍️ Adding a Blog Post
+1. Write the article as `blog/posts/<slug>.md`.
+2. Add its metadata entry to `blog/posts.json`.
+3. Rebuild:
+
+```bash
+npm install   # first time only
+npm run build # generates blog/<slug>.html, sitemap.xml, feed.xml
+```
+
+4. Commit and push — GitHub Pages serves the generated pages directly.
+
+## 🚀 Running Locally
+No build needed for browsing — serve the folder statically:
+
+```bash
+python -m http.server 8000
+# or
+npx serve .
+```
 
 ## 📄 License
 MIT License. Feel free to use this layout as inspiration for your own portfolio!

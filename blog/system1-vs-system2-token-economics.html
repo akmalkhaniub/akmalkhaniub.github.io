@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling | Akmal Khan Tech Blog</title>
+  <meta name="description" content="An analysis of pre-training scaling laws vs. reasoning-time scaling loops (OpenAI o1, DeepSeek R1), detailing compute trade-offs, latency profiles, and thinking token economics.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system1-vs-system2-token-economics.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system1-vs-system2-token-economics.html">
+  <meta property="og:title" content="System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling">
+  <meta property="og:description" content="An analysis of pre-training scaling laws vs. reasoning-time scaling loops (OpenAI o1, DeepSeek R1), detailing compute trade-offs, latency profiles, and thinking token economics.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-09">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling">
+  <meta name="twitter:description" content="An analysis of pre-training scaling laws vs. reasoning-time scaling loops (OpenAI o1, DeepSeek R1), detailing compute trade-offs, latency profiles, and thinking token economics.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling",
+  "description": "An analysis of pre-training scaling laws vs. reasoning-time scaling loops (OpenAI o1, DeepSeek R1), detailing compute trade-offs, latency profiles, and thinking token economics.",
+  "url": "https://akmalkhaniub.github.io/blog/system1-vs-system2-token-economics.html",
+  "datePublished": "2026-06-09",
+  "keywords": "o1, R1, Inference Scaling, Token Economics",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system1-vs-system2-token-economics.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 10, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 8 min read</span>
+              <div class="article-tags"><span class="project-badge">o1</span><span class="project-badge">R1</span><span class="project-badge">Inference Scaling</span><span class="project-badge">Token Economics</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling</h1>
+<blockquote>
+<h3>📖 Article Overview</h3>
+<ul>
+<li><strong>What this article is about:</strong> An analysis of the transition from pre-training scaling laws (dense scaling during training) to inference-time scaling (System 2 reasoning loops like OpenAI o1 or DeepSeek R1).</li>
+<li><strong>Why it matters:</strong> System 2 models scale reasoning capability dynamically at runtime, changing how we budget for latency and compute costs in real-world applications.</li>
+<li><strong>What we synthesized:</strong> While reasoning scaling achieves extreme accuracy on complex logical tasks (math, coding, science), it introduces significant user-facing latency and inflates token billing via hidden reasoning tokens.</li>
+</ul>
+</blockquote>
+<hr>
+<p>In the first years of the generative AI boom, the industry was governed by <strong>Pre-training Scaling Laws</strong>. As established by Kaplan et al. (2020), model performance scaled predictably with parameter counts, dataset tokens, and training compute. To build a smarter model, you spent millions pre-training a larger dense network.</p>
+<p>By 2025–2026, the paradigm has shifted. We have hit the limits of high-quality human text data, forcing a transition to <strong>Inference-Time Scaling (System 2 Thinking)</strong>.</p>
+<p>Popularized by reasoning models like OpenAI&#39;s o1 and DeepSeek&#39;s R1, System 2 scaling shifts the compute budget from training to inference. Instead of generating an answer instantly (System 1), the model runs reinforcement learning loops at runtime to plan, search, backtrack, and self-correct before outputting the final answer.</p>
+<p>This article synthesizes the trade-offs of inference-time scaling, analyzing <strong>what is good (pros)</strong>, <strong>what is not (cons)</strong>, and how to audit &quot;thinking token&quot; economics, as modeled in my exam generator project, <a href="https://github.com/akmalkhaniub/QuestionPaperAI" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> QuestionPaperAI</a>.</p>
+<hr>
+<h2>🎨 System 1 vs. System 2 Execution Paths</h2>
+<p>Unlike standard token generation, System 2 reasoning models execute a multi-turn, hidden computation loop before delivering the first user-facing token.</p>
+<div class="mermaid">graph TD
+    classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
+    classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
+    classDef system1 fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
+    classDef system2 fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#92400e;
+    classDef error fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
+
+    Input[User Query Input] --&gt; ModeCheck{Requires Reasoning?}
+    
+    ModeCheck --&gt;|No: System 1| DirectGen[Direct Token Generation]
+    ModeCheck --&gt;|Yes: System 2| InitPlan[Initialize Step-by-Step Plan]
+    
+    subgraph ThinkingLoop [Inference-Time Search]
+        InitPlan --&gt; RunStep[Generate Thinking Tokens / Step N]
+        RunStep --&gt; EvalStep{Self-Correct / Grade Step?}
+        EvalStep --&gt;|Contradiction Found| Backtrack[Backtrack and Rewrite Step]
+        Backtrack --&gt; RunStep
+        EvalStep --&gt;|Step Validated| NextStep{Is Goal Achieved?}
+        NextStep --&gt;|No| RunStep
+    end
+    
+    NextStep --&gt;|Yes| FormatOut[Format User-Facing Answer]
+    
+    DirectGen --&gt; Return1[Instant Output / Low Latency]
+    FormatOut --&gt; Return2[Grounded Output / High Latency]
+
+    class Input start;
+    class ModeCheck,EvalStep,NextStep check;
+    class DirectGen,Return1 system1;
+    class InitPlan,RunStep,FormatOut,Return2 system2;
+    class Backtrack error;</div>
+<hr>
+<h2>🔍 Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h3>What&#39;s Good (The Pros)</h3>
+<ul>
+<li><strong>Logical Precision</strong>: System 2 scaling solves multi-step reasoning puzzles (complex math proofs, competitive coding, scientific calculations) with unprecedented accuracy.</li>
+<li><strong>Parameter Efficiency</strong>: Instead of training a 1-trillion parameter dense model, we achieve equivalent reasoning accuracy using a 70B parameter model by scaling inference compute.</li>
+<li><strong>Sample Efficiency</strong>: The model learns to critique its own thoughts via reinforcement learning (RL) rather than relying exclusively on massive human-curated datasets.</li>
+</ul>
+<h3>What&#39;s Not (The Cons)</h3>
+<ul>
+<li><strong>Inference Latency Spikes</strong>: Responses no longer appear instantly. User queries can block for 15 to 90 seconds while the model iterates through its hidden reasoning loop, breaking real-time UI expectations.</li>
+<li><strong>Thinking Token Inflation</strong>: The model might generate 2,000 hidden &quot;thinking tokens&quot; just to output a 100-word answer. This token inflation compounds API billing costs exponentially.</li>
+<li><strong>Simple Query Overkill</strong>: Running a System 2 loop for a basic query (e.g. <em>&quot;What is the capital of France?&quot;</em>) is highly inefficient, wasting CPU cycles and money.</li>
+</ul>
+<hr>
+<h2>💻 Auditing Thinking Tokens in Node.js</h2>
+<p>Because reasoning models bill for both hidden thinking tokens and user-facing output tokens, your API tracking layer must separate these metrics to calculate costs accurately. </p>
+<p>Here is a Node.js middleware wrapper that queries the reasoning engine, isolates the thinking token metadata, and logs cost metrics, modeled on the test-generation pipelines in <a href="https://github.com/akmalkhaniub/QuestionPaperAI" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> QuestionPaperAI</a>.</p>
+<pre><code class="language-javascript">// billingMiddleware.js
+const { Pool } = require('pg');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+const DEEPSEEK_R1_RATES = {
+  input: 0.00000055,        // $0.55 per Million
+  thinking: 0.00000219,     // $2.19 per Million
+  output: 0.00000219        // $2.19 per Million
+};
+
+async function logReasoningUsage(userId, query, responsePayload) {
+  const { usage, model } = responsePayload;
+  
+  // Extract token categories
+  const inputTokens = usage.prompt_tokens;
+  const outputTokens = usage.completion_tokens;
+  const thinkingTokens = usage.completion_tokens_details?.reasoning_tokens || 0;
+  
+  // Calculate cost
+  const standardOutputTokens = outputTokens - thinkingTokens;
+  const cost = (inputTokens * DEEPSEEK_R1_RATES.input) +
+               (thinkingTokens * DEEPSEEK_R1_RATES.thinking) +
+               (standardOutputTokens * DEEPSEEK_R1_RATES.output);
+
+  const sql = `
+    INSERT INTO token_billing_audit 
+    (user_id, model_name, input_tokens, output_tokens, thinking_tokens, estimated_cost_usd)
+    VALUES ($1, $2, $3, $4, $5, $6);
+  `;
+  
+  await pool.query(sql, [userId, model, inputTokens, standardOutputTokens, thinkingTokens, cost]);
+  console.log(`[Billing Log]: Cost for User ${userId}: $${cost.toFixed(6)} (${thinkingTokens} thinking tokens used).`);
+}</code></pre>
+<hr>
+<h2>📋 System 2 Implementation Checklist</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>Separate Thinking Token Budgets</strong>: Always set a <code>max_completion_tokens</code> limit on reasoning calls to prevent the model from entering long, expensive self-critique loops.</li>
+<li><input disabled="" type="checkbox"> <strong>Implement Client-Side Loading UI</strong>: Replace standard typing indicators with a thinking log or progress bar showing the user that the model is actively reasoning in the background.</li>
+<li><input disabled="" type="checkbox"> <strong>Cache Routing</strong>: Route simple factual queries to System 1 models (like Claude Haiku or GPT-4o-mini) to save cost and latency.</li>
+</ul>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>The shift from training-time scaling to inference-time scaling marks a major milestone in AI architecture:</p>
+<ol>
+<li><strong>Reasoning on Demand:</strong> System 2 models allow us to trade runtime compute (latency and cost) for task accuracy. Complex math and competitive programming no longer require giant pre-trained weights.</li>
+<li><strong>The Hidden Billing Trap:</strong> Tracking &quot;thinking tokens&quot; is mandatory. Because reasoning models consume massive internal token loops before returning user-facing data, middleware layers must inspect execution headers to prevent billing surprises.</li>
+<li><strong>Hybrid Orchestration:</strong> Routing queries based on their cognitive demand is key. General questions should bypass System 2 loops entirely, reserving high-latency reasoning for deep logic puzzles.</li>
+</ol>
+<p><em>Takeaway:</em> Scalable AI development is transitioning from prompt hacks to token economics auditing.</p>
+<hr>
+<h2>📚 References &amp; Further Reading</h2>
+<ul>
+<li><strong>Scaling Laws</strong>: Kaplan et al., 2020. <em>Scaling Laws for Neural Language Models</em>. <a href="https://arxiv.org/abs/2001.08361" target="_blank" rel="noopener">arXiv:2001.08361</a>.</li>
+<li><strong>DeepSeek R1 &amp; GRPO</strong>: Xiong et al., 2025. <em>DeepSeek: Paradigm Shifts and Technical Evolution in Large AI Models</em>. Outlines Group Relative Policy Optimization (GRPO) for reasoning. <a href="https://arxiv.org/abs/2507.09955" target="_blank" rel="noopener">arXiv:2507.09955</a>.</li>
+<li><strong>System 2 Thinking in LLMs</strong>: Andrej Karpathy&#39;s video lecture on <a href="https://www.youtube.com/watch?v=zjkBMFhNj_g#t=2h15m" target="_blank" rel="noopener">System 1 vs System 2 Thinking in LLMs</a>.</li>
+</ul>
+<p><em>To check out our reasoning integrations for automated curriculum generation, inspect the source code of our <a href="https://github.com/akmalkhaniub/QuestionPaperAI" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> QuestionPaperAI</a> repository.</em></p>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem1-vs-system2-token-economics.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=System%201%20vs.%20System%202%20Thinking%3A%20The%20Token%20Economics%20of%20Inference-Time%20Scaling&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem1-vs-system2-token-economics.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item active">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>

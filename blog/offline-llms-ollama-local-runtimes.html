@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Deploying clinical assistant models locally, measuring local inference latency, and establishing local-first SQLite offline data syncing.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/offline-llms-ollama-local-runtimes.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/offline-llms-ollama-local-runtimes.html">
+  <meta property="og:title" content="Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes">
+  <meta property="og:description" content="Deploying clinical assistant models locally, measuring local inference latency, and establishing local-first SQLite offline data syncing.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-05-16">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes">
+  <meta name="twitter:description" content="Deploying clinical assistant models locally, measuring local inference latency, and establishing local-first SQLite offline data syncing.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Offline LLMs: Deploying Gemma & Mistral via Local Ollama Runtimes",
+  "description": "Deploying clinical assistant models locally, measuring local inference latency, and establishing local-first SQLite offline data syncing.",
+  "url": "https://akmalkhaniub.github.io/blog/offline-llms-ollama-local-runtimes.html",
+  "datePublished": "2026-05-16",
+  "keywords": "Local AI, Ollama, Mistral, React Native",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/offline-llms-ollama-local-runtimes.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> May 17, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 6 min read</span>
+              <div class="article-tags"><span class="project-badge">Local AI</span><span class="project-badge">Ollama</span><span class="project-badge">Mistral</span><span class="project-badge">React Native</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<blockquote>
+<h3>📖 Article Overview</h3>
+<ul>
+<li><strong>What this article is about:</strong> This article explores how to transition from cloud-hosted AI APIs to local-first architectures using Ollama, open-weight models, and offline-first database synchronization for highly regulated clinical environments.</li>
+<li><strong>Why it matters:</strong> Deploying local-first AI ensures 100% offline reliability, zero API costs, and strict compliance with HIPAA data privacy standards by keeping sensitive patient data entirely on local edge hardware.</li>
+<li><strong>What we synthesized:</strong> We analyzed the performance tradeoffs of local vs. cloud inference, detailed a robust SQLite-to-PostgreSQL background synchronization pipeline, and outlined critical security and hardware guardrails for edge deployment.</li>
+</ul>
+</blockquote>
+<p>In resource-constrained clinics or highly regulated medical environments, deploying cloud-hosted models (like Claude or GPT) is often impossible due to lack of stable internet connectivity or strict HIPAA patient data privacy standards.</p>
+<p>To build reliable clinical assistants, we must shift from cloud APIs to <strong>Local-First AI Architectures</strong>. This means deploying open-weight models (like Gemma 2 or Mistral 7B) directly on local edge hardware and managing database synchronization locally.</p>
+<p>This article reviews the setup, performance tradeoffs, and offline-first database synchronization strategies modeled on my clinical decision assistant, <a href="https://github.com/akmalkhaniub/MedEdge" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> MedEdge</a>.</p>
+<hr>
+<h2>🛠️ Running Local Models via Ollama</h2>
+<p>Ollama has become the standard execution layer for running open-weight models on local servers. It packages model weights, configurations, and runtime dependencies into a single, unified service exposed via a local HTTP server (<code>localhost:11434</code>).</p>
+<h3>1. Local CLI Deployment</h3>
+<p>To run a clinical-grade Mistral model locally, we pull and run it directly on the edge machine:</p>
+<pre><code class="language-bash">ollama run mistral</code></pre>
+<p>Ollama automatically detects system hardware (Apple Silicon unified memory, Nvidia CUDA, or AMD ROCm) and offloads weights to the GPU accordingly to maximize inference speed.</p>
+<h3>2. JavaScript Intake Client</h3>
+<p>Inside our local React Native clinical dashboard, we query the local server directly:</p>
+<pre><code class="language-typescript">async function generateClinicalSummary(rawTranscription: string) {
+  const response = await fetch('http://localhost:11434/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'mistral',
+      prompt: `Translate the following doctor-patient audio transcription into a structured SOAP clinical note:\n\n${rawTranscription}`,
+      stream: false
+    })
+  });
+  const data = await response.json();
+  return data.response;
+}</code></pre>
+<hr>
+<h2>📊 Cloud vs. Local Inference Performance</h2>
+<p>Deploying local models requires understanding the performance and resource tradeoffs:</p>
+<div class="mermaid">graph TD
+    subgraph Cloud [Cloud APIs: Claude / GPT]
+        C_Cap[High Parameters / 100B+] --&gt; C_Lat[Sub-second Latency / 80+ tps]
+        C_Lat --&gt; C_Sec[Vulnerable to Network / HIPAA overhead]
+    end
+    
+    subgraph Local [Local Edge: Ollama / Gemma / Mistral]
+        L_Cap[Small Parameters / 7B-9B] --&gt; L_Lat[Hardware Dependent / 15-40 tps]
+        L_Lat --&gt; L_Sec[100% Offline / High Privacy]
+    end</div>
+<ul>
+<li><strong>Accuracy</strong>: Frontier cloud models outperform local 7B models on open-ended logic. However, for specialized structured extraction (like parsing transcription into a standard SOAP note template), fine-tuned 7B models match or exceed general cloud models while costing $0 in API fees.</li>
+<li><strong>Latency</strong>: While cloud calls are highly optimized, they require a round-trip network call. Under offline conditions, a local Nvidia RTX GPU executing Mistral at <strong>45 tokens per second</strong> delivers sub-500ms response times without any external dependencies.</li>
+</ul>
+<hr>
+<h2>🔄 Offline-First Syncing: SQLite to Postgres</h2>
+<p>A clinical assistant must save records even when the clinic is completely disconnected from the network. We implement a <strong>Local-First Synchronization Pipeline</strong>:</p>
+<div class="mermaid">sequenceDiagram
+    actor Doctor as Physician
+    participant App as React Native Client
+    participant SQL as Local SQLite DB
+    participant Sync as Background Sync Worker
+    participant Cloud as PostgreSQL Cloud Database
+
+    Doctor-&gt;&gt;App: Input patient intake details
+    App-&gt;&gt;SQL: Write encrypted record with status 'pending_sync'
+    Note over SQL: Record saved locally. 100% offline functionality.
+    
+    Note over Sync: Network connectivity restored (Online)
+    Sync-&gt;&gt;SQL: Query records where status = 'pending_sync'
+    SQL--&gt;&gt;Sync: Return 5 pending patient intakes
+    Sync-&gt;&gt;Cloud: POST batch payload (JSONB schema)
+    Cloud--&gt;&gt;Sync: Acknowledge batch sync success (201 Created)
+    Sync-&gt;&gt;SQL: Update status to 'synced' for processed records</div>
+<ol>
+<li><strong>Local Writes</strong>: The mobile and web clients write encrypted patient files directly to a local <strong>SQLite database</strong>. Every entry is tagged with a <code>sync_status = &#39;pending_sync&#39;</code> flag and a unique UUID.</li>
+<li><strong>Connectivity Detection</strong>: A background service monitors system network events.</li>
+<li><strong>Batch Synchronization</strong>: Once internet connectivity is detected, the sync worker gathers all pending records, packages them into a compressed JSON payload, and posts them to our centralized <strong>PostgreSQL</strong> database. </li>
+<li><strong>Acknowledge and Clear</strong>: Upon receiving a success status from the cloud API gateway, the local sync worker updates the local SQLite records to <code>sync_status = &#39;synced&#39;</code>.</li>
+</ol>
+<hr>
+<h2>📋 Local-First Implementation Guardrails</h2>
+<ul>
+<li><input disabled="" type="checkbox"> <strong>GPU VRAM Checks</strong>: Ensure the edge server has sufficient dedicated VRAM to hold the model weights in memory (minimum 8GB VRAM for 7B models). If memory is exceeded, execution falls back to CPU, increasing latency by 10x.</li>
+<li><input disabled="" type="checkbox"> <strong>Encryption-at-Rest</strong>: Encrypt the local SQLite database using SQLCipher to ensure patient records remain protected if the physical device is stolen.</li>
+<li><input disabled="" type="checkbox"> <strong>Conflict Resolution Policies</strong>: Implement a &quot;last-write-wins&quot; policy using local timestamp UUIDs to handle synchronization conflict cases.</li>
+</ul>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Transitioning to a local-first architecture empowers healthcare applications to remain resilient, secure, and highly performant without relying on constant cloud connectivity.</p>
+<ol>
+<li><strong>Local-First Privacy &amp; Compliance:</strong> Running open-weight models like Mistral 7B locally via Ollama eliminates external data transmission, ensuring strict adherence to HIPAA and other data privacy regulations.</li>
+<li><strong>Offline-First Synchronization:</strong> Implementing a robust SQLite-to-PostgreSQL pipeline allows clinical assistants to function seamlessly offline and securely sync encrypted records once connectivity is restored.</li>
+<li><strong>Hardware &amp; Security Guardrails:</strong> Successful edge deployment requires careful VRAM management to avoid CPU fallback latency, alongside robust local encryption (like SQLCipher) to protect data-at-rest.</li>
+</ol>
+<p><em>Takeaway:</em> <em>By shifting to local-first AI, developers can build highly secure, zero-cost, and resilient clinical assistants that perform reliably in any environment.</em></p>
+<hr>
+<h2>📚 References &amp; Further Reading</h2>
+<ul>
+<li><strong>Local LLM Quantization</strong>: <em>LLM.int8(): 8-bit Matrix Multiplication for Transformers</em>. Explains how model weights are compressed to run on consumer hardware. <a href="https://arxiv.org/abs/2208.07339" target="_blank" rel="noopener">arXiv:2208.07339</a></li>
+<li><strong>Offline-First Data Sync</strong>: <a href="https://www.zetetic.net/sqlcipher/" target="_blank" rel="noopener">SQLCipher Database Encryption</a>. Standard for local-first database encryption.</li>
+</ul>
+<p><em>To inspect our local clinical decision assistant codebase, check out the public <a href="https://github.com/akmalkhaniub/MedEdge" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> MedEdge</a> repository.</em></p>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Foffline-llms-ollama-local-runtimes.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Offline%20LLMs%3A%20Deploying%20Gemma%20%26%20Mistral%20via%20Local%20Ollama%20Runtimes&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Foffline-llms-ollama-local-runtimes.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>
