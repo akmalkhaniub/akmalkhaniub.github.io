@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90% | Akmal Khan Tech Blog</title>
+  <meta name="description" content="A deep dive into Anthropic and OpenAI prompt caching APIs, context window cost topology, and a complete Python implementation with real cost projections at scale.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/prompt-caching-context-window-economics.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/prompt-caching-context-window-economics.html">
+  <meta property="og:title" content="Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%">
+  <meta property="og:description" content="A deep dive into Anthropic and OpenAI prompt caching APIs, context window cost topology, and a complete Python implementation with real cost projections at scale.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-19">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%">
+  <meta name="twitter:description" content="A deep dive into Anthropic and OpenAI prompt caching APIs, context window cost topology, and a complete Python implementation with real cost projections at scale.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Prompt Caching & Context Window Economics: Cutting LLM API Costs by 90%",
+  "description": "A deep dive into Anthropic and OpenAI prompt caching APIs, context window cost topology, and a complete Python implementation with real cost projections at scale.",
+  "url": "https://akmalkhaniub.github.io/blog/prompt-caching-context-window-economics.html",
+  "datePublished": "2026-06-19",
+  "keywords": "Cost Optimization, Anthropic, OpenAI, Python",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/prompt-caching-context-window-economics.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 20, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 8 min read</span>
+              <div class="article-tags"><span class="project-badge">Cost Optimization</span><span class="project-badge">Anthropic</span><span class="project-badge">OpenAI</span><span class="project-badge">Python</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+As AI systems scale from prototype to production, LLM API costs grow non-linearly. A multi-step agent processing 50,000 tokens per request at 1,000 daily active users generates millions of tokens per day — invoices that quickly become unsustainable. This article dives deep into <strong>Prompt Caching</strong> (Anthropic&#39;s Cache Control, OpenAI&#39;s Prompt Caching), the <strong>economics of context window sizing</strong>, and provides concrete Python implementations to cut your input token costs by up to 90% without sacrificing response quality.</p>
+</blockquote>
+<hr>
+<h2>The Hidden Cost of Long-Context AI Systems</h2>
+<p>Every LLM API invocation is billed on token counts — both input and output. For a standard chatbot this is manageable. For enterprise AI platforms, costs scale dramatically due to:</p>
+<ol>
+<li><strong>System Prompt Repetition</strong>: A 4,000-token system prompt is resent on every single API call. Across 10,000 daily requests, that&#39;s 40 million redundant input tokens billed at full price.</li>
+<li><strong>RAG Context Injection</strong>: Injecting retrieved documents into the prompt for every query compounds the cost. A 10-chunk RAG system with 500 tokens per chunk adds 5,000 input tokens per call.</li>
+<li><strong>Multi-Turn Conversation History</strong>: Maintaining conversation context by resending the full history on each turn creates a quadratic cost growth pattern as conversation length increases.</li>
+</ol>
+<p><strong>Prompt Caching</strong> solves this at the infrastructure level by allowing the LLM provider to cache the KV (Key-Value) attention states of repeated prompt prefixes, billing cached tokens at a fraction of the cost of fresh tokens.</p>
+<hr>
+<h2>Context Window Cost Topology</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+graph LR
+    subgraph Per Request Token Breakdown
+        A[System Prompt&lt;br/&gt;~4000 tokens] --&gt; T[Total Input]
+        B[RAG Context&lt;br/&gt;~5000 tokens] --&gt; T
+        C[Chat History&lt;br/&gt;~3000 tokens] --&gt; T
+        D[User Query&lt;br/&gt;~200 tokens] --&gt; T
+    end
+    
+    T --&gt; E{Caching Applied?}
+    
+    E --&gt;|No Cache| F[12200 tokens&lt;br/&gt;billed at $0.015/1K = $0.183 per call]
+    E --&gt;|With Cache| G[Cache Hit: 12000 tokens @ $0.0015/1K&lt;br/&gt;+ Fresh: 200 tokens @ $0.015/1K&lt;br/&gt;= $0.021 per call — 88% savings]
+    
+    style A fill:#1e293b,stroke:#f59e0b,stroke-width:2px
+    style B fill:#1e293b,stroke:#f59e0b,stroke-width:2px
+    style C fill:#1e293b,stroke:#f59e0b,stroke-width:2px
+    style D fill:#1e293b,stroke:#10b981,stroke-width:2px
+    style F fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style G fill:#052e16,stroke:#10b981,stroke-width:2px</div>
+<hr>
+<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<pre><code class="language-plaintext">+----------------------------------------------------------------------------------------------------------------------+
+|                                      PROMPT CACHING TRADE-OFFS MATRIX                                                |
++----------------------------------------------------+---------------------------------------------------------------+
+| What's Good (Pros)                                 | What's Not (Cons)                                             |
++----------------------------------------------------+---------------------------------------------------------------+
+| * Dramatic Cost Reduction: Cached tokens billed at | * Cache TTL Constraints: Anthropic caches for 5 minutes;      |
+|   10% of full input price (Anthropic: $0.003/1K    |   infrequent users won't benefit from cache hits.             |
+|   cached vs. $0.015/1K fresh for Sonnet).          |                                                               |
+| * Zero Latency Overhead: Cache reads are faster    | * Prefix Rigidity: The cached portion MUST be a static        |
+|   than fresh token processing — sub-10ms.          |   prefix. Dynamic content must come after the cache boundary. |
+| * Transparent Integration: Caching is opt-in via   | * Min Token Floor: Anthropic requires ≥1024 tokens for a      |
+|   a single API flag — no architecture changes.     |   cache block; small prompts won't qualify.                   |
++----------------------------------------------------+---------------------------------------------------------------+</code></pre>
+<hr>
+<h2>Anthropic Cache Control: Complete Implementation</h2>
+<p>Anthropic&#39;s API uses a <code>cache_control</code> flag on individual message blocks. Blocks marked with <code>{&quot;type&quot;: &quot;ephemeral&quot;}</code> are cached server-side for 5 minutes. Only the <strong>prefix</strong> of the prompt can be cached — variable user content must appear after all cached blocks.</p>
+<pre><code class="language-python">import anthropic
+import json
+import time
+from typing import Optional
+
+# ─────────────────────────────────────────────
+# 1. Initialise Anthropic Client
+# ─────────────────────────────────────────────
+client = anthropic.Anthropic()
+
+# ─────────────────────────────────────────────
+# 2. Define Static Content (Cache Candidates)
+# ─────────────────────────────────────────────
+
+# A large system prompt that stays constant across requests
+SYSTEM_PROMPT = &quot;&quot;&quot;You are an expert Senior Full Stack AI Engineer specialising in enterprise RAG systems,
+multi-agent orchestration, and LLM infrastructure. You always respond with production-quality insights,
+include code examples where relevant, and structure your answers with clear sections.
+
+Architecture Principles You Follow:
+1. Prefer async patterns for all I/O-bound operations
+2. Always include error handling and retry logic for API calls
+3. Design for observability — every system should emit traces, metrics, and logs
+4. Enforce typed contracts at agent boundaries using Pydantic or TypedDict
+5. Default to the cheapest model capable of the task (route complexity, not convention)
+
+When evaluating trade-offs, always structure your analysis as:
+- What's Good: concrete benefits with measurable outcomes
+- What's Not: concrete risks with quantified costs
+- Recommendation: a clear decision with the primary reasoning factor
+&quot;&quot;&quot;
+
+# Simulated RAG document context (large static block)
+KNOWLEDGE_BASE_CONTEXT = &quot;&quot;&quot;
+[Retrieved Knowledge Base Documents — Session Context]
+
+Document 1: Rate Limiting Patterns
+Token bucket algorithm: maintains a bucket of tokens refilling at rate R tokens/second.
+Max capacity C tokens. Each request consumes T tokens. If insufficient tokens, request is queued or rejected.
+Sliding window: tracks request timestamps in a circular buffer. More memory-intensive but eliminates burst edge cases.
+
+Document 2: Redis Data Structures for Rate Limiting  
+INCR + EXPIRE: atomic increment with TTL. Simple but doesn't handle sliding windows.
+Sorted Sets (ZADD/ZRANGEBYSCORE): stores timestamps as scores. Enables precise sliding window with ZREMRANGEBYSCORE.
+Lua scripts: atomic multi-command execution without race conditions in distributed environments.
+
+Document 3: OpenAI &amp; Anthropic API Rate Limits (2025)
+Claude 3.5 Sonnet: 4000 RPM (requests per minute), 400K TPM (tokens per minute) on Tier 1.
+GPT-4o: 10000 RPM, 2M TPM on Tier 5.
+Recommended: implement exponential backoff starting at 1s, max 60s, with jitter.
+&quot;&quot;&quot;
+
+# ─────────────────────────────────────────────
+# 3. Build Cached Message Payload
+# ─────────────────────────────────────────────
+def build_cached_messages(user_query: str) -&gt; list:
+    &quot;&quot;&quot;
+    Constructs messages with cache_control markers on static prefix blocks.
+    The user query (dynamic) must come AFTER all cached blocks.
+    &quot;&quot;&quot;
+    return [
+        {
+            &quot;role&quot;: &quot;user&quot;,
+            &quot;content&quot;: [
+                # Block 1: Large static knowledge base — CACHE THIS
+                {
+                    &quot;type&quot;: &quot;text&quot;,
+                    &quot;text&quot;: f&quot;## Knowledge Base Context\n\n{KNOWLEDGE_BASE_CONTEXT}&quot;,
+                    &quot;cache_control&quot;: {&quot;type&quot;: &quot;ephemeral&quot;}  # ← Cache marker
+                },
+                # Block 2: Dynamic user query — DO NOT CACHE (changes every call)
+                {
+                    &quot;type&quot;: &quot;text&quot;,
+                    &quot;text&quot;: f&quot;\n\n## User Question\n\n{user_query}&quot;
+                }
+            ]
+        }
+    ]
+
+# ─────────────────────────────────────────────
+# 4. Make API Call with Caching
+# ─────────────────────────────────────────────
+def query_with_cache(user_query: str, verbose: bool = True) -&gt; dict:
+    &quot;&quot;&quot;Execute a query with prompt caching and return usage metrics.&quot;&quot;&quot;
+    start_time = time.time()
+    
+    response = client.messages.create(
+        model=&quot;claude-3-5-sonnet-20241022&quot;,
+        max_tokens=1024,
+        system=[
+            {
+                &quot;type&quot;: &quot;text&quot;,
+                &quot;text&quot;: SYSTEM_PROMPT,
+                &quot;cache_control&quot;: {&quot;type&quot;: &quot;ephemeral&quot;}  # ← Cache the system prompt too
+            }
+        ],
+        messages=build_cached_messages(user_query)
+    )
+    
+    elapsed_ms = round((time.time() - start_time) * 1000, 2)
+    
+    # Extract token usage for cost analysis
+    usage = response.usage
+    cache_creation_tokens = getattr(usage, 'cache_creation_input_tokens', 0)
+    cache_read_tokens = getattr(usage, 'cache_read_input_tokens', 0)
+    fresh_input_tokens = usage.input_tokens
+    output_tokens = usage.output_tokens
+    
+    # Calculate cost (Claude 3.5 Sonnet pricing, June 2025)
+    FRESH_INPUT_PRICE = 0.015 / 1000      # $0.015 per 1K fresh input tokens
+    CACHE_WRITE_PRICE = 0.01875 / 1000    # $0.01875 per 1K cache write tokens (1.25x)
+    CACHE_READ_PRICE = 0.0015 / 1000      # $0.0015 per 1K cache read tokens (10%)
+    OUTPUT_PRICE = 0.075 / 1000           # $0.075 per 1K output tokens
+    
+    actual_cost = (
+        (fresh_input_tokens * FRESH_INPUT_PRICE) +
+        (cache_creation_tokens * CACHE_WRITE_PRICE) +
+        (cache_read_tokens * CACHE_READ_PRICE) +
+        (output_tokens * OUTPUT_PRICE)
+    )
+    
+    uncached_cost = (
+        (fresh_input_tokens + cache_creation_tokens + cache_read_tokens) * FRESH_INPUT_PRICE +
+        (output_tokens * OUTPUT_PRICE)
+    )
+    
+    savings_pct = round((1 - actual_cost / uncached_cost) * 100, 1) if uncached_cost &gt; 0 else 0
+    
+    if verbose:
+        print(f&quot;\n{'='*60}&quot;)
+        print(f&quot;  Query: {user_query[:60]}...&quot;)
+        print(f&quot;  Latency: {elapsed_ms}ms&quot;)
+        print(f&quot;  Fresh Input Tokens:  {fresh_input_tokens:,}&quot;)
+        print(f&quot;  Cache Write Tokens:  {cache_creation_tokens:,}&quot;)
+        print(f&quot;  Cache Read Tokens:   {cache_read_tokens:,}&quot;)
+        print(f&quot;  Output Tokens:       {output_tokens:,}&quot;)
+        print(f&quot;  Actual Cost:         ${actual_cost:.6f}&quot;)
+        print(f&quot;  Uncached Cost:       ${uncached_cost:.6f}&quot;)
+        print(f&quot;  💰 Savings:          {savings_pct}%&quot;)
+        print(f&quot;{'='*60}\n&quot;)
+    
+    return {
+        &quot;response&quot;: response.content[0].text,
+        &quot;cost&quot;: actual_cost,
+        &quot;savings_pct&quot;: savings_pct,
+        &quot;cache_hit&quot;: cache_read_tokens &gt; 0,
+        &quot;latency_ms&quot;: elapsed_ms
+    }
+
+# ─────────────────────────────────────────────
+# 5. Demonstrate Cache Warming + Subsequent Hits
+# ─────────────────────────────────────────────
+if __name__ == &quot;__main__&quot;:
+    queries = [
+        &quot;What is the best Redis data structure for sliding window rate limiting?&quot;,
+        &quot;Compare token bucket vs sliding window rate limiting algorithms.&quot;,
+        &quot;What are Anthropic's API rate limits for Claude 3.5 Sonnet?&quot;,
+    ]
+    
+    print(&quot;🔥 First call — warms the cache (cache_creation tokens billed)&quot;)
+    result1 = query_with_cache(queries[0])
+    
+    print(&quot;⚡ Second call — cache hit expected (cache_read tokens billed at 10%)&quot;)
+    result2 = query_with_cache(queries[1])
+    
+    print(&quot;⚡ Third call — continued cache hits&quot;)
+    result3 = query_with_cache(queries[2])
+    
+    avg_savings = round(sum([result1[&quot;savings_pct&quot;], result2[&quot;savings_pct&quot;], result3[&quot;savings_pct&quot;]]) / 3, 1)
+    print(f&quot;\n📊 Average Cost Savings Across Session: {avg_savings}%&quot;)</code></pre>
+<hr>
+<h2>Monthly Cost Projection: Cached vs Uncached</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#6b7280'}}}%%
+xychart-beta
+    title &quot;Monthly API Cost: Cached vs. Uncached (Claude 3.5 Sonnet)&quot;
+    x-axis [&quot;1K req/day&quot;, &quot;5K req/day&quot;, &quot;10K req/day&quot;, &quot;50K req/day&quot;, &quot;100K req/day&quot;]
+    y-axis &quot;Monthly Cost (USD)&quot; 0 --&gt; 5000
+    bar [165, 825, 1650, 4125, 5000]
+    line [20, 99, 198, 990, 1980]</div>
+<p><em>At 10,000 requests/day, uncached cost is ~$1,650/month vs. ~$198/month with caching — a <strong>$1,452 monthly saving</strong> with a single API flag change.</em></p>
+<hr>
+<h2>OpenAI Prompt Caching: Automatic &amp; Zero Configuration</h2>
+<p>OpenAI&#39;s implementation is even simpler — <strong>caching is automatic</strong>. Any prompt prefix exceeding 1,024 tokens that is repeated within a session is automatically cached. No API flag changes required.</p>
+<pre><code class="language-python">from openai import OpenAI
+
+client = OpenAI()
+
+# OpenAI caches the prefix automatically if it's repeated
+# The system prompt + any large static content at the beginning is prime cache material
+def query_openai_cached(system_prompt: str, static_context: str, user_query: str):
+    response = client.chat.completions.create(
+        model=&quot;gpt-4o&quot;,
+        messages=[
+            {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: system_prompt},
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: f&quot;{static_context}\n\nQuestion: {user_query}&quot;}
+        ]
+    )
+    
+    usage = response.usage
+    # Check for cached tokens in the prompt_tokens_details breakdown
+    cached_tokens = getattr(usage.prompt_tokens_details, 'cached_tokens', 0) if hasattr(usage, 'prompt_tokens_details') else 0
+    
+    print(f&quot;Total Input Tokens: {usage.prompt_tokens}&quot;)
+    print(f&quot;Cached Tokens: {cached_tokens} (billed at 50% discount)&quot;)
+    print(f&quot;Fresh Tokens: {usage.prompt_tokens - cached_tokens}&quot;)
+    
+    return response.choices[0].message.content</code></pre>
+<blockquote>
+<p><strong>Key Difference</strong>: OpenAI caches at <strong>50% discount</strong> (vs Anthropic&#39;s 90% discount), but requires no configuration. Anthropic&#39;s cache is more powerful but demands explicit prefix design.</p>
+</blockquote>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Prompt Caching is the single highest-ROI optimisation available to teams running LLM applications at scale. By redesigning your prompts to front-load static content (system prompts, RAG context, tool definitions), you can cut input token costs by 80-90% with minimal engineering effort.</p>
+<ul>
+<li><strong>Design for prefix stability</strong>: Any content that changes per-request must go at the end. Reorganise your message construction pipeline accordingly.</li>
+<li><strong>Cache your tool definitions</strong>: For agent systems with large tool schemas (function definitions), cache these too — they repeat across every planning call.</li>
+<li><strong>Monitor cache hit rates</strong>: Track <code>cache_read_input_tokens</code> in your observability dashboard. A hit rate below 80% indicates your prefixes are too dynamic.</li>
+</ul>
+<p>In our next article, we explore <strong>Model Routing</strong> — the strategy of dynamically selecting GPT-4o, Claude 3.5 Sonnet, or a local Ollama model based on task complexity, cost budget, and latency constraints.</p>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>Anthropic Prompt Caching Guide</strong>: <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching" target="_blank" rel="noopener">Cache Control API Reference</a></li>
+<li><strong>OpenAI Prompt Caching</strong>: <a href="https://platform.openai.com/docs/guides/prompt-caching" target="_blank" rel="noopener">Automatic Caching in the Chat Completions API</a></li>
+<li><strong>LiteLLM</strong>: <a href="https://docs.litellm.ai/" target="_blank" rel="noopener">Unified LLM Gateway with Caching Support</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fprompt-caching-context-window-economics.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Prompt%20Caching%20%26%20Context%20Window%20Economics%3A%20Cutting%20LLM%20API%20Costs%20by%2090%25&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fprompt-caching-context-window-economics.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>

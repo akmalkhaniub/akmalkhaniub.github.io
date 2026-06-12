@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to instrument every LLM API call, agent reasoning step, and tool invocation with semantic traces using Langfuse and OpenTelemetry — and ship them into Grafana or Datadog dashboards.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/llm-observability-langfuse-opentelemetry.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/llm-observability-langfuse-opentelemetry.html">
+  <meta property="og:title" content="LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility">
+  <meta property="og:description" content="How to instrument every LLM API call, agent reasoning step, and tool invocation with semantic traces using Langfuse and OpenTelemetry — and ship them into Grafana or Datadog dashboards.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-20">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility">
+  <meta name="twitter:description" content="How to instrument every LLM API call, agent reasoning step, and tool invocation with semantic traces using Langfuse and OpenTelemetry — and ship them into Grafana or Datadog dashboards.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "LLM Observability with Langfuse & OpenTelemetry: Building AI System Visibility",
+  "description": "How to instrument every LLM API call, agent reasoning step, and tool invocation with semantic traces using Langfuse and OpenTelemetry — and ship them into Grafana or Datadog dashboards.",
+  "url": "https://akmalkhaniub.github.io/blog/llm-observability-langfuse-opentelemetry.html",
+  "datePublished": "2026-06-20",
+  "keywords": "Langfuse, OpenTelemetry, Observability, DevOps",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/llm-observability-langfuse-opentelemetry.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 21, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
+              <div class="article-tags"><span class="project-badge">Langfuse</span><span class="project-badge">OpenTelemetry</span><span class="project-badge">Observability</span><span class="project-badge">DevOps</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Deploying an LLM application without observability is like operating a production database with no query logs, no slow-query alerts, and no index usage metrics. You cannot optimise what you cannot measure. This article covers the complete <strong>LLM Observability Stack</strong> — tracing every agent reasoning step with <strong>Langfuse</strong>, forwarding infrastructure telemetry with <strong>OpenTelemetry (OTEL)</strong>, and building dashboards that surface cost anomalies, latency regressions, and hallucination rates in real-time. Includes a full Python + TypeScript implementation.</p>
+</blockquote>
+<hr>
+<h2>Why Standard APM Tools Fall Short for AI Systems</h2>
+<p>Classic Application Performance Monitoring (APM) tools like Datadog, New Relic, or AWS CloudWatch capture request latency, error rates, and CPU utilisation. These metrics are necessary but fundamentally insufficient for AI applications. The failure modes in LLM systems are semantic, not structural:</p>
+<ul>
+<li><strong>A 200 OK response</strong> can contain a hallucinated fact, a wrong code block, or a harmful output.</li>
+<li><strong>A 500ms latency</strong> might be acceptable for a tool call but unacceptable for a streaming response.</li>
+<li><strong>An agent loop completing successfully</strong> might have consumed 3× the expected tokens due to reasoning inefficiency.</li>
+</ul>
+<p>LLM Observability adds a <strong>semantic layer</strong> on top of infrastructure metrics: traces that capture the full prompt, the complete reasoning chain, tool invocations with inputs/outputs, and evaluation scores — all linked to a unique <code>trace_id</code> for cross-system debugging.</p>
+<hr>
+<h2>The Three Layers of LLM Observability</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+graph TB
+    subgraph Layer 3 — Evaluation
+        E1[Faithfulness Score]
+        E2[Answer Relevance]
+        E3[Hallucination Detector]
+    end
+
+    subgraph Layer 2 — LLM Traces
+        T1[Span: System Prompt]
+        T2[Span: RAG Retrieval]
+        T3[Span: LLM Generation]
+        T4[Span: Tool Call]
+        T5[Span: Final Output]
+    end
+
+    subgraph Layer 1 — Infrastructure
+        I1[Request Latency P50/P99]
+        I2[Token Usage per Model]
+        I3[API Error Rates]
+        I4[Cost per Request]
+    end
+
+    subgraph Platforms
+        P1[Langfuse&lt;br/&gt;Semantic Tracing]
+        P2[OpenTelemetry&lt;br/&gt;OTEL Collector]
+        P3[Grafana / Datadog&lt;br/&gt;Dashboards]
+    end
+
+    Layer 3 --&gt; P1
+    Layer 2 --&gt; P1
+    Layer 1 --&gt; P2
+    P2 --&gt; P3
+    P1 -.-&gt;|OTEL Export| P2
+
+    style P1 fill:#4c1d95,stroke:#a855f7,stroke-width:2px
+    style P2 fill:#0f172a,stroke:#06b6d4,stroke-width:2px
+    style P3 fill:#0f172a,stroke:#f59e0b,stroke-width:2px</div>
+<hr>
+<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<pre><code class="language-plaintext">+----------------------------------------------------------------------------------------------------------------------+
+|                                       LLM OBSERVABILITY TRADE-OFFS MATRIX                                            |
++----------------------------------------------------+---------------------------------------------------------------+
+| What's Good (Pros)                                 | What's Not (Cons)                                             |
++----------------------------------------------------+---------------------------------------------------------------+
+| * Full Trace Reconstruction: Every reasoning step, | * Data Privacy Risk: Traces capture full prompts — any PII   |
+|   tool call, and token count is logged and linked. |   in user inputs must be masked before export.                |
+| * Cost Attribution: Track API spend per user,      | * Storage Overhead: High-volume systems produce gigabytes of  |
+|   per feature, per agent — down to the cent.       |   trace data; retention policies must be defined.             |
+| * Regression Detection: Compare evaluation scores  | * Instrumentation Effort: Retrofitting tracing into existing  |
+|   before/after model or prompt changes.            |   agent code requires non-trivial refactoring.                |
+| * Hallucination Flagging: Automated LLM-as-judge   | * Eval Cost: Running automated evaluation judges adds ~20%    |
+|   scoring on every production response.            |   to your LLM API bill.                                       |
++----------------------------------------------------+---------------------------------------------------------------+</code></pre>
+<hr>
+<h2>Implementation: Langfuse Tracing for a Python Agent</h2>
+<p>Langfuse provides an SDK that wraps LLM API calls, automatically capturing prompts, completions, token usage, and latency into a structured trace hierarchy.</p>
+<pre><code class="language-python">import os
+import time
+from langfuse import Langfuse
+from langfuse.decorators import observe, langfuse_context
+from anthropic import Anthropic
+
+# ─────────────────────────────────────────────
+# 1. Initialise Clients
+# ─────────────────────────────────────────────
+langfuse = Langfuse(
+    public_key=os.environ[&quot;LANGFUSE_PUBLIC_KEY&quot;],
+    secret_key=os.environ[&quot;LANGFUSE_SECRET_KEY&quot;],
+    host=&quot;https://cloud.langfuse.com&quot;  # or self-hosted URL
+)
+
+anthropic_client = Anthropic()
+
+# ─────────────────────────────────────────────
+# 2. Use @observe Decorator for Automatic Tracing
+# ─────────────────────────────────────────────
+@observe(name=&quot;rag-retrieval-step&quot;)
+def retrieve_context(query: str, top_k: int = 5) -&gt; list[str]:
+    &quot;&quot;&quot;Simulated RAG retrieval — automatically traced as a span.&quot;&quot;&quot;
+    langfuse_context.update_current_observation(
+        input={&quot;query&quot;: query, &quot;top_k&quot;: top_k},
+        metadata={&quot;retriever&quot;: &quot;pgvector&quot;, &quot;index&quot;: &quot;enterprise-docs-v3&quot;}
+    )
+    
+    # Simulate vector search latency
+    time.sleep(0.08)
+    
+    # Mock retrieved chunks
+    chunks = [
+        f&quot;Document chunk {i}: Relevant content about {query}&quot; 
+        for i in range(1, top_k + 1)
+    ]
+    
+    langfuse_context.update_current_observation(
+        output={&quot;chunks_retrieved&quot;: len(chunks)},
+    )
+    return chunks
+
+@observe(name=&quot;llm-generation-step&quot;, as_type=&quot;generation&quot;)
+def generate_response(system_prompt: str, context: list[str], user_query: str) -&gt; dict:
+    &quot;&quot;&quot;LLM generation step — traced with full token usage and cost attribution.&quot;&quot;&quot;
+    
+    context_block = &quot;\n\n&quot;.join(context)
+    
+    langfuse_context.update_current_observation(
+        input={
+            &quot;system&quot;: system_prompt,
+            &quot;context_chunks&quot;: len(context),
+            &quot;user_query&quot;: user_query
+        },
+        model=&quot;claude-3-5-sonnet-20241022&quot;,
+    )
+    
+    response = anthropic_client.messages.create(
+        model=&quot;claude-3-5-sonnet-20241022&quot;,
+        max_tokens=1024,
+        system=system_prompt,
+        messages=[{
+            &quot;role&quot;: &quot;user&quot;,
+            &quot;content&quot;: f&quot;Context:\n{context_block}\n\nQuestion: {user_query}&quot;
+        }]
+    )
+    
+    output_text = response.content[0].text
+    
+    # Manually log token usage for cost tracking
+    langfuse_context.update_current_observation(
+        usage={
+            &quot;input&quot;: response.usage.input_tokens,
+            &quot;output&quot;: response.usage.output_tokens,
+            &quot;unit&quot;: &quot;TOKENS&quot;
+        },
+        output=output_text
+    )
+    
+    return {
+        &quot;text&quot;: output_text,
+        &quot;input_tokens&quot;: response.usage.input_tokens,
+        &quot;output_tokens&quot;: response.usage.output_tokens
+    }
+
+@observe(name=&quot;rag-agent-pipeline&quot;)
+def run_rag_pipeline(user_query: str, user_id: str, session_id: str) -&gt; str:
+    &quot;&quot;&quot;
+    Top-level agent pipeline — root trace with full session metadata.
+    All child functions (@observe decorated) become nested spans.
+    &quot;&quot;&quot;
+    # Tag the root trace with user and session metadata
+    langfuse_context.update_current_trace(
+        user_id=user_id,
+        session_id=session_id,
+        tags=[&quot;rag&quot;, &quot;production&quot;, &quot;claude-3-5-sonnet&quot;],
+        metadata={
+            &quot;pipeline_version&quot;: &quot;2.1.0&quot;,
+            &quot;environment&quot;: &quot;production&quot;
+        }
+    )
+    
+    SYSTEM_PROMPT = &quot;&quot;&quot;You are an expert AI assistant. Answer questions accurately using 
+    the provided context. If the context doesn't contain the answer, say so clearly.&quot;&quot;&quot;
+    
+    # Step 1: Retrieve context (creates a child span)
+    context_chunks = retrieve_context(query=user_query, top_k=5)
+    
+    # Step 2: Generate response (creates another child span with token tracking)
+    result = generate_response(
+        system_prompt=SYSTEM_PROMPT,
+        context=context_chunks,
+        user_query=user_query
+    )
+    
+    # Step 3: Log evaluation score (hallucination check placeholder)
+    langfuse_context.score_current_trace(
+        name=&quot;completeness&quot;,
+        value=0.92,  # From an automated eval pipeline
+        comment=&quot;Response covers all key points in retrieved context&quot;
+    )
+    
+    return result[&quot;text&quot;]
+
+# ─────────────────────────────────────────────
+# 3. Execute with Full Session Context
+# ─────────────────────────────────────────────
+if __name__ == &quot;__main__&quot;:
+    answer = run_rag_pipeline(
+        user_query=&quot;How do I implement sliding window rate limiting with Redis sorted sets?&quot;,
+        user_id=&quot;usr_engineer_1042&quot;,
+        session_id=&quot;sess_20260612_001&quot;
+    )
+    print(&quot;Answer:&quot;, answer)
+    
+    # Flush traces to Langfuse (important in short-lived scripts)
+    langfuse.flush()
+    print(&quot;\n✅ Traces exported to Langfuse dashboard.&quot;)</code></pre>
+<hr>
+<h2>OpenTelemetry Integration: Forwarding Traces to Your APM</h2>
+<p>Langfuse supports OTEL export, enabling you to forward all LLM traces into your existing Datadog, Grafana Tempo, or Jaeger setup for unified infrastructure + AI observability.</p>
+<pre><code class="language-python">from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import Resource
+import os
+
+# ─────────────────────────────────────────────
+# OTEL Tracer Setup (ships traces to Collector)
+# ─────────────────────────────────────────────
+resource = Resource.create({
+    &quot;service.name&quot;: &quot;enterprise-rag-api&quot;,
+    &quot;service.version&quot;: &quot;2.1.0&quot;,
+    &quot;deployment.environment&quot;: &quot;production&quot;,
+})
+
+provider = TracerProvider(resource=resource)
+
+# Ship to OTEL Collector (e.g. Datadog Agent, Grafana Agent, Jaeger)
+otlp_exporter = OTLPSpanExporter(
+    endpoint=os.environ.get(&quot;OTEL_EXPORTER_OTLP_ENDPOINT&quot;, &quot;http://localhost:4318/v1/traces&quot;),
+    headers={&quot;Authorization&quot;: f&quot;Bearer {os.environ.get('OTEL_AUTH_TOKEN', '')}&quot;}
+)
+provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+trace.set_tracer_provider(provider)
+
+tracer = trace.get_tracer(&quot;rag-pipeline&quot;)
+
+def run_traced_request(user_id: str, query: str):
+    &quot;&quot;&quot;Wrap an API handler with OTEL tracing for infrastructure metrics.&quot;&quot;&quot;
+    with tracer.start_as_current_span(&quot;handle-rag-request&quot;) as span:
+        span.set_attribute(&quot;user.id&quot;, user_id)
+        span.set_attribute(&quot;query.length&quot;, len(query))
+        span.set_attribute(&quot;rag.pipeline.version&quot;, &quot;2.1.0&quot;)
+        
+        try:
+            with tracer.start_as_current_span(&quot;vector-db-query&quot;) as db_span:
+                db_span.set_attribute(&quot;db.system&quot;, &quot;pgvector&quot;)
+                db_span.set_attribute(&quot;db.query.top_k&quot;, 5)
+                # ... vector search logic ...
+                db_span.set_attribute(&quot;db.results.count&quot;, 5)
+            
+            with tracer.start_as_current_span(&quot;llm-api-call&quot;) as llm_span:
+                llm_span.set_attribute(&quot;llm.model&quot;, &quot;claude-3-5-sonnet-20241022&quot;)
+                llm_span.set_attribute(&quot;llm.prompt.tokens&quot;, 8500)
+                # ... LLM call logic ...
+                llm_span.set_attribute(&quot;llm.completion.tokens&quot;, 342)
+                llm_span.set_attribute(&quot;llm.cost.usd&quot;, 0.0147)
+            
+            span.set_attribute(&quot;request.status&quot;, &quot;success&quot;)
+            
+        except Exception as e:
+            span.set_attribute(&quot;request.status&quot;, &quot;error&quot;)
+            span.record_exception(e)
+            raise</code></pre>
+<hr>
+<h2>TypeScript SDK: Tracing in Next.js / Hono APIs</h2>
+<pre><code class="language-typescript">import Langfuse from 'langfuse';
+
+const langfuse = new Langfuse({
+  publicKey: process.env.LANGFUSE_PUBLIC_KEY!,
+  secretKey: process.env.LANGFUSE_SECRET_KEY!,
+  baseUrl: 'https://cloud.langfuse.com',
+});
+
+interface RagResult {
+  answer: string;
+  inputTokens: number;
+  outputTokens: number;
+  cost: number;
+}
+
+export async function tracedRagRequest(
+  userId: string,
+  sessionId: string,
+  userQuery: string
+): Promise&lt;RagResult&gt; {
+  // Create root trace
+  const trace = langfuse.trace({
+    name: 'rag-api-request',
+    userId,
+    sessionId,
+    tags: ['production', 'nextjs-api'],
+    metadata: { version: '2.1.0' },
+  });
+
+  try {
+    // Span 1: Vector retrieval
+    const retrievalSpan = trace.span({
+      name: 'vector-retrieval',
+      input: { query: userQuery, topK: 5 },
+    });
+    
+    // ... vector search ...
+    const retrievedChunks = ['chunk1', 'chunk2', 'chunk3'];
+    
+    retrievalSpan.end({ output: { count: retrievedChunks.length } });
+
+    // Span 2: LLM generation (use generation type for token tracking)
+    const generationSpan = trace.generation({
+      name: 'claude-completion',
+      model: 'claude-3-5-sonnet-20241022',
+      input: { query: userQuery, contextChunks: retrievedChunks.length },
+    });
+
+    const inputTokens = 8200;
+    const outputTokens = 380;
+    const cost = (inputTokens * 0.015 + outputTokens * 0.075) / 1000;
+
+    generationSpan.end({
+      output: 'The sliding window rate limiter uses Redis sorted sets...',
+      usage: { input: inputTokens, output: outputTokens },
+      metadata: { cost_usd: cost },
+    });
+
+    // Add evaluation score
+    trace.score({
+      name: 'user-feedback',
+      value: 1,
+      comment: 'Thumbs up from user',
+    });
+
+    await langfuse.flushAsync();
+
+    return {
+      answer: 'Rate limiting implementation...',
+      inputTokens,
+      outputTokens,
+      cost,
+    };
+    
+  } catch (error) {
+    trace.update({ metadata: { error: String(error), status: 'failed' } });
+    await langfuse.flushAsync();
+    throw error;
+  }
+}</code></pre>
+<hr>
+<h2>Key Metrics Dashboard: What to Monitor</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7'}}}%%
+mindmap
+  root((LLM Observability&lt;br/&gt;Dashboard))
+    Cost Metrics
+      Total API spend per day
+      Cost per user session
+      Cost per feature/endpoint
+      Cache hit rate savings
+    Latency Metrics
+      P50 P95 P99 per endpoint
+      Time-to-first-token TTFT
+      Tool call latency breakdown
+      Queue wait times
+    Quality Metrics
+      Faithfulness scores
+      Answer relevance scores
+      Hallucination flag rate
+      User thumbs up rate
+    Volume Metrics
+      Requests per minute RPM
+      Tokens per minute TPM
+      Active sessions
+      Retry and error rates</div>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>LLM Observability is not optional in production AI systems — it is the foundation of continuous improvement. Without traces, you are debugging by intuition. With Langfuse + OpenTelemetry, every reasoning step, every dollar spent, and every quality regression becomes a queryable, alertable data point.</p>
+<ul>
+<li><strong>Instrument first, optimise second</strong>: Before tuning prompts or switching models, establish your baseline metrics. You cannot improve what you haven&#39;t measured.</li>
+<li><strong>Mask PII at the trace boundary</strong>: Configure Langfuse&#39;s masking rules to redact sensitive fields before traces are stored. Compliance is a day-one concern, not an afterthought.</li>
+<li><strong>Link traces to evaluations</strong>: Every automated eval score (faithfulness, relevance, hallucination) should be attached to the same <code>trace_id</code> as the generation it evaluated.</li>
+</ul>
+<p>In our next article, we tackle <strong>Guardrails &amp; Input/Output Validation</strong> — using Guardrails AI and NVIDIA NeMo to build structured safety layers that intercept harmful inputs and enforce schema-compliant agent outputs before they reach your users.</p>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>Langfuse Documentation</strong>: <a href="https://langfuse.com/docs" target="_blank" rel="noopener">Open-Source LLM Engineering Platform</a></li>
+<li><strong>OpenTelemetry for AI</strong>: <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener">Semantic Conventions for LLM Spans</a></li>
+<li><strong>Langfuse + OTEL Integration</strong>: <a href="https://langfuse.com/docs/integrations/opentelemetry" target="_blank" rel="noopener">Exporting Langfuse Traces via OTLP</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fllm-observability-langfuse-opentelemetry.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=LLM%20Observability%20with%20Langfuse%20%26%20OpenTelemetry%3A%20Building%20AI%20System%20Visibility&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fllm-observability-langfuse-opentelemetry.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item active">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>
