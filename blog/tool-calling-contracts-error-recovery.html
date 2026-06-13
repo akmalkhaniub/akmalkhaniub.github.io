@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to design typed tool schemas with Pydantic v2, build structured error feedback loops for LLM self-correction, and implement exponential backoff retry patterns for production agent reliability.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/tool-calling-contracts-error-recovery.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/tool-calling-contracts-error-recovery.html">
+  <meta property="og:title" content="Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas">
+  <meta property="og:description" content="How to design typed tool schemas with Pydantic v2, build structured error feedback loops for LLM self-correction, and implement exponential backoff retry patterns for production agent reliability.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-21">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas">
+  <meta name="twitter:description" content="How to design typed tool schemas with Pydantic v2, build structured error feedback loops for LLM self-correction, and implement exponential backoff retry patterns for production agent reliability.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Tool-Calling Contracts & Error Recovery: Building Resilient Agent Tool Schemas",
+  "description": "How to design typed tool schemas with Pydantic v2, build structured error feedback loops for LLM self-correction, and implement exponential backoff retry patterns for production agent reliability.",
+  "url": "https://akmalkhaniub.github.io/blog/tool-calling-contracts-error-recovery.html",
+  "datePublished": "2026-06-21",
+  "keywords": "Pydantic, LangGraph, Error Handling, Python",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/tool-calling-contracts-error-recovery.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 22, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
+              <div class="article-tags"><span class="project-badge">Pydantic</span><span class="project-badge">LangGraph</span><span class="project-badge">Error Handling</span><span class="project-badge">Python</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Tool calls are the primary interface between LLM reasoning and the real world. When agents call tools with hallucinated parameters, invalid JSON, or unexpected edge cases, the entire pipeline breaks. This article covers <strong>Tool-Calling Contract Design</strong> — how to define strict, typed tool schemas using the OpenAI function-calling format and Anthropic&#39;s tool use API, validate every argument with Pydantic, and implement <strong>graceful error recovery</strong> patterns that prevent a single tool failure from crashing a multi-step agent run. Includes full Python implementations with retry logic, fallback strategies, and structured error feedback loops.</p>
+</blockquote>
+<hr>
+<h2>Why Tool Calls Break in Production</h2>
+<p>Tool calling is conceptually simple: the LLM decides to call a function, the runtime executes it, and the result is fed back. In practice, production failures cluster around three anti-patterns:</p>
+<ol>
+<li><strong>Hallucinated Parameters</strong>: The model confidently passes an argument that doesn&#39;t exist in the schema — e.g., <code>{&quot;user_id&quot;: &quot;abc123&quot;, &quot;sort_by&quot;: &quot;relevance&quot;}</code> when <code>sort_by</code> is not a defined field. Without validation, this propagates silently.</li>
+<li><strong>Type Coercion Failures</strong>: The model returns <code>&quot;true&quot;</code> (string) for a boolean field, <code>&quot;5&quot;</code> (string) for an integer, or an ISO date string when an epoch timestamp is expected.</li>
+<li><strong>Missing Graceful Degradation</strong>: When a tool returns an error, naive agents either infinite-loop retrying or completely abort the task — both are unacceptable in enterprise workflows.</li>
+</ol>
+<p>The solution is a three-layer defense: <strong>Schema Contracts → Runtime Validation → Structured Recovery</strong>.</p>
+<hr>
+<h2>Tool Contract Architecture</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+flowchart TD
+    A[🧠 LLM Reasoning Layer] --&gt;|Generates tool call JSON| B{Schema Validator&lt;br/&gt;Pydantic v2}
+    
+    B --&gt;|✅ Valid Schema| C[Tool Executor&lt;br/&gt;Function Registry]
+    B --&gt;|❌ Invalid Schema| D[Error Feedback Loop&lt;br/&gt;Structured Error Message]
+    D --&gt; A
+
+    C --&gt;|Success| E[Tool Result&lt;br/&gt;Typed Response Object]
+    C --&gt;|Exception / Timeout| F{Retry Policy&lt;br/&gt;ExponentialBackoff}
+    
+    F --&gt;|Attempt ≤ Max Retries| C
+    F --&gt;|Max Retries Exceeded| G[Fallback Strategy&lt;br/&gt;Default Value / Alt Tool]
+    
+    E --&gt; H[LLM Observation&lt;br/&gt;Continue Reasoning]
+    G --&gt; H
+
+    style A fill:#4c1d95,stroke:#a855f7,stroke-width:2px
+    style B fill:#0f172a,stroke:#10b981,stroke-width:2px
+    style C fill:#0f172a,stroke:#0ea5e9,stroke-width:2px
+    style D fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style F fill:#1e293b,stroke:#f59e0b,stroke-width:2px
+    style G fill:#1e293b,stroke:#f59e0b,stroke-width:2px
+    style H fill:#4c1d95,stroke:#a855f7,stroke-width:2px</div>
+<hr>
+<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<pre><code class="language-plaintext">+----------------------------------------------------------------------------------------------------------------------+
+|                                  TOOL CONTRACT &amp; ERROR RECOVERY TRADE-OFFS                                           |
++----------------------------------------------------+---------------------------------------------------------------+
+| What's Good (Pros)                                 | What's Not (Cons)                                             |
++----------------------------------------------------+---------------------------------------------------------------+
+| * Hallucination Containment: Pydantic validation   | * Schema Complexity Cost: Detailed JSON schemas with          |
+|   catches invalid args before execution, returning |   descriptions and constraints consume extra input tokens     |
+|   structured feedback the LLM can correct.         |   on every planning call.                                     |
+| * Graceful Degradation: Retry + fallback logic     | * Retry Amplification: Exponential retries on flaky external  |
+|   keeps agent runs alive through transient         |   APIs (rate limits, network) can multiply total latency     |
+|   failures without human intervention.             |   from 5s to 60s+ in worst-case scenarios.                   |
+| * Typed Contracts: Returning Pydantic models       | * Error Loop Risk: Poorly designed error feedback messages    |
+|   (not raw dicts) from tools prevents downstream   |   can confuse the LLM into repeatedly calling the same        |
+|   attribute-access bugs in multi-step agents.      |   broken tool instead of pivoting to an alternative.          |
++----------------------------------------------------+---------------------------------------------------------------+</code></pre>
+<hr>
+<h2>Implementation: Typed Tool Registry with Pydantic v2</h2>
+<pre><code class="language-python">import json
+import time
+import functools
+from typing import Any, Callable, Optional, Type, TypeVar
+from pydantic import BaseModel, Field, ValidationError, field_validator
+from anthropic import Anthropic
+
+# ─────────────────────────────────────────────
+# 1. Define Typed Tool Input/Output Contracts
+# ─────────────────────────────────────────────
+
+class SearchDocumentsInput(BaseModel):
+    &quot;&quot;&quot;Input contract for the document search tool.&quot;&quot;&quot;
+    query: str = Field(..., min_length=3, max_length=500, description=&quot;The search query string&quot;)
+    top_k: int = Field(default=5, ge=1, le=20, description=&quot;Number of results to return (1-20)&quot;)
+    filter_tags: list[str] = Field(default_factory=list, description=&quot;Optional tag filters&quot;)
+    include_metadata: bool = Field(default=True, description=&quot;Whether to include document metadata&quot;)
+    
+    @field_validator('query')
+    @classmethod
+    def query_must_not_be_empty(cls, v: str) -&gt; str:
+        if not v.strip():
+            raise ValueError(&quot;Query cannot be empty or whitespace only&quot;)
+        return v.strip()
+
+class SearchDocumentsOutput(BaseModel):
+    &quot;&quot;&quot;Output contract for the document search tool.&quot;&quot;&quot;
+    results: list[dict[str, Any]]
+    total_found: int
+    query_used: str
+    latency_ms: float
+
+class ExecuteCodeInput(BaseModel):
+    &quot;&quot;&quot;Input contract for the Python code execution tool.&quot;&quot;&quot;
+    code: str = Field(..., description=&quot;Valid Python code to execute in isolated sandbox&quot;)
+    timeout_seconds: int = Field(default=30, ge=5, le=120, description=&quot;Execution timeout&quot;)
+    
+    @field_validator('code')
+    @classmethod
+    def code_must_not_import_os(cls, v: str) -&gt; str:
+        &quot;&quot;&quot;Basic security gate — prevent filesystem and subprocess access.&quot;&quot;&quot;
+        dangerous = ['import os', 'import subprocess', '__import__', 'open(', 'eval(', 'exec(']
+        for pattern in dangerous:
+            if pattern in v:
+                raise ValueError(f&quot;Dangerous pattern detected: '{pattern}'. Sandboxed execution disallows system access.&quot;)
+        return v
+
+class ExecuteCodeOutput(BaseModel):
+    &quot;&quot;&quot;Output contract for code execution.&quot;&quot;&quot;
+    stdout: str
+    stderr: str
+    exit_code: int
+    execution_time_ms: float
+
+# ─────────────────────────────────────────────
+# 2. Tool Decorator with Validation &amp; Retry
+# ─────────────────────────────────────────────
+
+class ToolExecutionError(Exception):
+    &quot;&quot;&quot;Raised when a tool fails after all retry attempts.&quot;&quot;&quot;
+    def __init__(self, tool_name: str, original_error: str, attempts: int):
+        self.tool_name = tool_name
+        self.original_error = original_error
+        self.attempts = attempts
+        super().__init__(f&quot;Tool '{tool_name}' failed after {attempts} attempts: {original_error}&quot;)
+
+F = TypeVar('F', bound=Callable[..., Any])
+
+def resilient_tool(
+    input_model: Type[BaseModel],
+    output_model: Type[BaseModel],
+    max_retries: int = 3,
+    base_delay: float = 1.0,
+    fallback_result: Optional[Any] = None
+):
+    &quot;&quot;&quot;
+    Decorator that adds:
+    - Pydantic input validation with structured error feedback
+    - Pydantic output validation
+    - Exponential backoff retry logic
+    - Configurable fallback on terminal failure
+    &quot;&quot;&quot;
+    def decorator(func: F) -&gt; F:
+        @functools.wraps(func)
+        def wrapper(raw_args: dict[str, Any]) -&gt; dict[str, Any]:
+            tool_name = func.__name__
+            
+            # Step 1: Validate inputs
+            try:
+                validated_input = input_model(**raw_args)
+            except ValidationError as e:
+                # Return structured error for LLM to self-correct
+                errors = [
+                    {&quot;field&quot;: err[&quot;loc&quot;][-1], &quot;issue&quot;: err[&quot;msg&quot;], &quot;invalid_value&quot;: err.get(&quot;input&quot;)}
+                    for err in e.errors()
+                ]
+                return {
+                    &quot;error&quot;: &quot;VALIDATION_FAILED&quot;,
+                    &quot;tool&quot;: tool_name,
+                    &quot;message&quot;: f&quot;Input validation failed for tool '{tool_name}'. Fix the following errors and retry:&quot;,
+                    &quot;field_errors&quot;: errors,
+                    &quot;schema_hint&quot;: input_model.model_json_schema()
+                }
+            
+            # Step 2: Execute with exponential backoff
+            last_error = &quot;&quot;
+            for attempt in range(1, max_retries + 1):
+                try:
+                    raw_result = func(validated_input)
+                    validated_output = output_model(**raw_result) if isinstance(raw_result, dict) else raw_result
+                    return validated_output.model_dump()
+                    
+                except ValidationError as e:
+                    return {
+                        &quot;error&quot;: &quot;OUTPUT_SCHEMA_VIOLATION&quot;,
+                        &quot;tool&quot;: tool_name,
+                        &quot;message&quot;: &quot;Tool returned an unexpected output format&quot;,
+                        &quot;details&quot;: str(e)
+                    }
+                except Exception as e:
+                    last_error = str(e)
+                    if attempt &lt; max_retries:
+                        delay = base_delay * (2 ** (attempt - 1))  # 1s, 2s, 4s
+                        print(f&quot;[Tool:{tool_name}] Attempt {attempt} failed: {e}. Retrying in {delay}s...&quot;)
+                        time.sleep(delay)
+                    else:
+                        print(f&quot;[Tool:{tool_name}] All {max_retries} attempts exhausted.&quot;)
+            
+            # Step 3: Return fallback or structured error
+            if fallback_result is not None:
+                print(f&quot;[Tool:{tool_name}] Using fallback result.&quot;)
+                return fallback_result
+            
+            return {
+                &quot;error&quot;: &quot;EXECUTION_FAILED&quot;,
+                &quot;tool&quot;: tool_name,
+                &quot;message&quot;: f&quot;Tool '{tool_name}' failed after {max_retries} attempts. Consider an alternative approach.&quot;,
+                &quot;last_error&quot;: last_error
+            }
+        
+        return wrapper  # type: ignore
+    return decorator
+
+# ─────────────────────────────────────────────
+# 3. Register Concrete Tool Implementations
+# ─────────────────────────────────────────────
+
+@resilient_tool(
+    input_model=SearchDocumentsInput,
+    output_model=SearchDocumentsOutput,
+    max_retries=3,
+    fallback_result={&quot;results&quot;: [], &quot;total_found&quot;: 0, &quot;query_used&quot;: &quot;&quot;, &quot;latency_ms&quot;: 0}
+)
+def search_documents(args: SearchDocumentsInput) -&gt; dict:
+    &quot;&quot;&quot;Simulated document search — replace with actual vector DB call.&quot;&quot;&quot;
+    start = time.time()
+    time.sleep(0.05)  # Simulate latency
+    
+    # Mock results
+    results = [
+        {&quot;id&quot;: f&quot;doc_{i}&quot;, &quot;content&quot;: f&quot;Document about {args.query}&quot;, &quot;score&quot;: 0.95 - (i * 0.05)}
+        for i in range(args.top_k)
+    ]
+    
+    return {
+        &quot;results&quot;: results,
+        &quot;total_found&quot;: args.top_k,
+        &quot;query_used&quot;: args.query,
+        &quot;latency_ms&quot;: round((time.time() - start) * 1000, 2)
+    }
+
+@resilient_tool(
+    input_model=ExecuteCodeInput,
+    output_model=ExecuteCodeOutput,
+    max_retries=2
+)
+def execute_python_code(args: ExecuteCodeInput) -&gt; dict:
+    &quot;&quot;&quot;Executes Python code in a restricted namespace.&quot;&quot;&quot;
+    import io, sys
+    from contextlib import redirect_stdout, redirect_stderr
+    
+    start = time.time()
+    stdout_capture = io.StringIO()
+    stderr_capture = io.StringIO()
+    
+    try:
+        with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
+            exec(args.code, {&quot;__builtins__&quot;: {&quot;print&quot;: print, &quot;range&quot;: range, &quot;len&quot;: len, &quot;str&quot;: str, &quot;int&quot;: int}})
+        exit_code = 0
+    except Exception as e:
+        stderr_capture.write(str(e))
+        exit_code = 1
+    
+    return {
+        &quot;stdout&quot;: stdout_capture.getvalue(),
+        &quot;stderr&quot;: stderr_capture.getvalue(),
+        &quot;exit_code&quot;: exit_code,
+        &quot;execution_time_ms&quot;: round((time.time() - start) * 1000, 2)
+    }
+
+# ─────────────────────────────────────────────
+# 4. Tool Registry &amp; Dispatcher
+# ─────────────────────────────────────────────
+
+TOOL_REGISTRY: dict[str, Callable] = {
+    &quot;search_documents&quot;: search_documents,
+    &quot;execute_python_code&quot;: execute_python_code,
+}
+
+def dispatch_tool_call(tool_name: str, tool_args: dict[str, Any]) -&gt; dict[str, Any]:
+    &quot;&quot;&quot;Routes LLM tool calls to the registered implementation.&quot;&quot;&quot;
+    if tool_name not in TOOL_REGISTRY:
+        return {
+            &quot;error&quot;: &quot;UNKNOWN_TOOL&quot;,
+            &quot;message&quot;: f&quot;Tool '{tool_name}' not found. Available tools: {list(TOOL_REGISTRY.keys())}&quot;
+        }
+    return TOOL_REGISTRY[tool_name](tool_args)
+
+# ─────────────────────────────────────────────
+# 5. Anthropic Agent Loop with Full Error Recovery
+# ─────────────────────────────────────────────
+
+TOOLS = [
+    {
+        &quot;name&quot;: &quot;search_documents&quot;,
+        &quot;description&quot;: &quot;Search the enterprise knowledge base for relevant documents using semantic search.&quot;,
+        &quot;input_schema&quot;: SearchDocumentsInput.model_json_schema()
+    },
+    {
+        &quot;name&quot;: &quot;execute_python_code&quot;,
+        &quot;description&quot;: &quot;Execute Python code in a secure sandbox and return stdout/stderr output.&quot;,
+        &quot;input_schema&quot;: ExecuteCodeInput.model_json_schema()
+    }
+]
+
+def run_agent_with_error_recovery(user_task: str, max_iterations: int = 10) -&gt; str:
+    &quot;&quot;&quot;Agent loop that handles tool errors gracefully via structured feedback.&quot;&quot;&quot;
+    client = Anthropic()
+    messages = [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: user_task}]
+    
+    for iteration in range(max_iterations):
+        response = client.messages.create(
+            model=&quot;claude-3-5-sonnet-20241022&quot;,
+            max_tokens=4096,
+            tools=TOOLS,
+            messages=messages
+        )
+        
+        if response.stop_reason == &quot;end_turn&quot;:
+            # Extract final text response
+            for block in response.content:
+                if hasattr(block, 'text'):
+                    return block.text
+        
+        if response.stop_reason == &quot;tool_use&quot;:
+            messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: response.content})
+            tool_results = []
+            
+            for block in response.content:
+                if block.type == &quot;tool_use&quot;:
+                    print(f&quot;\n[Iteration {iteration+1}] Calling tool: {block.name}&quot;)
+                    print(f&quot;  Args: {json.dumps(block.input, indent=2)}&quot;)
+                    
+                    result = dispatch_tool_call(block.name, block.input)
+                    
+                    # If error, the structured error dict is returned to LLM for self-correction
+                    is_error = &quot;error&quot; in result
+                    print(f&quot;  Result: {'❌ ERROR' if is_error else '✅ SUCCESS'}&quot;)
+                    
+                    tool_results.append({
+                        &quot;type&quot;: &quot;tool_result&quot;,
+                        &quot;tool_use_id&quot;: block.id,
+                        &quot;content&quot;: json.dumps(result),
+                        &quot;is_error&quot;: is_error
+                    })
+            
+            messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: tool_results})
+    
+    return &quot;Agent reached maximum iterations without completing the task.&quot;
+
+if __name__ == &quot;__main__&quot;:
+    result = run_agent_with_error_recovery(
+        &quot;Search for documents about Redis rate limiting and then write a Python script to calculate the optimal token bucket refill rate for 1000 requests per minute.&quot;
+    )
+    print(&quot;\n===== FINAL RESULT =====&quot;)
+    print(result)</code></pre>
+<hr>
+<h2>Error Recovery Sequence: LLM Self-Correction Loop</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b'}}}%%
+sequenceDiagram
+    participant LLM as LLM Agent
+    participant V as Pydantic Validator
+    participant T as Tool Executor
+    participant R as Retry Engine
+
+    LLM-&gt;&gt;V: tool_call: search_documents({query: &quot;&quot;, top_k: &quot;five&quot;})
+    V--&gt;&gt;LLM: VALIDATION_FAILED: query too short, top_k must be int
+    LLM-&gt;&gt;V: tool_call: search_documents({query: &quot;rate limiting&quot;, top_k: 5})
+    V-&gt;&gt;T: Validated input — execute
+    T--&gt;&gt;R: ConnectionError: DB unavailable
+    R-&gt;&gt;T: Retry 1 (1s delay)
+    T--&gt;&gt;R: ConnectionError again
+    R-&gt;&gt;T: Retry 2 (2s delay)
+    T--&gt;&gt;LLM: EXECUTION_FAILED after 3 attempts
+    LLM-&gt;&gt;V: tool_call: execute_python_code({code: &quot;print('fallback logic')&quot;})
+    V-&gt;&gt;T: Execute in sandbox
+    T--&gt;&gt;LLM: stdout: &quot;fallback logic&quot;, exit_code: 0
+    LLM--&gt;&gt;LLM: Synthesise answer from available results</div>
+<hr>
+<h2>Generating Tool Schemas Directly from Pydantic Models</h2>
+<p>Instead of hand-crafting JSON schemas, derive them automatically from your Pydantic models — guaranteeing schema and validation stay in sync:</p>
+<pre><code class="language-python">def pydantic_to_anthropic_tool(
+    name: str,
+    description: str,
+    input_model: Type[BaseModel]
+) -&gt; dict:
+    &quot;&quot;&quot;Auto-generates an Anthropic-compatible tool definition from a Pydantic model.&quot;&quot;&quot;
+    schema = input_model.model_json_schema()
+    # Remove Pydantic's $defs if they exist (Anthropic doesn't support refs)
+    schema.pop(&quot;$defs&quot;, None)
+    return {
+        &quot;name&quot;: name,
+        &quot;description&quot;: description,
+        &quot;input_schema&quot;: schema
+    }
+
+# Usage: Schema auto-generated from the Pydantic class
+search_tool_def = pydantic_to_anthropic_tool(
+    name=&quot;search_documents&quot;,
+    description=&quot;Search enterprise knowledge base using semantic similarity.&quot;,
+    input_model=SearchDocumentsInput
+)
+
+print(json.dumps(search_tool_def, indent=2))
+# {
+#   &quot;name&quot;: &quot;search_documents&quot;,
+#   &quot;description&quot;: &quot;Search enterprise knowledge base...&quot;,
+#   &quot;input_schema&quot;: {
+#     &quot;type&quot;: &quot;object&quot;,
+#     &quot;properties&quot;: {
+#       &quot;query&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;minLength&quot;: 3, ...},
+#       &quot;top_k&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;default&quot;: 5, ...},
+#       ...
+#     },
+#     &quot;required&quot;: [&quot;query&quot;]
+#   }
+# }</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Robust tool-calling is the difference between a demo agent and a production agent. By encoding contracts in Pydantic models, validating at runtime, and returning structured error feedback, you give the LLM everything it needs to self-correct without human intervention.</p>
+<ul>
+<li><strong>Always return structured errors to the LLM</strong> — not raw exceptions. The model cannot learn from a Python traceback, but it can correct itself from a field-level validation message.</li>
+<li><strong>Cap retries with jitter</strong>: Add random jitter (<code>delay * random.uniform(0.8, 1.2)</code>) to retry delays to prevent thundering-herd effects when multiple agent workers hit the same external API simultaneously.</li>
+<li><strong>Test failure modes explicitly</strong>: Write unit tests that pass intentionally malformed tool arguments and assert that the error feedback message is parseable by an LLM.</li>
+</ul>
+<p>In our next article, we explore <strong>Agent Memory: Short-Term, Episodic &amp; Semantic</strong> — how to persist agent state across sessions using Mem0, Redis, and pgvector so agents accumulate knowledge and context over time.</p>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>Anthropic Tool Use Guide</strong>: <a href="https://docs.anthropic.com/en/docs/build-with-claude/tool-use" target="_blank" rel="noopener">Function Calling with Claude</a></li>
+<li><strong>OpenAI Function Calling</strong>: <a href="https://platform.openai.com/docs/guides/function-calling" target="_blank" rel="noopener">Structured Tool Calling Reference</a></li>
+<li><strong>Pydantic v2 Documentation</strong>: <a href="https://docs.pydantic.dev/latest/" target="_blank" rel="noopener">Data Validation for Python</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Ftool-calling-contracts-error-recovery.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Tool-Calling%20Contracts%20%26%20Error%20Recovery%3A%20Building%20Resilient%20Agent%20Tool%20Schemas&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Ftool-calling-contracts-error-recovery.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>
