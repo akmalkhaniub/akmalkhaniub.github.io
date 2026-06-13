@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Nobody Tells You About Vector Embeddings in Production | Akmal Khan Tech Blog</title>
+  <meta name="description" content="8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/vector-embeddings-production-traps.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/vector-embeddings-production-traps.html">
+  <meta property="og:title" content="What Nobody Tells You About Vector Embeddings in Production">
+  <meta property="og:description" content="8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-25">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="What Nobody Tells You About Vector Embeddings in Production">
+  <meta name="twitter:description" content="8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "What Nobody Tells You About Vector Embeddings in Production",
+  "description": "8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.",
+  "url": "https://akmalkhaniub.github.io/blog/vector-embeddings-production-traps.html",
+  "datePublished": "2026-06-25",
+  "keywords": "Embeddings, RAG, pgvector, Python",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/vector-embeddings-production-traps.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">What Nobody Tells You About Vector Embeddings in Production</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 26, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">Embeddings</span><span class="project-badge">RAG</span><span class="project-badge">pgvector</span><span class="project-badge">Python</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>What Nobody Tells You About Vector Embeddings in Production</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Vector embeddings are the foundation of every RAG system, semantic search engine, and recommendation pipeline. Yet most tutorials stop at <code>model.encode(text)</code> and call it done. In production, embeddings fail in ways that are silent, subtle, and catastrophically expensive to debug: wrong distance metrics returning garbage silently, stale embeddings after model upgrades corrupting search results, dimension mismatches crashing pipelines at 2am, and tokenisation limits silently truncating your most important documents. This article covers <strong>8 production embedding failures</strong> with exact fixes in <strong>Python</strong>, covering pgvector, Pinecone, Weaviate, and the Sentence Transformers / OpenAI embedding APIs.</p>
+</blockquote>
+<hr>
+<h2>Why Embedding Bugs Are the Hardest to Find</h2>
+<p>A broken SQL query throws an exception. A broken embedding pipeline returns results — just wrong ones. Cosine similarity between a garbage vector and a real one is still a number. Your API returns 200 OK. Your users get irrelevant answers. Your eval metrics don&#39;t catch it because the eval dataset was embedded with the same broken model.</p>
+<p>This is the danger zone: <strong>silent correctness failures</strong> with no stack traces.</p>
+<hr>
+<h2>The Embedding Production Failure Map</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+flowchart TD
+    D[Document] --&gt; T[Tokeniser]
+    T --&gt;|Truncated silently| F1[💥 Trap 1: Silent truncation&lt;br/&gt;at 512 tokens]
+    T --&gt;|OK| E[Embedding Model]
+    
+    E --&gt;|Model version changed| F2[💥 Trap 2: Stale index&lt;br/&gt;after model upgrade]
+    E --&gt;|OK| V[(Vector Store)]
+    
+    V --&gt;|Wrong metric configured| F3[💥 Trap 3: Cosine vs&lt;br/&gt;dot product mismatch]
+    V --&gt;|No normalisation| F4[💥 Trap 4: L2 distance&lt;br/&gt;on unnormalised vectors]
+    V --&gt;|OK| Q[Query Embedding]
+    
+    Q --&gt;|Different model than index| F5[💥 Trap 5: Query/index&lt;br/&gt;model mismatch]
+    Q --&gt;|OK| R[Search Results]
+    
+    R --&gt;|No re-embedding on update| F6[💥 Trap 6: Stale doc&lt;br/&gt;embeddings after edit]
+    R --&gt;|Multilingual mismatch| F7[💥 Trap 7: Cross-lingual&lt;br/&gt;query on mono model]
+    R --&gt;|Batch dim mismatch| F8[💥 Trap 8: Dimension&lt;br/&gt;mismatch on insert]
+
+    style F1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style F2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style F3 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style F4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style F5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style F6 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+    style F7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+    style F8 fill:#78350f,stroke:#f59e0b,stroke-width:2px</div>
+<hr>
+<h2>Trap 1: Silent Truncation at 512 Tokens</h2>
+<p><strong>Symptom</strong>: Long documents return poor search results despite being highly relevant. No errors thrown.</p>
+<p><strong>Root cause</strong>: Most embedding models (BERT-based, <code>text-embedding-ada-002</code>, <code>all-MiniLM</code>) have a <strong>hard 512-token limit</strong>. Anything beyond that is silently dropped. A 2,000-word policy document gets embedded using only the first ~375 words. The rest — often where the critical detail lives — is invisible to search.</p>
+<pre><code class="language-python">from sentence_transformers import SentenceTransformer
+from transformers import AutoTokenizer
+import numpy as np
+
+model_name = &quot;sentence-transformers/all-MiniLM-L6-v2&quot;
+model = SentenceTransformer(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+def safe_embed_with_chunking(
+    text: str,
+    max_tokens: int = 512,
+    overlap_tokens: int = 50,
+    pooling: str = &quot;mean&quot;  # &quot;mean&quot; | &quot;first&quot; | &quot;last&quot;
+) -&gt; np.ndarray:
+    &quot;&quot;&quot;
+    Embeds long text by splitting into overlapping chunks and pooling.
+    Prevents silent truncation of content beyond the model's token limit.
+    &quot;&quot;&quot;
+    tokens = tokenizer.encode(text, add_special_tokens=False)
+    
+    if len(tokens) &lt;= max_tokens:
+        return model.encode(text, normalize_embeddings=True)
+    
+    # Split into overlapping chunks
+    stride = max_tokens - overlap_tokens
+    chunks = []
+    for start in range(0, len(tokens), stride):
+        chunk_tokens = tokens[start:start + max_tokens]
+        chunk_text = tokenizer.decode(chunk_tokens, skip_special_tokens=True)
+        chunks.append(chunk_text)
+        if start + max_tokens &gt;= len(tokens):
+            break
+    
+    # Embed all chunks
+    chunk_embeddings = model.encode(chunks, normalize_embeddings=True, batch_size=32)
+    
+    # Pool chunk embeddings
+    if pooling == &quot;mean&quot;:
+        return np.mean(chunk_embeddings, axis=0)
+    elif pooling == &quot;first&quot;:
+        return chunk_embeddings[0]
+    elif pooling == &quot;last&quot;:
+        return chunk_embeddings[-1]
+    
+    return np.mean(chunk_embeddings, axis=0)
+
+def check_truncation_risk(texts: list[str], model_name: str, threshold: float = 0.9) -&gt; list[dict]:
+    &quot;&quot;&quot;Audit a batch of texts and flag those near the token limit.&quot;&quot;&quot;
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    max_tokens = tokenizer.model_max_length
+    
+    risks = []
+    for text in texts:
+        token_count = len(tokenizer.encode(text))
+        ratio = token_count / max_tokens
+        if ratio &gt; threshold:
+            risks.append({
+                &quot;text_preview&quot;: text[:100],
+                &quot;token_count&quot;: token_count,
+                &quot;limit&quot;: max_tokens,
+                &quot;truncated_pct&quot;: round((1 - max_tokens / token_count) * 100, 1) if token_count &gt; max_tokens else 0,
+                &quot;status&quot;: &quot;TRUNCATED&quot; if token_count &gt; max_tokens else &quot;AT_RISK&quot;
+            })
+    return risks</code></pre>
+<hr>
+<h2>Trap 2: Stale Index After Model Upgrade</h2>
+<p><strong>Symptom</strong>: You upgrade from <code>text-embedding-ada-002</code> to <code>text-embedding-3-large</code>. Existing documents in your index were embedded with the old model. Queries use the new model. Search quality collapses — you&#39;re comparing apples to oranges in high-dimensional space.</p>
+<p><strong>Root cause</strong>: Different embedding models produce vectors in <strong>completely different semantic spaces</strong>. You cannot mix vectors from different models in the same index.</p>
+<pre><code class="language-python">import hashlib
+import json
+from datetime import datetime
+from typing import Optional
+
+# ─── Embedding Model Registry ─────────────────────────
+EMBEDDING_MODEL_REGISTRY = {
+    &quot;current&quot;: {
+        &quot;name&quot;: &quot;text-embedding-3-large&quot;,
+        &quot;provider&quot;: &quot;openai&quot;,
+        &quot;dimensions&quot;: 3072,
+        &quot;version&quot;: &quot;2024-01-25&quot;,
+        &quot;fingerprint&quot;: &quot;openai-te3-large-20240125&quot;
+    },
+    &quot;deprecated&quot;: [
+        {&quot;fingerprint&quot;: &quot;openai-ada-002-20221201&quot;, &quot;name&quot;: &quot;text-embedding-ada-002&quot;}
+    ]
+}
+
+def get_model_fingerprint(model_name: str, model_version: str) -&gt; str:
+    &quot;&quot;&quot;Deterministic fingerprint for a model version.&quot;&quot;&quot;
+    return hashlib.sha256(f&quot;{model_name}:{model_version}&quot;.encode()).hexdigest()[:16]
+
+class EmbeddingVersionGuard:
+    &quot;&quot;&quot;
+    Attaches model fingerprints to every embedded document.
+    Raises an error if a query model doesn't match the index model.
+    &quot;&quot;&quot;
+
+    def embed_document(
+        self,
+        doc_id: str,
+        text: str,
+        client,
+        model: str = &quot;text-embedding-3-large&quot;
+    ) -&gt; dict:
+        &quot;&quot;&quot;Embed with model metadata attached.&quot;&quot;&quot;
+        response = client.embeddings.create(input=text, model=model)
+        
+        return {
+            &quot;doc_id&quot;: doc_id,
+            &quot;vector&quot;: response.data[0].embedding,
+            &quot;metadata&quot;: {
+                &quot;embedding_model&quot;: model,
+                &quot;embedding_model_fingerprint&quot;: get_model_fingerprint(model, &quot;v1&quot;),
+                &quot;embedded_at&quot;: datetime.utcnow().isoformat(),
+                &quot;token_count&quot;: response.usage.total_tokens,
+            }
+        }
+    
+    def validate_query_model(
+        self,
+        query_model: str,
+        index_model_fingerprint: str
+    ) -&gt; None:
+        &quot;&quot;&quot;Assert query and index use compatible models before searching.&quot;&quot;&quot;
+        query_fingerprint = get_model_fingerprint(query_model, &quot;v1&quot;)
+        if query_fingerprint != index_model_fingerprint:
+            raise ValueError(
+                f&quot;Model mismatch! Index was built with fingerprint '{index_model_fingerprint}' &quot;
+                f&quot;but query uses '{query_model}' (fingerprint: '{query_fingerprint}'). &quot;
+                f&quot;Re-index all documents before querying with the new model.&quot;
+            )
+
+# Migration helper: detect stale documents in bulk
+def audit_index_for_stale_embeddings(
+    documents: list[dict],
+    current_model_fingerprint: str
+) -&gt; dict:
+    stale = [d for d in documents if d.get(&quot;metadata&quot;, {}).get(&quot;embedding_model_fingerprint&quot;) != current_model_fingerprint]
+    return {
+        &quot;total&quot;: len(documents),
+        &quot;stale_count&quot;: len(stale),
+        &quot;stale_ids&quot;: [d[&quot;doc_id&quot;] for d in stale[:20]],  # First 20 for preview
+        &quot;action_required&quot;: len(stale) &gt; 0,
+        &quot;recommendation&quot;: f&quot;Re-embed {len(stale)} documents with current model before enabling search.&quot;
+    }</code></pre>
+<hr>
+<h2>Trap 3: Cosine vs Dot Product — Silent Wrong Results</h2>
+<p><strong>Symptom</strong>: Semantically identical sentences score poorly. Unrelated sentences score high. No errors, no warnings.</p>
+<p><strong>Root cause</strong>: OpenAI <code>text-embedding-3-*</code> models return <strong>normalised vectors</strong> — for these, cosine similarity and dot product are equivalent. But <code>text-embedding-ada-002</code> and many HuggingFace models return <strong>unnormalised vectors</strong> — using dot product on these gives entirely wrong rankings based on vector magnitude, not semantic similarity.</p>
+<pre><code class="language-python">import numpy as np
+from openai import OpenAI
+
+client = OpenAI()
+
+def embed(text: str, model: str = &quot;text-embedding-ada-002&quot;) -&gt; np.ndarray:
+    response = client.embeddings.create(input=text, model=model)
+    return np.array(response.data[0].embedding)
+
+def cosine_similarity(a: np.ndarray, b: np.ndarray) -&gt; float:
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+def dot_product(a: np.ndarray, b: np.ndarray) -&gt; float:
+    return float(np.dot(a, b))
+
+def is_normalised(vec: np.ndarray, tolerance: float = 1e-3) -&gt; bool:
+    &quot;&quot;&quot;Check if a vector has unit norm (i.e., is already normalised).&quot;&quot;&quot;
+    norm = np.linalg.norm(vec)
+    return abs(norm - 1.0) &lt; tolerance
+
+def safe_similarity(a: np.ndarray, b: np.ndarray) -&gt; float:
+    &quot;&quot;&quot;
+    Always uses cosine similarity — normalises first if needed.
+    Safe for both normalised and unnormalised vectors.
+    &quot;&quot;&quot;
+    if not is_normalised(a):
+        a = a / np.linalg.norm(a)
+    if not is_normalised(b):
+        b = b / np.linalg.norm(b)
+    return float(np.dot(a, b))  # Equivalent to cosine after normalisation
+
+# Demonstrate the danger
+if __name__ == &quot;__main__&quot;:
+    v1 = embed(&quot;How do I implement rate limiting?&quot;)
+    v2 = embed(&quot;What are the best rate limiter algorithms?&quot;)  # Semantically similar
+    v3 = embed(&quot;What is the capital of France?&quot;)  # Semantically different
+    
+    print(&quot;=== Cosine Similarity (Correct) ===&quot;)
+    print(f&quot;Similar pair:   {cosine_similarity(v1, v2):.4f}&quot;)  # Should be HIGH
+    print(f&quot;Different pair: {cosine_similarity(v1, v3):.4f}&quot;)  # Should be LOW
+
+    print(&quot;\n=== Dot Product on Unnormalised Vectors (Can Be Wrong) ===&quot;)
+    print(f&quot;Similar pair:   {dot_product(v1, v2):.4f}&quot;)
+    print(f&quot;Different pair: {dot_product(v1, v3):.4f}&quot;)  # May rank incorrectly!
+    
+    print(&quot;\n=== Is this model normalised? ===&quot;)
+    print(f&quot;v1 normalised: {is_normalised(v1)}&quot;)  # ada-002: False, te3-large: True</code></pre>
+<p><strong>pgvector index tip — use the right operator class:</strong></p>
+<pre><code class="language-sql">-- For normalised vectors (OpenAI te3-*): use &lt;=&gt; (cosine) or &lt;#&gt; (negative dot product)
+CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops);
+
+-- For unnormalised vectors: ALWAYS use cosine, never inner product
+-- Or normalise on insert:
+UPDATE documents SET embedding = embedding / |embedding|;  -- normalise existing vectors</code></pre>
+<hr>
+<h2>Trap 4: Dimension Mismatch Corrupts Silently in Some Stores</h2>
+<p><strong>Symptom</strong>: You switch embedding models (e.g., 1536-dim ada-002 to 3072-dim te3-large). Some vector databases silently truncate or pad vectors to match the index dimension. Others throw cryptic internal errors. Your data is corrupt.</p>
+<pre><code class="language-python">from dataclasses import dataclass
+
+@dataclass
+class EmbeddingDimensionGuard:
+    expected_dim: int
+    model_name: str
+
+    def validate(self, vector: list[float], doc_id: str) -&gt; list[float]:
+        actual_dim = len(vector)
+        if actual_dim != self.expected_dim:
+            raise ValueError(
+                f&quot;Dimension mismatch for doc '{doc_id}': &quot;
+                f&quot;expected {self.expected_dim}D (model: {self.model_name}), &quot;
+                f&quot;got {actual_dim}D. &quot;
+                f&quot;Did you change the embedding model without re-creating the index?&quot;
+            )
+        return vector
+
+# Usage
+guard = EmbeddingDimensionGuard(expected_dim=3072, model_name=&quot;text-embedding-3-large&quot;)
+
+def safe_upsert(doc_id: str, text: str, client, pg_conn):
+    response = client.embeddings.create(input=text, model=&quot;text-embedding-3-large&quot;)
+    vector = guard.validate(response.data[0].embedding, doc_id)  # Raises before bad insert
+    pg_conn.execute(
+        &quot;INSERT INTO documents (id, embedding) VALUES (%s, %s) ON CONFLICT (id) DO UPDATE SET embedding = EXCLUDED.embedding&quot;,
+        (doc_id, vector)
+    )</code></pre>
+<hr>
+<h2>Trap 5: Multilingual Queries on Monolingual Models</h2>
+<p><strong>Symptom</strong>: Your English-trained RAG system is deployed to users in Pakistan, Germany, and Japan. Non-English queries return near-random results.</p>
+<p><strong>Root cause</strong>: English-only embedding models (many MiniLM variants) project non-English text into a meaningless region of the embedding space. The cosine similarities are numerically valid but semantically meaningless.</p>
+<pre><code class="language-python"># ✅ Use multilingual models for international deployments
+MULTILINGUAL_MODELS = {
+    &quot;high_quality&quot;: &quot;intfloat/multilingual-e5-large&quot;,      # 560M params, 100 languages
+    &quot;fast&quot;: &quot;sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2&quot;,  # 118M, 50 languages
+    &quot;openai&quot;: &quot;text-embedding-3-large&quot;,                     # OpenAI supports 100+ languages natively
+}
+
+def detect_language_and_route(text: str) -&gt; str:
+    &quot;&quot;&quot;Route to appropriate embedding model based on detected language.&quot;&quot;&quot;
+    try:
+        from langdetect import detect
+        lang = detect(text)
+        if lang == 'en':
+            return &quot;text-embedding-3-small&quot;   # Cheaper for English-only
+        else:
+            return &quot;text-embedding-3-large&quot;   # Better multilingual performance
+    except Exception:
+        return &quot;text-embedding-3-large&quot;       # Safe default on detection failure</code></pre>
+<hr>
+<h2>Trap 6: Documents Updated But Embeddings Not Refreshed</h2>
+<p><strong>Symptom</strong>: A user edits a document. The document text in your database is updated. But the embedding in your vector store still reflects the old content. Search returns the old version&#39;s content.</p>
+<pre><code class="language-python">import hashlib
+
+def get_content_hash(text: str) -&gt; str:
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+class EmbeddingFreshnessChecker:
+    &quot;&quot;&quot;Detects when document content has changed and embeddings need refreshing.&quot;&quot;&quot;
+    
+    def should_re_embed(self, doc_id: str, current_text: str, stored_hash: str | None) -&gt; bool:
+        current_hash = get_content_hash(current_text)
+        if stored_hash is None or stored_hash != current_hash:
+            print(f&quot;[Embeddings] Doc '{doc_id}' content changed — queuing re-embed&quot;)
+            return True
+        return False
+
+    async def sync_document(self, doc_id: str, text: str, stored_hash: str | None, embed_fn, store_fn):
+        if self.should_re_embed(doc_id, text, stored_hash):
+            new_vector = await embed_fn(text)
+            new_hash = get_content_hash(text)
+            await store_fn(doc_id, new_vector, new_hash)
+            return True
+        return False  # No update needed</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Vector embeddings are deceptively fragile at the boundaries — tokenisation limits, model versioning, distance metric mismatches, and content staleness all fail silently, making them uniquely difficult to debug in production.</p>
+<ul>
+<li><strong>Always store a model fingerprint alongside every vector</strong> — it&#39;s the only way to detect index staleness after a model upgrade.</li>
+<li><strong>Always use cosine similarity</strong> unless you have explicitly confirmed your model outputs normalised vectors and have benchmarked dot product against it.</li>
+<li><strong>Audit token counts before embedding</strong>, not after — truncation at 512 tokens discards data with no exception raised.</li>
+</ul>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>OpenAI Embeddings Guide</strong>: <a href="https://platform.openai.com/docs/guides/embeddings" target="_blank" rel="noopener">Best practices for using embeddings</a></li>
+<li><strong>Sentence Transformers</strong>: <a href="https://www.sbert.net/docs/pretrained_models.html" target="_blank" rel="noopener">Pretrained Models Reference</a></li>
+<li><strong>pgvector Distance Operators</strong>: <a href="https://github.com/pgvector/pgvector#distance-functions" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> pgvector README</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-embeddings-production-traps.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=What%20Nobody%20Tells%20You%20About%20Vector%20Embeddings%20in%20Production&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-embeddings-production-traps.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">June 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">June 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="async-python-event-loop-mistakes.html">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop<span class="sidebar-post-date">June 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">June 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="sse-gotchas-production-llm-streaming.html">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production<span class="sidebar-post-date">June 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>
