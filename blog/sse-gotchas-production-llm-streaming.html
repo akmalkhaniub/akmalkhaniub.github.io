@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production | Akmal Khan Tech Blog</title>
+  <meta name="description" content="The battle-tested field guide to SSE production failures — Nginx buffering, Cloudflare timeouts, EventSource auth limits, reconnect storms, connection leaks, and more. With exact fixes in TypeScript and Python.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/sse-gotchas-production-llm-streaming.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/sse-gotchas-production-llm-streaming.html">
+  <meta property="og:title" content="SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production">
+  <meta property="og:description" content="The battle-tested field guide to SSE production failures — Nginx buffering, Cloudflare timeouts, EventSource auth limits, reconnect storms, connection leaks, and more. With exact fixes in TypeScript and Python.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-24">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production">
+  <meta name="twitter:description" content="The battle-tested field guide to SSE production failures — Nginx buffering, Cloudflare timeouts, EventSource auth limits, reconnect storms, connection leaks, and more. With exact fixes in TypeScript and Python.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production",
+  "description": "The battle-tested field guide to SSE production failures — Nginx buffering, Cloudflare timeouts, EventSource auth limits, reconnect storms, connection leaks, and more. With exact fixes in TypeScript and Python.",
+  "url": "https://akmalkhaniub.github.io/blog/sse-gotchas-production-llm-streaming.html",
+  "datePublished": "2026-06-24",
+  "keywords": "SSE, Streaming, Node.js, Python, DevOps",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/sse-gotchas-production-llm-streaming.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 25, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 11 min read</span>
+              <div class="article-tags"><span class="project-badge">SSE</span><span class="project-badge">Streaming</span><span class="project-badge">Node.js</span><span class="project-badge">Python</span><span class="project-badge">DevOps</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Server-Sent Events (SSE) look deceptively simple — open a connection, stream text, done. But when you deploy an LLM streaming API behind a real infrastructure stack (Nginx, Cloudflare, ALBs, Next.js middleware), SSE breaks in ways that are maddening to debug. Tokens buffer for 30 seconds then dump all at once. Mobile clients reconnect in storms. Auth headers silently fail. This article documents <strong>10 production SSE gotchas</strong> that every AI engineer hits, with exact fixes in <strong>TypeScript (Hono/Node.js)</strong> and <strong>Python (FastAPI)</strong>. Consider this the battle-tested field guide that nobody wrote when you needed it.</p>
+</blockquote>
+<hr>
+<h2>Why SSE Looks Easy But Isn&#39;t</h2>
+<p>The EventSource API on the browser side is three lines:</p>
+<pre><code class="language-javascript">const source = new EventSource('/api/stream');
+source.onmessage = (e) =&gt; console.log(e.data);</code></pre>
+<p>The server side is barely more. But between your Node.js process and the browser sits a gauntlet: <strong>reverse proxies, CDNs, load balancers, middleware frameworks, and mobile network stacks</strong> — each with their own opinions about what a &quot;response&quot; looks like and when to flush it.</p>
+<p>The result: SSE that works perfectly in local development silently breaks in every production environment it touches.</p>
+<hr>
+<h2>The Full SSE Failure Map</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+flowchart TD
+    C[Browser EventSource] --&gt; P1{Proxy / CDN Layer}
+    
+    P1 --&gt;|Buffering ON| G1[💥 Gotcha 1&lt;br/&gt;Tokens buffer 30s&lt;br/&gt;then dump all at once]
+    P1 --&gt;|HTTP/1.1| G2[💥 Gotcha 2&lt;br/&gt;6-connection limit&lt;br/&gt;new tabs kill old streams]
+    P1 --&gt;|Auth via Header| G3[💥 Gotcha 3&lt;br/&gt;EventSource can't&lt;br/&gt;set Authorization header]
+    P1 --&gt;|Cloudflare timeout| G4[💥 Gotcha 4&lt;br/&gt;100s hard timeout&lt;br/&gt;kills long responses]
+    P1 --&gt;|Passed| S[Server]
+
+    S --&gt; P2{Framework Layer}
+    P2 --&gt;|Next.js middleware| G5[💥 Gotcha 5&lt;br/&gt;Edge runtime buffers&lt;br/&gt;full response body]
+    P2 --&gt;|Express compress()| G6[💥 Gotcha 6&lt;br/&gt;Gzip middleware&lt;br/&gt;swallows stream chunks]
+    P2 --&gt;|No keep-alive| G7[💥 Gotcha 7&lt;br/&gt;Connection closes after&lt;br/&gt;first event — client loops]
+    P2 --&gt;|Passed| L[LLM API]
+
+    L --&gt; P3{Client Reconnect}
+    P3 --&gt;|No Last-Event-ID| G8[💥 Gotcha 8&lt;br/&gt;Reconnect replays&lt;br/&gt;full response from start]
+    P3 --&gt;|No exponential backoff| G9[💥 Gotcha 9&lt;br/&gt;Reconnect storm on&lt;br/&gt;server restart]
+    P3 --&gt;|No done signal| G10[💥 Gotcha 10&lt;br/&gt;Client never closes —&lt;br/&gt;connection leak]
+
+    style G1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style G2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style G3 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style G4 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style G5 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style G6 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style G7 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style G8 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+    style G9 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+    style G10 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
+<hr>
+<h2>Gotcha 1: Your Proxy Is Buffering Everything</h2>
+<p><strong>Symptom</strong>: Works perfectly on <code>localhost:3000</code>. On production (behind Nginx or an AWS ALB), tokens don&#39;t appear until the full LLM response completes — then dump all at once. Streaming is completely broken.</p>
+<p><strong>Root cause</strong>: Nginx buffers upstream responses by default. It collects the full body before forwarding to the client, making SSE indistinguishable from a slow JSON response.</p>
+<p><strong>Fix — Nginx config:</strong></p>
+<pre><code class="language-nginx">location /api/stream {
+    proxy_pass http://localhost:3000;
+    
+    # THE critical SSE directives
+    proxy_buffering off;                    # Disable response buffering
+    proxy_cache off;                        # Disable caching
+    proxy_set_header Connection '';         # Force HTTP/1.1 keep-alive
+    proxy_http_version 1.1;
+    chunked_transfer_encoding on;
+    
+    # Prevent proxy from closing idle SSE connections
+    proxy_read_timeout 86400s;             # 24 hours — adjust to your LLM max runtime
+    proxy_send_timeout 86400s;
+    
+    # SSE-specific headers
+    proxy_set_header X-Accel-Buffering no; # Also disables Nginx buffering via header
+    add_header X-Accel-Buffering no;
+    add_header Cache-Control no-cache;
+}</code></pre>
+<p><strong>Fix — From the application side (belt and suspenders):</strong> Set <code>X-Accel-Buffering: no</code> on every SSE response. Nginx respects this header even if the config isn&#39;t set:</p>
+<pre><code class="language-typescript">// Hono (TypeScript)
+app.get('/api/stream', (c) =&gt; {
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',  // ← Disables Nginx buffering via header
+    }
+  });
+});</code></pre>
+<pre><code class="language-python"># FastAPI (Python)
+from fastapi.responses import StreamingResponse
+
+@app.get(&quot;/api/stream&quot;)
+async def stream_endpoint():
+    return StreamingResponse(
+        event_generator(),
+        media_type=&quot;text/event-stream&quot;,
+        headers={
+            &quot;Cache-Control&quot;: &quot;no-cache, no-transform&quot;,
+            &quot;Connection&quot;: &quot;keep-alive&quot;,
+            &quot;X-Accel-Buffering&quot;: &quot;no&quot;,  # ← Disables Nginx buffering
+            &quot;Access-Control-Allow-Origin&quot;: &quot;*&quot;,
+        }
+    )</code></pre>
+<hr>
+<h2>Gotcha 2: HTTP/1.1 Browser Connection Limit (6 Per Domain)</h2>
+<p><strong>Symptom</strong>: Your app opens multiple SSE streams (e.g., one per chat thread). After 6 concurrent tabs/streams to the same domain, new streams silently fail or existing ones freeze.</p>
+<p><strong>Root cause</strong>: HTTP/1.1 browsers enforce a <strong>maximum of 6 simultaneous connections per domain</strong>. Each SSE stream holds one connection open permanently — 6 streams exhausts the pool for the entire domain, blocking all other requests including regular API calls, image loads, and fetch requests.</p>
+<p><strong>Fix — Option A: Upgrade to HTTP/2</strong> (multiplexes all streams over one TCP connection — solves the problem entirely):</p>
+<pre><code class="language-nginx">server {
+    listen 443 ssl http2;  # ← Enable HTTP/2
+    # ... rest of config
+}</code></pre>
+<p><strong>Fix — Option B: Use a SharedWorker to multiplex SSE across tabs:</strong></p>
+<pre><code class="language-typescript">// shared-sse-worker.ts — runs once, shared across all tabs
+const connections = new Map&lt;string, EventSource&gt;();
+const subscribers = new Map&lt;string, Set&lt;MessagePort&gt;&gt;();
+
+self.onconnect = (e: MessageEvent) =&gt; {
+  const port = e.ports[0];
+  
+  port.onmessage = (msg) =&gt; {
+    const { type, streamId, url } = msg.data;
+    
+    if (type === 'SUBSCRIBE') {
+      if (!connections.has(streamId)) {
+        // Only ONE EventSource per stream ID — shared across all tabs
+        const source = new EventSource(url);
+        connections.set(streamId, source);
+        subscribers.set(streamId, new Set());
+        
+        source.onmessage = (event) =&gt; {
+          // Fan out to all tabs subscribed to this stream
+          subscribers.get(streamId)?.forEach(p =&gt; p.postMessage(event.data));
+        };
+      }
+      subscribers.get(streamId)?.add(port);
+    }
+    
+    if (type === 'UNSUBSCRIBE') {
+      subscribers.get(streamId)?.delete(port);
+      if (subscribers.get(streamId)?.size === 0) {
+        connections.get(streamId)?.close();
+        connections.delete(streamId);
+        subscribers.delete(streamId);
+      }
+    }
+  };
+};</code></pre>
+<hr>
+<h2>Gotcha 3: EventSource Cannot Send Authorization Headers</h2>
+<p><strong>Symptom</strong>: You try to protect your SSE endpoint with a Bearer token. Every other endpoint uses <code>Authorization: Bearer &lt;token&gt;</code>. EventSource silently ignores it — the browser always opens the SSE connection <strong>without custom headers</strong>, sending only cookies.</p>
+<p><strong>Root cause</strong>: The <code>EventSource</code> API does not support custom headers. It is a known, unfixed limitation of the W3C spec.</p>
+<pre><code class="language-typescript">// ❌ THIS DOES NOT WORK — headers are silently ignored
+const source = new EventSource('/api/stream', {
+  headers: { 'Authorization': `Bearer ${token}` }  // Browser ignores this
+});</code></pre>
+<p><strong>Fix — Option A: Pass token as a query parameter</strong> (use short-lived tokens only — never long-lived JWTs):</p>
+<pre><code class="language-typescript">// Client
+const shortLivedToken = await fetchShortLivedToken(); // expires in 60s
+const source = new EventSource(`/api/stream?token=${shortLivedToken}`);
+
+// Server (Hono)
+app.get('/api/stream', async (c) =&gt; {
+  const token = c.req.query('token');
+  const user = await validateShortLivedToken(token); // Validate &amp; expire immediately
+  if (!user) return c.text('Unauthorized', 401);
+  // ... stream
+});</code></pre>
+<p><strong>Fix — Option B: Use fetch() with a ReadableStream instead of EventSource</strong> (supports all headers, more control):</p>
+<pre><code class="language-typescript">// Client — fetch-based SSE (supports Authorization header)
+async function streamWithAuth(url: string, token: string): Promise&lt;void&gt; {
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`,  // ✅ Works with fetch
+      'Accept': 'text/event-stream',
+    }
+  });
+
+  if (!response.ok || !response.body) throw new Error('Stream failed');
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    
+    const chunk = decoder.decode(value, { stream: true });
+    // Parse SSE format manually
+    for (const line of chunk.split('\n')) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6);
+        if (data === '[DONE]') { reader.cancel(); return; }
+        console.log('Token:', JSON.parse(data).token);
+      }
+    }
+  }
+}</code></pre>
+<hr>
+<h2>Gotcha 4: Cloudflare&#39;s 100-Second Hard Timeout</h2>
+<p><strong>Symptom</strong>: Long LLM responses (e.g., generating a 5,000-word document) get cut off at exactly 100 seconds on Cloudflare-proxied domains. Connection drops, client gets no completion signal.</p>
+<p><strong>Root cause</strong>: Cloudflare&#39;s free and Pro plans enforce a <strong>100-second HTTP response timeout</strong>. It doesn&#39;t matter if you&#39;re streaming — if the connection is open longer than 100s, Cloudflare terminates it.</p>
+<p><strong>Fix — Send keepalive comments every 15 seconds</strong> (SSE comment lines starting with <code>:</code> are valid per spec, invisible to client, but reset Cloudflare&#39;s idle timeout):</p>
+<pre><code class="language-typescript">// Hono — SSE with Cloudflare keepalive pings
+app.get('/api/stream', async (c) =&gt; {
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+
+  const write = (data: string) =&gt; writer.write(encoder.encode(data));
+
+  // Start keepalive ping every 15s
+  const keepaliveInterval = setInterval(async () =&gt; {
+    try {
+      await write(': keepalive\n\n');  // SSE comment — valid spec, invisible to app
+    } catch {
+      clearInterval(keepaliveInterval);
+    }
+  }, 15_000);
+
+  // Run LLM stream in background
+  (async () =&gt; {
+    try {
+      const stream = await anthropic.messages.stream({ /* ... */ });
+      for await (const chunk of stream) {
+        if (chunk.type === 'content_block_delta' &amp;&amp; chunk.delta.type === 'text_delta') {
+          await write(`data: ${JSON.stringify({ token: chunk.delta.text })}\n\n`);
+        }
+      }
+      await write('data: [DONE]\n\n');
+    } finally {
+      clearInterval(keepaliveInterval);
+      writer.close();
+    }
+  })();
+
+  return new Response(readable, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'X-Accel-Buffering': 'no',
+    }
+  });
+});</code></pre>
+<hr>
+<h2>Gotcha 5: Next.js Edge Runtime Buffers SSE</h2>
+<p><strong>Symptom</strong>: Your Next.js Route Handler at <code>app/api/stream/route.ts</code> doesn&#39;t stream in production — even with <code>export const runtime = &#39;edge&#39;</code>. Vercel deployments receive all tokens at once.</p>
+<p><strong>Root cause</strong>: Next.js&#39;s bundler and some Vercel edge network configurations can buffer ReadableStream responses. You need to explicitly signal streaming intent.</p>
+<pre><code class="language-typescript">// ❌ This may buffer in Next.js production
+export async function GET() {
+  const stream = new ReadableStream({ /* ... */ });
+  return new Response(stream, {
+    headers: { 'Content-Type': 'text/event-stream' }
+  });
+}
+
+// ✅ Correct Next.js App Router SSE with explicit flush signals
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';  // ← Prevents static caching
+
+export async function GET(request: Request) {
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      const enqueue = (data: string) =&gt; {
+        controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+      };
+
+      // Send an immediate flush to establish the stream
+      enqueue(JSON.stringify({ type: 'connected' }));
+
+      const anthropicStream = await anthropic.messages.stream({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: 'Write a detailed essay on RAG systems.' }]
+      });
+
+      for await (const chunk of anthropicStream) {
+        if (chunk.type === 'content_block_delta' &amp;&amp; chunk.delta.type === 'text_delta') {
+          enqueue(JSON.stringify({ token: chunk.delta.text }));
+        }
+      }
+
+      enqueue('[DONE]');
+      controller.close();
+    }
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      'X-Accel-Buffering': 'no',
+      'X-Content-Type-Options': 'nosniff',
+    }
+  });
+}</code></pre>
+<hr>
+<h2>Gotcha 6: Express <code>compression()</code> Middleware Breaks SSE</h2>
+<p><strong>Symptom</strong>: SSE streams stall randomly. Works in development (no compression), breaks in production where <code>compression()</code> middleware is active.</p>
+<p><strong>Root cause</strong>: Express&#39;s <code>compression</code> middleware buffers response chunks to apply gzip — destroying SSE&#39;s real-time nature. It can&#39;t flush individual SSE events; it holds them waiting for more data to compress efficiently.</p>
+<pre><code class="language-typescript">// ❌ Global compression breaks SSE
+app.use(compression());
+
+// ✅ Apply compression selectively — skip SSE routes
+import compression from 'compression';
+
+app.use(compression({
+  filter: (req, res) =&gt; {
+    // Don't compress SSE routes
+    if (req.path.startsWith('/api/stream')) return false;
+    if (res.getHeader('Content-Type')?.toString().includes('text/event-stream')) return false;
+    // Use default filter for everything else
+    return compression.filter(req, res);
+  }
+}));</code></pre>
+<hr>
+<h2>Gotcha 7: Python FastAPI — asyncio Generator Must Explicitly Flush</h2>
+<p><strong>Symptom</strong>: FastAPI SSE streams in development but not in production with Gunicorn/Uvicorn workers. Tokens batch in groups of ~20 instead of arriving one by one.</p>
+<p><strong>Root cause</strong>: Python&#39;s async generators buffer <code>yield</code> statements depending on the ASGI server configuration and OS socket buffer sizes. You need to yield the newlines as separate flushes.</p>
+<pre><code class="language-python"># ❌ May buffer — single yield per event
+async def event_generator():
+    async for chunk in anthropic_stream:
+        yield f&quot;data: {chunk}\n\n&quot;  # OS may buffer this
+
+# ✅ Double-newline as separate yield forces flush in most ASGI servers
+async def event_generator():
+    async for chunk in anthropic_stream:
+        token = chunk.delta.text if hasattr(chunk, 'delta') else &quot;&quot;
+        if token:
+            yield f&quot;data: {json.dumps({'token': token})}\n&quot;
+            yield &quot;\n&quot;  # ← Separate yield forces ASGI flush
+
+# ✅ Even better: use sys.stdout.flush() signal for Uvicorn
+from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
+from anthropic import AsyncAnthropic
+import json
+
+anthropic = AsyncAnthropic()
+app = FastAPI()
+
+@app.get(&quot;/api/stream&quot;)
+async def stream(request: Request):
+    async def generate():
+        async with anthropic.messages.stream(
+            model=&quot;claude-3-5-sonnet-20241022&quot;,
+            max_tokens=1024,
+            messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Explain vector databases.&quot;}]
+        ) as stream:
+            async for text in stream.text_stream:
+                # Check if client disconnected mid-stream
+                if await request.is_disconnected():
+                    break
+                yield f&quot;data: {json.dumps({'token': text})}\n\n&quot;
+        
+        yield &quot;data: [DONE]\n\n&quot;
+    
+    return StreamingResponse(
+        generate(),
+        media_type=&quot;text/event-stream&quot;,
+        headers={
+            &quot;Cache-Control&quot;: &quot;no-cache&quot;,
+            &quot;X-Accel-Buffering&quot;: &quot;no&quot;,
+            &quot;Connection&quot;: &quot;keep-alive&quot;,
+        }
+    )</code></pre>
+<p>Run Uvicorn with <code>--workers 1</code> for SSE-heavy apps, or use <code>--loop uvloop</code> for better async performance:</p>
+<pre><code class="language-bash">uvicorn main:app --host 0.0.0.0 --port 8000 --loop uvloop --timeout-keep-alive 300</code></pre>
+<hr>
+<h2>Gotcha 8: EventSource Auto-Reconnect Replays Duplicate Tokens</h2>
+<p><strong>Symptom</strong>: When a network blip causes the SSE connection to drop and reconnect, the client re-renders the entire partial response from the beginning — duplicating tokens that were already displayed.</p>
+<p><strong>Root cause</strong>: <code>EventSource</code> automatically reconnects after disconnection (after ~3 seconds). Without a <code>Last-Event-ID</code> mechanism, the server has no way to know what was already delivered, so it starts from scratch.</p>
+<p><strong>Fix — Implement <code>id:</code> fields and resume-from-offset:</strong></p>
+<pre><code class="language-typescript">// Server: Tag every event with an incrementing ID
+app.get('/api/stream/:sessionId', async (c) =&gt; {
+  const sessionId = c.req.param('sessionId');
+  const lastEventId = c.req.header('Last-Event-ID');  // Browser sends this on reconnect
+  const resumeFromIndex = lastEventId ? parseInt(lastEventId) : 0;
+
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+  let eventIndex = 0;
+
+  (async () =&gt; {
+    const allTokens = await getSessionTokens(sessionId); // Fetch from Redis/DB
+
+    for (const token of allTokens) {
+      eventIndex++;
+      if (eventIndex &lt;= resumeFromIndex) continue;  // Skip already-delivered events
+
+      const sseEvent = [
+        `id: ${eventIndex}`,              // ← Client stores this as Last-Event-ID
+        `data: ${JSON.stringify({ token })}`,
+        '',
+        ''
+      ].join('\n');
+
+      await writer.write(encoder.encode(sseEvent));
+    }
+    writer.close();
+  })();
+
+  return new Response(readable, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+    }
+  });
+});</code></pre>
+<pre><code class="language-javascript">// Client: EventSource automatically sends Last-Event-ID on reconnect
+const source = new EventSource(`/api/stream/${sessionId}`);
+// No extra code needed — browser handles Last-Event-ID automatically!
+source.onmessage = (e) =&gt; appendToken(JSON.parse(e.data).token);</code></pre>
+<hr>
+<h2>Gotcha 9: Reconnect Storms on Server Restart</h2>
+<p><strong>Symptom</strong>: You deploy a new server version. All 500 concurrent SSE clients reconnect simultaneously. Your cold-start server is immediately overwhelmed — 500 concurrent LLM calls spike your costs and latency.</p>
+<p><strong>Root cause</strong>: <code>EventSource</code> has a fixed 3-second retry interval. 500 clients all waiting 3 seconds from the same disconnect event all reconnect at <code>t+3s</code> simultaneously — a <strong>thundering herd</strong>.</p>
+<p><strong>Fix — Override retry interval with jitter from the server side:</strong></p>
+<pre><code class="language-typescript">// Server: Send custom retry interval on connect (with per-client jitter)
+app.get('/api/stream', async (c) =&gt; {
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+
+  // Immediate: set client retry with random jitter (5-30 seconds)
+  const jitterMs = 5000 + Math.floor(Math.random() * 25000);
+  await writer.write(encoder.encode(`retry: ${jitterMs}\n\n`));  // ← SSE retry directive
+
+  // ... rest of stream
+});</code></pre>
+<pre><code class="language-javascript">// Client: Add additional application-level backoff on top
+let retryCount = 0;
+let source: EventSource;
+
+function connectSSE() {
+  source = new EventSource('/api/stream');
+  
+  source.onerror = () =&gt; {
+    source.close();
+    // Exponential backoff with jitter: 1s, 2s, 4s, 8s... capped at 60s
+    const delay = Math.min(1000 * Math.pow(2, retryCount) + Math.random() * 1000, 60000);
+    retryCount++;
+    console.log(`[SSE] Reconnecting in ${delay}ms (attempt ${retryCount})`);
+    setTimeout(connectSSE, delay);
+  };
+  
+  source.onopen = () =&gt; {
+    retryCount = 0;  // Reset on successful connection
+  };
+}
+
+connectSSE();</code></pre>
+<hr>
+<h2>Gotcha 10: Connection Leak — Client Never Closes the Stream</h2>
+<p><strong>Symptom</strong>: After the LLM finishes generating, the SSE connection stays open. The server holds the connection alive, consuming a file descriptor and memory. After hundreds of requests, your server hits its open-file-descriptor limit (<code>EMFILE</code> error).</p>
+<p><strong>Root cause</strong>: <code>EventSource</code> never closes itself. You must explicitly send a termination signal and call <code>source.close()</code> on the client, or the connection leaks indefinitely.</p>
+<p><strong>Fix — Send a <code>[DONE]</code> signal and close on both sides:</strong></p>
+<pre><code class="language-typescript">// Server: Always send a terminal event
+async function* llmStream() {
+  // ... yield tokens ...
+  yield 'data: [DONE]\n\n';  // ← Terminal signal
+}
+
+// Detect client disconnect and abort the LLM call
+app.get('/api/stream', async (c) =&gt; {
+  const abortController = new AbortController();
+  
+  c.req.raw.signal.addEventListener('abort', () =&gt; {
+    abortController.abort();  // Cancel the upstream LLM call if client disconnects
+    console.log('[SSE] Client disconnected — upstream call aborted');
+  });
+
+  // Pass signal to Anthropic SDK
+  const stream = anthropic.messages.stream(
+    { model: 'claude-3-5-sonnet-20241022', /* ... */ },
+    { signal: abortController.signal }  // ← Abort upstream on client disconnect
+  );
+  // ...
+});</code></pre>
+<pre><code class="language-javascript">// Client: Listen for [DONE] and close the connection
+const source = new EventSource('/api/stream');
+
+source.onmessage = (e) =&gt; {
+  if (e.data === '[DONE]') {
+    source.close();  // ← CRITICAL: explicitly close to release connection
+    console.log('[SSE] Stream complete, connection closed');
+    return;
+  }
+  appendToken(JSON.parse(e.data).token);
+};
+
+// Also close on component unmount (React)
+useEffect(() =&gt; {
+  const source = new EventSource('/api/stream');
+  return () =&gt; source.close();  // ← Cleanup on unmount
+}, []);</code></pre>
+<hr>
+<h2>Quick Reference: The SSE Production Checklist</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981'}}}%%
+mindmap
+  root((SSE Production&lt;br/&gt;Checklist))
+    Proxy Layer
+      Nginx: proxy_buffering off
+      X-Accel-Buffering no header
+      proxy_read_timeout 86400s
+      HTTP/2 enabled
+    Auth
+      Short-lived query param token
+      Or use fetch API instead of EventSource
+    Cloudflare
+      Keepalive comment every 15s
+      Or use Workers with streaming support
+    Framework
+      Next.js: export dynamic=force-dynamic
+      Express: skip compression for SSE routes
+      Python: double-yield for flush
+    Client
+      send retry with jitter on connect
+      Exponential backoff on onerror
+      Send id fields for resumption
+      Always close on DONE signal
+      Close on component unmount</div>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>SSE is the right protocol for LLM token streaming — it&#39;s simpler than WebSockets, HTTP/2 compatible, and natively auto-reconnecting. But &quot;simple&quot; doesn&#39;t mean &quot;trivial to deploy&quot;. The pitfalls are infrastructure-level, not code-level, which is why they&#39;re so hard to debug.</p>
+<ul>
+<li><strong><code>X-Accel-Buffering: no</code> is your most important header</strong> — set it on every SSE response and it protects you from Nginx, Varnish, and most CDN buffering with a single line.</li>
+<li><strong>Never use EventSource for authenticated endpoints</strong> — use the <code>fetch</code> ReadableStream API instead; it gives you full header control and is equally well-supported.</li>
+<li><strong>Always send <code>[DONE]</code> and always call <code>source.close()</code></strong> — every unclosed SSE connection is a file descriptor leak that will eventually crash your server under load.</li>
+</ul>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>W3C SSE Specification</strong>: <a href="https://html.spec.whatwg.org/multipage/server-sent-events.html" target="_blank" rel="noopener">Server-Sent Events Living Standard</a></li>
+<li><strong>MDN EventSource API</strong>: <a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" target="_blank" rel="noopener">Using server-sent events</a></li>
+<li><strong>Nginx Reverse Proxy</strong>: <a href="https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffering" target="_blank" rel="noopener">proxy_buffering directive reference</a></li>
+<li><strong>Cloudflare Workers Streaming</strong>: <a href="https://developers.cloudflare.com/workers/examples/streaming-responses/" target="_blank" rel="noopener">Streaming responses from Workers</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsse-gotchas-production-llm-streaming.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=SSE%20Gotchas%3A%2010%20Server-Sent%20Events%20Pitfalls%20That%20Will%20Break%20Your%20LLM%20Streaming%20in%20Production&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsse-gotchas-production-llm-streaming.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">June 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">June 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="async-python-event-loop-mistakes.html">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop<span class="sidebar-post-date">June 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">June 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="sse-gotchas-production-llm-streaming.html">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production<span class="sidebar-post-date">June 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>

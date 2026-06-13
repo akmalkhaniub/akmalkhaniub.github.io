@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redis in Production: The Hard Lessons | Akmal Khan Tech Blog</title>
+  <meta name="description" content="7 hard-won Redis production failures — LRU eviction eating job queues, KEYS blocking servers, Lua non-atomicity in cluster mode, connection pool exhaustion, and persistence misconfiguration. With Python and TypeScript fixes.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/redis-production-hard-lessons.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/redis-production-hard-lessons.html">
+  <meta property="og:title" content="Redis in Production: The Hard Lessons">
+  <meta property="og:description" content="7 hard-won Redis production failures — LRU eviction eating job queues, KEYS blocking servers, Lua non-atomicity in cluster mode, connection pool exhaustion, and persistence misconfiguration. With Python and TypeScript fixes.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-28">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Redis in Production: The Hard Lessons">
+  <meta name="twitter:description" content="7 hard-won Redis production failures — LRU eviction eating job queues, KEYS blocking servers, Lua non-atomicity in cluster mode, connection pool exhaustion, and persistence misconfiguration. With Python and TypeScript fixes.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Redis in Production: The Hard Lessons",
+  "description": "7 hard-won Redis production failures — LRU eviction eating job queues, KEYS blocking servers, Lua non-atomicity in cluster mode, connection pool exhaustion, and persistence misconfiguration. With Python and TypeScript fixes.",
+  "url": "https://akmalkhaniub.github.io/blog/redis-production-hard-lessons.html",
+  "datePublished": "2026-06-28",
+  "keywords": "Redis, DevOps, Python, Architecture",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/redis-production-hard-lessons.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Redis in Production: The Hard Lessons</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 29, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">Redis</span><span class="project-badge">DevOps</span><span class="project-badge">Python</span><span class="project-badge">Architecture</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Redis in Production: The Hard Lessons</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Redis is the workhorse of AI infrastructure — caching LLM responses, managing BullMQ job queues, storing session state, and acting as a pub/sub broker for agent coordination. It looks simple: set a key, get a key. But production Redis clusters fail in ways that are expensive and hard to debug: eviction policies silently deleting your job queue, Lua scripts running non-atomically in cluster mode, SCAN causing latency spikes in large keyspaces, connection pool exhaustion under bursty AI workloads, and persistence configurations that guarantee data loss on restart. This article covers <strong>7 hard production Redis lessons</strong> with Python (<code>redis-py</code> / <code>redis.asyncio</code>) and TypeScript (<code>ioredis</code>) implementations.</p>
+</blockquote>
+<hr>
+<h2>Redis Fails Quietly — That&#39;s the Danger</h2>
+<p>Unlike Postgres, which throws errors and rolls back, Redis&#39;s failure modes are often silent:</p>
+<ul>
+<li><strong>Eviction deletes your BullMQ jobs</strong> — worker silently loses tasks with no exception</li>
+<li><strong><code>KEYS *</code> blocks your server</strong> — one admin command freezes all Redis operations for seconds</li>
+<li><strong>Wrong persistence config</strong> — Redis restarts after OOM and loses all data, logging a single <code>INFO</code> level message</li>
+</ul>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+flowchart TD
+    R[Redis Server] --&gt; L1{Memory Limit&lt;br/&gt;Reached?}
+    L1 --&gt;|Yes + allkeys-lru| E1[💥 Lesson 1: LRU silently&lt;br/&gt;evicts job queue keys]
+    L1 --&gt;|No| L2{KEYS or&lt;br/&gt;SMEMBERS on&lt;br/&gt;huge set?}
+    L2 --&gt;|Yes| E2[💥 Lesson 2: O-n commands&lt;br/&gt;block entire server]
+    L2 --&gt;|No| L3{Cluster Mode?}
+    L3 --&gt;|Lua across slots| E3[💥 Lesson 3: Lua not&lt;br/&gt;atomic across nodes]
+    L3 --&gt;|Wrong keyslot| E4[💥 Lesson 4: MGET fails&lt;br/&gt;on different slots]
+    L3 --&gt;|No| L4{Persistence&lt;br/&gt;Config?}
+    L4 --&gt;|No AOF or RDB| E5[💥 Lesson 5: All data&lt;br/&gt;lost on restart]
+    L4 --&gt;|OK| L5{Connection&lt;br/&gt;Pool?}
+    L5 --&gt;|No pool / wrong size| E6[💥 Lesson 6: Connection&lt;br/&gt;exhaustion under load]
+    L5 --&gt;|OK| L6{TTL Strategy?}
+    L6 --&gt;|No TTL on sessions| E7[💥 Lesson 7: Memory&lt;br/&gt;grows without bound]
+
+    style E1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style E2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style E3 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style E4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style E5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style E6 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+    style E7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
+<hr>
+<h2>Lesson 1: The <code>allkeys-lru</code> Eviction Policy Eats Your Job Queue</h2>
+<p><strong>Symptom</strong>: BullMQ jobs disappear without being processed. No worker errors. Workers show as active. Jobs simply never complete.</p>
+<p><strong>Root cause</strong>: By default, many managed Redis instances (AWS ElastiCache, Redis Cloud) configure <code>maxmemory-policy allkeys-lru</code>. Under memory pressure, Redis evicts <strong>any key</strong> using LRU — including your BullMQ job keys, agent session state, and rate limiter counters.</p>
+<pre><code class="language-bash"># Check current eviction policy
+redis-cli CONFIG GET maxmemory-policy
+# &quot;maxmemory-policy&quot;
+# &quot;allkeys-lru&quot;  ← DANGER for job queues
+
+# ✅ Correct policy for mixed cache + persistent data workloads
+redis-cli CONFIG SET maxmemory-policy volatile-lru
+# Evicts only keys WITH an expiry set — leaves keys without TTL (job queues!) untouched</code></pre>
+<pre><code class="language-python">import redis
+
+r = redis.Redis(host='localhost', decode_responses=True)
+
+def audit_redis_config(client: redis.Redis) -&gt; dict:
+    &quot;&quot;&quot;Audit critical Redis configuration for production safety.&quot;&quot;&quot;
+    config = {}
+    
+    # Check eviction policy
+    policy = client.config_get('maxmemory-policy')['maxmemory-policy']
+    config['eviction_policy'] = {
+        'value': policy,
+        'safe': policy in ('volatile-lru', 'volatile-ttl', 'volatile-lfu', 'noeviction'),
+        'risk': 'CRITICAL' if policy == 'allkeys-lru' else 'OK',
+        'recommendation': 'Use volatile-lru if mixing cache and persistent data'
+    }
+    
+    # Check max memory
+    maxmem = client.config_get('maxmemory')['maxmemory']
+    config['maxmemory'] = {
+        'value': maxmem,
+        'configured': maxmem != '0',
+        'risk': 'HIGH' if maxmem == '0' else 'OK',
+        'recommendation': 'Always set maxmemory to prevent OS OOM killer'
+    }
+    
+    # Check persistence
+    save_config = client.config_get('save')['save']
+    aof = client.config_get('appendonly')['appendonly']
+    config['persistence'] = {
+        'rdb_enabled': bool(save_config),
+        'aof_enabled': aof == 'yes',
+        'risk': 'CRITICAL' if not save_config and aof != 'yes' else 'OK',
+        'recommendation': 'Enable AOF for durable queues, RDB for cache-only workloads'
+    }
+    
+    return config
+
+print(audit_redis_config(r))</code></pre>
+<p><strong>The rule</strong>: Use <code>volatile-lru</code> for any Redis instance storing both cache data (with TTL) and durable data (no TTL, like job queues). Reserve <code>allkeys-lru</code> only for pure cache deployments.</p>
+<hr>
+<h2>Lesson 2: <code>KEYS *</code> and <code>SMEMBERS</code> Block Everything</h2>
+<p><strong>Symptom</strong>: Once per day, your entire application freezes for 3-10 seconds. Redis latency spikes to thousands of milliseconds. The timing correlates with a cron job or admin script.</p>
+<p><strong>Root cause</strong>: Redis is single-threaded. <code>KEYS *</code> on a keyspace with 1 million keys takes 500ms–2s — during which <strong>no other command can execute</strong>. Same for <code>SMEMBERS</code> on a very large set.</p>
+<pre><code class="language-python"># ❌ NEVER in production — blocks Redis for all clients during scan
+all_keys = redis_client.keys(&quot;agent:session:*&quot;)     # O(N) — dangerous
+all_members = redis_client.smembers(&quot;all_user_ids&quot;)  # O(N) — dangerous
+
+# ✅ Use SCAN — cursor-based, non-blocking, runs in small O(1) batches
+def scan_keys_safe(client: redis.Redis, pattern: str, count: int = 100):
+    &quot;&quot;&quot;Iterates keys without blocking the server. Safe for production.&quot;&quot;&quot;
+    cursor = 0
+    while True:
+        cursor, keys = client.scan(cursor=cursor, match=pattern, count=count)
+        yield from keys
+        if cursor == 0:
+            break
+
+# Usage
+for key in scan_keys_safe(r, &quot;agent:session:*&quot;):
+    print(key)
+
+# ✅ For sets: use SSCAN instead of SMEMBERS
+def scan_set_safe(client: redis.Redis, key: str, count: int = 100):
+    cursor = 0
+    while True:
+        cursor, members = client.sscan(key, cursor=cursor, count=count)
+        yield from members
+        if cursor == 0:
+            break
+
+# ✅ Async version for FastAPI / asyncio contexts
+import redis.asyncio as aioredis
+
+async def scan_keys_async(client: aioredis.Redis, pattern: str):
+    async for key in client.scan_iter(match=pattern, count=100):
+        yield key</code></pre>
+<hr>
+<h2>Lesson 3: Lua Scripts Are NOT Atomic in Cluster Mode</h2>
+<p><strong>Symptom</strong>: Rate limiter that works perfectly in single-instance Redis starts double-counting or skipping increments when deployed to Redis Cluster.</p>
+<p><strong>Root cause</strong>: Lua scripts ARE atomic in single-instance Redis. In <strong>Cluster mode</strong>, a Lua script that accesses keys in <strong>different hash slots</strong> (different cluster nodes) is NOT atomic — the script runs across multiple nodes sequentially, with no cross-node transaction guarantees.</p>
+<pre><code class="language-python"># This Lua rate-limiter works on single Redis but NOT in cluster mode
+# if 'ratelimit:{user}:count' and 'ratelimit:{user}:window' hash to different slots
+
+RATE_LIMIT_SCRIPT = &quot;&quot;&quot;
+local count = redis.call('INCR', KEYS[1])
+if count == 1 then
+    redis.call('EXPIRE', KEYS[1], ARGV[1])
+end
+return count
+&quot;&quot;&quot;
+
+# ❌ In cluster mode: KEYS[1] might be on node A, KEYS[2] on node B
+# result = client.eval(script, 2, key1, key2, ttl)  # CROSSSLOT error or non-atomic
+
+# ✅ Fix: Use hash tags {} to force keys to the same slot
+# All keys with the same {tag} hash to the same slot — guaranteed co-location
+def get_rate_limit_keys(user_id: str) -&gt; tuple[str, str]:
+    # {user_id} forces both keys to the same hash slot
+    return f&quot;{{rl:{user_id}}}:count&quot;, f&quot;{{rl:{user_id}}}:window&quot;
+
+# ✅ Atomic sliding window rate limiter — cluster-safe
+SLIDING_WINDOW_SCRIPT = &quot;&quot;&quot;
+local key = KEYS[1]
+local now = tonumber(ARGV[1])
+local window = tonumber(ARGV[2])
+local limit = tonumber(ARGV[3])
+
+-- Remove entries outside the window
+redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
+
+-- Count remaining entries
+local count = redis.call('ZCARD', key)
+
+if count &lt; limit then
+    redis.call('ZADD', key, now, now .. math.random())
+    redis.call('EXPIRE', key, window)
+    return 1  -- Allowed
+end
+return 0  -- Rate limited
+&quot;&quot;&quot;
+
+import time
+import redis
+
+def check_rate_limit(
+    client: redis.Redis,
+    user_id: str,
+    limit: int = 100,
+    window_seconds: int = 60
+) -&gt; bool:
+    &quot;&quot;&quot;Cluster-safe sliding window rate limiter.&quot;&quot;&quot;
+    key = f&quot;{{rl:{user_id}}}:sliding&quot;  # ← Hash tag ensures cluster slot co-location
+    now_ms = int(time.time() * 1000)
+    
+    allowed = client.eval(
+        SLIDING_WINDOW_SCRIPT,
+        1, key,
+        now_ms, window_seconds * 1000, limit
+    )
+    return bool(allowed)</code></pre>
+<hr>
+<h2>Lesson 4: MGET / MSET Fail Across Cluster Slots</h2>
+<p><strong>Symptom</strong>: <code>MGET user:1 user:2 user:3</code> raises <code>CROSSSLOT Keys in request don&#39;t hash to the same slot</code> in Redis Cluster.</p>
+<p><strong>Root cause</strong>: Multi-key commands (<code>MGET</code>, <code>MSET</code>, <code>DEL</code> with multiple keys) require all keys to reside on the same cluster node. Arbitrary keys hash to different slots.</p>
+<pre><code class="language-python"># ❌ Fails in cluster mode if keys hash to different slots
+values = client.mget([&quot;user:1&quot;, &quot;user:2&quot;, &quot;user:3&quot;])  # CROSSSLOT error
+
+# ✅ Option A: Pipeline individual GETs — same performance, cluster-safe
+def cluster_safe_mget(client: redis.Redis, keys: list[str]) -&gt; list:
+    pipeline = client.pipeline()
+    for key in keys:
+        pipeline.get(key)
+    return pipeline.execute()
+
+# ✅ Option B: Force to same slot with hash tags
+# Use {user} tag if you know these keys logically belong together
+def get_user_fields(client: redis.Redis, user_id: str) -&gt; dict:
+    keys = {
+        &quot;profile&quot;: f&quot;{{user:{user_id}}}:profile&quot;,
+        &quot;session&quot;: f&quot;{{user:{user_id}}}:session&quot;,
+        &quot;prefs&quot;:   f&quot;{{user:{user_id}}}:prefs&quot;,
+    }
+    values = client.mget(list(keys.values()))  # ← All same slot now
+    return dict(zip(keys.keys(), values))</code></pre>
+<hr>
+<h2>Lesson 5: No Persistence = Total Data Loss on Restart</h2>
+<p><strong>Symptom</strong>: Redis server restarts (OOM kill, deployment, crash). All job queues, session state, and rate limit counters are gone. Your application starts in a completely blank state.</p>
+<p><strong>Root cause</strong>: Redis is an in-memory database. By default, <code>save &quot;&quot;</code> disables RDB persistence. <code>appendonly no</code> disables AOF. A restart means total data loss.</p>
+<pre><code class="language-bash"># redis.conf — production persistence settings
+
+# Option A: RDB snapshots (acceptable data loss window = snapshot interval)
+save 900 1      # Save if at least 1 key changed in 900 seconds
+save 300 10     # Save if at least 10 keys changed in 300 seconds
+save 60 10000   # Save if at least 10000 keys changed in 60 seconds
+
+# Option B: AOF — every write logged to disk (near-zero data loss)
+appendonly yes
+appendfsync everysec   # Sync to disk every second (balance of durability vs performance)
+# appendfsync always   # Sync on every write (maximum durability, ~2x slower writes)
+# appendfsync no       # OS decides when to sync (fastest, most data loss risk)
+
+# Option C: Both RDB + AOF (recommended for production job queues)
+appendonly yes
+appendfsync everysec
+save 3600 1</code></pre>
+<pre><code class="language-python">def check_persistence(client: redis.Redis) -&gt; dict:
+    info = client.info('persistence')
+    return {
+        &quot;rdb_enabled&quot;: info.get('rdb_last_save_time', 0) &gt; 0,
+        &quot;aof_enabled&quot;: info.get('aof_enabled', 0) == 1,
+        &quot;last_rdb_save&quot;: info.get('rdb_last_save_time'),
+        &quot;aof_current_size_mb&quot;: round(info.get('aof_current_size', 0) / 1024 / 1024, 2),
+        &quot;recommendation&quot;: (
+            &quot;CRITICAL: No persistence configured — all data lost on restart&quot;
+            if not info.get('rdb_last_save_time') and not info.get('aof_enabled')
+            else &quot;OK&quot;
+        )
+    }</code></pre>
+<hr>
+<h2>Lesson 6: Connection Pool Exhaustion Under AI Workload Spikes</h2>
+<p><strong>Symptom</strong>: Under load, Redis commands start timing out with <code>ConnectionError: max number of clients reached</code>. Latency spikes. Your AI agent queues stall.</p>
+<p><strong>Root cause</strong>: Each concurrent request that touches Redis needs a connection. LLM workloads are bursty — 10 simultaneous agent runs each making 20 Redis calls = 200 concurrent connections needed. Without pool tuning, the default pool size (10) is exhausted instantly.</p>
+<pre><code class="language-python"># ✅ Production Redis pool configuration
+import redis.asyncio as aioredis
+from redis.asyncio import ConnectionPool
+
+# For AI agent workloads: generous pool, long keepalive
+pool = ConnectionPool(
+    host='redis-host',
+    port=6379,
+    password='your-password',
+    max_connections=200,          # Matches your max concurrent agent connections
+    socket_timeout=5.0,           # Command timeout
+    socket_connect_timeout=2.0,   # Connection timeout
+    socket_keepalive=True,
+    socket_keepalive_options={
+        'TCP_KEEPIDLE': 60,        # Start keepalive after 60s idle
+        'TCP_KEEPINTVL': 10,       # Send keepalive every 10s
+        'TCP_KEEPCNT': 3,          # Drop connection after 3 failed keepalives
+    },
+    decode_responses=True,
+    retry_on_timeout=True,
+    retry_on_error=[ConnectionError, TimeoutError],
+)
+
+client = aioredis.Redis(connection_pool=pool)
+
+# Monitor pool health
+async def pool_health_check(client: aioredis.Redis) -&gt; dict:
+    pool = client.connection_pool
+    return {
+        &quot;max_connections&quot;: pool.max_connections,
+        &quot;current_connections&quot;: len(pool._connections) if hasattr(pool, '_connections') else 'N/A',
+        &quot;ping&quot;: await client.ping(),
+    }</code></pre>
+<hr>
+<h2>Lesson 7: Keys Without TTL Grow Your Memory Without Bound</h2>
+<p><strong>Symptom</strong>: Redis memory usage grows 10MB per day. After 3 months, you hit the memory limit. Eviction starts. Job queues begin losing data.</p>
+<p><strong>Root cause</strong>: Every key stored without a TTL lives forever unless explicitly deleted. Session tokens, temporary computation results, and agent state keys accumulate silently.</p>
+<pre><code class="language-python">from datetime import timedelta
+
+# ✅ Always set TTL on transient data — use a TTL policy function
+TTL_POLICIES = {
+    &quot;session&quot;: 3600 * 24 * 7,       # 7 days
+    &quot;agent_state&quot;: 3600 * 2,         # 2 hours (agent run max time)
+    &quot;rate_limit&quot;: 60,                # 1 minute window
+    &quot;llm_cache&quot;: 3600 * 24 * 30,    # 30 days (responses don't change)
+    &quot;embed_cache&quot;: 3600 * 24 * 90,  # 90 days (embeddings are stable)
+}
+
+def store_with_ttl(client: redis.Redis, key_type: str, key: str, value: str) -&gt; None:
+    ttl = TTL_POLICIES.get(key_type)
+    if ttl is None:
+        raise ValueError(f&quot;No TTL policy defined for key type '{key_type}'. &quot;
+                         f&quot;Add it to TTL_POLICIES or use PERSIST intentionally.&quot;)
+    client.setex(key, ttl, value)
+
+# ✅ Audit keys without TTL (find memory leaks)
+def find_immortal_keys(client: redis.Redis, pattern: str = &quot;*&quot;, sample_size: int = 1000) -&gt; list[str]:
+    &quot;&quot;&quot;Find keys with no expiry — potential memory leak candidates.&quot;&quot;&quot;
+    immortal = []
+    count = 0
+    for key in scan_keys_safe(client, pattern):
+        if count &gt;= sample_size:
+            break
+        ttl = client.ttl(key)
+        if ttl == -1:  # -1 = no expiry, -2 = key doesn't exist
+            immortal.append(key)
+        count += 1
+    return immortal
+
+immortal = find_immortal_keys(r, &quot;agent:*&quot;)
+print(f&quot;Found {len(immortal)} keys with no TTL — review for memory leaks&quot;)</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Redis is extraordinary when configured correctly and treacherous when not. The failures are subtle — no exceptions, no alerts, just gradually degrading reliability and eventually lost data or frozen queues.</p>
+<ul>
+<li><strong>Set <code>volatile-lru</code> eviction policy</strong> for any Redis instance that mixes cache data and persistent state. <code>allkeys-lru</code> will eventually evict your job queues under memory pressure.</li>
+<li><strong>Replace every <code>KEYS *</code> with <code>SCAN</code></strong> — one <code>KEYS *</code> call against a production keyspace is enough to freeze your Redis server for seconds, affecting every concurrent user.</li>
+<li><strong>Use hash tags <code>{...}</code> in Cluster mode</strong> whenever you need Lua script atomicity or multi-key operations. Without co-located keys, atomicity guarantees disappear silently.</li>
+</ul>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>Redis Configuration Guide</strong>: <a href="https://redis.io/docs/management/config/" target="_blank" rel="noopener">redis.conf production best practices</a></li>
+<li><strong>Redis Cluster Specification</strong>: <a href="https://redis.io/docs/management/scaling/" target="_blank" rel="noopener">Hash slots and key distribution</a></li>
+<li><strong>Redis Persistence</strong>: <a href="https://redis.io/docs/management/persistence/" target="_blank" rel="noopener">RDB vs AOF trade-offs</a></li>
+<li><strong>BullMQ with Redis</strong>: <a href="https://docs.bullmq.io/guide/connections" target="_blank" rel="noopener">Queue persistence and eviction considerations</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fredis-production-hard-lessons.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Redis%20in%20Production%3A%20The%20Hard%20Lessons&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fredis-production-hard-lessons.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item active">
+              <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">June 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">June 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="async-python-event-loop-mistakes.html">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop<span class="sidebar-post-date">June 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">June 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="sse-gotchas-production-llm-streaming.html">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production<span class="sidebar-post-date">June 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>

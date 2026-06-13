@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Eight async Python anti-patterns that silently strangle FastAPI and LLM API servers — time.sleep, synchronous I/O, sequential awaits, swallowed CancelledError, and missing run_in_executor for CPU work.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/async-python-event-loop-mistakes.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/async-python-event-loop-mistakes.html">
+  <meta property="og:title" content="Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop">
+  <meta property="og:description" content="Eight async Python anti-patterns that silently strangle FastAPI and LLM API servers — time.sleep, synchronous I/O, sequential awaits, swallowed CancelledError, and missing run_in_executor for CPU work.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-06-26">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop">
+  <meta name="twitter:description" content="Eight async Python anti-patterns that silently strangle FastAPI and LLM API servers — time.sleep, synchronous I/O, sequential awaits, swallowed CancelledError, and missing run_in_executor for CPU work.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop",
+  "description": "Eight async Python anti-patterns that silently strangle FastAPI and LLM API servers — time.sleep, synchronous I/O, sequential awaits, swallowed CancelledError, and missing run_in_executor for CPU work.",
+  "url": "https://akmalkhaniub.github.io/blog/async-python-event-loop-mistakes.html",
+  "datePublished": "2026-06-26",
+  "keywords": "Python, AsyncIO, FastAPI, Performance",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/async-python-event-loop-mistakes.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> June 27, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
+              <div class="article-tags"><span class="project-badge">Python</span><span class="project-badge">AsyncIO</span><span class="project-badge">FastAPI</span><span class="project-badge">Performance</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Python&#39;s <code>asyncio</code> is the backbone of every high-performance AI API — FastAPI, async Anthropic clients, async database drivers, SSE generators. Yet it&#39;s one of the most misused constructs in production Python codebases. The failure is always the same: a single blocking call buries the entire event loop, turning your async server into a slower-than-synchronous bottleneck. This article covers <strong>8 async Python anti-patterns</strong> that silently strangle your LLM API servers — with concrete fixes, benchmarks, and patterns for <code>asyncio.gather</code>, <code>TaskGroup</code>, <code>CancelledError</code>, and the <code>run_in_executor</code> escape hatch.</p>
+</blockquote>
+<hr>
+<h2>How One Blocking Call Destroys Async Performance</h2>
+<p>The event loop is a single-threaded scheduler. When you call a blocking function inside a coroutine, the entire loop stalls — <strong>no other coroutines run until the blocking call returns</strong>. In a server handling 100 concurrent requests, one accidental <code>time.sleep(2)</code> inside a coroutine stalls all 100 requests for 2 seconds.</p>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+sequenceDiagram
+    participant L as Event Loop
+    participant R1 as Request 1
+    participant R2 as Request 2
+    participant R3 as Request 3
+
+    Note over L: ✅ Correct async — all run concurrently
+    L-&gt;&gt;R1: await async_llm_call()
+    L-&gt;&gt;R2: await async_db_query()
+    L-&gt;&gt;R3: await async_embed()
+    R1--&gt;&gt;L: result (2s)
+    R2--&gt;&gt;L: result (0.5s)
+    R3--&gt;&gt;L: result (1s)
+    Note over L: Total wall time: ~2s
+
+    Note over L: ❌ One blocking call — R2 and R3 wait
+    L-&gt;&gt;R1: time.sleep(2) ← BLOCKS LOOP
+    Note over R2,R3: Frozen — cannot execute
+    R1--&gt;&gt;L: (2s later)
+    L-&gt;&gt;R2: now starts
+    L-&gt;&gt;R3: now starts
+    Note over L: Total wall time: ~4.5s</div>
+<hr>
+<h2>Anti-Pattern 1: <code>time.sleep()</code> Inside a Coroutine</h2>
+<pre><code class="language-python"># ❌ Blocks the entire event loop for 2 seconds
+async def process_document(doc_id: str):
+    result = await fetch_document(doc_id)
+    time.sleep(2)  # ← BLOCKS — no other requests can run
+    return await embed_document(result)
+
+# ✅ Yields control back to the event loop
+async def process_document(doc_id: str):
+    result = await fetch_document(doc_id)
+    await asyncio.sleep(2)  # ← Suspends this coroutine, loop runs others
+    return await embed_document(result)</code></pre>
+<p><strong>Detection</strong>: Search your codebase for <code>time.sleep</code> in any file containing <code>async def</code>. Every hit is a latency bomb.</p>
+<hr>
+<h2>Anti-Pattern 2: Synchronous I/O in Async Context</h2>
+<p><strong>Symptom</strong>: FastAPI endpoint is slower than a synchronous Flask equivalent. Adding more workers doesn&#39;t help.</p>
+<pre><code class="language-python">import requests  # ❌ Synchronous HTTP — blocks event loop
+import psycopg2  # ❌ Synchronous Postgres driver
+
+# ❌ Both of these block the event loop
+async def bad_handler():
+    response = requests.get(&quot;https://api.example.com/data&quot;)  # Blocks!
+    conn = psycopg2.connect(DATABASE_URL)                     # Blocks!
+    return response.json()
+
+# ✅ Use async equivalents
+import httpx
+import asyncpg
+
+async def good_handler():
+    async with httpx.AsyncClient() as client:
+        response = await client.get(&quot;https://api.example.com/data&quot;)  # Non-blocking
+    
+    conn = await asyncpg.connect(DATABASE_URL)  # Non-blocking
+    return response.json()</code></pre>
+<p><strong>The async alternatives map:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Blocking (❌)</th>
+<th>Async Alternative (✅)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>requests</code></td>
+<td><code>httpx.AsyncClient</code></td>
+</tr>
+<tr>
+<td><code>psycopg2</code></td>
+<td><code>asyncpg</code> or <code>psycopg3</code> (async mode)</td>
+</tr>
+<tr>
+<td><code>redis-py</code> (sync)</td>
+<td><code>redis.asyncio</code></td>
+</tr>
+<tr>
+<td><code>boto3</code> (sync)</td>
+<td><code>aioboto3</code></td>
+</tr>
+<tr>
+<td><code>open()</code> / file I/O</td>
+<td><code>aiofiles</code></td>
+</tr>
+<tr>
+<td><code>time.sleep()</code></td>
+<td><code>asyncio.sleep()</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Anti-Pattern 3: <code>asyncio.run()</code> Inside an Already-Running Loop</h2>
+<p><strong>Symptom</strong>: <code>RuntimeError: This event loop is already running</code> — common when mixing Jupyter notebooks, FastAPI, and async library code.</p>
+<pre><code class="language-python"># ❌ asyncio.run() creates a NEW event loop — crashes if one is already running
+async def call_llm(prompt: str):
+    result = asyncio.run(some_async_function())  # RuntimeError in FastAPI context!
+    return result
+
+# ✅ Just await it — you're already in an async context
+async def call_llm(prompt: str):
+    result = await some_async_function()
+    return result
+
+# ✅ If you genuinely need to call async code from sync context:
+import asyncio
+
+def sync_wrapper(coro):
+    &quot;&quot;&quot;Call async code from synchronous context safely.&quot;&quot;&quot;
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # Use thread pool to avoid nested loop issue
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, coro)
+                return future.result()
+        return loop.run_until_complete(coro)
+    except RuntimeError:
+        return asyncio.run(coro)</code></pre>
+<hr>
+<h2>Anti-Pattern 4: Sequential <code>await</code> When You Need Concurrency</h2>
+<p><strong>Symptom</strong>: Calling 5 embedding APIs takes 5x longer than calling 1. You&#39;re awaiting them one at a time.</p>
+<pre><code class="language-python"># ❌ Sequential — takes 5 × latency
+async def embed_all_sequential(texts: list[str]) -&gt; list[list[float]]:
+    results = []
+    for text in texts:
+        embedding = await embed_single(text)  # Waits for each before starting next
+        results.append(embedding)
+    return results
+
+# ✅ Concurrent — takes max(individual latencies)
+async def embed_all_concurrent(texts: list[str]) -&gt; list[list[float]]:
+    tasks = [embed_single(text) for text in texts]
+    return await asyncio.gather(*tasks)
+
+# ✅ With error handling — gather fails fast by default
+async def embed_all_safe(texts: list[str]) -&gt; list[list[float] | Exception]:
+    tasks = [embed_single(text) for text in texts]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            print(f&quot;[Embed] Text {i} failed: {result}&quot;)
+            results[i] = []  # Fallback to empty vector
+    
+    return results
+
+# ✅ Python 3.11+ TaskGroup — cancels all siblings on first failure
+async def embed_all_taskgroup(texts: list[str]) -&gt; list[list[float]]:
+    results = [None] * len(texts)
+    
+    async with asyncio.TaskGroup() as tg:
+        async def embed_and_store(i: int, text: str):
+            results[i] = await embed_single(text)
+        
+        for i, text in enumerate(texts):
+            tg.create_task(embed_and_store(i, text))
+    
+    return results</code></pre>
+<hr>
+<h2>Anti-Pattern 5: Swallowing <code>CancelledError</code></h2>
+<p><strong>Symptom</strong>: FastAPI takes 30+ seconds to shut down gracefully. Uvicorn hangs on SIGTERM. Background tasks run indefinitely after shutdown is requested.</p>
+<p><strong>Root cause</strong>: <code>CancelledError</code> is how asyncio signals a coroutine to stop. Catching it with a bare <code>except Exception</code> swallows it — the coroutine never terminates.</p>
+<pre><code class="language-python"># ❌ Swallows CancelledError — coroutine NEVER stops when cancelled
+async def stream_tokens():
+    try:
+        async for token in llm_stream():
+            yield token
+    except Exception:  # CancelledError is a subclass of BaseException, not Exception!
+        pass           # ← CancelledError IS caught here in Python &lt; 3.8, silently
+
+# ❌ Also wrong in Python 3.8+
+async def background_worker():
+    while True:
+        try:
+            await do_work()
+        except Exception as e:
+            print(f&quot;Error: {e}&quot;)
+            # CancelledError not re-raised — worker loops forever after cancellation
+
+# ✅ Always re-raise CancelledError
+async def background_worker():
+    while True:
+        try:
+            await do_work()
+        except asyncio.CancelledError:
+            print(&quot;[Worker] Cancellation received — shutting down cleanly&quot;)
+            await cleanup_resources()
+            raise  # ← MUST re-raise so the event loop knows we stopped
+        except Exception as e:
+            print(f&quot;[Worker] Error (continuing): {e}&quot;)
+
+# ✅ Or use BaseException to catch everything including CancelledError
+async def stream_tokens():
+    try:
+        async for token in llm_stream():
+            yield token
+    except asyncio.CancelledError:
+        await close_llm_connection()
+        raise
+    except Exception as e:
+        print(f&quot;Stream error: {e}&quot;)</code></pre>
+<hr>
+<h2>Anti-Pattern 6: Blocking CPU Work Without <code>run_in_executor</code></h2>
+<p><strong>Symptom</strong>: Embedding large batches with a local SentenceTransformer model blocks your entire FastAPI server during inference — all other requests queue up for 2-10 seconds.</p>
+<p><strong>Root cause</strong>: CPU-bound work (numpy operations, PyTorch inference, JSON serialisation of huge payloads) holds the GIL and blocks the event loop just like I/O blocking calls.</p>
+<pre><code class="language-python">import asyncio
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
+model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
+
+# ❌ Blocks the event loop during model inference
+async def embed_blocking(texts: list[str]) -&gt; np.ndarray:
+    return model.encode(texts)  # CPU-bound — blocks everything!
+
+# ✅ Run CPU work in a thread pool — releases the event loop
+thread_pool = ThreadPoolExecutor(max_workers=4)
+
+async def embed_nonblocking(texts: list[str]) -&gt; np.ndarray:
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(
+        thread_pool,
+        lambda: model.encode(texts, batch_size=32)
+    )
+
+# ✅ For truly CPU-heavy work (no GIL sharing needed): process pool
+process_pool = ProcessPoolExecutor(max_workers=2)
+
+def cpu_intensive_task(data: bytes) -&gt; dict:
+    &quot;&quot;&quot;Pure CPU work — runs in separate process, bypasses GIL entirely.&quot;&quot;&quot;
+    import json, hashlib
+    return {&quot;hash&quot;: hashlib.sha256(data).hexdigest(), &quot;size&quot;: len(data)}
+
+async def run_cpu_task(data: bytes) -&gt; dict:
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(process_pool, cpu_intensive_task, data)</code></pre>
+<hr>
+<h2>Anti-Pattern 7: Creating Tasks Without Storing References</h2>
+<p><strong>Symptom</strong>: Background tasks silently disappear. Fire-and-forget tasks get garbage collected before completion.</p>
+<pre><code class="language-python"># ❌ Task may be garbage collected before it completes
+async def handle_request(user_id: str, prompt: str):
+    asyncio.create_task(log_to_analytics(user_id, prompt))  # Reference lost immediately!
+    return await generate_response(prompt)
+
+# ✅ Keep a strong reference to background tasks
+_background_tasks: set[asyncio.Task] = set()
+
+async def handle_request(user_id: str, prompt: str):
+    task = asyncio.create_task(log_to_analytics(user_id, prompt))
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)  # Auto-cleanup when done
+    
+    return await generate_response(prompt)</code></pre>
+<hr>
+<h2>Anti-Pattern 8: Not Setting Timeouts on Awaited Calls</h2>
+<p><strong>Symptom</strong>: A slow third-party API call hangs indefinitely. Your server runs out of connections waiting for a response that never comes.</p>
+<pre><code class="language-python"># ❌ No timeout — hangs forever if external service is unresponsive
+async def fetch_context(query: str):
+    return await external_search_api(query)  # What if this takes 5 minutes?
+
+# ✅ Always set timeouts on external awaited calls
+async def fetch_context(query: str, timeout_seconds: float = 5.0):
+    try:
+        return await asyncio.wait_for(
+            external_search_api(query),
+            timeout=timeout_seconds
+        )
+    except asyncio.TimeoutError:
+        print(f&quot;[Timeout] Search API exceeded {timeout_seconds}s — using fallback&quot;)
+        return []  # Return empty context instead of hanging
+
+# ✅ Timeout on gather — cancel all if any exceeds limit
+async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
+    try:
+        return await asyncio.wait_for(
+            asyncio.gather(*tasks, return_exceptions=True),
+            timeout=timeout
+        )
+    except asyncio.TimeoutError:
+        print(&quot;[Timeout] Parallel task group exceeded time limit&quot;)
+        return [None] * len(tasks)</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Async Python is not automatically fast — it is fast only when every I/O operation correctly yields control back to the event loop. A single blocking call anywhere in a hot code path negates the entire benefit of async architecture.</p>
+<ul>
+<li><strong>Audit aggressively</strong>: Use <code>pytest-asyncio</code> with <code>anyio</code> or <code>asyncio-debugger</code> to detect accidental blocking calls in your test suite before they hit production.</li>
+<li><strong>Default to <code>asyncio.gather</code></strong> for parallel I/O, <code>run_in_executor</code> for CPU work, and <code>TaskGroup</code> (Python 3.11+) when you need all-or-nothing semantics.</li>
+<li><strong>Never suppress <code>CancelledError</code></strong> — it is how graceful shutdown works in every async Python server, including Uvicorn and Gunicorn with worker class <code>uvicorn.workers.UvicornWorker</code>.</li>
+</ul>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>Python asyncio Documentation</strong>: <a href="https://docs.python.org/3/library/asyncio-task.html" target="_blank" rel="noopener">Coroutines and Tasks</a></li>
+<li><strong>FastAPI Concurrency Guide</strong>: <a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noopener">Async and Await</a></li>
+<li><strong>Python 3.11 TaskGroup</strong>: <a href="https://peps.python.org/pep-0654/" target="_blank" rel="noopener">PEP 654 — Exception Groups and except*</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fasync-python-event-loop-mistakes.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Stop%20Handling%20Async%20Python%20Wrong%3A%208%20Patterns%20That%20Block%20Your%20Event%20Loop&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fasync-python-event-loop-mistakes.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">June 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">June 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="async-python-event-loop-mistakes.html">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop<span class="sidebar-post-date">June 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">June 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="sse-gotchas-production-llm-streaming.html">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production<span class="sidebar-post-date">June 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>
