@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSockets in Production: Where SSE Ends and WS Begins | Akmal Khan Tech Blog</title>
+  <meta name="description" content="8 WebSocket production failure modes — Nginx upgrade header misconfiguration, idle proxy disconnections, auth token expiry mid-session, message backpressure drops, broadcast blocking, and memory leaks from missing disconnect cleanup.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/websockets-production-sse-vs-ws.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/websockets-production-sse-vs-ws.html">
+  <meta property="og:title" content="WebSockets in Production: Where SSE Ends and WS Begins">
+  <meta property="og:description" content="8 WebSocket production failure modes — Nginx upgrade header misconfiguration, idle proxy disconnections, auth token expiry mid-session, message backpressure drops, broadcast blocking, and memory leaks from missing disconnect cleanup.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-05-07">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="WebSockets in Production: Where SSE Ends and WS Begins">
+  <meta name="twitter:description" content="8 WebSocket production failure modes — Nginx upgrade header misconfiguration, idle proxy disconnections, auth token expiry mid-session, message backpressure drops, broadcast blocking, and memory leaks from missing disconnect cleanup.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "WebSockets in Production: Where SSE Ends and WS Begins",
+  "description": "8 WebSocket production failure modes — Nginx upgrade header misconfiguration, idle proxy disconnections, auth token expiry mid-session, message backpressure drops, broadcast blocking, and memory leaks from missing disconnect cleanup.",
+  "url": "https://akmalkhaniub.github.io/blog/websockets-production-sse-vs-ws.html",
+  "datePublished": "2026-05-07",
+  "keywords": "WebSockets, Node.js, Python, Real-Time",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/websockets-production-sse-vs-ws.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">WebSockets in Production: Where SSE Ends and WS Begins</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> May 8, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">WebSockets</span><span class="project-badge">Node.js</span><span class="project-badge">Python</span><span class="project-badge">Real-Time</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>WebSockets in Production: Where SSE Ends and WS Begins</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Server-Sent Events handle 90% of LLM streaming use cases perfectly. But when your architecture needs full-duplex communication — collaborative editing, live agent-to-agent coordination, multi-user whiteboards, or real-time tool call feedback — you need WebSockets. The problem is that WebSockets fail in production for entirely different reasons than SSE: Nginx upgrade header misconfiguration, heartbeat timer drift causing phantom disconnections, proxy timeouts on idle connections, message backpressure silently dropping data, and auth token expiry mid-session. This article maps the <strong>8 WebSocket production failure modes</strong> you&#39;ll hit, and provides complete fixes in <strong>TypeScript (Hono/ws) and Python (FastAPI/websockets)</strong>.</p>
+</blockquote>
+<hr>
+<h2>SSE vs WebSockets: Choose the Right Tool</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+flowchart TD
+    Q1{Does the client&lt;br/&gt;send messages&lt;br/&gt;after connection?} --&gt;|No| SSE[✅ Use SSE&lt;br/&gt;Simpler, HTTP/2 multiplexed&lt;br/&gt;Auto-reconnect built in]
+    Q1 --&gt;|Yes| Q2{More than&lt;br/&gt;10 msg/sec&lt;br/&gt;in both directions?}
+    Q2 --&gt;|No| Q3{Need binary&lt;br/&gt;frames?}
+    Q2 --&gt;|Yes| WS[✅ Use WebSockets&lt;br/&gt;Full-duplex, lower overhead&lt;br/&gt;at high message rates]
+    Q3 --&gt;|Yes| WS
+    Q3 --&gt;|No| Q4{Collaborative&lt;br/&gt;multi-user&lt;br/&gt;real-time?}
+    Q4 --&gt;|Yes| WS
+    Q4 --&gt;|No| SSE
+
+    style SSE fill:#052e16,stroke:#10b981,stroke-width:2px
+    style WS fill:#0c1a3a,stroke:#3b82f6,stroke-width:2px</div>
+<p><strong>Use SSE for</strong>: LLM token streaming, one-way notifications, progress updates, server push
+<strong>Use WebSockets for</strong>: Chat apps, collaborative editors, agent-to-user tool call feedback, live dashboards with bidirectional controls</p>
+<hr>
+<h2>Failure 1: Nginx Doesn&#39;t Upgrade to WebSocket Protocol</h2>
+<p><strong>Symptom</strong>: WebSocket handshake returns <code>400 Bad Request</code> or <code>101 Switching Protocols</code> never fires. Works on <code>localhost</code>, broken in production.</p>
+<p><strong>Root cause</strong>: WebSocket upgrades require specific HTTP headers that Nginx strips by default: <code>Connection: Upgrade</code> and <code>Upgrade: websocket</code>.</p>
+<pre><code class="language-nginx"># ❌ Standard proxy config — strips Upgrade headers
+location /ws {
+    proxy_pass http://localhost:3000;
+}
+
+# ✅ WebSocket-aware Nginx config
+location /ws {
+    proxy_pass http://localhost:3000;
+    
+    # Required for WebSocket upgrade
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection &quot;upgrade&quot;;
+    
+    # Prevent Nginx from closing idle WS connections
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+    
+    # Forward real client IP
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}</code></pre>
+<hr>
+<h2>Failure 2: Phantom Disconnections from Idle Proxy Timeouts</h2>
+<p><strong>Symptom</strong>: WebSocket connections drop exactly every 60 seconds during idle periods. Clients see <code>1006 Abnormal Closure</code>. Active connections (frequent messages) never drop.</p>
+<p><strong>Root cause</strong>: Load balancers and proxies (AWS ALB default: 60s, Nginx default: 60s) close idle TCP connections. A WebSocket connection with no messages for 60s looks &quot;idle&quot; and gets terminated.</p>
+<p><strong>Fix — Implement heartbeat ping/pong:</strong></p>
+<pre><code class="language-typescript">// Server: Hono WebSocket with heartbeat
+import { Hono } from 'hono';
+import { upgradeWebSocket } from 'hono/cloudflare-workers';
+
+const app = new Hono();
+
+// Track active connections with their heartbeat timers
+const connections = new Map&lt;string, {
+  ws: WebSocket;
+  pingInterval: ReturnType&lt;typeof setInterval&gt;;
+  isAlive: boolean;
+}&gt;();
+
+app.get('/ws', upgradeWebSocket((c) =&gt; {
+  const connId = crypto.randomUUID();
+
+  return {
+    onOpen(event, ws) {
+      console.log(`[WS] Connected: ${connId}`);
+
+      const conn = {
+        ws: ws.raw as WebSocket,
+        isAlive: true,
+        pingInterval: setInterval(() =&gt; {
+          if (!conn.isAlive) {
+            // Client missed a pong — close the dead connection
+            console.log(`[WS] ${connId} missed pong — terminating`);
+            clearInterval(conn.pingInterval);
+            connections.delete(connId);
+            ws.close(1001, 'Heartbeat timeout');
+            return;
+          }
+          conn.isAlive = false;
+          ws.send(JSON.stringify({ type: 'ping', ts: Date.now() }));
+        }, 25_000), // Ping every 25s — under the 60s ALB timeout
+      };
+
+      connections.set(connId, conn);
+    },
+
+    onMessage(event, ws) {
+      const data = JSON.parse(event.data as string);
+
+      // Reset heartbeat on pong
+      if (data.type === 'pong') {
+        const conn = connections.get(connId);
+        if (conn) conn.isAlive = true;
+        return;
+      }
+
+      // Handle real messages
+      ws.send(JSON.stringify({ type: 'ack', received: data }));
+    },
+
+    onClose() {
+      const conn = connections.get(connId);
+      if (conn) clearInterval(conn.pingInterval);
+      connections.delete(connId);
+      console.log(`[WS] Disconnected: ${connId}`);
+    },
+  };
+}));</code></pre>
+<pre><code class="language-python"># FastAPI WebSocket with heartbeat
+import asyncio
+import json
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+
+app = FastAPI()
+
+HEARTBEAT_INTERVAL = 25  # seconds
+
+@app.websocket(&quot;/ws&quot;)
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    
+    async def send_heartbeats():
+        &quot;&quot;&quot;Send periodic pings to prevent proxy idle timeout.&quot;&quot;&quot;
+        while True:
+            try:
+                await asyncio.sleep(HEARTBEAT_INTERVAL)
+                await websocket.send_json({&quot;type&quot;: &quot;ping&quot;, &quot;ts&quot;: asyncio.get_event_loop().time()})
+            except Exception:
+                break
+    
+    heartbeat_task = asyncio.create_task(send_heartbeats())
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            
+            if data.get(&quot;type&quot;) == &quot;pong&quot;:
+                continue  # Heartbeat acknowledged
+            
+            # Process real message
+            await websocket.send_json({&quot;type&quot;: &quot;ack&quot;, &quot;echo&quot;: data})
+            
+    except WebSocketDisconnect:
+        print(&quot;Client disconnected&quot;)
+    finally:
+        heartbeat_task.cancel()</code></pre>
+<hr>
+<h2>Failure 3: Auth Token Expiry Mid-Session</h2>
+<p><strong>Symptom</strong>: User is connected for 2 hours. JWT expires. Next message returns <code>4001 Unauthorized</code>. User loses all session state and has to start over.</p>
+<p><strong>Root cause</strong>: JWTs passed during WebSocket handshake (via query param or cookie) are only validated once — at connection time. They&#39;re never re-checked mid-session. When they expire, the server has no mechanism to challenge the client.</p>
+<pre><code class="language-typescript">// ✅ Token refresh protocol over the WebSocket connection itself
+// Client-side token refresh handler
+class AuthenticatedWebSocket {
+  private ws: WebSocket | null = null;
+  private token: string;
+  private refreshTimer: ReturnType&lt;typeof setTimeout&gt; | null = null;
+
+  constructor(private url: string, initialToken: string) {
+    this.token = initialToken;
+  }
+
+  connect() {
+    this.ws = new WebSocket(`${this.url}?token=${this.token}`);
+
+    this.ws.onmessage = (event) =&gt; {
+      const msg = JSON.parse(event.data);
+
+      // Server signals token is expiring soon
+      if (msg.type === 'TOKEN_EXPIRING') {
+        this.refreshToken();
+        return;
+      }
+
+      // Server accepted refreshed token
+      if (msg.type === 'TOKEN_REFRESHED') {
+        this.token = msg.newToken;
+        console.log('[WS Auth] Token refreshed successfully');
+        return;
+      }
+
+      this.handleMessage(msg);
+    };
+
+    this.ws.onerror = () =&gt; {
+      if (this.refreshTimer) clearTimeout(this.refreshTimer);
+    };
+  }
+
+  private async refreshToken() {
+    try {
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const { token } = await response.json();
+      
+      // Send new token over existing WS connection
+      this.ws?.send(JSON.stringify({ type: 'REFRESH_TOKEN', token }));
+    } catch {
+      // Refresh failed — reconnect with full auth
+      this.ws?.close();
+      window.location.href = '/login';
+    }
+  }
+
+  private handleMessage(msg: unknown) {
+    console.log('[WS] Message:', msg);
+  }
+}</code></pre>
+<hr>
+<h2>Failure 4: Message Backpressure — The Silent Data Drop</h2>
+<p><strong>Symptom</strong>: Under high load, some WebSocket messages are never delivered. No errors. The server log shows messages sent, client log shows fewer received.</p>
+<p><strong>Root cause</strong>: WebSocket <code>send()</code> is not inherently backpressure-aware. If you send messages faster than the client can consume them, the outgoing buffer fills up and messages are silently dropped once <code>bufferedAmount</code> exceeds the limit.</p>
+<pre><code class="language-typescript">// ❌ No backpressure — silently drops messages under load
+async function streamResults(ws: WebSocket, results: AsyncIterable&lt;string&gt;) {
+  for await (const chunk of results) {
+    ws.send(chunk); // What if client is slow to consume?
+  }
+}
+
+// ✅ Backpressure-aware sender — waits for buffer to drain
+const MAX_BUFFER_SIZE = 64 * 1024; // 64KB
+const DRAIN_POLL_MS = 16;           // ~1 frame
+
+async function backpressureSend(ws: WebSocket, data: string): Promise&lt;void&gt; {
+  // Wait if the outgoing buffer is full
+  while (ws.bufferedAmount &gt; MAX_BUFFER_SIZE) {
+    if (ws.readyState !== WebSocket.OPEN) return;
+    await new Promise(r =&gt; setTimeout(r, DRAIN_POLL_MS));
+  }
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(data);
+  }
+}
+
+async function streamResultsWithBackpressure(
+  ws: WebSocket,
+  results: AsyncIterable&lt;string&gt;
+) {
+  for await (const chunk of results) {
+    await backpressureSend(ws, chunk);
+    if (ws.readyState !== WebSocket.OPEN) break; // Stop if closed
+  }
+}</code></pre>
+<hr>
+<h2>Failure 5: Broadcasting to Many Clients Blocks the Event Loop</h2>
+<p><strong>Symptom</strong>: You have 500 connected WebSocket clients. When you broadcast a message, the server freezes for 200ms while iterating through all connections.</p>
+<pre><code class="language-typescript">// ❌ Synchronous broadcast — blocks event loop for large connection sets
+function broadcastAll(message: string) {
+  for (const [id, conn] of connections) {
+    conn.ws.send(message); // Synchronous — blocks on each send
+  }
+}
+
+// ✅ Chunked async broadcast — yields to event loop between batches
+async function broadcastChunked(message: string, chunkSize = 50) {
+  const connList = Array.from(connections.values());
+  
+  for (let i = 0; i &lt; connList.length; i += chunkSize) {
+    const chunk = connList.slice(i, i + chunkSize);
+    
+    // Send to this chunk concurrently
+    await Promise.allSettled(
+      chunk.map(conn =&gt; {
+        if (conn.ws.readyState === WebSocket.OPEN) {
+          return backpressureSend(conn.ws, message);
+        }
+        return Promise.resolve();
+      })
+    );
+    
+    // Yield to event loop between chunks
+    await new Promise(r =&gt; setImmediate(r));
+  }
+}</code></pre>
+<hr>
+<h2>Failure 6: Close Codes Mean Something — Don&#39;t Ignore Them</h2>
+<p><strong>Symptom</strong>: Client reconnects strategy is too aggressive, causing reconnect storms on planned server maintenance.</p>
+<pre><code class="language-typescript">// ✅ Read the close code before deciding to reconnect
+const ws = new WebSocket('/ws');
+
+ws.onclose = (event) =&gt; {
+  console.log(`[WS] Closed: code=${event.code} reason=&quot;${event.reason}&quot;`);
+  
+  switch (event.code) {
+    case 1000: // Normal closure
+      console.log('[WS] Server closed cleanly — no reconnect needed');
+      break;
+    
+    case 1001: // Going away (server restart/deploy)
+      console.log('[WS] Server restarting — reconnect with backoff');
+      reconnectWithBackoff();
+      break;
+    
+    case 1006: // Abnormal closure (network loss, proxy timeout)
+      console.log('[WS] Abnormal close — reconnect immediately');
+      reconnectWithBackoff();
+      break;
+    
+    case 4001: // Custom: Unauthorized
+      console.log('[WS] Auth expired — redirect to login');
+      window.location.href = '/login';
+      break;
+    
+    case 4002: // Custom: Rate limited
+      console.log('[WS] Rate limited — wait 30s before reconnect');
+      setTimeout(connect, 30_000);
+      break;
+    
+    default:
+      console.log('[WS] Unknown close code — reconnect with backoff');
+      reconnectWithBackoff();
+  }
+};
+
+let retryCount = 0;
+function reconnectWithBackoff() {
+  const delay = Math.min(1000 * 2 ** retryCount + Math.random() * 500, 30_000);
+  retryCount++;
+  setTimeout(connect, delay);
+}
+
+function connect() {
+  // ... establish new WebSocket
+  retryCount = 0; // Reset on successful open
+}</code></pre>
+<hr>
+<h2>Failure 7: No Room Cleanup — Memory Leak on Disconnect</h2>
+<p><strong>Symptom</strong>: Server memory grows linearly with total historical connections. After 24 hours, memory usage is 3× baseline.</p>
+<pre><code class="language-python"># ❌ Connections added but never removed on disconnect
+active_connections: dict[str, WebSocket] = {}
+
+@app.websocket(&quot;/ws/{room_id}&quot;)
+async def room_ws(websocket: WebSocket, room_id: str, client_id: str):
+    await websocket.accept()
+    active_connections[client_id] = websocket  # Added...
+    
+    try:
+        while True:
+            data = await websocket.receive_json()
+            # ... handle message
+    except WebSocketDisconnect:
+        pass  # ← Disconnect caught but connection NEVER removed from dict!
+
+# ✅ Always clean up on disconnect — use try/finally
+class ConnectionManager:
+    def __init__(self):
+        self.rooms: dict[str, set[WebSocket]] = {}
+
+    async def connect(self, room_id: str, websocket: WebSocket):
+        await websocket.accept()
+        if room_id not in self.rooms:
+            self.rooms[room_id] = set()
+        self.rooms[room_id].add(websocket)
+        print(f&quot;[WS] Room {room_id}: {len(self.rooms[room_id])} clients&quot;)
+
+    def disconnect(self, room_id: str, websocket: WebSocket):
+        self.rooms.get(room_id, set()).discard(websocket)
+        if not self.rooms.get(room_id):
+            del self.rooms[room_id]  # Remove empty rooms
+        print(f&quot;[WS] Room {room_id}: {len(self.rooms.get(room_id, set()))} clients&quot;)
+
+    async def broadcast(self, room_id: str, message: dict):
+        dead = set()
+        for ws in self.rooms.get(room_id, set()):
+            try:
+                await ws.send_json(message)
+            except Exception:
+                dead.add(ws)
+        for ws in dead:
+            self.disconnect(room_id, ws)
+
+manager = ConnectionManager()
+
+@app.websocket(&quot;/ws/{room_id}&quot;)
+async def room_endpoint(websocket: WebSocket, room_id: str):
+    await manager.connect(room_id, websocket)
+    try:
+        while True:
+            data = await websocket.receive_json()
+            await manager.broadcast(room_id, {&quot;echo&quot;: data})
+    except WebSocketDisconnect:
+        pass
+    finally:
+        manager.disconnect(room_id, websocket)  # ← Always runs</code></pre>
+<hr>
+<h2>Failure 8: AWS ALB / Cloudflare Don&#39;t Support WebSockets on All Plans</h2>
+<p><strong>Symptom</strong>: WebSocket works behind Nginx but breaks on AWS ALB or Cloudflare proxy.</p>
+<ul>
+<li><strong>AWS ALB</strong>: Supports WebSocket natively — but requires the target group protocol to be HTTP, not HTTPS. Ensure your EC2/ECS target accepts HTTP and the ALB handles TLS termination.</li>
+<li><strong>Cloudflare</strong>: WebSocket requires <strong>at minimum the Pro plan</strong>. Free plan silently proxies as HTTP, breaking the Upgrade handshake.</li>
+<li><strong>Vercel</strong>: WebSocket is <strong>not supported</strong> on serverless functions. Use Vercel&#39;s Edge Functions with Durable Objects, or an external WebSocket server (Ably, Pusher, or a dedicated WS host).</li>
+</ul>
+<pre><code class="language-typescript">// ✅ Detect WebSocket support before connecting — degrade to SSE gracefully
+function createConnection(url: string, onMessage: (data: unknown) =&gt; void) {
+  if ('WebSocket' in window &amp;&amp; !forceSSE) {
+    const ws = new WebSocket(url.replace('https://', 'wss://'));
+    ws.onopen = () =&gt; console.log('[Connection] WebSocket established');
+    ws.onmessage = (e) =&gt; onMessage(JSON.parse(e.data));
+    ws.onerror = () =&gt; {
+      console.warn('[Connection] WS failed — falling back to SSE');
+      ws.close();
+      useSSEFallback(url, onMessage);
+    };
+    return ws;
+  }
+  return useSSEFallback(url, onMessage);
+}
+
+function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
+  const source = new EventSource(url + '/stream');
+  source.onmessage = (e) =&gt; onMessage(JSON.parse(e.data));
+  return source;
+}</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>WebSockets unlock true bidirectional real-time communication but bring a distinct set of production failure modes compared to SSE. The most dangerous are silent: dropped messages from buffer overflow, phantom disconnections from idle proxies, and memory leaks from missing disconnect cleanup.</p>
+<ul>
+<li><strong>Always implement heartbeats at 25-second intervals</strong> — most proxies and load balancers have 60-second idle timeouts. Heartbeats keep connections alive and detect dead clients.</li>
+<li><strong>Read close codes and act accordingly</strong> — <code>1000</code> means don&#39;t reconnect; <code>1006</code> means reconnect immediately; <code>4001</code> means re-authenticate. Ignoring close codes leads to unnecessary reconnect storms.</li>
+<li><strong>Clean up in <code>finally</code> blocks</strong> — every WebSocket <code>connect</code> must have a corresponding <code>disconnect</code> in a <code>finally</code> clause, or you will leak memory with every closed connection.</li>
+</ul>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>MDN WebSocket API</strong>: <a href="https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code" target="_blank" rel="noopener">WebSocket close codes reference</a></li>
+<li><strong>RFC 6455</strong>: <a href="https://datatracker.ietf.org/doc/html/rfc6455" target="_blank" rel="noopener">The WebSocket Protocol specification</a></li>
+<li><strong>FastAPI WebSockets</strong>: <a href="https://fastapi.tiangolo.com/advanced/websockets/" target="_blank" rel="noopener">WebSocket documentation</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fwebsockets-production-sse-vs-ws.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=WebSockets%20in%20Production%3A%20Where%20SSE%20Ends%20and%20WS%20Begins&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fwebsockets-production-sse-vs-ws.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">June 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">June 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="async-python-event-loop-mistakes.html">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop<span class="sidebar-post-date">June 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">June 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="sse-gotchas-production-llm-streaming.html">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production<span class="sidebar-post-date">June 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="pgvector-index-performance-traps.html">Why Your pgvector Index Is 10× Slower Than It Should Be<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="docker-production-blind-spots.html">The Parts of Docker Nobody Explains (Until It Breaks in Production)<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="jwt-security-what-they-dont-teach-you.html">JWT: What They Don't Teach You Until You Get Hacked<span class="sidebar-post-date">May 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="websockets-production-sse-vs-ws.html">WebSockets in Production: Where SSE Ends and WS Begins<span class="sidebar-post-date">May 8, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>

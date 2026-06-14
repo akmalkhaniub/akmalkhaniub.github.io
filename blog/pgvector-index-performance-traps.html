@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why Your pgvector Index Is 10× Slower Than It Should Be | Akmal Khan Tech Blog</title>
+  <meta name="description" content="7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/pgvector-index-performance-traps.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/pgvector-index-performance-traps.html">
+  <meta property="og:title" content="Why Your pgvector Index Is 10× Slower Than It Should Be">
+  <meta property="og:description" content="7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-05-27">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Why Your pgvector Index Is 10× Slower Than It Should Be">
+  <meta name="twitter:description" content="7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Why Your pgvector Index Is 10× Slower Than It Should Be",
+  "description": "7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.",
+  "url": "https://akmalkhaniub.github.io/blog/pgvector-index-performance-traps.html",
+  "datePublished": "2026-05-27",
+  "keywords": "pgvector, PostgreSQL, RAG, Performance",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/pgvector-index-performance-traps.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Why Your pgvector Index Is 10× Slower Than It Should Be</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> May 28, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">pgvector</span><span class="project-badge">PostgreSQL</span><span class="project-badge">RAG</span><span class="project-badge">Performance</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Why Your pgvector Index Is 10× Slower Than It Should Be</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+pgvector is the most accessible path to production vector search — it lives inside your existing PostgreSQL database, needs no new infrastructure, and integrates cleanly with every ORM. But &quot;accessible&quot; doesn&#39;t mean &quot;fast by default.&quot; Without correct index configuration, pgvector silently falls back to exact sequential scan, ignores your index entirely on large result sets, returns completely wrong results when you mix filtering with ANN search, and degrades from milliseconds to seconds as your table grows past 100K rows. This article covers <strong>7 pgvector performance and correctness traps</strong> with exact SQL fixes, index configuration parameters, and hybrid search patterns.</p>
+</blockquote>
+<hr>
+<h2>The pgvector Performance Cliff</h2>
+<p>pgvector supports two search modes: <strong>exact k-NN</strong> (sequential scan — always correct, O(n) cost) and <strong>approximate nearest neighbour / ANN</strong> (index-based — fast, slightly approximate). The danger is that pgvector silently falls back to exact scan in ways that produce no errors — just a query that takes 4 seconds instead of 4 milliseconds.</p>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+flowchart TD
+    Q[Vector Query] --&gt; P{Index exists&lt;br/&gt;and usable?}
+    P --&gt;|No index| S1[💥 Trap 1: Sequential scan&lt;br/&gt;O-n — 4s on 1M rows]
+    P --&gt;|Wrong operator| S2[💥 Trap 2: Wrong distance operator&lt;br/&gt;Index ignored silently]
+    P --&gt;|Filter before ANN| S3[💥 Trap 3: WHERE filter kills&lt;br/&gt;index — exact scan fallback]
+    P --&gt;|Index exists| C{ef_search&lt;br/&gt;configured?}
+    C --&gt;|Default ef_search=40| S4[💥 Trap 4: Poor recall&lt;br/&gt;missing relevant results]
+    C --&gt;|OK| D{Vacuum run&lt;br/&gt;recently?}
+    D --&gt;|No vacuum| S5[💥 Trap 5: Bloat degrades&lt;br/&gt;HNSW graph quality]
+    D --&gt;|OK| R[✅ Fast ANN search&lt;br/&gt;&lt; 10ms]
+
+    style S1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style S2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style S3 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style S4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style S5 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
+<hr>
+<h2>Trap 1: No Index — Silent Sequential Scan</h2>
+<p><strong>Symptom</strong>: Queries work on 10K rows. After you load 500K documents, the same query takes 8 seconds. No errors.</p>
+<p><strong>Root cause</strong>: pgvector has no index by default. Every vector similarity query performs a full table scan, computing distance to every row.</p>
+<pre><code class="language-sql">-- ❌ No index — O(n) scan on every query
+SELECT id, content, embedding &lt;=&gt; $1::vector AS distance
+FROM documents
+ORDER BY distance
+LIMIT 5;
+-- EXPLAIN ANALYZE shows: Seq Scan on documents
+
+-- ✅ Create HNSW index (recommended for most use cases)
+-- Parameters: m = number of connections per node, ef_construction = build quality
+CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+
+-- ✅ Or IVFFlat for large datasets with known list count
+-- lists ≈ sqrt(number_of_rows)
+CREATE INDEX ON documents USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);  -- For ~10K rows: 100 lists. For ~1M rows: 1000 lists.
+
+-- Verify index is being used
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, content, embedding &lt;=&gt; $1::vector AS distance
+FROM documents
+ORDER BY distance
+LIMIT 5;
+-- Should show: Index Scan using documents_embedding_idx</code></pre>
+<p><strong>HNSW vs IVFFlat:</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>HNSW</th>
+<th>IVFFlat</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Build time</td>
+<td>Slower</td>
+<td>Faster</td>
+</tr>
+<tr>
+<td>Query speed</td>
+<td>Faster</td>
+<td>Slower</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>More</td>
+<td>Less</td>
+</tr>
+<tr>
+<td>Best for</td>
+<td>Production serving</td>
+<td>Large datasets, batch indexing</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Trap 2: Wrong Distance Operator — Index Silently Ignored</h2>
+<p><strong>Symptom</strong>: You create an HNSW index with <code>vector_cosine_ops</code> but your query uses <code>&lt;-&gt;</code> (L2 distance). The index is never used. Full sequential scan on every query.</p>
+<p><strong>Root cause</strong>: pgvector has three distance operators, each requiring its own index operator class:</p>
+<pre><code class="language-sql">-- The three operators and their index classes:
+-- &lt;=&gt;  cosine distance       → vector_cosine_ops
+-- &lt;-&gt;  L2 (Euclidean) distance → vector_l2_ops
+-- &lt;#&gt;  negative dot product  → vector_ip_ops
+
+-- ❌ Index built for cosine, query uses L2 — index NOT used
+CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops);
+
+SELECT * FROM documents ORDER BY embedding &lt;-&gt; $1::vector LIMIT 5;
+-- EXPLAIN: Seq Scan (index ignored!)
+
+-- ✅ Match operator to index operator class
+-- For normalised embeddings (OpenAI te3, modern sentence transformers):
+CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops);
+SELECT * FROM documents ORDER BY embedding &lt;=&gt; $1::vector LIMIT 5;  -- ✅ Uses index
+
+-- For unnormalised embeddings:
+CREATE INDEX ON documents USING hnsw (embedding vector_l2_ops);
+SELECT * FROM documents ORDER BY embedding &lt;-&gt; $1::vector LIMIT 5;  -- ✅ Uses index
+
+-- Check which index your query is using
+EXPLAIN SELECT * FROM documents ORDER BY embedding &lt;=&gt; $1::vector LIMIT 5;</code></pre>
+<hr>
+<h2>Trap 3: WHERE Filters Before ANN — Exact Scan Fallback</h2>
+<p><strong>Symptom</strong>: Adding a <code>WHERE tenant_id = $2</code> filter to your vector search causes 100× slowdown. The more selective the filter, the slower it gets.</p>
+<p><strong>Root cause</strong>: pgvector&#39;s HNSW/IVFFlat indexes operate on the full vector space. When you add a <code>WHERE</code> clause, PostgreSQL must apply the filter either before or after the ANN search. If applied before (pre-filter), the index is useless for the filtered subset. If applied after (post-filter), you may scan thousands of ANN results to find <code>top_k</code> that match the filter.</p>
+<pre><code class="language-sql">-- ❌ Pre-filter kills index effectiveness
+SELECT id, content, embedding &lt;=&gt; $1::vector AS dist
+FROM documents
+WHERE tenant_id = $2           -- ← Filter applied before ANN
+  AND category = 'engineering'
+ORDER BY dist
+LIMIT 5;
+-- May fall back to sequential scan if filter is selective enough
+
+-- ✅ Strategy A: Partition table by tenant (best for high-cardinality tenant IDs)
+-- Each tenant has their own table — index is used on smaller dataset
+CREATE TABLE documents_tenant_abc (LIKE documents INCLUDING ALL);
+CREATE INDEX ON documents_tenant_abc USING hnsw (embedding vector_cosine_ops);
+
+-- ✅ Strategy B: Increase ef_search to find more candidates for post-filtering
+SET hnsw.ef_search = 200;  -- Search 200 candidates, then apply filter
+SELECT id, content, embedding &lt;=&gt; $1::vector AS dist
+FROM documents
+WHERE tenant_id = $2
+ORDER BY dist
+LIMIT 5;
+-- More accurate but slightly slower — tune based on filter selectivity
+
+-- ✅ Strategy C: Use pgvector's iterative index scan (pgvector 0.7+)
+-- Automatically increases search scope until enough filtered results found
+SET enable_indexonlyscan = on;
+SELECT id, content, embedding &lt;=&gt; $1::vector AS dist
+FROM documents
+WHERE tenant_id = $2
+ORDER BY dist
+LIMIT 5;</code></pre>
+<hr>
+<h2>Trap 4: Default <code>ef_search = 40</code> Gives Poor Recall</h2>
+<p><strong>Symptom</strong>: Your semantic search misses obviously relevant documents. Manual inspection shows the right document exists in the table but isn&#39;t returned in top-5.</p>
+<p><strong>Root cause</strong>: <code>ef_search</code> controls how many candidate nodes HNSW explores during search. The default is 40 — fast but low recall on large or complex datasets. The right value depends on your data distribution and the <code>m</code> parameter used at build time.</p>
+<pre><code class="language-sql">-- Check current ef_search
+SHOW hnsw.ef_search;  -- Default: 40
+
+-- Benchmark recall vs latency tradeoff:
+-- Lower ef_search = faster, lower recall
+-- Higher ef_search = slower, higher recall
+
+-- Test recall at different ef_search values:
+SET hnsw.ef_search = 40;   -- Default — fast but may miss results
+SET hnsw.ef_search = 100;  -- Better recall, ~2× slower
+SET hnsw.ef_search = 200;  -- High recall, ~4× slower
+
+-- ✅ Set per-session based on use case
+-- Interactive search: balance speed and recall
+SET hnsw.ef_search = 100;
+
+-- Batch processing where recall matters more than latency:
+SET hnsw.ef_search = 200;
+
+-- ✅ Or set globally in postgresql.conf for consistent behaviour:
+-- hnsw.ef_search = 100</code></pre>
+<pre><code class="language-python"># Python: set ef_search per query via SQLAlchemy
+from sqlalchemy import text
+
+async def vector_search(
+    query_embedding: list[float],
+    top_k: int = 5,
+    ef_search: int = 100,
+    session = None
+) -&gt; list[dict]:
+    # Set ef_search for this session
+    await session.execute(text(f&quot;SET hnsw.ef_search = {ef_search}&quot;))
+    
+    results = await session.execute(
+        text(&quot;&quot;&quot;
+            SELECT id, content,
+                   embedding &lt;=&gt; :embedding AS distance
+            FROM documents
+            ORDER BY distance
+            LIMIT :top_k
+        &quot;&quot;&quot;),
+        {&quot;embedding&quot;: str(query_embedding), &quot;top_k&quot;: top_k}
+    )
+    return [dict(row) for row in results]</code></pre>
+<hr>
+<h2>Trap 5: Table Bloat Degrades HNSW Graph Quality Over Time</h2>
+<p><strong>Symptom</strong>: Search quality gradually degrades over weeks as documents are inserted and deleted. Same queries return different (worse) results.</p>
+<p><strong>Root cause</strong>: PostgreSQL&#39;s MVCC (multi-version concurrency control) keeps old row versions (dead tuples) in the table. HNSW indexes also accumulate dead entries from deleted vectors. Without regular <code>VACUUM</code>, the index graph degrades.</p>
+<pre><code class="language-sql">-- Check table and index bloat
+SELECT
+    schemaname,
+    tablename,
+    n_dead_tup,
+    n_live_tup,
+    round(100.0 * n_dead_tup / NULLIF(n_live_tup + n_dead_tup, 0), 2) AS dead_pct,
+    last_vacuum,
+    last_autovacuum
+FROM pg_stat_user_tables
+WHERE tablename = 'documents';
+
+-- Manual vacuum for high-write vector tables
+VACUUM ANALYZE documents;
+
+-- For severe bloat: full repack (locks table — schedule in maintenance window)
+VACUUM FULL documents;
+
+-- ✅ Configure autovacuum more aggressively for vector tables
+-- These tables have more churn than typical OLTP tables
+ALTER TABLE documents SET (
+    autovacuum_vacuum_scale_factor = 0.01,   -- Vacuum when 1% of rows are dead (default: 20%)
+    autovacuum_analyze_scale_factor = 0.005, -- Analyze when 0.5% of rows change
+    autovacuum_vacuum_cost_delay = 2         -- Less I/O throttling for faster cleanup
+);</code></pre>
+<hr>
+<h2>Trap 6: <code>LIMIT</code> Without Enough Candidates for Reranking</h2>
+<p><strong>Symptom</strong>: You retrieve top-5 vectors to feed into a cross-encoder reranker. Reranker outputs poor results because the top-5 ANN results don&#39;t include the actually-best matches.</p>
+<p><strong>Root cause</strong>: ANN is approximate — the top-5 returned may not be the true top-5. Reranking can only improve ordering within the candidate set. If the true best match is ranked #12 by ANN, it never reaches your reranker.</p>
+<pre><code class="language-python"># ❌ Retrieving only top_k for reranking — reranker can't fix ANN misses
+async def search_and_rerank_bad(query: str, top_k: int = 5):
+    # ANN only returns 5 — if the best match is rank 8, it's never seen
+    ann_results = await vector_search(query_embedding, top_k=5)
+    return reranker.rerank(query, ann_results)[:top_k]
+
+# ✅ Retrieve a larger candidate set (10-20×), then rerank to top_k
+async def search_and_rerank_good(
+    query: str,
+    top_k: int = 5,
+    candidate_multiplier: int = 10  # Retrieve 10× more for reranking
+) -&gt; list[dict]:
+    candidates = await vector_search(
+        query_embedding,
+        top_k=top_k * candidate_multiplier,  # 50 candidates for top-5 result
+        ef_search=200  # Higher ef_search for larger candidate set
+    )
+    
+    # Reranker has 50 candidates to work with — dramatically better recall
+    reranked = reranker.rerank(query, candidates)
+    return reranked[:top_k]</code></pre>
+<hr>
+<h2>Trap 7: Not Using <code>EXPLAIN ANALYZE</code> to Confirm Index Usage</h2>
+<p>The single most important habit with pgvector: <strong>always verify your index is being used</strong> before declaring your setup correct.</p>
+<pre><code class="language-sql">-- Full diagnostics query
+EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+SELECT id, content, embedding &lt;=&gt; '[0.1, 0.2, ...]'::vector AS distance
+FROM documents
+ORDER BY distance
+LIMIT 5;
+
+-- What to look for in the output:
+-- ✅ GOOD: &quot;Index Scan using documents_embedding_idx&quot;
+-- ❌ BAD:  &quot;Seq Scan on documents&quot; (index not used)
+-- ❌ BAD:  &quot;Bitmap Heap Scan&quot; with &quot;Recheck&quot; (partial index usage)
+
+-- Check index health
+SELECT indexname, idx_scan, idx_tup_read, idx_tup_fetch
+FROM pg_stat_user_indexes
+WHERE tablename = 'documents';
+-- idx_scan = 0 after many queries means your index is never used</code></pre>
+<pre><code class="language-python"># Python helper: audit pgvector query plan
+from sqlalchemy import text
+
+async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
+    result = await session.execute(
+        text(&quot;&quot;&quot;
+            EXPLAIN (ANALYZE, FORMAT TEXT)
+            SELECT id, embedding &lt;=&gt; :emb AS dist
+            FROM documents ORDER BY dist LIMIT 5
+        &quot;&quot;&quot;),
+        {&quot;emb&quot;: str(query_embedding)}
+    )
+    plan = &quot;\n&quot;.join(row[0] for row in result)
+    
+    if &quot;Seq Scan&quot; in plan:
+        print(&quot;⚠️ WARNING: Sequential scan detected — check index configuration&quot;)
+    elif &quot;Index Scan&quot; in plan:
+        print(&quot;✅ Index scan confirmed&quot;)
+    
+    return plan</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>pgvector&#39;s greatest strength — living inside Postgres — is also its greatest trap. When it silently falls back to sequential scan, you get no error, no warning, and no indication that your &quot;fast&quot; vector search is actually O(n). Treat <code>EXPLAIN ANALYZE</code> as mandatory, not optional.</p>
+<ul>
+<li><strong>Build the right index for your distance metric</strong> — <code>vector_cosine_ops</code> for cosine, <code>vector_l2_ops</code> for L2. Mismatching operator and index class means the index is never used.</li>
+<li><strong>Tune <code>ef_search</code> explicitly</strong> — the default of 40 is a latency optimisation, not a recall optimisation. For production RAG, 100–200 is a better starting point.</li>
+<li><strong>Retrieve 10–20× more candidates than you need when reranking</strong> — ANN approximation errors can only be corrected if the correct results are in the candidate set.</li>
+</ul>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>pgvector GitHub</strong>: <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> pgvector: Open-source vector similarity search for Postgres</a></li>
+<li><strong>pgvector HNSW Parameters</strong>: <a href="https://github.com/pgvector/pgvector#hnsw" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> Indexing configuration guide</a></li>
+<li><strong>PostgreSQL EXPLAIN</strong>: <a href="https://www.postgresql.org/docs/current/using-explain.html" target="_blank" rel="noopener">Understanding query plans</a></li>
+<li><strong>Hierarchical Navigable Small World (HNSW)</strong>: <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">Efficient and robust approximate nearest neighbor search</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fpgvector-index-performance-traps.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Why%20Your%20pgvector%20Index%20Is%2010%C3%97%20Slower%20Than%20It%20Should%20Be&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fpgvector-index-performance-traps.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">June 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">June 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="async-python-event-loop-mistakes.html">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop<span class="sidebar-post-date">June 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">June 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="sse-gotchas-production-llm-streaming.html">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production<span class="sidebar-post-date">June 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="pgvector-index-performance-traps.html">Why Your pgvector Index Is 10× Slower Than It Should Be<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="docker-production-blind-spots.html">The Parts of Docker Nobody Explains (Until It Breaks in Production)<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="jwt-security-what-they-dont-teach-you.html">JWT: What They Don't Teach You Until You Get Hacked<span class="sidebar-post-date">May 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="websockets-production-sse-vs-ws.html">WebSockets in Production: Where SSE Ends and WS Begins<span class="sidebar-post-date">May 8, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>
