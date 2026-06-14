@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Parts of Docker Nobody Explains (Until It Breaks in Production) | Akmal Khan Tech Blog</title>
+  <meta name="description" content="7 Docker production blind spots — PID 1 SIGTERM handling, layer cache ordering, running as root, secrets baked into layers, .dockerignore failures, missing health checks, and bloated images without multi-stage builds.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/docker-production-blind-spots.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/docker-production-blind-spots.html">
+  <meta property="og:title" content="The Parts of Docker Nobody Explains (Until It Breaks in Production)">
+  <meta property="og:description" content="7 Docker production blind spots — PID 1 SIGTERM handling, layer cache ordering, running as root, secrets baked into layers, .dockerignore failures, missing health checks, and bloated images without multi-stage builds.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-05-21">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="The Parts of Docker Nobody Explains (Until It Breaks in Production)">
+  <meta name="twitter:description" content="7 Docker production blind spots — PID 1 SIGTERM handling, layer cache ordering, running as root, secrets baked into layers, .dockerignore failures, missing health checks, and bloated images without multi-stage builds.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "The Parts of Docker Nobody Explains (Until It Breaks in Production)",
+  "description": "7 Docker production blind spots — PID 1 SIGTERM handling, layer cache ordering, running as root, secrets baked into layers, .dockerignore failures, missing health checks, and bloated images without multi-stage builds.",
+  "url": "https://akmalkhaniub.github.io/blog/docker-production-blind-spots.html",
+  "datePublished": "2026-05-21",
+  "keywords": "Docker, DevOps, Python, Node.js",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/docker-production-blind-spots.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">The Parts of Docker Nobody Explains (Until It Breaks in Production)</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> May 22, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">Docker</span><span class="project-badge">DevOps</span><span class="project-badge">Python</span><span class="project-badge">Node.js</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>The Parts of Docker Nobody Explains (Until It Breaks in Production)</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Docker tutorials get you from zero to a running container in 10 minutes. What they skip: why your containerised AI service crashes with <code>SIGKILL</code> instead of shutting down gracefully, why your CI builds take 8 minutes when they should take 30 seconds, why Node.js inside Docker runs as root and why that&#39;s a security incident waiting to happen, and why your <code>.dockerignore</code> file is silently being ignored. This article covers <strong>7 Docker production blind spots</strong> that only reveal themselves in real deployments — with Dockerfile fixes for Python (FastAPI/Uvicorn) and Node.js (Next.js/Hono) AI services.</p>
+</blockquote>
+<hr>
+<h2>The Gap Between Docker Tutorials and Production Reality</h2>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
+flowchart LR
+    subgraph Tutorial Dockerfile
+        T1[FROM python:3.11]
+        T2[COPY . .]
+        T3[RUN pip install -r requirements.txt]
+        T4[CMD python app.py]
+    end
+
+    subgraph Production Reality
+        P1[💥 PID 1 ignores SIGTERM]
+        P2[💥 node_modules copied into image]
+        P3[💥 pip cache busted on every build]
+        P4[💥 Running as root user]
+        P5[💥 Secrets baked into layers]
+        P6[💥 No health check]
+        P7[💥 Image is 2.4GB]
+    end
+
+    Tutorial Dockerfile --&gt; Production Reality
+
+    style P1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style P2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style P3 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style P4 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style P5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+    style P6 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+    style P7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
+<hr>
+<h2>Blind Spot 1: PID 1 and the SIGTERM That Never Arrives</h2>
+<p><strong>Symptom</strong>: <code>docker stop</code> takes exactly 10 seconds before force-killing the container. Database connections are severed mid-transaction. BullMQ jobs are abandoned mid-execution. Your &quot;graceful shutdown&quot; code never runs.</p>
+<p><strong>Root cause</strong>: When you run <code>CMD python app.py</code>, Docker makes <code>python</code> PID 1. Linux only sends <code>SIGTERM</code> to PID 1. But <code>python</code> (and <code>node</code>, <code>uvicorn</code>, etc.) don&#39;t forward signals to child processes by default. After 10 seconds, Docker escalates to <code>SIGKILL</code> — no cleanup possible.</p>
+<pre><code class="language-dockerfile"># ❌ Python/Node becomes PID 1 — doesn't handle signals correctly
+CMD [&quot;python&quot;, &quot;app.py&quot;]
+CMD [&quot;node&quot;, &quot;server.js&quot;]
+
+# ✅ Option A: Use exec form (not shell form) — this IS correct for single processes
+# exec form runs the process as PID 1 directly, signals work
+CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
+
+# ✅ Option B: Use tini as a proper init process (handles zombie reaping too)
+# Install in your Dockerfile:
+RUN apt-get install -y tini
+ENTRYPOINT [&quot;/usr/bin/tini&quot;, &quot;--&quot;]
+CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
+
+# ✅ Option C: Use --init flag on docker run / compose
+# docker run --init myimage
+# compose.yml:
+# init: true</code></pre>
+<pre><code class="language-python"># Your FastAPI app must handle SIGTERM gracefully
+import signal
+import asyncio
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    print(&quot;[App] Starting up — connecting to DB and Redis&quot;)
+    yield
+    # Shutdown — runs when SIGTERM received
+    print(&quot;[App] Shutting down — closing connections gracefully&quot;)
+    # await redis_pool.aclose()
+    # await db_pool.close()
+
+app = FastAPI(lifespan=lifespan)</code></pre>
+<hr>
+<h2>Blind Spot 2: Layer Cache Busted by Wrong COPY Order</h2>
+<p><strong>Symptom</strong>: Every CI build reinstalls all Python packages from scratch even when you only changed a single <code>.py</code> file. 8-minute builds instead of 30-second ones.</p>
+<p><strong>Root cause</strong>: Docker layer cache is invalidated when any file in a <code>COPY</code> command changes. If you <code>COPY . .</code> before <code>RUN pip install</code>, any code change invalidates the pip install layer.</p>
+<pre><code class="language-dockerfile"># ❌ COPY . . before pip install — any code change busts the cache
+FROM python:3.11-slim
+WORKDIR /app
+COPY . .                          # ← Every file change invalidates next layer
+RUN pip install -r requirements.txt  # ← Reinstalls everything every time
+
+# ✅ Copy dependency files FIRST, install, THEN copy source code
+FROM python:3.11-slim
+WORKDIR /app
+
+# Layer 1: Dependency manifest (rarely changes)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt  # ← Cached unless requirements.txt changes
+
+# Layer 2: Source code (changes frequently — but above cache is preserved)
+COPY . .
+
+CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]</code></pre>
+<pre><code class="language-dockerfile"># ✅ Same pattern for Node.js
+FROM node:20-slim
+WORKDIR /app
+
+# Copy package files first
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev  # ← Cached unless package.json changes
+
+# Then copy source
+COPY . .
+RUN npm run build
+
+CMD [&quot;node&quot;, &quot;dist/server.js&quot;]</code></pre>
+<hr>
+<h2>Blind Spot 3: Running as Root Is a Security Incident Waiting to Happen</h2>
+<p><strong>Symptom</strong>: A dependency vulnerability or code execution bug inside your container gives attackers root access to the host in misconfigured environments.</p>
+<p><strong>Root cause</strong>: Docker containers run as <code>root</code> (UID 0) by default. If your container is ever compromised — through a vulnerable npm package, a deserialization exploit, or a path traversal — the attacker has root inside the container, which may translate to host root depending on Docker daemon configuration.</p>
+<pre><code class="language-dockerfile"># ❌ Running as root (Docker default)
+FROM python:3.11-slim
+WORKDIR /app
+COPY . .
+RUN pip install -r requirements.txt
+CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
+# docker inspect → &quot;User&quot;: &quot;&quot; → runs as root
+
+# ✅ Create and use a non-root user
+FROM python:3.11-slim
+
+# Create non-root user with no home directory and no shell
+RUN groupadd --gid 1001 appgroup &amp;&amp; \
+    useradd --uid 1001 --gid 1001 --no-create-home --shell /bin/false appuser
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY --chown=appuser:appgroup . .  # ← Transfer ownership to appuser
+
+USER appuser  # ← Switch to non-root before CMD
+
+EXPOSE 8000
+CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]</code></pre>
+<hr>
+<h2>Blind Spot 4: Secrets Baked Into Image Layers Are Permanent</h2>
+<p><strong>Symptom</strong>: You delete the <code>ENV API_KEY=secret</code> line from your Dockerfile and rebuild. The secret is still retrievable from the old image layer with <code>docker history</code> or <code>docker save</code>.</p>
+<p><strong>Root cause</strong>: Docker image layers are immutable and cumulative. Even if you <code>RUN unset API_KEY</code> in a later layer, the secret exists in the earlier layer forever — visible to anyone who can pull the image.</p>
+<pre><code class="language-dockerfile"># ❌ Secret in ENV — permanent in image history
+ENV ANTHROPIC_API_KEY=&quot;sk-ant-...&quot;
+ENV DATABASE_URL=&quot;postgresql://user:password@host/db&quot;
+
+# ❌ Secret in RUN — also permanent even if deleted later
+RUN pip install -r requirements.txt --extra-index-url https://user:token@pypi.company.com/simple
+
+# ✅ Never bake secrets — use runtime environment injection
+# In production: pass via Docker secrets, Kubernetes secrets, or env at runtime
+# docker run --env-file .env myimage
+# docker run -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY myimage
+
+# ✅ For build-time secrets (private PyPI, npm registries): use BuildKit secrets
+# syntax=docker/dockerfile:1
+FROM python:3.11-slim
+RUN --mount=type=secret,id=pip_config,target=/root/.pip/pip.conf \
+    pip install -r requirements.txt
+# Build with: docker build --secret id=pip_config,src=pip.conf .
+# Secret NEVER appears in any layer</code></pre>
+<hr>
+<h2>Blind Spot 5: Your <code>.dockerignore</code> Is Being Ignored</h2>
+<p><strong>Symptom</strong>: Build context takes 45 seconds to send to Docker daemon. Your image contains <code>node_modules</code>, <code>.git</code>, <code>.env</code>, and your entire test dataset.</p>
+<p><strong>Root cause</strong>: <code>.dockerignore</code> only works if it&#39;s in the <strong>build context directory</strong> (where you run <code>docker build</code>). If you run <code>docker build</code> from a parent directory, or if the file has Windows line endings, it may be silently skipped.</p>
+<pre><code class="language-bash"># Check what's being sent to Docker daemon
+docker build --no-cache . 2&gt;&amp;1 | head -5
+# &quot;Sending build context to Docker daemon  2.3GB&quot;  ← Problem!
+
+# Audit what's in your build context
+docker build . -f /dev/null --progress=plain 2&gt;&amp;1 | grep &quot;^#&quot;</code></pre>
+<pre><code class="language-plaintext"># .dockerignore — comprehensive for AI/Node.js projects
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Build outputs
+.next/
+dist/
+build/
+*.egg-info/
+
+# Dev and test
+.env
+.env.local
+.env.*.local
+*.test.ts
+*.spec.py
+tests/
+__tests__/
+
+# Git and CI
+.git/
+.github/
+.gitignore
+
+# Large data files — keep out of image
+data/
+datasets/
+*.csv
+*.parquet
+*.pkl
+models/          # Local model weights — use volumes in production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db</code></pre>
+<hr>
+<h2>Blind Spot 6: No HEALTHCHECK = Kubernetes Sends Traffic to Dead Containers</h2>
+<p><strong>Symptom</strong>: Your pod is running (Kubernetes shows <code>Running</code> status) but returning 500 errors. Kubernetes keeps sending traffic because it doesn&#39;t know the app is broken.</p>
+<pre><code class="language-dockerfile"># ❌ No health check — orchestrators assume &quot;running&quot; = &quot;healthy&quot;
+CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
+
+# ✅ Add HEALTHCHECK so Docker/Kubernetes knows when the app is truly ready
+HEALTHCHECK --interval=30s \
+            --timeout=10s \
+            --start-period=15s \
+            --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1</code></pre>
+<pre><code class="language-python"># Add a lightweight /health endpoint to your FastAPI app
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+import asyncio
+
+@app.get(&quot;/health&quot;)
+async def health_check():
+    &quot;&quot;&quot;
+    Lightweight health check — verifies app is responding.
+    Optionally check DB/Redis connectivity for deeper probes.
+    &quot;&quot;&quot;
+    checks = {&quot;status&quot;: &quot;ok&quot;, &quot;service&quot;: &quot;rag-api&quot;}
+    
+    # Optional: check Redis
+    try:
+        await redis_client.ping()
+        checks[&quot;redis&quot;] = &quot;ok&quot;
+    except Exception as e:
+        checks[&quot;redis&quot;] = f&quot;error: {str(e)}&quot;
+        return JSONResponse(status_code=503, content=checks)
+    
+    return checks</code></pre>
+<hr>
+<h2>Blind Spot 7: Multi-Stage Builds — Shipping Dev Dependencies to Production</h2>
+<p><strong>Symptom</strong>: Your Python or Node.js production image is 1.8GB. It contains pytest, mypy, eslint, TypeScript compiler, and test fixtures that have no business running in production.</p>
+<pre><code class="language-dockerfile"># ✅ Multi-stage build — lean production image
+# Stage 1: Builder (has dev tools, compilers, test deps)
+FROM node:20-slim AS builder
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci                    # Install ALL deps including devDependencies
+
+COPY . .
+RUN npm run build             # Compile TypeScript, bundle, etc.
+RUN npm run test              # Run tests AT BUILD TIME — fail fast
+
+# Stage 2: Production runtime (only production artifacts)
+FROM node:20-slim AS production
+WORKDIR /app
+
+# Copy ONLY the built output and production deps
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./
+RUN npm ci --omit=dev         # ← Only production dependencies
+
+RUN groupadd --gid 1001 appgroup &amp;&amp; \
+    useradd --uid 1001 --gid 1001 --no-create-home --shell /bin/false appuser
+USER appuser
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+EXPOSE 3000
+CMD [&quot;node&quot;, &quot;dist/server.js&quot;]
+# Result: ~180MB instead of 1.8GB</code></pre>
+<pre><code class="language-dockerfile"># ✅ Multi-stage Python with UV package manager (fastest Python builds)
+FROM python:3.11-slim AS builder
+RUN pip install uv
+WORKDIR /app
+COPY requirements.txt .
+RUN uv pip install --system --no-cache -r requirements.txt
+
+FROM python:3.11-slim AS production
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /usr/local/lib/python3.11 /usr/local/lib/python3.11
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --chown=1001:1001 . .
+
+RUN useradd --uid 1001 --no-create-home --shell /bin/false appuser
+USER appuser
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+EXPOSE 8000
+CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;, &quot;--workers&quot;, &quot;2&quot;]</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<p>Docker&#39;s simplicity is a double-edged sword — it hides complexity that resurfaces as production incidents. The failures above follow a pattern: they&#39;re invisible in development (fast machine, no proxy, running as you) and catastrophic in production (slow CI, proxied, rootless Kubernetes).</p>
+<ul>
+<li><strong>Always use exec form <code>CMD [&quot;executable&quot;, &quot;arg&quot;]</code></strong> — never shell form <code>CMD executable arg</code>. Exec form is PID 1, receives signals correctly, and is the only form that enables graceful shutdown.</li>
+<li><strong>Copy dependency manifests before source code</strong> — this single change often cuts CI build times by 80% by preserving the package-install cache layer.</li>
+<li><strong>Never use ENV or RUN to handle secrets</strong> — use Docker BuildKit <code>--mount=type=secret</code> for build-time secrets and runtime environment injection for application secrets.</li>
+</ul>
+<hr>
+<h3>Research References &amp; Resources</h3>
+<ul>
+<li><strong>Docker Multi-Stage Builds</strong>: <a href="https://docs.docker.com/build/building/multi-stage/" target="_blank" rel="noopener">Use multi-stage builds</a></li>
+<li><strong>Docker BuildKit Secrets</strong>: <a href="https://docs.docker.com/build/building/secrets/" target="_blank" rel="noopener">Build secrets reference</a></li>
+<li><strong>tini Init Process</strong>: <a href="https://github.com/krallin/tini" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> A tiny but valid init for containers</a></li>
+<li><strong>Docker Security Best Practices</strong>: <a href="https://docs.docker.com/engine/security/" target="_blank" rel="noopener">Docker security guide</a></li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdocker-production-blind-spots.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=The%20Parts%20of%20Docker%20Nobody%20Explains%20(Until%20It%20Breaks%20in%20Production)&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdocker-production-blind-spots.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">June 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">June 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="async-python-event-loop-mistakes.html">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop<span class="sidebar-post-date">June 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">June 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="sse-gotchas-production-llm-streaming.html">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production<span class="sidebar-post-date">June 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="pgvector-index-performance-traps.html">Why Your pgvector Index Is 10× Slower Than It Should Be<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="docker-production-blind-spots.html">The Parts of Docker Nobody Explains (Until It Breaks in Production)<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="jwt-security-what-they-dont-teach-you.html">JWT: What They Don't Teach You Until You Get Hacked<span class="sidebar-post-date">May 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="websockets-production-sse-vs-ws.html">WebSockets in Production: Where SSE Ends and WS Begins<span class="sidebar-post-date">May 8, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>
