@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Comparing the linear-time complexity of State Space Models (Mamba-2, Jamba) against standard quadratic self-attention architectures and KV-cache constraints.">
+  <title>React Native's New Architecture: JSI, Fabric, and Bridgeless Mode | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How the new React Native C++ architecture replaces the JSON bridge with JSI direct bindings to eliminate UI thread latency.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/ssms-vs-transformers-attention-bottlenecks.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/react-native-new-architecture-jsi.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/ssms-vs-transformers-attention-bottlenecks.html">
-  <meta property="og:title" content="State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes">
-  <meta property="og:description" content="Comparing the linear-time complexity of State Space Models (Mamba-2, Jamba) against standard quadratic self-attention architectures and KV-cache constraints.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/react-native-new-architecture-jsi.html">
+  <meta property="og:title" content="React Native's New Architecture: JSI, Fabric, and Bridgeless Mode">
+  <meta property="og:description" content="How the new React Native C++ architecture replaces the JSON bridge with JSI direct bindings to eliminate UI thread latency.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-03">
+  <meta property="article:published_time" content="2026-06-19">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes">
-  <meta name="twitter:description" content="Comparing the linear-time complexity of State Space Models (Mamba-2, Jamba) against standard quadratic self-attention architectures and KV-cache constraints.">
+  <meta name="twitter:title" content="React Native's New Architecture: JSI, Fabric, and Bridgeless Mode">
+  <meta name="twitter:description" content="How the new React Native C++ architecture replaces the JSON bridge with JSI direct bindings to eliminate UI thread latency.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes",
-  "description": "Comparing the linear-time complexity of State Space Models (Mamba-2, Jamba) against standard quadratic self-attention architectures and KV-cache constraints.",
-  "url": "https://akmalkhaniub.github.io/blog/ssms-vs-transformers-attention-bottlenecks.html",
-  "datePublished": "2026-06-03",
-  "keywords": "Mamba, SSMs, Attention, Linear Scaling",
+  "headline": "React Native's New Architecture: JSI, Fabric, and Bridgeless Mode",
+  "description": "How the new React Native C++ architecture replaces the JSON bridge with JSI direct bindings to eliminate UI thread latency.",
+  "url": "https://akmalkhaniub.github.io/blog/react-native-new-architecture-jsi.html",
+  "datePublished": "2026-06-19",
+  "keywords": "React Native, Mobile, Performance, Architecture",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/ssms-vs-transformers-attention-bottlenecks.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/react-native-new-architecture-jsi.html"
 }
   </script>
 
@@ -93,150 +93,114 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes</h1>
+            <h1 class="article-title">React Native's New Architecture: JSI, Fabric, and Bridgeless Mode</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> June 4, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> June 20, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 7 min read</span>
-              <div class="article-tags"><span class="project-badge">Mamba</span><span class="project-badge">SSMs</span><span class="project-badge">Attention</span><span class="project-badge">Linear Scaling</span></div>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">React Native</span><span class="project-badge">Mobile</span><span class="project-badge">Performance</span><span class="project-badge">Architecture</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes</h1>
+<h1>React Native&#39;s New Architecture: JSI, Fabric, and Bridgeless Mode</h1>
 <blockquote>
-<h3>📖 Article Overview</h3>
-<ul>
-<li><strong>What this article is about:</strong> A technical comparison between quadratic-time Self-Attention (used in standard Transformers) and linear-time State Space Models (SSMs like Mamba-2) for long-sequence tasks.</li>
-<li><strong>Why it matters:</strong> As prompt contexts scale into millions of tokens, the $O(N^2)$ VRAM memory footprint of standard attention becomes unsustainable, causing hardware crashes.</li>
-<li><strong>What we synthesized:</strong> State Space Models (SSMs) provide linear memory scaling and high token throughput by collapsing context history into a constant-size state. However, they struggle with high-fidelity factual recall (&quot;needle-in-a-haystack&quot;) and exact copying tasks compared to attention.</li>
-</ul>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+For years, React Native&#39;s primary bottleneck has been <strong>the Bridge</strong> — the asynchronous, serialized JSON gateway that handled all communication between the JavaScript engine and the Native platform. Whenever a user scrolled quickly through a list or performed a fast gesture, the Bridge would choke, leading to dropped frames and sluggish UI performance. React Native&#39;s New Architecture (introduced fully in version 0.74+) solves this by replacing the Bridge with the <strong>JavaScript Interface (JSI)</strong>, enabling direct C++ communication. This article covers the mechanics of JSI, the Fabric renderer, and how Bridgeless Mode eliminates latency.</p>
 </blockquote>
 <hr>
-<p>The self-attention mechanism is both the secret to the Transformer&#39;s reasoning power and its biggest engineering limitation. </p>
-<p>Self-attention computes a relationship matrix comparing every token in a prompt to every other token. This creates a <strong>quadratic complexity bottleneck</strong>: doubling your input context length increases the computational load and VRAM memory footprint by <strong>four times ($O(N^2)$)</strong>.</p>
-<p>To break past this barrier, researchers have developed <strong>State Space Models (SSMs)</strong>—most notably <strong>Mamba-2</strong>—to act as a linear-time sequence modeling alternative.</p>
-<p>This article synthesizes the trade-offs of State Space Models vs. Transformers, evaluating <strong>what is good (pros)</strong>, <strong>what is not (cons)</strong>, and how SSM states are computed in PyTorch, drawing from research references tracked in my repository <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a>.</p>
-<hr>
-<h2>🎨 Memory Complexity: Attention vs. State Space Models</h2>
-<p>As context lengths scale into millions of tokens, the VRAM consumption of self-attention diverges quadratically, while SSMs maintain a constant state size, scaling memory usage linearly.</p>
-<div class="mermaid">graph TD
-    classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
-    classDef linear fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
-    classDef quad fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
-    classDef label fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
-
-    Start[Inference Sequence Length N] --&gt; ScaleType{Scale Complexity}
-    
-    ScaleType --&gt;|Self-Attention: O N^2| PathQuad[Quadratic Memory Growth]
-    ScaleType --&gt;|State Space SSM: O N| PathLinear[Linear Memory Growth]
-    
-    PathQuad --&gt;|Context: 100K tokens| HBM_Crash[KV-Cache exhausts HBM/VRAM / Out Of Memory error]
-    PathLinear --&gt;|Context: 100K tokens| LowVRAM[Constant state size / Stable execution]
-
-    class Start,ScaleType label;
-    class PathLinear,LowVRAM linear;
-    class PathQuad,HBM_Crash quad;</div>
-<hr>
-<h2>🔍 Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
-<h3>What&#39;s Good (The Pros)</h3>
-<ul>
-<li><strong>Linear $O(N)$ Complexity</strong>: Mamba scales compute and memory footprint linearly with context length, enabling the processing of massive sequence payloads (entire code repositories or textbooks) on modest hardware.</li>
-<li><strong>No KV-Cache Growth</strong>: Standard transformers must store the Key-Value (KV) cache of all past tokens in memory during generation. SSMs collapse this history into a fixed-size state representation, eliminating VRAM expansion.</li>
-<li><strong>High Inference Throughput</strong>: By avoiding KV-cache read/write cycles, SSMs achieve significantly higher token generation throughput on GPUs.</li>
-</ul>
-<h3>What&#39;s Not (The Cons)</h3>
-<ul>
-<li><strong>Factual Recall Degradation</strong>: Because SSMs compress history into a fixed-size state, they suffer from &quot;information decay.&quot; They perform poorly on &quot;needle-in-a-haystack&quot; tasks where a model must locate a single, precise fact inside a large document.</li>
-<li><strong>Poor Copying and Retrieval</strong>: SSMs struggle with precise text copying or lookup operations—tasks where the explicit routing matrix of Transformer attention shines.</li>
-<li><strong>Training Infrastructure Latency</strong>: The vast majority of deep learning hardware (TPUs/GPUs) and software libraries are optimized for Transformer matrix operations, making custom SSM training pipelines complex to run.</li>
-</ul>
-<hr>
-<h2>💻 Modeling an SSM Selective Scan in Python</h2>
-<p>The core of the Mamba architecture is the <strong>Selective Scan</strong>. Unlike traditional recurrent neural networks (RNNs) which apply static transition matrices, Mamba dynamically varies its transition matrix based on the current input token, choosing what to remember or forget.</p>
-<p>Here is a PyTorch-style representation of a selective scan state transition, modeled on research structures in our <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a> repository:</p>
-<pre><code class="language-python">import torch
-import torch.nn as nn
-
-class SelectiveScanSSM(nn.Module):
-    def __init__(self, d_model, d_state):
-        super().__init__()
-        self.d_model = d_model
-        self.d_state = d_state
-        
-        # Projections to calculate dynamic parameters based on the current token input
-        self.x_proj = nn.Linear(d_model, d_state * 2 + d_model, bias=False)
-        self.dt_proj = nn.Linear(d_model, d_model, bias=True)
-        
-        # Standard State Space parameter matrices
-        self.A = nn.Parameter(torch.randn(d_model, d_state))
-        self.D = nn.Parameter(torch.randn(d_model))
-
-    def forward(self, u):
-        # u shape: [batch, seq_len, d_model]
-        batch, seq_len, _ = u.shape
-        
-        # 1. Compute dynamic transitions (Selective logic)
-        x_dbl = self.x_proj(u) # [batch, seq_len, d_state*2 + d_model]
-        delta, B, C = torch.split(x_dbl, [self.d_model, self.d_state, self.d_state], dim=-1)
-        
-        # Apply softplus to ensure time-delta is positive
-        delta = torch.nn.functional.softplus(self.dt_proj(delta))
-        
-        # 2. Execute the state recurrence loop
-        h = torch.zeros(batch, self.d_model, self.d_state, device=u.device)
-        ys = []
-        
-        for t in range(seq_len):
-            u_t = u[:, t, :] # Current input token
-            delta_t = delta[:, t, :]
-            B_t = B[:, t, :]
-            C_t = C[:, t, :]
-            
-            # Discretize continuous state matrices
-            # h_t = (I + dA) * h_{t-1} + dB * u_t
-            dA = torch.exp(delta_t.unsqueeze(-1) * self.A)
-            dB = delta_t.unsqueeze(-1) * B_t.unsqueeze(1)
-            
-            # Update hidden state
-            h = dA * h + dB * u_t.unsqueeze(-1)
-            
-            # Compute output: y = C * h + D * u
-            y_t = torch.einsum(&quot;bms,bs-&gt;bm&quot;, h, C_t) + self.D * u_t
-            ys.append(y_t)
-            
-        return torch.stack(ys, dim=1) # [batch, seq_len, d_model]</code></pre>
-<hr>
-<h2>📋 SSM Ingestion Guardrails</h2>
-<ul>
-<li><strong>Hybrid Architectures</strong>: For tasks requiring both long context and exact recall, use hybrid models (like Jamba) that interleave Transformer attention layers (for retrieval) with Mamba SSM layers (for context scaling).</li>
-<li><strong>PII/Key Anchoring</strong>: When passing document datasets to SSMs, place key facts or lookup terms at the very beginning of the prompt to maximize the model&#39;s initial state activation.</li>
-</ul>
-<hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
-<p>Breaking the attention memory barrier is essential for the next generation of long-context applications:</p>
+<h2>The Bottleneck: Why the Old Bridge Failed</h2>
+<p>In the old architecture, JavaScript and Native code operated like two separate islands connected by a single shipping channel. If JavaScript wanted to render a view, it had to serialize the layout payload into JSON, send it asynchronously over the Bridge, wait for the Native thread to parse it, and then render it. </p>
+<p>This asynchronous nature meant:</p>
 <ol>
-<li><strong>Linear Scaling is Real:</strong> Mamba and other selective state space architectures offer a concrete pathway to processing millions of tokens without linear GPU cluster expansions.</li>
-<li><strong>The Recall Trade-off:</strong> Do not replace attention wholesale if your application requires 100% factual accuracy in document searches. SSMs suffer from information decay over long distances.</li>
-<li><strong>The Rise of Hybrids:</strong> Modern architectures (like Jamba) are moving toward hybrid designs—combining attention layers (for exact recall) with recurrent SSM layers (for context efficiency).</li>
+<li><strong>No Synchronous Execution</strong>: JavaScript could not invoke native functions instantly on the same thread.</li>
+<li><strong>Double Serialization Overhead</strong>: Every coordinate, string, and layout instruction had to be packed and unpacked as JSON strings.</li>
+<li><strong>Dropped UI Frames</strong>: Under high load, layout instructions lagged behind user scroll gestures, leading to empty white spaces.</li>
 </ol>
-<p><em>Takeaway:</em> Choose your architecture based on your sequence memory bounds vs. your precise factual recall requirements.</p>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    subgraph Old Architecture (Async JSON Bridge)
+        JS_Old[JavaScript Engine] --&gt;|1. Serialize JSON| Bridge[Async Bridge]
+        Bridge --&gt;|2. Deserialize JSON| Native_Old[Native UI Thread]
+    end
+
+    subgraph New Architecture (Direct C++ JSI Bindings)
+        JS_New[JavaScript Engine] ===|Direct C++ Pointer Call| JSI[JSI Interface]
+        JSI ===|Direct Memory Access| Native_New[Native UI Thread / Fabric]
+    end
+    
+    style JS_New fill:#111827,stroke:#38bdf8,stroke-width:2px
+    style Native_New fill:#111827,stroke:#38bdf8,stroke-width:2px
+    style JSI fill:#0f172a,stroke:#38bdf8,stroke-width:3px</div>
 <hr>
-<h2>📚 References &amp; Further Reading</h2>
+<h2>The New Core Pillars</h2>
+<p>The new React Native architecture is built on three core pillars:</p>
+<h3>1. JavaScript Interface (JSI)</h3>
+<p>JSI replaces the Bridge. It is a lightweight C++ interface that gives the JavaScript engine (Hermes) <strong>direct access to the native C++ object pointers</strong>. JavaScript can call native functions directly, sync or async, without JSON serialization.</p>
+<h3>2. Fabric Renderer</h3>
+<p>Fabric is the new UI rendering engine. Instead of scheduling async native updates, Fabric runs synchronously. This allows React Native to execute heavy animations, transitions, and user interactions directly on the UI thread, eliminating the &quot;white flash&quot; layout issue.</p>
+<h3>3. TurboModules</h3>
+<p>TurboModules are the new native modules. In the old system, all native modules (camera, filesystem, Bluetooth) had to be initialized when the app started. TurboModules are <strong>lazy-loaded</strong> and communicate directly through JSI, significantly reducing app startup latency.</p>
+<hr>
+<h2>Coding a C++ TurboModule under the New Architecture</h2>
+<p>Under the new architecture, we use C++ to write high-performance native modules. Here is a simple demonstration showing a shared calculation module (<code>FastMath</code>) using JSI.</p>
+<h3>1. The Codegen Schema Definition (TypeScript)</h3>
+<p>First, define the module interface using Flow or TypeScript:</p>
+<pre><code class="language-typescript">// Spec/NativeFastMath.ts
+import type { TurboModule } from 'react-native';
+import { TurboModuleRegistry } from 'react-native';
+
+export interface Spec extends TurboModule {
+  multiply(a: number, b: number): number;
+  hashString(input: string): string;
+}
+
+export default TurboModuleRegistry.getEnrolled&lt;Spec&gt;('FastMath');</code></pre>
+<hr>
+<h3>2. The Native C++ Implementation (<code>FastMath.cpp</code>)</h3>
+<p>Codegen automatically creates the boilerplate, and we implement the C++ logic:</p>
+<pre><code class="language-cpp">#include &quot;FastMath.h&quot;
+
+namespace facebook {
+namespace react {
+
+FastMath::FastMath(std::shared_ptr&lt;CallInvoker&gt; jsInvoker)
+    : TurboModule(jsInvoker) {}
+
+// Direct native computation on the JS thread without bridge overhead
+double FastMath::multiply(double a, double b) {
+  return a * b;
+}
+
+// Memory-direct string hashing
+std::string FastMath::hashString(std::string input) {
+  unsigned long hash = 5381;
+  for (char c : input) {
+    hash = ((hash &lt;&lt; 5) + hash) + c;
+  }
+  return std::to_string(hash);
+}
+
+} // namespace react
+} // namespace facebook</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Takeaways</h2>
+<p>React Native&#39;s new architecture bridges the native performance gap completely:</p>
 <ul>
-<li><strong>Mamba Architecture</strong>: Gu &amp; Dao, 2023. <em>Mamba: Linear-Time Sequence Modeling with Selective State Spaces</em>. <a href="https://arxiv.org/abs/2312.00752" target="_blank" rel="noopener">arXiv:2312.00752</a>.</li>
-<li><strong>Mamba-2 Updates</strong>: Dao &amp; Gu, 2024. <em>Transformers are SSMs: Generalized State Space Models</em>. Details on hardware-aware matrix formulations.</li>
-<li><strong>SSM Video Breakdown</strong>: Yannic Kilcher&#39;s tutorial on <a href="https://www.youtube.com/watch?v=N6PiV3ESB-4" target="_blank" rel="noopener">Mamba: Linear-Time Sequence Modeling</a>.</li>
+<li><input disabled="" type="checkbox"> <strong>Eliminate JSON overhead</strong>: Leverage JSI to pass binary data, images, and raw objects directly between JavaScript and native memory.</li>
+<li><input disabled="" type="checkbox"> <strong>Use lazy loading</strong>: Migrating native modules to TurboModules ensures your app startup remains fast.</li>
+<li><input disabled="" type="checkbox"> <strong>Optimize layout transitions</strong>: Take advantage of the synchronous Fabric renderer to build complex, fluid layouts.</li>
+<li><input disabled="" type="checkbox"> <strong>Enforce Bridgeless Mode</strong>: Configure your app to run in complete Bridgeless Mode to fully disable the legacy Bridge thread and claim maximum memory savings.</li>
 </ul>
-<p><em>To review our experimental sequence models and agent evaluation benchmarks, explore the codebase inside <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a>.</em></p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fssms-vs-transformers-attention-bottlenecks.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=State%20Space%20Models%20vs.%20Attention%3A%20The%20Quest%20for%20Infinite%20Context%20without%20VRAM%20Crashes&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fssms-vs-transformers-attention-bottlenecks.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Freact-native-new-architecture-jsi.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=React%20Native's%20New%20Architecture%3A%20JSI%2C%20Fabric%2C%20and%20Bridgeless%20Mode&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Freact-native-new-architecture-jsi.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -304,7 +268,7 @@ class SelectiveScanSSM(nn.Module):
             <li class="sidebar-post-item">
               <a href="nodejs-native-evolution-tooling.html">Node.js Native Evolution: Moving Away from Tooling Bloat<span class="sidebar-post-date">June 20, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="react-native-new-architecture-jsi.html">React Native's New Architecture: JSI, Fabric, and Bridgeless Mode<span class="sidebar-post-date">June 20, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -385,7 +349,7 @@ class SelectiveScanSSM(nn.Module):
             <li class="sidebar-post-item">
               <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
