@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Comparing the linear-time complexity of State Space Models (Mamba-2, Jamba) against standard quadratic self-attention architectures and KV-cache constraints.">
+  <title>Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable | Akmal Khan Tech Blog</title>
+  <meta name="description" content="The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/ssms-vs-transformers-attention-bottlenecks.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/ssms-vs-transformers-attention-bottlenecks.html">
-  <meta property="og:title" content="State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes">
-  <meta property="og:description" content="Comparing the linear-time complexity of State Space Models (Mamba-2, Jamba) against standard quadratic self-attention architectures and KV-cache constraints.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html">
+  <meta property="og:title" content="Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable">
+  <meta property="og:description" content="The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-03">
+  <meta property="article:published_time" content="2026-06-20">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes">
-  <meta name="twitter:description" content="Comparing the linear-time complexity of State Space Models (Mamba-2, Jamba) against standard quadratic self-attention architectures and KV-cache constraints.">
+  <meta name="twitter:title" content="Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable">
+  <meta name="twitter:description" content="The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes",
-  "description": "Comparing the linear-time complexity of State Space Models (Mamba-2, Jamba) against standard quadratic self-attention architectures and KV-cache constraints.",
-  "url": "https://akmalkhaniub.github.io/blog/ssms-vs-transformers-attention-bottlenecks.html",
-  "datePublished": "2026-06-03",
-  "keywords": "Mamba, SSMs, Attention, Linear Scaling",
+  "headline": "Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable",
+  "description": "The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.",
+  "url": "https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html",
+  "datePublished": "2026-06-20",
+  "keywords": "RAG, Rerankers, pgvector, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/ssms-vs-transformers-attention-bottlenecks.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html"
 }
   </script>
 
@@ -93,150 +93,137 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes</h1>
+            <h1 class="article-title">Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> June 4, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> June 21, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 7 min read</span>
-              <div class="article-tags"><span class="project-badge">Mamba</span><span class="project-badge">SSMs</span><span class="project-badge">Attention</span><span class="project-badge">Linear Scaling</span></div>
+              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
+              <div class="article-tags"><span class="project-badge">RAG</span><span class="project-badge">Rerankers</span><span class="project-badge">pgvector</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes</h1>
+<h1>Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable</h1>
 <blockquote>
-<h3>📖 Article Overview</h3>
-<ul>
-<li><strong>What this article is about:</strong> A technical comparison between quadratic-time Self-Attention (used in standard Transformers) and linear-time State Space Models (SSMs like Mamba-2) for long-sequence tasks.</li>
-<li><strong>Why it matters:</strong> As prompt contexts scale into millions of tokens, the $O(N^2)$ VRAM memory footprint of standard attention becomes unsustainable, causing hardware crashes.</li>
-<li><strong>What we synthesized:</strong> State Space Models (SSMs) provide linear memory scaling and high token throughput by collapsing context history into a constant-size state. However, they struggle with high-fidelity factual recall (&quot;needle-in-a-haystack&quot;) and exact copying tasks compared to attention.</li>
-</ul>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Most basic Retrieval-Augmented Generation (RAG) tutorials stop at cosine similarity vector search. In production, however, raw vector search often fails to find the exact information needed. Because embedding models (Bi-encoders) represent whole documents as single coordinates, they prioritize general semantic context over specific, granular answers. This article explains why neural <strong>Rerankers (Cross-encoders)</strong> are essential for accurate RAG pipelines and demonstrates how to build a hybrid search, Reciprocal Rank Fusion (RRF), and BGE Reranker pipeline in Python.</p>
 </blockquote>
 <hr>
-<p>The self-attention mechanism is both the secret to the Transformer&#39;s reasoning power and its biggest engineering limitation. </p>
-<p>Self-attention computes a relationship matrix comparing every token in a prompt to every other token. This creates a <strong>quadratic complexity bottleneck</strong>: doubling your input context length increases the computational load and VRAM memory footprint by <strong>four times ($O(N^2)$)</strong>.</p>
-<p>To break past this barrier, researchers have developed <strong>State Space Models (SSMs)</strong>—most notably <strong>Mamba-2</strong>—to act as a linear-time sequence modeling alternative.</p>
-<p>This article synthesizes the trade-offs of State Space Models vs. Transformers, evaluating <strong>what is good (pros)</strong>, <strong>what is not (cons)</strong>, and how SSM states are computed in PyTorch, drawing from research references tracked in my repository <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a>.</p>
-<hr>
-<h2>🎨 Memory Complexity: Attention vs. State Space Models</h2>
-<p>As context lengths scale into millions of tokens, the VRAM consumption of self-attention diverges quadratically, while SSMs maintain a constant state size, scaling memory usage linearly.</p>
-<div class="mermaid">graph TD
-    classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
-    classDef linear fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
-    classDef quad fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
-    classDef label fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
-
-    Start[Inference Sequence Length N] --&gt; ScaleType{Scale Complexity}
+<h2>The Limits of Bi-Encoders (Vector Embeddings)</h2>
+<p>Embedding models are <strong>Bi-encoders</strong>. They process the user query and the database documents independently, converting them into vectors to measure distance. While fast, this means the model cannot capture token-to-token interactions between the query and the candidate documents. </p>
+<p>A <strong>Cross-encoder</strong> (Reranker) takes the query and a document <em>together</em> as a single input, executing full self-attention across both. This produces a highly accurate relevancy score, but is too computationally expensive to run on millions of documents.</p>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    Query[User Query] --&gt; VectorSearch[1. Dense Vector Search &lt;br&gt; pgvector]
+    Query --&gt; KeywordSearch[2. Sparse Keyword Search &lt;br&gt; BM25]
     
-    ScaleType --&gt;|Self-Attention: O N^2| PathQuad[Quadratic Memory Growth]
-    ScaleType --&gt;|State Space SSM: O N| PathLinear[Linear Memory Growth]
+    VectorSearch --&gt; RRF[3. Reciprocal Rank Fusion &lt;br&gt; Merge top 50 results]
+    KeywordSearch --&gt; RRF
     
-    PathQuad --&gt;|Context: 100K tokens| HBM_Crash[KV-Cache exhausts HBM/VRAM / Out Of Memory error]
-    PathLinear --&gt;|Context: 100K tokens| LowVRAM[Constant state size / Stable execution]
-
-    class Start,ScaleType label;
-    class PathLinear,LowVRAM linear;
-    class PathQuad,HBM_Crash quad;</div>
-<hr>
-<h2>🔍 Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
-<h3>What&#39;s Good (The Pros)</h3>
-<ul>
-<li><strong>Linear $O(N)$ Complexity</strong>: Mamba scales compute and memory footprint linearly with context length, enabling the processing of massive sequence payloads (entire code repositories or textbooks) on modest hardware.</li>
-<li><strong>No KV-Cache Growth</strong>: Standard transformers must store the Key-Value (KV) cache of all past tokens in memory during generation. SSMs collapse this history into a fixed-size state representation, eliminating VRAM expansion.</li>
-<li><strong>High Inference Throughput</strong>: By avoiding KV-cache read/write cycles, SSMs achieve significantly higher token generation throughput on GPUs.</li>
-</ul>
-<h3>What&#39;s Not (The Cons)</h3>
-<ul>
-<li><strong>Factual Recall Degradation</strong>: Because SSMs compress history into a fixed-size state, they suffer from &quot;information decay.&quot; They perform poorly on &quot;needle-in-a-haystack&quot; tasks where a model must locate a single, precise fact inside a large document.</li>
-<li><strong>Poor Copying and Retrieval</strong>: SSMs struggle with precise text copying or lookup operations—tasks where the explicit routing matrix of Transformer attention shines.</li>
-<li><strong>Training Infrastructure Latency</strong>: The vast majority of deep learning hardware (TPUs/GPUs) and software libraries are optimized for Transformer matrix operations, making custom SSM training pipelines complex to run.</li>
-</ul>
-<hr>
-<h2>💻 Modeling an SSM Selective Scan in Python</h2>
-<p>The core of the Mamba architecture is the <strong>Selective Scan</strong>. Unlike traditional recurrent neural networks (RNNs) which apply static transition matrices, Mamba dynamically varies its transition matrix based on the current input token, choosing what to remember or forget.</p>
-<p>Here is a PyTorch-style representation of a selective scan state transition, modeled on research structures in our <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a> repository:</p>
-<pre><code class="language-python">import torch
-import torch.nn as nn
-
-class SelectiveScanSSM(nn.Module):
-    def __init__(self, d_model, d_state):
-        super().__init__()
-        self.d_model = d_model
-        self.d_state = d_state
-        
-        # Projections to calculate dynamic parameters based on the current token input
-        self.x_proj = nn.Linear(d_model, d_state * 2 + d_model, bias=False)
-        self.dt_proj = nn.Linear(d_model, d_model, bias=True)
-        
-        # Standard State Space parameter matrices
-        self.A = nn.Parameter(torch.randn(d_model, d_state))
-        self.D = nn.Parameter(torch.randn(d_model))
-
-    def forward(self, u):
-        # u shape: [batch, seq_len, d_model]
-        batch, seq_len, _ = u.shape
-        
-        # 1. Compute dynamic transitions (Selective logic)
-        x_dbl = self.x_proj(u) # [batch, seq_len, d_state*2 + d_model]
-        delta, B, C = torch.split(x_dbl, [self.d_model, self.d_state, self.d_state], dim=-1)
-        
-        # Apply softplus to ensure time-delta is positive
-        delta = torch.nn.functional.softplus(self.dt_proj(delta))
-        
-        # 2. Execute the state recurrence loop
-        h = torch.zeros(batch, self.d_model, self.d_state, device=u.device)
-        ys = []
-        
-        for t in range(seq_len):
-            u_t = u[:, t, :] # Current input token
-            delta_t = delta[:, t, :]
-            B_t = B[:, t, :]
-            C_t = C[:, t, :]
-            
-            # Discretize continuous state matrices
-            # h_t = (I + dA) * h_{t-1} + dB * u_t
-            dA = torch.exp(delta_t.unsqueeze(-1) * self.A)
-            dB = delta_t.unsqueeze(-1) * B_t.unsqueeze(1)
-            
-            # Update hidden state
-            h = dA * h + dB * u_t.unsqueeze(-1)
-            
-            # Compute output: y = C * h + D * u
-            y_t = torch.einsum(&quot;bms,bs-&gt;bm&quot;, h, C_t) + self.D * u_t
-            ys.append(y_t)
-            
-        return torch.stack(ys, dim=1) # [batch, seq_len, d_model]</code></pre>
-<hr>
-<h2>📋 SSM Ingestion Guardrails</h2>
-<ul>
-<li><strong>Hybrid Architectures</strong>: For tasks requiring both long context and exact recall, use hybrid models (like Jamba) that interleave Transformer attention layers (for retrieval) with Mamba SSM layers (for context scaling).</li>
-<li><strong>PII/Key Anchoring</strong>: When passing document datasets to SSMs, place key facts or lookup terms at the very beginning of the prompt to maximize the model&#39;s initial state activation.</li>
-</ul>
-<hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
-<p>Breaking the attention memory barrier is essential for the next generation of long-context applications:</p>
+    RRF --&gt; Reranker{4. Cross-Encoder Reranker &lt;br&gt; BGE-Reranker-Large}
+    Reranker --&gt;|Re-calculate token affinity| TopDocs[5. Isolated Top-3 Context]
+    TopDocs --&gt; LLM[LLM Generation]</div>
+<p>By using both, we get the best of both worlds:</p>
 <ol>
-<li><strong>Linear Scaling is Real:</strong> Mamba and other selective state space architectures offer a concrete pathway to processing millions of tokens without linear GPU cluster expansions.</li>
-<li><strong>The Recall Trade-off:</strong> Do not replace attention wholesale if your application requires 100% factual accuracy in document searches. SSMs suffer from information decay over long distances.</li>
-<li><strong>The Rise of Hybrids:</strong> Modern architectures (like Jamba) are moving toward hybrid designs—combining attention layers (for exact recall) with recurrent SSM layers (for context efficiency).</li>
+<li>Use fast Bi-encoders (vector/keyword search) to retrieve the top 50 candidate documents.</li>
+<li>Use a slow Cross-encoder (Reranker) to evaluate only those top 50 and sort them, passing the top 3 to the LLM.</li>
 </ol>
-<p><em>Takeaway:</em> Choose your architecture based on your sequence memory bounds vs. your precise factual recall requirements.</p>
 <hr>
-<h2>📚 References &amp; Further Reading</h2>
+<h2>Step-by-Step Implementation: Hybrid Search + RRF + BGE Reranker</h2>
+<p>Here is the Python implementation of this pipeline using the <code>SentenceTransformers</code> library.</p>
+<pre><code class="language-python">import numpy as np
+from sentence_transformers import CrossEncoder
+
+# 1. Initialize the BGE Cross-Encoder Reranker
+# This model is small enough to run on CPU with ~50ms latency
+reranker = CrossEncoder(&quot;BAAI/bge-reranker-large&quot;, revision=&quot;main&quot;)
+
+# Dummy Mock Results from Vector Search
+vector_results = [
+    {&quot;id&quot;: 1, &quot;text&quot;: &quot;PostgreSQL uses Write-Ahead Logging (WAL) to ensure data integrity.&quot;, &quot;rank&quot;: 1},
+    {&quot;id&quot;: 2, &quot;text&quot;: &quot;Database backups can be scheduled using pg_dump and cron jobs.&quot;, &quot;rank&quot;: 2},
+    {&quot;id&quot;: 3, &quot;text&quot;: &quot;Redis maintains data in memory and supports snapshotting for persistence.&quot;, &quot;rank&quot;: 3}
+]
+
+# Dummy Mock Results from Keyword Search (BM25)
+keyword_results = [
+    {&quot;id&quot;: 2, &quot;text&quot;: &quot;Database backups can be scheduled using pg_dump and cron jobs.&quot;, &quot;rank&quot;: 1},
+    {&quot;id&quot;: 1, &quot;text&quot;: &quot;PostgreSQL uses Write-Ahead Logging (WAL) to ensure data integrity.&quot;, &quot;rank&quot;: 2},
+    {&quot;id&quot;: 4, &quot;text&quot;: &quot;Write-Ahead Logging writes changes to disk before updating pages.&quot;, &quot;rank&quot;: 3}
+]
+
+def reciprocal_rank_fusion(dense_runs, sparse_runs, k=60):
+    &quot;&quot;&quot;
+    Combines ranks from vector and keyword search using RRF formula:
+    score = sum(1 / (k + rank))
+    &quot;&quot;&quot;
+    scores = {}
+    documents = {}
+    
+    for run in [dense_runs, sparse_runs]:
+        for doc in run:
+            doc_id = doc[&quot;id&quot;]
+            documents[doc_id] = doc[&quot;text&quot;]
+            rank = doc[&quot;rank&quot;]
+            if doc_id not in scores:
+                scores[doc_id] = 0.0
+            scores[doc_id] += 1.0 / (k + rank)
+            
+    # Sort documents by RRF score
+    sorted_ids = sorted(scores, key=scores.get, reverse=True)
+    return [{&quot;id&quot;: doc_id, &quot;text&quot;: documents[doc_id]} for doc_id in sorted_ids]
+
+def rerank_documents(query: str, candidates: list[dict]) -&gt; list[dict]:
+    &quot;&quot;&quot;
+    Reranks candidate documents using BGE Cross-Encoder
+    &quot;&quot;&quot;
+    # Prepare query-document pairs for the cross-encoder
+    pairs = [[query, doc[&quot;text&quot;]] for doc in candidates]
+    
+    # Compute relevance scores (higher = more relevant)
+    scores = reranker.predict(pairs)
+    
+    # Attach scores to documents
+    for i, doc in enumerate(candidates):
+        doc[&quot;rerank_score&quot;] = float(scores[i])
+        
+    # Sort by rerank score descending
+    candidates.sort(key=lambda x: x[&quot;rerank_score&quot;], reverse=True)
+    return candidates
+
+# Execution Pipeline
+if __name__ == &quot;__main__&quot;:
+    query = &quot;How does PostgreSQL ensure data integrity?&quot;
+    
+    # 1. Merge Vector &amp; Keyword search results using RRF
+    merged_candidates = reciprocal_rank_fusion(vector_results, keyword_results)
+    print(&quot;Merged Candidates (RRF):&quot;, [doc[&quot;id&quot;] for doc in merged_candidates])
+    
+    # 2. Run BGE Reranker on the merged set
+    reranked_docs = rerank_documents(query, merged_candidates)
+    
+    print(&quot;\n--- Reranked Context Results ---&quot;)
+    for doc in reranked_docs[:2]:
+        print(f&quot;ID: {doc['id']}, Score: {doc['rerank_score']:.4f}&quot;)
+        print(f&quot;Text: {doc['text']}\n&quot;)</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Takeaways</h2>
+<p>Rerankers are one of the most effective ways to boost your RAG system&#39;s accuracy:</p>
 <ul>
-<li><strong>Mamba Architecture</strong>: Gu &amp; Dao, 2023. <em>Mamba: Linear-Time Sequence Modeling with Selective State Spaces</em>. <a href="https://arxiv.org/abs/2312.00752" target="_blank" rel="noopener">arXiv:2312.00752</a>.</li>
-<li><strong>Mamba-2 Updates</strong>: Dao &amp; Gu, 2024. <em>Transformers are SSMs: Generalized State Space Models</em>. Details on hardware-aware matrix formulations.</li>
-<li><strong>SSM Video Breakdown</strong>: Yannic Kilcher&#39;s tutorial on <a href="https://www.youtube.com/watch?v=N6PiV3ESB-4" target="_blank" rel="noopener">Mamba: Linear-Time Sequence Modeling</a>.</li>
+<li><input disabled="" type="checkbox"> <strong>Combine dense and sparse search</strong>: Use hybrid search (vector similarity + keyword matching) as your initial retrieval pass.</li>
+<li><input disabled="" type="checkbox"> <strong>Use Reciprocal Rank Fusion (RRF)</strong>: Blend results from different search indexes fairly before reranking.</li>
+<li><input disabled="" type="checkbox"> <strong>Deploy a Cross-encoder</strong>: Place a reranker (like BGE-Reranker or Cohere V3) in front of your LLM call.</li>
+<li><input disabled="" type="checkbox"> <strong>Measure latency tradeoffs</strong>: Keep your candidate list size (retrieval pool) limited to 50–100 documents to ensure reranking completes within 100ms.</li>
 </ul>
-<p><em>To review our experimental sequence models and agent evaluation benchmarks, explore the codebase inside <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a>.</em></p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fssms-vs-transformers-attention-bottlenecks.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=State%20Space%20Models%20vs.%20Attention%3A%20The%20Quest%20for%20Infinite%20Context%20without%20VRAM%20Crashes&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fssms-vs-transformers-attention-bottlenecks.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Frag-reranking-cross-encoders-bge.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Beyond%20Simple%20Vector%20Search%3A%20Why%20Cohere%2FBGE%20Rerankers%20are%20Non-Negotiable&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Frag-reranking-cross-encoders-bge.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -292,7 +279,7 @@ class SelectiveScanSSM(nn.Module):
             <li class="sidebar-post-item">
               <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">June 22, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="rag-reranking-cross-encoders-bge.html">Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable<span class="sidebar-post-date">June 21, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -385,7 +372,7 @@ class SelectiveScanSSM(nn.Module):
             <li class="sidebar-post-item">
               <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">June 5, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">June 4, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
