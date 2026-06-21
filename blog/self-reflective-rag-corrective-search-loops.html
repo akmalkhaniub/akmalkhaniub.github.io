@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA) | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Analyzing KV-cache optimizations, comparing low-rank Multi-head Latent Attention (MLA) in DeepSeek V3 against Grouped-Query Attention (GQA) in LLaMA-3.">
+  <title>Self-Reflective RAG (CRAG): Corrective Search Loops | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to build a self-corrective RAG pipeline that evaluates retrieved documents, triggers web search fallback on poor context matches, and prevents LLM hallucinations.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/kv-cache-compression-mla-vs-gqa.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/self-reflective-rag-corrective-search-loops.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/kv-cache-compression-mla-vs-gqa.html">
-  <meta property="og:title" content="Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)">
-  <meta property="og:description" content="Analyzing KV-cache optimizations, comparing low-rank Multi-head Latent Attention (MLA) in DeepSeek V3 against Grouped-Query Attention (GQA) in LLaMA-3.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/self-reflective-rag-corrective-search-loops.html">
+  <meta property="og:title" content="Self-Reflective RAG (CRAG): Corrective Search Loops">
+  <meta property="og:description" content="How to build a self-corrective RAG pipeline that evaluates retrieved documents, triggers web search fallback on poor context matches, and prevents LLM hallucinations.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-05">
+  <meta property="article:published_time" content="2026-06-24">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)">
-  <meta name="twitter:description" content="Analyzing KV-cache optimizations, comparing low-rank Multi-head Latent Attention (MLA) in DeepSeek V3 against Grouped-Query Attention (GQA) in LLaMA-3.">
+  <meta name="twitter:title" content="Self-Reflective RAG (CRAG): Corrective Search Loops">
+  <meta name="twitter:description" content="How to build a self-corrective RAG pipeline that evaluates retrieved documents, triggers web search fallback on poor context matches, and prevents LLM hallucinations.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)",
-  "description": "Analyzing KV-cache optimizations, comparing low-rank Multi-head Latent Attention (MLA) in DeepSeek V3 against Grouped-Query Attention (GQA) in LLaMA-3.",
-  "url": "https://akmalkhaniub.github.io/blog/kv-cache-compression-mla-vs-gqa.html",
-  "datePublished": "2026-06-05",
-  "keywords": "MLA, GQA, KV Cache, System Design",
+  "headline": "Self-Reflective RAG (CRAG): Corrective Search Loops",
+  "description": "How to build a self-corrective RAG pipeline that evaluates retrieved documents, triggers web search fallback on poor context matches, and prevents LLM hallucinations.",
+  "url": "https://akmalkhaniub.github.io/blog/self-reflective-rag-corrective-search-loops.html",
+  "datePublished": "2026-06-24",
+  "keywords": "RAG, CRAG, Search, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/kv-cache-compression-mla-vs-gqa.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/self-reflective-rag-corrective-search-loops.html"
 }
   </script>
 
@@ -93,184 +93,157 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)</h1>
+            <h1 class="article-title">Self-Reflective RAG (CRAG): Corrective Search Loops</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> June 6, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> June 25, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 7 min read</span>
-              <div class="article-tags"><span class="project-badge">MLA</span><span class="project-badge">GQA</span><span class="project-badge">KV Cache</span><span class="project-badge">System Design</span></div>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">RAG</span><span class="project-badge">CRAG</span><span class="project-badge">Search</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Compressing the KV Cache: DeepSeek&#39;s Latent Projections (MLA) vs. Meta&#39;s Grouped Queries (GQA)</h1>
+<h1>Self-Reflective RAG (CRAG): Corrective Search Loops</h1>
 <blockquote>
-<h3>📖 Article Overview</h3>
-<ul>
-<li><strong>What this article is about:</strong> An analysis of Key-Value (KV) cache compression methods, comparing low-rank Multi-head Latent Attention (MLA, used in DeepSeek V3/R1) against Grouped-Query Attention (GQA, used in Meta LLaMA-3).</li>
-<li><strong>Why it matters:</strong> LLM serving throughput is bounded by memory bandwidth. Storing the historical keys and values of concurrent active users consumes massive amounts of VRAM, limiting concurrency.</li>
-<li><strong>What we synthesized:</strong> GQA groups heads to reduce cache footprint by 8x with minimal information loss. MLA projects keys and values into a compressed latent vector space to achieve a 14x (93%) cache reduction, significantly boosting server throughput but adding mathematical projection overhead.</li>
-</ul>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Traditional Retrieval-Augmented Generation (RAG) pipelines suffer from a major structural flaw: <strong>they assume the retriever always finds the correct context</strong>. If the vector database returns irrelevant or outdated documents, the LLM will generate an incorrect, hallucinated response. To solve this, advanced AI teams build <strong>Self-Reflective RAG (also known as Corrective RAG or CRAG)</strong> pipelines. By inserting a grader node that evaluates retrieved context relevance and triggers dynamic web search fallback when information is missing, CRAG ensures your generation is always grounded. This article walks through building a CRAG pipeline in Python.</p>
 </blockquote>
 <hr>
-<p>The primary bottleneck in serving large language models is not compute capability—it is memory bandwidth. </p>
-<p>When generating text, the model must store the Key-Value (KV) tensors of all past tokens in GPU memory. This is called the <strong>KV Cache</strong>. For a 70B parameter model processing a 32K context window, the KV Cache for a single user request can consume over <strong>12GB of VRAM</strong>, severely limiting the number of concurrent requests a server can process.</p>
-<p>To resolve this bottleneck, framework developers use key cache compression strategies: Meta&#39;s <strong>Grouped-Query Attention (GQA)</strong> and DeepSeek&#39;s <strong>Multi-head Latent Attention (MLA)</strong>.</p>
-<p>This article synthesizes the trade-offs of MLA vs. GQA, detailing <strong>what is good (pros)</strong>, <strong>what is not (cons)</strong>, and how to write a TypeScript telemetry profiling script, drawing from high-throughput optimization designs modeled in my async engine, <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</p>
-<hr>
-<h2>🎨 Attention Projections: GQA vs. MLA</h2>
-<p>GQA groups multiple Query heads to share single Key/Value heads, while MLA compresses keys and values into a shared low-rank latent vector space, expanding them dynamically during computation.</p>
-<div class="mermaid">graph TD
-    classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
-    classDef gqaStyle fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#92400e;
-    classDef mlaStyle fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
-    classDef label fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
-
-    Start[Inference: Parse Keys &amp; Values] --&gt; Compression{Attention Method}
-    
-    Compression --&gt;|Meta GQA: LLaMA-3| PathGQA[Grouped-Query Attention]
-    Compression --&gt;|DeepSeek MLA: V3/R1| PathMLA[Multi-head Latent Attention]
-    
-    PathGQA --&gt;|8:1 Ratio| HBM_Save1[Key-Value heads grouped / Reduces cache size by 8x]
-    PathMLA --&gt;|Low-Rank Latent| HBM_Save2[Compresses K &amp; V into latent vector dc / Reduces cache size by 14x]
-
-    class Start,Compression check;
-    class PathGQA,HBM_Save1 gqaStyle;
-    class PathMLA,HBM_Save2 mlaStyle;</div>
-<hr>
-<h2>🔍 Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
-<h3>1. Grouped-Query Attention (GQA)</h3>
-<p>Used as the standard attention mechanism in Meta&#39;s LLaMA-3 and Mistral&#39;s Mixtral models.</p>
-<ul>
-<li><strong>What&#39;s Good (The Pros)</strong>:<ul>
-<li><em>Simplicity</em>: Easy to implement and fully supported by all major GPU serving runtimes (vLLM, TensorRT-LLM).</li>
-<li><em>8x Cache Compression</em>: Reduces the KV Cache memory footprint by a factor of 8 by grouping 8 Query heads per single Key/Value head.</li>
-</ul>
-</li>
-<li><strong>What&#39;s Not (The Cons)</strong>:<ul>
-<li><em>Information Loss</em>: Grouping heads degrades the model&#39;s ability to attend to multiple different facts simultaneously, slightly impacting long-context recall.</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h3>2. Multi-head Latent Attention (MLA)</h3>
-<p>Introduced in DeepSeek-V3 and utilized in the DeepSeek-R1 reasoning models.</p>
-<ul>
-<li><strong>What&#39;s Good (The Pros)</strong>:<ul>
-<li><em>93% Cache Reduction</em>: MLA compresses keys and values into a compact, low-rank latent vector space ($d_c = 512$ dimensions) during inference. This reduces the KV Cache footprint by <strong>14x</strong> compared to standard Multi-Head Attention.</li>
-<li><em>Massive Concurrent Throughput</em>: By freeing up VRAM, servers can process 10x more concurrent user streams on the same GPU cluster, slashing operational hosting costs.</li>
-</ul>
-</li>
-<li><strong>What&#39;s Not (The Cons)</strong>:<ul>
-<li><em>Increased Computation Load</em>: Decompressing the latent KV representation during the attention forward pass adds extra mathematical projection steps, increasing the active GPU compute load.</li>
-<li><em>Integration Complexity</em>: The custom projection equations are highly complex, requiring specialized serving kernels that are not yet natively supported by all standard model runners.</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2>💻 Profiling KV-Cache Memory in TypeScript</h2>
-<p>To monitor and scale high-concurrency systems, you must track the active memory footprint of your model&#39;s context caches. </p>
-<p>Here is a TypeScript class that calculates the KV Cache memory footprint of a serving cluster under concurrent user requests, using the structural principles found in our asynchronous transaction processors in <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</p>
-<pre><code class="language-typescript">interface ModelSpec {
-  name: string;
-  numLayers: number;
-  numHeads: number;
-  headDim: number;
-  numKvHeads: number; // For GQA
-  latentDim?: number;  // For MLA
-}
-
-class KVCacheProfiler {
-  private spec: ModelSpec;
-
-  constructor(spec: ModelSpec) {
-    this.spec = spec;
-  }
-
-  /**
-   * Calculates KV Cache size in Bytes per single user request
-   * Formula for standard/GQA: 2 * numLayers * numKvHeads * headDim * seqLen * bytesPerFloat
-   */
-  public calculateRequestCacheSize(seqLen: number, precisionBytes: number = 2): number {
-    const { numLayers, headDim, numKvHeads, latentDim } = this.spec;
-
-    if (latentDim) {
-      // MLA formula: Compresses K&amp;V into a latent dimension (dc)
-      // KV Cache size = (latentDim + positional_dimension) * numLayers * seqLen * precisionBytes
-      const posDim = 64; // DeepSeek-V3 positional embedding dimension
-      return (latentDim + posDim) * numLayers * seqLen * precisionBytes;
-    }
-
-    // GQA / Standard formula
-    return 2 * numLayers * numKvHeads * headDim * seqLen * precisionBytes;
-  }
-
-  /**
-   * Profiles total VRAM consumption for concurrent sessions
-   */
-  public profileCluster(activeUsers: number, avgSeqLen: number): void {
-    const cachePerUserBytes = this.calculateRequestCacheSize(avgSeqLen);
-    const totalCacheBytes = cachePerUserBytes * activeUsers;
-    const totalCacheGB = totalCacheBytes / (1024 * 1024 * 1024);
-
-    console.log(`[Memory Profile - ${this.spec.name}]:`);
-    console.log(`- KV Cache per user: ${(cachePerUserBytes / (1024 * 1024)).toFixed(2)} MB`);
-    console.log(`- Total KV Cache for ${activeUsers} concurrent users: ${totalCacheGB.toFixed(2)} GB`);
-  }
-}
-
-// Example usage comparing LLaMA-3 (GQA) vs DeepSeek-V3 (MLA)
-const llama3Profiler = new KVCacheProfiler({
-  name: &quot;LLaMA-3-70B (GQA)&quot;,
-  numLayers: 80,
-  numHeads: 64,
-  headDim: 128,
-  numKvHeads: 8 // GQA ratio 8:1
-});
-
-const deepseekProfiler = new KVCacheProfiler({
-  name: &quot;DeepSeek-V3 (MLA)&quot;,
-  numLayers: 61,
-  numHeads: 128,
-  headDim: 128,
-  numKvHeads: 128, // MLA uses latent projection instead
-  latentDim: 512    // Compressed low-rank representation
-});
-
-// Profile 100 concurrent users at 32K context window
-llama3Profiler.profileCluster(100, 32768);
-deepseekProfiler.profileCluster(100, 32768);</code></pre>
-<hr>
-<h2>📋 KV-Cache Management Guardrails</h2>
-<ul>
-<li><strong>vLLM PagedAttention</strong>: Always deploy KV Cache configurations inside dynamic paging engines (like vLLM PagedAttention) to prevent fragmentation crashes.</li>
-<li><strong>Prefill Decoupling</strong>: Separate prefill instances (which compute KV tensors) from decoding instances (which iterate token generation) to prevent latency spikes during high-concurrency request bursts.</li>
-</ul>
-<hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
-<p>Optimizing memory utilization during token decoding is the key to scaling LLM deployments:</p>
+<h2>The Corrective RAG (CRAG) Architecture</h2>
+<p>Instead of feeding retrieved documents directly into the prompt generator, a CRAG pipeline routes them through three logical stages:</p>
 <ol>
-<li><strong>The Concurrency Revolution:</strong> DeepSeek&#39;s MLA demonstrates that low-rank compression of keys and values allows a single server to handle up to 10x more concurrent users, drastically lowering hosting costs.</li>
-<li><strong>Compute vs. Memory Trade-off:</strong> GQA is mathematically simpler and universally supported by serving frameworks, making it the choice for general deployments. MLA trades additional GPU matrix projections (FLOPs) for high VRAM compression.</li>
-<li><strong>Deploy with Paging:</strong> Regardless of the attention optimization selected, combining compression with block-allocation schemes (like PagedAttention) is necessary to eliminate cache fragmentation.</li>
+<li><strong>Context Grading</strong>: An evaluator LLM grades each retrieved document block as <code>CORRECT</code>, <code>INCORRECT</code>, or <code>AMBIGUOUS</code>.</li>
+<li><strong>Dynamic Web Search Fallback</strong>: If the grader marks all documents as <code>INCORRECT</code> (indicating the local vector database lacks the query&#39;s answer), the pipeline suspends generation and queries a Web Search API (like Tavily) to fetch real-time context.</li>
+<li><strong>Context Filtering &amp; Ingestion</strong>: The system extracts the highly relevant web search snippets, discards the irrelevant local database records, and compiles the final grounded prompt.</li>
 </ol>
-<p><em>Takeaway:</em> Choose GQA for out-of-the-box framework compatibility; choose MLA to maximize active concurrent user densities.</p>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    Query[User Query] --&gt; Retrieve[1. Retrieve from Vector DB]
+    Retrieve --&gt; Grader{2. Context Grader Node}
+    
+    Grader --&gt;|CORRECT &lt;br&gt; Confidence &gt; 0.8| Generate[3. Generate LLM Completion]
+    Grader --&gt;|INCORRECT &lt;br&gt; Confidence &lt; 0.3| Search[4. Trigger Web Search API]
+    Grader --&gt;|AMBIGUOUS| Hybrid[5. Merge Vector &amp; Web Search]
+    
+    Search --&gt; Filter[6. Filter Snippets]
+    Hybrid --&gt; Filter
+    Filter --&gt; Generate</div>
 <hr>
-<h2>📚 References &amp; Further Reading</h2>
+<h2>Implementing Corrective RAG in Python</h2>
+<p>Below is a complete implementation using Python, <code>pydantic</code> for structured grading outputs, and a mock web search searcher routing logic.</p>
+<pre><code class="language-python">import os
+from typing import Literal
+from pydantic import BaseModel, Field
+from openai import OpenAI
+
+# Initialize client
+client = OpenAI(api_key=os.getenv(&quot;OPENAI_API_KEY&quot;))
+
+# Define structured grading output schema
+class DocumentGrade(BaseModel):
+    relevance: Literal[&quot;CORRECT&quot;, &quot;INCORRECT&quot;, &quot;AMBIGUOUS&quot;] = Field(
+        ..., 
+        description=&quot;Whether the document contains information directly answering the user query.&quot;
+    )
+    explanation: str = Field(..., description=&quot;Short rationale for the grade.&quot;)
+
+def grade_retrieved_document(query: str, doc_content: str) -&gt; DocumentGrade:
+    &quot;&quot;&quot;
+    Grades the relevance of a retrieved document to the user query
+    &quot;&quot;&quot;
+    system_prompt = (
+        &quot;You are an objective grader. Evaluate if the retrieved document contains &quot;
+        &quot;any information relevant to answering the user query. &quot;
+        &quot;Grade as CORRECT if relevant, INCORRECT if irrelevant, and AMBIGUOUS if partially relevant.&quot;
+    )
+    
+    prompt = f&quot;Query: {query}\n\nDocument: {doc_content}&quot;
+    
+    completion = client.beta.chat.completions.parse(
+        model=&quot;gpt-4o-mini&quot;,
+        messages=[
+            {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: system_prompt},
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}
+        ],
+        response_format=DocumentGrade
+    )
+    return completion.choices[0].message.parsed
+
+def mock_web_search(query: str) -&gt; str:
+    &quot;&quot;&quot;
+    Simulates calling a Web Search API (like Tavily or Searx)
+    &quot;&quot;&quot;
+    print(f&quot;-&gt; Triggering Web Search Fallback for: '{query}'&quot;)
+    return &quot;Web Search Result: According to official PostgreSQL documents, PgBouncer Transaction Mode disables prepared statement caching natively.&quot;
+
+def execute_crag_pipeline(query: str, retrieved_docs: list[str]) -&gt; str:
+    valid_contexts = []
+    needs_search = False
+    
+    # 1. Grade all retrieved documents
+    for doc in retrieved_docs:
+        grade = grade_retrieved_document(query, doc)
+        print(f&quot;Document Grade: {grade.relevance} ({grade.explanation})&quot;)
+        
+        if grade.relevance in [&quot;CORRECT&quot;, &quot;AMBIGUOUS&quot;]:
+            valid_contexts.append(doc)
+        
+        if grade.relevance == &quot;AMBIGUOUS&quot;:
+            # Partial hit - we can enrich this with search
+            needs_search = True
+
+    # 2. If no documents were relevant, trigger full web search fallback
+    if not valid_contexts:
+        print(&quot;-&gt; Local context database lookup failed completely.&quot;)
+        web_context = mock_web_search(query)
+        valid_contexts.append(web_context)
+    elif needs_search:
+        web_context = mock_web_search(query)
+        valid_contexts.append(web_context)
+
+    # 3. Assemble final context and generate completion
+    final_context = &quot;\n\n&quot;.join(valid_contexts)
+    prompt = f&quot;Context:\n{final_context}\n\nQuery: {query}\n\nAnswer:&quot;
+    
+    completion = client.chat.completions.create(
+        model=&quot;gpt-4o-mini&quot;,
+        messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}],
+        temperature=0.0
+    )
+    
+    return completion.choices[0].message.content
+
+# Run Simulation
+if __name__ == &quot;__main__&quot;:
+    query = &quot;How do I fix PgBouncer prepared statement error?&quot;
+    
+    # Mock documents returned from vector search that are IRRELEVANT (outdated info)
+    mock_retrieved_docs = [
+        &quot;To start PgBouncer, run the pgbouncer command pointing to your .ini configuration file.&quot;,
+        &quot;PostgreSQL connection pooling saves memory limits by multiplexing client ports.&quot;
+    ]
+    
+    final_answer = execute_crag_pipeline(query, mock_retrieved_docs)
+    print(&quot;\n--- Final Answer ---&quot;)
+    print(final_answer)</code></pre>
+<hr>
+<h2>🏁 Conclusion &amp; Takeaways</h2>
+<p>Self-Reflective loops protect RAG systems from poor vector search results:</p>
 <ul>
-<li><strong>DeepSeek MLA Specification</strong>: DeepSeek-AI. <em>DeepSeek-V3 Technical Report</em>. Details Multi-head Latent Attention math and low-rank projections. <a href="https://github.com/deepseek-ai/DeepSeek-V3" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> DeepSeek Portal</a>.</li>
-<li><strong>Meta LLaMA GQA</strong>: Meta AI. <em>LLaMA 3 Model Architecture</em>. Details on Grouped-Query Attention scaling. <a href="https://ai.meta.com/blog/meta-llama-3/" target="_blank" rel="noopener">Meta AI Blog</a>.</li>
-<li><strong>Attention Compression</strong>: ICLR papers on KV-cache compression and low-rank tensor decompositions.</li>
+<li><input disabled="" type="checkbox"> <strong>Insert a grader node</strong>: Always evaluate the semantic relevancy of retrieved document fragments before passing them to the generator.</li>
+<li><input disabled="" type="checkbox"> <strong>Enforce structured grading criteria</strong>: Use strict grading schemas (CORRECT, INCORRECT, AMBIGUOUS) using Pydantic parse endpoints.</li>
+<li><input disabled="" type="checkbox"> <strong>Establish search fallback gates</strong>: If local vector data scores below your relevancy threshold, dynamically trigger search API gateways to collect fresh data.</li>
+<li><input disabled="" type="checkbox"> <strong>Filter context dynamically</strong>: Strip away flagged irrelevant context blocks to optimize input token costs and keep prompts focused.</li>
 </ul>
-<p><em>To check out our high-throughput asynchronous engine logic and database scaling structures, inspect the source code of our <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a> repository.</em></p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fkv-cache-compression-mla-vs-gqa.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Compressing%20the%20KV%20Cache%3A%20DeepSeek's%20Latent%20Projections%20(MLA)%20vs.%20Meta's%20Grouped%20Queries%20(GQA)&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fkv-cache-compression-mla-vs-gqa.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fself-reflective-rag-corrective-search-loops.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Self-Reflective%20RAG%20(CRAG)%3A%20Corrective%20Search%20Loops&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fself-reflective-rag-corrective-search-loops.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -305,7 +278,7 @@ deepseekProfiler.profileCluster(100, 32768);</code></pre>
             <li class="sidebar-post-item">
               <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">June 26, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="self-reflective-rag-corrective-search-loops.html">Self-Reflective RAG (CRAG): Corrective Search Loops<span class="sidebar-post-date">June 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -416,7 +389,7 @@ deepseekProfiler.profileCluster(100, 32768);</code></pre>
             <li class="sidebar-post-item">
               <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">June 7, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">June 6, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
