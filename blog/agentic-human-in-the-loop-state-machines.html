@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Semantic Cache Eviction: Managing Stale LLM Cache Databases | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Designing cache invalidation protocols in vector databases, handling prompt updates, target model upgrades, and soft evictions with Redis metadata namespaces.">
+  <title>Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to design resilient agent checkpointers that pause execution, persist state to database storage, and resume upon receiving secure human approval callbacks.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/semantic-cache-eviction-strategies.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/agentic-human-in-the-loop-state-machines.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/semantic-cache-eviction-strategies.html">
-  <meta property="og:title" content="Semantic Cache Eviction: Managing Stale LLM Cache Databases">
-  <meta property="og:description" content="Designing cache invalidation protocols in vector databases, handling prompt updates, target model upgrades, and soft evictions with Redis metadata namespaces.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/agentic-human-in-the-loop-state-machines.html">
+  <meta property="og:title" content="Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates">
+  <meta property="og:description" content="How to design resilient agent checkpointers that pause execution, persist state to database storage, and resume upon receiving secure human approval callbacks.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-26">
+  <meta property="article:published_time" content="2026-07-07">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Semantic Cache Eviction: Managing Stale LLM Cache Databases">
-  <meta name="twitter:description" content="Designing cache invalidation protocols in vector databases, handling prompt updates, target model upgrades, and soft evictions with Redis metadata namespaces.">
+  <meta name="twitter:title" content="Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates">
+  <meta name="twitter:description" content="How to design resilient agent checkpointers that pause execution, persist state to database storage, and resume upon receiving secure human approval callbacks.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Semantic Cache Eviction: Managing Stale LLM Cache Databases",
-  "description": "Designing cache invalidation protocols in vector databases, handling prompt updates, target model upgrades, and soft evictions with Redis metadata namespaces.",
-  "url": "https://akmalkhaniub.github.io/blog/semantic-cache-eviction-strategies.html",
-  "datePublished": "2026-06-26",
-  "keywords": "Redis, Embeddings, Caching, Architecture",
+  "headline": "Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption & Approval Gates",
+  "description": "How to design resilient agent checkpointers that pause execution, persist state to database storage, and resume upon receiving secure human approval callbacks.",
+  "url": "https://akmalkhaniub.github.io/blog/agentic-human-in-the-loop-state-machines.html",
+  "datePublished": "2026-07-07",
+  "keywords": "AI Agents, State Machines, LangGraph, Architecture",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/semantic-cache-eviction-strategies.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/agentic-human-in-the-loop-state-machines.html"
 }
   </script>
 
@@ -93,148 +93,197 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">Semantic Cache Eviction: Managing Stale LLM Cache Databases</h1>
+            <h1 class="article-title">Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> June 27, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 8, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Redis</span><span class="project-badge">Embeddings</span><span class="project-badge">Caching</span><span class="project-badge">Architecture</span></div>
+              <div class="article-tags"><span class="project-badge">AI Agents</span><span class="project-badge">State Machines</span><span class="project-badge">LangGraph</span><span class="project-badge">Architecture</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Semantic Cache Eviction: Managing Stale LLM Cache Databases</h1>
+<h1>Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates</h1>
 <blockquote>
 <p>[!NOTE]
 <strong>📖 Article Overview</strong>
-Implementing a semantic cache (like matching query embedding distances in Redis or Qdrant before calling LLM APIs) is a standard optimization to reduce latency and token costs. However, caching LLM responses introduces a complex problem: <strong>cache invalidation</strong>. If you update your model version, tweak your system prompt, or modify your underlying databases, your semantic cache will continue serving stale, outdated, or now-incorrect answers. This article outlines the architecture of <strong>Semantic Cache Eviction</strong> — hashing prompts, namespace routing, and executing targeted purges — with a complete implementation in Python.</p>
+While autonomous agent swarms excel at processing data and planning tasks, fully autonomous execution is a liability in enterprise operations. Sending wire transfers, editing customer database entries, or executing server mutations require strict human review. In this article, we cover how to design <strong>Human-in-the-Loop (HITL) state machines</strong> that pause execution at critical nodes, serialize the complete agent memory and execution tree to a database, and resume operation dynamically upon receiving a validated external human approval webhook.</p>
 </blockquote>
 <hr>
-<h2>The Stale Embedding Problem</h2>
-<p>In traditional web development, we evict caches using direct keys (e.g. <code>DEL user:99</code>). In semantic caching, we search for matching keys using vector similarity.</p>
-<p>If the prompt template changes from <em>&quot;Summarize this text in 3 sentences&quot;</em> to <em>&quot;Summarize this text in 5 bullet points&quot;</em>, a naive vector lookup will match the new user query with the old 3-sentence summary cached under the previous template. The cache is stale, but because the user query embedding is similar, the system returns the wrong output style.</p>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+<h2>The Autonomy Problem in the Enterprise</h2>
+<p>When an agent plans and runs a series of actions, it operates in a loop: planning, executing tools, inspecting results, and deciding the next step. If one of these steps involves a sensitive transaction—like spending money or emailing a client—we cannot let the agent run unsupervised. </p>
+<p>We need a way to insert a <strong>Human Gate</strong>:</p>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[User Query] --&gt; HashGen[1. Generate Query Hash + Embedding]
-    HashGen --&gt; CheckNamespace{2. Check Namespace in Cache}
+    Start[User Prompt] --&gt; Step1[Plan Generation]
+    Step1 --&gt; Node1[Action Node: Create Draft invoice]
+    Node1 --&gt; Check{Is sensitive action?}
     
-    CheckNamespace -- Match Found --&gt; Similarity{3. Cosine Similarity &gt; 0.96?}
-    Similarity -- Yes --&gt; ReturnCache[Return Cached Completion]
-    Similarity -- No --&gt; CallLLM[4. Invoke LLM API]
+    Check --&gt;|Yes| Pause[Pause Execution &amp; Serialize State]
+    Pause --&gt; DB[(PostgreSQL Checkpoint DB)]
+    Pause --&gt; Notify[Send Slack/Email Notification with Approval Link]
     
-    CheckNamespace -- Prompt/Model changed or Cache Purged --&gt; CallLLM
-    CallLLM --&gt; SaveCache[5. Save to Cache Namespace]</div>
+    Notify --&gt; Await[Await Human Action Callback]
+    Await --&gt; Webhook[Receive Webhook: Approve / Edit]
+    
+    Webhook --&gt; Deserialize[Reload State from DB]
+    Deserialize --&gt; Node2[Action Node: Execute payment]
+    Check --&gt;|No| Node2
+    Node2 --&gt; End[Deliver Output]</div>
+<p>To achieve this without blocking active server thread pools, we design an <strong>Asynchronous Checkpointed State Machine</strong>. The system serializes the agent&#39;s memory stack and current graph position, saves it to a persistent database, and releases the CPU resource.</p>
 <hr>
-<h2>3 Pillars of Semantic Cache Invalidation</h2>
-<p>To build a reliable semantic cache, you must tie cache keys to the variables that define the execution state:</p>
-<h3>1. Hashing the Application Context</h3>
-<p>The cache key should not just be the user query. It must include a hash of the <strong>system prompt version</strong> and the <strong>active model name</strong>. If either the prompt template changes or the model is upgraded, the hash changes, automatically partitioning new cached completions from legacy ones.</p>
-<h3>2. Metadata Namespaces</h3>
-<p>Store cache entries with strict metadata fields (e.g., <code>tenant_id</code>, <code>category</code>, <code>data_version</code>). This allows you to run bulk deletes across specific namespaces without wiping the entire global cache.</p>
-<h3>3. Soft Eviction (Re-evaluation thresholds)</h3>
-<p>Instead of a binary hit/miss, evaluate similarity scores:</p>
-<ul>
-<li><strong>Score &gt; 0.98</strong>: High confidence. Serve cache instantly.</li>
-<li><strong>Score 0.94 - 0.98</strong>: Ambiguous. Serve cache, but trigger an asynchronous LLM request in the background to verify the answer. If the new response differs, overwrite the cache.</li>
-<li><strong>Score &lt; 0.94</strong>: Cache miss. Route directly to LLM.</li>
-</ul>
+<h2>Designing Thread Checkpointing</h2>
+<p>In a checkpointed state machine, the agent&#39;s execution is represented as a state graph. The state contains:</p>
+<ol>
+<li><strong>System Variables</strong>: Current node, execution history, and variables.</li>
+<li><strong>Conversation History</strong>: The array of messages exchanged.</li>
+<li><strong>Internal Memory</strong>: Intermediate variables and scratchpad steps.</li>
+</ol>
+<p>When the agent hits an interruption boundary, the graph engine returns a <code>PAUSED</code> signal instead of executing the next node.</p>
 <hr>
-<h2>Implementation: Hashed Semantic Cache Router in Python</h2>
-<p>Below is a Python implementation utilizing <code>redis-py</code> that creates contextual cache keys, conducts vector similarity lookups, and supports namespace-based cache eviction.</p>
-<pre><code class="language-python">import hashlib
-import json
-import redis
-from redis.commands.search.query import Query
+<h2>Implementing Checkpoint Persistence in Python</h2>
+<p>Below is a complete, production-grade Python script demonstrating state serialization, checkpoint database persistence (using an in-memory mock representing a SQL/NoSQL store), and asynchronous callback routing.</p>
+<pre><code class="language-python">import json
+import uuid
+from typing import Dict, List, Any, Optional
 
-# Connect to Redis Server
-# (Assuming Redis Stack is running locally with the Search module enabled)
-redis_client = redis.Redis(host=&quot;localhost&quot;, port=6379, decode_responses=True)
+# Mock Checkpoint Database
+DB_STORE: Dict[str, str] = {}
 
-class SemanticCacheManager:
-    def __init__(self, system_prompt: str, model_name: str):
-        self.model_name = model_name
-        # 1. Compile a unique hash representing the system state/prompt
-        self.context_hash = hashlib.sha256(
-            f&quot;{system_prompt}:{model_name}&quot;.encode(&quot;utf-8&quot;)
-        ).hexdigest()
-        
-    def generate_cache_key(self, query_text: str) -&gt; str:
-        &quot;&quot;&quot;
-        Creates a unique cache key prefix incorporating the system state hash
-        &quot;&quot;&quot;
-        query_hash = hashlib.sha256(query_text.encode(&quot;utf-8&quot;)).hexdigest()
-        return f&quot;cache:{self.context_hash}:{query_hash}&quot;
+class AgentState:
+    def __init__(self, thread_id: str, messages: List[Dict[str, str]], scratchpad: Dict[str, Any]):
+        self.thread_id = thread_id
+        self.messages = messages
+        self.scratchpad = scratchpad
+        self.current_node = &quot;START&quot;
+        self.status = &quot;ACTIVE&quot;
 
-    def set_cache_entry(self, query_text: str, query_vector: list[float], completion: str, namespace: str):
-        &quot;&quot;&quot;
-        Saves completion to the semantic cache with metadata namespace
-        &quot;&quot;&quot;
-        key = self.generate_cache_key(query_text)
-        
-        # Save structured document fields
-        payload = {
-            &quot;query&quot;: query_text,
-            &quot;completion&quot;: completion,
-            &quot;namespace&quot;: namespace,
-            &quot;context_hash&quot;: self.context_hash,
-            # Store raw vector as binary blob for Redis Index
-            &quot;embedding&quot;: bytes(bytearray(query_vector))
-        }
-        
-        redis_client.hset(key, mapping=payload)
-        # Set standard TTL (e.g. 7 days)
-        redis_client.expire(key, 604800)
+    def serialize(self) -&gt; str:
+        return json.dumps({
+            &quot;thread_id&quot;: self.thread_id,
+            &quot;messages&quot;: self.messages,
+            &quot;scratchpad&quot;: self.scratchpad,
+            &quot;current_node&quot;: self.current_node,
+            &quot;status&quot;: self.status
+        })
 
-    def get_cache_entry(self, query_vector: list[float], threshold: float = 0.96) -&gt; str | None:
-        &quot;&quot;&quot;
-        Performs vector similarity search constrained to the current context hash
-        &quot;&quot;&quot;
-        # Formulate a Vector Search query matching current context_hash
-        vector_query = (
-            f&quot;(@context_hash:{self.context_hash})=&gt;[KNN 1 @embedding $query_vector AS score]&quot;
-        )
-        
-        q = Query(vector_query).sort_by(&quot;score&quot;).paging(0, 1).return_fields(&quot;completion&quot;, &quot;score&quot;).dialect(2)
-        
-        query_params = {
-            &quot;query_vector&quot;: bytes(bytearray(query_vector))
-        }
-        
-        # Execute Redis Search index query
-        results = redis_client.ft(&quot;idx_cache&quot;).search(q, query_params)
-        
-        if results.docs:
-            doc = results.docs[0]
-            # Convert Redis score (distance) to cosine similarity
-            similarity = 1.0 - float(doc.score)
-            if similarity &gt;= threshold:
-                return doc.completion
-        return None
+    @classmethod
+    def deserialize(cls, data_str: str) -&gt; 'AgentState':
+        data = json.loads(data_str)
+        state = cls(data[&quot;thread_id&quot;], data[&quot;messages&quot;], data[&quot;scratchpad&quot;])
+        state.current_node = data[&quot;current_node&quot;]
+        state.status = data[&quot;status&quot;]
+        return state
 
-    def purge_namespace(self, namespace: str):
-        &quot;&quot;&quot;
-        Evicts all cache entries belonging to a specific metadata namespace
-        &quot;&quot;&quot;
-        # Find all keys matching the index filter
-        q = Query(f&quot;@namespace:{namespace}&quot;).return_fields(&quot;id&quot;).paging(0, 1000)
-        results = redis_client.ft(&quot;idx_cache&quot;).search(q)
+class Checkpointer:
+    @staticmethod
+    def save(state: AgentState) -&gt; None:
+        DB_STORE[state.thread_id] = state.serialize()
+        print(f&quot;[Checkpointer] Thread {state.thread_id} checkpoint saved at node: {state.current_node}&quot;)
+
+    @staticmethod
+    def load(thread_id: str) -&gt; Optional[AgentState]:
+        data_str = DB_STORE.get(thread_id)
+        if not data_str:
+            return None
+        print(f&quot;[Checkpointer] Thread {thread_id} checkpoint loaded.&quot;)
+        return AgentState.deserialize(data_str)
+
+class EnterpriseWorkflowEngine:
+    def __init__(self, thread_id: str):
+        self.thread_id = thread_id
+        # Load existing state or initialize a new one
+        self.state = Checkpointer.load(thread_id) or AgentState(thread_id, [], {})
+
+    def execute(self, user_input: Optional[str] = None) -&gt; None:
+        if self.state.status == &quot;PAUSED&quot;:
+            print(f&quot;[Engine] Thread {self.thread_id} is PAUSED. Awaiting human callback.&quot;)
+            return
+
+        if self.state.current_node == &quot;START&quot;:
+            print(&quot;[Engine] Node: START&quot;)
+            self.state.messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: user_input or &quot;&quot;})
+            self.state.current_node = &quot;GENERATE_INVOICE&quot;
+            Checkpointer.save(self.state)
+
+        if self.state.current_node == &quot;GENERATE_INVOICE&quot;:
+            print(&quot;[Engine] Node: GENERATE_INVOICE&quot;)
+            invoice_amount = 5000  # Calculated dynamically
+            self.state.scratchpad[&quot;invoice_amount&quot;] = invoice_amount
+            self.state.messages.append({
+                &quot;role&quot;: &quot;assistant&quot;,
+                &quot;content&quot;: f&quot;Generated invoice of ${invoice_amount}.&quot;
+            })
+            
+            # Sensitive Gate Check
+            if invoice_amount &gt; 1000:
+                print(f&quot;[Engine] Invoice amount ${invoice_amount} exceeds limit. Initiating HITL Gate.&quot;)
+                self.state.current_node = &quot;EXECUTE_PAYMENT&quot;
+                self.state.status = &quot;PAUSED&quot;
+                Checkpointer.save(self.state)
+                # Send approval alert in production (e.g., Slack Webhook or email notification)
+                return
+            
+            self.state.current_node = &quot;EXECUTE_PAYMENT&quot;
+
+        if self.state.current_node == &quot;EXECUTE_PAYMENT&quot;:
+            print(&quot;[Engine] Node: EXECUTE_PAYMENT&quot;)
+            # Payment executes
+            self.state.messages.append({
+                &quot;role&quot;: &quot;assistant&quot;, 
+                &quot;content&quot;: f&quot;Invoice of ${self.state.scratchpad['invoice_amount']} successfully paid.&quot;
+            })
+            self.state.current_node = &quot;COMPLETED&quot;
+            self.state.status = &quot;COMPLETED&quot;
+            Checkpointer.save(self.state)
+            print(&quot;[Engine] Workflow Completed.&quot;)
+
+    def receive_human_callback(self, action: str, feedback: Optional[str] = None) -&gt; None:
+        if self.state.status != &quot;PAUSED&quot;:
+            print(f&quot;[Callback] Cannot callback thread {self.thread_id}; status is {self.state.status}&quot;)
+            return
+
+        print(f&quot;[Callback] Received callback: {action.upper()}&quot;)
         
-        for doc in results.docs:
-            redis_client.delete(doc.id)
-        print(f&quot;Purged {len(results.docs)} entries from cache namespace: {namespace}&quot;)</code></pre>
-<h3>Key Highlights of the Code:</h3>
-<ul>
-<li><strong>Context Partitioning</strong>: By prefixing the key with <code>self.context_hash</code>, the cache automatically partitions itself. If you update your prompt, the new queries generate a different hash, rendering the old cache entries unreachable without requiring database-wide drops.</li>
-<li><strong>Granular Eviction</strong>: The <code>purge_namespace</code> method lets you invalidate specific customers&#39; data or categories (e.g., when a user deletes their profile) without affecting global caching.</li>
-</ul>
+        if action == &quot;approve&quot;:
+            self.state.status = &quot;ACTIVE&quot;
+            self.state.messages.append({&quot;role&quot;: &quot;human_gate&quot;, &quot;content&quot;: &quot;Approved by human reviewer.&quot;})
+            Checkpointer.save(self.state)
+            # Resume execution
+            self.execute()
+        elif action == &quot;reject&quot;:
+            self.state.status = &quot;REJECTED&quot;
+            self.state.messages.append({
+                &quot;role&quot;: &quot;human_gate&quot;, 
+                &quot;content&quot;: f&quot;Rejected by human reviewer. Reason: {feedback or 'None'}&quot;
+            })
+            Checkpointer.save(self.state)
+            print(&quot;[Engine] Workflow Rejected and Terminated.&quot;)
+
+# Execution Flow Example
+if __name__ == &quot;__main__&quot;:
+    thread_uuid = str(uuid.uuid4())
+    print(f&quot;--- Workflow Start (Thread: {thread_uuid}) ---&quot;)
+    
+    # 1. Start execution
+    engine = EnterpriseWorkflowEngine(thread_uuid)
+    engine.execute(user_input=&quot;Submit corporate invoice calculation.&quot;)
+    
+    # 2. Try to run again (will block because state is paused)
+    print(&quot;\n--- Running engine again while paused ---&quot;)
+    engine.execute()
+
+    # 3. Simulate human callback (Approved)
+    print(&quot;\n--- Simulating human approval callback ---&quot;)
+    engine.receive_human_callback(action=&quot;approve&quot;)</code></pre>
 <hr>
 <h2>🏁 Conclusion &amp; Takeaways</h2>
-<p>An invalidation strategy is the difference between a secure cache and a stale system:</p>
+<p>To build safe, enterprise-compliant agentic workflows:</p>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Hash the system parameters</strong>: Always include the system prompt template and model name inside the cache key prefix.</li>
-<li><input disabled="" type="checkbox"> <strong>Add metadata namespaces</strong>: Tag cache entries with database tenancy and data versions to allow targeted invalidation.</li>
-<li><input disabled="" type="checkbox"> <strong>Use transaction local variables</strong>: Set TTLs on all cache writes to naturally phase out unused historical entries.</li>
-<li><input disabled="" type="checkbox"> <strong>Soft evict ambiguous matches</strong>: Build re-evaluation ranges to run asynchronous background LLM queries for mid-similarity hits.</li>
+<li><input disabled="" type="checkbox"> <strong>Define clear threshold gates</strong>: Never allow agents to make un-audited state updates or calls for sensitive tasks. Enforce gates at the configuration level.</li>
+<li><input disabled="" type="checkbox"> <strong>Decouple state from memory</strong>: Do not keep active execution processes running during human review. Serialize the state to a database and spin down resources.</li>
+<li><input disabled="" type="checkbox"> <strong>Generate unique secure URLs</strong>: Include a cryptographically signed token in the human feedback notification to prevent spoofing or unauthorized approvals.</li>
+<li><input disabled="" type="checkbox"> <strong>Log human interventions</strong>: Ensure comments, overrides, and approval details are recorded into the conversation thread to maintain strict audit integrity.</li>
 </ul>
 
           </div>
@@ -242,8 +291,8 @@ class SemanticCacheManager:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsemantic-cache-eviction-strategies.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Semantic%20Cache%20Eviction%3A%20Managing%20Stale%20LLM%20Cache%20Databases&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsemantic-cache-eviction-strategies.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fagentic-human-in-the-loop-state-machines.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Human-in-the-Loop%20(HITL)%20State%20Machines%3A%20Implementing%20Asynchronous%20Interruption%20%26%20Approval%20Gates&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fagentic-human-in-the-loop-state-machines.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -266,7 +315,7 @@ class SemanticCacheManager:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="agentic-human-in-the-loop-state-machines.html">Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -302,7 +351,7 @@ class SemanticCacheManager:
             <li class="sidebar-post-item">
               <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">June 28, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="semantic-cache-eviction-strategies.html">Semantic Cache Eviction: Managing Stale LLM Cache Databases<span class="sidebar-post-date">June 27, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
