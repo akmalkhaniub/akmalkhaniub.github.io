@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP | Akmal Khan Tech Blog</title>
-  <meta name="description" content="How to scale agent capabilities by indexing tool schemas in a vector store, dynamically retrieving relevant tools, and mounting them via Model Context Protocol (MCP) gates.">
+  <title>The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/semantic-tool-routing-vector-retrieval-mcp.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/semantic-tool-routing-vector-retrieval-mcp.html">
-  <meta property="og:title" content="Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP">
-  <meta property="og:description" content="How to scale agent capabilities by indexing tool schemas in a vector store, dynamically retrieving relevant tools, and mounting them via Model Context Protocol (MCP) gates.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html">
+  <meta property="og:title" content="The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms">
+  <meta property="og:description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-06">
+  <meta property="article:published_time" content="2026-07-15">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP">
-  <meta name="twitter:description" content="How to scale agent capabilities by indexing tool schemas in a vector store, dynamically retrieving relevant tools, and mounting them via Model Context Protocol (MCP) gates.">
+  <meta name="twitter:title" content="The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms">
+  <meta name="twitter:description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval & MCP",
-  "description": "How to scale agent capabilities by indexing tool schemas in a vector store, dynamically retrieving relevant tools, and mounting them via Model Context Protocol (MCP) gates.",
-  "url": "https://akmalkhaniub.github.io/blog/semantic-tool-routing-vector-retrieval-mcp.html",
-  "datePublished": "2026-07-06",
-  "keywords": "MCP, Vector DB, Tooling, Optimization",
+  "headline": "The Database is the Blackboard: Shared State & Session Store Patterns for Agent Swarms",
+  "description": "Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.",
+  "url": "https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html",
+  "datePublished": "2026-07-15",
+  "keywords": "Database Scaling, System Design, PostgreSQL, Concurrency",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/semantic-tool-routing-vector-retrieval-mcp.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html"
 }
   </script>
 
@@ -93,188 +93,161 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP</h1>
+            <h1 class="article-title">The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> July 7, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 16, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
-              <div class="article-tags"><span class="project-badge">MCP</span><span class="project-badge">Vector DB</span><span class="project-badge">Tooling</span><span class="project-badge">Optimization</span></div>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">Database Scaling</span><span class="project-badge">System Design</span><span class="project-badge">PostgreSQL</span><span class="project-badge">Concurrency</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP</h1>
+<h1>The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms</h1>
 <blockquote>
 <p>[!NOTE]
 <strong>📖 Article Overview</strong>
-As enterprises deploy AI agents across their operations, the number of available tools (APIs, database adapters, internal calculators) scales into the hundreds. However, sending every tool schema in the LLM&#39;s system prompt exhausts token budgets, degrades reasoning latency, and increases tool-calling hallucinations. In this article, we explain how to build a <strong>Semantic Tool Routing</strong> pipeline. We index tool definitions inside a vector database, dynamically retrieve only the top-k relevant tools for the current query, and mount them securely at runtime using the <strong>Model Context Protocol (MCP)</strong>.</p>
+As AI agent architectures evolve from simple chain models into complex swarms, state coordination becomes the primary design challenge. Rather than relying solely on direct message exchanges (e.g. HTTP posts, WebSockets) which create coupling and high coordination overhead, advanced multi-agent systems rely on <strong>Blackboard Architectures</strong>. In this article, we analyze shared state patterns, design a PostgreSQL JSONB blackboard schema, and implement a concurrency-safe blackboard storage manager in Python.</p>
 </blockquote>
 <hr>
-<h2>The Tool Bloat Problem: Hallucinations &amp; Cost</h2>
-<p>When an LLM client is configured to use tools, the developer supplies a JSON array containing the schema of every available tool (including parameters, descriptions, and types). </p>
-<p>If you expose 100+ tools:</p>
+<h2>The Handoff Problem</h2>
+<p>In a decentralized swarm, agent nodes must transfer execution control and context data to one another. There are two primary architectural paradigms to handle this:</p>
 <ol>
-<li><strong>Context Window Inflation</strong>: Storing 100 tool schemas can consume 10,000 to 30,000 tokens on <em>every single interaction</em>, significantly increasing execution costs.</li>
-<li><strong>Reasoning Degradation</strong>: LLMs struggle to select the correct tool when faced with a massive catalog of overlapping functions. This leads to selecting the wrong parameters or hallucinating function calls.</li>
+<li><strong>Direct Peer-to-Peer Message Passing</strong>: Agent A calls Agent B&#39;s API. This is easy to set up but highly coupled. If Agent B crashes, the state is lost, and auditing execution paths requires complex trace collectors.</li>
+<li><strong>Blackboard Pattern (Shared State DB)</strong>: A central, persistent memory store—the &quot;Blackboard&quot;—holds the global state, task lists, and execution history. Agent nodes poll or subscribe to this blackboard. They inspect the current board state, write updates, and hand off control by updating the task status.</li>
 </ol>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[User Query: Calculate Q3 payroll total] --&gt; Search[Semantic Vector Search]
-    Search --&gt;|Matches query to tool descriptions| VectorDB[(Tool Vector Store)]
-    
-    VectorDB --&gt;|Retrieves top-3 relevant schemas| Router[Dynamic Tool Router]
-    
-    Router --&gt;|Compiles runtime schemas| LLM[LLM Engine]
-    LLM --&gt;|Generates Tool Call| MCPGate[Model Context Protocol Gate]
-    
-    MCPGate --&gt;|Invokes target server| ToolServer[Payroll MCP Server]
-    ToolServer --&gt;|Executes API &amp; returns results| LLM</div>
-<p>To prevent this, we introduce a <strong>Semantic Tool Router</strong>. We generate embeddings of our tool descriptions and store them in a vector index. Before querying the LLM, we perform a vector search to fetch the top-3 matching tools. The LLM only sees the tools it actually needs.</p>
+    subgraph Blackboard Architecture
+        DB[(Shared Blackboard DB)]
+        Coord[Coordinator Agent] --&gt;|Reads &amp; Schedules Tasks| DB
+        W1[Worker Agent: Researcher] &lt;--&gt;|Fetch task &amp; Write findings| DB
+        W2[Worker Agent: Coder] &lt;--&gt;|Fetch task &amp; Write code| DB
+        W3[Worker Agent: Validator] &lt;--&gt;|Fetch task &amp; Write test reports| DB
+    end</div>
+<p>Using a blackboard database decouples execution nodes, enforces transactional consistency, and provides built-in auditability of the agent swarm’s reasoning path.</p>
 <hr>
-<h2>Indexing &amp; Formatting Tool Metadata</h2>
-<p>For vector search to work effectively, each tool must have a clear semantic description. Instead of embedding code, we embed the human-readable explanation of what the tool does:</p>
+<h2>Designing a Concurrency-Safe Schema</h2>
+<p>When multiple agents write to the same blackboard concurrently, they risk overwrite errors (race conditions). We prevent this using <strong>Transactional Locks</strong>:</p>
 <ul>
-<li><strong>Function</strong>: <code>get_user_payroll_data(user_id: str, quarter: int)</code></li>
-<li><strong>Embedded Text</strong>: <em>&quot;Retrieves financial payroll data, total salaries paid, tax deductions, and bonuses for a specific user ID and calendar quarter.&quot;</em></li>
+<li><strong>Relational Schema (PostgreSQL)</strong>: We represent the blackboard as a table containing a unique <code>task_id</code>, a status column (<code>PENDING</code>, <code>RUNNING</code>, <code>COMPLETED</code>), and a JSONB column containing the execution context.</li>
+<li><strong>Concurrency Locking</strong>: When an agent claims a task, it runs a <code>SELECT ... FOR UPDATE</code> query. This locks the database row, preventing other agent threads from claiming the same task. The agent updates the status and context, then commits the transaction, releasing the lock.</li>
 </ul>
 <hr>
-<h2>Implementing a Semantic Tool Router in Python</h2>
-<p>Below is a complete Python implementation demonstrating how to vectorize tool metadata, execute a cosine-similarity query, and dynamically construct a subset of tool schemas for an LLM execution loop.</p>
-<pre><code class="language-python">import numpy as np
-from typing import List, Dict, Any
+<h2>Code Demo: Conactivity-Safe Blackboard Manager</h2>
+<p>Below is a complete Python script demonstrating a Blackboard manager using SQLite (with SQLAlchemy) that simulates concurrent workers processing tasks from a shared state repository using row-level transactional boundaries.</p>
+<pre><code class="language-python">import time
+import threading
+from typing import Dict, Any, List
+from sqlalchemy import create_engine, Column, Integer, String, JSON
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Mock embedding generator (in production, use OpenAI, SentenceTransformers, or Gemini embeddings)
-def get_mock_embedding(text: str) -&gt; np.ndarray:
-    # Deterministic mock vector generation based on word presence
-    vector = np.zeros(128)
-    words = text.lower().split()
-    for word in words:
-        char_sum = sum(ord(c) for c in word) % 128
-        vector[char_sum] += 1.0
-    # Normalize vector
-    norm = np.linalg.norm(vector)
-    if norm &gt; 0:
-        vector = vector / norm
-    return vector
+Base = declarative_base()
 
-class ToolRegistry:
-    def __init__(self):
-        self.tools: Dict[str, Dict[str, Any]] = {}
-        self.vectors: Dict[str, np.ndarray] = {}
+class BlackboardTask(Base):
+    __tablename__ = 'blackboard_tasks'
+    id = Column(Integer, primary_key=True)
+    status = Column(String(50), default=&quot;PENDING&quot;)
+    assigned_agent = Column(String(100), nullable=True)
+    context = Column(JSON, default=dict)
 
-    def register_tool(self, name: str, description: str, schema: Dict[str, Any]) -&gt; None:
-        self.tools[name] = {
-            &quot;name&quot;: name,
-            &quot;description&quot;: description,
-            &quot;schema&quot;: schema
-        }
-        # Vectorize the description of the tool
-        self.vectors[name] = get_mock_embedding(description)
-        print(f&quot;[Registry] Registered tool: {name}&quot;)
+# Setup Database
+engine = create_engine(&quot;sqlite:///:memory:&quot;, connect_args={&quot;check_same_thread&quot;: False})
+Base.metadata.create_all(engine)
+SessionLocal = sessionmaker(bind=engine)
 
-    def get_relevant_tools(self, query: str, top_k: int = 2) -&gt; List[Dict[str, Any]]:
-        query_vector = get_mock_embedding(query)
-        scores = []
-
-        for name, tool_vector in self.vectors.items():
-            # Calculate cosine similarity
-            similarity = np.dot(query_vector, tool_vector)
-            scores.append((name, similarity))
-
-        # Sort tools by similarity score in descending order
-        scores.sort(key=lambda x: x[1], reverse=True)
-        
-        print(f&quot;\n[Search] Top matching tools for query '{query}':&quot;)
-        relevant_tools = []
-        for name, score in scores[:top_k]:
-            print(f&quot; - {name} (Similarity Score: {score:.3f})&quot;)
-            relevant_tools.append(self.tools[name])
+class BlackboardRepository:
+    @staticmethod
+    def claim_task(agent_name: str, task_id: int) -&gt; bool:
+        session = SessionLocal()
+        try:
+            # In PostgreSQL, we would run: SELECT * FROM blackboard_tasks WHERE id = :id FOR UPDATE
+            task = session.query(BlackboardTask).filter(BlackboardTask.id == task_id).with_for_update().first()
             
-        return relevant_tools
+            if task and task.status == &quot;PENDING&quot;:
+                print(f&quot;[{agent_name}] Row lock acquired. Claiming task {task_id}...&quot;)
+                task.status = &quot;RUNNING&quot;
+                task.assigned_agent = agent_name
+                task.context[&quot;claimed_at&quot;] = time.time()
+                session.commit()
+                return True
+            return False
+        except Exception as e:
+            session.rollback()
+            print(f&quot;[{agent_name}] Error claiming task: {e}&quot;)
+            return False
+        finally:
+            session.close()
 
-# 1. Define schemas and descriptions
-payroll_schema = {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-        &quot;name&quot;: &quot;calculate_quarterly_payroll&quot;,
-        &quot;parameters&quot;: {
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-                &quot;quarter&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;1, 2, 3, or 4&quot;}
-            },
-            &quot;required&quot;: [&quot;quarter&quot;]
-        }
-    }
-}
+    @staticmethod
+    def update_task_results(agent_name: str, task_id: int, results: Dict[str, Any]) -&gt; None:
+        session = SessionLocal()
+        try:
+            task = session.query(BlackboardTask).filter(BlackboardTask.id == task_id).first()
+            if task and task.assigned_agent == agent_name:
+                # Merge existing context data
+                current_context = dict(task.context)
+                current_context.update(results)
+                task.context = current_context
+                task.status = &quot;COMPLETED&quot;
+                session.commit()
+                print(f&quot;[{agent_name}] Successfully submitted results for task {task_id}.&quot;)
+        except Exception as e:
+            session.rollback()
+            print(f&quot;Error updating task: {e}&quot;)
+        finally:
+            session.close()
 
-server_reboot_schema = {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-        &quot;name&quot;: &quot;reboot_kubernetes_pod&quot;,
-        &quot;parameters&quot;: {
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-                &quot;pod_name&quot;: {&quot;type&quot;: &quot;string&quot;}
-            },
-            &quot;required&quot;: [&quot;pod_name&quot;]
-        }
-    }
-}
+# Simulate Agent Worker Node Execution
+def run_worker_node(agent_name: str, task_id: int, task_duration: float, mock_data: Dict[str, Any]):
+    print(f&quot;[{agent_name}] Worker spawned.&quot;)
+    # 1. Attempt to claim task
+    if BlackboardRepository.claim_task(agent_name, task_id):
+        # 2. Simulate processing
+        time.sleep(task_duration)
+        # 3. Write results back
+        BlackboardRepository.update_task_results(agent_name, task_id, mock_data)
+    else:
+        print(f&quot;[{agent_name}] Failed to claim task {task_id} (already locked/claimed).&quot;)
 
-db_query_schema = {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-        &quot;name&quot;: &quot;run_read_only_sql&quot;,
-        &quot;parameters&quot;: {
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-                &quot;query&quot;: {&quot;type&quot;: &quot;string&quot;}
-            },
-            &quot;required&quot;: [&quot;query&quot;]
-        }
-    }
-}
-
-# 2. Initialize and populate the registry
 if __name__ == &quot;__main__&quot;:
-    registry = ToolRegistry()
-    
-    registry.register_tool(
-        name=&quot;calculate_quarterly_payroll&quot;,
-        description=&quot;Calculates payroll sums, salaries paid, and expenses for tax reporting and fiscal auditing.&quot;,
-        schema=payroll_schema
+    # Seed a task in the blackboard database
+    session = SessionLocal()
+    new_task = BlackboardTask(id=101, context={&quot;input&quot;: &quot;Analyze security vulnerabilities in login.py&quot;})
+    session.add(new_task)
+    session.commit()
+    session.close()
+
+    # Spawn two concurrent threads attempting to process the same task
+    worker_a = threading.Thread(
+        target=run_worker_node, 
+        args=(&quot;Security_Scanner_A&quot;, 101, 1.0, {&quot;vulnerabilities&quot;: [&quot;SQL Injection on line 42&quot;]})
     )
-    
-    registry.register_tool(
-        name=&quot;reboot_kubernetes_pod&quot;,
-        description=&quot;Restarts a failing docker container, pod deployment, or backend service in the cluster.&quot;,
-        schema=server_reboot_schema
-    )
-    
-    registry.register_tool(
-        name=&quot;run_read_only_sql&quot;,
-        description=&quot;Executes SELECT queries, read-only analytics, database scans, and table fetches.&quot;,
-        schema=db_query_schema
+    worker_b = threading.Thread(
+        target=run_worker_node, 
+        args=(&quot;Security_Scanner_B&quot;, 101, 0.5, {&quot;vulnerabilities&quot;: [&quot;XSS on line 12&quot;]})
     )
 
-    # 3. Query the registry semantically
-    user_prompt = &quot;Auditor request: calculate the employee salaries paid in Q3.&quot;
-    selected_tools = registry.get_relevant_tools(user_prompt, top_k=1)
-    
-    print(&quot;\n[Engine] Compiled Runtime Schemas:&quot;)
-    print(selected_tools[0][&quot;schema&quot;])</code></pre>
+    worker_a.start()
+    worker_b.start()
+
+    worker_a.join()
+    worker_b.join()
+
+    # Read final results from the blackboard
+    session = SessionLocal()
+    final_task = session.query(BlackboardTask).filter(BlackboardTask.id == 101).first()
+    print(&quot;\n--- Final Blackboard State ---&quot;)
+    print(f&quot;Status: {final_task.status}&quot;)
+    print(f&quot;Assigned Agent: {final_task.assigned_agent}&quot;)
+    print(f&quot;Context Payload: {final_task.context}&quot;)
+    session.close()</code></pre>
 <hr>
-<h2>Standardizing Bindings via Model Context Protocol (MCP)</h2>
-<p>Once we identify the relevant tools for a session, we invoke them using the <strong>Model Context Protocol (MCP)</strong>. Developed by Anthropic, MCP decouples the client application from the execution environments. </p>
-<p>Rather than baking API keys and execution scripts directly into the main agent host, the agent connects via stdin/stdout or HTTP SSE transport to modular <strong>MCP Servers</strong>. The client acts as a gateway that routes queries and reads schemas dynamically from the connected servers, enforcing a clean separation of concerns and scaling integrations securely.</p>
-<hr>
-<h2>🏁 Conclusion &amp; Takeaways</h2>
-<p>To scale tool access for enterprise-grade agents:</p>
+<h2>Key Takeaways</h2>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Enforce tool schema caching</strong>: Avoid generating tool embeddings dynamically during execution. Cache tool schemas and description vectors inside a fast registry DB.</li>
-<li><input disabled="" type="checkbox"> <strong>Index semantic descriptions, not code names</strong>: Model routers rely on natural language descriptions to match queries. Write detailed explanations of <em>when</em> to use a tool.</li>
-<li><input disabled="" type="checkbox"> <strong>Limit LLM context exposure</strong>: Set <code>top_k</code> constraints (usually 3 to 5 tools maximum) to optimize execution costs and prevent tool hallucinations.</li>
-<li><input disabled="" type="checkbox"> <strong>Enforce MCP boundaries</strong>: Run sensitive execution scripts inside isolated MCP servers with strict read/write boundaries, rather than hosting execution files on your main server.</li>
+<li><strong>Decoupled Swarms</strong>: Blackboard systems decouple agent logic. Workers do not need to know which agent takes the task next; they only need to know how to read and write to the database.</li>
+<li><strong>Audit Trail Out of the Box</strong>: Because all intermediate thought tokens, tool execution payloads, and status changes are committed directly to the database, tracing lineage is trivial.</li>
+<li><strong>Strict State Locking</strong>: Utilizing database locks (<code>FOR UPDATE</code>) prevents duplication and race conditions in high-throughput enterprise agent environments.</li>
 </ul>
 
           </div>
@@ -282,8 +255,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsemantic-tool-routing-vector-retrieval-mcp.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Semantic%20Tool%20Routing%3A%20Scaling%20to%20Hundreds%20of%20Enterprise%20Tools%20via%20Vector%20Retrieval%20%26%20MCP&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsemantic-tool-routing-vector-retrieval-mcp.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-blackboard-database-shared-state.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=The%20Database%20is%20the%20Blackboard%3A%20Shared%20State%20%26%20Session%20Store%20Patterns%20for%20Agent%20Swarms&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-blackboard-database-shared-state.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -309,7 +282,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="system-design-agentic-apis-rate-limiting.html">Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients<span class="sidebar-post-date">July 17, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="system-design-blackboard-database-shared-state.html">The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms<span class="sidebar-post-date">July 16, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -336,7 +309,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="agentic-human-in-the-loop-state-machines.html">Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="semantic-tool-routing-vector-retrieval-mcp.html">Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP<span class="sidebar-post-date">July 7, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
