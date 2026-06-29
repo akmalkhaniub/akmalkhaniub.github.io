@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP | Akmal Khan Tech Blog</title>
-  <meta name="description" content="How to scale agent capabilities by indexing tool schemas in a vector store, dynamically retrieving relevant tools, and mounting them via Model Context Protocol (MCP) gates.">
+  <title>Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to design APIs for agentic consumers: implementing idempotency key propagation across swarms, adaptive rate-limiting based on semantic feedback, and caching tool execution payloads.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/semantic-tool-routing-vector-retrieval-mcp.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system-design-agentic-apis-rate-limiting.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/semantic-tool-routing-vector-retrieval-mcp.html">
-  <meta property="og:title" content="Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP">
-  <meta property="og:description" content="How to scale agent capabilities by indexing tool schemas in a vector store, dynamically retrieving relevant tools, and mounting them via Model Context Protocol (MCP) gates.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-agentic-apis-rate-limiting.html">
+  <meta property="og:title" content="Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients">
+  <meta property="og:description" content="How to design APIs for agentic consumers: implementing idempotency key propagation across swarms, adaptive rate-limiting based on semantic feedback, and caching tool execution payloads.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-06">
+  <meta property="article:published_time" content="2026-07-16">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP">
-  <meta name="twitter:description" content="How to scale agent capabilities by indexing tool schemas in a vector store, dynamically retrieving relevant tools, and mounting them via Model Context Protocol (MCP) gates.">
+  <meta name="twitter:title" content="Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients">
+  <meta name="twitter:description" content="How to design APIs for agentic consumers: implementing idempotency key propagation across swarms, adaptive rate-limiting based on semantic feedback, and caching tool execution payloads.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval & MCP",
-  "description": "How to scale agent capabilities by indexing tool schemas in a vector store, dynamically retrieving relevant tools, and mounting them via Model Context Protocol (MCP) gates.",
-  "url": "https://akmalkhaniub.github.io/blog/semantic-tool-routing-vector-retrieval-mcp.html",
-  "datePublished": "2026-07-06",
-  "keywords": "MCP, Vector DB, Tooling, Optimization",
+  "headline": "Designing for Non-Deterministic Workloads: API Design & Rate-Limiting for Agentic Clients",
+  "description": "How to design APIs for agentic consumers: implementing idempotency key propagation across swarms, adaptive rate-limiting based on semantic feedback, and caching tool execution payloads.",
+  "url": "https://akmalkhaniub.github.io/blog/system-design-agentic-apis-rate-limiting.html",
+  "datePublished": "2026-07-16",
+  "keywords": "System Design, API Design, Rate Limiting, FastAPI",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/semantic-tool-routing-vector-retrieval-mcp.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system-design-agentic-apis-rate-limiting.html"
 }
   </script>
 
@@ -93,188 +93,150 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP</h1>
+            <h1 class="article-title">Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> July 7, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 17, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
-              <div class="article-tags"><span class="project-badge">MCP</span><span class="project-badge">Vector DB</span><span class="project-badge">Tooling</span><span class="project-badge">Optimization</span></div>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">System Design</span><span class="project-badge">API Design</span><span class="project-badge">Rate Limiting</span><span class="project-badge">FastAPI</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP</h1>
+<h1>Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients</h1>
 <blockquote>
 <p>[!NOTE]
 <strong>📖 Article Overview</strong>
-As enterprises deploy AI agents across their operations, the number of available tools (APIs, database adapters, internal calculators) scales into the hundreds. However, sending every tool schema in the LLM&#39;s system prompt exhausts token budgets, degrades reasoning latency, and increases tool-calling hallucinations. In this article, we explain how to build a <strong>Semantic Tool Routing</strong> pipeline. We index tool definitions inside a vector database, dynamically retrieve only the top-k relevant tools for the current query, and mount them securely at runtime using the <strong>Model Context Protocol (MCP)</strong>.</p>
+Traditional REST APIs are architected around predictable, linear human behaviors (e.g., paging, form submissions, button clicks). AI agents, however, introduce highly concurrent, non-linear, and recursive calling patterns as they loop through planning and tool execution. In this article, we explore how to design API interfaces optimized for agentic clients, detail the propagation of idempotency keys, and implement a FastAPI rate-limiter tailored to prevent agentic loops from overwhelming backends.</p>
 </blockquote>
 <hr>
-<h2>The Tool Bloat Problem: Hallucinations &amp; Cost</h2>
-<p>When an LLM client is configured to use tools, the developer supplies a JSON array containing the schema of every available tool (including parameters, descriptions, and types). </p>
-<p>If you expose 100+ tools:</p>
+<h2>The Agentic Traffic Pattern</h2>
+<p>When an AI agent executes a multi-step task, it consumes APIs not as a static integration, but as dynamic tools. This creates traffic behaviors that differ fundamentally from human clients:</p>
 <ol>
-<li><strong>Context Window Inflation</strong>: Storing 100 tool schemas can consume 10,000 to 30,000 tokens on <em>every single interaction</em>, significantly increasing execution costs.</li>
-<li><strong>Reasoning Degradation</strong>: LLMs struggle to select the correct tool when faced with a massive catalog of overlapping functions. This leads to selecting the wrong parameters or hallucinating function calls.</li>
+<li><strong>High Concurrency and Depth</strong>: An agent might spawn parallel sub-agents, resulting in hundreds of API requests hitting downstream microservices in a single second.</li>
+<li><strong>Recursive Validation Loops</strong>: If a tool returns a validation error, the agent will rewrite its parameters and immediately retry the call—creating rapid, loop-driven retry spikes.</li>
+<li><strong>Semantic Caching Vulnerability</strong>: Traditional caching relies on exact string matches (URLs, headers). Agents construct varied queries to find the same information, bypassing standard cache keys.</li>
 </ol>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[User Query: Calculate Q3 payroll total] --&gt; Search[Semantic Vector Search]
-    Search --&gt;|Matches query to tool descriptions| VectorDB[(Tool Vector Store)]
-    
-    VectorDB --&gt;|Retrieves top-3 relevant schemas| Router[Dynamic Tool Router]
-    
-    Router --&gt;|Compiles runtime schemas| LLM[LLM Engine]
-    LLM --&gt;|Generates Tool Call| MCPGate[Model Context Protocol Gate]
-    
-    MCPGate --&gt;|Invokes target server| ToolServer[Payroll MCP Server]
-    ToolServer --&gt;|Executes API &amp; returns results| LLM</div>
-<p>To prevent this, we introduce a <strong>Semantic Tool Router</strong>. We generate embeddings of our tool descriptions and store them in a vector index. Before querying the LLM, we perform a vector search to fetch the top-3 matching tools. The LLM only sees the tools it actually needs.</p>
+    subgraph Traditional [1. Deterministic Traffic]
+        User[Human Browser] --&gt;|Single GET| Gate[API Gateway]
+        Gate --&gt;|Sync Process| DB[(Database)]
+    end
+
+    subgraph Agentic [2. Recursive Swarm Traffic]
+        Agent[Orchestrator Agent] --&gt;|Recursive Handoffs| A1[Agent Worker A]
+        Agent --&gt;|Parallel Spawns| A2[Agent Worker B]
+        A1 --&gt;|Recursive Retries &amp; Tool Calls| ToolGate[Agent-Facing Gateway]
+        A2 --&gt;|Recursive Retries &amp; Tool Calls| ToolGate
+        ToolGate --&gt;|Idempotency Guard &amp; Rate Limiter| DB
+    end</div>
 <hr>
-<h2>Indexing &amp; Formatting Tool Metadata</h2>
-<p>For vector search to work effectively, each tool must have a clear semantic description. Instead of embedding code, we embed the human-readable explanation of what the tool does:</p>
+<h2>1. Designing API Schemas for LLM Comprehension</h2>
+<p>To ensure agents execute tool calls reliably, APIs must be designed with LLM consumption in mind:</p>
 <ul>
-<li><strong>Function</strong>: <code>get_user_payroll_data(user_id: str, quarter: int)</code></li>
-<li><strong>Embedded Text</strong>: <em>&quot;Retrieves financial payroll data, total salaries paid, tax deductions, and bonuses for a specific user ID and calendar quarter.&quot;</em></li>
+<li><strong>Self-Describing Fields</strong>: Prefer verbose, semantic field names (e.g., <code>is_active_subscription</code> instead of <code>act_sub</code>).</li>
+<li><strong>Rich Metadata Descriptions</strong>: Every API endpoint schema (OpenAPI/Swagger) must contain clean description blocks detailing the constraints and business logic.</li>
+<li><strong>Semantic Error Payloads</strong>: Instead of returning a generic <code>400 Bad Request</code>, return a structured JSON response explaining exactly <em>what</em> was invalid and <em>how</em> to correct it. This allows the LLM agent to parse the error and self-correct.</li>
 </ul>
 <hr>
-<h2>Implementing a Semantic Tool Router in Python</h2>
-<p>Below is a complete Python implementation demonstrating how to vectorize tool metadata, execute a cosine-similarity query, and dynamically construct a subset of tool schemas for an LLM execution loop.</p>
-<pre><code class="language-python">import numpy as np
-from typing import List, Dict, Any
-
-# Mock embedding generator (in production, use OpenAI, SentenceTransformers, or Gemini embeddings)
-def get_mock_embedding(text: str) -&gt; np.ndarray:
-    # Deterministic mock vector generation based on word presence
-    vector = np.zeros(128)
-    words = text.lower().split()
-    for word in words:
-        char_sum = sum(ord(c) for c in word) % 128
-        vector[char_sum] += 1.0
-    # Normalize vector
-    norm = np.linalg.norm(vector)
-    if norm &gt; 0:
-        vector = vector / norm
-    return vector
-
-class ToolRegistry:
-    def __init__(self):
-        self.tools: Dict[str, Dict[str, Any]] = {}
-        self.vectors: Dict[str, np.ndarray] = {}
-
-    def register_tool(self, name: str, description: str, schema: Dict[str, Any]) -&gt; None:
-        self.tools[name] = {
-            &quot;name&quot;: name,
-            &quot;description&quot;: description,
-            &quot;schema&quot;: schema
-        }
-        # Vectorize the description of the tool
-        self.vectors[name] = get_mock_embedding(description)
-        print(f&quot;[Registry] Registered tool: {name}&quot;)
-
-    def get_relevant_tools(self, query: str, top_k: int = 2) -&gt; List[Dict[str, Any]]:
-        query_vector = get_mock_embedding(query)
-        scores = []
-
-        for name, tool_vector in self.vectors.items():
-            # Calculate cosine similarity
-            similarity = np.dot(query_vector, tool_vector)
-            scores.append((name, similarity))
-
-        # Sort tools by similarity score in descending order
-        scores.sort(key=lambda x: x[1], reverse=True)
-        
-        print(f&quot;\n[Search] Top matching tools for query '{query}':&quot;)
-        relevant_tools = []
-        for name, score in scores[:top_k]:
-            print(f&quot; - {name} (Similarity Score: {score:.3f})&quot;)
-            relevant_tools.append(self.tools[name])
-            
-        return relevant_tools
-
-# 1. Define schemas and descriptions
-payroll_schema = {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-        &quot;name&quot;: &quot;calculate_quarterly_payroll&quot;,
-        &quot;parameters&quot;: {
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-                &quot;quarter&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;1, 2, 3, or 4&quot;}
-            },
-            &quot;required&quot;: [&quot;quarter&quot;]
-        }
-    }
-}
-
-server_reboot_schema = {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-        &quot;name&quot;: &quot;reboot_kubernetes_pod&quot;,
-        &quot;parameters&quot;: {
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-                &quot;pod_name&quot;: {&quot;type&quot;: &quot;string&quot;}
-            },
-            &quot;required&quot;: [&quot;pod_name&quot;]
-        }
-    }
-}
-
-db_query_schema = {
-    &quot;type&quot;: &quot;function&quot;,
-    &quot;function&quot;: {
-        &quot;name&quot;: &quot;run_read_only_sql&quot;,
-        &quot;parameters&quot;: {
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-                &quot;query&quot;: {&quot;type&quot;: &quot;string&quot;}
-            },
-            &quot;required&quot;: [&quot;query&quot;]
-        }
-    }
-}
-
-# 2. Initialize and populate the registry
-if __name__ == &quot;__main__&quot;:
-    registry = ToolRegistry()
-    
-    registry.register_tool(
-        name=&quot;calculate_quarterly_payroll&quot;,
-        description=&quot;Calculates payroll sums, salaries paid, and expenses for tax reporting and fiscal auditing.&quot;,
-        schema=payroll_schema
-    )
-    
-    registry.register_tool(
-        name=&quot;reboot_kubernetes_pod&quot;,
-        description=&quot;Restarts a failing docker container, pod deployment, or backend service in the cluster.&quot;,
-        schema=server_reboot_schema
-    )
-    
-    registry.register_tool(
-        name=&quot;run_read_only_sql&quot;,
-        description=&quot;Executes SELECT queries, read-only analytics, database scans, and table fetches.&quot;,
-        schema=db_query_schema
-    )
-
-    # 3. Query the registry semantically
-    user_prompt = &quot;Auditor request: calculate the employee salaries paid in Q3.&quot;
-    selected_tools = registry.get_relevant_tools(user_prompt, top_k=1)
-    
-    print(&quot;\n[Engine] Compiled Runtime Schemas:&quot;)
-    print(selected_tools[0][&quot;schema&quot;])</code></pre>
-<hr>
-<h2>Standardizing Bindings via Model Context Protocol (MCP)</h2>
-<p>Once we identify the relevant tools for a session, we invoke them using the <strong>Model Context Protocol (MCP)</strong>. Developed by Anthropic, MCP decouples the client application from the execution environments. </p>
-<p>Rather than baking API keys and execution scripts directly into the main agent host, the agent connects via stdin/stdout or HTTP SSE transport to modular <strong>MCP Servers</strong>. The client acts as a gateway that routes queries and reads schemas dynamically from the connected servers, enforcing a clean separation of concerns and scaling integrations securely.</p>
-<hr>
-<h2>🏁 Conclusion &amp; Takeaways</h2>
-<p>To scale tool access for enterprise-grade agents:</p>
+<h2>2. Idempotency Key Propagation across Swarms</h2>
+<p>Since agents are prone to network timeouts or validation retries, every write endpoint must enforce <strong>Idempotency</strong>. </p>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Enforce tool schema caching</strong>: Avoid generating tool embeddings dynamically during execution. Cache tool schemas and description vectors inside a fast registry DB.</li>
-<li><input disabled="" type="checkbox"> <strong>Index semantic descriptions, not code names</strong>: Model routers rely on natural language descriptions to match queries. Write detailed explanations of <em>when</em> to use a tool.</li>
-<li><input disabled="" type="checkbox"> <strong>Limit LLM context exposure</strong>: Set <code>top_k</code> constraints (usually 3 to 5 tools maximum) to optimize execution costs and prevent tool hallucinations.</li>
-<li><input disabled="" type="checkbox"> <strong>Enforce MCP boundaries</strong>: Run sensitive execution scripts inside isolated MCP servers with strict read/write boundaries, rather than hosting execution files on your main server.</li>
+<li><strong>Mechanics</strong>: The client generates a unique <code>Idempotency-Key</code> (typically a UUIDv4) and sends it in the request header. The server stores the key and the resulting response payload in a fast cache (like Redis) with a short TTL (e.g., 24 hours).</li>
+<li><strong>Propagation</strong>: If an orchestrator agent delegates a task to worker agents, it must propagate the root transaction&#39;s idempotency context down the call graph. This guarantees that even if a worker agent crashes and restarts, it cannot execute duplicate operations (e.g., billing a credit card twice).</li>
+</ul>
+<hr>
+<h2>3. Implementing a Rate-Limiting Guard in FastAPI</h2>
+<p>Below is a complete FastAPI application demonstrating how to enforce idempotency checks and apply a token-bucket rate limiter designed to guard against recursive agentic loops.</p>
+<pre><code class="language-python">import time
+from typing import Dict, Optional
+from fastapi import FastAPI, Header, HTTPException, status
+from pydantic import BaseModel
+
+app = FastAPI(title=&quot;Agentic API Gateway&quot;)
+
+# Mock In-Memory Caches
+idempotency_cache: Dict[str, Dict[str, Any]] = {}
+rate_limit_cache: Dict[str, List[float]] = {}
+
+class ToolRequest(BaseModel):
+    account_id: str
+    amount: float
+    description: str
+
+class ToolResponse(BaseModel):
+    transaction_id: str
+    status: str
+    message: str
+
+def check_rate_limit(client_id: str, rate: int = 5, capacity: int = 10) -&gt; bool:
+    &quot;&quot;&quot;
+    Implements a Token Bucket rate limiter.
+    rate: tokens added per second
+    capacity: maximum burst capacity
+    &quot;&quot;&quot;
+    now = time.time()
+    timestamps = rate_limit_cache.get(client_id, [])
+    
+    # Filter out timestamps older than 1 second
+    timestamps = [t for t in timestamps if now - t &lt; 1.0]
+    
+    if len(timestamps) &gt;= capacity:
+        return False
+        
+    timestamps.append(now)
+    rate_limit_cache[client_id] = timestamps
+    return True
+
+@app.post(
+    &quot;/api/v1/transfer&quot;, 
+    response_model=ToolResponse,
+    status_code=status.HTTP_200_OK
+)
+def execute_transfer(
+    payload: ToolRequest,
+    idempotency_key: Optional[str] = Header(None, alias=&quot;Idempotency-Key&quot;),
+    client_id: Optional[str] = Header(&quot;anonymous&quot;, alias=&quot;X-Client-ID&quot;)
+):
+    # 1. Enforce Rate Limiting
+    if not check_rate_limit(client_id):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=&quot;Agent loop protection: Maximum execution frequency exceeded.&quot;
+        )
+
+    # 2. Enforce Idempotency
+    if not idempotency_key:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=&quot;Idempotency-Key header is required for all state-writing tool calls.&quot;
+        )
+
+    if idempotency_key in idempotency_cache:
+        print(f&quot;[CACHE HIT] Returning saved payload for key: {idempotency_key}&quot;)
+        cached_data = idempotency_cache[idempotency_key]
+        return ToolResponse(**cached_data)
+
+    # 3. Simulate Core Business Logic
+    transaction_id = f&quot;tx_{int(time.time() * 1000)}&quot;
+    response_data = {
+        &quot;transaction_id&quot;: transaction_id,
+        &quot;status&quot;: &quot;SUCCESS&quot;,
+        &quot;message&quot;: f&quot;Successfully transferred ${payload.amount} from account {payload.account_id}.&quot;
+    }
+
+    # Save to idempotency store
+    idempotency_cache[idempotency_key] = response_data
+    
+    print(f&quot;[EXECUTE] Processing new transaction: {transaction_id}&quot;)
+    return ToolResponse(**response_data)</code></pre>
+<hr>
+<h2>key Takeaways for System Architects</h2>
+<ul>
+<li><strong>Standardize Idempotency</strong>: Never expose a state-altering tool to an LLM agent without requiring an idempotency key.</li>
+<li><strong>Design for Error Autonomy</strong>: Include precise diagnostic fields and recovery instructions in error payloads to help agents self-correct without human intervention.</li>
+<li><strong>Token-Aware Gateways</strong>: Set rate limits at the API gateway that check client IDs specifically for agent nodes to avoid rate-limiting legitimate human users during agent storms.</li>
 </ul>
 
           </div>
@@ -282,8 +244,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsemantic-tool-routing-vector-retrieval-mcp.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Semantic%20Tool%20Routing%3A%20Scaling%20to%20Hundreds%20of%20Enterprise%20Tools%20via%20Vector%20Retrieval%20%26%20MCP&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsemantic-tool-routing-vector-retrieval-mcp.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-agentic-apis-rate-limiting.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Designing%20for%20Non-Deterministic%20Workloads%3A%20API%20Design%20%26%20Rate-Limiting%20for%20Agentic%20Clients&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-agentic-apis-rate-limiting.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -306,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="system-design-agentic-apis-rate-limiting.html">Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients<span class="sidebar-post-date">July 17, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -336,7 +298,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="agentic-human-in-the-loop-state-machines.html">Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="semantic-tool-routing-vector-retrieval-mcp.html">Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP<span class="sidebar-post-date">July 7, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
