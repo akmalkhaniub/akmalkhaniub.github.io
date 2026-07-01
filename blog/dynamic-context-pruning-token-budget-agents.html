@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression | Akmal Khan Tech Blog</title>
-  <meta name="description" content="How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.">
+  <title>Dynamic Context Pruning: Programmatic Token Budgeting for Long-Context Reasoning Chains | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to build a dynamic context pruning engine that calculates token usage, removes verbose tool outputs, compiles semantic summaries of older conversation blocks, and keeps only the most relevant context window active.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/dynamic-context-pruning-token-budget-agents.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html">
-  <meta property="og:title" content="Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression">
-  <meta property="og:description" content="How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/dynamic-context-pruning-token-budget-agents.html">
+  <meta property="og:title" content="Dynamic Context Pruning: Programmatic Token Budgeting for Long-Context Reasoning Chains">
+  <meta property="og:description" content="How to build a dynamic context pruning engine that calculates token usage, removes verbose tool outputs, compiles semantic summaries of older conversation blocks, and keeps only the most relevant context window active.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-09">
+  <meta property="article:published_time" content="2026-07-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression">
-  <meta name="twitter:description" content="How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.">
+  <meta name="twitter:title" content="Dynamic Context Pruning: Programmatic Token Budgeting for Long-Context Reasoning Chains">
+  <meta name="twitter:description" content="How to build a dynamic context pruning engine that calculates token usage, removes verbose tool outputs, compiles semantic summaries of older conversation blocks, and keeps only the most relevant context window active.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Context Pruning for Long-Running Swarms: Sliding Windows & Memory Compression",
-  "description": "How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.",
-  "url": "https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html",
-  "datePublished": "2026-07-09",
+  "headline": "Dynamic Context Pruning: Programmatic Token Budgeting for Long-Context Reasoning Chains",
+  "description": "How to build a dynamic context pruning engine that calculates token usage, removes verbose tool outputs, compiles semantic summaries of older conversation blocks, and keeps only the most relevant context window active.",
+  "url": "https://akmalkhaniub.github.io/blog/dynamic-context-pruning-token-budget-agents.html",
+  "datePublished": "2026-07-17",
   "keywords": "Optimization, AI Agents, Memory, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/dynamic-context-pruning-token-budget-agents.html"
 }
   </script>
 
@@ -93,139 +93,141 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression</h1>
+            <h1 class="article-title">Dynamic Context Pruning: Programmatic Token Budgeting for Long-Context Reasoning Chains</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> July 10, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 18, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
               <div class="article-tags"><span class="project-badge">Optimization</span><span class="project-badge">AI Agents</span><span class="project-badge">Memory</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression</h1>
+<h1>Dynamic Context Pruning: Programmatic Token Budgeting for Long-Context Reasoning Chains</h1>
 <blockquote>
 <p>[!NOTE]
 <strong>📖 Article Overview</strong>
-Long-running agentic workflows—such as analyzing codebase structures, running automated code migrations, or executing hours-long data aggregation loops—accumulate massive chat logs and execution states. Leaving this history unchecked degrades query latency, spikes API costs, and distracts models, leading to failures. This article covers <strong>Context Engineering</strong> techniques to optimize memory usage: <strong>Semantic Pruning</strong> of intermediate tool outputs, <strong>Token Sliding Windows</strong>, and <strong>Recursive Memory Compression</strong>.</p>
+While modern LLMs support vast context windows (exceeding 1 million tokens), utilizing these full windows in production is a major anti-pattern. Large contexts drastically increase time-to-first-token latency, degrade reasoning accuracy (the &quot;needle in a haystack&quot; problem), and generate massive API bills. In this article, we explore <strong>Dynamic Context Pruning</strong> strategies: stripping tool outputs, implementing sliding windows, and executing recursive summarizations in Python.</p>
 </blockquote>
 <hr>
-<h2>The Context Inflation Problem</h2>
-<p>In a standard agent loop, every message exchanged, prompt executed, and raw tool output (such as SQL tables or raw HTML scans) is appended to the conversation history. On long tasks, this history grows.</p>
-<p>When the context window gets bloated:</p>
+<h2>The Danger of Context Inflation</h2>
+<p>As an autonomous agent executes a multi-step workflow, its conversation log inflates rapidly. Every tool invocation, traceback error dump, and intermediate reasoning thought adds to the context window:</p>
 <ol>
-<li><strong>Financial Cost</strong>: Since LLM APIs charge per token, sending 100k tokens of historic logs on every turn becomes prohibitively expensive.</li>
-<li><strong>Lost in the Middle</strong>: LLMs tend to ignore instructions or data stored in the middle of long prompts.</li>
-<li><strong>Latency Inflation</strong>: Model processing times increase as the prompt length grows.</li>
+<li><strong>Latency Scaling</strong>: Attention calculations scale quadratically (O(N^2)) or linear-biases in newer architectures. In practice, feeding 100,000 tokens increases latency and slows down agentic response loops.</li>
+<li><strong>Retrieval Degradation</strong>: As prompts grow larger, models start missing constraints, ignoring system guidelines, or losing track of historical details.</li>
+<li><strong>Financial Leakage</strong>: Even with prompt caching, providers charge for reading the cache. In high-frequency loops, reading large caches repeatedly accumulates massive costs.</li>
 </ol>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#b45309', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f59e0b', 'lineColor': '#b45309', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Raw[Raw Message Log Stack] --&gt; Slice{Is Token Count &gt; Budget?}
-    
-    Slice --&gt;|Yes: Exceeds Limit| Prune[1. Semantic Prune: Strip raw tool outputs]
-    Prune --&gt; Slide[2. Slide Window: Keep latest N messages]
-    Slide --&gt; Compress[3. Compress Memory: Summarize discarded history]
-    
-    Compress --&gt; Compile[Compile Final Context: Summary + Writable Window]
-    Slice --&gt;|No| Compile
-    
-    Compile --&gt; LLM[LLM API Call]</div>
+    Raw[Incoming Messages &amp; Tool Logs] --&gt; Filter[Prune Verbose Tool Output]
+    Filter --&gt; Budget{Total Tokens &gt; Limit?}
+    Budget --&gt;|No| Prompt[Assemble Prompt]
+    Budget --&gt;|Yes| Summarize[Summarize Historical Nodes]
+    Summarize --&gt; Slide[Slide Message Window]
+    Slide --&gt; Prompt</div>
 <hr>
-<h2>3 Core Optimization Techniques</h2>
-<h3>1. Semantic Pruning</h3>
-<p>Not all messages are equal. A raw database output containing 5,000 lines of CSV data is useful to the tool-caller agent <em>once</em> to extract a summary. It does not need to stay in the context history for subsequent steps. Semantic pruning involves stripping out raw tool responses and replacing them with a brief summary (e.g., <code>[Tool Output: Successfully fetched 50 pending records]</code>).</p>
-<h3>2. Sliding Windows</h3>
-<p>We restrict the active conversation history to the most recent $N$ messages (e.g. the last 10 messages). Any message older than the window is sliced out of the active context array.</p>
-<h3>3. Recursive Memory Compression</h3>
-<p>To prevent the agent from forgetting the overall goal or key facts when older messages are sliced out, we run an asynchronous summarization task. The model condenses the oldest messages into a running system summary (e.g. &quot;Running Summary of past steps...&quot;), which is permanently injected at the start of the system prompt.</p>
-<hr>
-<h2>Implementing a Context Compressor in Python</h2>
-<p>Below is a complete, production-ready Python class illustrating token calculation, semantic pruning of verbose tool outputs, and sliding window orchestration.</p>
-<pre><code class="language-python">import tiktoken
-from typing import List, Dict, Any
-
-class ContextCompressor:
-    def __init__(self, model_name: str = &quot;gpt-4o&quot;, max_token_budget: int = 4000):
-        self.encoder = tiktoken.encoding_for_model(model_name)
-        self.max_token_budget = max_token_budget
-        self.running_summary = &quot;Initial goal: Analyse repository logs and generate audit.&quot;
-
-    def count_tokens(self, text: str) -&gt; int:
-        return len(self.encoder.encode(text))
-
-    def calculate_messages_tokens(self, messages: List[Dict[str, str]]) -&gt; int:
-        return sum(self.count_tokens(msg[&quot;content&quot;]) for msg in messages)
-
-    def semantic_pruning(self, messages: List[Dict[str, str]]) -&gt; List[Dict[str, str]]:
-        pruned_messages = []
-        for msg in messages:
-            # If the message is a raw tool execution output and is very large, prune it
-            if msg[&quot;role&quot;] == &quot;tool&quot; and len(msg[&quot;content&quot;]) &gt; 500:
-                summary = f&quot;[Tool Output: Content pruned. Output contained data matching {msg['content'][:100]}...]&quot;
-                pruned_messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;content&quot;: summary})
-            else:
-                pruned_messages.append(msg.copy())
-        return pruned_messages
-
-    def compress_context(self, messages: List[Dict[str, str]]) -&gt; List[Dict[str, str]]:
-        # Step 1: Run semantic pruning on tool outputs
-        working_messages = self.semantic_pruning(messages)
-        
-        # Step 2: Check if the token count exceeds budget
-        total_tokens = self.calculate_messages_tokens(working_messages)
-        summary_tokens = self.count_tokens(self.running_summary)
-        
-        if (total_tokens + summary_tokens) &lt;= self.max_token_budget:
-            # Within budget - compile prompt directly
-            return [{&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: self.running_summary}] + working_messages
-
-        print(f&quot;[Compressor] Context ({total_tokens + summary_tokens} tokens) exceeds budget ({self.max_token_budget}). Compressing...&quot;)
-
-        # Step 3: Slide window &amp; compress oldest messages
-        # We slide the window by removing the oldest non-system messages until within budget
-        while (self.calculate_messages_tokens(working_messages) + summary_tokens) &gt; self.max_token_budget:
-            if len(working_messages) &lt;= 2:
-                # Keep at least the latest user and assistant exchange
-                break
-                
-            discarded = working_messages.pop(0)
-            # In a production environment, you would trigger an LLM call here to update the summary:
-            # self.running_summary = query_summarizer_llm(self.running_summary, discarded)
-            self.running_summary += f&quot;\n- Processed step: {discarded['content'][:80]}...&quot;
-            summary_tokens = self.count_tokens(self.running_summary)
-
-        print(f&quot;[Compressor] Compression complete. New context length: {len(working_messages)} active messages.&quot;)
-        
-        # Step 4: Compile the final payload
-        system_node = {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: f&quot;System Summary:\n{self.running_summary}&quot;}
-        return [system_node] + working_messages
-
-# Execution
-if __name__ == &quot;__main__&quot;:
-    compressor = ContextCompressor(max_token_budget=150)
-    
-    conversation = [
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Fetch database configurations and audit the schemas.&quot;},
-        {&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;Executing SQL query to retrieve configuration logs.&quot;},
-        # Verbose tool output that will trigger semantic pruning
-        {&quot;role&quot;: &quot;tool&quot;, &quot;content&quot;: &quot;CONFIG_LOG: &quot; + &quot;a&quot; * 1000},
-        {&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;Analysis complete. Schema matches secure baseline.&quot;},
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Excellent. Now check the cluster pods.&quot;}
-    ]
-    
-    final_payload = compressor.compress_context(conversation)
-    
-    print(&quot;\n--- Compiled Prompt Payload ---&quot;)
-    for msg in final_payload:
-        print(f&quot;[{msg['role'].upper()}] {msg['content'][:150]}&quot;)</code></pre>
-<hr>
-<h2>🏁 Conclusion &amp; Takeaways</h2>
-<p>Implementing context compression controls ensures runtime cost efficiency and model focus:</p>
+<h2>1. Stripping Tool Output Verbosity</h2>
+<p>Tool execution logs are the primary driver of context bloat. An agent might query a database and receive a 10MB raw JSON dump containing 5,000 rows, of which it only needs two values.</p>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Run semantic pruning immediately</strong>: Do not let raw, verbose data outputs persist in the message array. Condense them to structured outcomes immediately after invocation.</li>
-<li><input disabled="" type="checkbox"> <strong>Enforce token-based budgets</strong>: Calculate context length using model-specific encoders (like <code>tiktoken</code>) rather than raw string lengths.</li>
-<li><input disabled="" type="checkbox"> <strong>Run summarization asynchronously</strong>: Keep updates to the running summary separate from the main execution loop to prevent blocking agent runs.</li>
-<li><input disabled="" type="checkbox"> <strong>Slide windows selectively</strong>: Never slide out the initial system prompt or user query parameters; keep core execution directives pinned at the top.</li>
+<li><strong>Semantic Summarization</strong>: Tool gateways must intercept raw payloads, compile a high-level summary (e.g. <em>&quot;SQL Query returned 500 rows. Keys of interest: id, email. Sample row: ...&quot;</em>), and inject only the summary into the agent’s message history.</li>
+</ul>
+<hr>
+<h2>2. Sliding Windows and Recursive Compression</h2>
+<p>To maintain long-running conversations without hitting limits:</p>
+<ul>
+<li><strong>The System Anchor</strong>: The system prompt (instructions, tools) must remain locked and never pruned.</li>
+<li><strong>Sliding Window</strong>: Keep only the last <code>K</code> messages in their raw, high-fidelity format to preserve immediate conversational context.</li>
+<li><strong>Recursive Summarization</strong>: Take messages older than the sliding window, feed them to a background summarizer model, and save the resulting summary in a single rolling history block (the &quot;Memory State&quot;).</li>
+</ul>
+<hr>
+<h2>Code Demo: Building a Token Budget Manager</h2>
+<p>Below is a Python implementation of a context optimizer that manages a token budget, compresses historical chat segments, and filters verbose payloads.</p>
+<pre><code class="language-python">from typing import List, Dict, Any
+
+class MessageManager:
+    def __init__(self, token_limit: int = 1500):
+        self.token_limit = token_limit
+        self.system_prompt: Dict[str, str] = {
+            &quot;role&quot;: &quot;system&quot;, 
+            &quot;content&quot;: &quot;You are a database administration assistant. Analyze query logs.&quot;
+        }
+        # Approximate tokens (4 chars = 1 token)
+        self.system_tokens = len(self.system_prompt[&quot;content&quot;]) // 4
+        self.history: List[Dict[str, Any]] = []
+
+    def add_message(self, role: str, content: str, is_tool_output: bool = False):
+        tokens = len(content) // 4
+        
+        # If it is a tool output, apply initial structural pruning
+        if is_tool_output and tokens &gt; 400:
+            print(&quot;✂️ [PRUNE] Truncating verbose tool log payload before ingestion.&quot;)
+            content = content[:400] + &quot;\n...[Truncated by Manager]...&quot;
+            tokens = len(content) // 4
+            
+        self.history.append({
+            &quot;role&quot;: role,
+            &quot;content&quot;: content,
+            &quot;tokens&quot;: tokens
+        })
+        self._enforce_token_budget()
+
+    def get_context_payload(self) -&gt; List[Dict[str, str]]:
+        payload = [self.system_prompt]
+        for msg in self.history:
+            payload.append({&quot;role&quot;: msg[&quot;role&quot;], &quot;content&quot;: msg[&quot;content&quot;]})
+        return payload
+
+    def _enforce_token_budget(self):
+        total_tokens = self.system_tokens + sum(msg[&quot;tokens&quot;] for msg in self.history)
+        
+        while total_tokens &gt; self.token_limit and len(self.history) &gt; 2:
+            print(f&quot;⚠️ [BUDGET EXCEEDED] Current: {total_tokens} tokens. Executing compression...&quot;)
+            
+            # Collapse the oldest two user/assistant messages into a summary
+            oldest_msg_1 = self.history.pop(0)
+            oldest_msg_2 = self.history.pop(0)
+            
+            summary_content = f&quot;[Historical Summary: User asked about {oldest_msg_1['content'][:40]} and Assistant responded.]&quot;
+            summary_tokens = len(summary_content) // 4
+            
+            # Insert the summary node at the beginning of the history
+            self.history.insert(0, {
+                &quot;role&quot;: &quot;system&quot;,
+                &quot;content&quot;: summary_content,
+                &quot;tokens&quot;: summary_tokens
+            })
+            
+            # Re-evaluate
+            total_tokens = self.system_tokens + sum(msg[&quot;tokens&quot;] for msg in self.history)
+            print(f&quot;✅ [COMPRESSION DONE] New total: {total_tokens} tokens.&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    manager = MessageManager(token_limit=500)
+
+    # 1. Add typical user query
+    manager.add_message(&quot;user&quot;, &quot;Check status of billing query database.&quot;)
+    
+    # 2. Add highly verbose tool output (simulating database query dump)
+    db_dump = &quot;DATABASE ROW DATA: &quot; + &quot;id=101, val=50; id=102, val=60; &quot; * 50  # ~400 tokens
+    manager.add_message(&quot;tool&quot;, db_dump, is_tool_output=True)
+    
+    # 3. Add assistant response
+    manager.add_message(&quot;assistant&quot;, &quot;Database logs look stable. All rows retrieved successfully.&quot;)
+
+    # 4. Trigger budget limit by adding a new turn
+    manager.add_message(&quot;user&quot;, &quot;Can you calculate the average of those retrieved values?&quot;)
+
+    # Fetch compiled payload
+    compiled_messages = manager.get_context_payload()
+    print(&quot;\n--- Compiled Context Sent to LLM ---&quot;)
+    for msg in compiled_messages:
+        print(f&quot;[{msg['role'].upper()}]: {msg['content'][:100]}...&quot;)</code></pre>
+<hr>
+<h2>Architectural Best Practices</h2>
+<ul>
+<li><strong>Always Compress Recursively</strong>: Never delete historical user interactions completely. Instead, use small, fast SLMs (like Llama 3.2 3B or Gemini Flash) to generate paragraph summaries of expired blocks.</li>
+<li><strong>Filter Before Ingestion</strong>: Build format-aware parsers at the tool gateway. If a tool outputs raw HTML or CSV, extract the critical keys first and discard the wrapper syntax.</li>
+<li><strong>Observability Monitoring</strong>: Keep track of the average context length per session. If lengths grow continuously without stabilization, refine your window slice bounds.</li>
 </ul>
 
           </div>
@@ -233,8 +235,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fagentic-context-pruning-sliding-windows-memory-compression.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Context%20Pruning%20for%20Long-Running%20Swarms%3A%20Sliding%20Windows%20%26%20Memory%20Compression&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fagentic-context-pruning-sliding-windows-memory-compression.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdynamic-context-pruning-token-budget-agents.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Dynamic%20Context%20Pruning%3A%20Programmatic%20Token%20Budgeting%20for%20Long-Context%20Reasoning%20Chains&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdynamic-context-pruning-token-budget-agents.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -263,7 +265,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="semantic-cache-layer-vector-db-redis.html">Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups<span class="sidebar-post-date">July 19, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="dynamic-context-pruning-token-budget-agents.html">Dynamic Context Pruning: Programmatic Token Budgeting for Long-Context Reasoning Chains<span class="sidebar-post-date">July 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -287,7 +289,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="agentic-swarms-vs-hierarchical-orchestrator-topologies.html">Swarms vs. Hierarchies: Designing Decentralized vs. Orchestrated Agent Topologies<span class="sidebar-post-date">July 11, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="agentic-context-pruning-sliding-windows-memory-compression.html">Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression<span class="sidebar-post-date">July 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">

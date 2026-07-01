@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression | Akmal Khan Tech Blog</title>
-  <meta name="description" content="How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.">
+  <title>Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to construct a client-side semantic cache layer using vector databases to capture query variations and return cached LLM responses without duplicate API invocation.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/semantic-cache-layer-vector-db-redis.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html">
-  <meta property="og:title" content="Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression">
-  <meta property="og:description" content="How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/semantic-cache-layer-vector-db-redis.html">
+  <meta property="og:title" content="Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups">
+  <meta property="og:description" content="How to construct a client-side semantic cache layer using vector databases to capture query variations and return cached LLM responses without duplicate API invocation.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-09">
+  <meta property="article:published_time" content="2026-07-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression">
-  <meta name="twitter:description" content="How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.">
+  <meta name="twitter:title" content="Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups">
+  <meta name="twitter:description" content="How to construct a client-side semantic cache layer using vector databases to capture query variations and return cached LLM responses without duplicate API invocation.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Context Pruning for Long-Running Swarms: Sliding Windows & Memory Compression",
-  "description": "How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.",
-  "url": "https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html",
-  "datePublished": "2026-07-09",
-  "keywords": "Optimization, AI Agents, Memory, Python",
+  "headline": "Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups",
+  "description": "How to construct a client-side semantic cache layer using vector databases to capture query variations and return cached LLM responses without duplicate API invocation.",
+  "url": "https://akmalkhaniub.github.io/blog/semantic-cache-layer-vector-db-redis.html",
+  "datePublished": "2026-07-18",
+  "keywords": "Vector DB, Redis, Caching, Performance",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/semantic-cache-layer-vector-db-redis.html"
 }
   </script>
 
@@ -93,139 +93,141 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression</h1>
+            <h1 class="article-title">Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> July 10, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 19, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
-              <div class="article-tags"><span class="project-badge">Optimization</span><span class="project-badge">AI Agents</span><span class="project-badge">Memory</span><span class="project-badge">Python</span></div>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">Vector DB</span><span class="project-badge">Redis</span><span class="project-badge">Caching</span><span class="project-badge">Performance</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression</h1>
+<h1>Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups</h1>
 <blockquote>
 <p>[!NOTE]
 <strong>📖 Article Overview</strong>
-Long-running agentic workflows—such as analyzing codebase structures, running automated code migrations, or executing hours-long data aggregation loops—accumulate massive chat logs and execution states. Leaving this history unchecked degrades query latency, spikes API costs, and distracts models, leading to failures. This article covers <strong>Context Engineering</strong> techniques to optimize memory usage: <strong>Semantic Pruning</strong> of intermediate tool outputs, <strong>Token Sliding Windows</strong>, and <strong>Recursive Memory Compression</strong>.</p>
+While provider-side prompt caching accelerates execution for exact prefix matches, it fails to capture variations in user queries. If a user asks <em>&quot;How do I restart Nginx?&quot;</em> followed by <em>&quot;What is the command to restart Nginx?&quot;</em>, provider-side caches treat them as entirely different prompts. In this article, we design a client-side <strong>Semantic Cache Layer</strong> using vector embeddings and cosine similarity thresholds, and implement a production-ready semantic cache manager in Python.</p>
 </blockquote>
 <hr>
-<h2>The Context Inflation Problem</h2>
-<p>In a standard agent loop, every message exchanged, prompt executed, and raw tool output (such as SQL tables or raw HTML scans) is appended to the conversation history. On long tasks, this history grows.</p>
-<p>When the context window gets bloated:</p>
-<ol>
-<li><strong>Financial Cost</strong>: Since LLM APIs charge per token, sending 100k tokens of historic logs on every turn becomes prohibitively expensive.</li>
-<li><strong>Lost in the Middle</strong>: LLMs tend to ignore instructions or data stored in the middle of long prompts.</li>
-<li><strong>Latency Inflation</strong>: Model processing times increase as the prompt length grows.</li>
-</ol>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#b45309', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f59e0b', 'lineColor': '#b45309', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    Raw[Raw Message Log Stack] --&gt; Slice{Is Token Count &gt; Budget?}
-    
-    Slice --&gt;|Yes: Exceeds Limit| Prune[1. Semantic Prune: Strip raw tool outputs]
-    Prune --&gt; Slide[2. Slide Window: Keep latest N messages]
-    Slide --&gt; Compress[3. Compress Memory: Summarize discarded history]
-    
-    Compress --&gt; Compile[Compile Final Context: Summary + Writable Window]
-    Slice --&gt;|No| Compile
-    
-    Compile --&gt; LLM[LLM API Call]</div>
-<hr>
-<h2>3 Core Optimization Techniques</h2>
-<h3>1. Semantic Pruning</h3>
-<p>Not all messages are equal. A raw database output containing 5,000 lines of CSV data is useful to the tool-caller agent <em>once</em> to extract a summary. It does not need to stay in the context history for subsequent steps. Semantic pruning involves stripping out raw tool responses and replacing them with a brief summary (e.g., <code>[Tool Output: Successfully fetched 50 pending records]</code>).</p>
-<h3>2. Sliding Windows</h3>
-<p>We restrict the active conversation history to the most recent $N$ messages (e.g. the last 10 messages). Any message older than the window is sliced out of the active context array.</p>
-<h3>3. Recursive Memory Compression</h3>
-<p>To prevent the agent from forgetting the overall goal or key facts when older messages are sliced out, we run an asynchronous summarization task. The model condenses the oldest messages into a running system summary (e.g. &quot;Running Summary of past steps...&quot;), which is permanently injected at the start of the system prompt.</p>
-<hr>
-<h2>Implementing a Context Compressor in Python</h2>
-<p>Below is a complete, production-ready Python class illustrating token calculation, semantic pruning of verbose tool outputs, and sliding window orchestration.</p>
-<pre><code class="language-python">import tiktoken
-from typing import List, Dict, Any
-
-class ContextCompressor:
-    def __init__(self, model_name: str = &quot;gpt-4o&quot;, max_token_budget: int = 4000):
-        self.encoder = tiktoken.encoding_for_model(model_name)
-        self.max_token_budget = max_token_budget
-        self.running_summary = &quot;Initial goal: Analyse repository logs and generate audit.&quot;
-
-    def count_tokens(self, text: str) -&gt; int:
-        return len(self.encoder.encode(text))
-
-    def calculate_messages_tokens(self, messages: List[Dict[str, str]]) -&gt; int:
-        return sum(self.count_tokens(msg[&quot;content&quot;]) for msg in messages)
-
-    def semantic_pruning(self, messages: List[Dict[str, str]]) -&gt; List[Dict[str, str]]:
-        pruned_messages = []
-        for msg in messages:
-            # If the message is a raw tool execution output and is very large, prune it
-            if msg[&quot;role&quot;] == &quot;tool&quot; and len(msg[&quot;content&quot;]) &gt; 500:
-                summary = f&quot;[Tool Output: Content pruned. Output contained data matching {msg['content'][:100]}...]&quot;
-                pruned_messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;content&quot;: summary})
-            else:
-                pruned_messages.append(msg.copy())
-        return pruned_messages
-
-    def compress_context(self, messages: List[Dict[str, str]]) -&gt; List[Dict[str, str]]:
-        # Step 1: Run semantic pruning on tool outputs
-        working_messages = self.semantic_pruning(messages)
-        
-        # Step 2: Check if the token count exceeds budget
-        total_tokens = self.calculate_messages_tokens(working_messages)
-        summary_tokens = self.count_tokens(self.running_summary)
-        
-        if (total_tokens + summary_tokens) &lt;= self.max_token_budget:
-            # Within budget - compile prompt directly
-            return [{&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: self.running_summary}] + working_messages
-
-        print(f&quot;[Compressor] Context ({total_tokens + summary_tokens} tokens) exceeds budget ({self.max_token_budget}). Compressing...&quot;)
-
-        # Step 3: Slide window &amp; compress oldest messages
-        # We slide the window by removing the oldest non-system messages until within budget
-        while (self.calculate_messages_tokens(working_messages) + summary_tokens) &gt; self.max_token_budget:
-            if len(working_messages) &lt;= 2:
-                # Keep at least the latest user and assistant exchange
-                break
-                
-            discarded = working_messages.pop(0)
-            # In a production environment, you would trigger an LLM call here to update the summary:
-            # self.running_summary = query_summarizer_llm(self.running_summary, discarded)
-            self.running_summary += f&quot;\n- Processed step: {discarded['content'][:80]}...&quot;
-            summary_tokens = self.count_tokens(self.running_summary)
-
-        print(f&quot;[Compressor] Compression complete. New context length: {len(working_messages)} active messages.&quot;)
-        
-        # Step 4: Compile the final payload
-        system_node = {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: f&quot;System Summary:\n{self.running_summary}&quot;}
-        return [system_node] + working_messages
-
-# Execution
-if __name__ == &quot;__main__&quot;:
-    compressor = ContextCompressor(max_token_budget=150)
-    
-    conversation = [
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Fetch database configurations and audit the schemas.&quot;},
-        {&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;Executing SQL query to retrieve configuration logs.&quot;},
-        # Verbose tool output that will trigger semantic pruning
-        {&quot;role&quot;: &quot;tool&quot;, &quot;content&quot;: &quot;CONFIG_LOG: &quot; + &quot;a&quot; * 1000},
-        {&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: &quot;Analysis complete. Schema matches secure baseline.&quot;},
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;Excellent. Now check the cluster pods.&quot;}
-    ]
-    
-    final_payload = compressor.compress_context(conversation)
-    
-    print(&quot;\n--- Compiled Prompt Payload ---&quot;)
-    for msg in final_payload:
-        print(f&quot;[{msg['role'].upper()}] {msg['content'][:150]}&quot;)</code></pre>
-<hr>
-<h2>🏁 Conclusion &amp; Takeaways</h2>
-<p>Implementing context compression controls ensures runtime cost efficiency and model focus:</p>
+<h2>The Catch-22 of Exact String Caching</h2>
+<p>In traditional web applications, key-value stores (like Redis) cache database query results using exact string keys (e.g., query SQL string hash). In LLM interactions, this approach falls short:</p>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Run semantic pruning immediately</strong>: Do not let raw, verbose data outputs persist in the message array. Condense them to structured outcomes immediately after invocation.</li>
-<li><input disabled="" type="checkbox"> <strong>Enforce token-based budgets</strong>: Calculate context length using model-specific encoders (like <code>tiktoken</code>) rather than raw string lengths.</li>
-<li><input disabled="" type="checkbox"> <strong>Run summarization asynchronously</strong>: Keep updates to the running summary separate from the main execution loop to prevent blocking agent runs.</li>
-<li><input disabled="" type="checkbox"> <strong>Slide windows selectively</strong>: Never slide out the initial system prompt or user query parameters; keep core execution directives pinned at the top.</li>
+<li><strong>Query Variations</strong>: Users express the same intent in infinitely varied formats, structures, or spelling.</li>
+<li><strong>Redundant API Costs</strong>: Processing these variation queries forces the LLM to generate identical answers, wasting token budgets and execution time.</li>
+<li><strong>The Solution</strong>: A <strong>Semantic Cache</strong>. Instead of comparing characters, we compare <strong>semantic vectors</strong> (embeddings). If the vector distance between the incoming query and a previously cached query is close enough, we return the cached response.</li>
+</ul>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    User[User Query] --&gt; Embed[Generate Query Vector]
+    Embed --&gt; DBQuery[Search Vector Database]
+    DBQuery --&gt; Match{Is Cosine Similarity &gt; Threshold?}
+    Match --&gt;|Yes: Cache Hit| Return[Return Cached LLM Response]
+    Match --&gt;|No: Cache Miss| LLM[Invoke LLM API]
+    LLM --&gt; WriteCache[Insert Query &amp; Response to Vector DB]
+    WriteCache --&gt; Return</div>
+<hr>
+<h2>1. Cosine Similarity &amp; Threshold Tuning</h2>
+<p>To construct a reliable semantic cache, we calculate the <strong>Cosine Similarity</strong> between the embedding vector of the incoming query ((\vec{A})) and cached query vectors ((\vec{B})):</p>
+<p>[\text{Similarity} = \frac{\vec{A} \cdot \vec{B}}{|\vec{A}| |\vec{B}|}]</p>
+<ul>
+<li><strong>Threshold Selection</strong>:<ul>
+<li><strong>0.98+</strong>: Extreme precision. Only catches near-duplicate inputs (e.g., minor typo corrections).</li>
+<li><strong>0.95 - 0.97</strong>: Recommended production sweet spot. Catches identical semantic meanings across different sentence patterns.</li>
+<li><strong>Below 0.90</strong>: High risk of false hits. The cache might return an answer for a completely different topic (e.g., returning Apache restart instructions for an Nginx query).</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>Code Demo: Building a Semantic Cache Layer</h2>
+<p>Below is a Python implementation of a semantic cache layer. It handles embedding generation (simulated with a mock vector space), performs cosine similarity matches, and saves results in an in-memory repository.</p>
+<pre><code class="language-python">import math
+from typing import List, Dict, Any, Optional
+
+# Helper function to compute cosine similarity between two float lists
+def cosine_similarity(v1: List[float], v2: List[float]) -&gt; float:
+    dot_product = sum(x * y for x, y in zip(v1, v2))
+    magnitude1 = math.sqrt(sum(x * x for x in v1))
+    magnitude2 = math.sqrt(sum(x * x for x in v2))
+    if magnitude1 == 0 or magnitude2 == 0:
+        return 0.0
+    return dot_product / (magnitude1 * magnitude2)
+
+# Mock Embedding Client (generates vectors based on word frequencies for testing)
+class MockEmbeddingClient:
+    def get_embedding(self, text: str) -&gt; List[float]:
+        # Formulate a simplistic 8-dimensional vector based on keywords
+        keywords = [&quot;nginx&quot;, &quot;restart&quot;, &quot;apache&quot;, &quot;status&quot;, &quot;linux&quot;, &quot;systemctl&quot;, &quot;error&quot;, &quot;log&quot;]
+        text_lower = text.lower()
+        vector = []
+        for word in keywords:
+            vector.append(1.0 if word in text_lower else 0.0)
+        
+        # Normalize vector to unit length
+        length = math.sqrt(sum(x*x for x in vector))
+        if length == 0:
+            return [0.0] * 8
+        return [x / length for x in vector]
+
+class SemanticCache:
+    def __init__(self, embedding_client: MockEmbeddingClient, threshold: float = 0.95):
+        self.embedding_client = embedding_client
+        self.threshold = threshold
+        # Schema: [{&quot;query&quot;: str, &quot;vector&quot;: List[float], &quot;response&quot;: str}]
+        self.store: List[Dict[str, Any]] = []
+
+    def lookup(self, query: str) -&gt; Optional[str]:
+        query_vector = self.embedding_client.get_embedding(query)
+        best_score = 0.0
+        best_response = None
+        
+        for entry in self.store:
+            score = cosine_similarity(query_vector, entry[&quot;vector&quot;])
+            if score &gt; best_score:
+                best_score = score
+                best_response = entry[&quot;response&quot;]
+                
+        if best_score &gt;= self.threshold:
+            print(f&quot;🎯 Cache Hit! Semantic Similarity: {best_score:.4f}&quot;)
+            return best_response
+            
+        print(f&quot;💨 Cache Miss. Highest Similarity was: {best_score:.4f}&quot;)
+        return None
+
+    def insert(self, query: str, response: str):
+        vector = self.embedding_client.get_embedding(query)
+        self.store.append({
+            &quot;query&quot;: query,
+            &quot;vector&quot;: vector,
+            &quot;response&quot;: response
+        })
+        print(f&quot;💾 Inserted new query-response vector into cache.&quot;)
+
+if __name__ == &quot;__main__&quot;:
+    embed_client = MockEmbeddingClient()
+    cache = SemanticCache(embed_client, threshold=0.95)
+
+    # Seed the cache with a response
+    cache.insert(
+        query=&quot;How do I restart the nginx server?&quot;,
+        response=&quot;Run: sudo systemctl restart nginx&quot;
+    )
+
+    # 1. Test case: Similar semantic query (different sentence structure)
+    test_query_1 = &quot;what is the command to restart nginx?&quot;
+    result_1 = cache.lookup(test_query_1)
+    print(f&quot;Query: '{test_query_1}' -&gt; Response: {result_1}\n&quot;)
+
+    # 2. Test case: Non-matching query (different keywords)
+    test_query_2 = &quot;How do I check Apache server logs?&quot;
+    result_2 = cache.lookup(test_query_2)
+    print(f&quot;Query: '{test_query_2}' -&gt; Response: {result_2}&quot;)</code></pre>
+<hr>
+<h2>Architectural Guidelines</h2>
+<ul>
+<li><strong>Select a High-Quality Embedding Model</strong>: Models like OpenAI <code>text-embedding-3-small</code> or Cohere <code>embed-english-v3.0</code> provide high semantic separation, reducing false positives.</li>
+<li><strong>Handle Cache Eviction</strong>: Set an LRU (Least Recently Used) cache policy or TTL (Time-To-Live) on vector entries. If underlying application data or prompts change, invalidate target vector namespaces.</li>
+<li><strong>Blend Vector Caching with Local Database</strong>: Store vector search indexes in Redis (using RediSearch vector utilities) or pgvector for sub-millisecond retrieval speeds in high-scale environments.</li>
 </ul>
 
           </div>
@@ -233,8 +235,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fagentic-context-pruning-sliding-windows-memory-compression.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Context%20Pruning%20for%20Long-Running%20Swarms%3A%20Sliding%20Windows%20%26%20Memory%20Compression&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fagentic-context-pruning-sliding-windows-memory-compression.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsemantic-cache-layer-vector-db-redis.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Semantic%20Cache%20Layers%20for%20LLMs%3A%20Reducing%20Token%20Costs%20with%20Vector-Based%20Prompt%20Lookups&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsemantic-cache-layer-vector-db-redis.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -260,7 +262,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="context-cache-architecture-gemini-claude.html">Context Cache Architecture: Maximizing Prompt Caching Hits in Gemini 2.0 &amp; Claude 3.5<span class="sidebar-post-date">July 20, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="semantic-cache-layer-vector-db-redis.html">Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups<span class="sidebar-post-date">July 19, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -287,7 +289,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="agentic-swarms-vs-hierarchical-orchestrator-topologies.html">Swarms vs. Hierarchies: Designing Decentralized vs. Orchestrated Agent Topologies<span class="sidebar-post-date">July 11, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="agentic-context-pruning-sliding-windows-memory-compression.html">Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression<span class="sidebar-post-date">July 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
