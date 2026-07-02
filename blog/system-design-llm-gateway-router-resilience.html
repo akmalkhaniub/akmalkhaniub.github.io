@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Local LLM Serving: GGUF vs. EXL2 vs. AWQ Quantization | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Evaluating local model quantizations — GGUF, AWQ, and EXL2 formats, VRAM sizing, and performance limits for hosting models locally with vLLM.">
+  <title>LLM Gateway &amp; Router Pattern: Resilient Multi-Provider Fallbacks and Circuit Breakers | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Designing a highly resilient proxy layer for agent workloads. Implementing multi-provider fallback chains, retry backoffs, and circuit breakers to handle API outages and rate limits.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/local-llm-gguf-exl2-awq-quantization.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system-design-llm-gateway-router-resilience.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/local-llm-gguf-exl2-awq-quantization.html">
-  <meta property="og:title" content="Local LLM Serving: GGUF vs. EXL2 vs. AWQ Quantization">
-  <meta property="og:description" content="Evaluating local model quantizations — GGUF, AWQ, and EXL2 formats, VRAM sizing, and performance limits for hosting models locally with vLLM.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-llm-gateway-router-resilience.html">
+  <meta property="og:title" content="LLM Gateway &amp; Router Pattern: Resilient Multi-Provider Fallbacks and Circuit Breakers">
+  <meta property="og:description" content="Designing a highly resilient proxy layer for agent workloads. Implementing multi-provider fallback chains, retry backoffs, and circuit breakers to handle API outages and rate limits.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-20">
+  <meta property="article:published_time" content="2026-07-20">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Local LLM Serving: GGUF vs. EXL2 vs. AWQ Quantization">
-  <meta name="twitter:description" content="Evaluating local model quantizations — GGUF, AWQ, and EXL2 formats, VRAM sizing, and performance limits for hosting models locally with vLLM.">
+  <meta name="twitter:title" content="LLM Gateway &amp; Router Pattern: Resilient Multi-Provider Fallbacks and Circuit Breakers">
+  <meta name="twitter:description" content="Designing a highly resilient proxy layer for agent workloads. Implementing multi-provider fallback chains, retry backoffs, and circuit breakers to handle API outages and rate limits.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Local LLM Serving: GGUF vs. EXL2 vs. AWQ Quantization",
-  "description": "Evaluating local model quantizations — GGUF, AWQ, and EXL2 formats, VRAM sizing, and performance limits for hosting models locally with vLLM.",
-  "url": "https://akmalkhaniub.github.io/blog/local-llm-gguf-exl2-awq-quantization.html",
-  "datePublished": "2026-06-20",
-  "keywords": "vLLM, Quantization, Model Serving, DevOps",
+  "headline": "LLM Gateway & Router Pattern: Resilient Multi-Provider Fallbacks and Circuit Breakers",
+  "description": "Designing a highly resilient proxy layer for agent workloads. Implementing multi-provider fallback chains, retry backoffs, and circuit breakers to handle API outages and rate limits.",
+  "url": "https://akmalkhaniub.github.io/blog/system-design-llm-gateway-router-resilience.html",
+  "datePublished": "2026-07-20",
+  "keywords": "System Design, Gateways, Resilience, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/local-llm-gguf-exl2-awq-quantization.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system-design-llm-gateway-router-resilience.html"
 }
   </script>
 
@@ -93,94 +93,160 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">Local LLM Serving: GGUF vs. EXL2 vs. AWQ Quantization</h1>
+            <h1 class="article-title">LLM Gateway &amp; Router Pattern: Resilient Multi-Provider Fallbacks and Circuit Breakers</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> June 21, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 21, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">vLLM</span><span class="project-badge">Quantization</span><span class="project-badge">Model Serving</span><span class="project-badge">DevOps</span></div>
+              <div class="article-tags"><span class="project-badge">System Design</span><span class="project-badge">Gateways</span><span class="project-badge">Resilience</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Local LLM Serving: GGUF vs. EXL2 vs. AWQ Quantization</h1>
+<h1>LLM Gateway &amp; Router Pattern: Resilient Multi-Provider Fallbacks and Circuit Breakers</h1>
 <blockquote>
 <p>[!NOTE]
 <strong>📖 Article Overview</strong>
-Deploying open-source LLMs (like Llama-3, Mistral, or DeepSeek) locally or on private server infrastructure requires compressing the model weights to fit into available GPU VRAM. This compression is called <strong>quantization</strong>. Choosing the wrong format can cause slow token-generation speeds or degraded output quality. This article breaks down the three primary quantization standards — <strong>GGUF</strong>, <strong>AWQ</strong>, and <strong>EXL2</strong> — explaining their execution engines, VRAM usage calculations, and how to serve them in production using vLLM.</p>
+In production agent swarms, relying on a single LLM provider is a critical point of failure. API rate limits (HTTP 429), connection timeouts, and provider outages can instantly halt a running agent chain. To secure high availability, architects deploy the <strong>LLM Gateway &amp; Router Pattern</strong>. In this article, we design a middleware proxy that handles multi-provider fallback chains, retry backoffs, and implements a custom <strong>Circuit Breaker</strong> state machine in Python.</p>
 </blockquote>
 <hr>
-<h2>What is Quantization?</h2>
-<p>An LLM&#39;s weights are originally stored as 16-bit floating-point numbers (FP16 or BF16). A 70-billion parameter model requires around 140 GB of VRAM just to load. Quantization compresses these weights into lower bit-depth integers (like 4-bit, 5-bit, or 8-bit), allowing massive models to run on single consumer or enterprise GPUs.</p>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart LR
-    FP16[Original Weights: FP16 / BF16 &lt;br&gt; 16 bits per parameter] --&gt;|Quantization Process| INT4[Compressed Weights: INT4 / INT8 &lt;br&gt; 4-8 bits per parameter]
-    INT4 --&gt; GGUF[GGUF format &lt;br&gt; CPU+GPU offload]
-    INT4 --&gt; AWQ[AWQ format &lt;br&gt; Activation-Aware, GPU only]
-    INT4 --&gt; EXL2[EXL2 format &lt;br&gt; ExLlamaV2, High-speed GPU]</div>
+<h2>The Provider Outage Threat</h2>
+<p>For agentic systems, LLM inference API calls are the core execution dependencies. When these calls fail, the entire application fails. </p>
+<p>Three main issues threaten inference connections:</p>
+<ol>
+<li><strong>Rate Limiting (429)</strong>: High-throughput swarms exceed token-per-minute (TPM) allocations.</li>
+<li><strong>Outages</strong>: Model providers experience downtime or network packet loss.</li>
+<li><strong>Model Versioning Failures</strong>: A deprecated model release is retired, breaking API bindings.</li>
+</ol>
+<p>To prevent outages, developers wrap their LLM calls inside a resilient <strong>LLM Gateway</strong>. The gateway acts as a smart router, managing API traffic and redirecting requests to alternate providers when errors occur.</p>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#4c1d95', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#8b5cf6', 'lineColor': '#4c1d95', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    Request[Agent Prompt Request] --&gt; Gate[LLM Gateway Router]
+    
+    subgraph Circuit Breaker States
+        Gate --&gt;|State: CLOSED| CallPrimary[Try Primary Provider: Claude 3.5]
+        Gate --&gt;|State: OPEN| Failover[Route straight to Backup: Gemini 2.0]
+        
+        CallPrimary --&gt;|Success| Reset[Reset Error Counter]
+        CallPrimary --&gt;|Consecutive Failures &gt; Limit| OpenBreaker[Switch State to OPEN &amp; Start Cooldown]
+        
+        OpenBreaker --&gt; Failover
+    end</div>
 <hr>
-<h2>GGUF vs. AWQ vs. EXL2: The Trade-Off Matrix</h2>
-<h3>1. GGUF (GPT-Generated Unified Format)</h3>
+<h2>1. Multi-Provider Fallback Routing Chains</h2>
+<p>A fallback chain defines an ordered routing list of secondary endpoints.</p>
 <ul>
-<li><strong>Best For</strong>: CPU-only or mixed CPU+GPU environments.</li>
-<li><strong>Engine</strong>: llama.cpp</li>
-<li><strong>Key Benefit</strong>: Allows you to split the model layers, loading part in GPU VRAM and offloading the remainder to slower system RAM (CPU).</li>
-<li><strong>Limitations</strong>: CPU execution is slow.</li>
-</ul>
-<h3>2. AWQ (Activation-Aware Weight Quantization)</h3>
-<ul>
-<li><strong>Best For</strong>: GPU server deployments (vLLM, TGI).</li>
-<li><strong>Engine</strong>: vLLM, TensorRT-LLM</li>
-<li><strong>Key Benefit</strong>: Observes model activations during calibration to preserve the most critical weights, keeping accuracy high.</li>
-<li><strong>Limitations</strong>: Requires dedicated GPUs (CUDA).</li>
-</ul>
-<h3>3. EXL2 (ExLlamaV2 Format)</h3>
-<ul>
-<li><strong>Best For</strong>: Maximum token generation speeds on GPUs.</li>
-<li><strong>Engine</strong>: ExLlamaV2, TabbyAPI</li>
-<li><strong>Key Benefit</strong>: Supports variable-bitrate quantization (e.g., 4.65 bits per parameter), allowing fine-grained VRAM target matching.</li>
-<li><strong>Limitations</strong>: GPU only.</li>
+<li><strong>Semantic Parity</strong>: Ensure that fallback models have similar structural capabilities (e.g. if the primary model is <code>claude-3-5-sonnet</code>, routing fallbacks to <code>gemini-2-0-pro</code> or <code>gpt-4o</code> rather than smaller, non-reasoning SLMs).</li>
+<li><strong>Token Translation</strong>: The gateway must map API parameter configurations (e.g. translation from Anthropic message payloads to Google Gemini syntax models).</li>
 </ul>
 <hr>
-<h2>VRAM Sizing Calculation formula</h2>
-<p>To calculate how much VRAM you need to load a model:</p>
-<p>[\text{VRAM (GB)} = \left( \frac{\text{Parameters (B)} \times \text{Bits per Parameter}}{8} \right) \times 1.2]</p>
-<p><em>Note: The (1.2) multiplier represents a 20% overhead buffer for the context window (KV Cache) and model activations during runtime.</em></p>
-<p>Here is a simple Python function to run this estimation before deployment:</p>
-<pre><code class="language-python"># vram_calculator.py
-def estimate_vram_requirements(param_count_billions: float, bits_per_param: float) -&gt; float:
-    # Base weight size in Gigabytes
-    model_size_gb = (param_count_billions * bits_per_param) / 8.0
-    
-    # 20% buffer for KV Cache (assuming 8k context) and activation layers
-    total_vram_needed = model_size_gb * 1.2
-    
-    return total_vram_needed
+<h2>2. Implementing the Circuit Breaker Pattern</h2>
+<p>A circuit breaker prevents the application from making requests that are likely to fail, saving network resources and processing overhead:</p>
+<ul>
+<li><strong>CLOSED</strong>: Normal state. All requests route to the primary provider.</li>
+<li><strong>OPEN</strong>: The primary provider has failed multiple times in a row. The gateway &quot;trips&quot; the breaker, failing fast and routing all requests directly to the backup provider without contacting the primary.</li>
+<li><strong>HALF-OPEN</strong>: After a cooldown period (e.g., 60 seconds), the gateway enters HALF-OPEN state, sending a single test request to the primary. If it succeeds, the breaker resets to CLOSED. If it fails, the breaker returns to OPEN.</li>
+</ul>
+<hr>
+<h2>Code Demo: Resilient LLM Gateway with Circuit Breakers</h2>
+<p>Below is a Python implementation of a resilient LLM Gateway. It routes mock prompts, counts consecutive errors, manages cooldown timestamps, and switches breaker states dynamically.</p>
+<pre><code class="language-python">import time
+from typing import List, Optional
 
-# Example: Llama-3 8B model quantized to 4-bit (GGUF or AWQ)
-needed = estimate_vram_requirements(param_count_billions=8.0, bits_per_param=4.0)
-print(f&quot;Estimated VRAM: {needed:.2f} GB (Fits on a single 16GB or 24GB VRAM GPU)&quot;)</code></pre>
+class CircuitBreaker:
+    def __init__(self, failure_limit: int = 3, cooldown_seconds: float = 5.0):
+        self.failure_limit = failure_limit
+        self.cooldown_seconds = cooldown_seconds
+        
+        self.state = &quot;CLOSED&quot;  # CLOSED, OPEN, HALF-OPEN
+        self.failure_count = 0
+        self.last_failure_time: Optional[float] = None
+
+    def record_success(self):
+        self.state = &quot;CLOSED&quot;
+        self.failure_count = 0
+        self.last_failure_time = None
+
+    def record_failure(self):
+        self.failure_count += 1
+        self.last_failure_time = time.time()
+        
+        if self.failure_count &gt;= self.failure_limit:
+            self.state = &quot;OPEN&quot;
+            print(f&quot;🚨 [Breaker] Failure limit reached. Tripping circuit to OPEN!&quot;)
+
+    def check_state(self) -&gt; str:
+        # If open, check if cooldown period has expired
+        if self.state == &quot;OPEN&quot; and self.last_failure_time:
+            if time.time() - self.last_failure_time &gt;= self.cooldown_seconds:
+                self.state = &quot;HALF-OPEN&quot;
+                print(f&quot;🔄 [Breaker] Cooldown expired. Testing provider in HALF-OPEN state.&quot;)
+        return self.state
+
+class ResilientLLMGateway:
+    def __init__(self, primary_breaker: CircuitBreaker):
+        self.primary_breaker = primary_breaker
+        self.primary_provider = &quot;Claude-3.5-Sonnet&quot;
+        self.backup_provider = &quot;Gemini-2.0-Pro&quot;
+
+    def execute_prompt(self, prompt: str, mock_primary_fails: bool = False) -&gt; str:
+        breaker_state = self.primary_breaker.check_state()
+        
+        # 1. If breaker is OPEN, route directly to backup (fail-fast)
+        if breaker_state == &quot;OPEN&quot;:
+            print(f&quot;⚡ [Gateway] Breaker is OPEN. Routing straight to backup: '{self.backup_provider}'&quot;)
+            return self._call_backup(prompt)
+
+        # 2. Try calling primary provider
+        print(f&quot;📞 [Gateway] Attempting connection to primary: '{self.primary_provider}' (Breaker: {breaker_state})...&quot;)
+        
+        if mock_primary_fails:
+            print(f&quot;❌ [Gateway] Connection to '{self.primary_provider}' failed.&quot;)
+            self.primary_breaker.record_failure()
+            # Try backup provider immediately as fallback
+            return self._call_backup(prompt)
+        else:
+            # Success
+            self.primary_breaker.record_success()
+            return f&quot;[{self.primary_provider}] SUCCESS: Processed '{prompt}'&quot;
+
+    def _call_backup(self, prompt: str) -&gt; str:
+        return f&quot;[{self.backup_provider}] SUCCESS (Fallback): Processed '{prompt}'&quot;
+
+if __name__ == &quot;__main__&quot;:
+    breaker = CircuitBreaker(failure_limit=3, cooldown_seconds=2.0)
+    gateway = ResilientLLMGateway(breaker)
+
+    # Turn 1: Happy path
+    print(gateway.execute_prompt(&quot;Analyze database logs.&quot;))
+
+    # Turn 2-4: Failures (Trips the breaker)
+    print(&quot;\n--- Simulating Primary Provider Failures ---&quot;)
+    print(gateway.execute_prompt(&quot;Generate index queries.&quot;, mock_primary_fails=True)) # Fails (Count: 1)
+    print(gateway.execute_prompt(&quot;Generate index queries.&quot;, mock_primary_fails=True)) # Fails (Count: 2)
+    print(gateway.execute_prompt(&quot;Generate index queries.&quot;, mock_primary_fails=True)) # Fails (Count: 3 -&gt; Trips to OPEN)
+
+    # Turn 5: Breaker is OPEN, routes straight to backup
+    print(&quot;\n--- Breaker is OPEN ---&quot;)
+    print(gateway.execute_prompt(&quot;Generate schema scripts.&quot;))
+
+    # Wait for cooldown to expire
+    print(&quot;\n⌛ Sleeping for 2.1 seconds to trigger cooldown...&quot;)
+    time.sleep(2.1)
+
+    # Turn 6: Breaker is now HALF-OPEN, tests primary. Let's simulate a success to reset the circuit.
+    print(&quot;\n--- Breaker is HALF-OPEN (Testing recovery) ---&quot;)
+    print(gateway.execute_prompt(&quot;Analyze database logs.&quot;, mock_primary_fails=False)) # Resets to CLOSED
+
+    # Turn 7: Closed again, routes to primary
+    print(&quot;\n--- Breaker returned to CLOSED ---&quot;)
+    print(gateway.execute_prompt(&quot;Final check.&quot;))</code></pre>
 <hr>
-<h2>Serving AWQ Models with vLLM in Production</h2>
-<p>vLLM is a high-performance LLM serving engine. It natively supports AWQ and GPTQ quantized models, providing extreme throughput using PagedAttention.</p>
-<h3>Docker Run Config:</h3>
-<p>Here is how to spin up a Docker container serving an 8B AWQ model locally:</p>
-<pre><code class="language-bash">docker run --gpus all \
-  -v ~/.cache/huggingface:/root/.cache/huggingface \
-  -p 8000:8000 \
-  --ipc=host \
-  vllm/vllm-openai:latest \
-  --model casperhansen/llama-3-8b-instruct-awq \
-  --quantization awq \
-  --max-model-len 8192</code></pre>
-<p>Once running, the container exposes an OpenAI-compatible API on port <code>8000</code>, allowing you to route user prompts instantly.</p>
-<hr>
-<h2>🏁 Conclusion &amp; Takeaways</h2>
-<p>Selecting the right quantization format is critical for local LLM cost and speed:</p>
+<h2>Architectural Guidelines</h2>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Choose GGUF for edge/local client dev</strong>: GGUF is perfect for running on laptops (macOS/Windows) because it allows CPU RAM offloading.</li>
-<li><input disabled="" type="checkbox"> <strong>Choose AWQ for server-scale production</strong>: vLLM handles AWQ natively, delivering the highest concurrent token throughput.</li>
-<li><input disabled="" type="checkbox"> <strong>Compute your KV Cache buffer</strong>: Always leave a 20% VRAM buffer above the model weight size to prevent Out-Of-Memory (OOM) crashes when context windows fill up.</li>
+<li><strong>Propagate Status Codes</strong>: Do not hide error types inside your gateway logs. Expose detailed error details (<code>429 Rate Limit</code>, <code>503 Service Unavailable</code>, <code>ConnectionTimeout</code>) to allow downstream routers to make informed fallback decisions.</li>
+<li><strong>Map Token Metrics</strong>: Maintain a token-usage counter inside the gateway. If a backup model is much cheaper or has higher limits, route bulk background jobs (e.g. vector embedding indexing) directly to the backup.</li>
+<li><strong>Implement Cooldown Policies</strong>: Keep breaker open states short during development but scale them to 60-120 seconds in production to allow remote provider server queues to clear.</li>
 </ul>
 
           </div>
@@ -188,8 +254,8 @@ print(f&quot;Estimated VRAM: {needed:.2f} GB (Fits on a single 16GB or 24GB VRAM
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flocal-llm-gguf-exl2-awq-quantization.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Local%20LLM%20Serving%3A%20GGUF%20vs.%20EXL2%20vs.%20AWQ%20Quantization&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flocal-llm-gguf-exl2-awq-quantization.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-llm-gateway-router-resilience.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=LLM%20Gateway%20%26%20Router%20Pattern%3A%20Resilient%20Multi-Provider%20Fallbacks%20and%20Circuit%20Breakers&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-llm-gateway-router-resilience.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -218,7 +284,7 @@ print(f&quot;Estimated VRAM: {needed:.2f} GB (Fits on a single 16GB or 24GB VRAM
             <li class="sidebar-post-item">
               <a href="system-design-event-driven-rabbitmq-celery.html">Event-Driven Agent Swarms: Architecting RabbitMQ &amp; Celery Pipelines for Asynchronous Execution<span class="sidebar-post-date">July 22, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="system-design-llm-gateway-router-resilience.html">LLM Gateway &amp; Router Pattern: Resilient Multi-Provider Fallbacks and Circuit Breakers<span class="sidebar-post-date">July 21, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -338,7 +404,7 @@ print(f&quot;Estimated VRAM: {needed:.2f} GB (Fits on a single 16GB or 24GB VRAM
             <li class="sidebar-post-item">
               <a href="rag-reranking-cross-encoders-bge.html">Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable<span class="sidebar-post-date">June 21, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="local-llm-gguf-exl2-awq-quantization.html">Local LLM Serving: GGUF vs. EXL2 vs. AWQ Quantization<span class="sidebar-post-date">June 21, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
