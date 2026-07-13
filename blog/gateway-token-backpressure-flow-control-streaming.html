@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Backpressure Control: Managing Generation Rates on Slow Clients | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Preventing gateway memory bloat: building backpressure controllers to throttle LLM streaming rates based on client connection capacity.">
+  <meta name="author" content="Akmal Khan">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/gateway-token-backpressure-flow-control-streaming.html">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/gateway-token-backpressure-flow-control-streaming.html">
+  <meta property="og:title" content="Token Backpressure Control: Managing Generation Rates on Slow Clients">
+  <meta property="og:description" content="Preventing gateway memory bloat: building backpressure controllers to throttle LLM streaming rates based on client connection capacity.">
+  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:site_name" content="Akmal Khan">
+  <meta property="article:published_time" content="2026-07-11">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Token Backpressure Control: Managing Generation Rates on Slow Clients">
+  <meta name="twitter:description" content="Preventing gateway memory bloat: building backpressure controllers to throttle LLM streaming rates based on client connection capacity.">
+  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Token Backpressure Control: Managing Generation Rates on Slow Clients",
+  "description": "Preventing gateway memory bloat: building backpressure controllers to throttle LLM streaming rates based on client connection capacity.",
+  "url": "https://akmalkhaniub.github.io/blog/gateway-token-backpressure-flow-control-streaming.html",
+  "datePublished": "2026-07-11",
+  "keywords": "Performance, Gateways, Streaming, Python",
+  "author": {
+    "@type": "Person",
+    "name": "Akmal Khan",
+    "url": "https://akmalkhaniub.github.io/"
+  },
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/gateway-token-backpressure-flow-control-streaming.html"
+}
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome + Prism theme -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="article.css">
+
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+</head>
+<body>
+
+  <div id="progress-container"><div id="progress-bar"></div></div>
+  <div class="bg-grid"></div>
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <header>
+    <div class="header-container">
+      <a href="../" class="logo"><span class="logo-accent">&lt;</span>Akmal Khan<span class="logo-accent"> /&gt;</span></a>
+      <nav>
+        <ul>
+          <li><a href="../#about" class="nav-link">About</a></li>
+          <li><a href="../#skills" class="nav-link">Skills</a></li>
+          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../certifications.html" class="nav-link">Certs</a></li>
+          <li><a href="../publications.html" class="nav-link">Research</a></li>
+          <li><a href="index.html" class="nav-link active-nav">Blog</a></li>
+          <li><a href="../#contact" class="nav-link nav-btn">Get In Touch</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+      <button class="mobile-nav-toggle" aria-label="Toggle menu" id="mobile-toggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <main class="article-container">
+    <div class="blog-layout">
+      <div class="article-main-column">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
+
+        <article class="article-card">
+          <div class="article-header">
+            <h1 class="article-title">Token Backpressure Control: Managing Generation Rates on Slow Clients</h1>
+            <div class="article-meta">
+              <span><i class="fa-regular fa-calendar"></i> July 12, 2026</span>
+              <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">Performance</span><span class="project-badge">Gateways</span><span class="project-badge">Streaming</span><span class="project-badge">Python</span></div>
+            </div>
+          </div>
+
+          <div class="article-body">
+<h1>Token Backpressure Control: Managing Generation Rates on Slow Clients</h1>
+<blockquote>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Real-time streaming gateways decouple LLM providers from web clients. However, they introduce a significant performance risk: <strong>Rate Mismatch</strong>. A frontier LLM easily generates tokens at 100+ tokens/sec, but a client on a slow mobile network can only consume 15 tokens/sec. If the gateway proxy buffers this excess data without limit, it exhausts server memory, leading to crashes. In this article, we analyze <strong>Token Backpressure Control</strong>, design flow-control logic, and implement an asynchronous stream throttle manager in Python.</p>
+</blockquote>
+<hr>
+<h2>The Danger of Unbounded Buffering</h2>
+<p>When an API gateway streams token responses to clients:</p>
+<ul>
+<li><strong>Memory Exhaustion (OOM)</strong>: If the client connection lags, the gateway holds open active connection buffers in RAM. With thousands of active sessions, memory bloat triggers Out-Of-Memory (OOM) failures.</li>
+<li><strong>API Waste</strong>: If the client disconnects due to lag, the LLM continues generating tokens in the background, consuming API credits for responses that will never be delivered.</li>
+<li><strong>The Solution</strong>: <strong>Backpressure</strong>. The gateway monitors the client&#39;s consumption speed. If the buffer queue exceeds a threshold, the gateway throttles the LLM generator stream, resuming only when the client queue drains.</li>
+</ul>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    LLM[LLM API Stream] --&gt;|Generate Tokens: 100/sec| Gateway[Gateway Buffer Queue]
+    Gateway --&gt;|Consume Tokens: 15/sec| Client[Slow Client Socket]
+    
+    Gateway --&gt; Check{Buffer Queue &gt; Threshold?}
+    Check --&gt;|Yes| Pause[Trigger Backpressure: Pause LLM Stream]
+    Check --&gt;|No| Resume[Resume LLM Stream]
+    
+    Pause --&gt; Resume</div>
+<hr>
+<h2>1. Under the Hood: TCP Window and Application-Level Flow Control</h2>
+<p>To implement backpressure, we evaluate two connection vectors:</p>
+<ul>
+<li><strong>TCP Socket Backpressure</strong>: The host operating system&#39;s network socket layer blocks writes when the client&#39;s TCP window is full.</li>
+<li><strong>Application Buffer Queues</strong>: The gateway proxy tracks the size of the output queue (e.g. <code>asyncio.Queue(maxsize=10)</code>). When the queue reaches capacity, the async generator halts generation.</li>
+</ul>
+<hr>
+<h2>2. Setting up Safety Throttles</h2>
+<p>The flow control manager enforces:</p>
+<ol>
+<li><strong>Low Buffer Limits</strong>: Keeping the maximum queue size small (under 20 tokens) to prevent RAM allocation spikes.</li>
+<li><strong>Graceful Timeouts</strong>: Terminating the upstream LLM API call immediately if the client disconnects or pauses for too long, preventing token billing waste.</li>
+</ol>
+<hr>
+<h2>Code Demo: Asynchronous Token Flow Controller</h2>
+<p>Below is a Python implementation of a stream flow manager. It simulates token generation, checks socket output limits, and pauses the generator thread when client queues reach capacity.</p>
+<pre><code class="language-python">import asyncio
+from typing import AsyncGenerator
+
+class TokenBackpressureController:
+    def __init__(self, max_buffer_size: int = 5):
+        self.max_buffer_size = max_buffer_size
+        self.buffer = asyncio.Queue(maxsize=max_buffer_size)
+        self.generation_active = True
+
+    async def generate_llm_tokens(self) -&gt; AsyncGenerator[str, None]:
+        # Simulated LLM provider generating tokens at 50/sec
+        for token_idx in range(1, 15):
+            if not self.generation_active:
+                break
+                
+            token = f&quot;Token_{token_idx}&quot;
+            
+            # Check if buffer is full before adding token
+            if self.buffer.full():
+                print(f&quot;⚠️ [Backpressure] Buffer Full ({self.buffer.qsize()}/{self.max_buffer_size}). Throttling LLM generator...&quot;)
+                # Wait until client consumes tokens and frees space
+                while self.buffer.full():
+                    await asyncio.sleep(0.1)
+                print(&quot;🔄 [Backpressure] Buffer drained. Resuming LLM generator.&quot;)
+
+            await self.buffer.put(token)
+            yield token
+
+    async def simulate_slow_client_consume(self):
+        # Simulated slow mobile client consuming tokens at 5/sec
+        while self.generation_active:
+            if not self.buffer.empty():
+                token = await self.buffer.get()
+                print(f&quot;📥 [Client] Consumed: {token}&quot;)
+                self.buffer.task_done()
+            
+            await asyncio.sleep(0.5) # Lag delay
+
+if __name__ == &quot;__main__&quot;:
+    async def run_simulation():
+        controller = TokenBackpressureController(max_buffer_size=4)
+        
+        print(&quot;⚡ Initiating Asynchronous Token Flow Control...&quot;)
+        print(&quot;-------------------------------------------------&quot;)
+
+        # Launch slow consumer in background
+        consumer_task = asyncio.create_task(controller.simulate_slow_client_consume())
+
+        # Run generator
+        async for t in controller.generate_llm_tokens():
+            # Generator pushes to buffer
+            pass
+
+        # Stop simulation
+        await asyncio.sleep(1)
+        controller.generation_active = False
+        await consumer_task
+
+    asyncio.run(run_simulation())</code></pre>
+<hr>
+<h2>Architectural Guidelines</h2>
+<ul>
+<li><strong>Enforce Queue Size Limits</strong>: Set strict maximum size limits on async gateway queues (e.g. <code>maxsize = 20</code>) to prevent memory leak crashes.</li>
+<li><strong>Stop Terminated Streams</strong>: Monitor connection close events on client sockets and immediately cancel the corresponding LLM API requests.</li>
+<li><strong>Throttle, Don&#39;t Disconnect</strong>: Implement progressive delays rather than hard socket closures to preserve connection stability.</li>
+</ul>
+
+          </div>
+
+          <div class="share-box">
+            <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
+            <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fgateway-token-backpressure-flow-control-streaming.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Token%20Backpressure%20Control%3A%20Managing%20Generation%20Rates%20on%20Slow%20Clients&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fgateway-token-backpressure-flow-control-streaming.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+          </div>
+
+          <div class="newsletter-box">
+            <h3><i class="fa-regular fa-paper-plane"></i> Subscribe to my Newsletter</h3>
+            <p>Get my latest deep-dives on backend architectures, AI agents, and production systems directly in your inbox.</p>
+            <form action="https://akmalshahbaz.substack.com/api/v1/free?nojs=true" method="post" target="_blank" class="newsletter-form">
+              <input type="email" name="email" placeholder="Enter your email address..." required aria-label="Email address" />
+              <button type="submit" class="btn btn-primary">Subscribe</button>
+            </form>
+          </div>
+
+          <div class="comments-section">
+            <h3><i class="fa-regular fa-comments"></i> Discussion &amp; Comments</h3>
+            <div class="giscus"></div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
+          <ul class="sidebar-post-list">
+            <li class="sidebar-post-item">
+              <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">July 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item active">
+              <a href="gateway-token-backpressure-flow-control-streaming.html">Token Backpressure Control: Managing Generation Rates on Slow Clients<span class="sidebar-post-date">July 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="gateway-sse-vs-websockets-real-time-streaming.html">SSE vs. WebSockets: Architectural Choices for Real-Time Token Streaming<span class="sidebar-post-date">July 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-episodic-vector-retrieval-trajectory-logs.html">Episodic Vector Memory: Retrieving Past Tool Trajectories for Production Agents<span class="sidebar-post-date">July 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-hierarchical-context-trees-prompt-optimization.html">Hierarchical Context Trees: Managing Multi-Tier Agent Memory Segments<span class="sidebar-post-date">July 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-blackboard-design-pattern-agent-state.html">The Blackboard Design Pattern: Sharing State Safely Across Agent Swarms<span class="sidebar-post-date">July 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-cross-encoder-reranking-context-compression.html">Cross-Encoder Reranking: Optimizing Context Relevancy under Token Limits<span class="sidebar-post-date">July 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-hybrid-search-sparse-dense-rrf-ranking.html">Hybrid Retrieval: Merging Sparse BM25 and Dense Vector Search with Reciprocal Rank Fusion (RRF)<span class="sidebar-post-date">July 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-entity-graph-context-traversal.html">Entity-Graph RAG: Resolving Document Context with Knowledge Graphs<span class="sidebar-post-date">July 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="security-ast-pre-execution-code-injection-scanning.html">Static Analysis of Agent Code: Pre-Execution AST Scanning for Injection Vectors<span class="sidebar-post-date">July 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="security-dynamic-rbac-tool-grants-tokens.html">Dynamic Tool RBAC: Implementing Scoped Tool Grants for Swarms<span class="sidebar-post-date">July 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="security-zero-trust-grpc-microvm-sandboxing.html">Zero-Trust Tool Sandboxes: Isolation with gRPC and MicroVMs<span class="sidebar-post-date">July 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">July 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">June 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">June 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">June 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">June 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="database-self-healing-schema-migrations-lock-checks.html">Self-Healing Schema Migrations: Safe Dynamic Migration Generators<span class="sidebar-post-date">June 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="database-self-healing-explain-analyze-indexing-swarms.html">Autonomous Indexing Swarms: Detecting Slow Queries and Recommending PG Indexes<span class="sidebar-post-date">June 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="routing-topology-litellm-routellm-optimizers.html">LiteLLM vs. RouteLLM: Implementing Enterprise Cost-Latency Optimizers<span class="sidebar-post-date">June 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="routing-topology-dynamic-semantic-classifiers.html">Dynamic Semantic Classifiers: Optimizing Routing Decisions with Local Embeddings<span class="sidebar-post-date">June 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="routing-topology-graph-routers-dag-paths.html">Graph-Structured Routers: Decomposing Multi-Step Queries into DAG Paths<span class="sidebar-post-date">June 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hitl-state-machine-ttl-escalation-timeouts.html">TTL Escalation &amp; Fallback: Managing Timed-Out Approvals in Agent Pipelines<span class="sidebar-post-date">June 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hitl-state-machine-jwt-verified-approval-gates.html">JWT-Verified Approval Callbacks: Securing Human Review Gates against Context Injection<span class="sidebar-post-date">June 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hitl-state-machine-checkpoint-persistence.html">Asynchronous Checkpoint Persistence: Designing Pause-and-Resume State Machines<span class="sidebar-post-date">June 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-llm-kv-cache-token-dropping-reflection.html">Dynamic Token-Dropping: Optimizing Edge KV-Cache Slices for Local Reflection Loops<span class="sidebar-post-date">June 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-agents-shared-memory-ipc-latency.html">Shared Memory on the Edge: Inter-Process Communication (IPC) for Local Agents<span class="sidebar-post-date">June 17, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-swarm-orchestration-single-gpu-VRAM.html">Edge Swarm Orchestration: Running Cooperating Agents on Single-GPU Nodes<span class="sidebar-post-date">June 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-chaos-engineering-agent-failures.html">Chaos Engineering for Agents: Simulating Network Failures and Payload Corruptions<span class="sidebar-post-date">June 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-state-invariants-logic-assertions.html">State Invariants for Agentic Workflows: Enforcing Logic Assertions on Shared DB State<span class="sidebar-post-date">June 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-plan-compilation-execution-trees.html">Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms<span class="sidebar-post-date">June 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="codebase-daemon-agents-continuous-refactoring.html">Continuous Repository Modernization: Designing Daemon Agents for Ongoing Refactoring<span class="sidebar-post-date">June 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="codebase-automated-test-generation-coverage-gaps.html">Automated Integration Test Gen: Mapping Coverage Gaps to Agentic Test Builders<span class="sidebar-post-date">June 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="codebase-semantic-graph-indexing-dependency-trees.html">Semantic Graph Indexing: Mapping Code Dependencies for Large-Scale Agent Refactoring<span class="sidebar-post-date">June 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="team-lead-sprints-for-swarms-hybrid-teams.html">Sprints for Swarms: Re-architecting Jira, Git, and Task Delegation for Hybrid Engineering Teams<span class="sidebar-post-date">June 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="team-lead-verification-architect-test-gates.html">The Verification Architect: Why the Modern Team Lead Focuses on Test Gates over Code Reviews<span class="sidebar-post-date">June 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="team-lead-fighting-cognitive-rot-mentorship.html">Fighting Cognitive Rot: Mentorship Strategies to Keep Developers Sharp in an AI-Dominated Codebase<span class="sidebar-post-date">June 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-saga-pattern-agent-transactions.html">The Saga Pattern for Agentic Workflows: Implementing Distributed Transaction Rollbacks in Swarms<span class="sidebar-post-date">June 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-event-driven-rabbitmq-celery.html">Event-Driven Agent Swarms: Architecting RabbitMQ &amp; Celery Pipelines for Asynchronous Execution<span class="sidebar-post-date">June 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-llm-gateway-router-resilience.html">LLM Gateway &amp; Router Pattern: Resilient Multi-Provider Fallbacks and Circuit Breakers<span class="sidebar-post-date">June 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-cache-architecture-gemini-claude.html">Context Cache Architecture: Maximizing Prompt Caching Hits in Gemini 2.0 &amp; Claude 3.5<span class="sidebar-post-date">June 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="semantic-cache-layer-vector-db-redis.html">Semantic Cache Layers for LLMs: Reducing Token Costs with Vector-Based Prompt Lookups<span class="sidebar-post-date">June 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="dynamic-context-pruning-token-budget-agents.html">Dynamic Context Pruning: Programmatic Token Budgeting for Long-Context Reasoning Chains<span class="sidebar-post-date">June 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-agentic-apis-rate-limiting.html">Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients<span class="sidebar-post-date">May 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-blackboard-database-shared-state.html">The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms<span class="sidebar-post-date">May 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system-design-agent-communication-protocol-schemas.html">Agent-to-Agent Communication: Designing Protocol Contracts &amp; Handoff Schemas<span class="sidebar-post-date">May 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-sdlc-inner-loop-self-healing-code.html">Agentic Code Generation &amp; Self-Healing: Revolutionizing the Inner Loop of SDLC<span class="sidebar-post-date">May 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-sdlc-outer-loop-ci-cd-regression-diagnosis.html">Automating the Outer Loop: Agentic CI/CD, PR Triage, and Regression Diagnosis<span class="sidebar-post-date">May 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-sdlc-refactoring-legacy-migrations.html">Agentic Refactoring &amp; Migration: Automating Legacy Upgrades and Codebase-Wide Deprecations<span class="sidebar-post-date">May 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-swarms-vs-hierarchical-orchestrator-topologies.html">Swarms vs. Hierarchies: Designing Decentralized vs. Orchestrated Agent Topologies<span class="sidebar-post-date">May 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-context-pruning-sliding-windows-memory-compression.html">Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression<span class="sidebar-post-date">May 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="securing-agent-tool-execution-rbac-delegated-auth.html">Securing Agent Tool Execution: Enforcing RBAC and User-Delegated Auth in Swarms<span class="sidebar-post-date">May 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-human-in-the-loop-state-machines.html">Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates<span class="sidebar-post-date">May 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="semantic-tool-routing-vector-retrieval-mcp.html">Semantic Tool Routing: Scaling to Hundreds of Enterprise Tools via Vector Retrieval &amp; MCP<span class="sidebar-post-date">May 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-lineage-audit-trails-observability.html">Agentic Lineage &amp; Audit Trails: Tracing Non-Deterministic Decision Trees for Compliance<span class="sidebar-post-date">May 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-consensus-voting-debate-topologies.html">Multi-Agent Consensus: Architecting Voting &amp; Debate Topologies in LLM Swarms<span class="sidebar-post-date">May 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="postgres-partitioning-at-scale-high-write-loads.html">PostgreSQL Partitioning at Scale: Architecting Declarative Table Partitioning for High-Write Loads<span class="sidebar-post-date">May 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hardening-structured-llm-outputs-context-free-grammars.html">Hardening Structured LLM Outputs: JSON Schema Constraints and Context-Free Grammars at the Edge<span class="sidebar-post-date">May 17, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="enterprise-angular-ddd-signals-monorepos.html">Enterprise Angular Architectures: Domain-Driven Design, Signal State, and Monorepo Scalability<span class="sidebar-post-date">May 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="resumability-vs-hydration-frontend-architectures.html">Resumability vs. Hydration: Architectural Trade-Offs in Modern Frontend Frameworks<span class="sidebar-post-date">May 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="client-side-webassembly-rust-web-workers.html">Client-Side WebAssembly: Offloading Heavy Computations with Rust and Web Workers<span class="sidebar-post-date">May 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">May 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-15-react-19-optimistic-ui.html">Next.js 15 &amp; React 19: Mastering the useOptimistic Hook<span class="sidebar-post-date">May 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-app-router-caching-traps.html">The Hidden Traps in Next.js App Router Caching<span class="sidebar-post-date">May 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="semantic-cache-eviction-strategies.html">Semantic Cache Eviction: Managing Stale LLM Cache Databases<span class="sidebar-post-date">May 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="async-python-event-loop-mistakes.html">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop<span class="sidebar-post-date">May 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="zero-downtime-postgres-migrations.html">Zero-Downtime PostgreSQL Migrations: Avoiding Table Locks at Scale<span class="sidebar-post-date">May 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="vector-embeddings-production-traps.html">What Nobody Tells You About Vector Embeddings in Production<span class="sidebar-post-date">May 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="self-reflective-rag-corrective-search-loops.html">Self-Reflective RAG (CRAG): Corrective Search Loops<span class="sidebar-post-date">May 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="sse-gotchas-production-llm-streaming.html">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production<span class="sidebar-post-date">May 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-first-crdt-mobile-sync.html">Offline-First Mobile Apps: Syncing Data Natively with CRDTs<span class="sidebar-post-date">May 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="guardrails-input-output-validation.html">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk<span class="sidebar-post-date">May 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="pgbouncer-prepared-statements-transaction-mode.html">PgBouncer in Production: The Prepared Statement Traps<span class="sidebar-post-date">May 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="layout-aware-semantic-chunking-pdf.html">Semantic Chunking &amp; Layout-Aware PDF Ingestion for Enterprise RAG<span class="sidebar-post-date">May 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-routing-litellm-routellm.html">Model Routing with LiteLLM &amp; RouteLLM: Serving the Right Model at the Right Cost<span class="sidebar-post-date">May 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="speculative-decoding-function-calling.html">Speculative Decoding for Function Calling: Slashing Tool-Loop Latency<span class="sidebar-post-date">May 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-evals-llm-as-a-judge.html">Evaluating Agentic Swarms: Setting up LLM-as-a-Judge Evals in CI<span class="sidebar-post-date">May 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="tool-calling-contracts-error-recovery.html">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas<span class="sidebar-post-date">May 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-reranking-cross-encoders-bge.html">Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable<span class="sidebar-post-date">May 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-gguf-exl2-awq-quantization.html">Local LLM Serving: GGUF vs. EXL2 vs. AWQ Quantization<span class="sidebar-post-date">May 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-observability-langfuse-opentelemetry.html">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility<span class="sidebar-post-date">May 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nodejs-native-evolution-tooling.html">Node.js Native Evolution: Moving Away from Tooling Bloat<span class="sidebar-post-date">May 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-native-new-architecture-jsi.html">React Native's New Architecture: JSI, Fabric, and Bridgeless Mode<span class="sidebar-post-date">May 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-server-actions-security-vulnerabilities.html">React Server Actions Security: Avoiding Hidden API Vulnerabilities<span class="sidebar-post-date">May 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="prompt-caching-context-window-economics.html">Prompt Caching &amp; Context Window Economics: Cutting LLM API Costs by 90%<span class="sidebar-post-date">May 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-micro-frontends-multi-zones.html">Next.js Multi-Zones &amp; Micro Frontends: Federating Server Components at the Edge<span class="sidebar-post-date">May 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="supervisor-worker-agent-patterns-langgraph.html">Supervisor-Worker Agent Patterns: Orchestrating Multi-Agent Systems with LangGraph &amp; CrewAI<span class="sidebar-post-date">May 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="reasoning-models-production-guidelines.html">Production Engineering for Reasoning Models: Handling Thinking Tokens and Timeout Budgets<span class="sidebar-post-date">May 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-tenant-rag-security.html">Multi-Tenant RAG: Secure Vector Search Isolation in Production Systems<span class="sidebar-post-date">May 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="llm-gateway-pattern-resilience.html">The LLM Gateway Pattern: Building a Resilient Proxy Layer for Production APIs<span class="sidebar-post-date">April 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="local-llm-scaling-runtimes-vllm-ollama.html">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes<span class="sidebar-post-date">April 30, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono<span class="sidebar-post-date">April 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="event-driven-agent-queues-redis-bullmq.html">Event-Driven Agent Queues: Decoupling LLM API Calls with Redis &amp; BullMQ<span class="sidebar-post-date">April 28, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths<span class="sidebar-post-date">April 27, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders<span class="sidebar-post-date">April 26, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="graphrag-entity-graphs.html">GraphRAG &amp; Entity Graphs: Merging Knowledge Graphs with Vector Embeddings<span class="sidebar-post-date">April 25, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="system1-vs-system2-token-economics.html">System 1 vs. System 2 Thinking: The Token Economics of Inference-Time Scaling<span class="sidebar-post-date">April 24, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-cross-agent-memory.html">Advanced Context Engineering: Cross-Agent Memory Synchronization via MCP Resources<span class="sidebar-post-date">April 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets<span class="sidebar-post-date">April 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-14-to-15-migration-gotchas.html">Next.js 14 to 15 Migration: Top Gotchas You Must Know<span class="sidebar-post-date">April 23, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-prompt-caching.html">Advanced Context Engineering: Semantic Prompt Caching &amp; Token Optimization<span class="sidebar-post-date">April 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="react-nextjs-compiler-ppr-actions.html">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem<span class="sidebar-post-date">April 22, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-ephemeral-sandboxing.html">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking<span class="sidebar-post-date">April 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="rag-evolution-2024-2026.html">The Evolution of RAG: Mapping the Key Transformations from 2024 to 2026<span class="sidebar-post-date">April 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-rag-logical-retrieval.html">Agentic RAG: Transforming Passive Retrieval into Deep Reasoning Loops<span class="sidebar-post-date">April 21, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="kv-cache-compression-mla-vs-gqa.html">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)<span class="sidebar-post-date">April 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="production-ready-multi-agent-blueprint.html">Building a Production-Ready Multi-Agent App: A Practical Blueprint<span class="sidebar-post-date">April 20, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ternary-quantization-bitnet-fp16-floats.html">The 1.58-Bit Era: How Ternary Weights Replace Matrix Multiplication with Integer Addition<span class="sidebar-post-date">April 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems<span class="sidebar-post-date">April 19, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="ssms-vs-transformers-attention-bottlenecks.html">State Space Models vs. Attention: The Quest for Infinite Context without VRAM Crashes<span class="sidebar-post-date">April 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="mcp-a2a-agent-interoperability.html">MCP, A2A, and the Future of Open Agent Interoperability<span class="sidebar-post-date">April 18, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="memory-state-context-multi-agent.html">Memory, State, and Context in Multi-Agent Apps<span class="sidebar-post-date">April 17, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="the-validator-agent-pattern.html">The Validator Agent: The Most Underappreciated Pattern in Production AI<span class="sidebar-post-date">April 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="how-to-design-agent-roles.html">How to Design Agent Roles Without Creating Chaos<span class="sidebar-post-date">April 15, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-framework-comparison.html">Framework Comparison: LangGraph vs. CrewAI vs. OpenAI Agents SDK vs. AutoGen<span class="sidebar-post-date">April 14, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="do-you-really-need-multi-agent-ai.html">Do You Really Need Multi-Agent AI? The Counter-Hype Evaluation<span class="sidebar-post-date">April 13, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nine-multi-agent-architectures.html">Nine Multi-Agent Architectures Every AI Builder Should Know<span class="sidebar-post-date">April 12, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="pgvector-index-performance-traps.html">Why Your pgvector Index Is 10× Slower Than It Should Be<span class="sidebar-post-date">April 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">April 11, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="workflow-vs-agent-vs-multi-agent.html">Workflow vs. Agent vs. Multi-Agent System: Defining the Boundaries<span class="sidebar-post-date">April 10, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="multi-agent-buzzword-to-architecture.html">Multi-Agent AI Is Not a Buzzword — It Is a Software Architecture Shift<span class="sidebar-post-date">April 9, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="agentic-ai-architectures.html">Agentic AI Architectures: Designing Reliable Multi-Agent Workflows in Production<span class="sidebar-post-date">April 8, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="context-engineering-mcp.html">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)<span class="sidebar-post-date">April 7, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="django-async-payroll-engine.html">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django<span class="sidebar-post-date">April 6, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="docker-production-blind-spots.html">The Parts of Docker Nobody Explains (Until It Breaks in Production)<span class="sidebar-post-date">April 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="model-context-protocol-mcp-usb-c.html">Model Context Protocol (MCP): The USB-C Standard for AI Tooling<span class="sidebar-post-date">April 5, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="why-rag-fails-production.html">Why RAG Fails in Production: The Case for Structured Semantic Search<span class="sidebar-post-date">April 4, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="token-economics-cost-latency-dashboards.html">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI<span class="sidebar-post-date">April 3, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="distributed-task-queues-redis-bullmq.html">Distributed Task Queues: Decoupling Agent Ingestion with Redis &amp; BullMQ<span class="sidebar-post-date">April 2, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="2g-sms-fallback-bridge-africa-talking.html">2G SMS Fallback Bridge: Messaging Patients Without Internet Access<span class="sidebar-post-date">April 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="offline-llms-ollama-local-runtimes.html">Offline LLMs: Deploying Gemma &amp; Mistral via Local Ollama Runtimes<span class="sidebar-post-date">March 31, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="jwt-security-what-they-dont-teach-you.html">JWT: What They Don't Teach You Until You Get Hacked<span class="sidebar-post-date">March 29, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="websockets-production-sse-vs-ws.html">WebSockets in Production: Where SSE Ends and WS Begins<span class="sidebar-post-date">March 22, 2026</span></a>
+            </li>
+          </ul>
+        </div>
+        <div class="sidebar-card">
+          <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.75rem;">
+            <strong>Akmal Khan</strong> is a Senior Staff Engineer specializing in full-stack AI platforms, agentic pipelines, and vector search database systems.
+          </p>
+          <a href="../#about" style="font-size: 0.8rem; font-weight: 600; color: var(--accent-cyan); text-decoration: underline;">Learn more about Akmal &rarr;</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div id="zoom-modal"><div id="zoom-content"></div></div>
+
+  <footer>
+    <div class="container footer-container">
+      <p>&copy; 2026 Akmal Khan. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="https://github.com/akmalkhaniub" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/akmal-khan-332000250/" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Giscus comments -->
+  <script src="https://giscus.app/client.js"
+          data-repo="akmalkhaniub/akmalkhaniub.github.io"
+          data-repo-id="R_kgDOSuTO2A"
+          data-category="General"
+          data-category-id="DIC_kwDOSuTO2M4C-VTn"
+          data-mapping="pathname"
+          data-strict="0"
+          data-reactions-enabled="1"
+          data-emit-metadata="0"
+          data-input-position="bottom"
+          data-theme="preferred_color_scheme"
+          data-lang="en"
+          crossorigin="anonymous"
+          async></script>
+
+  <!-- Prism syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <script src="../shared.js"></script>
+  <script src="article.js"></script>
+</body>
+</html>
