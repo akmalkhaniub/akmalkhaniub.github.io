@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator | Akmal Khan Tech Blog</title>
-  <meta name="description" content="A deep dive into decoupled worker contexts and validator contracts that eliminate LLM self-evaluation bias and stabilize production AI systems.">
+  <title>Quantization-Aware Training: Protecting Model Precision against Bit Loss | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Improving low-bit model accuracy: simulating weight rounding errors during training to harden local 4-bit adapters.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/orchestrator-worker-validator-architecture.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/slm-quantization-aware-training-precision-preservation.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/orchestrator-worker-validator-architecture.html">
-  <meta property="og:title" content="The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator">
-  <meta property="og:description" content="A deep dive into decoupled worker contexts and validator contracts that eliminate LLM self-evaluation bias and stabilize production AI systems.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/slm-quantization-aware-training-precision-preservation.html">
+  <meta property="og:title" content="Quantization-Aware Training: Protecting Model Precision against Bit Loss">
+  <meta property="og:description" content="Improving low-bit model accuracy: simulating weight rounding errors during training to harden local 4-bit adapters.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-17">
+  <meta property="article:published_time" content="2026-07-15">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator">
-  <meta name="twitter:description" content="A deep dive into decoupled worker contexts and validator contracts that eliminate LLM self-evaluation bias and stabilize production AI systems.">
+  <meta name="twitter:title" content="Quantization-Aware Training: Protecting Model Precision against Bit Loss">
+  <meta name="twitter:description" content="Improving low-bit model accuracy: simulating weight rounding errors during training to harden local 4-bit adapters.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator",
-  "description": "A deep dive into decoupled worker contexts and validator contracts that eliminate LLM self-evaluation bias and stabilize production AI systems.",
-  "url": "https://akmalkhaniub.github.io/blog/orchestrator-worker-validator-architecture.html",
-  "datePublished": "2026-03-17",
-  "keywords": "AI Agents, Validation, Software Engineering",
+  "headline": "Quantization-Aware Training: Protecting Model Precision against Bit Loss",
+  "description": "Improving low-bit model accuracy: simulating weight rounding errors during training to harden local 4-bit adapters.",
+  "url": "https://akmalkhaniub.github.io/blog/slm-quantization-aware-training-precision-preservation.html",
+  "datePublished": "2026-07-15",
+  "keywords": "Optimization, Fine-Tuning, Quantization, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/orchestrator-worker-validator-architecture.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/slm-quantization-aware-training-precision-preservation.html"
 }
   </script>
 
@@ -93,107 +93,128 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator</h1>
+            <h1 class="article-title">Quantization-Aware Training: Protecting Model Precision against Bit Loss</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> March 18, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 16, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 6 min read</span>
-              <div class="article-tags"><span class="project-badge">AI Agents</span><span class="project-badge">Validation</span><span class="project-badge">Software Engineering</span></div>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">Optimization</span><span class="project-badge">Fine-Tuning</span><span class="project-badge">Quantization</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Breaking the Self-Review Loop: The Orchestrator-Worker-Validator Pattern</h1>
+<h1>Quantization-Aware Training: Protecting Model Precision against Bit Loss</h1>
 <blockquote>
-<h3>📖 Article Overview</h3>
-<ul>
-<li><strong>What this article is about:</strong> This article analyzes the failure modes of single-LLM self-review loops and details the 3-tier Orchestrator-Worker-Validator architecture designed to solve them.</li>
-<li><strong>Why it matters:</strong> Separating agentic labor prevents cognitive bias in LLMs, reduces token costs, secures systems against prompt injection, and guarantees reliable code execution in production.</li>
-<li><strong>What we synthesized:</strong> We synthesized the core mechanics of the Orchestrator-Worker-Validator loop, key implementation rules for context isolation, and strategies for combining rule-based and model-based validation.</li>
-</ul>
+<p>[!NOTE]
+<strong>📖 Article Overview</strong>
+Deploying fine-tuned models to edge devices requires converting high-precision weights (FP16 or BF16) into compressed formats (INT4 or INT8). However, performing post-training quantization (PTQ) directly on custom-trained adapters frequently causes a significant drop in accuracy. The rounding errors introduced by compressing weights scramble the specific features learned during fine-tuning. To prevent accuracy degradation, engineers use <strong>Quantization-Aware Training (QAT)</strong>. By simulating low-bit rounding errors during the forward pass, we train weights to adapt to compression noise. In this article, we implement a QAT rounding simulation module in Python.</p>
 </blockquote>
-<p>One of the most persistent failure modes in early agent deployments is the <strong>Self-Review Loop</strong>. Developers write a prompt that instructs a single LLM to:</p>
-<ol>
-<li>Write a Python script.</li>
-<li>Read the script it just wrote.</li>
-<li>Fix any errors in the script.</li>
-</ol>
-<p>In production, this pattern routinely fails. Large Language Models exhibit a cognitive bias analogous to human <strong>sunk cost bias</strong>: once a model generates an output, its subsequent self-inspections tend to confirm its original assumptions. If the model made a logical error in step 1, it will likely read past that same error in step 2, declaring its own work &quot;valid.&quot;</p>
-<p>To build reliable systems, we must separate the labor. We do this by implementing a 3-tier architecture: <strong>Orchestrator, Worker, and Validator</strong>.</p>
-<p>This pattern, popularized by enterprise AI engineering teams like Factory, structures agentic execution as a strict software pipeline.</p>
 <hr>
-<h2>The Three-Tier Architecture Loop</h2>
-<div class="mermaid">graph TD
-    UserReq[User Goal / Issue] --&gt;|1. Request| Orch[Orchestrator Agent]
-    Orch --&gt;|2. Create Plan &amp; Verification Contract| Worker[Worker Agent]
-    Worker --&gt;|3. Produce Execution / Code| Val[Validator Agent]
+<h2>The Threat of Quantization Noise</h2>
+<p>In standard compression workflows:</p>
+<ul>
+<li><strong>The Post-Training Drop</strong>: Quantizing a custom-tuned adapter post-hoc rounds floating-point values to discrete integer steps, destroying high-precision representations.</li>
+<li><strong>Loss of Domain Accuracy</strong>: SLMs fine-tuned to output strict JSON schemas start outputting syntax errors after compression due to rounding losses.</li>
+<li><strong>The Solution</strong>: <strong>Quantization-Aware Training (QAT)</strong>. We preserve weights in high-precision (FP32) but pass them through a simulated quantization gate (fake quantization) during forward training passes. The optimizer updates the FP32 weights based on the degraded outputs, learning robust parameters.</li>
+</ul>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    Weight[High-Precision Weights: FP32] --&gt; FakeQuant{Fake Quantization Gate}
     
-    subgraph Validation Gate [Validation Gate]
-        Val --&gt;|4. Run Verification Suite| VerifyCheck{Passes Contract?}
+    subgraph Quantization Simulation
+        FakeQuant --&gt; Scale[Scale to target bit bounds: e.g. -8 to +7]
+        Scale --&gt; Round[Round floats to nearest integers]
+        Round --&gt; DeScale[De-scale back to floating range]
     end
     
-    VerifyCheck --&gt;|No: Generate Critique| Worker
-    VerifyCheck --&gt;|Yes: Commit Code| Finish[Approved Output]
-
-    style ValidationGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
-    style Finish fill:#f0fdf4,stroke:#16a34a,stroke-width:2px</div>
-<h3>1. The Orchestrator (The Planner)</h3>
-<p>The user request enters the Orchestrator. The Orchestrator&#39;s role is strictly cognitive planning, not code execution. It:</p>
+    DeScale --&gt; Forward[Execute forward training pass]
+    Forward --&gt; Backprop[Calculate Gradients &amp; Update FP32 weights]</div>
+<hr>
+<h2>1. Simulating Integer Clamping (Fake Quantization)</h2>
+<p>To implement simulated low-bit training:</p>
 <ul>
-<li>Analyzes the goal.</li>
-<li>Queries metadata directories to identify files or databases that need modification.</li>
-<li>Generates a discrete, step-by-step execution plan.</li>
-<li><strong>Drafts the Verification Contract</strong>: The contract outlines the expected variables, required imports, validation scripts, or schema checks that the final output must satisfy.</li>
-</ul>
-<h3>2. The Worker (The Executer)</h3>
-<p>The Worker receives a task card from the Orchestrator. </p>
-<ul>
-<li><strong>Context Isolation</strong>: The Worker does <em>not</em> see the global plan, other worker logs, or system instructions. It is given a narrow context window, a clean list of 1–2 tools (e.g., read/write file), and the task contract.</li>
-<li><strong>Why this matters</strong>: Context isolation prevents prompt injection attacks (where external data compromises the agent) and minimizes token costs. It also ensures the model has high focus on the exact code task at hand.</li>
-</ul>
-<h3>3. The Validator (The Inspector)</h3>
-<p>The Validator takes the Worker&#39;s output and matches it against the Verification Contract.</p>
-<ul>
-<li><strong>Independent Context</strong>: The Validator has no visibility into the worker&#39;s execution path or thought log. It only evaluates the final artifact.</li>
-<li><strong>Verification Methods</strong>:<ul>
-<li><em>Rule-Based Validation</em>: Running code linters, compilers, and test suites (e.g., Pytest, Jest).</li>
-<li><em>Model-Based Validation</em>: Utilizing a separate, smaller LLM prompt with a strict QA grading rubric (LLM-as-judge).</li>
-</ul>
-</li>
-<li><strong>Feedback loop</strong>: If the validation fails, the Validator compiles a list of specific errors (e.g., &quot;Line 43 failed compilation with SyntaxError&quot;) and redirects the card back to the Worker. The Worker runs again with the critique as additional input.</li>
+<li><strong>Scale weights to range</strong>: Multiply weights by a scale factor derived from the maximum parameter ranges.</li>
+<li><strong>Clamp values</strong>: Restrict outputs to target bit bounds (e.g. mapping to <code>[-8, 7]</code> for signed 4-bit configurations) to simulate clipping.</li>
 </ul>
 <hr>
-<h2>📋 Architectural Rules for Production Builders</h2>
-<ul>
-<li><input disabled="" type="checkbox"> <strong>Strict Context Partitioning</strong>: Ensure your Worker and Validator prompts do <em>not</em> share system instructions, variable memory, or history files.</li>
-<li><input disabled="" type="checkbox"> <strong>Rule-Based Precedence</strong>: Always execute programmatic validation (tests, compilers, regex schema checks) <em>before</em> invoking LLM-as-judge validators. Save tokens and ensure 100% accuracy on structural checks.</li>
-<li><input disabled="" type="checkbox"> <strong>Termination Escape Valve</strong>: Set a strict threshold on the Worker-Validator critique loop (e.g., if a worker fails validation 3 times, pause execution and alert a human supervisor).</li>
-</ul>
-<hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
-<p>Adopting a structured multi-agent architecture is the key to overcoming the inherent cognitive biases of single-LLM systems.</p>
+<h2>2. Straight-Through Estimators (STE)</h2>
+<p>Since rounding is a non-differentiable step (gradient is zero almost everywhere):</p>
 <ol>
-<li><strong>Deconstruct the Self-Review Loop:</strong> LLMs cannot reliably grade their own work due to confirmation bias, making a separate Validator agent essential for objective quality control.</li>
-<li><strong>Isolate Context for Security and Focus:</strong> Restricting the Worker&#39;s context window minimizes token overhead, prevents prompt injection, and ensures high-fidelity task execution.</li>
-<li><strong>Prioritize Programmatic Validation:</strong> Run deterministic, rule-based checks like compilers and unit tests before calling LLM-as-judge evaluators to save API costs and guarantee structural correctness.</li>
+<li><strong>Pass gradients unchanged</strong>: Use a Straight-Through Estimator (STE) during backpropagation to bypass the rounding derivative.</li>
+<li><strong>Apply updates</strong>: Apply calculated gradients directly to the high-precision weights.</li>
 </ol>
-<p><em>Takeaway:</em> <em>To build production-grade AI agents, replace single-model self-correction with a strict, multi-agent pipeline of isolated planners, executors, and validators.</em></p>
 <hr>
-<h2>📚 References &amp; Further Reading</h2>
+<h2>Code Demo: Quantization-Aware Training Simulator</h2>
+<p>Below is a Python implementation of a quantization-aware training simulator. It injects fake quantization noise into weights, executes forward passes, and updates floating parameters.</p>
+<pre><code class="language-python">import numpy as np
+from typing import Tuple
+
+class QATWeightSimulator:
+    def __init__(self, num_bits: int = 4):
+        self.num_bits = num_bits
+        # Calculate integer bounds for signed quantization (e.g. 4-bit is -8 to 7)
+        self.qmin = -(2 ** (num_bits - 1))
+        self.qmax = (2 ** (num_bits - 1)) - 1
+
+    def fake_quantize_weights(self, weights: np.ndarray) -&gt; np.ndarray:
+        # Determine scale factor based on weight distribution
+        max_val = np.max(np.abs(weights)) or 1e-5
+        scale = max_val / self.qmax
+
+        # 1. Scale and round float weights to simulated integer range
+        quantized = np.round(weights / scale)
+
+        # 2. Clamp values within target bit boundaries
+        clamped = np.clip(quantized, self.qmin, self.qmax)
+
+        # 3. De-scale back to floating-point representation (reconstructing FP32)
+        dequantized = clamped * scale
+        return dequantized
+
+    def execute_forward_qat_layer(self, inputs: np.ndarray, weights: np.ndarray) -&gt; Tuple[np.ndarray, np.ndarray]:
+        # Apply fake quantization to weights before computing output
+        qat_weights = self.fake_quantize_weights(weights)
+        output = np.dot(inputs, qat_weights.T)
+        return output, qat_weights
+
+if __name__ == &quot;__main__&quot;:
+    print(&quot;🛡️ Initializing QAT Weight Simulator (4-Bit Target)...&quot;)
+    print(&quot;-------------------------------------------------------&quot;)
+
+    simulator = QATWeightSimulator(num_bits=4)
+
+    # Simulated floating-point adapter weights (FP32)
+    fp32_weights = np.array([
+        [0.085, -0.124, 0.342],
+        [-0.015, 0.448, -0.219]
+    ])
+
+    mock_inputs = np.array([[1.0, 2.0, -1.0]])
+
+    # Run QAT forward pass
+    output, simulated_weights = simulator.execute_forward_qat_layer(mock_inputs, fp32_weights)
+
+    print(&quot;\n🌲 --- Quantization Comparison ---&quot;)
+    print(&quot;Original FP32 Weights:&quot;)
+    print(fp32_weights)
+    print(&quot;\nSimulated 4-Bit Rounded Weights (FP32 representation):&quot;)
+    print(simulated_weights)
+    print(f&quot;\nLayer Output with Quantization Noise: {output}&quot;)</code></pre>
+<hr>
+<h2>Quantization-Aware Takeaways</h2>
 <ul>
-<li><strong>Factory.ai Architecture Blog</strong>: <em>The Multi-Agent Architecture That Ships</em>. Luke Alvoeiro details the separation of planning, execution, and validation in automated software development squads. <em>(Technical Case Study)</em></li>
-<li><strong>Reflexion Paper</strong>: Shinn et al., 2023. <em>Reflexion: Language Agents with Active Generative Feedback</em>. Explains the mathematical and systemic benefit of separate critic models in agentic loops. <a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">Link</a></li>
-<li><strong>LLM-as-a-Judge</strong>: Zheng et al., 2023. <em>Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</em>. Analyzes the systematic biases and optimal setups for utilizing model evaluators. <a href="https://arxiv.org/abs/2306.05685" target="_blank" rel="noopener">Link</a></li>
+<li><strong>Simulate Rounding Noise</strong>: Inject quantization rounding errors during training to train models to adapt to noise.</li>
+<li><strong>Keep High-Precision Backups</strong>: Maintain master weights in high-precision (FP32) to aggregate gradients.</li>
+<li><strong>Enforce Safe Boundaries</strong>: Clamp weights to prevent activation overflow during low-bit deployment.</li>
 </ul>
-<p><em>To explore complete code implementations of all 17 agent microservices in a single monorepo, check out the public <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a> repository.</em></p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Forchestrator-worker-validator-architecture.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=The%20Multi-Agent%20Architecture%20That%20Actually%20Ships%3A%20Orchestrator%20%E2%86%92%20Worker%20%E2%86%92%20Validator&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Forchestrator-worker-validator-architecture.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fslm-quantization-aware-training-precision-preservation.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Quantization-Aware%20Training%3A%20Protecting%20Model%20Precision%20against%20Bit%20Loss&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fslm-quantization-aware-training-precision-preservation.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -216,7 +237,7 @@
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 16, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -651,7 +672,7 @@
             <li class="sidebar-post-item">
               <a href="pgvector-index-performance-traps.html">Why Your pgvector Index Is 10× Slower Than It Should Be<span class="sidebar-post-date">March 18, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="orchestrator-worker-validator-architecture.html">The Multi-Agent Architecture That Actually Ships: Orchestrator → Worker → Validator<span class="sidebar-post-date">March 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
