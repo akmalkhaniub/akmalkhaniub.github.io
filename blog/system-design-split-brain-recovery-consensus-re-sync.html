@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
+  <title>Split-Brain Recovery: Partition Resolution &amp; Consensus Re-Sync | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Hardening distributed agent clusters: designing consensus re-sync handlers to resolve divergent state histories when network partitions heal.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system-design-split-brain-recovery-consensus-re-sync.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html">
-  <meta property="og:title" content="The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms">
-  <meta property="og:description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-split-brain-recovery-consensus-re-sync.html">
+  <meta property="og:title" content="Split-Brain Recovery: Partition Resolution &amp; Consensus Re-Sync">
+  <meta property="og:description" content="Hardening distributed agent clusters: designing consensus re-sync handlers to resolve divergent state histories when network partitions heal.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-25">
+  <meta property="article:published_time" content="2026-07-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms">
-  <meta name="twitter:description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
+  <meta name="twitter:title" content="Split-Brain Recovery: Partition Resolution &amp; Consensus Re-Sync">
+  <meta name="twitter:description" content="Hardening distributed agent clusters: designing consensus re-sync handlers to resolve divergent state histories when network partitions heal.">
   <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "The Database is the Blackboard: Shared State & Session Store Patterns for Agent Swarms",
-  "description": "Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.",
-  "url": "https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html",
-  "datePublished": "2026-04-25",
-  "keywords": "Database Scaling, System Design, PostgreSQL, Concurrency",
+  "headline": "Split-Brain Recovery: Partition Resolution & Consensus Re-Sync",
+  "description": "Hardening distributed agent clusters: designing consensus re-sync handlers to resolve divergent state histories when network partitions heal.",
+  "url": "https://akmalkhaniub.github.io/blog/system-design-split-brain-recovery-consensus-re-sync.html",
+  "datePublished": "2026-07-17",
+  "keywords": "Architecture, System Design, Resilience, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system-design-split-brain-recovery-consensus-re-sync.html"
 }
   </script>
 
@@ -93,161 +93,131 @@
 
         <article class="article-card">
           <div class="article-header">
-            <h1 class="article-title">The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms</h1>
+            <h1 class="article-title">Split-Brain Recovery: Partition Resolution &amp; Consensus Re-Sync</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> April 26, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 18, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Database Scaling</span><span class="project-badge">System Design</span><span class="project-badge">PostgreSQL</span><span class="project-badge">Concurrency</span></div>
+              <div class="article-tags"><span class="project-badge">Architecture</span><span class="project-badge">System Design</span><span class="project-badge">Resilience</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms</h1>
+<h1>Split-Brain Recovery: Partition Resolution &amp; Consensus Re-Sync</h1>
 <blockquote>
 <p>[!NOTE]
 <strong>📖 Article Overview</strong>
-As AI agent architectures evolve from simple chain models into complex swarms, state coordination becomes the primary design challenge. Rather than relying solely on direct message exchanges (e.g. HTTP posts, WebSockets) which create coupling and high coordination overhead, advanced multi-agent systems rely on <strong>Blackboard Architectures</strong>. In this article, we analyze shared state patterns, design a PostgreSQL JSONB blackboard schema, and implement a concurrency-safe blackboard storage manager in Python.</p>
+During major cross-cloud outages or fiber cuts, network partitions split multi-agent clusters into isolated sub-networks. If both isolated partitions continue executing tasks independently, a dangerous <strong>Split-Brain State</strong> develops: both sides accept user commands and mutate task states along divergent execution paths. When the network partition heals, merging divergent state histories naively results in lost work or corrupted task DAGs. To maintain data consistency, systems engineers deploy <strong>Consensus Re-Sync Handlers</strong>. By comparing vector clock lineage and applying consensus reconciliation rules, clusters recover unified state timelines. In this article, we implement a split-brain reconciliation manager in Python.</p>
 </blockquote>
 <hr>
-<h2>The Handoff Problem</h2>
-<p>In a decentralized swarm, agent nodes must transfer execution control and context data to one another. There are two primary architectural paradigms to handle this:</p>
-<ol>
-<li><strong>Direct Peer-to-Peer Message Passing</strong>: Agent A calls Agent B&#39;s API. This is easy to set up but highly coupled. If Agent B crashes, the state is lost, and auditing execution paths requires complex trace collectors.</li>
-<li><strong>Blackboard Pattern (Shared State DB)</strong>: A central, persistent memory store—the &quot;Blackboard&quot;—holds the global state, task lists, and execution history. Agent nodes poll or subscribe to this blackboard. They inspect the current board state, write updates, and hand off control by updating the task status.</li>
-</ol>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    subgraph Blackboard Architecture
-        DB[(Shared Blackboard DB)]
-        Coord[Coordinator Agent] --&gt;|Reads &amp; Schedules Tasks| DB
-        W1[Worker Agent: Researcher] &lt;--&gt;|Fetch task &amp; Write findings| DB
-        W2[Worker Agent: Coder] &lt;--&gt;|Fetch task &amp; Write code| DB
-        W3[Worker Agent: Validator] &lt;--&gt;|Fetch task &amp; Write test reports| DB
-    end</div>
-<p>Using a blackboard database decouples execution nodes, enforces transactional consistency, and provides built-in auditability of the agent swarm’s reasoning path.</p>
-<hr>
-<h2>Designing a Concurrency-Safe Schema</h2>
-<p>When multiple agents write to the same blackboard concurrently, they risk overwrite errors (race conditions). We prevent this using <strong>Transactional Locks</strong>:</p>
+<h2>The Distributed Partition Dilemma</h2>
+<p>In partitioned agent networks:</p>
 <ul>
-<li><strong>Relational Schema (PostgreSQL)</strong>: We represent the blackboard as a table containing a unique <code>task_id</code>, a status column (<code>PENDING</code>, <code>RUNNING</code>, <code>COMPLETED</code>), and a JSONB column containing the execution context.</li>
-<li><strong>Concurrency Locking</strong>: When an agent claims a task, it runs a <code>SELECT ... FOR UPDATE</code> query. This locks the database row, preventing other agent threads from claiming the same task. The agent updates the status and context, then commits the transaction, releasing the lock.</li>
+<li><strong>The Divergent Branch Problem</strong>: Partition A executes step 3A while Partition B concurrently executes step 3B for the same task key.</li>
+<li><strong>Corrupted Context Graphs</strong>: Unifying divergent trace histories without causal ordering produces invalid execution sequences.</li>
+<li><strong>The Solution</strong>: <strong>Consensus Re-Sync &amp; Lineage Pruning</strong>. Upon network healing, nodes exchange state vector clock trees, identify divergence points, and apply deterministic consensus rules (such as leader-driven pruning or branch unioning).</li>
+</ul>
+<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
+flowchart TD
+    State[Common State Base: Step 1] --&gt; Partition{Network Partition Event}
+    
+    subgraph Divergent Clusters
+        Partition --&gt;|Cluster A Branch| NodeA[Cluster A: Step 2A]
+        Partition --&gt;|Cluster B Branch| NodeB[Cluster B: Step 2B]
+    end
+    
+    NodeA --&gt; Heal[Network Heals: Trigger Re-Sync Manager]
+    NodeB --&gt; Heal
+    
+    Heal --&gt; VectorCheck[Compare Vector Clock Lineage]
+    VectorCheck --&gt; Reconcile{Conflict Resolution Policy}
+    Reconcile --&gt;|Union non-conflicting steps| Unified[Unified Task Timeline]</div>
+<hr>
+<h2>1. Detecting Divergent Vector Clocks</h2>
+<p>To identify split-brain branches:</p>
+<ul>
+<li><strong>Track Vector Clock Lineages</strong>: Attach vector clock maps <code>{&quot;cluster_a&quot;: 2, &quot;cluster_b&quot;: 1}</code> to state updates.</li>
+<li><strong>Detect Concurrent Divergence</strong>: Identify states where neither vector clock dominates the other, signaling a split-brain branch.</li>
 </ul>
 <hr>
-<h2>Code Demo: Conactivity-Safe Blackboard Manager</h2>
-<p>Below is a complete Python script demonstrating a Blackboard manager using SQLite (with SQLAlchemy) that simulates concurrent workers processing tasks from a shared state repository using row-level transactional boundaries.</p>
-<pre><code class="language-python">import time
-import threading
-from typing import Dict, Any, List
-from sqlalchemy import create_engine, Column, Integer, String, JSON
-from sqlalchemy.orm import declarative_base, sessionmaker
+<h2>2. Reconciling Divergent Histories</h2>
+<p>The re-sync manager resolves split-brain states:</p>
+<ol>
+<li><strong>Locate Common Ancestor</strong>: Traverses vector clock lineages to find the last agreed-upon state.</li>
+<li><strong>Apply Consensus Merges</strong>: Merge non-conflicting step logs and re-index sequential step execution keys.</li>
+</ol>
+<hr>
+<h2>Code Demo: Split-Brain Reconciliation Manager</h2>
+<p>Below is a Python implementation of a split-brain reconciliation manager. It detects divergent execution branches across partitioned clusters and unifies task timelines upon network healing.</p>
+<pre><code class="language-python">import copy
+from typing import List, Dict, Any
 
-Base = declarative_base()
+class SplitBrainReconciler:
+    def __init__(self):
+        pass
 
-class BlackboardTask(Base):
-    __tablename__ = 'blackboard_tasks'
-    id = Column(Integer, primary_key=True)
-    status = Column(String(50), default=&quot;PENDING&quot;)
-    assigned_agent = Column(String(100), nullable=True)
-    context = Column(JSON, default=dict)
+    def detect_divergence(self, state_a: Dict[str, Any], state_b: Dict[str, Any]) -&gt; bool:
+        vc_a = state_a.get(&quot;vector_clock&quot;, {})
+        vc_b = state_b.get(&quot;vector_clock&quot;, {})
+        
+        # Concurrent divergence occurs when neither vector clock strictly dominates
+        a_greater = any(vc_a.get(k, 0) &gt; vc_b.get(k, 0) for k in vc_a)
+        b_greater = any(vc_b.get(k, 0) &gt; vc_a.get(k, 0) for k in vc_b)
+        
+        return a_greater and b_greater
 
-# Setup Database
-engine = create_engine(&quot;sqlite:///:memory:&quot;, connect_args={&quot;check_same_thread&quot;: False})
-Base.metadata.create_all(engine)
-SessionLocal = sessionmaker(bind=engine)
+    def reconcile_divergent_branches(self, branch_a: List[Dict[str, Any]], branch_b: List[Dict[str, Any]]) -&gt; List[Dict[str, Any]]:
+        print(&quot;⚡ [Re-Sync Manager] Network partition healed. Reconciling divergent state branches...&quot;)
+        
+        unified_timeline: List[Dict[str, Any]] = []
+        seen_steps = set()
 
-class BlackboardRepository:
-    @staticmethod
-    def claim_task(agent_name: str, task_id: int) -&gt; bool:
-        session = SessionLocal()
-        try:
-            # In PostgreSQL, we would run: SELECT * FROM blackboard_tasks WHERE id = :id FOR UPDATE
-            task = session.query(BlackboardTask).filter(BlackboardTask.id == task_id).with_for_update().first()
-            
-            if task and task.status == &quot;PENDING&quot;:
-                print(f&quot;[{agent_name}] Row lock acquired. Claiming task {task_id}...&quot;)
-                task.status = &quot;RUNNING&quot;
-                task.assigned_agent = agent_name
-                task.context[&quot;claimed_at&quot;] = time.time()
-                session.commit()
-                return True
-            return False
-        except Exception as e:
-            session.rollback()
-            print(f&quot;[{agent_name}] Error claiming task: {e}&quot;)
-            return False
-        finally:
-            session.close()
+        # Combine steps from both branches while preserving uniqueness and causal order
+        combined = branch_a + branch_b
+        combined.sort(key=lambda x: (x.get(&quot;timestamp&quot;, 0), x.get(&quot;step_id&quot;)))
 
-    @staticmethod
-    def update_task_results(agent_name: str, task_id: int, results: Dict[str, Any]) -&gt; None:
-        session = SessionLocal()
-        try:
-            task = session.query(BlackboardTask).filter(BlackboardTask.id == task_id).first()
-            if task and task.assigned_agent == agent_name:
-                # Merge existing context data
-                current_context = dict(task.context)
-                current_context.update(results)
-                task.context = current_context
-                task.status = &quot;COMPLETED&quot;
-                session.commit()
-                print(f&quot;[{agent_name}] Successfully submitted results for task {task_id}.&quot;)
-        except Exception as e:
-            session.rollback()
-            print(f&quot;Error updating task: {e}&quot;)
-        finally:
-            session.close()
+        for item in combined:
+            step_key = (item[&quot;step_id&quot;], item[&quot;action&quot;])
+            if step_key not in seen_steps:
+                seen_steps.add(step_key)
+                unified_timeline.append(item)
+                print(f&quot;   ✅ Merged Step '{item['action']}' from Cluster '{item['cluster_origin']}'&quot;)
 
-# Simulate Agent Worker Node Execution
-def run_worker_node(agent_name: str, task_id: int, task_duration: float, mock_data: Dict[str, Any]):
-    print(f&quot;[{agent_name}] Worker spawned.&quot;)
-    # 1. Attempt to claim task
-    if BlackboardRepository.claim_task(agent_name, task_id):
-        # 2. Simulate processing
-        time.sleep(task_duration)
-        # 3. Write results back
-        BlackboardRepository.update_task_results(agent_name, task_id, mock_data)
-    else:
-        print(f&quot;[{agent_name}] Failed to claim task {task_id} (already locked/claimed).&quot;)
+        return unified_timeline
 
 if __name__ == &quot;__main__&quot;:
-    # Seed a task in the blackboard database
-    session = SessionLocal()
-    new_task = BlackboardTask(id=101, context={&quot;input&quot;: &quot;Analyze security vulnerabilities in login.py&quot;})
-    session.add(new_task)
-    session.commit()
-    session.close()
+    reconciler = SplitBrainReconciler()
 
-    # Spawn two concurrent threads attempting to process the same task
-    worker_a = threading.Thread(
-        target=run_worker_node, 
-        args=(&quot;Security_Scanner_A&quot;, 101, 1.0, {&quot;vulnerabilities&quot;: [&quot;SQL Injection on line 42&quot;]})
-    )
-    worker_b = threading.Thread(
-        target=run_worker_node, 
-        args=(&quot;Security_Scanner_B&quot;, 101, 0.5, {&quot;vulnerabilities&quot;: [&quot;XSS on line 12&quot;]})
-    )
+    # Divergent state logs produced during network partition
+    branch_cluster_a = [
+        {&quot;step_id&quot;: 1, &quot;action&quot;: &quot;Init Task DAG&quot;, &quot;cluster_origin&quot;: &quot;Cluster_A&quot;, &quot;timestamp&quot;: 100, &quot;vector_clock&quot;: {&quot;A&quot;: 1, &quot;B&quot;: 0}},
+        {&quot;step_id&quot;: 2, &quot;action&quot;: &quot;Query Database Schema&quot;, &quot;cluster_origin&quot;: &quot;Cluster_A&quot;, &quot;timestamp&quot;: 105, &quot;vector_clock&quot;: {&quot;A&quot;: 2, &quot;B&quot;: 0}}
+    ]
 
-    worker_a.start()
-    worker_b.start()
+    branch_cluster_b = [
+        {&quot;step_id&quot;: 1, &quot;action&quot;: &quot;Init Task DAG&quot;, &quot;cluster_origin&quot;: &quot;Cluster_B&quot;, &quot;timestamp&quot;: 100, &quot;vector_clock&quot;: {&quot;A&quot;: 0, &quot;B&quot;: 1}},
+        {&quot;step_id&quot;: 3, &quot;action&quot;: &quot;Fetch External API Data&quot;, &quot;cluster_origin&quot;: &quot;Cluster_B&quot;, &quot;timestamp&quot;: 108, &quot;vector_clock&quot;: {&quot;A&quot;: 0, &quot;B&quot;: 2}}
+    ]
 
-    worker_a.join()
-    worker_b.join()
+    print(&quot;🛡️ Executing Split-Brain Reconciliation Pipeline...&quot;)
+    print(&quot;-----------------------------------------------------&quot;)
 
-    # Read final results from the blackboard
-    session = SessionLocal()
-    final_task = session.query(BlackboardTask).filter(BlackboardTask.id == 101).first()
-    print(&quot;\n--- Final Blackboard State ---&quot;)
-    print(f&quot;Status: {final_task.status}&quot;)
-    print(f&quot;Assigned Agent: {final_task.assigned_agent}&quot;)
-    print(f&quot;Context Payload: {final_task.context}&quot;)
-    session.close()</code></pre>
+    # Detect divergence
+    is_split = reconciler.detect_divergence(branch_cluster_a[-1], branch_cluster_b[-1])
+    print(f&quot;🔍 Split-Brain Divergence Detected: {is_split}&quot;)
+
+    if is_split:
+        unified_history = reconciler.reconcile_divergent_branches(branch_cluster_a, branch_cluster_b)
+
+        print(&quot;\n📈 --- Final Reconciled Unified Timeline ---&quot;)
+        for step in unified_history:
+            print(f&quot;   Step {step['step_id']}: {step['action']} (via {step['cluster_origin']})&quot;)</code></pre>
 <hr>
-<h2>Key Takeaways</h2>
+<h2>Split-Brain Recovery Takeaways</h2>
 <ul>
-<li><strong>Decoupled Swarms</strong>: Blackboard systems decouple agent logic. Workers do not need to know which agent takes the task next; they only need to know how to read and write to the database.</li>
-<li><strong>Audit Trail Out of the Box</strong>: Because all intermediate thought tokens, tool execution payloads, and status changes are committed directly to the database, tracing lineage is trivial.</li>
-<li><strong>Strict State Locking</strong>: Utilizing database locks (<code>FOR UPDATE</code>) prevents duplication and race conditions in high-throughput enterprise agent environments.</li>
+<li><strong>Use Vector Clock Lineages</strong>: Attach vector clock maps to all state updates to identify when network partitions cause execution divergence.</li>
+<li><strong>Locate Common Ancestor</strong>: Trace back vector clocks to find the last consensus state before the partition occurred.</li>
+<li><strong>Unify Non-Conflicting Steps</strong>: Merge parallel non-conflicting agent step logs to preserve execution work when network connectivity restores.</li>
 </ul>
 
           </div>
@@ -255,8 +225,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-blackboard-database-shared-state.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=The%20Database%20is%20the%20Blackboard%3A%20Shared%20State%20%26%20Session%20Store%20Patterns%20for%20Agent%20Swarms&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-blackboard-database-shared-state.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-split-brain-recovery-consensus-re-sync.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Split-Brain%20Recovery%3A%20Partition%20Resolution%20%26%20Consensus%20Re-Sync&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-split-brain-recovery-consensus-re-sync.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -279,7 +249,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="system-design-split-brain-recovery-consensus-re-sync.html">Split-Brain Recovery: Partition Resolution &amp; Consensus Re-Sync<span class="sidebar-post-date">July 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -528,7 +498,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="system-design-agentic-apis-rate-limiting.html">Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients<span class="sidebar-post-date">April 27, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="system-design-blackboard-database-shared-state.html">The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms<span class="sidebar-post-date">April 26, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
