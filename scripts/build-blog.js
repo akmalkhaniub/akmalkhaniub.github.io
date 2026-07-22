@@ -57,6 +57,40 @@ renderer.link = function (token) {
   return `<a href="${escapeHtml(href)}"${title}${target}>${text}</a>`;
 };
 
+renderer.blockquote = function (token) {
+  const quoteText = token.text || '';
+  const match = quoteText.match(/^\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(?:\r?\n)?([\s\S]*)$/i);
+  if (match) {
+    const type = match[1].toUpperCase();
+    const contentMarkdown = match[2];
+    const contentHtml = this.parser.parse(marked.lexer(contentMarkdown));
+    
+    let icon = 'fa-info-circle';
+    let title = 'Note';
+    if (type === 'TIP') {
+      icon = 'fa-lightbulb';
+      title = 'Tip';
+    } else if (type === 'IMPORTANT') {
+      icon = 'fa-circle-exclamation';
+      title = 'Important';
+    } else if (type === 'WARNING') {
+      icon = 'fa-triangle-exclamation';
+      title = 'Warning';
+    } else if (type === 'CAUTION') {
+      icon = 'fa-radiation';
+      title = 'Caution';
+    }
+
+    return `<div class="alert alert-${type.toLowerCase()}">
+  <div class="alert-title"><i class="fa-solid ${icon}"></i> ${title}</div>
+  <div class="alert-content">${contentHtml}</div>
+</div>\n`;
+  }
+
+  const html = this.parser.parse(token.tokens);
+  return `<blockquote>\n${html}</blockquote>\n`;
+};
+
 marked.use({ renderer });
 
 // ---------- page template ----------
@@ -89,6 +123,8 @@ function pageHtml(post, bodyHtml) {
     mainEntityOfPage: url
   }, null, 2);
 
+  const ogImage = post.coverImage ? `${SITE}${post.coverImage}` : 'https://github.com/akmalkhaniub.png';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,15 +142,15 @@ function pageHtml(post, bodyHtml) {
   <meta property="og:url" content="${url}">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${desc}">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="${ogImage}">
   <meta property="og:site_name" content="${AUTHOR}">
   ${iso ? `<meta property="article:published_time" content="${iso}">` : ''}
 
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${title}">
   <meta name="twitter:description" content="${desc}">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="${ogImage}">
 
   <script type="application/ld+json">
 ${jsonLd}
@@ -127,7 +163,7 @@ ${jsonLd}
 
   <!-- FontAwesome + Prism theme -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="stylesheet" href="assets/css/prism.css">
 
   <link rel="stylesheet" href="../style.css">
   <link rel="stylesheet" href="article.css">
@@ -169,6 +205,7 @@ ${jsonLd}
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
+          ${post.coverImage ? `<div class="article-cover-frame"><img src="${escapeHtml(post.coverImage)}" class="article-cover-img" alt="${title} Cover" /></div>` : ''}
           <div class="article-header">
             <h1 class="article-title">${title}</h1>
             <div class="article-meta">
@@ -253,11 +290,8 @@ ${sidebarHtml(post.slug)}
           async></script>
 
   <!-- Prism syntax highlighting -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="assets/js/prism.js"></script>
+  <script src="assets/js/prism-components.js"></script>
   ${bodyHtml.includes('class="mermaid"') ? '<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>' : ''}
 
   <script src="../shared.js"></script>
