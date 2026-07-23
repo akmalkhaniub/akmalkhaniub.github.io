@@ -19,6 +19,8 @@ const SITE = 'https://akmalkhaniub.github.io';
 const AUTHOR = 'Akmal Khan';
 
 const posts = JSON.parse(readFileSync(join(ROOT, 'blog', 'posts.json'), 'utf8'));
+const ebook = JSON.parse(readFileSync(join(ROOT, 'blog', 'ebook.json'), 'utf8'));
+const ebookSlugs = new Set(ebook.flatMap(chap => chap.pages.map(p => p.slug)));
 
 // ---------- helpers ----------
 const escapeHtml = (s) =>
@@ -105,6 +107,24 @@ const sidebarHtml = (activeSlug) =>
     )
     .join('\n');
 
+const ebookSidebarHtml = (activeSlug) =>
+  ebook
+    .map(
+      (chap) => `            <div class="sidebar-chapter">
+              <div class="chapter-title">${escapeHtml(chap.chapter)}</div>
+              <ul class="chapter-pages">
+                ${chap.pages
+                  .map(
+                    (p) => `                <li class="sidebar-post-item${p.slug === activeSlug ? ' active' : ''}">
+                  <a href="${p.slug}.html">${escapeHtml(p.title)}</a>
+                </li>`
+                  )
+                  .join('\n')}
+              </ul>
+            </div>`
+    )
+    .join('\n');
+
 function pageHtml(post, bodyHtml) {
   const url = `${SITE}/blog/${post.slug}.html`;
   const title = escapeHtml(post.title);
@@ -124,6 +144,13 @@ function pageHtml(post, bodyHtml) {
   }, null, 2);
 
   const ogImage = post.coverImage ? `${SITE}${post.coverImage}` : 'https://github.com/akmalkhaniub.png';
+
+  const isEbook = ebookSlugs.has(post.slug);
+  const sidebarIcon = isEbook ? 'fa-book' : 'fa-list';
+  const sidebarTitle = isEbook ? 'Book Chapters' : 'Latest Articles';
+  const sidebarContent = isEbook
+    ? ebookSidebarHtml(post.slug)
+    : `          <ul class="sidebar-post-list">\n${sidebarHtml(post.slug)}\n          </ul>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -245,10 +272,8 @@ ${bodyHtml}
 
       <aside class="blog-sidebar">
         <div class="sidebar-card">
-          <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
-          <ul class="sidebar-post-list">
-${sidebarHtml(post.slug)}
-          </ul>
+          <h4><i class="fa-solid ${sidebarIcon}"></i> ${sidebarTitle}</h4>
+${sidebarContent}
         </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-user-astronaut"></i> The Author</h4>
