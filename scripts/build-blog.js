@@ -108,10 +108,12 @@ const sidebarHtml = (activeSlug) =>
     .join('\n');
 
 const ebookSidebarHtml = (activeSlug) =>
+  `          <div class="ebook-sidebar-scroll">\n` +
   ebook
-    .map(
-      (chap) => `            <div class="sidebar-chapter">
-              <div class="chapter-title">${escapeHtml(chap.chapter)}</div>
+    .map((chap) => {
+      const hasActive = chap.pages.some((p) => p.slug === activeSlug);
+      return `            <details class="sidebar-chapter"${hasActive ? ' open' : ''}>
+              <summary class="chapter-title">${escapeHtml(chap.chapter)}</summary>
               <ul class="chapter-pages">
                 ${chap.pages
                   .map(
@@ -121,9 +123,10 @@ const ebookSidebarHtml = (activeSlug) =>
                   )
                   .join('\n')}
               </ul>
-            </div>`
-    )
-    .join('\n');
+            </details>`;
+    })
+    .join('\n') +
+  `\n          </div>`;
 
 function pageHtml(post, bodyHtml) {
   const url = `${SITE}/blog/${post.slug}.html`;
