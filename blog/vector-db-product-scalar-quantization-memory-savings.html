@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Token Backpressure Control: Managing Generation Rates on Slow Clients | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Preventing gateway memory bloat: building backpressure controllers to throttle LLM streaming rates based on client connection capacity.">
+  <title>Vector Quantization Semantics: Product vs. Scalar Quantization at Scale | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Analyzing vector compression mechanics: comparing Scalar Quantization (SQ) and Product Quantization (PQ), and measuring RAM savings in production databases.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/gateway-token-backpressure-flow-control-streaming.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/vector-db-product-scalar-quantization-memory-savings.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/gateway-token-backpressure-flow-control-streaming.html">
-  <meta property="og:title" content="Token Backpressure Control: Managing Generation Rates on Slow Clients">
-  <meta property="og:description" content="Preventing gateway memory bloat: building backpressure controllers to throttle LLM streaming rates based on client connection capacity.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/vector-db-product-scalar-quantization-memory-savings.html">
+  <meta property="og:title" content="Vector Quantization Semantics: Product vs. Scalar Quantization at Scale">
+  <meta property="og:description" content="Analyzing vector compression mechanics: comparing Scalar Quantization (SQ) and Product Quantization (PQ), and measuring RAM savings in production databases.">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-07">
+  <meta property="article:published_time" content="2026-07-24">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Token Backpressure Control: Managing Generation Rates on Slow Clients">
-  <meta name="twitter:description" content="Preventing gateway memory bloat: building backpressure controllers to throttle LLM streaming rates based on client connection capacity.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:title" content="Vector Quantization Semantics: Product vs. Scalar Quantization at Scale">
+  <meta name="twitter:description" content="Analyzing vector compression mechanics: comparing Scalar Quantization (SQ) and Product Quantization (PQ), and measuring RAM savings in production databases.">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Token Backpressure Control: Managing Generation Rates on Slow Clients",
-  "description": "Preventing gateway memory bloat: building backpressure controllers to throttle LLM streaming rates based on client connection capacity.",
-  "url": "https://akmalkhaniub.github.io/blog/gateway-token-backpressure-flow-control-streaming.html",
-  "datePublished": "2026-06-07",
-  "keywords": "Performance, Gateways, Streaming, Python",
+  "headline": "Vector Quantization Semantics: Product vs. Scalar Quantization at Scale",
+  "description": "Analyzing vector compression mechanics: comparing Scalar Quantization (SQ) and Product Quantization (PQ), and measuring RAM savings in production databases.",
+  "url": "https://akmalkhaniub.github.io/blog/vector-db-product-scalar-quantization-memory-savings.html",
+  "datePublished": "2026-07-24",
+  "keywords": "Vector Database, Quantization, Qdrant, System Design",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/gateway-token-backpressure-flow-control-streaming.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/vector-db-product-scalar-quantization-memory-savings.html"
 }
   </script>
 
@@ -92,134 +92,141 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Vector Quantization Semantics: Product vs. Scalar Quantization at Scale Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Token Backpressure Control: Managing Generation Rates on Slow Clients</h1>
+            <h1 class="article-title">Vector Quantization Semantics: Product vs. Scalar Quantization at Scale</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> June 8, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 25, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Performance</span><span class="project-badge">Gateways</span><span class="project-badge">Streaming</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">Vector Database</span><span class="project-badge">Quantization</span><span class="project-badge">Qdrant</span><span class="project-badge">System Design</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Token Backpressure Control: Managing Generation Rates on Slow Clients</h1>
-<div class="alert alert-note">
-  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
-  <div class="alert-content"><p><strong>📖 Article Overview</strong>
-Real-time streaming gateways decouple LLM providers from web clients. However, they introduce a significant performance risk: <strong>Rate Mismatch</strong>. A frontier LLM easily generates tokens at 100+ tokens/sec, but a client on a slow mobile network can only consume 15 tokens/sec. If the gateway proxy buffers this excess data without limit, it exhausts server memory, leading to crashes. In this article, we analyze <strong>Token Backpressure Control</strong>, design flow-control logic, and implement an asynchronous stream throttle manager in Python.</p>
-</div>
-</div>
+<h1>Vector Quantization Semantics: Product vs. Scalar Quantization at Scale</h1>
+<p>When managing vector databases, <strong>VRAM and RAM memory footprints</strong> are the primary cost bottlenecks. Storing one million 1536-dimensional vectors using standard 32-bit floating-point numbers (<code>float32</code>) requires:</p>
+<p>$$\text{Memory} = 1,000,000 \times 1536 \times 4 \text{ bytes} \approx 6.14 \text{ GB}$$</p>
+<p>Once you build an HNSW index, this memory usage doubles to over <strong>12 GB</strong>. Storing hundreds of millions of vectors in production requires hundreds of gigabytes of expensive memory, making raw vector storage economically unsustainable.</p>
+<p>To solve this, modern vector engines utilize <strong>Vector Quantization</strong> to compress floating-point values into compact byte representations. This article covers the mechanics of <strong>Scalar Quantization (SQ)</strong> and <strong>Product Quantization (PQ)</strong> and how to implement them in production.</p>
 <hr>
-<h2>The Danger of Unbounded Buffering</h2>
-<p>When an API gateway streams token responses to clients:</p>
+<h2>📖 Quantization Mechanics: SQ vs. PQ</h2>
+<div class="mermaid">graph TD
+  subgraph Raw Vector: 1536 floats 6144 bytes
+    Raw[1.42, -0.84, ..., 0.12]
+  end
+  subgraph Scalar Quantization: 1536 bytes
+    SQ[Map float32 range to int8: 127, -64, ..., 10]
+  end
+  subgraph Product Quantization: 96 bytes
+    Sub1[Sub-vector 1] --&gt; Centroid1[Centroid Index: 0x05]
+    Sub2[Sub-vector 2] --&gt; Centroid2[Centroid Index: 0xA2]
+    PQ[Array of centroid byte indices]
+  end
+  Raw --&gt;|Linear scaling| SQ
+  Raw --&gt;|Subspace split &amp; clustering| PQ</div>
+<h3>1. Scalar Quantization (SQ)</h3>
+<p>Scalar Quantization compresses each dimension of a vector independently by mapping floating-point values from a continuous range (e.g., $[-1.0, 1.0]$) to a discrete set of integers (typically 8-bit integers, $int8$, representing $[-128, 127]$).</p>
 <ul>
-<li><strong>Memory Exhaustion (OOM)</strong>: If the client connection lags, the gateway holds open active connection buffers in RAM. With thousands of active sessions, memory bloat triggers Out-Of-Memory (OOM) failures.</li>
-<li><strong>API Waste</strong>: If the client disconnects due to lag, the LLM continues generating tokens in the background, consuming API credits for responses that will never be delivered.</li>
-<li><strong>The Solution</strong>: <strong>Backpressure</strong>. The gateway monitors the client&#39;s consumption speed. If the buffer queue exceeds a threshold, the gateway throttles the LLM generator stream, resuming only when the client queue drains.</li>
+<li><strong>Compression Ratio</strong>: Exact <strong>4x reduction</strong> (from 4 bytes to 1 byte per dimension).</li>
+<li><strong>Accuracy Loss</strong>: Minimal. High-quality SQ implementations (like SQ8) retain <strong>&gt;98% of search recall accuracy</strong> compared to raw float searches.</li>
 </ul>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    LLM[LLM API Stream] --&gt;|Generate Tokens: 100/sec| Gateway[Gateway Buffer Queue]
-    Gateway --&gt;|Consume Tokens: 15/sec| Client[Slow Client Socket]
-    
-    Gateway --&gt; Check{Buffer Queue &gt; Threshold?}
-    Check --&gt;|Yes| Pause[Trigger Backpressure: Pause LLM Stream]
-    Check --&gt;|No| Resume[Resume LLM Stream]
-    
-    Pause --&gt; Resume</div>
-<hr>
-<h2>1. Under the Hood: TCP Window and Application-Level Flow Control</h2>
-<p>To implement backpressure, we evaluate two connection vectors:</p>
-<ul>
-<li><strong>TCP Socket Backpressure</strong>: The host operating system&#39;s network socket layer blocks writes when the client&#39;s TCP window is full.</li>
-<li><strong>Application Buffer Queues</strong>: The gateway proxy tracks the size of the output queue (e.g. <code>asyncio.Queue(maxsize=10)</code>). When the queue reaches capacity, the async generator halts generation.</li>
-</ul>
-<hr>
-<h2>2. Setting up Safety Throttles</h2>
-<p>The flow control manager enforces:</p>
+<h3>2. Product Quantization (PQ)</h3>
+<p>Product Quantization is a lossy compression technique that clusters multidimensional vector spaces:</p>
 <ol>
-<li><strong>Low Buffer Limits</strong>: Keeping the maximum queue size small (under 20 tokens) to prevent RAM allocation spikes.</li>
-<li><strong>Graceful Timeouts</strong>: Terminating the upstream LLM API call immediately if the client disconnects or pauses for too long, preventing token billing waste.</li>
+<li><strong>Subspace Division</strong>: A high-dimensional vector (e.g., $D=1024$) is split into $m$ smaller sub-vectors (e.g., $m=128$ sub-vectors of dimension $d=8$).</li>
+<li><strong>Centroid Clustering</strong>: For each of the $m$ subspaces, K-Means clustering is executed across the dataset to find a set of centroids (typically $K=256$, which fits in a single 8-bit byte).</li>
+<li><strong>Index Assignment</strong>: The sub-vectors are replaced with the 1-byte index of their nearest centroid.</li>
 </ol>
-<hr>
-<h2>Code Demo: Asynchronous Token Flow Controller</h2>
-<p>Below is a Python implementation of a stream flow manager. It simulates token generation, checks socket output limits, and pauses the generator thread when client queues reach capacity.</p>
-<pre><code class="language-python">import asyncio
-from typing import AsyncGenerator
-
-class TokenBackpressureController:
-    def __init__(self, max_buffer_size: int = 5):
-        self.max_buffer_size = max_buffer_size
-        self.buffer = asyncio.Queue(maxsize=max_buffer_size)
-        self.generation_active = True
-
-    async def generate_llm_tokens(self) -&gt; AsyncGenerator[str, None]:
-        # Simulated LLM provider generating tokens at 50/sec
-        for token_idx in range(1, 15):
-            if not self.generation_active:
-                break
-                
-            token = f&quot;Token_{token_idx}&quot;
-            
-            # Check if buffer is full before adding token
-            if self.buffer.full():
-                print(f&quot;⚠️ [Backpressure] Buffer Full ({self.buffer.qsize()}/{self.max_buffer_size}). Throttling LLM generator...&quot;)
-                # Wait until client consumes tokens and frees space
-                while self.buffer.full():
-                    await asyncio.sleep(0.1)
-                print(&quot;🔄 [Backpressure] Buffer drained. Resuming LLM generator.&quot;)
-
-            await self.buffer.put(token)
-            yield token
-
-    async def simulate_slow_client_consume(self):
-        # Simulated slow mobile client consuming tokens at 5/sec
-        while self.generation_active:
-            if not self.buffer.empty():
-                token = await self.buffer.get()
-                print(f&quot;📥 [Client] Consumed: {token}&quot;)
-                self.buffer.task_done()
-            
-            await asyncio.sleep(0.5) # Lag delay
-
-if __name__ == &quot;__main__&quot;:
-    async def run_simulation():
-        controller = TokenBackpressureController(max_buffer_size=4)
-        
-        print(&quot;⚡ Initiating Asynchronous Token Flow Control...&quot;)
-        print(&quot;-------------------------------------------------&quot;)
-
-        # Launch slow consumer in background
-        consumer_task = asyncio.create_task(controller.simulate_slow_client_consume())
-
-        # Run generator
-        async for t in controller.generate_llm_tokens():
-            # Generator pushes to buffer
-            pass
-
-        # Stop simulation
-        await asyncio.sleep(1)
-        controller.generation_active = False
-        await consumer_task
-
-    asyncio.run(run_simulation())</code></pre>
-<hr>
-<h2>Architectural Guidelines</h2>
 <ul>
-<li><strong>Enforce Queue Size Limits</strong>: Set strict maximum size limits on async gateway queues (e.g. <code>maxsize = 20</code>) to prevent memory leak crashes.</li>
-<li><strong>Stop Terminated Streams</strong>: Monitor connection close events on client sockets and immediately cancel the corresponding LLM API requests.</li>
-<li><strong>Throttle, Don&#39;t Disconnect</strong>: Implement progressive delays rather than hard socket closures to preserve connection stability.</li>
+<li><strong>Compression Ratio</strong>: Up to <strong>16x to 64x reduction</strong> (e.g. 1024 float32 dimensions compressed into 128 bytes).</li>
+<li><strong>Accuracy Loss</strong>: Moderate. PQ can cause recall drops of 5–15%, making it ideal for coarse-grained routing before running exact re-ranking.</li>
 </ul>
+<hr>
+<h2>🛠️ Configuring Quantization in Qdrant Collections</h2>
+<p>Qdrant supports native Scalar and Product Quantization configurations on collection startup.</p>
+<h3>1. Configuring Scalar Quantization (SQ)</h3>
+<p>Here is a collection configuration optimized for 4x compression using 8-bit Scalar Quantization, enabling fast HNSW graph traversal:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;sq_collection&quot;,
+  &quot;vectors&quot;: {
+    &quot;size&quot;: 1536,
+    &quot;distance&quot;: &quot;Cosine&quot;
+  },
+  &quot;quantization_config&quot;: {
+    &quot;scalar&quot;: {
+      &quot;type&quot;: &quot;int8&quot;,
+      &quot;available_on_ram&quot;: true,
+      &quot;always_ram&quot;: true
+    }
+  }
+}</code></pre>
+<h3>2. Configuring Product Quantization (PQ)</h3>
+<p>Here is a configuration for high-ratio Product Quantization, dividing 1536 dimensions into 96 sub-vectors (compression ratio of 16x):</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;pq_collection&quot;,
+  &quot;vectors&quot;: {
+    &quot;size&quot;: 1536,
+    &quot;distance&quot;: &quot;Cosine&quot;
+  },
+  &quot;quantization_config&quot;: {
+    &quot;product&quot;: {
+      &quot;compression&quot;: &quot;x16&quot;,
+      &quot;always_ram&quot;: false
+    }
+  }
+}</code></pre>
+<hr>
+<h2>⚖️ Memory and Latency Footprints</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Index Type</th>
+<th align="center">VRAM per 1M Vectors</th>
+<th align="center">Query Latency</th>
+<th align="center">Search Recall Accuracy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Raw float32</strong></td>
+<td align="center">6.14 GB</td>
+<td align="center">Baseline (1.0x)</td>
+<td align="center"><strong>100.0% (Exact)</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>Scalar (SQ8)</strong></td>
+<td align="center">1.54 GB</td>
+<td align="center">0.8x (Faster cache reads)</td>
+<td align="center"><strong>~98.5%</strong></td>
+</tr>
+<tr>
+<td align="left"><strong>Product (PQx16)</strong></td>
+<td align="center">384 MB</td>
+<td align="center">1.5x (Unpacking overhead)</td>
+<td align="center"><strong>~88.0%</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>⚠️ Important Pitfalls in Quantization</h2>
+<p>Ensure your configuration balances compression and precision:</p>
+<div class="alert alert-important">
+  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
+  <div class="alert-content"><p><strong>Use Over-Sampling to Recover Precision</strong>: When querying highly compressed PQ indexes, you can recover lost recall by requesting more candidates during the HNSW search phase (e.g. increase <code>hnsw_ef</code> to 128) and re-scoring only the top results using original vectors.</p>
+</div>
+</div>
+<div class="alert alert-caution">
+  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
+  <div class="alert-content"><p><strong>Cold Startup Delays</strong>: Setting <code>always_ram: false</code> in Qdrant configures the engine to read quantized files from disk. While this saves RAM, it can create massive latency spikes on cold boots. Keep critical index files locked in memory if sub-10ms response times are required.</p>
+</div>
+</div>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fgateway-token-backpressure-flow-control-streaming.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Token%20Backpressure%20Control%3A%20Managing%20Generation%20Rates%20on%20Slow%20Clients&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fgateway-token-backpressure-flow-control-streaming.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-db-product-scalar-quantization-memory-savings.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Vector%20Quantization%20Semantics%3A%20Product%20vs.%20Scalar%20Quantization%20at%20Scale&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-db-product-scalar-quantization-memory-savings.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -242,7 +249,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="vector-db-product-scalar-quantization-memory-savings.html">Vector Quantization Semantics: Product vs. Scalar Quantization at Scale<span class="sidebar-post-date">July 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -419,7 +426,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="gateway-token-backpressure-flow-control-streaming.html">Token Backpressure Control: Managing Generation Rates on Slow Clients<span class="sidebar-post-date">June 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
