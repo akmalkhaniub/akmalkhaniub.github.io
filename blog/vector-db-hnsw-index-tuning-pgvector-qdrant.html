@@ -104,112 +104,144 @@
           </div>
 
           <div class="article-body">
-<h1>HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant</h1>
-<div class="alert alert-note">
-  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
-  <div class="alert-content"><p><strong>📖 Article Overview</strong>
-As vector databases (like <code>pgvector</code>, Qdrant, or Pinecone) scale to store millions of document embeddings, query latencies can degrade rapidly. If a multi-agent RAG workflow relies on slow similarity searches, response times slow down, rendering the system unusable. To restore performance, engineers must construct <strong>Hierarchical Navigable Small World (HNSW)</strong> index graphs. However, HNSW graphs present a critical trade-off: <strong>Recall accuracy vs. Search latency</strong>. In this article, we analyze HNSW graph structures, configure index tuning parameters, and implement a graph search-path simulator in Python.</p>
-</div>
-</div>
+<h1>HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search</h1>
+<p>In vector retrieval applications, matching a user&#39;s query vector against millions of document vectors is computationally expensive. Running a full brute-force linear search (Flat index) guarantees 100% recall, but scales linearly ($O(N)$), degrading latency to hundreds of milliseconds in large datasets.</p>
+<p>To achieve sub-10ms search times, production databases use <strong>Approximate Nearest Neighbor (ANN)</strong> search algorithms. The gold standard for ANN search is the <strong>Hierarchical Navigable Small World (HNSW)</strong> graph index. This article details HNSW&#39;s layered routing architecture and how to tune its parameters (<code>M</code>, <code>efConstruction</code>, and <code>efSearch</code>) in <strong>pgvector</strong> and <strong>Qdrant</strong> to balance search latency and recall accuracy.</p>
 <hr>
-<h2>The HNSW Index Trade-Off</h2>
-<p>Unlike flat index vectors that run complete linear scans (exact search), HNSW builds a multi-layer graph of document nodes:</p>
+<h2>📖 Under the Hood: HNSW&#39;s Layered Routing</h2>
+<p>HNSW organizes vectors into a multi-layered graph, mimicking a skip list:</p>
 <ul>
-<li><strong>The Layered Graph Structure</strong>: Top layers have fewer links, enabling fast routing across distant semantic concepts. Bottom layers have dense links, enabling fine-grained local similarity scans.</li>
-<li><strong>Tuning Parameters</strong>:<ul>
-<li><strong><code>M</code></strong>: The maximum number of connection links per node. Higher <code>M</code> improves recall on high-dimensional vectors but increases index build times and memory footprints.</li>
-<li><strong><code>ef_construction</code></strong>: The size of the dynamic candidate list evaluated during index creation. Higher <code>ef_construction</code> builds a more accurate graph but increases indexing times.</li>
-<li><strong><code>ef_search</code></strong>: The size of the candidate list evaluated during query execution. Higher <code>ef_search</code> increases recall accuracy at the cost of higher query latencies.</li>
+<li><strong>Upper Layers</strong>: Contain fewer nodes with longer-range links. Queries execute fast, high-level routing to quickly zoom in on the region of interest.</li>
+<li><strong>Lower Layers</strong>: Contain denser links. Routing transitions downward to execute fine-grained, localized searches until it reaches the base layer (Layer 0), which contains all vectors.</li>
+</ul>
+<div class="mermaid">graph TD
+  subgraph Layer 2 (Express Layer)
+    L2_A[Vector Entry] --&gt; L2_B[Far Destination]
+  end
+  subgraph Layer 1 (Local Area Layer)
+    L1_A[Vector Entry] --&gt; L1_B[Mid Destination 1]
+    L1_B --&gt; L1_C[Mid Destination 2]
+  end
+  subgraph Layer 0 (Base Layer - All Vectors)
+    L0_A[Vector Entry] --&gt; L0_B[Node A]
+    L0_B --&gt; L0_C[Node B]
+    L0_C --&gt; L0_D[Node C]
+  end
+  L2_A --&gt; L1_A
+  L1_B --&gt; L0_B</div>
+<h3>The Core Tuning Knobs</h3>
+<ul>
+<li><strong><code>M</code></strong>: The maximum number of bidirectional link connections established for each new node added to the graph. <ul>
+<li><em>Impact</em>: Higher <code>M</code> values improve graph connectivity (improving recall on high-dimensional vectors) but increase memory consumption and index build times.</li>
+</ul>
+</li>
+<li><strong><code>efConstruction</code></strong>: The size of the dynamic candidate list evaluated during index creation.<ul>
+<li><em>Impact</em>: Higher <code>efConstruction</code> values generate higher-quality graphs (better link choices) but slow down build times.</li>
+</ul>
+</li>
+<li><strong><code>efSearch</code></strong>: The size of the dynamic candidate list maintained during query execution.<ul>
+<li><em>Impact</em>: Higher <code>efSearch</code> values increase search recall (accuracy) but increase latency as the query must traverse more paths. Unlike <code>M</code> and <code>efConstruction</code>, this is a <strong>runtime</strong> parameter.</li>
 </ul>
 </li>
 </ul>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    Query[Query Vector Input] --&gt; L2[Layer 2: Sparse routing nodes]
-    L2 --&gt; L1[Layer 1: Closer semantic clusters]
-    L1 --&gt; L0[Layer 0: Dense local nearest neighbors]
-    
-    L0 --&gt; Evaluator{ef_search boundary reached?}
-    Evaluator --&gt;|Yes| Stop[Stop Traversal &amp; Return K-Nearest Neighbors]
-    Evaluator --&gt;|No| NextNode[Traverse Next Nearest Edge]
-    NextNode --&gt; L0</div>
 <hr>
-<h2>1. Tuning Index Parameters in Production</h2>
-<p>For enterprise agent systems, customize your index parameters:</p>
-<ul>
-<li><strong>For High-Recall RAG (QA / Code Audit)</strong>: Set <code>M = 32</code>, <code>ef_construction = 128</code>, and <code>ef_search = 64</code>. This configuration ensures that critical document targets are not missed during retrieval.</li>
-<li><strong>For Latency-Critical swarms (Chatbots / Classification)</strong>: Set <code>M = 16</code>, <code>ef_construction = 64</code>, and <code>ef_search = 32</code> to speed up query execution.</li>
-</ul>
+<h2>🛠️ Tuning HNSW Indexes in Production</h2>
+<h3>1. Optimizing pgvector in PostgreSQL</h3>
+<p>To create a high-performance HNSW index in PostgreSQL, use the <code>hnsw</code> index type and specify your <code>m</code> and <code>ef_construction</code> parameters during index definition:</p>
+<pre><code class="language-sql">-- 1. Create HNSW index with custom hyperparameters
+-- Optimized for 1536-dimensional vectors (e.g. text-embedding-3-small)
+CREATE INDEX CONCURRENTLY products_hnsw_idx 
+ON products 
+USING hnsw (embedding_vector vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+
+-- 2. Configure runtime search boundary parameters
+-- Set ef_search high inside active user sessions to guarantee high recall
+SET hnsw.ef_search = 40;
+
+-- Execute query
+SELECT id, name, description
+FROM products
+ORDER BY embedding_vector &lt;=&gt; '[0.015, -0.024, ..., 0.087]'
+LIMIT 10;</code></pre>
+<h3>2. Configuring Qdrant Collections</h3>
+<p>In Qdrant, index parameters are configured when creating or updating collections. Here is a REST configuration payload to optimize a Qdrant collection for high-throughput querying:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;enterprise_kb&quot;,
+  &quot;vectors&quot;: {
+    &quot;size&quot;: 1536,
+    &quot;distance&quot;: &quot;Cosine&quot;
+  },
+  &quot;hnsw_config&quot;: {
+    &quot;m&quot;: 16,
+    &quot;ef_construct&quot;: 100,
+    &quot;full_scan_threshold&quot;: 10000,
+    &quot;max_elements_on_leaf&quot;: 512
+  },
+  &quot;optimizers_config&quot;: {
+    &quot;default_segment_number&quot;: 2
+  }
+}</code></pre>
+<p>To run queries with optimized search bounds dynamically in Qdrant, pass the runtime parameter overrides in your query payload:</p>
+<pre><code class="language-json">{
+  &quot;vector&quot;: [0.015, -0.024, 0.087],
+  &quot;limit&quot;: 10,
+  &quot;params&quot;: {
+    &quot;hnsw_ef&quot;: 64,
+    &quot;exact&quot;: false
+  }
+}</code></pre>
 <hr>
-<h2>2. Managing write-heavy indexes</h2>
-<p>Building HNSW graphs concurrently consumes substantial CPU resources:</p>
-<ol>
-<li><strong>Defer Index Creation</strong>: Bulk-insert raw document vectors first, then build the HNSW index concurrently.</li>
-<li><strong>Configure Memory Allocations</strong>: In PostgreSQL, allocate sufficient <code>max_parallel_workers</code> and <code>maintenance_work_mem</code> resources before running <code>CREATE INDEX</code> queries.</li>
-</ol>
+<h2>⚖️ Recall vs. Latency Trade-offs</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Mode</th>
+<th align="center"><code>M</code></th>
+<th align="center"><code>efConstruction</code></th>
+<th align="center"><code>efSearch</code></th>
+<th align="center">Latency (p99)</th>
+<th align="center">Recall Accuracy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Ultra-Fast Search</strong></td>
+<td align="center">8</td>
+<td align="center">32</td>
+<td align="center">16</td>
+<td align="center"><strong>&lt;2ms</strong></td>
+<td align="center">~85%</td>
+</tr>
+<tr>
+<td align="left"><strong>Balanced Production</strong></td>
+<td align="center">16</td>
+<td align="center">64</td>
+<td align="center">40</td>
+<td align="center"><strong>~5ms</strong></td>
+<td align="center">~96%</td>
+</tr>
+<tr>
+<td align="left"><strong>High Precision RAG</strong></td>
+<td align="center">32</td>
+<td align="center">128</td>
+<td align="center">120</td>
+<td align="center"><strong>~15ms</strong></td>
+<td align="center">~99.4%</td>
+</tr>
+</tbody></table>
 <hr>
-<h2>Code Demo: HNSW Search-Path Simulator</h2>
-<p>Below is a Python implementation of an HNSW graph traversal simulator. It models search paths across a multi-tier node structure, measures traversal steps, and benchmarks latency/recall trade-offs based on candidate thresholds.</p>
-<pre><code class="language-python">import math
-from typing import List, Dict, Tuple
-
-class HNSWGraphSimulator:
-    def __init__(self):
-        # Simulated multi-layer graph nodes representing semantic concepts
-        # Structure: Layer 2 -&gt; Layer 1 -&gt; Layer 0 (Detailed chunks)
-        self.layers = {
-            2: {&quot;A&quot;: [1.0, 1.0], &quot;B&quot;: [-1.0, -1.0]},
-            1: {&quot;A1&quot;: [1.0, 0.8], &quot;A2&quot;: [0.8, 1.0], &quot;B1&quot;: [-1.0, -0.8]},
-            0: {&quot;A1a&quot;: [1.0, 0.79], &quot;A1b&quot;: [0.98, 0.82], &quot;B1a&quot;: [-0.99, -0.78]}
-        }
-
-    def _distance(self, v1: List[float], v2: List[float]) -&gt; float:
-        return math.sqrt(sum((x - y) ** 2 for x, y in zip(v1, v2)))
-
-    def simulate_search(self, query: List[float], ef_search: int) -&gt; Tuple[str, int]:
-        steps = 0
-        current_node = &quot;A&quot; # Start node at Layer 2
-        
-        # Traverse down layers
-        for layer_idx in [2, 1, 0]:
-            layer_nodes = self.layers[layer_idx]
-            best_dist = float(&quot;inf&quot;)
-            best_node = current_node
-
-            # Scan adjacent nodes in active layer
-            # Simulating search candidate limit: ef_search bounds execution steps
-            for node, coords in list(layer_nodes.items())[:ef_search]:
-                steps += 1
-                dist = self._distance(query, coords)
-                if dist &lt; best_dist:
-                    best_dist = dist
-                    best_node = node
-            
-            current_node = best_node
-
-        return current_node, steps
-
-if __name__ == &quot;__main__&quot;:
-    simulator = HNSWGraphSimulator()
-    query_vector = [0.99, 0.80] # Target close to A1a
-
-    print(&quot;🛰️ Simulating HNSW Graph Traversal Search...&quot;)
-    print(&quot;---------------------------------------------&quot;)
-
-    # Run with small ef_search (low latency, lower accuracy potential)
-    node_low, steps_low = simulator.simulate_search(query_vector, ef_search=1)
-    print(f&quot;[Low Latency] ef_search = 1 | Traversal Steps: {steps_low} | Match Node: **{node_low}**&quot;)
-
-    # Run with larger ef_search (high latency, high accuracy potential)
-    node_high, steps_high = simulator.simulate_search(query_vector, ef_search=3)
-    print(f&quot;[High Recall]  ef_search = 3 | Traversal Steps: {steps_high} | Match Node: **{node_high}**&quot;)</code></pre>
-<hr>
-<h2>Architectural Guidelines</h2>
-<ul>
-<li><strong>Customize ef_search</strong>: Set <code>ef_search</code> dynamically on a per-request basis. Increase the search window for code audits, and reduce it for rapid chat classifications.</li>
-<li><strong>Build Concurrently</strong>: Defer index creation until after bulk-insert runs are complete, using concurrent worker options.</li>
-<li><strong>Monitor Recall Rates</strong>: Periodically benchmark index queries against exact flat-index lookups to verify accuracy is not drifting.</li>
-</ul>
+<h2>⚠️ Important Pitfalls in Index Configuration</h2>
+<p>Ensure your configurations avoid these performance bottlenecks:</p>
+<div class="alert alert-important">
+  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
+  <div class="alert-content"><p><strong>Build Time Lockups</strong>: Creating HNSW indexes on large tables (e.g. &gt;10 million rows) is highly resource-intensive and can lock writes. Always specify <code>CREATE INDEX CONCURRENTLY</code> in PostgreSQL to ensure the database can continue handling client traffic during index generation.</p>
+</div>
+</div>
+<div class="alert alert-caution">
+  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
+  <div class="alert-content"><p><strong>Memory Allocation</strong>: HNSW graphs are stored entirely in RAM to support fast lookup hops. An index configured with high <code>M</code> (e.g. 64) can easily occupy tens of gigabytes of RAM. Calculate index memory sizes before deploying to production servers.</p>
+</div>
+</div>
 
           </div>
 
@@ -240,6 +272,9 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
+            <li class="sidebar-post-item active">
+              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search<span class="sidebar-post-date">July 25, 2026</span></a>
+            </li>
             <li class="sidebar-post-item">
               <a href="distillation-model-serving-quantization-vllm-ollama.html">Distilled SLM Serving: Quantization, PagedAttention, and Production Latency Tuning<span class="sidebar-post-date">July 25, 2026</span></a>
             </li>
