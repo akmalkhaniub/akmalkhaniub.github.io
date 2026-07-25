@@ -1,119 +1,148 @@
-# LoRA & QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware
+# Parameter-Efficient Fine-Tuning: Training SLMs on Custom Trajectory Trees
 
-> [!NOTE]
-> **📖 Article Overview**
-> Fine-tuning a Small Language Model (SLM) with billions of parameters directly consumes massive amounts of GPU memory. Backpropagating errors through all layers of a 7B model can easily exhaust consumer-grade hardware budgets. To enable local customization, machine learning engineers use **Low-Rank Adaptation (LoRA)** and **Quantized LoRA (QLoRA)**. Instead of updating all model weights, we freeze the base network and inject lightweight, trainable rank adapter matrices. In this article, we design a parameter-efficient adapter wrapper and implement a LoRA layer optimizer simulator in Python.
+To deploy highly specialized AI agents in production, we do not need massive, expensive 70B+ models. Instead, we can distill execution expertise into **Small Language Models (SLMs)** ranging from 1.5B to 8B parameters (such as Llama-3-8B or Qwen-2.5-7B). 
+
+To teach an SLM how to reason and call tools without losing its general language capabilities, we perform **Parameter-Efficient Fine-Tuning (PEFT)**. This article details the mathematical foundations of Low-Rank Adaptation (LoRA/QLoRA) and provides a production-grade Python script to train an SLM on multi-step agent trajectory trees.
 
 ---
 
-## The Efficiency of Low-Rank Adapters
+## 📖 The Mathematics of LoRA and QLoRA
 
-In traditional model training setups:
-* **Memory Exhaustion**: Storing optimizer states for 7 billion active weights requires high-end hardware infrastructure, blocking local edge deployment.
-* **Storage Bloat**: Saving full model weights for each specific task-adapter requires gigabytes of disk storage.
-* **The Solution**: **LoRA & QLoRA**. We freeze the pre-trained weights $W_0$. We decompose the weight updates $\Delta W$ into two low-rank matrices $A$ and $B$, significantly reducing the number of parameters trained.
+During standard full fine-tuning, every single weight parameter in the model's weight matrices ($W_0$) is modified. For an 8B model, updating 8 billion parameters requires massive GPU memory ($>160$ GB VRAM) due to storing gradients and optimizer states.
 
-$$\Delta W = B \times A$$
+**Low-Rank Adaptation (LoRA)** simplifies this by freezing the original model weights $W_0 \in \mathbb{R}^{d \times k}$ and injects trainable rank decomposition matrices. The weight update $\Delta W$ is decomposed into two low-rank matrices $B$ and $A$:
 
-Where $B$ is a matrix of size $d \times r$, $A$ is of size $r \times k$, and the rank $r \ll d, k$.
+$$\Delta W = B \cdot A$$
+
+Where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$, with the rank $r \ll \min(d, k)$ (typically $r = 8$ or $16$).
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    Input[Layer Input Vector: x] --> Base[Base Model Layer: W0 - Frozen]
-    Input --> AdapterA[LoRA Adapter A: rank matrix - Trainable]
-    
-    AdapterA --> AdapterB[LoRA Adapter B: rank matrix - Trainable]
-    AdapterB --> Scaling[Apply scaling factor: alpha / r]
-    
-    Base --> Combine[Sum outputs]
-    Scaling --> Combine
-    Combine --> Output[Layer Output Vector: y]
+graph LR
+  Input([Input Vector x]) --> |Freeze W0| BaseProduct[W0 * x]
+  Input --> |Trainable A| MatrixA[A * x]
+  MatrixA --> |Trainable B| MatrixB[B * A * x]
+  BaseProduct --> Sum[Combine: W0 * x + B * A * x]
+  MatrixB --> Sum
+  Sum --> Output([Output Vector y])
 ```
 
----
-
-## 1. Decomposing Weight Updates
-
-To configure low-rank adapters:
-* **Freeze Base Layers**: Disable gradient updates (`requires_grad = False`) on all base model weight parameters.
-* **Specify Rank ($r$)**: Enforce low-rank constraints (typically $r = 8$ or $r = 16$) to limit trainable adapter size.
+By only updating $B$ and $A$, we reduce the number of trainable parameters by **99.9%**, enabling fine-tuning on a single consumer GPU (e.g., 24GB VRAM). **QLoRA** takes this further by quantizing the base model weights ($W_0$) into a specialized 4-bit NormalFloat (NF4) format, reducing memory usage even more.
 
 ---
 
-## 2. Applying Scaling Coefficients
+## 🛠️ Python Trajectory Training Script
 
-The adapter scaling coordinates target contributions:
-1. **Apply Scaling Factor**: Multiply adapter updates by a scaling constant $\frac{\alpha}{r}$, where $\alpha$ acts as a learning rate helper.
-2. **Combine Output**: Sum the base frozen layer output with the scaled adapter contribution.
-
----
-
-## Code Demo: LoRA Adapter Layer Simulator
-
-Below is a Python implementation of a low-rank adapter (LoRA) layer simulator. It models freezing base weights, mapping rank adapter parameters, and executing forward training steps.
+Here is a production-grade training script utilizing Hugging Face's `trl` (SFTTrainer), `peft`, and `transformers` to fine-tune an SLM on custom agent trajectories formatted in ChatML.
 
 ```python
-import numpy as np
-from typing import Tuple
+import torch
+from datasets import load_dataset
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+    TrainingArguments
+)
+from trl import SFTTrainer
 
-class LoRALayerSimulator:
-    def __init__(self, in_features: int, out_features: int, rank: int = 8, alpha: int = 16):
-        self.in_features = in_features
-        self.out_features = out_features
-        self.rank = rank
-        self.alpha = alpha
-        self.scaling = alpha / rank
+# 1. Base Model & Training Configurations
+BASE_MODEL = "Qwen/Qwen2.5-7B-Instruct"
+DATASET_PATH = "G:/ReplitProjects/akmalkhaniub.github.io/blog/posts/dataset.jsonl"
+OUTPUT_DIR = "./slm-trajectory-adapter"
 
-        # 1. Base weights: Frozen (Simulated by not calculating gradients for W0)
-        self.W0 = np.random.randn(out_features, in_features) * 0.01
-        
-        # 2. Trainable Adapter Matrices A and B
-        # Initialize A with normal distribution, B with zeros (ensures adapter starts at zero contribution)
-        self.adapter_A = np.random.randn(rank, in_features) * 0.01
-        self.adapter_B = np.zeros((out_features, rank))
+# 2. Configure 4-bit Quantization (QLoRA)
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16
+)
 
-    def forward(self, x: np.ndarray) -> np.ndarray:
-        # y = W0*x + (B*A)*x * (alpha/rank)
-        base_output = np.dot(x, self.W0.T)
-        
-        # Calculate adapter contribution
-        adapter_output = np.dot(x, self.adapter_A.T)
-        adapter_output = np.dot(adapter_output, self.adapter_B.T)
-        
-        scaled_adapter_output = adapter_output * self.scaling
-        return base_output + scaled_adapter_output
+# 3. Load Tokenizer and Base Model
+print(f"Loading tokenizer and base model: {BASE_MODEL}")
+tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
+tokenizer.pad_token = tokenizer.eos_token
+tokenizer.padding_side = "right"
 
-    def update_adapter_weights(self, gradient_A: np.ndarray, gradient_B: np.ndarray, lr: float = 0.01):
-        # Simulate simple optimizer update on trainable parameters
-        self.adapter_A -= lr * gradient_A
-        self.adapter_B -= lr * gradient_B
-        print("💾 [Optimizer] Updated trainable LoRA adapter weights.")
+model = AutoModelForCausalLM.from_pretrained(
+    BASE_MODEL,
+    quantization_config=bnb_config,
+    device_map="auto",
+    torch_dtype=torch.bfloat16
+)
 
-if __name__ == "__main__":
-    print("🛡️ Initializing LoRA Layer Simulator...")
-    print("---------------------------------------")
+# 4. Prepare Model for Peft Training
+model = prepare_model_for_kbit_training(model)
 
-    # Layer dimensions: 512 input, 256 output, rank 8 adapter
-    layer = LoRALayerSimulator(in_features=512, out_features=256, rank=8, alpha=16)
+# 5. Define LoRA Target Configurations
+peft_config = LoraConfig(
+    r=16,                           # Low-rank dimension (rank)
+    lora_alpha=32,                  # Scaling factor
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    lora_dropout=0.05,
+    bias="none",
+    task_type="CAUSAL_LM"
+)
 
-    # Input batch representing sequence tokens
-    mock_input = np.random.randn(4, 512)
+model = get_peft_model(model, peft_config)
+model.print_trainable_parameters()
 
-    # Execute forward pass
-    output = layer.forward(mock_input)
-    print(f"📊 Forward Pass Output Shape: {output.shape}")
+# 6. Load Dataset
+# Expected dataset format in dataset.jsonl:
+# {"messages": [{"role": "user", "content": "..."}, {"role": "assistant", "content": "Thought: ... Tool: ..."}]}
+dataset = load_dataset("json", data_files=DATASET_PATH, split="train")
 
-    # Simulate gradient backward step updates
-    grad_A_mock = np.random.randn(8, 512) * 0.001
-    grad_B_mock = np.random.randn(256, 8) * 0.001
-    layer.update_adapter_weights(grad_A_mock, grad_B_mock)
+# 7. Configure Training Hyperparameters
+training_args = TrainingArguments(
+    output_dir=OUTPUT_DIR,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,
+    learning_rate=2e-4,
+    logging_steps=10,
+    max_steps=100,                  # Short run for demonstration
+    bf16=True,
+    optim="paged_adamw_8bit",       # Optimizer suited for low VRAM
+    save_strategy="steps",
+    save_steps=50,
+    warmup_ratio=0.03,
+    report_to="none"
+)
+
+# 8. Initialize SFTTrainer
+trainer = SFTTrainer(
+    model=model,
+    train_dataset=dataset,
+    peft_config=peft_config,
+    max_seq_length=2048,
+    tokenizer=tokenizer,
+    args=training_args,
+)
+
+# 9. Execute Fine-Tuning
+print("Starting SLM fine-tuning execution...")
+trainer.train()
+
+# 10. Save LoRA adapter weights
+print(f"Saving fine-tuned adapter to {OUTPUT_DIR}")
+trainer.model.save_pretrained(OUTPUT_DIR)
 ```
 
 ---
 
-## PEFT Fine-Tuning Takeaways
+## ⚠️ Important Pitfalls in Fine-Tuning
 
-* **Freeze Base Weights**: Turn off gradients on base model parameters to minimize local GPU memory usage.
-* **Tune Alpha and Rank**: Balance rank ($r$) and scaling coefficient ($\alpha$) parameter scopes to control domain learning rates.
-* **Merge Adapters on Serve**: Fuse trainable adapter weights directly into the base weights during deployment to eliminate runtime latency overheads.
+When fine-tuning SLMs on execution trajectories, keep these guardrails in mind:
+
+> [!WARNING]
+> **Catastrophic Forgetting**: Fine-tuning an SLM strictly on narrow code/tool datasets can destroy its general conversational coherence. Always mix your custom trajectory dataset with a small percentage (e.g. 10–15%) of general chat instruction data to preserve base model vocabulary.
+
+> [!IMPORTANT]
+> **Masking Loss**: Do not train the model to predict the user prompts. Ensure that your trainer configuration utilizes data-collator masks (`DataCollatorForCompletionOnlyLM`) to compute loss **only** on the assistant's reasoning thoughts and tool call answers, ignoring user instruction tokens.
+
+---
+
+## 📈 Real-World Production Adoption
+High-performance AI platforms utilize QLoRA to customize micro-models:
+* **Edge Diagnostics Swarms**: Train 3B parameter models that interpret local system telemetry, running QLoRA fine-tuning in under 4 hours on commercial workstation GPUs.
+* **Specialized Code Generators**: Fine-tune SLMs to generate SQL queries matching specific enterprise database schemas, achieving 95% execution accuracy while completely ignoring out-of-domain knowledge.
