@@ -1,123 +1,118 @@
-# Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents
+# Distilled SLM Serving: Quantization, PagedAttention, and Production Latency Tuning
 
-> [!NOTE]
-> **📖 Article Overview**
-> Once you have compiled a clean, validated instruction dataset and executed your fine-tuning run (e.g. using LLaMA-Factory or Unsloth), you have a set of LoRA adapters or a merged base model. To deploy this model locally on resource-constrained edge servers, you must quantize it to reduce VRAM memory footprints. In this article, we map the model compilation pipeline, compare quantization standards, and implement a **vLLM Inference Config Compiler** in Python.
+After validating and fine-tuning your Small Language Model (SLM) on agent execution datasets, the final challenge is deploying the model into production. Unlike large-scale API endpoints that run on massive server clusters, SLMs are typically hosted on single-GPU instances or edge servers.
+
+To support high-throughput agent loops under 50ms per token, we must optimize serving latency. This article covers **quantization formats (AWQ, GPTQ, GGUF)**, **PagedAttention memory management**, and production configuration tuning inside high-performance inference engines like **vLLM**.
 
 ---
 
-## Merging LoRA Weights and Exporting Parameters
+## 📖 The Production Bottleneck: KV Cache Allocation
 
-Fine-tuning often yields a set of **LoRA (Low-Rank Adaptation) adapter weights** stored separately from the base model. To prepare the model for high-throughput serving:
-1. **Model Merging**: Merge the LoRA adapter weights back into the base model (e.g. `Llama-3-8B`) to create a single, unified set of parameter tensors.
-2. **Precision Reduction (Quantization)**: Compress 16-bit floating-point weights (FP16) to 4-bit or 8-bit integer formats to fit the model within small GPU VRAM footprints.
+In autoregressive generation, the model predicts tokens one-by-one. To speed up calculations, the key-value (KV) states of all previous tokens are cached in VRAM (the **KV Cache**).
+
+In traditional serving frameworks (like Hugging Face Transformers), VRAM is allocated statically and contiguously for each request. This causes two massive inefficiencies:
+1. **Internal Fragmentation**: If a request allocates space for 2048 tokens but only uses 100, the remaining space lies wasted.
+2. **External Fragmentation**: Virtual memory slots cannot be shared across concurrent requests.
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    Base[Base Model: FP16 Weights] --> Merge[Merge LoRA Adapter Weights]
-    Adapter[LoRA Adapter Weights] --> Merge
-    
-    Merge --> ModelMerged[Merged FP16 Model]
-    ModelMerged --> Quantize{Quantization Compiler: GGUF / AWQ}
-    
-    Quantize -->|Format: GGUF| Local[Run Locally via Ollama]
-    Quantize -->|Format: AWQ / GPTQ| vLLM[Deploy to vLLM Server]
-    
-    Local --> Serve([Local Inference Active])
-    vLLM --> Serve
+graph TD
+  A[Client Request] --> B[vLLM Inference Engine]
+  B --> C{PagedAttention Router}
+  C -->|Divide KV Cache into physical blocks| D[Non-contiguous VRAM allocation]
+  C -->|Dynamic lookup table mapping| E[Dynamic virtual block memory mapping]
+  D --> F[Eliminate 96% of memory waste]
+  E --> F
+  F --> G[Supports 4x higher concurrency]
 ```
 
----
-
-## 1. Comparing Quantization Standards: AWQ vs. GGUF
-
-Choosing the correct format depends on your target deployment runtime:
-* **GGUF (GPT-Generated Unified Format)**: Optimized for CPU and mixed CPU/GPU serving. It is the standard format for Ollama, llama.cpp, and local desktop integrations.
-* **AWQ (Activation-aware Weight Quantization)**: Designed for high-performance GPU serving. It keeps Capable capability on task benchmarks and integrates with `vLLM` runtimes.
+**vLLM** solves this by introducing **PagedAttention**, which partitions the KV cache into logical blocks mapped to non-contiguous physical pages in VRAM, mimicking virtual memory paging in operating systems. This reduces VRAM waste to near zero, enabling 2–4× higher batch sizes and concurrency.
 
 ---
 
-## 2. Setting up High-Throughput Serving Parameters
+## 🛠️ Production-Grade vLLM Serving Configuration
 
-To optimize serving performance on vLLM engines:
-1. **Configure PagedAttention**: Allocate GPU memory block sizes (e.g. `block_size = 16`) to prevent memory fragmentation.
-2. **Limit Max Model Length**: Keep the maximum token sequence context bounded (e.g., `max_model_len = 8192`) to control KV-cache size.
-
----
-
-## Code Demo: vLLM Inference Config Compiler
-
-Below is a Python implementation of a vLLM serving config compiler. It evaluates hardware VRAM resources, checks model formats, and compiles optimized serving configuration JSON files.
+Here is a Python script to initialize a high-throughput vLLM engine instance for a quantized 4-bit AWQ model, configuring PagedAttention parameters and KV cache limits for production.
 
 ```python
-import json
-from typing import Dict, Any, Tuple
+from vllm import LLM, SamplingParams
+import os
 
-class VLLMConfigCompiler:
-    def __init__(self, available_vram_gb: float):
-        self.vram = available_vram_gb
+# Define model paths and configurations
+MODEL_PATH = "Qwen/Qwen2.5-7B-Instruct-AWQ"  # Load pre-quantized 4-bit AWQ model
+MAX_MODEL_LEN = 4096                           # Max sequence context boundary
 
-    def compile_serving_config(self, model_name: str, model_format: str, size_gb: float) -> Tuple[bool, Dict[str, Any], str]:
-        # Initialize base config parameters
-        config = {
-            "model": model_name,
-            "quantization": None,
-            "gpu_memory_utilization": 0.90,
-            "max_model_len": 4096,
-            "block_size": 16
-        }
+print(f"Initializing vLLM Engine for quantized model: {MODEL_PATH}")
 
-        # 1. Determine optimal quantization format based on size and VRAM
-        if model_format == "FP16":
-            if size_gb > self.vram:
-                # If model is too large, recommend AWQ quantization
-                config["quantization"] = "awq"
-                compressed_size = size_gb * 0.25 # 4-bit compression
-                if compressed_size > self.vram:
-                    return False, {}, "Model is too large even with 4-bit AWQ quantization."
-                print(f"⚠️ [Config Compiler] Merged FP16 size ({size_gb} GB) exceeds VRAM ({self.vram} GB). Compressing to 4-bit AWQ...")
-            else:
-                config["quantization"] = None
+# Initialize the vLLM engine with PagedAttention tuning
+llm = LLM(
+    model=MODEL_PATH,
+    quantization="awq",                        # Explicitly define AWQ loader
+    max_model_len=MAX_MODEL_LEN,
+    
+    # PagedAttention & VRAM tuning parameters
+    gpu_memory_utilization=0.90,               # Allocate 90% of GPU VRAM for the engine
+    max_num_seqs=256,                          # Max concurrent requests in a single batch
+    
+    # KV Cache Configuration
+    max_num_batched_tokens=4096,
+    trust_remote_code=True,
+    
+    # Block size optimization (typically 16 or 32 for optimal memory paging)
+    block_size=16
+)
 
-        elif model_format in ["AWQ", "GPTQ"]:
-            config["quantization"] = model_format.lower()
+# Define sampling configurations optimized for deterministic agent tool calls
+sampling_params = SamplingParams(
+    temperature=0.0,                           # Zero temperature enforces strict determinism
+    max_tokens=512,                            # Maximum response length per call
+    stop=["<|im_end|>", "<|endoftext|>"],      # Stop tokens to prevent runtime runaways
+    presence_penalty=0.0,
+    frequency_penalty=0.0
+)
 
-        # 2. Adjust GPU memory utilization safety margins
-        # Leaving 10% VRAM headroom for KV-cache and system overheads
-        config["gpu_memory_utilization"] = 0.90
-
-        return True, config, "Successfully compiled vLLM serving configuration."
+def execute_agent_prompt(user_query: str) -> str:
+    """
+    Submit task query to the local vLLM server engine.
+    """
+    formatted_prompt = f"<|im_start|>user\n{user_query}<|im_end|>\n<|im_start|>assistant\n"
+    
+    print(f"Submitting query to inference engine...")
+    outputs = llm.generate([formatted_prompt], sampling_params)
+    
+    # Extract generated output
+    generated_text = outputs[0].outputs[0].text
+    return generated_text
 
 if __name__ == "__main__":
-    # Simulate a local edge workstation GPU with 8 GB of VRAM
-    compiler = VLLMConfigCompiler(available_vram_gb=8.0)
-
-    # Model Case 1: Large merged FP16 model (16 GB)
-    model_name_1 = "qwen-7b-instruct-merged"
-    success_1, cfg_1, msg_1 = compiler.compile_serving_config(model_name_1, "FP16", size_gb=14.0)
-    
-    print("🚀 Running vLLM Serving Configuration Compiler...")
-    print("-------------------------------------------------")
-    
-    print(f"\n[Case 1] Model: {model_name_1}")
-    print(f"Status: **{success_1}** | Message: {msg_1}")
-    if success_1:
-        print(json.dumps(cfg_1, indent=2))
-
-    # Model Case 2: Lightweight AWQ quantized model
-    model_name_2 = "llama-3-8b-awq"
-    success_2, cfg_2, msg_2 = compiler.compile_serving_config(model_name_2, "AWQ", size_gb=4.5)
-    print(f"\n[Case 2] Model: {model_name_2}")
-    print(f"Status: **{success_2}** | Message: {msg_2}")
-    if success_2:
-        print(json.dumps(cfg_2, indent=2))
+    test_query = "Read telemetry logs and locate connection timeouts."
+    response = execute_agent_prompt(test_query)
+    print(f"Engine response:\n{response}")
 ```
 
 ---
 
-## Deployment Takeaways
+## ⚖️ Quantization Trade-offs (AWQ vs. GGUF vs. GPTQ)
 
-* **Quantize for GPU serving**: Use AWQ or GPTQ quantization formats when deploying models to vLLM servers to maximize throughput.
-* **Configure Memory Headroom**: Keep `gpu_memory_utilization` around `0.90` (90%) to leave VRAM space for the KV-cache.
-* **Decouple Base and Adapter Weights**: During development, keep LoRA weights separate from base models to compile and test modifications rapidly.
+When selecting a serving model, developers must choose the appropriate format:
+
+1. **AWQ (Activation-aware Weight Quantization)**:
+   * *Strengths*: Highly optimized for GPUs. Protects the top 1% most important weights from accuracy loss during 4-bit compression.
+   * *Best For*: High-throughput server deployments running on NVIDIA A10/A100/H100 cards.
+2. **GPTQ (Generalized Post-Training Quantization)**:
+   * *Strengths*: Solid compression, fast execution speeds.
+   * *Best For*: Standard GPU serving environments with fixed batch allocations.
+3. **GGUF (GPT-Generated Unified Format)**:
+   * *Strengths*: Highly optimized for CPU-only and Apple Silicon execution via llama.cpp.
+   * *Best For*: Local development workstations and edge systems lacking dedicated GPUs.
+
+---
+
+## ⚠️ Important Pitfalls in Model Serving
+
+Keep these constraints in mind to prevent service interruptions:
+
+> [!IMPORTANT]
+> **VRAM Allocation Conflicts**: By default, vLLM attempts to occupy 90% of GPU memory for its KV cache allocator. If you attempt to run database engines, Python workers, or web gateways on the same GPU, the process will crash with an out-of-memory error. Adjust `gpu_memory_utilization` downward (e.g., 0.50–0.60) if sharing resources.
+
+> [!CAUTION]
+> **Context Window Flooding**: If an agent outputs massive execution loops, it will flood the KV cache. Implement strict token counters on input prompt lengths to avoid hitting the context limit and dropping requests.
