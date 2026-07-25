@@ -104,123 +104,132 @@
           </div>
 
           <div class="article-body">
-<h1>Kafka Event Streams: Designing Event Schemas for Swarms</h1>
-<div class="alert alert-note">
-  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
-  <div class="alert-content"><p><strong>📖 Article Overview</strong>
-When multi-agent systems rely on synchronous HTTP API calls to communicate, they run into scaling bottlenecks. If a coordinator agent waits for three worker nodes to complete tasks, the coordinator&#39;s execution thread blocks, causing database timeouts and memory buildup. To build scalable, high-throughput systems, architects must transition to <strong>Event-Driven Architectures</strong>. By routing tasks and status logs asynchronously across Apache Kafka event streams, we decouple agent nodes. In this article, we design standardized event schemas and implement an async Kafka producer simulator in Python.</p>
-</div>
-</div>
-<hr>
-<h2>The Bottleneck of Synchronous Swarms</h2>
-<p>In basic REST-based agent networks:</p>
-<ul>
-<li><strong>Blocking Thread Pools</strong>: Coordinator servers freeze while waiting for slow LLM generations or web scraping queries to complete.</li>
-<li><strong>Tight Coupling</strong>: Adding new observability workers or audit tools requires modifying the primary agent code, increasing regression risks.</li>
-<li><strong>The Solution</strong>: <strong>Kafka Message Streaming</strong>. We route task status logs to shared Kafka topics. Downstream workers subscribe to relevant topics, enabling asynchronous parallel execution.</li>
-</ul>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    Coordinator[Coordinator Agent Node] --&gt;|Publish task event| Producer[Kafka Event Producer]
-    
-    subgraph Kafka Event Broker
-        Producer --&gt;|Stream to topic| Topic[Topic: agent-task-assignments]
-    end
-    
-    Topic --&gt;|Pull assignment event| Worker1[Worker Agent Node 1]
-    Topic --&gt;|Pull assignment event| Worker2[Worker Agent Node 2]
-    
-    Worker1 --&gt;|Publish result event| ResultTopic[Topic: agent-task-results]
-    Worker2 --&gt;|Publish result event| ResultTopic</div>
-<hr>
-<h2>1. Structuring Standardized Event Schemas</h2>
-<p>To coordinate asynchronous messages:</p>
-<ul>
-<li><strong>Define Action Schemas</strong>: Every message must conform to a strict JSON structure containing <code>event_type</code>, <code>correlation_id</code>, <code>source_node</code>, and <code>payload</code> variables.</li>
-<li><strong>Implement Partition Keys</strong>: Partition topics using the <code>correlation_id</code> (task session key) to guarantee that related events are processed in order by single partitions.</li>
-</ul>
-<hr>
-<h2>2. Setting up Non-Blocking Producers</h2>
-<p>The event stream manager publishes events asynchronously:</p>
+<h1>Coordinating Swarms over Kafka: Partitioned Topics and Replay Security</h1>
+<p>In basic multi-agent systems, agents communicate using direct, synchronous HTTP calls or simple in-memory queues (like Python&#39;s <code>asyncio.Queue</code>). While this works for simple workflows, it creates critical bottlenecks in enterprise architectures:</p>
 <ol>
-<li><strong>Queue Messages</strong>: Store event payloads in a local buffer before flushing them to the broker.</li>
-<li><strong>Execute Callbacks</strong>: Trigger confirmation callbacks upon successful broker receipts to handle packet dropouts.</li>
+<li><strong>Coupling</strong>: If the &quot;Validator Agent&quot; goes offline, the upstream &quot;Writer Agent&quot; blocks and fails immediately.</li>
+<li><strong>No Scaling</strong>: Direct calls cannot scale processing across multiple concurrent agent worker containers.</li>
+<li><strong>No Execution Guarantee</strong>: If a node crashes during a long-running computation, the execution state is lost.</li>
 </ol>
+<p>To build resilient, highly scalable agent swarms, production systems use <strong>Apache Kafka</strong> as an event-driven telemetry and routing broker. This article details designing partitioned event topologies, propagating tracing context across asynchronous boundaries, and implementing replay security to manage duplicate messages.</p>
 <hr>
-<h2>Code Demo: Kafka Event Producer Simulator</h2>
-<p>Below is a Python implementation of an asynchronous event producer. It compiles JSON event payloads, simulates routing to Kafka topics, and handles delivery receipts.</p>
-<pre><code class="language-python">import time
-import uuid
-import json
-from typing import Dict, Any, Tuple
-
-class SimulatedKafkaProducer:
-    def __init__(self, bootstrap_servers: str):
-        self.bootstrap_servers = bootstrap_servers
-        self.published_events: List[Dict[str, Any]] = []
-
-    def compile_event_payload(self, event_type: str, source: str, payload_data: Dict[str, Any], correlation_id: str = None) -&gt; Dict[str, Any]:
-        # Structure standardized event message schema
-        return {
-            &quot;event_id&quot;: str(uuid.uuid4()),
-            &quot;correlation_id&quot;: correlation_id or str(uuid.uuid4()),
-            &quot;event_type&quot;: event_type,
-            &quot;source_node&quot;: source,
-            &quot;timestamp_ms&quot;: int(time.time() * 1000),
-            &quot;payload&quot;: payload_data
-        }
-
-    def publish_to_topic(self, topic: str, key: str, value_event: Dict[str, Any]) -&gt; Tuple[bool, str]:
-        print(f&quot;📡 [Kafka Producer] Publishing to topic '{topic}' | Key: {key[:8]}...&quot;)
-        
-        # Verify JSON serialization
-        try:
-            serialized_payload = json.dumps(value_event)
-        except TypeError:
-            return False, &quot;Serialization Error: Payload is not JSON serializable.&quot;
-
-        # Simulate OTLP network delay
-        time.sleep(0.1)
-        self.published_events.append(value_event)
-        
-        return True, f&quot;Success: Offset 10{len(self.published_events)} acknowledged.&quot;
-
-if __name__ == &quot;__main__&quot;:
-    producer = SimulatedKafkaProducer(bootstrap_servers=&quot;localhost:9092&quot;)
-
-    print(&quot;🛡️ Initializing Kafka Event Producer Swarm...&quot;)
-    print(&quot;-----------------------------------------------&quot;)
-
-    # Compile a task assignment event
-    correlation_key = str(uuid.uuid4())
-    task_payload = {&quot;task_id&quot;: &quot;job_101&quot;, &quot;instruction&quot;: &quot;Analyze system performance database logs&quot;}
-    
-    event = producer.compile_event_payload(
-        event_type=&quot;TASK_ASSIGNED&quot;,
-        source=&quot;orchestrator_agent&quot;,
-        payload_data=task_payload,
-        correlation_id=correlation_key
-    )
-
-    # Publish event to Kafka Topic
-    success, receipt = producer.publish_to_topic(
-        topic=&quot;agent-task-assignments&quot;,
-        key=correlation_key,
-        value_event=event
-    )
-
-    print(&quot;\n📈 --- Delivery Receipt Confirmation ---&quot;)
-    print(f&quot;Status: {success}&quot;)
-    print(f&quot;Receipt: {receipt}&quot;)
-    print(&quot;\n--- Serialized Event Schema ---&quot;)
-    print(json.dumps(event, indent=2))</code></pre>
-<hr>
-<h2>Event-Driven Takeaways</h2>
+<h2>📖 The Kafka Swarm Coordination Model</h2>
+<p>Rather than invoking downstream services directly, agents write status and command events to Kafka topics. Downstream workers subscribe to these topics and process events asynchronously:</p>
+<div class="mermaid">graph LR
+  subgraph Producer Agent
+    A[Planner Agent] --&gt;|Emit TaskApprovedEvent| K[Kafka Broker]
+  end
+  subgraph Kafka Partition Routing
+    K --&gt;|Partition by trajectory_id| P1[Partition 0: Trajectory A]
+    K --&gt;|Partition by trajectory_id| P2[Partition 1: Trajectory B]
+  end
+  subgraph Consumer Swarm
+    P1 --&gt; W1[Worker Container 1]
+    P2 --&gt; W2[Worker Container 2]
+  end</div>
+<h3>1. Partitioned Topics for In-Order Execution</h3>
+<p>Kafka topics are divided into physical <strong>partitions</strong>. Messages inside a single partition are guaranteed to be read in the exact order they were written. </p>
 <ul>
-<li><strong>Standardize Message Structures</strong>: Enforce strict JSON event schemas containing unique event and correlation IDs across all nodes.</li>
-<li><strong>Partition by Correlation ID</strong>: Route related agent task events to the same partition using identical keys to guarantee ordering.</li>
-<li><strong>Buffer Messages Asynchronously</strong>: Use background memory queue loops to stream metrics without blocking primary agent run threads.</li>
+<li><strong>The Pattern</strong>: By using the <code>trajectory_id</code> as the Kafka message partition key, we guarantee that all execution steps for a specific task route to the exact same partition. Multiple workers can process different trajectories concurrently, but a single trajectory&#39;s events are processed sequentially by a single worker, preventing out-of-order execution bugs.</li>
 </ul>
+<h3>2. Context Propagation &amp; Distributed Tracing</h3>
+<p>Because events cross thread and network boundaries, we must propagate tracing contexts (W3C traceparent headers) inside Kafka message metadata headers. This allows platforms (like OpenTelemetry or Langfuse) to reconstruct the full multi-agent execution path.</p>
+<hr>
+<h2>🛠️ Implementing a Resilient Kafka Agent Consumer</h2>
+<p>Here is a Python implementation of an event-driven Kafka consumer for agent swarms. It demonstrates context propagation and uses Redis-based idempotency checks to prevent duplicate execution (replay security).</p>
+<pre><code class="language-python">import json
+import time
+from typing import Dict, Any
+
+# Mock Kafka Message Envelope
+class KafkaMessage:
+    def __init__(self, key: str, value: Dict[str, Any], headers: Dict[str, str]):
+        self.key = key          # Partition key: trajectory_id
+        self.value = value      # Event payload
+        self.headers = headers  # Metadata (headers)
+
+# Mock Redis Store for Idempotency
+class RedisIdempotencyCache:
+    def __init__(self):
+        self._keys = set()
+
+    def is_duplicate(self, idempotency_key: str) -&gt; bool:
+        if idempotency_key in self._keys:
+            return True
+        # Store key with a TTL in real Redis
+        self._keys.add(idempotency_key)
+        return False
+
+class KafkaAgentConsumer:
+    &quot;&quot;&quot;
+    Kafka consumer worker that processes agent events, enforces replay safety,
+    and extracts tracing metadata headers.
+    &quot;&quot;&quot;
+    def __init__(self, idempotency_cache: RedisIdempotencyCache):
+        self.cache = idempotency_cache
+
+    def consume_event(self, message: KafkaMessage) -&gt; None:
+        trajectory_id = message.key
+        event_payload = message.value
+        headers = message.headers
+
+        # 1. Replay Security: Enforce uniqueness using message ID
+        message_id = event_payload.get(&quot;message_id&quot;)
+        if not message_id or self.cache.is_duplicate(message_id):
+            print(f&quot;[Replay Warning] Ignored duplicate event message: {message_id}&quot;)
+            return
+
+        # 2. Context Propagation: Extract OpenTelemetry traceparent headers
+        traceparent = headers.get(&quot;traceparent&quot;, &quot;00-00000000000000000000000000000000-0000000000000000-00&quot;)
+        print(f&quot;[Tracing] Active Span context parent initialized: {traceparent}&quot;)
+
+        # 3. Process the event payload
+        event_type = event_payload.get(&quot;event_type&quot;)
+        print(f&quot;[Worker] Processing event '{event_type}' for trajectory {trajectory_id}...&quot;)
+        
+        # Simulate agent execution work
+        time.sleep(0.1)
+        print(f&quot;[Worker] Successfully processed event: {message_id}\n&quot;)
+
+# Demonstration Usage
+if __name__ == &quot;__main__&quot;:
+    cache = RedisIdempotencyCache()
+    consumer = KafkaAgentConsumer(cache)
+
+    # Prepare mock event
+    event = {
+        &quot;message_id&quot;: &quot;msg-8854-abcd-9988&quot;,
+        &quot;event_type&quot;: &quot;ExecuteCodeBlock&quot;,
+        &quot;code&quot;: &quot;print('Hello World')&quot;,
+        &quot;timestamp&quot;: 1784694200
+    }
+    
+    headers = {
+        &quot;traceparent&quot;: &quot;00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01&quot;
+    }
+
+    msg1 = KafkaMessage(key=&quot;trajectory-1025&quot;, value=event, headers=headers)
+    msg2 = KafkaMessage(key=&quot;trajectory-1025&quot;, value=event, headers=headers) # Duplicate replay
+
+    # Process events
+    print(&quot;Submitting first event...&quot;)
+    consumer.consume_event(msg1)
+
+    print(&quot;Submitting replay of the same event...&quot;)
+    consumer.consume_event(msg2)</code></pre>
+<hr>
+<h2>⚠️ Important Pitfalls in Kafka Swarm Coordination</h2>
+<p>Ensure your event-driven routing avoids these production issues:</p>
+<div class="alert alert-important">
+  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
+  <div class="alert-content"><p><strong>Consumer Lag Rebalances</strong>: If an agent takes too long to process a single event (e.g. waiting 60s for a complex local code execution run), Kafka may assume the consumer container crashed and trigger a partition rebalance. Always offload long-running computations to background threads or Celery tasks, returning control to the Kafka consumer loop immediately.</p>
+</div>
+</div>
+<div class="alert alert-caution">
+  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
+  <div class="alert-content"><p><strong>Out-of-Order Handoffs</strong>: If you change the partition key format from <code>trajectory_id</code> to something arbitrary (like <code>agent_role</code>), events for the same task will route to different partitions, resulting in race conditions where Step 3 completes before Step 2. Keep the partition key strictly bound to the execution transaction.</p>
+</div>
+</div>
 
           </div>
 
@@ -251,6 +260,9 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
+            <li class="sidebar-post-item active">
+              <a href="event-driven-kafka-streaming-agent-topics.html">Coordinating Swarms over Kafka: Partitioned Topics and Replay Security<span class="sidebar-post-date">July 25, 2026</span></a>
+            </li>
             <li class="sidebar-post-item">
               <a href="system-design-cqrs-rag-pipelines-separation-concerns.html">CQRS in RAG: Decoupling Document Ingestion from Semantic Query Loops<span class="sidebar-post-date">July 25, 2026</span></a>
             </li>
