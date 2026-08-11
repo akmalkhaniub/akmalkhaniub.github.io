@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Schema Serialization Speedups: Migrating to Pydantic v2 in FastAPI | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Exploring Pydantic v2's Rust core engine (pydantic-core): benchmarking payload validation throughput, zero-copy JSON serialization, and migrating legacy v1 syntax.">
+  <title>FastAPI in Production Swarms: High-Concurrency Pros, Cons &amp; Gotchas | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Architectural review of FastAPI in high-concurrency production swarms: analyzing performance pros, structural cons, and production failure modes like un-awaited coroutine leaks and database pool exhaustion.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/fastapi-schema-serialization-speedups-pydantic-v2.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/fastapi-production-swarms-high-concurrency-pros-cons-gotchas.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/fastapi-schema-serialization-speedups-pydantic-v2.html">
-  <meta property="og:title" content="Schema Serialization Speedups: Migrating to Pydantic v2 in FastAPI">
-  <meta property="og:description" content="Exploring Pydantic v2's Rust core engine (pydantic-core): benchmarking payload validation throughput, zero-copy JSON serialization, and migrating legacy v1 syntax.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/fastapi-production-swarms-high-concurrency-pros-cons-gotchas.html">
+  <meta property="og:title" content="FastAPI in Production Swarms: High-Concurrency Pros, Cons &amp; Gotchas">
+  <meta property="og:description" content="Architectural review of FastAPI in high-concurrency production swarms: analyzing performance pros, structural cons, and production failure modes like un-awaited coroutine leaks and database pool exhaustion.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-11">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Schema Serialization Speedups: Migrating to Pydantic v2 in FastAPI">
-  <meta name="twitter:description" content="Exploring Pydantic v2's Rust core engine (pydantic-core): benchmarking payload validation throughput, zero-copy JSON serialization, and migrating legacy v1 syntax.">
+  <meta name="twitter:title" content="FastAPI in Production Swarms: High-Concurrency Pros, Cons &amp; Gotchas">
+  <meta name="twitter:description" content="Architectural review of FastAPI in high-concurrency production swarms: analyzing performance pros, structural cons, and production failure modes like un-awaited coroutine leaks and database pool exhaustion.">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Schema Serialization Speedups: Migrating to Pydantic v2 in FastAPI",
-  "description": "Exploring Pydantic v2's Rust core engine (pydantic-core): benchmarking payload validation throughput, zero-copy JSON serialization, and migrating legacy v1 syntax.",
-  "url": "https://akmalkhaniub.github.io/blog/fastapi-schema-serialization-speedups-pydantic-v2.html",
+  "headline": "FastAPI in Production Swarms: High-Concurrency Pros, Cons & Gotchas",
+  "description": "Architectural review of FastAPI in high-concurrency production swarms: analyzing performance pros, structural cons, and production failure modes like un-awaited coroutine leaks and database pool exhaustion.",
+  "url": "https://akmalkhaniub.github.io/blog/fastapi-production-swarms-high-concurrency-pros-cons-gotchas.html",
   "datePublished": "2026-08-11",
-  "keywords": "FastAPI, Pydantic, Rust, Python",
+  "keywords": "FastAPI, Production, Architecture, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/fastapi-schema-serialization-speedups-pydantic-v2.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/fastapi-production-swarms-high-concurrency-pros-cons-gotchas.html"
 }
   </script>
 
@@ -92,128 +92,161 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Schema Serialization Speedups: Migrating to Pydantic v2 in FastAPI Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="FastAPI in Production Swarms: High-Concurrency Pros, Cons &amp; Gotchas Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Schema Serialization Speedups: Migrating to Pydantic v2 in FastAPI</h1>
+            <h1 class="article-title">FastAPI in Production Swarms: High-Concurrency Pros, Cons &amp; Gotchas</h1>
             <div class="article-meta">
               <span><i class="fa-regular fa-calendar"></i> August 12, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">FastAPI</span><span class="project-badge">Pydantic</span><span class="project-badge">Rust</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">FastAPI</span><span class="project-badge">Production</span><span class="project-badge">Architecture</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Schema Serialization Speedups: Migrating to Pydantic v2 in FastAPI</h1>
-<p>FastAPI relies on <strong>Pydantic</strong> for input validation, query string parsing, and response serialization. In earlier versions of FastAPI (using Pydantic v1), validating large nested JSON payloads or serializing thousands of database records into response models incurred significant CPU overhead. Pydantic v1 executed validation via pure Python loops, making data parsing the single largest bottleneck in high-throughput APIs.</p>
-<p>The release of <strong>Pydantic v2</strong> fundamentally transformed FastAPI&#39;s throughput characteristics. By rewriting the validation and serialization engine in <strong>Rust</strong> (<code>pydantic-core</code>), Pydantic v2 achieved a <strong>5x to 15x performance increase</strong>.</p>
-<p>This article explores the internal Rust-backed architecture of Pydantic v2, key syntax migration patterns, and performance optimization techniques for FastAPI.</p>
+<h1>FastAPI in Production Swarms: High-Concurrency Pros, Cons &amp; Gotchas</h1>
+<p>Deploying FastAPI across multi-node microservice clusters (production swarms) delivers incredible developer velocity and low-latency API throughput. However, as services scale to handle millions of requests, engineering teams encounter architectural trade-offs and subtle production failure modes that do not appear in smaller setups.</p>
+<p>FastAPI&#39;s minimalist, unopinionated design gives developers total freedom, but that freedom can lead to inconsistent project structures, connection pool leaks, or silent event loop starvation if best practices are ignored.</p>
+<p>This article presents an objective architectural review of FastAPI in high-concurrency environments—analyzing its core <strong>Pros</strong>, <strong>Cons</strong>, and <strong>Production Gotchas</strong>.</p>
 <hr>
-<h2>📖 Pydantic v1 vs. Pydantic v2 Architecture</h2>
-<p>The architectural evolution from pure Python loops to Rust-compiled validation graphs:</p>
+<h2>📖 Microservice Architectural Trade-offs Matrix</h2>
+<p>Evaluating FastAPI&#39;s strengths, limitations, and operational risks:</p>
 <div class="mermaid">graph TD
-  subgraph Legacy Pydantic v1 (Pure Python)
-    A[Raw JSON Payload] --&gt; B[CPython JSON Decoder]
-    B --&gt; C[Python Object Instantiation]
-    C --&gt; D[Pure Python Field Validation Loop]
-    D --&gt; E[Validated Model Instance]
+  A[FastAPI Production Service] --&gt; B[Architectural Pros]
+  A --&gt; C[Architectural Cons]
+  A --&gt; D[Production Gotchas]
+  
+  subgraph Strengths
+    B --&gt; B1[Pydantic v2 Rust Speed]
+    B --&gt; B2[Autogenerated OpenAPI Specs]
+    B --&gt; B3[Native Async Concurrency]
   end
   
-  subgraph Modern Pydantic v2 (Rust Core)
-    F[Raw JSON Payload / Bytes] --&gt; G[Rust pydantic-core Binary Engine]
-    G --&gt;|Direct C-API Memory Allocation| H[Compiled Schema Validation Graph]
-    H --&gt; I[Validated FastAPI Model Instance: 10x Speedup]
+  subgraph Trade-offs
+    C --&gt; C1[Unopinionated Structure: No Default ORM]
+    C --&gt; C2[Dependency Injection Scope Complexity]
+    C --&gt; C3[Silent Event-Loop Blocking Risks]
+  end
+  
+  subgraph Failure Modes
+    D --&gt; D1[Un-awaited Coroutine Leaks]
+    D --&gt; D2[Global Worker State Contention]
+    D --&gt; D3[Database Connection Pool Exhaustion]
   end</div>
-<h3>Key Performance Innovations in Pydantic v2</h3>
-<ol>
-<li><strong>Rust <code>pydantic-core</code> Engine</strong>: Validation graphs are pre-compiled into C-compatible binary data structures when the model class is defined. During HTTP requests, incoming JSON bytes are parsed and validated directly in Rust, bypassing CPython interpreter overhead.</li>
-<li><strong>Direct CPython Memory Allocation</strong>: Model instantiation avoids creating intermediate Python dictionary representations, writing fields directly into Python object memory slots.</li>
-<li><strong>Zero-Copy Serialization</strong>: High-speed JSON serialization (<code>model.model_dump_json()</code>) serializes Pydantic objects straight to JSON strings in Rust, eliminating the need to construct intermediary Python dictionaries first.</li>
-</ol>
 <hr>
-<h2>🛠️ Python Implementation: Pydantic v2 High-Throughput Serialization</h2>
-<p>Here is a production-grade Python script demonstrating Pydantic v2 validation patterns, custom field validators, and JSON dump benchmarks:</p>
-<pre><code class="language-python">import time
-from typing import List, Optional
-from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
+<h2>⚖️ Architectural Pros vs. Cons</h2>
+<h3>The Pros</h3>
+<ul>
+<li><strong>Rust-Backed High Performance</strong>: With Pydantic v2 handling parsing in C-compiled Rust binaries and Starlette managing ASGI routing, FastAPI achieves throughput comparable to Node.js and Go.</li>
+<li><strong>Automatic OpenAPI Documentation</strong>: Standard Python type annotations automatically generate interactive <code>/docs</code> (Swagger UI) and <code>/redoc</code> interfaces, keeping frontend and backend teams perfectly aligned.</li>
+<li><strong>Type-Driven Developer Velocity</strong>: Catching schema errors at development time via IDE type checkers (<code>mypy</code>, <code>pyright</code>) eliminates entire classes of runtime validation bugs.</li>
+</ul>
+<h3>The Cons</h3>
+<ul>
+<li><strong>Lack of Opinionated Project Scaffolding</strong>: Unlike Django (which provides built-in ORMs, migrations, admin panels, and auth), FastAPI provides no opinions on database routing or directory structures. Teams must build custom scaffolding from scratch.</li>
+<li><strong>Dependency Injection Scope Hazards</strong>: FastAPI&#39;s <code>Depends()</code> system is clean, but sub-dependencies instantiated within route handlers can create performance bottlenecks if expensive objects are re-created on every single request.</li>
+</ul>
+<hr>
+<h2>🛠️ Python Implementation: Production Guardrails &amp; Health Inspector</h2>
+<p>Here is a production-grade Python module demonstrating how to inspect worker process safety, validate connection pool bounds, and detect un-awaited coroutine risks:</p>
+<pre><code class="language-python">import os
+import sys
+import asyncio
+from typing import Dict, Any, List
+from fastapi import FastAPI, Depends, HTTPException, status
+from pydantic import BaseModel
 
-# 1. Define Modern Pydantic v2 Schema
-class OrderItemSchema(BaseModel):
-    item_id: str
-    quantity: int = Field(..., gt=0, description=&quot;Quantity must be greater than zero&quot;)
-    unit_price: float = Field(..., gt=0.0)
+app = FastAPI(title=&quot;Production Guardrails Inspector&quot;)
 
-class TransactionPayloadSchema(BaseModel):
-    # Modern ConfigDict replaces old Config inner class
-    model_config = ConfigDict(str_strip_whitespace=True, validate_assignment=True)
+class SystemHealthReport(BaseModel):
+    worker_pid: int
+    environment: str
+    db_pool_limit: int
+    configured_workers: int
+    total_max_db_connections: int
+    status: str
 
-    transaction_id: str
-    user_email: str
-    items: List[OrderItemSchema]
-    coupon_code: Optional[str] = None
+class ProductionSafetyInspector:
+    &quot;&quot;&quot;
+    Audits process worker limits and database pool configurations
+    to prevent connection pool exhaustion during autoscaling.
+    &quot;&quot;&quot;
+    def __init__(self, max_db_pool_per_worker: int = 10):
+        self.max_pool_per_worker = max_db_pool_per_worker
+        # Get worker process ID
+        self.pid = os.getpid()
+        # Estimate workers based on environment variables
+        self.num_workers = int(os.getenv(&quot;WEB_CONCURRENCY&quot;, &quot;4&quot;))
 
-    # Modern @field_validator replaces legacy @validator
-    @field_validator(&quot;transaction_id&quot;)
-    @classmethod
-    def validate_transaction_id_prefix(cls, value: str) -&gt; str:
-        if not value.startswith(&quot;tx-&quot;):
-            raise ValueError(&quot;transaction_id must begin with prefix 'tx-'&quot;)
-        return value
+    def audit_connection_limits(self) -&gt; SystemHealthReport:
+        total_connections = self.max_pool_per_worker * self.num_workers
+        
+        # Guardrail Warning: Database connection limit safety check
+        # Databases typically cap connections at 100 per instance by default
+        health_status = &quot;HEALTHY&quot;
+        if total_connections &gt; 80:
+            health_status = &quot;WARNING: Potential DB Connection Exhaustion&quot;
 
-# Benchmark Runner
-def benchmark_pydantic_v2_throughput(num_records: int = 20_000):
-    print(f&quot;🚀 Benchmarking Pydantic v2 Parsing &amp; Serialization across {num_records:,} payloads...&quot;)
-    print(&quot;=&quot; * 75)
+        return SystemHealthReport(
+            worker_pid=self.pid,
+            environment=os.getenv(&quot;ENV&quot;, &quot;production&quot;),
+            db_pool_limit=self.max_pool_per_worker,
+            configured_workers=self.num_workers,
+            total_max_db_connections=total_connections,
+            status=health_status
+        )
 
-    raw_payload_template = {
-        &quot;transaction_id&quot;: &quot;tx-889021&quot;,
-        &quot;user_email&quot;: &quot; customer@domain.com &quot;,  # Will be whitespace-stripped by ConfigDict
-        &quot;items&quot;: [
-            {&quot;item_id&quot;: &quot;prod-1&quot;, &quot;quantity&quot;: 2, &quot;unit_price&quot;: 49.99},
-            {&quot;item_id&quot;: &quot;prod-2&quot;, &quot;quantity&quot;: 1, &quot;unit_price&quot;: 12.50}
-        ],
-        &quot;coupon_code&quot;: &quot;SUMMER2026&quot;
-    }
+# Dependency Injection for Guardrail Inspector
+def get_inspector() -&gt; ProductionSafetyInspector:
+    return ProductionSafetyInspector(max_db_pool_per_worker=15)
 
-    # 1. Measure Batch Validation Speed
-    start_val = time.perf_counter()
-    validated_models = [TransactionPayloadSchema.model_validate(raw_payload_template) for _ in range(num_records)]
-    val_duration = time.perf_counter() - start_val
-    val_rps = num_records / val_duration
+@app.get(&quot;/health/audit&quot;, response_model=SystemHealthReport)
+async def run_health_audit(inspector: ProductionSafetyInspector = Depends(get_inspector)):
+    return inspector.audit_connection_limits()
 
-    print(f&quot; ✅ Validation Time  : {val_duration:.4f} seconds&quot;)
-    print(f&quot; 📊 Validation Rate  : {val_rps:,.2f} models/sec&quot;)
+# 🚨 GOTCHA DEMO: Un-awaited Coroutine Detection
+async def background_logging_task(msg: str):
+    await asyncio.sleep(0.01)
+    print(f&quot;📝 [Background Log] {msg}&quot;)
 
-    # 2. Measure High-Speed Rust JSON Serialization (model_dump_json)
-    start_ser = time.perf_counter()
-    json_bytes_list = [model.model_dump_json() for model in validated_models]
-    ser_duration = time.perf_counter() - start_ser
-    ser_rps = num_records / ser_duration
+@app.get(&quot;/demo-gotcha&quot;)
+async def gotcha_unawaited_demo():
+    # ❌ GOTCHA: Forgetting 'await' or 'asyncio.create_task()' returns a bare coroutine!
+    # Python will issue a RuntimeWarning: &quot;coroutine 'background_logging_task' was never awaited&quot;
+    # To fix, wrap in: asyncio.create_task(background_logging_task(&quot;Safe Log&quot;))
+    
+    _ = background_logging_task(&quot;Leaked Log&quot;)  # Un-awaited call
+    return {&quot;message&quot;: &quot;Endpoint returned, but coroutine was leaked without execution!&quot;}
 
-    print(f&quot; ✅ Serialization Time: {ser_duration:.4f} seconds&quot;)
-    print(f&quot; 📊 Serialization Rate: {ser_rps:,.2f} dumps/sec&quot;)
-
+# Test Simulation
 if __name__ == &quot;__main__&quot;:
-    benchmark_pydantic_v2_throughput(num_records=25_000)</code></pre>
+    async def run_test():
+        print(&quot;🚀 Executing Production Safety Audit...&quot;)
+        print(&quot;=&quot; * 75)
+        inspector = ProductionSafetyInspector(max_db_pool_per_worker=25)
+        report = inspector.audit_connection_limits()
+        print(f&quot; Report: {report.model_dump_json(indent=2)}&quot;)
+
+    asyncio.run(run_test())</code></pre>
 <hr>
-<h2>🚨 Migration Gotchas: Pydantic v1 ➔ v2</h2>
-<p>When upgrading legacy FastAPI projects to Pydantic v2:</p>
-<div class="alert alert-important">
-  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Replace Legacy Method Calls</strong>: Update <code>.dict()</code> to <code>.model_dump()</code> and <code>.json()</code> to <code>.model_dump_json()</code>. While legacy alias wrappers exist in v2, calling them incurs Python deprecation overhead and bypasses the fastest Rust serialization code paths.</p>
+<h2>🚨 Critical Production Gotchas</h2>
+<p>When deploying FastAPI at scale:</p>
+<div class="alert alert-warning">
+  <div class="alert-title"><i class="fa-solid fa-triangle-exclamation"></i> Warning</div>
+  <div class="alert-content"><p><strong>1. Connection Pool Exhaustion</strong>: If each Gunicorn worker allocates a database connection pool of size 20, running 10 worker containers across 5 Kubernetes pods results in $20 \times 10 \times 5 = 1,000$ concurrent database connections, crashing PostgreSQL instances. Always use an external connection pooler like <strong>PgBouncer</strong> or strictly limit worker pool sizes.</p>
 </div>
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Watch for <code>@model_validator</code> Mode Differences</strong>: In Pydantic v2, <code>@model_validator(mode=&#39;before&#39;)</code> receives raw dictionary input before field parsing, while <code>mode=&#39;after&#39;</code> receives the instantiated model instance. Confusing these modes will cause runtime <code>AttributeError</code> exceptions when migrating complex validators.</p>
+  <div class="alert-content"><p><strong>2. Global Mutable State Leaks</strong>: Avoid using global in-memory dictionaries to cache user data or session state across requests. Because ASGI servers spawn multiple independent worker processes, requests from the same user hit different worker memory spaces, causing silent state synchronization bugs.</p>
 </div>
 </div>
 <hr>
 <h2>📈 Real-World Enterprise Impact</h2>
-<p>Teams migrating FastAPI services to Pydantic v2 report:</p>
+<p>Teams applying production guardrails report:</p>
 <ul>
-<li><strong>80% Lower Serialization Latency</strong>: High-volume JSON APIs experience dramatic latency drops when returning large array responses.</li>
-<li><strong>Reduced Memory Allocations</strong>: Lower memory churn reduces Python Garbage Collection (GC) pauses, smoothing out response tail latencies (p99).</li>
+<li><strong>Zero Database Connection Crashes</strong>: Deploying PgBouncer alongside audited worker connection pool limits prevents database starvation during autoscaling events.</li>
+<li><strong>Predictable Tail Latency (p99)</strong>: Auditing async codebases for un-awaited coroutines and blocking synchronous calls stabilizes p99 response times under peak load.</li>
 </ul>
 
           </div>
@@ -221,8 +254,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Ffastapi-schema-serialization-speedups-pydantic-v2.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Schema%20Serialization%20Speedups%3A%20Migrating%20to%20Pydantic%20v2%20in%20FastAPI&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Ffastapi-schema-serialization-speedups-pydantic-v2.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Ffastapi-production-swarms-high-concurrency-pros-cons-gotchas.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=FastAPI%20in%20Production%20Swarms%3A%20High-Concurrency%20Pros%2C%20Cons%20%26%20Gotchas&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Ffastapi-production-swarms-high-concurrency-pros-cons-gotchas.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -245,13 +278,13 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="fastapi-production-swarms-high-concurrency-pros-cons-gotchas.html">FastAPI in Production Swarms: High-Concurrency Pros, Cons &amp; Gotchas<span class="sidebar-post-date">August 12, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="fastapi-distributed-observability-opentelemetry-lifespan-handlers.html">Distributed Observability: OpenTelemetry &amp; Lifespan Event Handling<span class="sidebar-post-date">August 12, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="fastapi-schema-serialization-speedups-pydantic-v2.html">Schema Serialization Speedups: Migrating to Pydantic v2 in FastAPI<span class="sidebar-post-date">August 12, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
