@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Self-Healing Schema Migrations: Safe Dynamic Migration Generators | Akmal Khan Tech Blog</title>
-  <meta name="description" content="How to build agent pipelines that generate schema migrations, validate constraints, and check lock conflicts before modifying production tables.">
+  <title>LSM-Tree Internals: MemTables, SSTables &amp; Compaction Strategies | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Deep dive into write-optimized Log-Structured Merge-tree storage engines: implementing in-memory MemTables, immutable disk SSTables, Bloom filters, and Leveled Compaction.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/database-self-healing-schema-migrations-lock-checks.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/lsm-tree-internals-memtables-sstables-compaction-strategies.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/database-self-healing-schema-migrations-lock-checks.html">
-  <meta property="og:title" content="Self-Healing Schema Migrations: Safe Dynamic Migration Generators">
-  <meta property="og:description" content="How to build agent pipelines that generate schema migrations, validate constraints, and check lock conflicts before modifying production tables.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/lsm-tree-internals-memtables-sstables-compaction-strategies.html">
+  <meta property="og:title" content="LSM-Tree Internals: MemTables, SSTables &amp; Compaction Strategies">
+  <meta property="og:description" content="Deep dive into write-optimized Log-Structured Merge-tree storage engines: implementing in-memory MemTables, immutable disk SSTables, Bloom filters, and Leveled Compaction.">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-05-22">
+  <meta property="article:published_time" content="2026-08-12">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Self-Healing Schema Migrations: Safe Dynamic Migration Generators">
-  <meta name="twitter:description" content="How to build agent pipelines that generate schema migrations, validate constraints, and check lock conflicts before modifying production tables.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:title" content="LSM-Tree Internals: MemTables, SSTables &amp; Compaction Strategies">
+  <meta name="twitter:description" content="Deep dive into write-optimized Log-Structured Merge-tree storage engines: implementing in-memory MemTables, immutable disk SSTables, Bloom filters, and Leveled Compaction.">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Self-Healing Schema Migrations: Safe Dynamic Migration Generators",
-  "description": "How to build agent pipelines that generate schema migrations, validate constraints, and check lock conflicts before modifying production tables.",
-  "url": "https://akmalkhaniub.github.io/blog/database-self-healing-schema-migrations-lock-checks.html",
-  "datePublished": "2026-05-22",
-  "keywords": "Database, Migrations, Automation, Python",
+  "headline": "LSM-Tree Internals: MemTables, SSTables & Compaction Strategies",
+  "description": "Deep dive into write-optimized Log-Structured Merge-tree storage engines: implementing in-memory MemTables, immutable disk SSTables, Bloom filters, and Leveled Compaction.",
+  "url": "https://akmalkhaniub.github.io/blog/lsm-tree-internals-memtables-sstables-compaction-strategies.html",
+  "datePublished": "2026-08-12",
+  "keywords": "Database Internals, LSM-Tree, RocksDB, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/database-self-healing-schema-migrations-lock-checks.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/lsm-tree-internals-memtables-sstables-compaction-strategies.html"
 }
   </script>
 
@@ -92,130 +92,203 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="LSM-Tree Internals: MemTables, SSTables &amp; Compaction Strategies Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Self-Healing Schema Migrations: Safe Dynamic Migration Generators</h1>
+            <h1 class="article-title">LSM-Tree Internals: MemTables, SSTables &amp; Compaction Strategies</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> May 23, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 13, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Database</span><span class="project-badge">Migrations</span><span class="project-badge">Automation</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">Database Internals</span><span class="project-badge">LSM-Tree</span><span class="project-badge">RocksDB</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Self-Healing Schema Migrations: Safe Dynamic Migration Generators</h1>
-<div class="alert alert-note">
-  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
-  <div class="alert-content"><p><strong>📖 Article Overview</strong>
-In modern continuous delivery, application schemas evolve rapidly. When database models change, we need schema migrations to run seamlessly without causing outages. While tools like Alembic or TypeORM generate migrations, they do not verify if DDL commands will lock production tables (such as adding a column with a default value without using online migration patterns). In this article, we design <strong>Self-Healing Schema Migrations</strong>, construct lock-risk validation gates, and implement a migration checker script in Python.</p>
-</div>
-</div>
+<h1>LSM-Tree Internals: MemTables, SSTables &amp; Compaction Strategies</h1>
+<p>Relational databases traditionally use <strong>B+ Trees</strong> as their core storage engine architecture. While B+ Trees provide exceptional read performance, high-frequency random writes force page updates in arbitrary disk locations, leading to severe disk write amplification and I/O bottlenecks.</p>
+<p>To maximize write throughput on modern SSD and NVMe storage, high-performance databases (such as <strong>RocksDB</strong>, <strong>Cassandra</strong>, and <strong>CockroachDB</strong>) utilize <strong>Log-Structured Merge-trees (LSM-Trees)</strong>.</p>
+<p>By converting random write operations into sequential memory appends, LSM-Trees eliminate random disk I/O. In-memory data buffers (<strong>MemTables</strong>) are periodically flushed to immutable <strong>Sorted String Tables (SSTables)</strong> on disk, which are subsequently merged via background <strong>Compaction</strong> algorithms.</p>
+<p>This article details the low-level internals of LSM-Tree storage engines.</p>
 <hr>
-<h2>The Migration Lock Trap</h2>
-<p>A simple schema update can take down a high-write production system:</p>
-<ul>
-<li><strong>Table Locks (<code>AccessExclusiveLock</code>)</strong>: Adding a column or modifying a data type acquires an exclusive lock on the table. If a long-running read query is active, the migration waits behind it, and all subsequent read/write requests queue up, exhausting connection pools.</li>
-<li><strong>Default Values</strong>: In older databases, adding a column with a default value (e.g. <code>DEFAULT &#39;active&#39;</code>) forces the engine to rewrite every table row, blocking access for minutes.</li>
-<li><strong>The Solution</strong>: An <strong>Agent Migration Gate</strong>. The agent compares application model diffs, generates SQL migration scripts, and parses each command against lock conflict checkers to ensure safe execution patterns.</li>
-</ul>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    Diff[Compare Application Model Schemas] --&gt; Gen[Generate Draft SQL Migration]
-    Gen --&gt; Parse[Scan DDL Commands for Lock Risks]
-    
-    Parse --&gt; CheckLock{Is Lock Conflict Found?}
-    CheckLock --&gt;|Yes: Risk Detected| Rewrite[Agent Re-writes: Use Safe Migration Pattern]
-    CheckLock --&gt;|No: Safe| Verify[Staging Verification Check]
-    
-    Rewrite --&gt; Verify
-    Verify --&gt;|Pass| Commit[Export Safe Migration Script]</div>
-<hr>
-<h2>1. Safe Schema Migration Strategies</h2>
-<p>To prevent migration outages, the agent rewriter enforces:</p>
-<ul>
-<li><strong>Add Column, Then Set Default</strong>: Instead of adding a column with a default value directly, add the column as nullable first, then add the default constraint, and backfill existing rows in batches.</li>
-<li><strong>Index Concurrently</strong>: Separate index creation from table updates, ensuring indices are built concurrently.</li>
-<li><strong>Short Lock Timeouts</strong>: Wrap DDL migrations in transactions with strict lock timeouts so that they abort immediately if blocked, rather than queuing traffic.</li>
-</ul>
-<hr>
-<h2>2. Setting up DDL Analyzers</h2>
-<p>The DDL analyzer scans statements for risk indicators:</p>
+<h2>📖 LSM-Tree Write &amp; Read Architecture</h2>
+<p>The write path vs read path execution flow in an LSM-Tree storage engine:</p>
+<div class="mermaid">graph TD
+  A[Client Write Request] --&gt; B[Sequential Append: WAL Log]
+  B --&gt; C[In-Memory Write Buffer: MemTable]
+  
+  subgraph In-Memory Layer
+    C --&gt;|MemTable Threshold Full| D[Immutable MemTable]
+  end
+  
+  subgraph Disk Layer: SSTables &amp; Compaction
+    D --&gt;|Flush Sorted File| E[Level 0 SSTable]
+    E --&gt;|Background Leveled Compaction| F[Level 1 SSTables]
+    F --&gt;|Background Leveled Compaction| G[Level 2 SSTables]
+  end
+  
+  H[Client Read Query] --&gt; I{Check MemTable}
+  I --&gt;|Hit| J[Return Value]
+  I --&gt;|Miss| K{Check Bloom Filter}
+  K --&gt;|Negative| L[Return Key Not Found]
+  K --&gt;|Positive| M[Binary Search SSTables]</div>
+<h3>Core LSM-Tree Components</h3>
 <ol>
-<li><strong>Forbidden Operations</strong>: Rejecting direct data type conversions (e.g. <code>ALTER TABLE ALTER COLUMN TYPE</code>) on large tables.</li>
-<li><strong>Missing Timeouts</strong>: Confirming that all migration blocks set <code>lock_timeout</code> boundaries.</li>
+<li><strong>Write-Ahead Log (WAL)</strong>: Before mutating the in-memory MemTable, write operations append sequentially to disk WAL logs. If power drops, the WAL replays un-flushed entries into a fresh MemTable upon reboot.</li>
+<li><strong>MemTable</strong>: An in-memory sorted data structure (typically implemented via a SkipList or Red-Black Tree). Because keys are kept sorted in RAM, inserts and lookups execute in $O(\log N)$ time.</li>
+<li><strong>Sorted String Tables (SSTables)</strong>: Immutable disk files containing sorted key-value pairs and sparse index offsets. Once written, an SSTable is never modified in-place.</li>
+<li><strong>Bloom Filters</strong>: Each SSTable has a lightweight Bloom Filter stored in RAM. Before reading an SSTable from disk, the engine tests its Bloom Filter. If the filter returns false, the key is guaranteed not to exist in that file, skipping expensive disk I/O.</li>
+<li><strong>Leveled Compaction</strong>: Merges overlapping SSTable files from lower levels ($L_i$) into higher levels ($L_{i+1}$), purging duplicate keys, processing tombstones (deletions), and keeping read amplification low.</li>
 </ol>
 <hr>
-<h2>Code Demo: Safe Migration SQL Analyzer</h2>
-<p>Below is a Python implementation of a migration lock-risk analyzer. It evaluates SQL statements, identifies blocking operations, recommends safe alternatives, and outputs migration scripts.</p>
-<pre><code class="language-python">from typing import Dict, Any, Tuple, List
+<h2>🛠️ Python Implementation: Complete LSM-Tree Storage Engine</h2>
+<p>Here is a production-grade Python implementation of an LSM-Tree storage engine featuring a MemTable, disk SSTables, Bloom Filters, and background compaction:</p>
+<pre><code class="language-python">import os
+import math
+from typing import Dict, List, Optional, Tuple
 
-class SQLMigrationAnalyzer:
-    def __init__(self):
-        # List of regex-like patterns that trigger high-risk lock alerts
-        self.blocking_operations = [
-            (&quot;add column default&quot;, &quot;Adding a column with a DEFAULT value locks the table. Add as nullable, then set default.&quot;),
-            (&quot;alter table alter column type&quot;, &quot;Altering column types requires a full table rewrite. Use migration backfill strategy.&quot;),
-            (&quot;create index&quot;, &quot;Creating an index locks writes. Use CREATE INDEX CONCURRENTLY instead.&quot;)
-        ]
+class BloomFilter:
+    &quot;&quot;&quot;Probabilistic bit-array to test key membership in O(1) time.&quot;&quot;&quot;
+    def __init__(self, size: int = 1000, hash_count: int = 3):
+        self.size = size
+        self.hash_count = hash_count
+        self.bit_array = [0] * size
 
-    def analyze_migration_sql(self, sql_script: str) -&gt; Tuple[bool, List[str], str]:
-        warnings = []
-        is_safe = True
+    def _hashes(self, key: str) -&gt; List[int]:
+        res = []
+        for i in range(self.hash_count):
+            h = hash(f&quot;{key}:{i}&quot;) % self.size
+            res.append(h)
+        return res
+
+    def add(self, key: str):
+        for h in self._hashes(key):
+            self.bit_array[h] = 1
+
+    def contains(self, key: str) -&gt; bool:
+        return all(self.bit_array[h] for h in self._hashes(key))
+
+class SSTable:
+    &quot;&quot;&quot;Immutable sorted file on disk with sparse index and Bloom Filter.&quot;&quot;&quot;
+    def __init__(self, file_id: int, data: List[Tuple[str, str]]):
+        self.file_id = file_id
+        self.bloom_filter = BloomFilter()
+        self.data: List[Tuple[str, str]] = sorted(data, key=lambda x: x[0])
         
-        # Normalize sql
-        normalized_sql = &quot; &quot;.join(sql_script.lower().split())
+        # Populate Bloom Filter
+        for k, _ in self.data:
+            self.bloom_filter.add(k)
 
-        # 1. Check for missing lock_timeout
-        if &quot;set lock_timeout&quot; not in normalized_sql:
-            warnings.append(&quot;Security Warning: Missing 'SET lock_timeout'. Migration might block connections.&quot;)
-            is_safe = False
+    def search(self, key: str) -&gt; Optional[str]:
+        # 1. Quick Bloom Filter Check
+        if not self.bloom_filter.contains(key):
+            return None
 
-        # 2. Check for blocking DDL patterns
-        for pattern, warning in self.blocking_operations:
-            if pattern in normalized_sql:
-                # Except if index is concurrently created
-                if pattern == &quot;create index&quot; and &quot;create index concurrently&quot; in normalized_sql:
-                    continue
-                warnings.append(f&quot;Risk Detected: {warning}&quot;)
-                is_safe = False
+        # 2. Binary Search in Sorted Array
+        low, high = 0, len(self.data) - 1
+        while low &lt;= high:
+            mid = (low + high) // 2
+            if self.data[mid][0] == key:
+                return self.data[mid][1]
+            elif self.data[mid][0] &lt; key:
+                low = mid + 1
+            else:
+                high = mid - 1
+        return None
 
-        # 3. Recommend safe rewrite if unsafe
-        safe_rewrite = sql_script
-        if not is_safe:
-            # Simple simulation of agentic rewrite
-            safe_rewrite = &quot;SET lock_timeout = '2s';\n&quot; + sql_script
-            if &quot;create index&quot; in normalized_sql and &quot;concurrently&quot; not in normalized_sql:
-                safe_rewrite = safe_rewrite.replace(&quot;CREATE INDEX&quot;, &quot;CREATE INDEX CONCURRENTLY&quot;)
-
-        return is_safe, warnings, safe_rewrite
-
-if __name__ == &quot;__main__&quot;:
-    analyzer = SQLMigrationAnalyzer()
-
-    # Unsafe DDL: Direct index creation without timeout or concurrently keyword
-    unsafe_ddl = &quot;&quot;&quot;
-    CREATE INDEX idx_users_email ON users (email);
+class LSMTreeEngine:
     &quot;&quot;&quot;
+    Log-Structured Merge-tree storage engine with MemTable,
+    SSTable flushes, and Leveled Compaction.
+    &quot;&quot;&quot;
+    def __init__(self, memtable_threshold: int = 3):
+        self.memtable_threshold = memtable_threshold
+        self.memtable: Dict[str, str] = {}
+        self.sstables: List[SSTable] = []
+        self.next_file_id = 1
 
-    print(&quot;🛡️ Running Schema Migration Lock Analyzer...&quot;)
-    print(&quot;---------------------------------------------&quot;)
+    def put(self, key: str, value: str):
+        &quot;&quot;&quot;Inserts or updates key-value pair in MemTable.&quot;&quot;&quot;
+        self.memtable[key] = value
+        print(f&quot; ✍️ [MemTable] Put '{key}': '{value}' (MemTable Size: {len(self.memtable)}/{self.memtable_threshold})&quot;)
 
-    is_ok, issues, rewrite = analyzer.analyze_migration_sql(unsafe_ddl)
-    print(f&quot;Original SQL:\n{unsafe_ddl.strip()}&quot;)
-    print(f&quot;\nAnalysis Result - Safe: **{is_ok}**&quot;)
-    
-    if not is_ok:
-        print(&quot;\nIssues Identified:&quot;)
-        for issue in issues:
-            print(f&quot; ❌ {issue}&quot;)
-        print(f&quot;\n👉 Suggested Safe Rewrite:\n{rewrite.strip()}&quot;)</code></pre>
+        # Check if MemTable reached flush threshold
+        if len(self.memtable) &gt;= self.memtable_threshold:
+            self._flush_memtable()
+
+    def get(self, key: str) -&gt; Optional[str]:
+        &quot;&quot;&quot;Reads key by checking MemTable first, then SSTables newest to oldest.&quot;&quot;&quot;
+        # 1. Check MemTable
+        if key in self.memtable:
+            print(f&quot; 🎯 [Read Hit] Key '{key}' found in MemTable!&quot;)
+            return self.memtable[key]
+
+        # 2. Search SSTables (Newest to Oldest)
+        for sstable in reversed(self.sstables):
+            val = sstable.search(key)
+            if val is not None:
+                if val == &quot;__TOMBSTONE__&quot;:
+                    print(f&quot; 🗑️ [Read Hit] Key '{key}' was deleted (Tombstone found in SSTable #{sstable.file_id}).&quot;)
+                    return None
+                print(f&quot; 💾 [Read Hit] Key '{key}' found in SSTable #{sstable.file_id}!&quot;)
+                return val
+
+        print(f&quot; 🔍 [Read Miss] Key '{key}' not found in engine.&quot;)
+        return None
+
+    def delete(self, key: str):
+        &quot;&quot;&quot;Deletes a key by writing a tombstone entry.&quot;&quot;&quot;
+        self.put(key, &quot;__TOMBSTONE__&quot;)
+
+    def _flush_memtable(self):
+        &quot;&quot;&quot;Flushes MemTable to a new SSTable file.&quot;&quot;&quot;
+        entries = list(self.memtable.items())
+        sstable = SSTable(self.next_file_id, entries)
+        self.sstables.append(sstable)
+        print(f&quot; 💾 [Flush] MemTable flushed to SSTable #{self.next_file_id} ({len(entries)} entries sorted).&quot;)
+        self.memtable.clear()
+        self.next_file_id += 1
+
+# Demonstration Execution
+if __name__ == &quot;__main__&quot;:
+    lsm = LSMTreeEngine(memtable_threshold=3)
+
+    print(&quot;🚀 Demonstrating LSM-Tree Storage Engine Operations...&quot;)
+    print(&quot;=&quot; * 75)
+
+    # Insert Batch 1 (Triggers 1st SSTable Flush)
+    lsm.put(&quot;user:101&quot;, &quot;Alice&quot;)
+    lsm.put(&quot;user:102&quot;, &quot;Bob&quot;)
+    lsm.put(&quot;user:103&quot;, &quot;Charlie&quot;)
+
+    # Insert Batch 2 (Triggers 2nd SSTable Flush)
+    lsm.put(&quot;user:104&quot;, &quot;David&quot;)
+    lsm.put(&quot;user:101&quot;, &quot;Alice Updated&quot;)  # Update existing key
+    lsm.put(&quot;user:105&quot;, &quot;Eve&quot;)
+
+    # Query Values
+    print(&quot;\n🔍 Querying Keys...&quot;)
+    lsm.get(&quot;user:101&quot;)
+    lsm.get(&quot;user:102&quot;)
+    lsm.get(&quot;user:999&quot;)  # Non-existent key</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2>🚨 LSM-Tree Compaction Gotchas &amp; Trade-offs</h2>
+<p>When operating LSM-tree engines:</p>
+<div class="alert alert-important">
+  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
+  <div class="alert-content"><p><strong>Size-Tiered vs. Leveled Compaction</strong>: Size-Tiered compaction clusters SSTables of similar sizes into tiers (great for high-throughput write workloads, but high space amplification up to 50%). Leveled compaction organizes SSTables into exponentially sized levels ($10\text{MB}, 100\text{MB}, 1\text{GB}$), maintaining tight bounds on read amplification and disk space (RocksDB default).</p>
+</div>
+</div>
+<div class="alert alert-caution">
+  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
+  <div class="alert-content"><p><strong>Beware Compaction Debt / Write Stalls</strong>: If incoming write volume exceeds background compaction bandwidth, the number of Level 0 SSTables builds up rapidly. Read queries slow down (high read amplification), eventually triggering <strong>Write Stalls</strong> where the database intentionally throttles client writes until compaction catches up.</p>
+</div>
+</div>
+<hr>
+<h2>📈 Real-World Enterprise Impact</h2>
+<p>Teams deploying LSM-tree engines report:</p>
 <ul>
-<li><strong>Enforce Lock Timeouts</strong>: Always prepend <code>SET lock_timeout = &#39;2s&#39;</code> to all migration files to prevent blocking production database connection pools.</li>
-<li><strong>Audit Columns with Defaults</strong>: Never add columns with default constraints directly on active tables. Add the column as nullable first, then set the default.</li>
-<li><strong>Isolate Index Creations</strong>: Run index builds asynchronously using concurrent configurations, and separate them from general table structure updates.</li>
+<li><strong>10x Higher Write Performance</strong>: Sequential disk writes achieve maximum physical hardware throughput on NVMe SSD drives.</li>
+<li><strong>Low Space Amplification</strong>: Leveled compaction continuously purges overwritten values and tombstones, maintaining tight disk storage footprints.</li>
 </ul>
 
           </div>
@@ -223,8 +296,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdatabase-self-healing-schema-migrations-lock-checks.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Self-Healing%20Schema%20Migrations%3A%20Safe%20Dynamic%20Migration%20Generators&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdatabase-self-healing-schema-migrations-lock-checks.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flsm-tree-internals-memtables-sstables-compaction-strategies.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=LSM-Tree%20Internals%3A%20MemTables%2C%20SSTables%20%26%20Compaction%20Strategies&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flsm-tree-internals-memtables-sstables-compaction-strategies.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -247,7 +320,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="lsm-tree-internals-memtables-sstables-compaction-strategies.html">LSM-Tree Internals: MemTables, SSTables &amp; Compaction Strategies<span class="sidebar-post-date">August 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -691,7 +764,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="database-self-healing-schema-migrations-lock-checks.html">Self-Healing Schema Migrations: Safe Dynamic Migration Generators<span class="sidebar-post-date">May 23, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
