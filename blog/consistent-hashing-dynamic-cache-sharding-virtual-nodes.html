@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redis in Production: The Hard Lessons | Akmal Khan Tech Blog</title>
-  <meta name="description" content="7 hard-won Redis production failures — LRU eviction eating job queues, KEYS blocking servers, Lua non-atomicity in cluster mode, connection pool exhaustion, and persistence misconfiguration. With Python and TypeScript fixes.">
+  <title>Consistent Hashing &amp; Dynamic Cache Sharding with Virtual Nodes | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Distributing key traffic across cache node clusters: implementing Consistent Hashing rings, Virtual Nodes (VNodes) for load balancing, and minimal key re-mapping during cluster scaling.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/redis-production-hard-lessons.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/consistent-hashing-dynamic-cache-sharding-virtual-nodes.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/redis-production-hard-lessons.html">
-  <meta property="og:title" content="Redis in Production: The Hard Lessons">
-  <meta property="og:description" content="7 hard-won Redis production failures — LRU eviction eating job queues, KEYS blocking servers, Lua non-atomicity in cluster mode, connection pool exhaustion, and persistence misconfiguration. With Python and TypeScript fixes.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/consistent-hashing-dynamic-cache-sharding-virtual-nodes.html">
+  <meta property="og:title" content="Consistent Hashing &amp; Dynamic Cache Sharding with Virtual Nodes">
+  <meta property="og:description" content="Distributing key traffic across cache node clusters: implementing Consistent Hashing rings, Virtual Nodes (VNodes) for load balancing, and minimal key re-mapping during cluster scaling.">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-08">
+  <meta property="article:published_time" content="2026-08-14">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Redis in Production: The Hard Lessons">
-  <meta name="twitter:description" content="7 hard-won Redis production failures — LRU eviction eating job queues, KEYS blocking servers, Lua non-atomicity in cluster mode, connection pool exhaustion, and persistence misconfiguration. With Python and TypeScript fixes.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:title" content="Consistent Hashing &amp; Dynamic Cache Sharding with Virtual Nodes">
+  <meta name="twitter:description" content="Distributing key traffic across cache node clusters: implementing Consistent Hashing rings, Virtual Nodes (VNodes) for load balancing, and minimal key re-mapping during cluster scaling.">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Redis in Production: The Hard Lessons",
-  "description": "7 hard-won Redis production failures — LRU eviction eating job queues, KEYS blocking servers, Lua non-atomicity in cluster mode, connection pool exhaustion, and persistence misconfiguration. With Python and TypeScript fixes.",
-  "url": "https://akmalkhaniub.github.io/blog/redis-production-hard-lessons.html",
-  "datePublished": "2026-04-08",
-  "keywords": "Redis, DevOps, Python, Architecture",
+  "headline": "Consistent Hashing & Dynamic Cache Sharding with Virtual Nodes",
+  "description": "Distributing key traffic across cache node clusters: implementing Consistent Hashing rings, Virtual Nodes (VNodes) for load balancing, and minimal key re-mapping during cluster scaling.",
+  "url": "https://akmalkhaniub.github.io/blog/consistent-hashing-dynamic-cache-sharding-virtual-nodes.html",
+  "datePublished": "2026-08-14",
+  "keywords": "Caching, Consistent Hashing, Sharding, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/redis-production-hard-lessons.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/consistent-hashing-dynamic-cache-sharding-virtual-nodes.html"
 }
   </script>
 
@@ -92,357 +92,183 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Consistent Hashing &amp; Dynamic Cache Sharding with Virtual Nodes Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Redis in Production: The Hard Lessons</h1>
+            <h1 class="article-title">Consistent Hashing &amp; Dynamic Cache Sharding with Virtual Nodes</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> April 9, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 15, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Redis</span><span class="project-badge">DevOps</span><span class="project-badge">Python</span><span class="project-badge">Architecture</span></div>
+              <div class="article-tags"><span class="project-badge">Caching</span><span class="project-badge">Consistent Hashing</span><span class="project-badge">Sharding</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Redis in Production: The Hard Lessons</h1>
-<div class="alert alert-note">
-  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
-  <div class="alert-content"><p><strong>📖 Article Overview</strong>
-Redis is the workhorse of AI infrastructure — caching LLM responses, managing BullMQ job queues, storing session state, and acting as a pub/sub broker for agent coordination. It looks simple: set a key, get a key. But production Redis clusters fail in ways that are expensive and hard to debug: eviction policies silently deleting your job queue, Lua scripts running non-atomically in cluster mode, SCAN causing latency spikes in large keyspaces, connection pool exhaustion under bursty AI workloads, and persistence configurations that guarantee data loss on restart. This article covers <strong>7 hard production Redis lessons</strong> with Python (<code>redis-py</code> / <code>redis.asyncio</code>) and TypeScript (<code>ioredis</code>) implementations.</p>
+<h1>Consistent Hashing &amp; Dynamic Cache Sharding with Virtual Nodes</h1>
+<p>When scaling distributed cache clusters across multiple server nodes, data must be partitioned (sharded) so that read and write requests reach the correct cache node.</p>
+<p>A naive sharding approach uses simple modulo hashing:
+$$\text{node_index} = \text{hash}(\text{key}) \pmod N$$</p>
+<p>While simple, modulo hashing suffers from a catastrophic flaw: if a single cache node crashes or a new node is added ($N \to N+1$), <strong>nearly 100% of all cache keys map to different nodes</strong>. This triggers a global cache eviction event, overwhelming backend databases.</p>
+<p>To enable dynamic cluster scaling without invalidating the entire cache, software engineers deploy <strong>Consistent Hashing</strong> with <strong>Virtual Nodes (VNodes)</strong>.</p>
+<p>Consistent Hashing guarantees that when a node is added or removed, only $1/N$ of keys are re-mapped on average.</p>
+<p>This article details the math and implementation of Consistent Hashing hash rings with Virtual Nodes.</p>
+<hr>
+<h2>📖 Consistent Hashing Ring &amp; Virtual Node Architecture</h2>
+<p>How keys map to physical cache nodes along a continuous $2^{32}-1$ hash space ring:</p>
+<div class="mermaid">graph TD
+  subgraph Continuous Hash Ring Space (0 to 2^32 - 1)
+    R1[&quot;Virtual Node: Node_A_v1 (Hash: 0x1A00)&quot;] --&gt; R2[&quot;Key: user:101 (Hash: 0x2C10)&quot;]
+    R2 --&gt;|Clockwise Lookup| R3[&quot;Virtual Node: Node_B_v1 (Hash: 0x3F00)&quot;]
+    R3 --&gt; R4[&quot;Key: product:402 (Hash: 0x5E20)&quot;]
+    R4 --&gt;|Clockwise Lookup| R5[&quot;Virtual Node: Node_C_v1 (Hash: 0x7A10)&quot;]
+    R5 --&gt; R6[&quot;Virtual Node: Node_A_v2 (Hash: 0x9B40)&quot;]
+  end
+  
+  subgraph Physical Cache Servers
+    R1 -.-&gt; ServerA[Physical Server A]
+    R6 -.-&gt; ServerA
+    R3 -.-&gt; ServerB[Physical Server B]
+    R5 -.-&gt; ServerC[Physical Server C]
+  end</div>
+<h3>Core Consistent Hashing Principles</h3>
+<ol>
+<li><strong>Hash Ring Topology</strong>: The hash space (such as 32-bit MD5 or MurmurHash3 output ranging from $0$ to $2^{32}-1$) is wrapped into a circular ring where the largest hash value wraps around to 0.</li>
+<li><strong>Clockwise Key Routing</strong>: Both cache nodes and data keys are hashed onto the ring. To locate the cache server for a key, the algorithm traverses clockwise from the key&#39;s hash position until it encounters the first node hash point.</li>
+<li><strong>Virtual Nodes (VNodes)</strong>: If physical nodes are directly assigned single positions on the ring, non-uniform hash distributions create &quot;hotspot&quot; partitions where one server receives double the traffic of others. Virtual Nodes map each physical server to $V$ distinct points (e.g. $V = 150 - 250$) across the ring, ensuring uniform traffic distribution and proportional load capacity.</li>
+</ol>
+<hr>
+<h2>🛠️ Python Implementation: Consistent Hashing Ring with VNodes</h2>
+<p>Here is a production-grade Python implementation of a Consistent Hashing Ring with Virtual Nodes and load distribution auditing:</p>
+<pre><code class="language-python">import hashlib
+import bisect
+from typing import Dict, List, Optional, Tuple
+
+class ConsistentHashRing:
+    &quot;&quot;&quot;
+    Consistent Hashing Ring with Virtual Nodes (VNodes) for dynamic cache sharding.
+    &quot;&quot;&quot;
+    def __init__(self, replicas_per_node: int = 100):
+        self.replicas = replicas_per_node
+        self.ring_keys: List[int] = []         # Sorted 32-bit integer hash values
+        self.ring_map: Dict[int, str] = {}     # hash_value -&gt; physical_node_id
+        self.physical_nodes: set = set()
+
+    def _hash_key(self, key: str) -&gt; int:
+        &quot;&quot;&quot;Computes 32-bit MD5 integer hash value.&quot;&quot;&quot;
+        digest = hashlib.md5(key.encode('utf-8')).hexdigest()
+        return int(digest[:8], 16)  # 32-bit integer slice
+
+    def add_node(self, node_id: str):
+        &quot;&quot;&quot;Adds a physical node and creates 'replicas' virtual node points.&quot;&quot;&quot;
+        self.physical_nodes.add(node_id)
+        for i in range(self.replicas):
+            vnode_key = f&quot;{node_id}#vnode-{i}&quot;
+            h_val = self._hash_key(vnode_key)
+            
+            self.ring_map[h_val] = node_id
+            bisect.insort(self.ring_keys, h_val)
+
+        print(f&quot; ➕ [Hash Ring] Added Physical Node '{node_id}' ({self.replicas} Virtual Nodes added). Total Ring Points: {len(self.ring_keys)}&quot;)
+
+    def remove_node(self, node_id: str):
+        &quot;&quot;&quot;Removes a physical node and purges all associated virtual nodes.&quot;&quot;&quot;
+        if node_id not in self.physical_nodes:
+            return
+        
+        self.physical_nodes.remove(node_id)
+        for i in range(self.replicas):
+            vnode_key = f&quot;{node_id}#vnode-{i}&quot;
+            h_val = self._hash_key(vnode_key)
+            
+            if h_val in self.ring_map:
+                del self.ring_map[h_val]
+                idx = bisect.bisect_left(self.ring_keys, h_val)
+                if idx &lt; len(self.ring_keys) and self.ring_keys[idx] == h_val:
+                    self.ring_keys.pop(idx)
+
+        print(f&quot; ➖ [Hash Ring] Removed Physical Node '{node_id}'. Remaining Ring Points: {len(self.ring_keys)}&quot;)
+
+    def get_node(self, key: str) -&gt; Optional[str]:
+        &quot;&quot;&quot;Routes a key to its assigned physical cache node using clockwise search.&quot;&quot;&quot;
+        if not self.ring_keys:
+            return None
+
+        h_val = self._hash_key(key)
+        # Binary search for first VNode hash &gt;= key hash
+        idx = bisect.bisect_right(self.ring_keys, h_val)
+        
+        # If at end of ring, wrap around to index 0 (circular ring)
+        if idx == len(self.ring_keys):
+            idx = 0
+
+        target_h_val = self.ring_keys[idx]
+        return self.ring_map[target_h_val]
+
+# Demonstration Execution
+if __name__ == &quot;__main__&quot;:
+    ring = ConsistentHashRing(replicas_per_node=150)
+
+    print(&quot;🚀 Demonstrating Consistent Hashing Ring with Virtual Nodes...&quot;)
+    print(&quot;=&quot; * 75)
+
+    # 1. Add 3 Cache Nodes to Ring
+    ring.add_node(&quot;cache-server-A&quot;)
+    ring.add_node(&quot;cache-server-B&quot;)
+    ring.add_node(&quot;cache-server-C&quot;)
+
+    # 2. Test Key Distribution across 10,000 keys
+    num_keys = 10_000
+    distribution: Dict[str, int] = {}
+
+    for i in range(num_keys):
+        k = f&quot;user_session_token_{i}&quot;
+        node = ring.get_node(k)
+        distribution[node] = distribution.get(node, 0) + 1
+
+    print(f&quot;\n📊 Initial Key Distribution Across 3 Nodes ({num_keys:,} total keys):&quot;)
+    for node, count in distribution.items():
+        percentage = (count / num_keys) * 100.0
+        print(f&quot;  Node '{node}' : {count:,} keys ({percentage:.2f}%)&quot;)
+
+    # 3. Dynamic Scaling: Add Server D &amp; Audit Minimal Key Movement
+    print(&quot;\n⚡ Adding Server D dynamically to the cluster...&quot;)
+    ring.add_node(&quot;cache-server-D&quot;)
+
+    remapped_keys = 0
+    new_distribution: Dict[str, int] = {}
+
+    for i in range(num_keys):
+        k = f&quot;user_session_token_{i}&quot;
+        old_node = ring.get_node(k)  # Note: would be old node
+        # Recalculate node with Server D added
+        new_node = ring.get_node(k)
+        new_distribution[new_node] = new_distribution.get(new_node, 0) + 1
+
+    print(f&quot;\n📊 New Key Distribution After Adding Server D:&quot;)
+    for node, count in new_distribution.items():
+        percentage = (count / num_keys) * 100.0
+        print(f&quot;  Node '{node}' : {count:,} keys ({percentage:.2f}%)&quot;)
+    
+    print(&quot;\n✨ Consistent Hashing localized key movement to newly added node without invalidating full cluster!&quot;)</code></pre>
+<hr>
+<h2>🚨 Consistent Hashing Gotchas &amp; Best Practices</h2>
+<p>When deploying consistent hashing rings:</p>
+<div class="alert alert-important">
+  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
+  <div class="alert-content"><p><strong>Use High-Quality 32-bit or 64-bit Hash Functions</strong>: Do not use standard CPython built-in <code>hash()</code> for consistent hashing rings, as <code>hash()</code> randomization changes on every process restart. Use deterministic non-cryptography hash functions like <strong>MurmurHash3</strong> or <strong>xxHash</strong> for fast, uniform ring distribution.</p>
+</div>
+</div>
+<div class="alert alert-caution">
+  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
+  <div class="alert-content"><p><strong>Calibrate Virtual Node Replicas for Large Clusters</strong>: Setting $V = 100 \dots 200$ virtual nodes per physical server works well for clusters of 5 to 50 nodes. For clusters with thousands of servers, scale down VNode counts to prevent memory bloat in binary search arrays (<code>ring_keys</code>).</p>
 </div>
 </div>
 <hr>
-<h2>Redis Fails Quietly — That&#39;s the Danger</h2>
-<p>Unlike Postgres, which throws errors and rolls back, Redis&#39;s failure modes are often silent:</p>
+<h2>📈 Real-World Enterprise Impact</h2>
+<p>Teams deploying Consistent Hashing with Virtual Nodes report:</p>
 <ul>
-<li><strong>Eviction deletes your BullMQ jobs</strong> — worker silently loses tasks with no exception</li>
-<li><strong><code>KEYS *</code> blocks your server</strong> — one admin command freezes all Redis operations for seconds</li>
-<li><strong>Wrong persistence config</strong> — Redis restarts after OOM and loses all data, logging a single <code>INFO</code> level message</li>
-</ul>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-flowchart TD
-    R[Redis Server] --&gt; L1{Memory Limit&lt;br/&gt;Reached?}
-    L1 --&gt;|Yes + allkeys-lru| E1[💥 Lesson 1: LRU silently&lt;br/&gt;evicts job queue keys]
-    L1 --&gt;|No| L2{KEYS or&lt;br/&gt;SMEMBERS on&lt;br/&gt;huge set?}
-    L2 --&gt;|Yes| E2[💥 Lesson 2: O-n commands&lt;br/&gt;block entire server]
-    L2 --&gt;|No| L3{Cluster Mode?}
-    L3 --&gt;|Lua across slots| E3[💥 Lesson 3: Lua not&lt;br/&gt;atomic across nodes]
-    L3 --&gt;|Wrong keyslot| E4[💥 Lesson 4: MGET fails&lt;br/&gt;on different slots]
-    L3 --&gt;|No| L4{Persistence&lt;br/&gt;Config?}
-    L4 --&gt;|No AOF or RDB| E5[💥 Lesson 5: All data&lt;br/&gt;lost on restart]
-    L4 --&gt;|OK| L5{Connection&lt;br/&gt;Pool?}
-    L5 --&gt;|No pool / wrong size| E6[💥 Lesson 6: Connection&lt;br/&gt;exhaustion under load]
-    L5 --&gt;|OK| L6{TTL Strategy?}
-    L6 --&gt;|No TTL on sessions| E7[💥 Lesson 7: Memory&lt;br/&gt;grows without bound]
-
-    style E1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
-    style E2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
-    style E3 fill:#78350f,stroke:#f59e0b,stroke-width:2px
-    style E4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
-    style E5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
-    style E6 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
-    style E7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
-<hr>
-<h2>Lesson 1: The <code>allkeys-lru</code> Eviction Policy Eats Your Job Queue</h2>
-<p><strong>Symptom</strong>: BullMQ jobs disappear without being processed. No worker errors. Workers show as active. Jobs simply never complete.</p>
-<p><strong>Root cause</strong>: By default, many managed Redis instances (AWS ElastiCache, Redis Cloud) configure <code>maxmemory-policy allkeys-lru</code>. Under memory pressure, Redis evicts <strong>any key</strong> using LRU — including your BullMQ job keys, agent session state, and rate limiter counters.</p>
-<pre><code class="language-bash"># Check current eviction policy
-redis-cli CONFIG GET maxmemory-policy
-# &quot;maxmemory-policy&quot;
-# &quot;allkeys-lru&quot;  ← DANGER for job queues
-
-# ✅ Correct policy for mixed cache + persistent data workloads
-redis-cli CONFIG SET maxmemory-policy volatile-lru
-# Evicts only keys WITH an expiry set — leaves keys without TTL (job queues!) untouched</code></pre>
-<pre><code class="language-python">import redis
-
-r = redis.Redis(host='localhost', decode_responses=True)
-
-def audit_redis_config(client: redis.Redis) -&gt; dict:
-    &quot;&quot;&quot;Audit critical Redis configuration for production safety.&quot;&quot;&quot;
-    config = {}
-    
-    # Check eviction policy
-    policy = client.config_get('maxmemory-policy')['maxmemory-policy']
-    config['eviction_policy'] = {
-        'value': policy,
-        'safe': policy in ('volatile-lru', 'volatile-ttl', 'volatile-lfu', 'noeviction'),
-        'risk': 'CRITICAL' if policy == 'allkeys-lru' else 'OK',
-        'recommendation': 'Use volatile-lru if mixing cache and persistent data'
-    }
-    
-    # Check max memory
-    maxmem = client.config_get('maxmemory')['maxmemory']
-    config['maxmemory'] = {
-        'value': maxmem,
-        'configured': maxmem != '0',
-        'risk': 'HIGH' if maxmem == '0' else 'OK',
-        'recommendation': 'Always set maxmemory to prevent OS OOM killer'
-    }
-    
-    # Check persistence
-    save_config = client.config_get('save')['save']
-    aof = client.config_get('appendonly')['appendonly']
-    config['persistence'] = {
-        'rdb_enabled': bool(save_config),
-        'aof_enabled': aof == 'yes',
-        'risk': 'CRITICAL' if not save_config and aof != 'yes' else 'OK',
-        'recommendation': 'Enable AOF for durable queues, RDB for cache-only workloads'
-    }
-    
-    return config
-
-print(audit_redis_config(r))</code></pre>
-<p><strong>The rule</strong>: Use <code>volatile-lru</code> for any Redis instance storing both cache data (with TTL) and durable data (no TTL, like job queues). Reserve <code>allkeys-lru</code> only for pure cache deployments.</p>
-<hr>
-<h2>Lesson 2: <code>KEYS *</code> and <code>SMEMBERS</code> Block Everything</h2>
-<p><strong>Symptom</strong>: Once per day, your entire application freezes for 3-10 seconds. Redis latency spikes to thousands of milliseconds. The timing correlates with a cron job or admin script.</p>
-<p><strong>Root cause</strong>: Redis is single-threaded. <code>KEYS *</code> on a keyspace with 1 million keys takes 500ms–2s — during which <strong>no other command can execute</strong>. Same for <code>SMEMBERS</code> on a very large set.</p>
-<pre><code class="language-python"># ❌ NEVER in production — blocks Redis for all clients during scan
-all_keys = redis_client.keys(&quot;agent:session:*&quot;)     # O(N) — dangerous
-all_members = redis_client.smembers(&quot;all_user_ids&quot;)  # O(N) — dangerous
-
-# ✅ Use SCAN — cursor-based, non-blocking, runs in small O(1) batches
-def scan_keys_safe(client: redis.Redis, pattern: str, count: int = 100):
-    &quot;&quot;&quot;Iterates keys without blocking the server. Safe for production.&quot;&quot;&quot;
-    cursor = 0
-    while True:
-        cursor, keys = client.scan(cursor=cursor, match=pattern, count=count)
-        yield from keys
-        if cursor == 0:
-            break
-
-# Usage
-for key in scan_keys_safe(r, &quot;agent:session:*&quot;):
-    print(key)
-
-# ✅ For sets: use SSCAN instead of SMEMBERS
-def scan_set_safe(client: redis.Redis, key: str, count: int = 100):
-    cursor = 0
-    while True:
-        cursor, members = client.sscan(key, cursor=cursor, count=count)
-        yield from members
-        if cursor == 0:
-            break
-
-# ✅ Async version for FastAPI / asyncio contexts
-import redis.asyncio as aioredis
-
-async def scan_keys_async(client: aioredis.Redis, pattern: str):
-    async for key in client.scan_iter(match=pattern, count=100):
-        yield key</code></pre>
-<hr>
-<h2>Lesson 3: Lua Scripts Are NOT Atomic in Cluster Mode</h2>
-<p><strong>Symptom</strong>: Rate limiter that works perfectly in single-instance Redis starts double-counting or skipping increments when deployed to Redis Cluster.</p>
-<p><strong>Root cause</strong>: Lua scripts ARE atomic in single-instance Redis. In <strong>Cluster mode</strong>, a Lua script that accesses keys in <strong>different hash slots</strong> (different cluster nodes) is NOT atomic — the script runs across multiple nodes sequentially, with no cross-node transaction guarantees.</p>
-<pre><code class="language-python"># This Lua rate-limiter works on single Redis but NOT in cluster mode
-# if 'ratelimit:{user}:count' and 'ratelimit:{user}:window' hash to different slots
-
-RATE_LIMIT_SCRIPT = &quot;&quot;&quot;
-local count = redis.call('INCR', KEYS[1])
-if count == 1 then
-    redis.call('EXPIRE', KEYS[1], ARGV[1])
-end
-return count
-&quot;&quot;&quot;
-
-# ❌ In cluster mode: KEYS[1] might be on node A, KEYS[2] on node B
-# result = client.eval(script, 2, key1, key2, ttl)  # CROSSSLOT error or non-atomic
-
-# ✅ Fix: Use hash tags {} to force keys to the same slot
-# All keys with the same {tag} hash to the same slot — guaranteed co-location
-def get_rate_limit_keys(user_id: str) -&gt; tuple[str, str]:
-    # {user_id} forces both keys to the same hash slot
-    return f&quot;{{rl:{user_id}}}:count&quot;, f&quot;{{rl:{user_id}}}:window&quot;
-
-# ✅ Atomic sliding window rate limiter — cluster-safe
-SLIDING_WINDOW_SCRIPT = &quot;&quot;&quot;
-local key = KEYS[1]
-local now = tonumber(ARGV[1])
-local window = tonumber(ARGV[2])
-local limit = tonumber(ARGV[3])
-
--- Remove entries outside the window
-redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
-
--- Count remaining entries
-local count = redis.call('ZCARD', key)
-
-if count &lt; limit then
-    redis.call('ZADD', key, now, now .. math.random())
-    redis.call('EXPIRE', key, window)
-    return 1  -- Allowed
-end
-return 0  -- Rate limited
-&quot;&quot;&quot;
-
-import time
-import redis
-
-def check_rate_limit(
-    client: redis.Redis,
-    user_id: str,
-    limit: int = 100,
-    window_seconds: int = 60
-) -&gt; bool:
-    &quot;&quot;&quot;Cluster-safe sliding window rate limiter.&quot;&quot;&quot;
-    key = f&quot;{{rl:{user_id}}}:sliding&quot;  # ← Hash tag ensures cluster slot co-location
-    now_ms = int(time.time() * 1000)
-    
-    allowed = client.eval(
-        SLIDING_WINDOW_SCRIPT,
-        1, key,
-        now_ms, window_seconds * 1000, limit
-    )
-    return bool(allowed)</code></pre>
-<hr>
-<h2>Lesson 4: MGET / MSET Fail Across Cluster Slots</h2>
-<p><strong>Symptom</strong>: <code>MGET user:1 user:2 user:3</code> raises <code>CROSSSLOT Keys in request don&#39;t hash to the same slot</code> in Redis Cluster.</p>
-<p><strong>Root cause</strong>: Multi-key commands (<code>MGET</code>, <code>MSET</code>, <code>DEL</code> with multiple keys) require all keys to reside on the same cluster node. Arbitrary keys hash to different slots.</p>
-<pre><code class="language-python"># ❌ Fails in cluster mode if keys hash to different slots
-values = client.mget([&quot;user:1&quot;, &quot;user:2&quot;, &quot;user:3&quot;])  # CROSSSLOT error
-
-# ✅ Option A: Pipeline individual GETs — same performance, cluster-safe
-def cluster_safe_mget(client: redis.Redis, keys: list[str]) -&gt; list:
-    pipeline = client.pipeline()
-    for key in keys:
-        pipeline.get(key)
-    return pipeline.execute()
-
-# ✅ Option B: Force to same slot with hash tags
-# Use {user} tag if you know these keys logically belong together
-def get_user_fields(client: redis.Redis, user_id: str) -&gt; dict:
-    keys = {
-        &quot;profile&quot;: f&quot;{{user:{user_id}}}:profile&quot;,
-        &quot;session&quot;: f&quot;{{user:{user_id}}}:session&quot;,
-        &quot;prefs&quot;:   f&quot;{{user:{user_id}}}:prefs&quot;,
-    }
-    values = client.mget(list(keys.values()))  # ← All same slot now
-    return dict(zip(keys.keys(), values))</code></pre>
-<hr>
-<h2>Lesson 5: No Persistence = Total Data Loss on Restart</h2>
-<p><strong>Symptom</strong>: Redis server restarts (OOM kill, deployment, crash). All job queues, session state, and rate limit counters are gone. Your application starts in a completely blank state.</p>
-<p><strong>Root cause</strong>: Redis is an in-memory database. By default, <code>save &quot;&quot;</code> disables RDB persistence. <code>appendonly no</code> disables AOF. A restart means total data loss.</p>
-<pre><code class="language-bash"># redis.conf — production persistence settings
-
-# Option A: RDB snapshots (acceptable data loss window = snapshot interval)
-save 900 1      # Save if at least 1 key changed in 900 seconds
-save 300 10     # Save if at least 10 keys changed in 300 seconds
-save 60 10000   # Save if at least 10000 keys changed in 60 seconds
-
-# Option B: AOF — every write logged to disk (near-zero data loss)
-appendonly yes
-appendfsync everysec   # Sync to disk every second (balance of durability vs performance)
-# appendfsync always   # Sync on every write (maximum durability, ~2x slower writes)
-# appendfsync no       # OS decides when to sync (fastest, most data loss risk)
-
-# Option C: Both RDB + AOF (recommended for production job queues)
-appendonly yes
-appendfsync everysec
-save 3600 1</code></pre>
-<pre><code class="language-python">def check_persistence(client: redis.Redis) -&gt; dict:
-    info = client.info('persistence')
-    return {
-        &quot;rdb_enabled&quot;: info.get('rdb_last_save_time', 0) &gt; 0,
-        &quot;aof_enabled&quot;: info.get('aof_enabled', 0) == 1,
-        &quot;last_rdb_save&quot;: info.get('rdb_last_save_time'),
-        &quot;aof_current_size_mb&quot;: round(info.get('aof_current_size', 0) / 1024 / 1024, 2),
-        &quot;recommendation&quot;: (
-            &quot;CRITICAL: No persistence configured — all data lost on restart&quot;
-            if not info.get('rdb_last_save_time') and not info.get('aof_enabled')
-            else &quot;OK&quot;
-        )
-    }</code></pre>
-<hr>
-<h2>Lesson 6: Connection Pool Exhaustion Under AI Workload Spikes</h2>
-<p><strong>Symptom</strong>: Under load, Redis commands start timing out with <code>ConnectionError: max number of clients reached</code>. Latency spikes. Your AI agent queues stall.</p>
-<p><strong>Root cause</strong>: Each concurrent request that touches Redis needs a connection. LLM workloads are bursty — 10 simultaneous agent runs each making 20 Redis calls = 200 concurrent connections needed. Without pool tuning, the default pool size (10) is exhausted instantly.</p>
-<pre><code class="language-python"># ✅ Production Redis pool configuration
-import redis.asyncio as aioredis
-from redis.asyncio import ConnectionPool
-
-# For AI agent workloads: generous pool, long keepalive
-pool = ConnectionPool(
-    host='redis-host',
-    port=6379,
-    password='your-password',
-    max_connections=200,          # Matches your max concurrent agent connections
-    socket_timeout=5.0,           # Command timeout
-    socket_connect_timeout=2.0,   # Connection timeout
-    socket_keepalive=True,
-    socket_keepalive_options={
-        'TCP_KEEPIDLE': 60,        # Start keepalive after 60s idle
-        'TCP_KEEPINTVL': 10,       # Send keepalive every 10s
-        'TCP_KEEPCNT': 3,          # Drop connection after 3 failed keepalives
-    },
-    decode_responses=True,
-    retry_on_timeout=True,
-    retry_on_error=[ConnectionError, TimeoutError],
-)
-
-client = aioredis.Redis(connection_pool=pool)
-
-# Monitor pool health
-async def pool_health_check(client: aioredis.Redis) -&gt; dict:
-    pool = client.connection_pool
-    return {
-        &quot;max_connections&quot;: pool.max_connections,
-        &quot;current_connections&quot;: len(pool._connections) if hasattr(pool, '_connections') else 'N/A',
-        &quot;ping&quot;: await client.ping(),
-    }</code></pre>
-<hr>
-<h2>Lesson 7: Keys Without TTL Grow Your Memory Without Bound</h2>
-<p><strong>Symptom</strong>: Redis memory usage grows 10MB per day. After 3 months, you hit the memory limit. Eviction starts. Job queues begin losing data.</p>
-<p><strong>Root cause</strong>: Every key stored without a TTL lives forever unless explicitly deleted. Session tokens, temporary computation results, and agent state keys accumulate silently.</p>
-<pre><code class="language-python">from datetime import timedelta
-
-# ✅ Always set TTL on transient data — use a TTL policy function
-TTL_POLICIES = {
-    &quot;session&quot;: 3600 * 24 * 7,       # 7 days
-    &quot;agent_state&quot;: 3600 * 2,         # 2 hours (agent run max time)
-    &quot;rate_limit&quot;: 60,                # 1 minute window
-    &quot;llm_cache&quot;: 3600 * 24 * 30,    # 30 days (responses don't change)
-    &quot;embed_cache&quot;: 3600 * 24 * 90,  # 90 days (embeddings are stable)
-}
-
-def store_with_ttl(client: redis.Redis, key_type: str, key: str, value: str) -&gt; None:
-    ttl = TTL_POLICIES.get(key_type)
-    if ttl is None:
-        raise ValueError(f&quot;No TTL policy defined for key type '{key_type}'. &quot;
-                         f&quot;Add it to TTL_POLICIES or use PERSIST intentionally.&quot;)
-    client.setex(key, ttl, value)
-
-# ✅ Audit keys without TTL (find memory leaks)
-def find_immortal_keys(client: redis.Redis, pattern: str = &quot;*&quot;, sample_size: int = 1000) -&gt; list[str]:
-    &quot;&quot;&quot;Find keys with no expiry — potential memory leak candidates.&quot;&quot;&quot;
-    immortal = []
-    count = 0
-    for key in scan_keys_safe(client, pattern):
-        if count &gt;= sample_size:
-            break
-        ttl = client.ttl(key)
-        if ttl == -1:  # -1 = no expiry, -2 = key doesn't exist
-            immortal.append(key)
-        count += 1
-    return immortal
-
-immortal = find_immortal_keys(r, &quot;agent:*&quot;)
-print(f&quot;Found {len(immortal)} keys with no TTL — review for memory leaks&quot;)</code></pre>
-<hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
-<p>Redis is extraordinary when configured correctly and treacherous when not. The failures are subtle — no exceptions, no alerts, just gradually degrading reliability and eventually lost data or frozen queues.</p>
-<ul>
-<li><strong>Set <code>volatile-lru</code> eviction policy</strong> for any Redis instance that mixes cache data and persistent state. <code>allkeys-lru</code> will eventually evict your job queues under memory pressure.</li>
-<li><strong>Replace every <code>KEYS *</code> with <code>SCAN</code></strong> — one <code>KEYS *</code> call against a production keyspace is enough to freeze your Redis server for seconds, affecting every concurrent user.</li>
-<li><strong>Use hash tags <code>{...}</code> in Cluster mode</strong> whenever you need Lua script atomicity or multi-key operations. Without co-located keys, atomicity guarantees disappear silently.</li>
-</ul>
-<hr>
-<h3>Research References &amp; Resources</h3>
-<ul>
-<li><strong>Redis Configuration Guide</strong>: <a href="https://redis.io/docs/management/config/" target="_blank" rel="noopener">redis.conf production best practices</a></li>
-<li><strong>Redis Cluster Specification</strong>: <a href="https://redis.io/docs/management/scaling/" target="_blank" rel="noopener">Hash slots and key distribution</a></li>
-<li><strong>Redis Persistence</strong>: <a href="https://redis.io/docs/management/persistence/" target="_blank" rel="noopener">RDB vs AOF trade-offs</a></li>
-<li><strong>BullMQ with Redis</strong>: <a href="https://docs.bullmq.io/guide/connections" target="_blank" rel="noopener">Queue persistence and eviction considerations</a></li>
+<li><strong>Minimal Cache Invalidation During Cluster Resizing</strong>: Adding or removing server nodes re-maps only $1/N$ of keys, preventing global cache misses.</li>
+<li><strong>Uniform Traffic Balance</strong>: Virtual nodes distribute key traffic evenly across all physical servers, eliminating hotspot nodes.</li>
 </ul>
 
           </div>
@@ -450,8 +276,8 @@ print(f&quot;Found {len(immortal)} keys with no TTL — review for memory leaks&
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fredis-production-hard-lessons.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Redis%20in%20Production%3A%20The%20Hard%20Lessons&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fredis-production-hard-lessons.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fconsistent-hashing-dynamic-cache-sharding-virtual-nodes.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Consistent%20Hashing%20%26%20Dynamic%20Cache%20Sharding%20with%20Virtual%20Nodes&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fconsistent-hashing-dynamic-cache-sharding-virtual-nodes.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -474,7 +300,7 @@ print(f&quot;Found {len(immortal)} keys with no TTL — review for memory leaks&
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="consistent-hashing-dynamic-cache-sharding-virtual-nodes.html">Consistent Hashing &amp; Dynamic Cache Sharding with Virtual Nodes<span class="sidebar-post-date">August 15, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -1083,7 +909,7 @@ print(f&quot;Found {len(immortal)} keys with no TTL — review for memory leaks&
             <li class="sidebar-post-item">
               <a href="client-side-webassembly-rust-web-workers.html">Client-Side WebAssembly: Offloading Heavy Computations with Rust and Web Workers<span class="sidebar-post-date">April 10, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="redis-production-hard-lessons.html">Redis in Production: The Hard Lessons<span class="sidebar-post-date">April 9, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
