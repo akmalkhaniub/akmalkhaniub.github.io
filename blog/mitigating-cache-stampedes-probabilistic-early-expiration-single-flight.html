@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Tuning vector database index parameters: configuring M, ef_construction, and ef_search to optimize recall vs. search latency.">
+  <title>Mitigating Cache Stampedes: Probabilistic Early Expiration &amp; Single-Flight Coalescing | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Eliminating the Thundering Herd / Cache Stampede problem: implementing Single-Flight request coalescing, XFetch probabilistic early expiration algorithms, and background key refreshes.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/vector-db-hnsw-index-tuning-pgvector-qdrant.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/mitigating-cache-stampedes-probabilistic-early-expiration-single-flight.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/vector-db-hnsw-index-tuning-pgvector-qdrant.html">
-  <meta property="og:title" content="HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant">
-  <meta property="og:description" content="Tuning vector database index parameters: configuring M, ef_construction, and ef_search to optimize recall vs. search latency.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/mitigating-cache-stampedes-probabilistic-early-expiration-single-flight.html">
+  <meta property="og:title" content="Mitigating Cache Stampedes: Probabilistic Early Expiration &amp; Single-Flight Coalescing">
+  <meta property="og:description" content="Eliminating the Thundering Herd / Cache Stampede problem: implementing Single-Flight request coalescing, XFetch probabilistic early expiration algorithms, and background key refreshes.">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-09">
+  <meta property="article:published_time" content="2026-08-14">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant">
-  <meta name="twitter:description" content="Tuning vector database index parameters: configuring M, ef_construction, and ef_search to optimize recall vs. search latency.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:title" content="Mitigating Cache Stampedes: Probabilistic Early Expiration &amp; Single-Flight Coalescing">
+  <meta name="twitter:description" content="Eliminating the Thundering Herd / Cache Stampede problem: implementing Single-Flight request coalescing, XFetch probabilistic early expiration algorithms, and background key refreshes.">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant",
-  "description": "Tuning vector database index parameters: configuring M, ef_construction, and ef_search to optimize recall vs. search latency.",
-  "url": "https://akmalkhaniub.github.io/blog/vector-db-hnsw-index-tuning-pgvector-qdrant.html",
-  "datePublished": "2026-06-09",
-  "keywords": "Database, Performance, RAG, Python",
+  "headline": "Mitigating Cache Stampedes: Probabilistic Early Expiration & Single-Flight Coalescing",
+  "description": "Eliminating the Thundering Herd / Cache Stampede problem: implementing Single-Flight request coalescing, XFetch probabilistic early expiration algorithms, and background key refreshes.",
+  "url": "https://akmalkhaniub.github.io/blog/mitigating-cache-stampedes-probabilistic-early-expiration-single-flight.html",
+  "datePublished": "2026-08-14",
+  "keywords": "Caching, Single-Flight, Resilience, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/vector-db-hnsw-index-tuning-pgvector-qdrant.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/mitigating-cache-stampedes-probabilistic-early-expiration-single-flight.html"
 }
   </script>
 
@@ -92,164 +92,208 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Mitigating Cache Stampedes: Probabilistic Early Expiration &amp; Single-Flight Coalescing Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant</h1>
+            <h1 class="article-title">Mitigating Cache Stampedes: Probabilistic Early Expiration &amp; Single-Flight Coalescing</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> June 10, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 15, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Database</span><span class="project-badge">Performance</span><span class="project-badge">RAG</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">Caching</span><span class="project-badge">Single-Flight</span><span class="project-badge">Resilience</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search</h1>
-<p>In vector retrieval applications, matching a user&#39;s query vector against millions of document vectors is computationally expensive. Running a full brute-force linear search (Flat index) guarantees 100% recall, but scales linearly ($O(N)$), degrading latency to hundreds of milliseconds in large datasets.</p>
-<p>To achieve sub-10ms search times, production databases use <strong>Approximate Nearest Neighbor (ANN)</strong> search algorithms. The gold standard for ANN search is the <strong>Hierarchical Navigable Small World (HNSW)</strong> graph index. This article details HNSW&#39;s layered routing architecture and how to tune its parameters (<code>M</code>, <code>efConstruction</code>, and <code>efSearch</code>) in <strong>pgvector</strong> and <strong>Qdrant</strong> to balance search latency and recall accuracy.</p>
+<h1>Mitigating Cache Stampedes: Probabilistic Early Expiration &amp; Single-Flight Coalescing</h1>
+<p>In high-concurrency systems, caching hot database queries handles thousands of reads per second. However, a major vulnerability exists when a popular cache key expires or is invalidated: the <strong>Cache Stampede</strong> (also known as the <strong>Thundering Herd Problem</strong>).</p>
+<p>When a hot key expires, thousands of concurrent incoming requests miss the cache simultaneously. Every worker process attempts to query the primary database to recompute the missing value, creating an instantaneous spike in database CPU and connection pool exhaustion.</p>
+<p>To protect backend databases from cache stampedes, software engineers deploy two complementary resilience patterns: <strong>Single-Flight Request Coalescing</strong> and <strong>Probabilistic Early Expiration (XFetch Algorithm)</strong>.</p>
+<p>This article details the math and implementation of both anti-stampede strategies.</p>
 <hr>
-<h2>📖 Under the Hood: HNSW&#39;s Layered Routing</h2>
-<p>HNSW organizes vectors into a multi-layered graph, mimicking a skip list:</p>
-<ul>
-<li><strong>Upper Layers</strong>: Contain fewer nodes with longer-range links. Queries execute fast, high-level routing to quickly zoom in on the region of interest.</li>
-<li><strong>Lower Layers</strong>: Contain denser links. Routing transitions downward to execute fine-grained, localized searches until it reaches the base layer (Layer 0), which contains all vectors.</li>
-</ul>
+<h2>📖 Single-Flight Request Coalescing Topology</h2>
+<p>How Single-Flight coalesces 1,000 concurrent cache misses into a single database query:</p>
 <div class="mermaid">graph TD
-  subgraph Layer 2 (Express Layer)
-    L2_A[Vector Entry] --&gt; L2_B[Far Destination]
+  subgraph Unprotected Thundering Herd
+    A1[1,000 Concurrent Requests] --&gt;|Cache Miss| B1[(Primary Database Storage)]
+    B1 --&gt;|1,000 Duplicate DB Queries| C1[Database CPU Spike &amp; Crash]
   end
-  subgraph Layer 1 (Local Area Layer)
-    L1_A[Vector Entry] --&gt; L1_B[Mid Destination 1]
-    L1_B --&gt; L1_C[Mid Destination 2]
-  end
-  subgraph Layer 0 (Base Layer - All Vectors)
-    L0_A[Vector Entry] --&gt; L0_B[Node A]
-    L0_B --&gt; L0_C[Node B]
-    L0_C --&gt; L0_D[Node C]
-  end
-  L2_A --&gt; L1_A
-  L1_B --&gt; L0_B</div>
-<h3>The Core Tuning Knobs</h3>
-<ul>
-<li><strong><code>M</code></strong>: The maximum number of bidirectional link connections established for each new node added to the graph. <ul>
-<li><em>Impact</em>: Higher <code>M</code> values improve graph connectivity (improving recall on high-dimensional vectors) but increase memory consumption and index build times.</li>
+  
+  subgraph Single-Flight Coalesced Architecture
+    A2[1,000 Concurrent Requests] --&gt;|Cache Miss| D[Single-Flight Group]
+    D --&gt;|1st Request Executes Fetch| E[(Primary Database Storage)]
+    D --&gt;|999 Requests Block &amp; Wait| F[Shared Single Result Broadcast]
+    E --&gt;|Single Result| F
+  end</div>
+<h3>Anti-Stampede Algorithms</h3>
+<ol>
+<li><strong>Single-Flight Request Coalescing</strong>: Manages in-flight database requests using a thread-safe mutex dictionary. If a query for key <code>k</code> is already executing, subsequent requests for <code>k</code> subscribe to the active execution channel, blocking until the first request completes and sharing the single returned result.</li>
+<li><strong>Probabilistic Early Expiration (XFetch)</strong>: Instead of waiting for a key to reach its hard expiration time ($\text{TTL}$), incoming requests probabilistically recompute the cache entry <em>before</em> it expires. The probability of early recomputation increases as the key approaches its expiration time and as computation cost $\delta$ increases:
+$$-\beta \cdot \delta \cdot \ln(\text{random}()) &gt; \text{TTL} - \text{now}$$
+Where:<ul>
+<li>$\delta$: Time taken to compute the database query.</li>
+<li>$\beta &gt; 0$: Aggressiveness constant (default $\beta = 1.0$).</li>
+<li>$\text{random}()$: Uniform random variable $u \in (0, 1]$.</li>
 </ul>
 </li>
-<li><strong><code>efConstruction</code></strong>: The size of the dynamic candidate list evaluated during index creation.<ul>
-<li><em>Impact</em>: Higher <code>efConstruction</code> values generate higher-quality graphs (better link choices) but slow down build times.</li>
-</ul>
-</li>
-<li><strong><code>efSearch</code></strong>: The size of the dynamic candidate list maintained during query execution.<ul>
-<li><em>Impact</em>: Higher <code>efSearch</code> values increase search recall (accuracy) but increase latency as the query must traverse more paths. Unlike <code>M</code> and <code>efConstruction</code>, this is a <strong>runtime</strong> parameter.</li>
-</ul>
-</li>
-</ul>
+</ol>
 <hr>
-<h2>🛠️ Tuning HNSW Indexes in Production</h2>
-<h3>1. Optimizing pgvector in PostgreSQL</h3>
-<p>To create a high-performance HNSW index in PostgreSQL, use the <code>hnsw</code> index type and specify your <code>m</code> and <code>ef_construction</code> parameters during index definition:</p>
-<pre><code class="language-sql">-- 1. Create HNSW index with custom hyperparameters
--- Optimized for 1536-dimensional vectors (e.g. text-embedding-3-small)
-CREATE INDEX CONCURRENTLY products_hnsw_idx 
-ON products 
-USING hnsw (embedding_vector vector_cosine_ops)
-WITH (m = 16, ef_construction = 64);
+<h2>🛠️ Python Implementation: Single-Flight &amp; XFetch Engine</h2>
+<p>Here is a production-grade Python implementation of Single-Flight Request Coalescing and the XFetch Probabilistic Early Expiration algorithm:</p>
+<pre><code class="language-python">import time
+import math
+import random
+import threading
+from typing import Dict, Any, Callable, Tuple, Optional
+from pydantic import BaseModel
 
--- 2. Configure runtime search boundary parameters
--- Set ef_search high inside active user sessions to guarantee high recall
-SET hnsw.ef_search = 40;
+class CacheEntry(BaseModel):
+    value: Any
+    ttl: float          # Hard expiration timestamp
+    delta: float        # Computation time taken to compute value (in seconds)
 
--- Execute query
-SELECT id, name, description
-FROM products
-ORDER BY embedding_vector &lt;=&gt; '[0.015, -0.024, ..., 0.087]'
-LIMIT 10;</code></pre>
-<h3>2. Configuring Qdrant Collections</h3>
-<p>In Qdrant, index parameters are configured when creating or updating collections. Here is a REST configuration payload to optimize a Qdrant collection for high-throughput querying:</p>
-<pre><code class="language-json">{
-  &quot;name&quot;: &quot;enterprise_kb&quot;,
-  &quot;vectors&quot;: {
-    &quot;size&quot;: 1536,
-    &quot;distance&quot;: &quot;Cosine&quot;
-  },
-  &quot;hnsw_config&quot;: {
-    &quot;m&quot;: 16,
-    &quot;ef_construct&quot;: 100,
-    &quot;full_scan_threshold&quot;: 10000,
-    &quot;max_elements_on_leaf&quot;: 512
-  },
-  &quot;optimizers_config&quot;: {
-    &quot;default_segment_number&quot;: 2
-  }
-}</code></pre>
-<p>To run queries with optimized search bounds dynamically in Qdrant, pass the runtime parameter overrides in your query payload:</p>
-<pre><code class="language-json">{
-  &quot;vector&quot;: [0.015, -0.024, 0.087],
-  &quot;limit&quot;: 10,
-  &quot;params&quot;: {
-    &quot;hnsw_ef&quot;: 64,
-    &quot;exact&quot;: false
-  }
-}</code></pre>
+class SingleFlightGroup:
+    &quot;&quot;&quot;
+    Coalesces concurrent requests for the same key so only a single
+    execution is in-flight at any given time.
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._calls: Dict[str, Tuple[threading.Event, Dict[str, Any]]] = {}
+
+    def do(self, key: str, fn: Callable[[], Any]) -&gt; Any:
+        self._lock.acquire()
+        
+        # If call is already in-flight, wait for existing execution
+        if key in self._calls:
+            event, result_container = self._calls[key]
+            self._lock.release()
+            print(f&quot; 🤝 [Single-Flight] Coalesced request for key '{key}'! Waiting on active fetch...&quot;)
+            event.wait()
+            return result_container[&quot;val&quot;]
+
+        # Otherwise, become the single leader thread
+        event = threading.Event()
+        result_container = {}
+        self._calls[key] = (event, result_container)
+        self._lock.release()
+
+        print(f&quot; 🚀 [Single-Flight] Leader thread executing DB fetch for key '{key}'...&quot;)
+        try:
+            val = fn()
+            result_container[&quot;val&quot;] = val
+            return val
+        finally:
+            self._lock.acquire()
+            event.set()  # Notify all waiting threads
+            del self._calls[key]
+            self._lock.release()
+
+class XFetchCacheStore:
+    &quot;&quot;&quot;
+    Cache store implementing the XFetch Probabilistic Early Expiration algorithm.
+    &quot;&quot;&quot;
+    def __init__(self, beta: float = 1.0):
+        self.beta = beta
+        self.store: Dict[str, CacheEntry] = {}
+        self.sf_group = SingleFlightGroup()
+
+    def get_or_fetch(self, key: str, fetch_fn: Callable[[], Any], ttl_seconds: float) -&gt; Any:
+        now = time.time()
+        entry = self.store.get(key)
+
+        # XFetch Evaluation: Check if we should probabilistically refresh early
+        should_refresh = False
+        if entry is None:
+            should_refresh = True
+        else:
+            # Formula: -beta * delta * ln(random()) &gt; (ttl - now)
+            x_val = -self.beta * entry.delta * math.log(random.random())
+            time_left = entry.ttl - now
+            if x_val &gt; time_left:
+                print(f&quot; 🎲 [XFetch] Early Refresh Triggered! (x_val: {x_val:.3f} &gt; time_left: {time_left:.3f}s)&quot;)
+                should_refresh = True
+
+        if not should_refresh and entry is not None:
+            return entry.value
+
+        # Execute fetch using Single-Flight to prevent thundering herd
+        def compute_wrapper():
+            start = time.perf_counter()
+            val = fetch_fn()
+            delta = time.perf_counter() - start
+            
+            # Store in cache with computed delta and hard TTL
+            self.store[key] = CacheEntry(
+                value=val,
+                ttl=time.time() + ttl_seconds,
+                delta=delta
+            )
+            return val
+
+        return self.sf_group.do(key, compute_wrapper)
+
+# Demonstration Execution
+if __name__ == &quot;__main__&quot;:
+    cache = XFetchCacheStore(beta=1.0)
+
+    def expensive_db_query():
+        time.sleep(0.05)  # Simulate 50ms DB query
+        return {&quot;data&quot;: &quot;Expensive Analytics Payload&quot;, &quot;timestamp&quot;: time.time()}
+
+    print(&quot;🚀 Demonstrating Single-Flight &amp; XFetch Anti-Stampede Engine...&quot;)
+    print(&quot;=&quot; * 75)
+
+    # 1. Warm Cache (Initial Single-Flight Fetch)
+    key = &quot;dashboard_stats&quot;
+    res1 = cache.get_or_fetch(key, expensive_db_query, ttl_seconds=2.0)
+    print(f&quot; Initial Fetch Result: {res1['data']}&quot;)
+
+    # 2. Simulate 5 Concurrent Threads Requesting Key Simultaneously
+    print(&quot;\n⚡ Simulating 5 Concurrent Threads Requesting Key...&quot;)
+    threads = []
+    results = []
+
+    def worker():
+        val = cache.get_or_fetch(key, expensive_db_query, ttl_seconds=2.0)
+        results.append(val)
+
+    for i in range(5):
+        t = threading.Thread(target=worker)
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    print(f&quot; ✅ All {len(results)} threads completed successfully with shared result!&quot;)</code></pre>
 <hr>
-<h2>⚖️ Recall vs. Latency Trade-offs</h2>
-<table>
-<thead>
-<tr>
-<th align="left">Mode</th>
-<th align="center"><code>M</code></th>
-<th align="center"><code>efConstruction</code></th>
-<th align="center"><code>efSearch</code></th>
-<th align="center">Latency (p99)</th>
-<th align="center">Recall Accuracy</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left"><strong>Ultra-Fast Search</strong></td>
-<td align="center">8</td>
-<td align="center">32</td>
-<td align="center">16</td>
-<td align="center"><strong>&lt;2ms</strong></td>
-<td align="center">~85%</td>
-</tr>
-<tr>
-<td align="left"><strong>Balanced Production</strong></td>
-<td align="center">16</td>
-<td align="center">64</td>
-<td align="center">40</td>
-<td align="center"><strong>~5ms</strong></td>
-<td align="center">~96%</td>
-</tr>
-<tr>
-<td align="left"><strong>High Precision RAG</strong></td>
-<td align="center">32</td>
-<td align="center">128</td>
-<td align="center">120</td>
-<td align="center"><strong>~15ms</strong></td>
-<td align="center">~99.4%</td>
-</tr>
-</tbody></table>
-<hr>
-<h2>⚠️ Important Pitfalls in Index Configuration</h2>
-<p>Ensure your configurations avoid these performance bottlenecks:</p>
+<h2>🚨 Anti-Stampede Gotchas &amp; Best Practices</h2>
+<p>When implementing anti-stampede protections:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Build Time Lockups</strong>: Creating HNSW indexes on large tables (e.g. &gt;10 million rows) is highly resource-intensive and can lock writes. Always specify <code>CREATE INDEX CONCURRENTLY</code> in PostgreSQL to ensure the database can continue handling client traffic during index generation.</p>
+  <div class="alert-content"><p><strong>Set $\beta$ According to Read Volume</strong>: In the XFetch formula ($-\beta \cdot \delta \cdot \ln(u)$), increasing $\beta &gt; 1.0$ makes early refresh more aggressive, while setting $\beta \to 0$ disables early expiration. For ultra-high traffic keys, a $\beta$ value between $1.0$ and $2.0$ guarantees that hot keys are seamlessly recomputed before expiration.</p>
 </div>
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Memory Allocation</strong>: HNSW graphs are stored entirely in RAM to support fast lookup hops. An index configured with high <code>M</code> (e.g. 64) can easily occupy tens of gigabytes of RAM. Calculate index memory sizes before deploying to production servers.</p>
+  <div class="alert-content"><p><strong>Handle Exceptions in Single-Flight Callbacks</strong>: If the primary database query inside <code>singleflight</code> raises an unhandled exception, ensure the error is propagated safely to all waiting threads and the single-flight key is cleaned up immediately. Otherwise, subsequent calls will deadlock waiting on an abandoned event.</p>
 </div>
 </div>
+<hr>
+<h2>📈 Real-World Enterprise Impact</h2>
+<p>Teams implementing Single-Flight and XFetch report:</p>
+<ul>
+<li><strong>Zero Database Crashes During Cache Expirations</strong>: Request coalescing prevents thousands of concurrent requests from overwhelming backend databases during key expirations.</li>
+<li><strong>Seamless Zero-Latency Refresh</strong>: Probabilistic early expiration refreshes hot cache keys in the background, maintaining near 100% cache hit rates for end users.</li>
+</ul>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-db-hnsw-index-tuning-pgvector-qdrant.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=HNSW%20Index%20Tuning%3A%20Optimizing%20Recall%20vs.%20Latency%20in%20pgvector%20and%20Qdrant&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-db-hnsw-index-tuning-pgvector-qdrant.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fmitigating-cache-stampedes-probabilistic-early-expiration-single-flight.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Mitigating%20Cache%20Stampedes%3A%20Probabilistic%20Early%20Expiration%20%26%20Single-Flight%20Coalescing&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fmitigating-cache-stampedes-probabilistic-early-expiration-single-flight.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -272,7 +316,7 @@ LIMIT 10;</code></pre>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="mitigating-cache-stampedes-probabilistic-early-expiration-single-flight.html">Mitigating Cache Stampedes: Probabilistic Early Expiration &amp; Single-Flight Coalescing<span class="sidebar-post-date">August 15, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -521,7 +565,7 @@ LIMIT 10;</code></pre>
             <li class="sidebar-post-item">
               <a href="vector-db-product-scalar-quantization-memory-savings.html">Vector Quantization Semantics: Product vs. Scalar Quantization at Scale<span class="sidebar-post-date">July 25, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search<span class="sidebar-post-date">July 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -689,7 +733,7 @@ LIMIT 10;</code></pre>
             <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
