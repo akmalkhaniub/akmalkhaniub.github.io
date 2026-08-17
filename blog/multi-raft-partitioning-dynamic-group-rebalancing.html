@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multi-Tenant RAG: Secure Vector Search Isolation in Production Systems | Akmal Khan Tech Blog</title>
-  <meta name="description" content="How to partition vector search indexes securely across tenants in production — comparing metadata filtering vs. namespace isolation, implementing Row-Level Security (RLS) in PostgreSQL, and maintaining pgvector performance.">
+  <title>Multi-Raft Partitioning &amp; Dynamic Group Rebalancing | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Scaling distributed consensus beyond single-leader limits: implementing Multi-Raft group partitioning, automated range splits, range routers, and leader transfer rebalancing.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/multi-tenant-rag-security.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/multi-raft-partitioning-dynamic-group-rebalancing.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/multi-tenant-rag-security.html">
-  <meta property="og:title" content="Multi-Tenant RAG: Secure Vector Search Isolation in Production Systems">
-  <meta property="og:description" content="How to partition vector search indexes securely across tenants in production — comparing metadata filtering vs. namespace isolation, implementing Row-Level Security (RLS) in PostgreSQL, and maintaining pgvector performance.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/multi-raft-partitioning-dynamic-group-rebalancing.html">
+  <meta property="og:title" content="Multi-Raft Partitioning &amp; Dynamic Group Rebalancing">
+  <meta property="og:description" content="Scaling distributed consensus beyond single-leader limits: implementing Multi-Raft group partitioning, automated range splits, range routers, and leader transfer rebalancing.">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-27">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Multi-Tenant RAG: Secure Vector Search Isolation in Production Systems">
-  <meta name="twitter:description" content="How to partition vector search indexes securely across tenants in production — comparing metadata filtering vs. namespace isolation, implementing Row-Level Security (RLS) in PostgreSQL, and maintaining pgvector performance.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:title" content="Multi-Raft Partitioning &amp; Dynamic Group Rebalancing">
+  <meta name="twitter:description" content="Scaling distributed consensus beyond single-leader limits: implementing Multi-Raft group partitioning, automated range splits, range routers, and leader transfer rebalancing.">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Multi-Tenant RAG: Secure Vector Search Isolation in Production Systems",
-  "description": "How to partition vector search indexes securely across tenants in production — comparing metadata filtering vs. namespace isolation, implementing Row-Level Security (RLS) in PostgreSQL, and maintaining pgvector performance.",
-  "url": "https://akmalkhaniub.github.io/blog/multi-tenant-rag-security.html",
-  "datePublished": "2026-03-27",
-  "keywords": "RAG, Security, pgvector, PostgreSQL",
+  "headline": "Multi-Raft Partitioning & Dynamic Group Rebalancing",
+  "description": "Scaling distributed consensus beyond single-leader limits: implementing Multi-Raft group partitioning, automated range splits, range routers, and leader transfer rebalancing.",
+  "url": "https://akmalkhaniub.github.io/blog/multi-raft-partitioning-dynamic-group-rebalancing.html",
+  "datePublished": "2026-08-17",
+  "keywords": "Multi-Raft, Distributed Systems, Sharding, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/multi-tenant-rag-security.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/multi-raft-partitioning-dynamic-group-rebalancing.html"
 }
   </script>
 
@@ -92,160 +92,195 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Multi-Raft Partitioning &amp; Dynamic Group Rebalancing Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Multi-Tenant RAG: Secure Vector Search Isolation in Production Systems</h1>
+            <h1 class="article-title">Multi-Raft Partitioning &amp; Dynamic Group Rebalancing</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> March 28, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 18, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 9 min read</span>
-              <div class="article-tags"><span class="project-badge">RAG</span><span class="project-badge">Security</span><span class="project-badge">pgvector</span><span class="project-badge">PostgreSQL</span></div>
+              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
+              <div class="article-tags"><span class="project-badge">Multi-Raft</span><span class="project-badge">Distributed Systems</span><span class="project-badge">Sharding</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Multi-Tenant RAG: Secure Vector Search Isolation in Production Systems</h1>
-<div class="alert alert-note">
-  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
-  <div class="alert-content"><p><strong>📖 Article Overview</strong>
-Multi-tenant applications must guarantee that customer data remains strictly isolated. In Retrieval-Augmented Generation (RAG) pipelines, a failure in data isolation can lead to a disastrous breach where Tenant A&#39;s private documents are retrieved to answer a query by Tenant B. This article explores two major vector isolation paradigms — metadata filtering vs. namespace segregation — and shows you how to implement bulletproof multi-tenant isolation in <code>pgvector</code> using PostgreSQL Row-Level Security (RLS) and custom session contexts.</p>
-</div>
-</div>
+<h1>Multi-Raft Partitioning &amp; Dynamic Group Rebalancing</h1>
+<p>A single Raft consensus group consists of $N$ nodes maintaining a single replicated log driven by a single Raft Leader.</p>
+<p>While a single Raft group guarantees strong consistency, it creates a fundamental scalability bottleneck: <strong>all write operations must pass through the single Raft Leader</strong>. A single Raft leader cannot scale past the I/O and network bandwidth capacity of a single physical server (typically bottlenecked at $\approx 50,000$ transactions per second).</p>
+<p>To scale distributed storage engines to petabytes of data and millions of transactions per second, modern distributed databases (<strong>CockroachDB</strong>, <strong>TiKV</strong>, <strong>YugabyteDB</strong>) utilize <strong>Multi-Raft Architecture</strong>.</p>
+<p>Multi-Raft partitions the entire dataset into contiguous key ranges (called <strong>Ranges</strong> or <strong>Shards</strong>) and assigns each range to its own independent Raft consensus group.</p>
+<p>This article details Multi-Raft architecture, range splitting, and dynamic replica rebalancing.</p>
 <hr>
-<h2>The Threat of Vector Data Leaks</h2>
-<p>In standard SQL applications, we isolate tenant records using <code>WHERE tenant_id = ?</code> clauses. When moving to vector databases, developers often perform a similarity search (like cosine distance) and assume they can filter out other tenants afterward. </p>
-<p>This post-query filtering is a massive security hazard. If the top-K nearest neighbors are all occupied by Tenant B&#39;s documents, Tenant A&#39;s query will return zero matching records of their own, even if relevant records exist deeper in the index. Pre-query metadata filtering fixes this, but if developers forget to pass the filter block in a single API call, the database returns cross-tenant data.</p>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-sequenceDiagram
-    participant Client as Tenant API Client
-    participant App as RAG Backend Engine
-    participant DB as PostgreSQL (pgvector + RLS)
-
-    Client-&gt;&gt;App: Query: &quot;What is our Q2 revenue?&quot; (JWT context: tenant_id = 99)
-    App-&gt;&gt;DB: Begin Transaction
-    App-&gt;&gt;DB: SET LOCAL app.current_tenant_id = 99
-    Note over DB: Enforce Row-Level Security Policy
-    App-&gt;&gt;DB: SELECT content FROM documents ORDER BY embedding &lt;=&gt; query_vector LIMIT 5
-    Note over DB: DB automatically filters indexes matching tenant_id = 99
-    DB--&gt;&gt;App: Return isolated matching documents
-    App-&gt;&gt;DB: Commit Transaction
-    App--&gt;&gt;Client: Generate LLM Answer</div>
-<hr>
-<h2>Metadata Filtering vs. PostgreSQL Row-Level Security (RLS)</h2>
-<table>
-<thead>
-<tr>
-<th align="left">Feature</th>
-<th align="left">Metadata Filtering (No RLS)</th>
-<th align="left">PostgreSQL Row-Level Security (RLS)</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left"><strong>Enforcement Layer</strong></td>
-<td align="left">Application-level (developer must write query filters)</td>
-<td align="left">Database-level (enforced automatically by engine)</td>
-</tr>
-<tr>
-<td align="left"><strong>Security Risk</strong></td>
-<td align="left">High (accidental omission bypasses checks)</td>
-<td align="left">Extremely Low (impossible to bypass if configured)</td>
-</tr>
-<tr>
-<td align="left"><strong>Performance</strong></td>
-<td align="left">Fast, but suffers if metadata cardinality is high</td>
-<td align="left">Native, utilizes underlying index partitioning</td>
-</tr>
-<tr>
-<td align="left"><strong>Maintainability</strong></td>
-<td align="left">Must be added to every query in code</td>
-<td align="left">Defined once in the database schema</td>
-</tr>
-</tbody></table>
-<p>PostgreSQL RLS ensures that even if you write <code>SELECT * FROM documents</code>, the engine automatically appends the tenant isolation filter behind the scenes based on the database session parameters.</p>
-<hr>
-<h2>Step 1: Database Schema Setup with pgvector &amp; RLS</h2>
-<p>Below is the database migration script. We enable the <code>vector</code> extension, create a <code>documents</code> table containing our vector columns, enable RLS, and declare an isolation policy based on a session config variable: <code>app.current_tenant_id</code>.</p>
-<pre><code class="language-sql">-- Enable the vector extension
-CREATE EXTENSION IF NOT EXISTS vector;
-
--- Create the multi-tenant documents table
-CREATE TABLE documents (
-    id SERIAL PRIMARY KEY,
-    tenant_id INT NOT NULL,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    embedding vector(1536) NOT NULL -- For OpenAI or similar 1536-dim embeddings
-);
-
--- Enable Row-Level Security (RLS) on the table
-ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
-
--- Create a policy: Only allow rows where tenant_id matches the session variable
-CREATE POLICY tenant_isolation_policy ON documents
-    FOR ALL
-    USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer);
-
--- Create an HNSW index on the embeddings column for fast similarity search
-CREATE INDEX ON documents 
-USING hnsw (embedding vector_cosine_ops);</code></pre>
-<h3>How the policy works:</h3>
-<ul>
-<li><code>current_setting(&#39;app.current_tenant_id&#39;, true)</code> reads a temporary configuration variable that we set inside the database transaction.</li>
-<li><code>USING (tenant_id = ...)</code> prevents any user session from reading, updating, or deleting records that do not match the assigned <code>tenant_id</code>.</li>
-</ul>
-<hr>
-<h2>Step 2: Querying the Isolated Database in Python</h2>
-<p>Here is how you execute a secure multi-tenant RAG search query. We establish a database session, set the local transaction context, and then call our vector distance operators.</p>
-<pre><code class="language-python">import os
-import psycopg2
-from psycopg2.extras import RealDictCursor
-
-# Get DB Connection string
-DATABASE_URL = os.getenv(&quot;DATABASE_URL&quot;, &quot;postgresql://postgres:postgres@localhost:5432/rag_db&quot;)
-
-def query_tenant_documents(tenant_id: int, query_vector: list[float], limit: int = 5):
-    connection = psycopg2.connect(DATABASE_URL)
-    try:
-        with connection:
-            with connection.cursor(cursor_factory=RealDictCursor) as cursor:
-                # 1. SET THE SESSION TENANT CONTEXT
-                # This variable is isolated to this specific transaction/connection block
-                cursor.execute(&quot;SET LOCAL app.current_tenant_id = %s;&quot;, (tenant_id,))
-                
-                # 2. PERFORM VECTOR SEARCH
-                # The RLS policy will automatically intercept and filter this search
-                search_query = &quot;&quot;&quot;
-                    SELECT id, title, content, (embedding &lt;=&gt; %s::vector) as distance
-                    FROM documents
-                    ORDER BY embedding &lt;=&gt; %s::vector
-                    LIMIT %s;
-                &quot;&quot;&quot;
-                cursor.execute(search_query, (query_vector, query_vector, limit))
-                results = cursor.fetchall()
-                return results
-    finally:
-        connection.close()
-
-# Example Usage
-if __name__ == &quot;__main__&quot;:
-    # Simulated 1536-dimension query vector
-    mock_vector = [0.015] * 1536
+<h2>📖 Multi-Raft Architecture &amp; Key-Range Routing Topology</h2>
+<p>How physical database nodes host hundreds of independent Raft consensus groups:</p>
+<div class="mermaid">graph TD
+  Client[Client SQL / KV Request] --&gt;|1. Route Key 'user_88'| Router[Multi-Raft Range Router]
+  
+  Router --&gt;|2. Key 'user_88' falls in Range 2 ['g', 'p')| Node1
+  
+  subgraph Physical Database Cluster (3 Nodes)
+    subgraph Server Node 1
+      R1_Leader[Range 1 Leader: 'a' - 'f']
+      R2_Leader[Range 2 Leader: 'g' - 'p']
+      R3_Follower[Range 3 Follower: 'q' - 'z']
+    end
     
-    # Run query for Tenant 99
-    # Will NEVER return results belonging to Tenant 100, even if they are closer
-    matching_docs = query_tenant_documents(tenant_id=99, query_vector=mock_vector)
-    for doc in matching_docs:
-        print(f&quot;ID: {doc['id']}, Title: {doc['title']}, Distance: {doc['distance']:.4f}&quot;)</code></pre>
-<h3>Why <code>SET LOCAL</code> is used:</h3>
-<p>We use <code>SET LOCAL</code> instead of <code>SET</code> inside the transaction. <code>SET LOCAL</code> ensures that the variable is automatically cleared as soon as the transaction commits or aborts. This prevents connection pooling libraries (like PgBouncer) from accidentally bleeding the tenant ID into a subsequent request handled by the same recycled TCP connection.</p>
+    subgraph Server Node 2
+      R1_Follower[Range 1 Follower]
+      R2_Follower2[Range 2 Follower]
+      R3_Leader[Range 3 Leader]
+    end
+    
+    subgraph Server Node 3
+      R1_Follower2[Range 1 Follower]
+      R2_Follower3[Range 2 Follower]
+      R3_Follower2[Range 3 Follower]
+    end
+  end
+  
+  R2_Leader --&gt;|3. AppendEntries to Raft Group 2| R2_Follower2 &amp; R2_Follower3</div>
+<h3>Core Multi-Raft Principles</h3>
+<ol>
+<li><strong>Contiguous Key-Range Partitioning</strong>: Data is partitioned into ordered key ranges (e.g. Range 1: <code>[&quot;a&quot;, &quot;f&quot;)</code>, Range 2: <code>[&quot;f&quot;, &quot;m&quot;)</code>, Range 3: <code>[&quot;m&quot;, &quot;z&quot;)</code>).</li>
+<li><strong>Co-located Independent Raft Groups</strong>: A single physical database server hosts multiple lightweight Raft state machine workers. Node 1 can act as the <strong>Raft Leader</strong> for Range 1 while simultaneously serving as a <strong>Raft Follower</strong> for Range 2 and Range 3.</li>
+<li><strong>Automated Range Splitting</strong>: When a Range grows beyond a size threshold (e.g., $64\text{ MB}$), the Range Leader executes a <strong>Split Transaction</strong>. The split command is logged to the Raft consensus log, partitioning the key range into two new independent Raft consensus groups (<code>Range 2a</code> and <code>Range 2b</code>).</li>
+<li><strong>Dynamic Leader &amp; Replica Rebalancing</strong>: Background cluster orchestrators monitor CPU, memory, and disk usage across physical nodes. If Node 1 becomes a hotspot, the coordinator commands Range Leaders on Node 1 to execute <strong>Leader Transfers</strong> to under-utilized nodes in the cluster.</li>
+</ol>
 <hr>
-<h2>🏁 Conclusion &amp; Takeaways</h2>
-<p>To secure enterprise RAG search engines:</p>
+<h2>🛠️ Python Implementation: Multi-Raft Router &amp; Range Split Engine</h2>
+<p>Here is a production-grade Python simulation of a Multi-Raft Range Router with automated Range Splitting and Leader Transfer balancing:</p>
+<pre><code class="language-python">import bisect
+from typing import List, Dict, Optional, Tuple
+from pydantic import BaseModel
+
+class KeyRange(BaseModel):
+    range_id: str
+    start_key: str
+    end_key: str
+    raft_leader: str
+    raft_followers: List[str]
+    size_bytes: int = 0
+
+class MultiRaftClusterRouter:
+    &quot;&quot;&quot;
+    Simulates a Multi-Raft Range Router and Cluster Balancing Engine.
+    &quot;&quot;&quot;
+    def __init__(self, physical_nodes: List[str]):
+        self.physical_nodes = physical_nodes
+        # Sorted boundary keys for binary search routing
+        self.range_boundaries: List[str] = []
+        # start_key -&gt; KeyRange object
+        self.ranges: Dict[str, KeyRange] = {}
+
+    def initialize_initial_range(self, leader_node: str, follower_nodes: List[str]):
+        &quot;&quot;&quot;Creates the initial root Range covering the entire key space [&quot;&quot;, chr(127)).&quot;&quot;&quot;
+        initial_range = KeyRange(
+            range_id=&quot;range-1&quot;,
+            start_key=&quot;&quot;,
+            end_key=chr(127),
+            raft_leader=leader_node,
+            raft_followers=follower_nodes,
+            size_bytes=0
+        )
+        self.ranges[&quot;&quot;] = initial_range
+        self.range_boundaries = [&quot;&quot;]
+
+    def route_key(self, key: str) -&gt; KeyRange:
+        &quot;&quot;&quot;Routes any key to its governing Range via binary search O(log R).&quot;&quot;&quot;
+        idx = bisect.bisect_right(self.range_boundaries, key) - 1
+        start_k = self.range_boundaries[idx]
+        return self.ranges[start_k]
+
+    def write_key(self, key: str, value: str, payload_size: int = 100):
+        target_range = self.route_key(key)
+        print(f&quot; 🔀 [Multi-Raft Router] Route '{key}' -&gt; {target_range.range_id} [{target_range.start_key!r} - {target_range.end_key!r}) | Leader: {target_range.raft_leader}&quot;)
+
+        # Simulate Range Growth
+        target_range.size_bytes += payload_size
+
+        # Check for Range Split Threshold (Simulated threshold: 300 bytes)
+        if target_range.size_bytes &gt;= 300:
+            self._split_range(target_range, split_key=key)
+
+    def _split_range(self, old_range: KeyRange, split_key: str):
+        &quot;&quot;&quot;Splits an overgrown Range into two independent Raft groups.&quot;&quot;&quot;
+        print(f&quot;\n ✂️ [RANGE SPLIT] Overgrown {old_range.range_id} ({old_range.size_bytes} bytes). Splitting at key '{split_key}'...&quot;)
+
+        # 1. Update Old Range boundary
+        original_end = old_range.end_key
+        old_range.end_key = split_key
+        old_range.size_bytes = old_range.size_bytes // 2
+
+        # 2. Create New Range for upper boundary
+        new_range_id = f&quot;range-{len(self.ranges) + 1}&quot;
+        new_range = KeyRange(
+            range_id=new_range_id,
+            start_key=split_key,
+            end_key=original_end,
+            raft_leader=self.physical_nodes[1 % len(self.physical_nodes)],  # Assign to node 2
+            raft_followers=[self.physical_nodes[0], self.physical_nodes[2]],
+            size_bytes=old_range.size_bytes
+        )
+
+        # 3. Register New Boundary in Router
+        self.ranges[split_key] = new_range
+        bisect.insort(self.range_boundaries, split_key)
+
+        print(f&quot;   ↳ {old_range.range_id} Updated: [{old_range.start_key!r} - {old_range.end_key!r})&quot;)
+        print(f&quot;   ↳ {new_range.range_id} Created: [{new_range.start_key!r} - {new_range.end_key!r}) | New Leader: {new_range.raft_leader}&quot;)
+
+    def transfer_leader(self, range_id: str, new_leader: str):
+        &quot;&quot;&quot;Executes a Raft Leader Transfer to rebalance cluster load.&quot;&quot;&quot;
+        for start_k, r in self.ranges.items():
+            if r.range_id == range_id:
+                old_l = r.raft_leader
+                r.raft_leader = new_leader
+                print(f&quot; 🔄 [Leader Transfer] {range_id}: Leader Transferred from {old_l} -&gt; {new_leader}&quot;)
+                return
+
+# Demonstration Execution
+if __name__ == &quot;__main__&quot;:
+    nodes = [&quot;node-us-east-1&quot;, &quot;node-us-east-2&quot;, &quot;node-us-west-1&quot;]
+    cluster_router = MultiRaftClusterRouter(physical_nodes=nodes)
+    cluster_router.initialize_initial_range(leader_node=&quot;node-us-east-1&quot;, follower_nodes=[&quot;node-us-east-2&quot;, &quot;node-us-west-1&quot;])
+
+    print(&quot;🚀 Demonstrating Multi-Raft Range Partitioning &amp; Splitting...&quot;)
+    print(&quot;=&quot; * 75)
+
+    # 1. Ingest Keys into Multi-Raft Cluster
+    keys_to_write = [&quot;account_10&quot;, &quot;customer_45&quot;, &quot;customer_99&quot;, &quot;order_200&quot;, &quot;user_500&quot;]
+
+    for k in keys_to_write:
+        cluster_router.write_key(key=k, value=&quot;sample_payload&quot;, payload_size=100)
+
+    # 2. Perform Raft Leader Transfer for Load Balancing
+    print(&quot;\n⚡ Rebalancing Cluster: Transferring Leadership for Range 2...&quot;)
+    cluster_router.transfer_leader(&quot;range-2&quot;, new_leader=&quot;node-us-west-1&quot;)
+
+    # 3. Verify Route Lookup after Splits
+    print(&quot;\n🔍 Final Multi-Raft Route Lookups:&quot;)
+    for k in [&quot;account_10&quot;, &quot;order_200&quot;]:
+        r = cluster_router.route_key(k)
+        print(f&quot;   • Key '{k}' -&gt; {r.range_id} (Leader: {r.raft_leader})&quot;)</code></pre>
+<hr>
+<h2>🚨 Multi-Raft Gotchas &amp; Best Practices</h2>
+<p>When architecting Multi-Raft storage engines:</p>
+<div class="alert alert-important">
+  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
+  <div class="alert-content"><p><strong>Enforce Co-located Atomic Range Splits</strong>: A Range Split operation must be committed as a special internal entry inside the Range&#39;s own Raft log. This guarantees that all Followers in the Raft group execute the split atomically at the exact same log index.</p>
+</div>
+</div>
+<div class="alert alert-caution">
+  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
+  <div class="alert-content"><p><strong>Avoid Single-Node Hotspots with Hash Pre-partitioning</strong>: If keys are inserted with monotonically increasing sequential IDs (<code>1, 2, 3, ...</code>), all new writes will hit the exact same tail Range, overwhelming a single Raft Leader. Use compound keys or hash prefixes (<code>hash(id)_id</code>) to distribute writes across distinct Raft groups.</p>
+</div>
+</div>
+<hr>
+<h2>📈 Real-World Enterprise Impact</h2>
+<p>Distributed databases utilizing Multi-Raft architecture (such as <strong>TiKV</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
-<li><input disabled="" type="checkbox"> <strong>Enforce isolation at the database level</strong>: Never rely solely on application filters or post-query filtering.</li>
-<li><input disabled="" type="checkbox"> <strong>Leverage PostgreSQL RLS</strong>: Enable RLS on all vector tables and tie access control to a session configuration variable.</li>
-<li><input disabled="" type="checkbox"> <strong>Use transaction-scoped variables</strong>: Always use <code>SET LOCAL</code> instead of global settings to prevent connection-pool state leakage.</li>
-<li><input disabled="" type="checkbox"> <strong>Test with multi-tenant asserts</strong>: Write integration tests that attempt to fetch nearest neighbors for Tenant A while placing high-similarity vectors belonging to Tenant B in the database.</li>
+<li><strong>Linear Horizontal Scalability</strong>: Scaling write throughput linearly by adding physical server nodes, expanding beyond $1,000,000$ transactions per second.</li>
+<li><strong>Granular Failure Isolation</strong>: A hardware crash on a single server node only impacts leadership for a fraction of ranges, which re-elect new leaders in under $300\text{ms}$ while the rest of the cluster operates uninterrupted.</li>
 </ul>
 
           </div>
@@ -253,8 +288,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fmulti-tenant-rag-security.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Multi-Tenant%20RAG%3A%20Secure%20Vector%20Search%20Isolation%20in%20Production%20Systems&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fmulti-tenant-rag-security.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fmulti-raft-partitioning-dynamic-group-rebalancing.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Multi-Raft%20Partitioning%20%26%20Dynamic%20Group%20Rebalancing&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fmulti-raft-partitioning-dynamic-group-rebalancing.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -277,7 +312,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="multi-raft-partitioning-dynamic-group-rebalancing.html">Multi-Raft Partitioning &amp; Dynamic Group Rebalancing<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -1024,7 +1059,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="reasoning-models-production-guidelines.html">Production Engineering for Reasoning Models: Handling Thinking Tokens and Timeout Budgets<span class="sidebar-post-date">March 29, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="multi-tenant-rag-security.html">Multi-Tenant RAG: Secure Vector Search Isolation in Production Systems<span class="sidebar-post-date">March 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
