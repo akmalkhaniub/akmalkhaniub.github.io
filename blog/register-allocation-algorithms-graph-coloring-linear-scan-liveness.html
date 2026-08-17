@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization | Akmal Khan Tech Blog</title>
-  <meta name="description" content="High-speed runtime compilation: implementing V8 / PyPy style hot loop profiling, speculative type specialization, inline type guards, and deoptimization bailouts.">
+  <title>Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Compiler backend code generation: implementing variable liveness analysis, Chaitin-Briggs graph coloring, single-pass linear scan allocation, and CPU register spilling.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/register-allocation-algorithms-graph-coloring-linear-scan-liveness.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.html">
-  <meta property="og:title" content="Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization">
-  <meta property="og:description" content="High-speed runtime compilation: implementing V8 / PyPy style hot loop profiling, speculative type specialization, inline type guards, and deoptimization bailouts.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/register-allocation-algorithms-graph-coloring-linear-scan-liveness.html">
+  <meta property="og:title" content="Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis">
+  <meta property="og:description" content="Compiler backend code generation: implementing variable liveness analysis, Chaitin-Briggs graph coloring, single-pass linear scan allocation, and CPU register spilling.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization">
-  <meta name="twitter:description" content="High-speed runtime compilation: implementing V8 / PyPy style hot loop profiling, speculative type specialization, inline type guards, and deoptimization bailouts.">
+  <meta name="twitter:title" content="Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis">
+  <meta name="twitter:description" content="Compiler backend code generation: implementing variable liveness analysis, Chaitin-Briggs graph coloring, single-pass linear scan allocation, and CPU register spilling.">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) & Deoptimization",
-  "description": "High-speed runtime compilation: implementing V8 / PyPy style hot loop profiling, speculative type specialization, inline type guards, and deoptimization bailouts.",
-  "url": "https://akmalkhaniub.github.io/blog/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.html",
+  "headline": "Register Allocation Algorithms: Graph Coloring, Linear Scan & Liveness Analysis",
+  "description": "Compiler backend code generation: implementing variable liveness analysis, Chaitin-Briggs graph coloring, single-pass linear scan allocation, and CPU register spilling.",
+  "url": "https://akmalkhaniub.github.io/blog/register-allocation-algorithms-graph-coloring-linear-scan-liveness.html",
   "datePublished": "2026-08-17",
-  "keywords": "JIT, Compilers, V8, Python",
+  "keywords": "Compiler Design, Register Allocation, Code Generation, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/register-allocation-algorithms-graph-coloring-linear-scan-liveness.html"
 }
   </script>
 
@@ -92,163 +92,178 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization</h1>
+            <h1 class="article-title">Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis</h1>
             <div class="article-meta">
               <span><i class="fa-regular fa-calendar"></i> August 18, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">JIT</span><span class="project-badge">Compilers</span><span class="project-badge">V8</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">Compiler Design</span><span class="project-badge">Register Allocation</span><span class="project-badge">Code Generation</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization</h1>
-<p>Dynamically typed programming languages (such as JavaScript, Python, Lua, and Ruby) provide immense developer ergonomics.</p>
-<p>However, executing dynamic languages via traditional interpreters introduces severe performance penalties. The interpreter must repeatedly inspect variable types, unbox integer values, and perform virtual method lookups inside tight loops, running <strong>$10\times$ to $50\times$ slower than compiled C code</strong>.</p>
-<p>To achieve near-native execution speeds without sacrificing dynamic language flexibility, modern runtimes (<strong>V8</strong>, <strong>PyPy</strong>, <strong>LuaJIT</strong>, <strong>JVM C2</strong>) employ <strong>Just-In-Time (JIT) Compilation</strong>.</p>
-<p>JIT compilers dynamically monitor program execution, identify &quot;hot&quot; loop traces, speculatively compile specialized native machine code based on runtime types, and insert <strong>Deoptimization (Deopt)</strong> guardrails.</p>
-<p>This article details hot loop profiling, speculative type specialization, and deoptimization bailout mechanics.</p>
+<h1>Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis</h1>
+<p>In the final stages of a compiler backend (such as <strong>LLVM CodeGen</strong>, <strong>GCC</strong>, or <strong>Cranelift</strong>), the compiler must translate Intermediate Representation (IR) instructions into native CPU assembly.</p>
+<p>Compiler IR operates on an <strong>unlimited abstraction of virtual registers</strong> (<code>v0, v1, v2, ... v999</code>).</p>
+<p>However, physical CPU hardware possesses a small, fixed number of physical registers—for example, x86_64 provides only <strong>16 general-purpose registers</strong> (<code>RAX</code>, <code>RBX</code>, <code>RCX</code>, <code>RDX</code>, <code>RSI</code>, <code>RDI</code>, <code>R8</code>–<code>R15</code>).</p>
+<p>Mapping an arbitrary number of virtual registers onto $K$ physical CPU registers without data corruption is the task of <strong>Register Allocation</strong>.</p>
+<p>If physical registers are exhausted, the compiler must <strong>Spill</strong> values to slow RAM stack frames (<code>MOV [RBP-8], RAX</code>).</p>
+<p>This article details Liveness Analysis, Chaitin-Briggs Graph Coloring, and Linear Scan Register Allocation.</p>
 <hr>
-<h2>📖 JIT Compilation &amp; Deoptimization Pipeline Architecture</h2>
-<p>How JIT engines profile hot loops, emit specialized machine code, and deoptimize when type guards fail:</p>
+<h2>📖 Register Allocation &amp; Live Range Interference Architecture</h2>
+<p>How compiler backends compute variable liveness intervals and allocate physical CPU registers:</p>
 <div class="mermaid">graph TD
-  subgraph Phase 1: Baseline Execution &amp; Profiling
-    Interpreter[Baseline Interpreter / Bytecode Loop] --&gt;|1. Increment Loop Counter| Profiler{Hot Loop Threshold Exceeded? &gt; 1000 iter}
-    Profiler --&gt;|No: Stay in Interpreter| Interpreter
+  subgraph Compiler IR &amp; Liveness Analysis
+    IR[IR Code Sequence: v0, v1, v2, v3] --&gt; Liveness[Liveness Analysis: Compute Live Intervals]
+    Liveness --&gt; Intervals[&quot;Live Intervals: v0=[1..4], v1=[2..6], v2=[3..5], v3=[7..9]&quot;]
   end
   
-  subgraph Phase 2: Speculative JIT Machine Code Emission
-    Profiler --&gt;|Yes: Hot Loop Identified!| TracingJIT[Tracing JIT Compiler]
-    TracingJIT --&gt;|2. Inspect Observed Types: e.g. a=INT32, b=INT32| TypeSpec[Speculative Type Specializer]
-    TypeSpec --&gt;|3. Emit Assembly: ADD EAX, EBX| MachineCode[Optimized Native Machine Code]
-  end
-  
-  subgraph Phase 3: High-Speed Execution &amp; Deoptimization
-    MachineCode --&gt;|4. Execute Native Loop (50x Faster!)| TypeGuard{Type Guard Check: Are inputs still INT32?}
-    TypeGuard --&gt;|Pass: Continue Fast Path| MachineCode
-    TypeGuard --&gt;|Fail: Input is String!| Deopt[🚨 DEOPTIMIZATION BAILOUT!]
+  subgraph Register Allocator Algorithm (Linear Scan / Graph Coloring)
+    Intervals --&gt; Allocator{Are Free CPU Registers Available?}
     
-    Deopt --&gt;|5. Reconstruct Interpreter Frame &amp; Revert| Interpreter
+    Allocator --&gt;|Yes: Assign Register| RegAssign[&quot;v0 -&gt; RAX, v1 -&gt; RBX, v2 -&gt; RCX&quot;]
+    Allocator --&gt;|No: Register Exhaustion!| Spill[Register Spiller: Spill longest interval v1 to RAM Stack [RBP-8]]
+  end
+  
+  subgraph Final Target Machine Code
+    RegAssign &amp; Spill --&gt; Assembly[Native Assembly Code: MOV RAX, 10; MOV [RBP-8], RBX]
   end</div>
-<h3>Core JIT Compiler Principles</h3>
+<h3>Core Register Allocation Principles</h3>
 <ol>
-<li><strong>Hot Loop Profiling</strong>: Runtimes start execution in a lightweight interpreter. Execution counters monitor loop iterations and function calls. When an execution count breaches a threshold (e.g. $1,000$ iterations), the loop is flagged as <strong>Hot</strong> and scheduled for JIT compilation.</li>
-<li><strong>Tracing JIT vs Method JIT</strong>:<ul>
-<li><strong>Method JIT</strong>: Compiles entire functions (e.g. Java HotSpot C2 compiler).</li>
-<li><strong>Tracing JIT</strong>: Records the exact linear sequence of bytecode instructions executed during a hot loop iteration (e.g. PyPy, LuaJIT). Conditional branches not taken during tracing are omitted, creating flat instruction traces.</li>
+<li><strong>Liveness Analysis</strong>: Computes the exact instruction range <code>[start, end]</code> where each virtual register is &quot;live&quot; (from its first definition statement until its final usage statement).</li>
+<li><strong>Interference Graphs &amp; Chaitin-Briggs Graph Coloring</strong>:<ul>
+<li>Two virtual registers <strong>interfere</strong> if their live intervals overlap in time (they cannot share the same physical register).</li>
+<li>The compiler constructs an <strong>Interference Graph</strong> where nodes represent virtual registers and edges represent interference.</li>
+<li>Register allocation is mapped to <strong>K-Graph Coloring</strong>: finding a valid node coloring using $K$ colors (where $K$ = number of physical CPU registers).</li>
 </ul>
 </li>
-<li><strong>Speculative Type Specialization</strong>: Dynamically typed expressions like <code>a + b</code> require complex runtime type checking. The JIT compiler observes that during 1,000 loop iterations, <code>a</code> and <code>b</code> were <em>always</em> 32-bit integers. It speculatively emits single-cycle CPU instructions (<code>ADD EAX, EBX</code>), stripping away type-checking overhead entirely!</li>
-<li><strong>Type Guards &amp; Deoptimization (Deopt)</strong>: Because the language is dynamic, a user might eventually pass a string to <code>a + b</code>. To preserve correctness, the JIT embeds inline <strong>Type Guards</strong> before specialized instructions. If a type guard fails, the JIT triggers <strong>Deoptimization</strong>: it halts native code execution, reconstructs the interpreter stack frame, and safely transfers execution back to the baseline interpreter (<strong>On-Stack Replacement / OSR</strong>).</li>
+<li><strong>Linear Scan Register Allocation</strong>: Graph coloring is $O(N^3)$ and too slow for fast JIT compilers. <strong>Linear Scan</strong> sorts live intervals by start point and processes them in a single $O(N)$ sweep. If an interval starts after an active interval ends, physical registers are freed and reassigned immediately.</li>
+<li><strong>Register Spilling</strong>: When $K$ physical registers are occupied and a new overlapping interval arrives, the allocator must <strong>spill</strong> one variable to the CPU stack frame. Cost heuristics select the variable with the lowest dynamic execution weight (e.g. spilling variables outside loop bodies rather than inside tight loops).</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Tracing JIT Engine with Deoptimization Guards</h2>
-<p>Here is a production-grade Python implementation of a Tracing JIT Engine featuring Hot Loop Profiling, Speculative Type Specialization, and Deoptimization Bailouts:</p>
-<pre><code class="language-python">from typing import List, Any, Dict, Optional
+<h2>🛠️ Python Implementation: Linear Scan Register Allocator Engine</h2>
+<p>Here is a production-grade Python implementation of a Linear Scan Register Allocator featuring Liveness Analysis and Register Spilling:</p>
+<pre><code class="language-python">from typing import List, Dict, Tuple, Optional
 from pydantic import BaseModel
 
-class TypeGuardFailedException(Exception):
-    pass
+class LiveInterval(BaseModel):
+    var_name: str
+    start_inst: int
+    end_inst: int
+    assigned_reg: Optional[str] = None
+    is_spilled: bool = False
 
-class JITCompiledTrace(BaseModel):
-    expected_type: type
-    hot_loop_count: int
-
-class TracingJITEngine:
+class LinearScanRegisterAllocator:
     &quot;&quot;&quot;
-    Simulates a Tracing JIT Compiler with Speculative Type Specialization and Deopt Guards.
+    Implements Poletto &amp; Sarkar Linear Scan Register Allocation.
     &quot;&quot;&quot;
-    def __init__(self, hot_threshold: int = 3):
-        self.hot_threshold = hot_threshold
-        self.loop_invocation_counts: Dict[str, int] = {}
-        self.compiled_traces: Dict[str, JITCompiledTrace] = {}
+    def __init__(self, physical_registers: List[str]):
+        self.physical_registers = list(physical_registers)
+        self.free_registers = list(physical_registers)
+        self.active_intervals: List[LiveInterval] = []
 
-    def execute_loop_body(self, loop_id: str, a: Any, b: Any) -&gt; Any:
+    def allocate_registers(self, intervals: List[LiveInterval]) -&gt; List[LiveInterval]:
         &quot;&quot;&quot;
-        Executes loop body via Fast JIT Path or Slow Interpreter Path.
+        Executes single-pass O(N) Linear Scan Register Allocation.
         &quot;&quot;&quot;
-        # Check if JIT compiled trace exists
-        if loop_id in self.compiled_traces:
-            trace = self.compiled_traces[loop_id]
-            try:
-                # 1. FAST PATH: Execute JIT Native Machine Code with Type Guard
-                return self._execute_jit_fast_path(trace, a, b)
-            except TypeGuardFailedException:
-                # 2. DEOPTIMIZATION BAILOUT: Revert to Interpreter!
-                print(f&quot; 🚨 [JIT Deopt Bailout] Type Guard Failed for '{loop_id}'! (Received type '{type(a).__name__}', Expected '{trace.expected_type.__name__}'). Deoptimizing!&quot;)
-                del self.compiled_traces[loop_id]  # Invalidate compiled trace
-                return self._execute_interpreter_slow_path(loop_id, a, b)
+        # 1. Sort intervals by start instruction
+        sorted_intervals = sorted(intervals, key=lambda x: x.start_inst)
+        
+        print(f&quot; 🚀 Starting Linear Scan Register Allocation ({len(self.physical_registers)} Physical Registers: {self.physical_registers})...&quot;)
+        print(&quot;=&quot; * 75)
 
-        # SLOW PATH: Baseline Interpreter Execution &amp; Profiling
-        return self._execute_interpreter_slow_path(loop_id, a, b)
+        for interval in sorted_intervals:
+            # 2. Expire old active intervals whose end_inst &lt; current start_inst
+            self._expire_old_intervals(interval.start_inst)
 
-    def _execute_interpreter_slow_path(self, loop_id: str, a: Any, b: Any) -&gt; Any:
-        # Increment profiling count
-        count = self.loop_invocation_counts.get(loop_id, 0) + 1
-        self.loop_invocation_counts[loop_id] = count
+            # 3. Check physical register availability
+            if len(self.active_intervals) == len(self.physical_registers):
+                # No registers free -&gt; Spill interval with furthest end instruction!
+                self._spill_at_interval(interval)
+            else:
+                # Assign free physical register
+                reg = self.free_registers.pop(0)
+                interval.assigned_reg = reg
+                self.active_intervals.append(interval)
+                # Keep active list sorted by end_inst
+                self.active_intervals.sort(key=lambda x: x.end_inst)
+                print(f&quot; ⚡ [Allocated] Variable '{interval.var_name}' (Live: [{interval.start_inst}..{interval.end_inst}]) -&gt; Assigned Register '{reg}'&quot;)
 
-        print(f&quot; 🐢 [Interpreter Slow Path] Iteration #{count} for '{loop_id}' (Types: {type(a).__name__}, {type(b).__name__})&quot;)
+        return sorted_intervals
 
-        # Trigger JIT Compilation if hot threshold reached
-        if count &gt;= self.hot_threshold and loop_id not in self.compiled_traces:
-            print(f&quot; ⚡ [JIT Compiler] Hot Threshold ({self.hot_threshold}) reached! Speculatively compiling native trace for type '{type(a).__name__}'...&quot;)
-            self.compiled_traces[loop_id] = JITCompiledTrace(
-                expected_type=type(a), hot_loop_count=count
-            )
+    def _expire_old_intervals(self, current_start: int):
+        &quot;&quot;&quot;Frees physical registers of expired intervals.&quot;&quot;&quot;
+        remaining_active = []
+        for active in self.active_intervals:
+            if active.end_inst &lt; current_start:
+                # Active interval has expired! Return register to pool
+                self.free_registers.append(active.assigned_reg)
+                print(f&quot; 🧹 [Expired] Variable '{active.var_name}' ended at inst #{active.end_inst}. Reclaimed '{active.assigned_reg}'.&quot;)
+            else:
+                remaining_active.append(active)
+        self.active_intervals = remaining_active
 
-        # Dynamic Interpreter Addition
-        return a + b
-
-    def _execute_jit_fast_path(self, trace: JITCompiledTrace, a: Any, b: Any) -&gt; Any:
-        # Inline Type Guard Check
-        if type(a) != trace.expected_type or type(b) != trace.expected_type:
-            raise TypeGuardFailedException(&quot;Type mismatch in fast path&quot;)
-
-        print(f&quot; 🚀 [JIT Fast Path] Executing Direct CPU Assembly for {trace.expected_type.__name__} ADD (0x4005a0)...&quot;)
-        # Simulates 1-cycle CPU ADD instruction
-        return a + b
+    def _spill_at_interval(self, current_interval: LiveInterval):
+        &quot;&quot;&quot;Spills candidate interval with furthest end instruction to stack.&quot;&quot;&quot;
+        candidate = self.active_intervals[-1]
+        
+        if candidate.end_inst &gt; current_interval.end_inst:
+            # Candidate active interval ends later than current -&gt; Spill candidate!
+            current_interval.assigned_reg = candidate.assigned_reg
+            candidate.assigned_reg = None
+            candidate.is_spilled = True
+            
+            print(f&quot; 💾 [Register Spill] Spilled Variable '{candidate.var_name}' to RAM Stack Frame! Assigned '{current_interval.assigned_reg}' to '{current_interval.var_name}'.&quot;)
+            
+            self.active_intervals.pop()
+            self.active_intervals.append(current_interval)
+            self.active_intervals.sort(key=lambda x: x.end_inst)
+        else:
+            # Current interval has longer range -&gt; Spill current interval!
+            current_interval.is_spilled = True
+            print(f&quot; 💾 [Register Spill] Spilled Current Variable '{current_interval.var_name}' directly to RAM Stack Frame!&quot;)
 
 # Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    jit = TracingJITEngine(hot_threshold=3)
+    # Define 3 Physical Registers: RAX, RBX, RCX
+    allocator = LinearScanRegisterAllocator(physical_registers=[&quot;RAX&quot;, &quot;RBX&quot;, &quot;RCX&quot;])
 
-    print(&quot;🚀 Demonstrating Dynamic Tracing JIT &amp; Deoptimization Architecture...&quot;)
-    print(&quot;=&quot; * 75)
+    # Define 5 Virtual Variables with overlapping live ranges
+    sample_intervals = [
+        LiveInterval(var_name=&quot;v0&quot;, start_inst=1, end_inst=4),
+        LiveInterval(var_name=&quot;v1&quot;, start_inst=2, end_inst=9),  # Long range -&gt; Spill candidate
+        LiveInterval(var_name=&quot;v2&quot;, start_inst=3, end_inst=5),
+        LiveInterval(var_name=&quot;v3&quot;, start_inst=4, end_inst=6),
+        LiveInterval(var_name=&quot;v4&quot;, start_inst=7, end_inst=10),
+    ]
 
-    loop_id = &quot;hot_sum_loop&quot;
+    result = allocator.allocate_registers(sample_intervals)
 
-    # 1. Run 3 Iterations with Integer Inputs -&gt; Triggers JIT Compilation
-    for i in range(1, 4):
-        res = jit.execute_loop_body(loop_id, a=10, b=i)
-
-    # 2. Run 4th Iteration with Integers -&gt; Executes Fast JIT Path!
-    print(&quot;\n4th Iteration (Fast JIT Path Active):&quot;)
-    res = jit.execute_loop_body(loop_id, a=10, b=4)
-
-    # 3. Run 5th Iteration with String Input -&gt; Triggers Deoptimization!
-    print(&quot;\n5th Iteration (Injecting String Type Violation):&quot;)
-    res = jit.execute_loop_body(loop_id, a=&quot;Hello &quot;, b=&quot;World&quot;)</code></pre>
+    print(&quot;\n📊 Final Register Allocation &amp; Spill Table:&quot;)
+    for i in result:
+        loc = f&quot;Register [{i.assigned_reg}]&quot; if i.assigned_reg else &quot;RAM Stack [RBP - 8]&quot;
+        print(f&quot;   • {i.var_name:8s} (Live: [{i.start_inst:02d}..{i.end_inst:02d}]) -&gt; Location: {loc}&quot;)</code></pre>
 <hr>
-<h2>🚨 JIT Compiler Gotchas &amp; Best Practices</h2>
-<p>When designing or tuning JIT-compiled runtimes:</p>
+<h2>🚨 Register Allocation Gotchas &amp; Best Practices</h2>
+<p>When engineering compiler backends:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Avoid Polymorphic Inline Caches (PIC) Instability</strong>: If a hot function receives objects of 5 different hidden classes, the JIT engine will repeatedly compile, deoptimize, and re-compile (<strong>Megamorphic Churn</strong>). Write <strong>Monomorphic Code</strong> where hot functions consistently receive identical data types.</p>
+  <div class="alert-content"><p><strong>Account for Calling Convention Register Constraints</strong>: Hard-wired calling conventions (e.g. System V AMD64 ABI) mandate that functions pass arguments in specific physical registers (<code>RDI</code>, <code>RSI</code>, <code>RDX</code>, <code>RCX</code>, <code>R8</code>, <code>R9</code>). Pre-color argument variables with fixed physical registers before running general allocation algorithms.</p>
 </div>
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Warm Up JIT Runtimes before Latency Benchmarking</strong>: JIT engines require hundreds of iterations to profile and compile hot code paths. Never execute performance benchmarks immediately upon application boot—always include a warmup phase to allow JIT compilers to stabilize.</p>
+  <div class="alert-content"><p><strong>Preserve Callee-Saved Registers</strong>: On x86_64, registers <code>RBX</code>, <code>RBP</code>, <code>R12</code>–<code>R15</code> are <strong>Callee-Saved</strong>. If a function modifies these physical registers, it <em>must</em> push their original values onto the stack during the function prologue and pop them back during the epilogue.</p>
 </div>
 </div>
 <hr>
 <h2>📈 Real-World Enterprise Impact</h2>
-<p>Runtimes adopting dynamic JIT compilation (such as <strong>V8 TurboFan</strong>, <strong>PyPy</strong>, and <strong>Java HotSpot C2</strong>) report:</p>
+<p>Compiler backends using Linear Scan and Graph Coloring (such as <strong>LLVM</strong> and <strong>V8 TurboFan</strong>) report:</p>
 <ul>
-<li><strong>$10\times$ to $50\times$ Execution Speedup</strong>: Accelerating dynamic scripting languages to match compiled C/C++ execution speeds.</li>
-<li><strong>Seamless Dynamic Flexibility</strong>: Developers retain high-level dynamic language features while benefiting from hardware-level CPU instruction optimizations.</li>
+<li><strong>Over 25% CPU Execution Speedup</strong>: Keeping high-frequency loop variables inside physical CPU registers avoids slow RAM stack memory reads (<code>MOV EAX, [RBP-8]</code>).</li>
+<li><strong>Microsecond JIT Compilation Latencies</strong>: Linear Scan allocation allows JIT compilers (V8) to emit optimized machine code in a single fast pass.</li>
 </ul>
 
           </div>
@@ -256,8 +271,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdynamic-jit-compilation-tracing-jits-pgo-deoptimization.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Dynamic%20JIT%20Compilation%3A%20Tracing%20JITs%2C%20Profile-Guided%20Optimization%20(PGO)%20%26%20Deoptimization&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdynamic-jit-compilation-tracing-jits-pgo-deoptimization.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fregister-allocation-algorithms-graph-coloring-linear-scan-liveness.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Register%20Allocation%20Algorithms%3A%20Graph%20Coloring%2C%20Linear%20Scan%20%26%20Liveness%20Analysis&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fregister-allocation-algorithms-graph-coloring-linear-scan-liveness.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -280,10 +295,10 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="register-allocation-algorithms-graph-coloring-linear-scan-liveness.html">Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="dynamic-jit-compilation-tracing-jits-pgo-deoptimization.html">Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
