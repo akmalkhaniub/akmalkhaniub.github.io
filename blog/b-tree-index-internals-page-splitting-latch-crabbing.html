@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vLLM &amp; TensorRT-LLM: High-Throughput Serving Architecture | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Architecting high-throughput LLM serving infrastructure: evaluating continuous batching vs. static batching, CUDA graph execution, PagedAttention VRAM reservation, and vLLM benchmarks.">
+  <title>B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Disk-oriented indexing mechanics: implementing B+Tree slotted-page layouts, 50/50 page splitting, Latch Crabbing lock coupling for concurrent tree traversal, and write amplification mitigation.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/llm-inference-vllm-tensorrt-high-throughput-serving-architecture.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/b-tree-index-internals-page-splitting-latch-crabbing.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/llm-inference-vllm-tensorrt-high-throughput-serving-architecture.html">
-  <meta property="og:title" content="vLLM &amp; TensorRT-LLM: High-Throughput Serving Architecture">
-  <meta property="og:description" content="Architecting high-throughput LLM serving infrastructure: evaluating continuous batching vs. static batching, CUDA graph execution, PagedAttention VRAM reservation, and vLLM benchmarks.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/b-tree-index-internals-page-splitting-latch-crabbing.html">
+  <meta property="og:title" content="B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification">
+  <meta property="og:description" content="Disk-oriented indexing mechanics: implementing B+Tree slotted-page layouts, 50/50 page splitting, Latch Crabbing lock coupling for concurrent tree traversal, and write amplification mitigation.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-03">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="vLLM &amp; TensorRT-LLM: High-Throughput Serving Architecture">
-  <meta name="twitter:description" content="Architecting high-throughput LLM serving infrastructure: evaluating continuous batching vs. static batching, CUDA graph execution, PagedAttention VRAM reservation, and vLLM benchmarks.">
+  <meta name="twitter:title" content="B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification">
+  <meta name="twitter:description" content="Disk-oriented indexing mechanics: implementing B+Tree slotted-page layouts, 50/50 page splitting, Latch Crabbing lock coupling for concurrent tree traversal, and write amplification mitigation.">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "vLLM & TensorRT-LLM: High-Throughput Serving Architecture",
-  "description": "Architecting high-throughput LLM serving infrastructure: evaluating continuous batching vs. static batching, CUDA graph execution, PagedAttention VRAM reservation, and vLLM benchmarks.",
-  "url": "https://akmalkhaniub.github.io/blog/llm-inference-vllm-tensorrt-high-throughput-serving-architecture.html",
-  "datePublished": "2026-08-03",
-  "keywords": "LLM Inference, vLLM, TensorRT-LLM, Python",
+  "headline": "B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing & Write Amplification",
+  "description": "Disk-oriented indexing mechanics: implementing B+Tree slotted-page layouts, 50/50 page splitting, Latch Crabbing lock coupling for concurrent tree traversal, and write amplification mitigation.",
+  "url": "https://akmalkhaniub.github.io/blog/b-tree-index-internals-page-splitting-latch-crabbing.html",
+  "datePublished": "2026-08-17",
+  "keywords": "B-Tree, Indexing, Slotted Page, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/llm-inference-vllm-tensorrt-high-throughput-serving-architecture.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/b-tree-index-internals-page-splitting-latch-crabbing.html"
 }
   </script>
 
@@ -92,162 +92,201 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="vLLM &amp; TensorRT-LLM: High-Throughput Serving Architecture Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">vLLM &amp; TensorRT-LLM: High-Throughput Serving Architecture</h1>
+            <h1 class="article-title">B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> August 4, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 18, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">LLM Inference</span><span class="project-badge">vLLM</span><span class="project-badge">TensorRT-LLM</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">B-Tree</span><span class="project-badge">Indexing</span><span class="project-badge">Slotted Page</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>vLLM &amp; TensorRT-LLM: High-Throughput Serving Architecture</h1>
-<p>Deploying self-hosted Small Language Models (SLMs) and open-weights foundation models (such as Llama 3, Mistral, or Qwen) in enterprise agent production environments requires specialized inference engineering. </p>
-<p>If developers deploy LLMs using standard PyTorch loops or basic HuggingFace pipelines, GPU hardware utilization frequently hovers at a miserable <strong>15–20%</strong>. Naive HTTP servers stall under concurrent load because static batching forces fast short-response requests to wait for slow long-generation requests to finish.</p>
-<p>To achieve maximum throughput (thousands of tokens per second per GPU node), high-scale engineering teams utilize dedicated inference serving engines like <strong>vLLM</strong> and NVIDIA <strong>TensorRT-LLM</strong>.</p>
-<p>This article analyzes the underlying architecture of high-throughput LLM serving engines and demonstrates how to benchmark multi-tenant inference workloads.</p>
+<h1>B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification</h1>
+<p>In relational storage engines (<strong>PostgreSQL btree</strong>, <strong>MySQL InnoDB</strong>, <strong>SQLite</strong>, <strong>Oracle</strong>), <strong>B+Trees</strong> are the foundational data structure driving primary keys and secondary indexes.</p>
+<p>Unlike standard in-memory binary search trees (AVL, Red-Black), B+Trees are specifically engineered for <strong>block-oriented disk and NVMe storage</strong>.</p>
+<p>With a high branching factor $B$ (typically hundreds of keys per $8\text{ KB}$ page), a B+Tree can index billions of rows with a tree height of only $3$ or $4$ disk seeks.</p>
+<p>However, supporting concurrent read/write transactions at high throughput requires managing complex physical page layouts (<strong>Slotted-Page Architecture</strong>), handling <strong>Page Splitting</strong>, and preventing concurrency deadlocks via <strong>Latch Crabbing (Lock Coupling)</strong>.</p>
+<p>This article details B+Tree slotted page layouts, Page Splitting algorithms, Latch Crabbing concurrency protocols, and Write Amplification mitigation.</p>
 <hr>
-<h2>📖 Continuous Batching vs. Static Batching Architecture</h2>
-<p>The core breakthrough in modern LLM serving is <strong>Continuous Batching</strong> (also known as iteration-level or dynamic batching):</p>
+<h2>📖 B+Tree Page Layout &amp; Latch Crabbing Architecture</h2>
+<p>How Slotted-Page layouts organize tuples inside $8\text{ KB}$ disk blocks and how Latch Crabbing lock coupling navigates concurrent trees:</p>
 <div class="mermaid">graph TD
-  subgraph Traditional Static Batching (High Latency)
-    A[Request 1: 50 Tokens] --&gt; B[Static Batch 1]
-    C[Request 2: 500 Tokens] --&gt; B
-    B --&gt; D[GPU Processing Loop]
-    D --&gt;|Request 1 Finishes Early| E[GPU Idle Seats Wasted Waiting for Request 2]
+  subgraph Slotted-Page Disk Block Layout (8 KB Fixed Size)
+    Header[Page Header: LSN, Slot Count, Free Space Pointer] --&gt; SlotArray[Slot Array: Slot 0 Offset, Slot 1 Offset...]
+    SlotArray --&gt; FreeSpace[&lt;-- Free Space Gap --&gt;]
+    FreeSpace --&gt; TupleData[Tuple 1 Data | Tuple 0 Data (Grows Backwards)]
   end
   
-  subgraph Continuous Batching vLLM / TensorRT-LLM
-    F[Request 1: Token 1..50] --&gt; G[Dynamic Iteration Scheduler]
-    H[Request 2: Token 1..500] --&gt; G
-    I[New Request 3 Arrives] --&gt; G
-    G --&gt;|Every Generation Step| J[Inject New Request Instantly Into Open Slot]
-    J --&gt; K[100% GPU Compute Utilization]
+  subgraph Latch Crabbing Concurrency Protocol (Lock Coupling)
+    ReadOp[Read Request: Key = 42] --&gt;|1. Acquire Read Latch| Root[Root Node Page 0]
+    Root --&gt;|2. Read Child Page P1 Pointer| Child[Internal Node Page P1]
+    Child --&gt;|3. Acquire Read Latch on P1 FIRST| ChildLatch[Child Latch Held]
+    ChildLatch --&gt;|4. Safe! Release Read Latch on Root| ReleaseRoot[Release Parent Latch]
+    ReleaseRoot --&gt;|5. Traverse to Leaf Page| Leaf[Leaf Page P9: Return Value]
   end</div>
-<h3>Key Architectural Pillars</h3>
+<h3>Core B+Tree Mechanics</h3>
 <ol>
-<li><strong>Iteration-Level Scheduling</strong>: Instead of operating on fixed batch boundaries, the engine schedules inference at every individual token generation step. As soon as Request 1 generates its end-of-sequence token (<code>&lt;EOS&gt;</code>), Request 3 is immediately inserted into that open memory slot without pausing the GPU pipeline.</li>
-<li><strong>CUDA Graph Execution</strong>: Launching individual CUDA kernels from Python introduces CPU-GPU synchronization overhead. High-throughput engines capture repetitive model execution graphs into compiled <strong>CUDA Graphs</strong>, executing entire forward passes with zero CPU launch latency.</li>
-<li><strong>Tensor Parallelism (TP) &amp; Pipeline Parallelism (PP)</strong>: For large models that exceed single GPU VRAM, TensorRT-LLM and vLLM split matrix multiplications across GPUs using NCCL inter-GPU communication primitives.</li>
+<li><strong>B+Tree vs Classic B-Tree Structural Difference</strong>:<ul>
+<li><em>B-Tree</em>: Stores data key-value records in both internal nodes and leaf nodes.</li>
+<li><em>B+Tree</em>: Stores actual data tuples (or row pointers) <strong>exclusively in leaf nodes</strong>. Internal nodes store only search key routers. Leaf nodes are linked together via a doubly-linked list (<code>prev_page_id</code>, <code>next_page_id</code>), allowing sequential range scans (<code>WHERE age &gt;= 21 AND age &lt;= 30</code>) to traverse leaves horizontally without re-traversing parent nodes.</li>
+</ul>
+</li>
+<li><strong>Slotted-Page Architecture</strong>:<ul>
+<li>Fixed-size disk blocks ($8\text{ KB}$ in PostgreSQL, $16\text{ KB}$ in InnoDB) cannot assume fixed-width tuples.</li>
+<li><em>Slot Array</em>: An array of 2-byte offsets growing forward from the page header.</li>
+<li><em>Tuple Data</em>: Variable-length row byte arrays growing backward from the end of the page.</li>
+<li><em>De-fragmentation</em>: Deleting a row simply marks its slot offset as empty. When free space becomes fragmented, the storage engine executes a page compaction routine.</li>
+</ul>
+</li>
+<li><strong>Page Splitting &amp; Write Amplification</strong>:<ul>
+<li>When an insertion targets a leaf page that lacks free space, the page splits $50/50$ into two sibling pages. A middle key is promoted to the parent node.</li>
+<li><em>Write Amplification</em>: Inserting a single $100\text{-byte}$ row into a full page forces the engine to rewrite an entire $8\text{ KB}$ or $16\text{ KB}$ page to disk, causing high disk write amplification.</li>
+</ul>
+</li>
+<li><strong>Latch Crabbing (Lock Coupling)</strong>:<ul>
+<li>To prevent thread race conditions without locking the entire tree:</li>
+<li><em>Read Traversal</em>: A thread acquires a Read Latch on child node $C$ <em>before</em> releasing the Read Latch on parent node $P$.</li>
+<li><em>Write Traversal</em>: A thread acquires a Write Latch on parent node $P$. If child $C$ is <strong>Safe</strong> (has space for insertion without splitting), the thread releases the Write Latch on $P$ and all ancestors.</li>
+</ul>
+</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Async vLLM Engine Benchmark Client</h2>
-<p>Here is a production Python implementation using <code>vLLM</code>&#39;s async engine API (<code>AsyncLLMEngine</code>) to benchmark concurrent token generation throughput and request latency:</p>
-<pre><code class="language-python">import asyncio
-import time
-from typing import List
+<h2>🛠️ Python Implementation: Slotted-Page B+Tree &amp; Latch Crabbing Engine</h2>
+<p>Here is a production-grade Python implementation of a Slotted-Page B+Tree Node Layout and Latch Crabbing Traversal Engine:</p>
+<pre><code class="language-python">import struct
+from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel
-from vllm.engine.arg_utils import AsyncEngineArgs
-from vllm.engine.async_llm_engine import AsyncLLMEngine
-from vllm.sampling_params import SamplingParams
 
-class BenchmarkMetrics(BaseModel):
-    total_requests: int
-    total_tokens_generated: int
-    total_elapsed_time_sec: float
-    tokens_per_second: float
-    avg_latency_per_request_sec: float
-
-class HighThroughputInferenceServer:
+class SlottedPage:
     &quot;&quot;&quot;
-    Asynchronous LLM Engine wrapper using vLLM for high-concurrency agent workloads.
+    Simulates a 512-Byte Disk Block with Slotted-Page Architecture.
     &quot;&quot;&quot;
-    def __init__(self, model_name: str = &quot;Qwen/Qwen2.5-7B-Instruct&quot;):
-        print(f&quot;⚙️ [vLLM Engine] Initializing model '{model_name}' with PagedAttention...&quot;)
-        engine_args = AsyncEngineArgs(
-            model=model_name,
-            tensor_parallel_size=1,
-            gpu_memory_utilization=0.90,
-            max_num_batched_tokens=8192,
-            max_num_seqs=256,
-            trust_remote_code=True
-        )
-        self.engine = AsyncLLMEngine.from_engine_args(engine_args)
+    PAGE_SIZE = 512
+    HEADER_SIZE = 12  # LSN (8B), SlotCount (2B), FreeSpaceOffset (2B)
 
-    async def generate_response(self, request_id: str, prompt: str) -&gt; int:
-        &quot;&quot;&quot;
-        Submits a prompt to the AsyncLLMEngine and streams output until completion.
-        &quot;&quot;&quot;
-        sampling_params = SamplingParams(
-            temperature=0.7,
-            max_tokens=256,
-            top_p=0.95
-        )
+    def __init__(self, page_id: int):
+        self.page_id = page_id
+        self.lsn = 0
+        self.slot_offsets: List[int] = []
+        self.data_bytes = bytearray(self.PAGE_SIZE)
+        self.free_space_offset = self.PAGE_SIZE  # Grows backward from end of page
+
+    def insert_tuple(self, key_id: int, payload: str) -&gt; bool:
+        &quot;&quot;&quot;Inserts variable-length tuple into Slotted Page layout.&quot;&quot;&quot;
+        encoded_data = f&quot;{key_id}:{payload}&quot;.encode(&quot;utf-8&quot;)
+        data_len = len(encoded_data)
+        needed_space = 2 + data_len  # 2 bytes for slot offset + data bytes
         
-        results_generator = self.engine.generate(prompt, sampling_params, request_id)
-        tokens_count = 0
-        
-        async for request_output in results_generator:
-            # Get count of generated tokens in current output snapshot
-            if request_output.outputs:
-                tokens_count = len(request_output.outputs[0].token_ids)
+        current_free_space = self.free_space_offset - (self.HEADER_SIZE + len(self.slot_offsets) * 2)
 
-        return tokens_count
+        if needed_space &gt; current_free_space:
+            print(f&quot; ⚠️ [Page #{self.page_id} Full!] Free Space ({current_free_space}B) &lt; Needed ({needed_space}B). Triggers Page Split!&quot;)
+            return False
 
-    async def run_concurrent_benchmark(self, prompts: List[str]) -&gt; BenchmarkMetrics:
+        # Write tuple data at end of page
+        self.free_space_offset -= data_len
+        self.data_bytes[self.free_space_offset : self.free_space_offset + data_len] = encoded_data
+
+        # Add slot offset pointer
+        self.slot_offsets.append(self.free_space_offset)
+        print(f&quot; 📥 [Page #{self.page_id} Insert] Key '{key_id}' written at offset {self.free_space_offset} (Total Slots: {len(self.slot_offsets)})&quot;)
+        return True
+
+class BPlusTreeNode:
+    def __init__(self, node_id: int, is_leaf: bool = False):
+        self.node_id = node_id
+        self.is_leaf = is_leaf
+        self.keys: List[int] = []
+        self.children: List['BPlusTreeNode'] = [] # Internal Node Pointers
+        self.slotted_page = SlottedPage(page_id=node_id)
+        self.next_leaf: Optional['BPlusTreeNode'] = None
+        self.is_latched: bool = False
+
+class BPlusTreeEngine:
+    &quot;&quot;&quot;
+    Simulates B+Tree Traversal with Latch Crabbing Concurrency Protocol.
+    &quot;&quot;&quot;
+    def __init__(self):
+        self.root = BPlusTreeNode(node_id=0, is_leaf=True)
+        self.node_counter = 0
+
+    def search_latch_crabbing(self, search_key: int) -&gt; BPlusTreeNode:
         &quot;&quot;&quot;
-        Executes a batch of concurrent prompts and calculates throughput metrics.
+        Executes Latch Crabbing Read Traversal (Acquire Child Latch -&gt; Release Parent Latch).
         &quot;&quot;&quot;
-        print(f&quot;🔥 [Benchmark] Dispatching {len(prompts)} concurrent requests to engine...&quot;)
-        start_time = time.perf_counter()
+        curr = self.root
+        curr.is_latched = True
+        print(f&quot; 🔒 [Latch Crabbing] Acquired Read Latch on Root Node #{curr.node_id}&quot;)
 
-        tasks = [
-            self.generate_response(f&quot;req-{idx}&quot;, prompt)
-            for idx, prompt in enumerate(prompts)
-        ]
-        
-        token_counts = await asyncio.gather(*tasks)
-        end_time = time.perf_counter()
+        while not curr.is_leaf:
+            # Find target child index
+            idx = 0
+            while idx &lt; len(curr.keys) and search_key &gt;= curr.keys[idx]:
+                idx += 1
+            
+            child = curr.children[idx]
+            
+            # Latch Crabbing Lock Coupling Step:
+            # 1. Acquire Latch on Child FIRST
+            child.is_latched = True
+            print(f&quot; 🔒 [Latch Crabbing] Acquired Read Latch on Child Node #{child.node_id}&quot;)
+            
+            # 2. Release Latch on Parent
+            curr.is_latched = False
+            print(f&quot; 🔓 [Latch Crabbing] Released Read Latch on Parent Node #{curr.node_id}&quot;)
+            
+            curr = child
 
-        total_elapsed = end_time - start_time
-        total_tokens = sum(token_counts)
-
-        return BenchmarkMetrics(
-            total_requests=len(prompts),
-            total_tokens_generated=total_tokens,
-            total_elapsed_time_sec=total_elapsed,
-            tokens_per_second=total_tokens / total_elapsed,
-            avg_latency_per_request_sec=total_elapsed / len(prompts)
-        )
+        print(f&quot; 🎯 [Latch Crabbing Success] Arrived at Target Leaf Node #{curr.node_id} for Key {search_key}!&quot;)
+        return curr
 
 # Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    # Simulated multi-tenant prompts
-    test_prompts = [
-        f&quot;Generate a Python function to process data chunk #{i}&quot;
-        for i in range(50)
-    ]
+    # Initialize B+Tree
+    tree = BPlusTreeEngine()
 
-    async def demo():
-        # Note: Requires GPU environment with vllm installed
-        server = HighThroughputInferenceServer()
-        metrics = await server.run_concurrent_benchmark(test_prompts)
-        print(&quot;\n📊 Benchmark Results:&quot;)
-        print(metrics.model_dump_json(indent=2))
+    print(&quot;🚀 Demonstrating B+Tree Slotted-Page Layout &amp; Latch Crabbing...&quot;)
+    print(&quot;=&quot; * 75)
 
-    # asyncio.run(demo())</code></pre>
+    # 1. Test Slotted Page Allocations
+    page = SlottedPage(page_id=101)
+    page.insert_tuple(1001, &quot;Alice_User_Record&quot;)
+    page.insert_tuple(1002, &quot;Bob_User_Record&quot;)
+
+    # 2. Construct Mock B+Tree Hierarchy for Latch Crabbing
+    root_node = BPlusTreeNode(node_id=0, is_leaf=False)
+    leaf1 = BPlusTreeNode(node_id=1, is_leaf=True)
+    leaf2 = BPlusTreeNode(node_id=2, is_leaf=True)
+
+    root_node.keys = [50]
+    root_node.children = [leaf1, leaf2]
+    tree.root = root_node
+
+    # 3. Execute Latch Crabbing Search
+    print(&quot;\n🔍 Executing Latch Crabbing Search for Key = 75:&quot;)
+    target_leaf = tree.search_latch_crabbing(search_key=75)</code></pre>
 <hr>
-<h2>⚠️ Important Serving Performance Guardrails</h2>
-<p>When configuring LLM inference engines for production:</p>
+<h2>🚨 B+Tree Storage Gotchas &amp; Best Practices</h2>
+<p>When tuning B+Tree indexes:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Set <code>gpu_memory_utilization</code> to 0.90–0.95</strong>: Allocate 90–95% of GPU VRAM to the inference engine. vLLM uses this reserved VRAM block to allocate dynamic PagedAttention KV-cache blocks, preventing out-of-memory crashes.</p>
+  <div class="alert-content"><p><strong>Use Fillfactor for Update-Heavy Tables</strong>: In PostgreSQL, setting <code>FILLFACTOR = 80</code> on B+Tree indexes leaves $20%$ empty space on leaf pages during creation. This space absorbs future <code>UPDATE</code> row additions without triggering immediate costly Page Splits.</p>
 </div>
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Avoid Request Queue Head-of-Line Blocking</strong>: Ensure <code>max_num_seqs</code> (maximum concurrent sequences) is tuned to your GPU VRAM size. Over-subscribing max sequences forces requests to swap KV-cache blocks to CPU RAM, causing catastrophic latency spikes.</p>
+  <div class="alert-content"><p><strong>Beware of Index Bloat on Random UUID Primary Keys</strong>: Inserting random 128-bit UUIDs as primary keys causes random B+Tree leaf insertions, forcing constant page splits across the entire index tree (<strong>Index Fragmentation</strong>). Use sequential UUIDs (UUIDv7) or auto-incrementing integers.</p>
 </div>
 </div>
 <hr>
 <h2>📈 Real-World Enterprise Impact</h2>
-<p>Teams deploying vLLM and TensorRT-LLM report:</p>
+<p>Storage engines deploying B+Tree slotted pages and latch crabbing (such as <strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, and <strong>SQLite</strong>) report:</p>
 <ul>
-<li><strong>4x–8x Higher Token Throughput</strong>: Continuous batching increases GPU token generation throughput from 350 tok/s to 2,400+ tok/s on an NVIDIA H100.</li>
-<li><strong>60% Reduction in Serving Infrastructure Costs</strong>: Consolidating multi-tenant agent workloads onto high-throughput inference engines drastically reduces total GPU node counts.</li>
+<li><strong>$O(\log_B N)$ Lightning-Fast Point Lookups</strong>: Reading keys from a billion-row table in under $4$ physical disk block seeks.</li>
+<li><strong>Deadlock-Free Concurrent Index Operations</strong>: Latch crabbing lock coupling enables thousands of concurrent threads to traverse and modify index pages simultaneously.</li>
 </ul>
 
           </div>
@@ -255,8 +294,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fllm-inference-vllm-tensorrt-high-throughput-serving-architecture.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=vLLM%20%26%20TensorRT-LLM%3A%20High-Throughput%20Serving%20Architecture&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fllm-inference-vllm-tensorrt-high-throughput-serving-architecture.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fb-tree-index-internals-page-splitting-latch-crabbing.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=B-Tree%20Index%20Internals%3A%20B%2BTrees%2C%20Page%20Splitting%2C%20Latch%20Crabbing%20%26%20Write%20Amplification&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fb-tree-index-internals-page-splitting-latch-crabbing.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -279,7 +318,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="b-tree-index-internals-page-splitting-latch-crabbing.html">B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -642,7 +681,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="quantization-strategies-local-slm-awq-gguf-fp8.html">Quantization Strategies for Local SLMs: AWQ, GGUF &amp; FP8 Trade-offs<span class="sidebar-post-date">August 4, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="llm-inference-vllm-tensorrt-high-throughput-serving-architecture.html">vLLM &amp; TensorRT-LLM: High-Throughput Serving Architecture<span class="sidebar-post-date">August 4, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
