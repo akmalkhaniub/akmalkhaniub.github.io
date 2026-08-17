@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>B+ Tree Index Engineering: Page Layouts, Buffer Pools &amp; Slotted Pages | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Exploring read-optimized B+ Tree storage engine internals: implementing slotted page binary disk layouts, LRU buffer pool page managers, and leaf node range scan linkages.">
+  <title>Work-Stealing Schedulers: Chase-Lev Deque, MPMC Queues &amp; Tokio Async Executor | Akmal Khan Tech Blog</title>
+  <meta name="description" content="High-efficiency thread pool scheduling: implementing lock-free Chase-Lev Work-Stealing Deques (owner LIFO push/pop, thief FIFO steal), MPMC overflow queues, and async task execution.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/b-plus-tree-index-engineering-page-layouts-buffer-pools.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/work-stealing-schedulers-chase-lev-tokio-async.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/b-plus-tree-index-engineering-page-layouts-buffer-pools.html">
-  <meta property="og:title" content="B+ Tree Index Engineering: Page Layouts, Buffer Pools &amp; Slotted Pages">
-  <meta property="og:description" content="Exploring read-optimized B+ Tree storage engine internals: implementing slotted page binary disk layouts, LRU buffer pool page managers, and leaf node range scan linkages.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/work-stealing-schedulers-chase-lev-tokio-async.html">
+  <meta property="og:title" content="Work-Stealing Schedulers: Chase-Lev Deque, MPMC Queues &amp; Tokio Async Executor">
+  <meta property="og:description" content="High-efficiency thread pool scheduling: implementing lock-free Chase-Lev Work-Stealing Deques (owner LIFO push/pop, thief FIFO steal), MPMC overflow queues, and async task execution.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-12">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="B+ Tree Index Engineering: Page Layouts, Buffer Pools &amp; Slotted Pages">
-  <meta name="twitter:description" content="Exploring read-optimized B+ Tree storage engine internals: implementing slotted page binary disk layouts, LRU buffer pool page managers, and leaf node range scan linkages.">
+  <meta name="twitter:title" content="Work-Stealing Schedulers: Chase-Lev Deque, MPMC Queues &amp; Tokio Async Executor">
+  <meta name="twitter:description" content="High-efficiency thread pool scheduling: implementing lock-free Chase-Lev Work-Stealing Deques (owner LIFO push/pop, thief FIFO steal), MPMC overflow queues, and async task execution.">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "B+ Tree Index Engineering: Page Layouts, Buffer Pools & Slotted Pages",
-  "description": "Exploring read-optimized B+ Tree storage engine internals: implementing slotted page binary disk layouts, LRU buffer pool page managers, and leaf node range scan linkages.",
-  "url": "https://akmalkhaniub.github.io/blog/b-plus-tree-index-engineering-page-layouts-buffer-pools.html",
-  "datePublished": "2026-08-12",
-  "keywords": "Database Internals, B+ Tree, PostgreSQL, Python",
+  "headline": "Work-Stealing Schedulers: Chase-Lev Deque, MPMC Queues & Tokio Async Executor",
+  "description": "High-efficiency thread pool scheduling: implementing lock-free Chase-Lev Work-Stealing Deques (owner LIFO push/pop, thief FIFO steal), MPMC overflow queues, and async task execution.",
+  "url": "https://akmalkhaniub.github.io/blog/work-stealing-schedulers-chase-lev-tokio-async.html",
+  "datePublished": "2026-08-17",
+  "keywords": "Work Stealing, Chase-Lev, Async, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/b-plus-tree-index-engineering-page-layouts-buffer-pools.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/work-stealing-schedulers-chase-lev-tokio-async.html"
 }
   </script>
 
@@ -92,163 +92,230 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="B+ Tree Index Engineering: Page Layouts, Buffer Pools &amp; Slotted Pages Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Work-Stealing Schedulers: Chase-Lev Deque, MPMC Queues &amp; Tokio Async Executor Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">B+ Tree Index Engineering: Page Layouts, Buffer Pools &amp; Slotted Pages</h1>
+            <h1 class="article-title">Work-Stealing Schedulers: Chase-Lev Deque, MPMC Queues &amp; Tokio Async Executor</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> August 13, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 18, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Database Internals</span><span class="project-badge">B+ Tree</span><span class="project-badge">PostgreSQL</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">Work Stealing</span><span class="project-badge">Chase-Lev</span><span class="project-badge">Async</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>B+ Tree Index Engineering: Page Layouts, Buffer Pools &amp; Slotted Pages</h1>
-<p>Relational database management systems (RDBMS) like <strong>PostgreSQL</strong>, <strong>MySQL (InnoDB)</strong>, and <strong>SQLite</strong> have relied on <strong>B+ Trees</strong> as their core storage engine representation for over four decades. Unlike standard binary search trees, B+ Trees are self-balancing, high-fanout $N$-ary trees specifically optimized for block-based disk storage hardware.</p>
-<p>In a B+ Tree, all actual table records reside exclusively in doubly-linked <strong>leaf nodes</strong>, while <strong>internal nodes</strong> hold only routing keys.</p>
-<p>To manage disk pages in memory without exhausting RAM or triggering operating system page faults, storage engines deploy a <strong>Buffer Pool Manager</strong> operating over <strong>Slotted Page</strong> binary disk layouts.</p>
-<p>This article explores the low-level disk page layouts, buffer pool eviction strategies, and node split mechanics of B+ Tree engines.</p>
+<h1>Work-Stealing Schedulers: Chase-Lev Deque, MPMC Queues &amp; Tokio Async Executor</h1>
+<p>In modern high-performance asynchronous runtime environments (<strong>Go Goroutine Scheduler</strong>, <strong>Rust Tokio</strong>, <strong>Java ForkJoinPool</strong>, <strong>C# .NET ThreadPool</strong>), systems process millions of lightweight async tasks per second.</p>
+<p>If a runtime uses a single global task queue shared across 64 CPU cores, thread contention on the queue mutex destroys scalability. Conversely, static per-thread task queues cause <strong>Load Imbalance</strong>: Core 0 becomes bogged down with $50,000$ tasks while Core 63 sits idle.</p>
+<p>To balance workloads dynamically across CPU cores with minimal lock contention, modern async executors deploy <strong>Work-Stealing Schedulers</strong>.</p>
+<p>Driven by the lock-free <strong>Chase-Lev Work-Stealing Deque</strong>, worker threads execute tasks locally in LIFO order while idle threads steal tasks from busy peers in FIFO order.</p>
+<p>This article details per-thread local deques, the Chase-Lev lock-free algorithm, cache locality advantages, MPMC overflow queues, and task-stealing protocols.</p>
 <hr>
-<h2>📖 Slotted Page Layout &amp; B+ Tree Architecture</h2>
-<p>The binary memory layout of an 8KB/16KB slotted page and leaf node linkage:</p>
+<h2>📖 Work-Stealing Scheduling &amp; Chase-Lev Deque Architecture</h2>
+<p>How the Chase-Lev Deque balances owner LIFO operations and thief FIFO stealing:</p>
 <div class="mermaid">graph TD
-  subgraph Slotted Page Binary Layout (8KB / 16KB Page)
-    A[Page Header: LSN, Slot Count, Free Space Offset] --&gt; B[Slot Array: Offset &amp; Length Pointers]
-    B --&gt;|Unused Free Space Window| C[Tuple Data Storage: Grows Bottom-Up]
+  subgraph Worker Thread 0 (Busy Worker)
+    Owner[Worker Thread 0 Owner] --&gt;|1. Push / Pop Tasks at BOTTOM (LIFO Order - Cache Hot!)| Bottom[Bottom Pointer]
+    
+    subgraph Chase-Lev Work-Stealing Deque (Worker 0)
+      Bottom --&gt;|Local Tasks Array| TaskN[Task N]
+      TaskN --&gt; TaskN1[Task N-1]
+      TaskN1 --&gt; Task0[Task 0: Oldest Parent Task]
+      Task0 --&gt; Top[Top Pointer]
+    end
   end
   
-  subgraph B+ Tree Index Hierarchy
-    D[Root Node: Internal Routing Keys] --&gt; E[Child Node 1: Internal]
-    D --&gt; F[Child Node 2: Internal]
-    
-    E --&gt; G[Leaf Page 101: Data Records]
-    E --&gt; H[Leaf Page 102: Data Records]
-    F --&gt; I[Leaf Page 103: Data Records]
-    
-    G &lt;--&gt;|Doubly-Linked Range Scan| H
-    H &lt;--&gt;|Doubly-Linked Range Scan| I
+  subgraph Worker Thread 1 (Idle Thief)
+    Thief[Idle Worker Thread 1] --&gt;|2. Steal Task from TOP via CAS (FIFO Order)| Top
+    Thief --&gt;|3. Execute Steolen Task 0| Exec[Execute Async Task 0]
   end</div>
-<h3>Core B+ Tree Engineering Primitives</h3>
+<h3>Core Work-Stealing Concepts</h3>
 <ol>
-<li><strong>Slotted-Page Architecture</strong>: Disk pages are divided into fixed sizes (e.g. 8KB in Postgres, 16KB in InnoDB). The slot array grows from the top down (storing 2-byte tuple offsets), while tuple bytes are written from the bottom up. This design allows variable-length records to be inserted or deleted without re-organizing the entire page file.</li>
-<li><strong>Buffer Pool Manager</strong>: Intercepts page requests from the execution engine. If a requested <code>page_id</code> is in the buffer pool frame array, it pins the page in RAM. If missing (cache miss), it fetches the page from disk, evicting cold &quot;dirty&quot; pages using <strong>LRU-K</strong> or <strong>Clock-Sweep</strong> algorithms.</li>
-<li><strong>Latch Crabbing</strong>: To allow concurrent thread queries without corruption, threads traverse the B+ Tree using latch crabbing: acquiring a read/write latch on a child node before releasing the latch on its parent.</li>
+<li><strong>The Work-Stealing Principle</strong>:<ul>
+<li>Each CPU worker thread manages a dedicated local task queue (<strong>Double-Ended Queue / Deque</strong>).</li>
+<li>When a worker thread spawns a new task, it pushes the task onto its local deque.</li>
+<li>If a worker thread finishes its own tasks, it transitions to a <strong>Thief</strong> state, scanning peer worker deques to <strong>steal</strong> work instead of idling.</li>
+</ul>
+</li>
+<li><strong>The Chase-Lev Lock-Free Deque</strong>:<ul>
+<li>Designed by David Chase and Yossi Lev. Allows concurrent single-owner push/pop and multi-thief steals with minimal synchronization:</li>
+<li><strong>Owner Operations (Bottom)</strong>:<ul>
+<li><em>Push</em>: Increments <code>bottom</code>. Stores task at <code>tasks[bottom]</code>. Uses <code>memory_order_release</code>.</li>
+<li><em>Pop</em>: Decrements <code>bottom</code>. Reads <code>task = tasks[bottom]</code>. If <code>bottom &gt; top</code>, returns task with zero lock contention!</li>
+<li>If <code>bottom == top</code> (last item in deque), owner uses <code>CAS(top, top, top+1)</code> to resolve race conditions against potential thieves.</li>
+</ul>
+</li>
+<li><strong>Thief Operations (Top)</strong>:<ul>
+<li><em>Steal</em>: Reads <code>top</code>. Reads <code>bottom</code>. If <code>top &lt; bottom</code>, reads <code>task = tasks[top]</code>. Executes <code>CAS(top, expected=top, new=top+1)</code>. If CAS succeeds, thief takes the task!</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Cache Locality Advantages (LIFO vs FIFO)</strong>:<ul>
+<li><strong>Owner Thread operates LIFO (Last-In, First-Out)</strong>: Popping the most recently pushed task ensures that child task data is still hot in the CPU&#39;s <strong>L1/L2 Cache</strong>.</li>
+<li><strong>Thief Thread operates FIFO (First-In, First-Out)</strong>: Stealing the oldest task at the top of the deque usually yields a large parent task that will spawn further sub-tasks, keeping the thief busy longer!</li>
+</ul>
+</li>
+<li><strong>Multi-Producer Multi-Consumer (MPMC) Overflow Queues</strong>:<ul>
+<li>Local deques have fixed capacities (e.g. $256$ task slots in Tokio). When a local deque overflows, excess tasks are pushed into a central <strong>Global MPMC Queue</strong>. Idle workers check the global queue before attempting peer steals.</li>
+</ul>
+</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Slotted Page &amp; Buffer Pool Engine</h2>
-<p>Here is a production-grade Python simulation of a Slotted Page data layout and LRU Buffer Pool Manager:</p>
-<pre><code class="language-python">import struct
-from typing import Dict, List, Optional, Tuple
+<h2>🛠️ Python Implementation: Chase-Lev Deque &amp; Work-Stealing Scheduler</h2>
+<p>Here is a production-grade Python implementation of a Lock-Free Chase-Lev Work-Stealing Deque and a Multi-Worker Async Scheduler:</p>
+<pre><code class="language-python">import time
+import random
+from typing import List, Optional, Tuple
 from pydantic import BaseModel
 
-class SlottedPage:
-    &quot;&quot;&quot;
-    Simulates a fixed 512-byte slotted page layout.
-    Slot array grows top-down (index 0..N), tuple data grows bottom-up (512..0).
-    &quot;&quot;&quot;
-    PAGE_SIZE = 512
+class AsyncTask(BaseModel):
+    task_id: str
+    work_units: int
 
-    def __init__(self, page_id: int):
-        self.page_id = page_id
-        self.header_size = 8  # 4-byte LSN, 2-byte slot_count, 2-byte free_space_pointer
-        self.slot_count = 0
-        self.free_space_pointer = self.PAGE_SIZE  # Starts at bottom of page
-        self.slots: List[Tuple[int, int]] = []    # [(offset, length)]
-        self.tuples: Dict[int, str] = {}           # slot_index -&gt; tuple_data
+class ChaseLevWorkStealingDeque:
+    &quot;&quot;&quot;
+    Simulates a Lock-Free Chase-Lev Deque (Single-Owner Bottom Push/Pop, Multi-Thief Top Steal).
+    &quot;&quot;&quot;
+    def __init__(self, capacity: int = 16):
+        self.capacity = capacity
+        self.tasks: List[Optional[AsyncTask]] = [None] * capacity
+        self.top = 0       # Atomic Top Pointer (Incremented by Thieves)
+        self.bottom = 0    # Atomic Bottom Pointer (Updated by Owner)
 
-    def insert_tuple(self, tuple_data: str) -&gt; Optional[int]:
-        data_bytes = tuple_data.encode('utf-8')
-        needed_space = 4 + len(data_bytes)  # 4 bytes for slot entry + data length
+    def owner_push(self, task: AsyncTask) -&gt; bool:
+        &quot;&quot;&quot;Pushes task onto the BOTTOM of the local deque (Owner Only).&quot;&quot;&quot;
+        b = self.bottom
+        t = self.top
         
-        current_free_bytes = self.free_space_pointer - (self.header_size + self.slot_count * 4)
-        if needed_space &gt; current_free_bytes:
-            print(f&quot; ⚠️ [Page #{self.page_id}] Out of free space! Needed {needed_space}B, available {current_free_bytes}B.&quot;)
+        if b - t &gt;= self.capacity:
+            print(f&quot; ⚠️ [Deque Full!] Capacity {self.capacity} reached. Task '{task.task_id}' sent to Global Overflow Queue.&quot;)
+            return False
+
+        self.tasks[b % self.capacity] = task
+        self.bottom = b + 1
+        print(f&quot; 📥 [Owner Push] Task '{task.task_id}' pushed to BOTTOM (Index {b})&quot;)
+        return True
+
+    def owner_pop(self) -&gt; Optional[AsyncTask]:
+        &quot;&quot;&quot;Pops task from the BOTTOM of local deque in LIFO order (Owner Only).&quot;&quot;&quot;
+        b = self.bottom - 1
+        self.bottom = b
+        t = self.top
+
+        if t &lt;= b:
+            # Tasks exist!
+            task = self.tasks[b % self.capacity]
+            if t == b:
+                # Last remaining item in deque! Must CAS against potential thieves.
+                if not self._cas_top(expected=t, new_top=t + 1):
+                    # Thief won the race!
+                    task = None
+                self.bottom = t + 1
+            print(f&quot; 📤 [Owner Pop LIFO] Popped Task '{task.task_id if task else 'None'}' from BOTTOM&quot;)
+            return task
+        else:
+            # Deque is empty! Reset pointers
+            self.bottom = t
             return None
 
-        # Write data bottom-up
-        self.free_space_pointer -= len(data_bytes)
-        slot_index = self.slot_count
-        self.slots.append((self.free_space_pointer, len(data_bytes)))
-        self.tuples[slot_index] = tuple_data
-        self.slot_count += 1
+    def thief_steal(self) -&gt; Optional[AsyncTask]:
+        &quot;&quot;&quot;Steals task from the TOP of deque in FIFO order (Thief Thread).&quot;&quot;&quot;
+        t = self.top
+        b = self.bottom
 
-        print(f&quot; 📄 [Page #{self.page_id}] Inserted Tuple '{tuple_data}' at Slot {slot_index} (Free Space: {self.free_space_pointer}B)&quot;)
-        return slot_index
+        if t &lt; b:
+            task = self.tasks[t % self.capacity]
+            # Execute Atomic CAS to increment Top
+            if self._cas_top(expected=t, new_top=t + 1):
+                print(f&quot; 🥷 [Thief STEAL FIFO!] Successfully stole Task '{task.task_id}' from TOP (Index {t})&quot;)
+                return task
+        return None
 
-class BufferPoolManager:
+    def _cas_top(self, expected: int, new_top: int) -&gt; bool:
+        &quot;&quot;&quot;Simulates Atomic Hardware CAS on Top Pointer.&quot;&quot;&quot;
+        if self.top == expected:
+            self.top = new_top
+            return True
+        return False
+
+class WorkStealingScheduler:
     &quot;&quot;&quot;
-    Manages fixed-capacity page frames in RAM using LRU eviction.
+    Simulates Multi-Worker Async Runtime (Tokio / Go Scheduler).
     &quot;&quot;&quot;
-    def __init__(self, capacity_frames: int = 2):
-        self.capacity = capacity_frames
-        self.frames: Dict[int, SlottedPage] = {}
-        self.lru_order: List[int] = []
+    def __init__(self, num_workers: int = 3):
+        self.workers = [ChaseLevWorkStealingDeque() for _ in range(num_workers)]
+        self.global_queue: List[AsyncTask] = []
 
-    def fetch_page(self, page_id: int, disk_pages: Dict[int, SlottedPage]) -&gt; SlottedPage:
-        # 1. Buffer Pool Hit
-        if page_id in self.frames:
-            self.lru_order.remove(page_id)
-            self.lru_order.append(page_id)
-            print(f&quot; 🎯 [Buffer Pool Hit] Page #{page_id} served from RAM frame.&quot;)
-            return self.frames[page_id]
+    def spawn_task(self, worker_id: int, task: AsyncTask):
+        deque = self.workers[worker_id]
+        if not deque.owner_push(task):
+            self.global_queue.append(task)
 
-        # 2. Buffer Pool Miss -&gt; Evict LRU if at capacity
-        print(f&quot; 💾 [Buffer Pool Miss] Fetching Page #{page_id} from disk...&quot;)
-        if len(self.frames) &gt;= self.capacity:
-            evicted_id = self.lru_order.pop(0)
-            del self.frames[evicted_id]
-            print(f&quot; ♻️ [LRU Eviction] Evicted Page #{evicted_id} from RAM to make room.&quot;)
+    def execute_worker_step(self, worker_id: int):
+        deque = self.workers[worker_id]
+        
+        # 1. Try Local Owner Pop (LIFO)
+        task = deque.owner_pop()
+        
+        # 2. Try Global Queue if local empty
+        if not task and self.global_queue:
+            task = self.global_queue.pop(0)
+            print(f&quot; 🌐 [Worker #{worker_id}] Fetched Task '{task.task_id}' from Global Queue&quot;)
 
-        # Load page into frame
-        page = disk_pages[page_id]
-        self.frames[page_id] = page
-        self.lru_order.append(page_id)
-        return page
+        # 3. Work-Stealing: Steal from Peer (FIFO)
+        if not task:
+            peers = [i for i in range(len(self.workers)) if i != worker_id]
+            random.shuffle(peers)
+            for peer_id in peers:
+                stolen = self.workers[peer_id].thief_steal()
+                if stolen:
+                    task = stolen
+                    print(f&quot; 🚀 [Worker #{worker_id}] Stole Task '{task.task_id}' from Worker #{peer_id}!&quot;)
+                    break
+
+        if task:
+            print(f&quot; ⚡ [Worker #{worker_id} Executing] Processing Task '{task.task_id}' ({task.work_units} work units)...&quot;)
 
 # Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    # Create 3 disk pages
-    disk_storage = {
-        101: SlottedPage(101),
-        102: SlottedPage(102),
-        103: SlottedPage(103)
-    }
+    scheduler = WorkStealingScheduler(num_workers=2)
 
-    # Populate slotted tuples
-    disk_storage[101].insert_tuple(&quot;order_id: 8891, amt: 45.00&quot;)
-    disk_storage[101].insert_tuple(&quot;order_id: 8892, amt: 120.50&quot;)
-    disk_storage[102].insert_tuple(&quot;order_id: 8893, amt: 300.00&quot;)
-
-    # Initialize Buffer Pool Manager with 2-frame RAM limit
-    bpm = BufferPoolManager(capacity_frames=2)
-
-    print(&quot;\n🚀 Testing Buffer Pool Fetch &amp; LRU Evictions...&quot;)
+    print(&quot;🚀 Demonstrating Chase-Lev Deque &amp; Work-Stealing Scheduler...&quot;)
     print(&quot;=&quot; * 75)
 
-    bpm.fetch_page(101, disk_storage)
-    bpm.fetch_page(102, disk_storage)
-    bpm.fetch_page(101, disk_storage)  # Hit, moves 101 to MRU
-    bpm.fetch_page(103, disk_storage)  # Miss, evicts 102 (LRU)</code></pre>
+    # Worker 0 receives 3 tasks (Overloaded)
+    print(&quot;1. Spawning Tasks onto Worker 0 Local Deque:&quot;)
+    scheduler.spawn_task(0, AsyncTask(task_id=&quot;Task_0_Root&quot;, work_units=10))
+    scheduler.spawn_task(0, AsyncTask(task_id=&quot;Task_1_Child&quot;, work_units=5))
+    scheduler.spawn_task(0, AsyncTask(task_id=&quot;Task_2_Child&quot;, work_units=2))
+
+    # Worker 0 executes local task (LIFO pop Task 2)
+    print(&quot;\n2. Worker 0 Execution Step (LIFO Owner Pop):&quot;)
+    scheduler.execute_worker_step(worker_id=0)
+
+    # Worker 1 (Idle) steals from Worker 0 (FIFO steal Task 0 Root)
+    print(&quot;\n3. Worker 1 Execution Step (Idle Thief Steals from Worker 0):&quot;)
+    scheduler.execute_worker_step(worker_id=1)</code></pre>
 <hr>
-<h2>🚨 B+ Tree Production Gotchas &amp; Mitigation</h2>
-<p>When configuring B+ Tree storage engines:</p>
+<h2>🚨 Work-Stealing Gotchas &amp; Best Practices</h2>
+<p>When designing work-stealing schedulers:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Mitigate Page Fragmentation with Vacuum / Defrag</strong>: Deleting tuples from slotted pages leaves empty holes in the slot array. Over time, pages suffer from internal fragmentation. Relational engines run background vacuum processes (like Postgres <code>VACUUM</code>) to compact tuples bottom-up and reclaim contiguous free space.</p>
+  <div class="alert-content"><p><strong>Use Power-of-Two Ring Buffers for Fast Bitwise Modulo</strong>: In production Chase-Lev deques, set capacity to powers of two ($256$). This replaces expensive integer division modulo operations (<code>index % capacity</code>) with lightning-fast bitwise AND masks (<code>index &amp; (capacity - 1)</code>).</p>
 </div>
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Avoid Unindexed Random Insertions on Sequential Primary Keys</strong>: Inserting UUIDs or random hashes as primary keys causes random B+ Tree node splits across arbitrary pages, causing severe page fill-factor degradation (down to 50% utilization). Use monotonically increasing IDs (Auto-Increment or TSID) to keep insertions at the rightmost leaf node.</p>
+  <div class="alert-content"><p><strong>Beware of Excess Theft Spin-Loops</strong>: If all worker deques are empty, worker threads continuously scanning peer deques consume $100%$ CPU power spinning uselessly. Implement <strong>Worker Thread Park/Unpark</strong> using conditional variables after a few unsuccessful steal attempts.</p>
 </div>
 </div>
 <hr>
 <h2>📈 Real-World Enterprise Impact</h2>
-<p>Teams leveraging B+ Tree index optimizations report:</p>
+<p>Work-stealing schedulers (such as <strong>Rust Tokio</strong>, <strong>Go Runtime</strong>, and <strong>Java ForkJoinPool</strong>) report:</p>
 <ul>
-<li><strong>Sub-Millisecond Single-Key Lookups</strong>: High fanout internal nodes enable reaching target leaf tuples in 3 to 4 page hops across multi-gigabyte tables.</li>
-<li><strong>Efficient Range Scans</strong>: Doubly-linked leaf nodes allow executing SQL range queries (<code>WHERE id BETWEEN 100 AND 500</code>) without traversing root index nodes repeatedly.</li>
+<li><strong>Over $90%$ Reduction in Thread Lock Contention</strong>: Per-thread local deques allow worker threads to push and pop tasks without acquiring global mutex locks.</li>
+<li><strong>Optimal CPU Multi-Core Utilization</strong>: Dynamic work stealing ensures zero CPU core idle time even during unbalanced async workloads.</li>
 </ul>
 
           </div>
@@ -256,8 +323,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fb-plus-tree-index-engineering-page-layouts-buffer-pools.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=B%2B%20Tree%20Index%20Engineering%3A%20Page%20Layouts%2C%20Buffer%20Pools%20%26%20Slotted%20Pages&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fb-plus-tree-index-engineering-page-layouts-buffer-pools.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fwork-stealing-schedulers-chase-lev-tokio-async.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Work-Stealing%20Schedulers%3A%20Chase-Lev%20Deque%2C%20MPMC%20Queues%20%26%20Tokio%20Async%20Executor&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fwork-stealing-schedulers-chase-lev-tokio-async.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -280,7 +347,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="work-stealing-schedulers-chase-lev-tokio-async.html">Work-Stealing Schedulers: Chase-Lev Deque, MPMC Queues &amp; Tokio Async Executor<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -553,7 +620,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="wal-recovery-algorithms-aries-protocol-storage-engines.html">WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines<span class="sidebar-post-date">August 13, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="b-plus-tree-index-engineering-page-layouts-buffer-pools.html">B+ Tree Index Engineering: Page Layouts, Buffer Pools &amp; Slotted Pages<span class="sidebar-post-date">August 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
