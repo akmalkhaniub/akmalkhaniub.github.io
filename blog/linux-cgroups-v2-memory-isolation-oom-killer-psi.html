@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Eliminating CPU memory copy overhead: evaluating sendfile(), splice(), and mmap() syscalls, DMA Scatter-Gather transfers, and direct page-cache to socket network routing.">
+  <title>Linux Cgroups v2 &amp; Memory Resource Isolation: OOM Killer Mechanics, Memory High/Max Limits &amp; Pressure Stall Information (PSI) | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Container memory isolation: implementing Cgroups v2 unified tree hierarchy, memory.high throttling vs memory.max hard caps, group OOM killer heuristics (oom_score_adj), and Pressure Stall Information (PSI).">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/linux-cgroups-v2-memory-isolation-oom-killer-psi.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html">
-  <meta property="og:title" content="Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors">
-  <meta property="og:description" content="Eliminating CPU memory copy overhead: evaluating sendfile(), splice(), and mmap() syscalls, DMA Scatter-Gather transfers, and direct page-cache to socket network routing.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/linux-cgroups-v2-memory-isolation-oom-killer-psi.html">
+  <meta property="og:title" content="Linux Cgroups v2 &amp; Memory Resource Isolation: OOM Killer Mechanics, Memory High/Max Limits &amp; Pressure Stall Information (PSI)">
+  <meta property="og:description" content="Container memory isolation: implementing Cgroups v2 unified tree hierarchy, memory.high throttling vs memory.max hard caps, group OOM killer heuristics (oom_score_adj), and Pressure Stall Information (PSI).">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-16">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors">
-  <meta name="twitter:description" content="Eliminating CPU memory copy overhead: evaluating sendfile(), splice(), and mmap() syscalls, DMA Scatter-Gather transfers, and direct page-cache to socket network routing.">
+  <meta name="twitter:title" content="Linux Cgroups v2 &amp; Memory Resource Isolation: OOM Killer Mechanics, Memory High/Max Limits &amp; Pressure Stall Information (PSI)">
+  <meta name="twitter:description" content="Container memory isolation: implementing Cgroups v2 unified tree hierarchy, memory.high throttling vs memory.max hard caps, group OOM killer heuristics (oom_score_adj), and Pressure Stall Information (PSI).">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Zero-Copy Network I/O: Sendfile, Splice & Memory-Mapped File Descriptors",
-  "description": "Eliminating CPU memory copy overhead: evaluating sendfile(), splice(), and mmap() syscalls, DMA Scatter-Gather transfers, and direct page-cache to socket network routing.",
-  "url": "https://akmalkhaniub.github.io/blog/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html",
-  "datePublished": "2026-08-16",
-  "keywords": "Linux Kernel, Zero-Copy, Networking, Python",
+  "headline": "Linux Cgroups v2 & Memory Resource Isolation: OOM Killer Mechanics, Memory High/Max Limits & Pressure Stall Information (PSI)",
+  "description": "Container memory isolation: implementing Cgroups v2 unified tree hierarchy, memory.high throttling vs memory.max hard caps, group OOM killer heuristics (oom_score_adj), and Pressure Stall Information (PSI).",
+  "url": "https://akmalkhaniub.github.io/blog/linux-cgroups-v2-memory-isolation-oom-killer-psi.html",
+  "datePublished": "2026-08-17",
+  "keywords": "Linux Kernel, Cgroups v2, OOM Killer, Python",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/linux-cgroups-v2-memory-isolation-oom-killer-psi.html"
 }
   </script>
 
@@ -92,171 +92,198 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Linux Cgroups v2 &amp; Memory Resource Isolation: OOM Killer Mechanics, Memory High/Max Limits &amp; Pressure Stall Information (PSI) Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors</h1>
+            <h1 class="article-title">Linux Cgroups v2 &amp; Memory Resource Isolation: OOM Killer Mechanics, Memory High/Max Limits &amp; Pressure Stall Information (PSI)</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> August 17, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 18, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Linux Kernel</span><span class="project-badge">Zero-Copy</span><span class="project-badge">Networking</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">Linux Kernel</span><span class="project-badge">Cgroups v2</span><span class="project-badge">OOM Killer</span><span class="project-badge">Python</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors</h1>
-<p>When building high-throughput web servers (like <strong>NGINX</strong>, <strong>Kafka</strong>, or <strong>HAProxy</strong>), a primary operation is reading static files from disk or proxying byte streams over network sockets.</p>
-<p>In a traditional file transfer implementation using standard <code>read()</code> and <code>write()</code> calls:</p>
-<ol>
-<li>The CPU copies data from disk to kernel page cache.</li>
-<li>The CPU copies data from kernel page cache to user-space application memory.</li>
-<li>The CPU copies data from user-space application memory to kernel socket buffer.</li>
-<li>The DMA engine copies data from kernel socket buffer to the Network Interface Card (NIC).</li>
-</ol>
-<p>This traditional transfer path requires <strong>4 context switches</strong> and <strong>4 memory copies</strong> (2 CPU copies + 2 DMA copies).</p>
-<p>To achieve maximum network throughput, operating system architects introduced <strong>Zero-Copy Network I/O</strong>.</p>
-<p>Zero-copy techniques—such as <strong><code>sendfile()</code></strong>, <strong><code>splice()</code></strong>, and <strong><code>mmap()</code></strong>—allow kernel Direct Memory Access (DMA) engines to transfer data directly between storage controllers and NICs without copying bytes into user-space memory.</p>
-<p>This article explores the mechanics of zero-copy Linux syscalls.</p>
+<h1>Linux Cgroups v2 &amp; Memory Resource Isolation: OOM Killer Mechanics, Memory High/Max Limits &amp; Pressure Stall Information (PSI)</h1>
+<p>In cloud-native infrastructure (<strong>Kubernetes</strong>, <strong>Docker</strong>, <strong>containerd</strong>, <strong>AWS Fargate</strong>), container multitenancy depends entirely on Linux Kernel <strong>Control Groups (cgroups)</strong>.</p>
+<p>Without strict memory resource isolation, a single misbehaving application container could consume all host RAM, triggering system-wide degradation for adjacent workloads.</p>
+<p>While <strong>Cgroups v1</strong> pioneered container isolation, its fragmented controller hierarchies created memory accounting discrepancies and writeback deadlocks.</p>
+<p>With <strong>Linux Cgroups v2 (Unified Hierarchy)</strong>, the Linux kernel completely redesigned memory control semantics, introducing granular throttling thresholds (<code>memory.high</code>), hard caps (<code>memory.max</code>), group-level Out-Of-Memory (OOM) killing, and <strong>Pressure Stall Information (PSI)</strong> metrics.</p>
+<p>This article details the Cgroups v2 unified tree hierarchy, memory boundary controls, kernel page reclaim algorithms, <code>oom_score</code> heuristics, and PSI stall detection.</p>
 <hr>
-<h2>📖 Traditional 4-Copy vs Zero-Copy Transfer Paths</h2>
-<p>Comparing the CPU memory overhead of traditional I/O vs <code>sendfile()</code> zero-copy transfers:</p>
+<h2>📖 Cgroups v2 Unified Memory Architecture &amp; OOM Mechanics</h2>
+<p>How Linux Cgroups v2 enforces multi-tiered memory boundaries and triggers group-level OOM eviction:</p>
 <div class="mermaid">graph TD
-  subgraph Traditional 4-Copy Path (read + write)
-    Disk1[(Disk Storage)] --&gt;|1. DMA Copy| PageCache1[Kernel Page Cache]
-    PageCache1 --&gt;|2. CPU Copy| UserMem[User Application Memory]
-    UserMem --&gt;|3. CPU Copy| SocketBuf1[Kernel Socket Buffer]
-    SocketBuf1 --&gt;|4. DMA Copy| NIC1[Network NIC Hardware]
+  subgraph Linux Cgroups v2 Memory Boundary Controls
+    Alloc[Process Memory Allocation] --&gt; MinCheck{&quot;Below memory.min? ($0-100 MB)&quot;}
+    MinCheck --&gt;|Yes: Never Reclaimed| SafeRAM[Protected In-RAM Page]
+    
+    MinCheck --&gt;|No| HighCheck{&quot;Exceeds memory.high? ($1 GB)&quot;}
+    HighCheck --&gt;|Yes| Throttle[&quot;⚠️ Kernel Throttle! Force Process Page Reclaim&quot;]
+    
+    HighCheck --&gt;|No| MaxCheck{&quot;Exceeds memory.max? ($2 GB Hard Cap)&quot;}
+    MaxCheck --&gt;|Yes: Direct Reclaim Fails| OOM[&quot;💥 OOM Killer Triggered!&quot;]
   end
   
-  subgraph Zero-Copy Path (sendfile / DMA Scatter-Gather)
-    Disk2[(Disk Storage)] --&gt;|1. DMA Copy| PageCache2[Kernel Page Cache]
-    PageCache2 -.-&gt;|2. Pass Descriptor Pointers Only| SocketBuf2[Kernel Socket Buffer]
-    PageCache2 --&gt;|3. Direct DMA Gather Copy| NIC2[Network NIC Hardware]
+  subgraph Group-Level OOM Killer Execution (memory.oom.group = 1)
+    OOM --&gt; Badness[Compute oom_score = RAM% + oom_score_adj]
+    Badness --&gt; KillTree[&quot;🗡️ Atomic Eviction: Terminate Entire Container Cgroup Process Tree!&quot;]
   end</div>
-<h3>Zero-Copy Linux Primitives</h3>
+<h3>Core Linux Memory Isolation Concepts</h3>
 <ol>
-<li><strong><code>sendfile(out_fd, in_fd, offset, count)</code></strong>: Transfers up to <code>count</code> bytes directly from an open file input descriptor (<code>in_fd</code>) to a socket output descriptor (<code>out_fd</code>). When supported by NIC hardware featuring DMA Scatter-Gather, zero CPU copies are required.</li>
-<li><strong><code>splice(fd_in, off_in, fd_out, off_out, len, flags)</code></strong>: Transfers data between a pipe and a file descriptor without copying data across user space boundaries.</li>
-<li><strong><code>mmap()</code> + <code>write()</code></strong>: Replaces <code>read()</code> by mapping the file contents directly into the user application&#39;s virtual memory address space. This avoids the CPU copy from kernel page cache to user memory, reducing 4 copies down to 3.</li>
+<li><strong>Cgroups v1 vs v2 Unified Hierarchy</strong>:<ul>
+<li><em>Cgroups v1</em>: Managed memory, CPU, and block I/O under separate filesystem trees (<code>/sys/fs/cgroup/memory</code>, <code>/sys/fs/cgroup/blkio</code>). Page cache writeback dirty pages could not be attributed back to the originating memory container.</li>
+<li><em>Cgroups v2</em>: Unified single-tree hierarchy (<code>/sys/fs/cgroup/</code>). All processes reside exclusively in leaf nodes, ensuring seamless unified memory and I/O accounting.</li>
+</ul>
+</li>
+<li><strong>Cgroups v2 Memory Threshold Controls</strong>:<ul>
+<li><strong><code>memory.min</code></strong>: Hard memory protection floor. If memory usage drops below <code>min</code>, kernel background page reclaim algorithms will <em>never</em> reclaim page cache or anonymous memory from this cgroup.</li>
+<li><strong><code>memory.low</code></strong>: Soft memory protection ceiling. Reclaimed only if other un-protected cgroups are exhausted.</li>
+<li><strong><code>memory.high</code></strong>: Throttle boundary. When a container exceeds <code>memory.high</code>, the kernel puts allocating threads to sleep in kernel space, forcing them to perform synchronous page reclaim before returning to user mode. <em>Prevents sudden OOM spikes!</em></li>
+<li><strong><code>memory.max</code></strong>: Hard memory limit cap. If usage exceeds <code>memory.max</code> and direct page reclaim cannot free enough pages, the Out-Of-Memory (OOM) Killer is invoked.</li>
+</ul>
+</li>
+<li><strong>Out-Of-Memory (OOM) Killer Mechanics</strong>:<ul>
+<li><strong><code>oom_score</code> Badness Calculation</strong>: The kernel scans all processes and computes an integer <code>oom_score</code> ($0$ to $1000$) proportional to the process&#39;s memory footprint plus its <code>/proc/[pid]/oom_score_adj</code> offset ($-1000$ to $+1000$).</li>
+<li><strong>Group OOM Killing (<code>memory.oom.group = 1</code>)</strong>: In Cgroups v1, the OOM killer terminated a single random child process, leaving the container in a zombie broken state. In Cgroups v2, setting <code>memory.oom.group = 1</code> forces the kernel to terminate the <strong>entire container process tree atomically</strong>.</li>
+</ul>
+</li>
+<li><strong>Linux Pressure Stall Information (PSI)</strong>:<ul>
+<li>Accessible via <code>/proc/pressure/memory</code>, PSI measures real-time CPU, memory, and I/O resource starvation.</li>
+<li>Tracks percentage of time tasks are stalled waiting for memory (<code>some</code> vs <code>full</code> stalls over 10s, 60s, 300s moving averages). Allows Kubernetes nodes to evict pods proactively before OOM crashes occur!</li>
+</ul>
+</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Zero-Copy Network Transfer Simulator</h2>
-<p>Here is a production-grade Python simulation comparing traditional 4-copy buffer transfers against Zero-Copy DMA transfer pipelines:</p>
+<h2>🛠️ Python Implementation: Linux Cgroups v2 &amp; OOM Killer Simulator</h2>
+<p>Here is a production-grade Python implementation of a Linux Cgroups v2 Memory Controller and OOM Killer Badness Score Calculator:</p>
 <pre><code class="language-python">import time
-from typing import Dict, Any, Tuple
+from typing import Dict, List, Optional
 from pydantic import BaseModel
 
-class TransferMetrics(BaseModel):
-    bytes_transferred: int
-    cpu_copies: int
-    dma_copies: int
-    context_switches: int
-    time_taken_ms: float
+class ProcessControlBlock(BaseModel):
+    pid: int
+    name: str
+    rss_memory_mb: float
+    page_cache_mb: float
+    oom_score_adj: int = 0  # -1000 to +1000
 
-class ZeroCopyNetworkSimulator:
+class CgroupV2Node(BaseModel):
+    cgroup_path: str
+    memory_min_mb: float = 100.0
+    memory_high_mb: float = 500.0
+    memory_max_mb: float = 1000.0
+    memory_oom_group: bool = True
+    processes: List[ProcessControlBlock] = []
+
+class LinuxCgroupsV2MemoryControllerEngine:
     &quot;&quot;&quot;
-    Simulates memory copies and context switches for Traditional vs Zero-Copy transfers.
+    Simulates Linux Cgroups v2 Memory Limits, Page Reclaim, &amp; OOM Killer.
     &quot;&quot;&quot;
-    def __init__(self):
-        # Simulated Memory Buffers
-        self.kernel_page_cache: bytearray = bytearray()
-        self.user_app_memory: bytearray = bytearray()
-        self.kernel_socket_buffer: bytearray = bytearray()
+    def __init__(self, host_total_ram_mb: float = 4096.0):
+        self.host_total_ram_mb = host_total_ram_mb
+        self.cgroups: Dict[str, CgroupV2Node] = {}
 
-    def traditional_read_write_transfer(self, file_bytes: bytes) -&gt; TransferMetrics:
-        &quot;&quot;&quot;
-        Simulates standard read() + write() 4-copy transfer loop.
-        &quot;&quot;&quot;
-        start = time.perf_counter()
-        size = len(file_bytes)
+    def create_cgroup(self, path: str, min_mb: float, high_mb: float, max_mb: float):
+        node = CgroupV2Node(cgroup_path=path, memory_min_mb=min_mb, memory_high_mb=high_mb, memory_max_mb=max_mb)
+        self.cgroups[path] = node
+        print(f&quot; 📂 [Cgroup v2 Created] Path: '{path}' (Min: {min_mb}MB | High: {high_mb}MB | Max: {max_mb}MB)&quot;)
 
-        # 1. Context Switch 1: read() syscall -&gt; DMA Copy 1 (Disk -&gt; Kernel Page Cache)
-        self.kernel_page_cache = bytearray(file_bytes)
+    def allocate_memory(self, cgroup_path: str, process: ProcessControlBlock) -&gt; bool:
+        &quot;&quot;&quot;Simulates memory allocation under Cgroups v2 boundaries.&quot;&quot;&quot;
+        cg = self.cgroups[cgroup_path]
+        cg.processes.append(process)
+
+        total_cg_usage = sum(p.rss_memory_mb + p.page_cache_mb for p in cg.processes)
+        print(f&quot;\n📥 [Memory Alloc] PID #{process.pid} ('{process.name}') in '{cgroup_path}' -&gt; Total Cgroup Usage: {total_cg_usage:.1f}MB&quot;)
+
+        # 1. Check memory.high Throttling Threshold
+        if total_cg_usage &gt; cg.memory_high_mb and total_cg_usage &lt;= cg.memory_max_mb:
+            print(f&quot; ⚠️ [memory.high EXCEEDED!] Usage ({total_cg_usage:.1f}MB &gt; {cg.memory_high_mb}MB). Kernel throttling process in sleep state!&quot;)
+            self._reclaim_page_cache(cg)
+
+        # 2. Check memory.max Hard Cap
+        total_cg_usage = sum(p.rss_memory_mb + p.page_cache_mb for p in cg.processes)
+        if total_cg_usage &gt; cg.memory_max_mb:
+            print(f&quot; 🔴 [memory.max HARD CAP EXCEEDED!] Usage ({total_cg_usage:.1f}MB &gt; {cg.memory_max_mb}MB). Triggering OOM Killer!&quot;)
+            self._trigger_oom_killer(cg)
+            return False
+
+        return True
+
+    def _reclaim_page_cache(self, cg: CgroupV2Node):
+        &quot;&quot;&quot;Simulates Kernel Page Reclaim on Page Cache.&quot;&quot;&quot;
+        print(&quot; 🧹 [Kernel Page Reclaim] Reclaiming page cache blocks...&quot;)
+        for p in cg.processes:
+            if p.page_cache_mb &gt; 10.0:
+                freed = p.page_cache_mb * 0.5
+                p.page_cache_mb -= freed
+                print(f&quot;   • Reclaimed {freed:.1f}MB page cache from PID #{p.pid}&quot;)
+
+    def _trigger_oom_killer(self, cg: CgroupV2Node):
+        &quot;&quot;&quot;Calculates oom_score badness and evicts processes.&quot;&quot;&quot;
+        print(&quot;\n💥 [Linux OOM Killer Triggered!]&quot;)
         
-        # 2. CPU Copy 1 (Kernel Page Cache -&gt; User Memory)
-        self.user_app_memory = bytearray(self.kernel_page_cache)
+        highest_score = -9999
+        victim_proc: Optional[ProcessControlBlock] = None
 
-        # 3. Context Switch 2: write() syscall -&gt; CPU Copy 2 (User Memory -&gt; Kernel Socket Buffer)
-        self.kernel_socket_buffer = bytearray(self.user_app_memory)
+        for p in cg.processes:
+            # Badness score calculation formula
+            ram_pct = ((p.rss_memory_mb + p.page_cache_mb) / self.host_total_ram_mb) * 1000.0
+            badness_score = int(ram_pct + p.oom_score_adj)
+            print(f&quot; 📊 PID #{p.pid} ('{p.name}') -&gt; RSS: {p.rss_memory_mb}MB | oom_score_adj: {p.oom_score_adj} | Calculated oom_score: {badness_score}&quot;)
 
-        # 4. DMA Copy 2 (Kernel Socket Buffer -&gt; NIC Hardware)
-        nic_payload = bytes(self.kernel_socket_buffer)
+            if badness_score &gt; highest_score:
+                highest_score = badness_score
+                victim_proc = p
 
-        elapsed = (time.perf_counter() - start) * 1000.0
-        return TransferMetrics(
-            bytes_transferred=size,
-            cpu_copies=2,
-            dma_copies=2,
-            context_switches=4,
-            time_taken_ms=elapsed
-        )
-
-    def zero_copy_sendfile_transfer(self, file_bytes: bytes) -&gt; TransferMetrics:
-        &quot;&quot;&quot;
-        Simulates sendfile() zero-copy transfer using DMA Scatter-Gather.
-        &quot;&quot;&quot;
-        start = time.perf_counter()
-        size = len(file_bytes)
-
-        # 1. Context Switch 1: sendfile() syscall -&gt; DMA Copy 1 (Disk -&gt; Kernel Page Cache)
-        self.kernel_page_cache = bytearray(file_bytes)
-
-        # 2. Kernel passes descriptor pointers ONLY to Socket Buffer (Zero CPU copies!)
-        # 3. Direct DMA Gather Copy from Page Cache straight to NIC
-        nic_payload = bytes(self.kernel_page_cache)
-
-        elapsed = (time.perf_counter() - start) * 1000.0
-        return TransferMetrics(
-            bytes_transferred=size,
-            cpu_copies=0,  # Zero CPU Copies!
-            dma_copies=2,
-            context_switches=2,
-            time_taken_ms=elapsed
-        )
+        if cg.memory_oom_group:
+            print(f&quot; 🗡️ [group.oom = 1] Terminating ENTIRE container process tree in '{cg.cgroup_path}'! (Victim Leader: PID #{victim_proc.pid})&quot;)
+            cg.processes.clear()
+        elif victim_proc:
+            print(f&quot; 🗡️ Terminating single victim process PID #{victim_proc.pid} ('{victim_proc.name}')!&quot;)
+            cg.processes.remove(victim_proc)
 
 # Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    sim = ZeroCopyNetworkSimulator()
-    # Generate 10MB simulated static file payload
-    file_payload = b&quot;X&quot; * (10 * 1024 * 1024)
+    cgroup_engine = LinuxCgroupsV2MemoryControllerEngine(host_total_ram_mb=4096.0)
 
-    print(&quot;🚀 Demonstrating Traditional 4-Copy vs Zero-Copy Network Transfers...&quot;)
+    print(&quot;🚀 Demonstrating Linux Cgroups v2 &amp; OOM Killer Simulation...&quot;)
     print(&quot;=&quot; * 75)
 
-    # 1. Traditional Read/Write Loop
-    trad_m = sim.traditional_read_write_transfer(file_payload)
-    print(f&quot;\n1. Traditional read() + write() Transfer (10MB):&quot;)
-    print(f&quot;   • CPU Memory Copies:   {trad_m.cpu_copies}&quot;)
-    print(f&quot;   • DMA Memory Copies:   {trad_m.dma_copies}&quot;)
-    print(f&quot;   • Context Switches:    {trad_m.context_switches}&quot;)
-    print(f&quot;   • Execution Time:      {trad_m.time_taken_ms:.3f} ms&quot;)
+    # 1. Create Cgroup Node
+    cgroup_engine.create_cgroup(&quot;/sys/fs/cgroup/kubepods/pod_app1&quot;, min_mb=100, high_mb=400, max_mb=800)
 
-    # 2. Zero-Copy sendfile Transfer
-    zc_m = sim.zero_copy_sendfile_transfer(file_payload)
-    print(f&quot;\n2. Zero-Copy sendfile() Transfer (10MB):&quot;)
-    print(f&quot;   • CPU Memory Copies:   {zc_m.cpu_copies}  (Zero CPU Copies!)&quot;)
-    print(f&quot;   • DMA Memory Copies:   {zc_m.dma_copies}&quot;)
-    print(f&quot;   • Context Switches:    {zc_m.context_switches}  (50% Reduction!)&quot;)
-    print(f&quot;   • Execution Time:      {zc_m.time_taken_ms:.3f} ms&quot;)</code></pre>
+    # 2. Allocate Normal Memory
+    p1 = ProcessControlBlock(pid=101, name=&quot;python_web_server&quot;, rss_memory_mb=250.0, page_cache_mb=100.0, oom_score_adj=0)
+    cgroup_engine.allocate_memory(&quot;/sys/fs/cgroup/kubepods/pod_app1&quot;, p1)
+
+    # 3. Exceed memory.high (Triggers Kernel Throttling &amp; Page Reclaim)
+    p2 = ProcessControlBlock(pid=102, name=&quot;worker_process&quot;, rss_memory_mb=150.0, page_cache_mb=100.0, oom_score_adj=100)
+    cgroup_engine.allocate_memory(&quot;/sys/fs/cgroup/kubepods/pod_app1&quot;, p2)
+
+    # 4. Exceed memory.max (Triggers OOM Killer Group Eviction)
+    p3 = ProcessControlBlock(pid=103, name=&quot;memory_leak_script&quot;, rss_memory_mb=500.0, page_cache_mb=50.0, oom_score_adj=500)
+    cgroup_engine.allocate_memory(&quot;/sys/fs/cgroup/kubepods/pod_app1&quot;, p3)</code></pre>
 <hr>
-<h2>🚨 Zero-Copy Gotchas &amp; Best Practices</h2>
-<p>When utilizing zero-copy network calls:</p>
+<h2>🚨 Cgroups v2 Gotchas &amp; Best Practices</h2>
+<p>When configuring Linux container memory limits:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Use Zero-Copy Only for Unmodified Data</strong>: <code>sendfile()</code> works because the application does not alter the bytes being transferred. If your application needs to inspect, encrypt, or compress the payload in user space before sending, standard user memory copies are required (or TLS offload hardware).</p>
+  <div class="alert-content"><p><strong>Always Set <code>memory.high</code> Below <code>memory.max</code> in Kubernetes Pods</strong>: Setting <code>memory.high</code> to $80%$ of <code>memory.max</code> gives the Linux kernel room to throttle process allocation speed and perform page cache reclaim, preventing sudden Out-Of-Memory (OOM) pod crashes.</p>
 </div>
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Watch Out for Truncated File Descriptor Race Conditions</strong>: If another process truncates a file while <code>sendfile()</code> is actively reading page cache bytes, the kernel emits a <code>SIGBUS</code> signal. Always handle <code>SIGBUS</code> or map files with appropriate file lock flags.</p>
+  <div class="alert-content"><p><strong>Enable <code>memory.oom.group = 1</code> for Multiprocess Containers</strong>: By default in un-configured cgroups, the kernel OOM killer kills only one child process, leaving the container running in a broken state. Set <code>memory.oom.group = 1</code> so Kubernetes detects the pod crash and restarts the container cleanly.</p>
 </div>
 </div>
 <hr>
 <h2>📈 Real-World Enterprise Impact</h2>
-<p>High-throughput event streaming systems (like <strong>Apache Kafka</strong>) use <code>sendfile()</code> to stream topic logs directly from disk to network sockets, achieving:</p>
+<p>Linux Cgroups v2 memory isolation (powering <strong>Kubernetes 1.25+</strong>, <strong>Docker Systemd Drivers</strong>, and <strong>Flatpak</strong>) reports:</p>
 <ul>
-<li><strong>Maxing Out 100Gbps Network Links</strong>: saturating physical network interfaces with minimal CPU usage.</li>
-<li><strong>60% Reduction in CPU Utilization</strong>: Eliminating CPU memory copies frees up CPU cycles for application logic.</li>
+<li><strong>Zero Host Node OOM Collapses</strong>: Multi-tiered <code>memory.high</code> throttling and <code>memory.max</code> hard caps protect host Linux kernel stability.</li>
+<li><strong>$10\times$ Faster Pod Recovery</strong>: Group OOM eviction (<code>memory.oom.group = 1</code>) ensures clean, deterministic container restarts without leaving zombie orphan processes.</li>
 </ul>
 
           </div>
@@ -264,8 +291,8 @@ if __name__ == &quot;__main__&quot;:
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fzero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Zero-Copy%20Network%20I%2FO%3A%20Sendfile%2C%20Splice%20%26%20Memory-Mapped%20File%20Descriptors&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fzero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flinux-cgroups-v2-memory-isolation-oom-killer-psi.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Linux%20Cgroups%20v2%20%26%20Memory%20Resource%20Isolation%3A%20OOM%20Killer%20Mechanics%2C%20Memory%20High%2FMax%20Limits%20%26%20Pressure%20Stall%20Information%20(PSI)&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flinux-cgroups-v2-memory-isolation-oom-killer-psi.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -288,7 +315,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="linux-cgroups-v2-memory-isolation-oom-killer-psi.html">Linux Cgroups v2 &amp; Memory Resource Isolation: OOM Killer Mechanics, Memory High/Max Limits &amp; Pressure Stall Information (PSI)<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -558,7 +585,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="protocol-buffers-grpc-streaming-multiplexed-http2-framing.html">Protocol Buffers &amp; gRPC Streaming: Multiplexed HTTP/2 Framing Internals<span class="sidebar-post-date">August 17, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html">Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors<span class="sidebar-post-date">August 17, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
