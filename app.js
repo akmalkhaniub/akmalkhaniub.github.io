@@ -41,6 +41,27 @@ document.addEventListener('DOMContentLoaded', () => {
         featured.querySelector('.featured-readtime').innerHTML = `<i class="fa-regular fa-clock"></i> ${latest.readTime}`;
         featured.querySelector('.featured-read-btn').href = url;
       })
-      .catch(() => { /* keep the hardcoded fallback content */ });
+  // Project Category Filter Handler
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const projectCards = document.querySelectorAll('.project-box[data-category]');
+
+  if (filterBtns.length > 0 && projectCards.length > 0) {
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filterVal = btn.getAttribute('data-filter');
+
+        projectCards.forEach(card => {
+          const categories = card.getAttribute('data-category') || '';
+          if (filterVal === 'all' || categories.split(' ').includes(filterVal)) {
+            card.classList.remove('hidden-project');
+          } else {
+            card.classList.add('hidden-project');
+          }
+        });
+      });
+    });
   }
 });
