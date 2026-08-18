@@ -10,7 +10,7 @@ This repository hosts the source code for my professional portfolio website: **[
 It is a modern, Bento Grid-style site built with semantic HTML5, custom CSS variables, and vanilla JavaScript — plus a fully **pre-rendered static blog** for maximum SEO.
 
 ## 🏗️ Structure & Key Features
-- **Profile Hero:** Overview of my experience as a Senior Staff Engineer focusing on AI-Powered Platforms.
+- **Profile Hero:** Overview of my experience as a Senior Full Stack AI Engineer focusing on AI-Powered Platforms.
 - **Featured Projects:** Highlights of core projects linking to their source code.
 - **Static Blog:** 38+ technical deep-dives, pre-rendered to static HTML pages with full Open Graph / Twitter Card / JSON-LD metadata.
 - **SEO:** `sitemap.xml`, `feed.xml` (RSS), `robots.txt`, canonical URLs, and structured data on every page.
