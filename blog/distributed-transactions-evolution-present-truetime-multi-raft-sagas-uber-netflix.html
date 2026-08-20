@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
+  <title>The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft &amp; Event-Driven Sagas at Google, Uber &amp; Netflix | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Planetary-scale transaction architectures: Google Spanner TrueTime commit-wait rule (2ε), CockroachDB/YugabyteDB Multi-Raft HLC MVCC, and Uber/Netflix Saga orchestration with transactional outbox and idempotency keys.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/distributed-transactions-evolution-present-truetime-multi-raft-sagas-uber-netflix.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html">
-  <meta property="og:title" content="The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms">
-  <meta property="og:description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-transactions-evolution-present-truetime-multi-raft-sagas-uber-netflix.html">
+  <meta property="og:title" content="The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft &amp; Event-Driven Sagas at Google, Uber &amp; Netflix">
+  <meta property="og:description" content="Planetary-scale transaction architectures: Google Spanner TrueTime commit-wait rule (2ε), CockroachDB/YugabyteDB Multi-Raft HLC MVCC, and Uber/Netflix Saga orchestration with transactional outbox and idempotency keys.">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-25">
+  <meta property="article:published_time" content="2026-08-19">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms">
-  <meta name="twitter:description" content="Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:title" content="The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft &amp; Event-Driven Sagas at Google, Uber &amp; Netflix">
+  <meta name="twitter:description" content="Planetary-scale transaction architectures: Google Spanner TrueTime commit-wait rule (2ε), CockroachDB/YugabyteDB Multi-Raft HLC MVCC, and Uber/Netflix Saga orchestration with transactional outbox and idempotency keys.">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "The Database is the Blackboard: Shared State & Session Store Patterns for Agent Swarms",
-  "description": "Architecting shared state storage for multi-agent workflows. Designing PostgreSQL JSONB schemas to support long-term context memory, parallel task updates, and transactional locks.",
-  "url": "https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html",
-  "datePublished": "2026-04-25",
-  "keywords": "Database Scaling, System Design, PostgreSQL, Concurrency",
+  "headline": "The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft & Event-Driven Sagas at Google, Uber & Netflix",
+  "description": "Planetary-scale transaction architectures: Google Spanner TrueTime commit-wait rule (2ε), CockroachDB/YugabyteDB Multi-Raft HLC MVCC, and Uber/Netflix Saga orchestration with transactional outbox and idempotency keys.",
+  "url": "https://akmalkhaniub.github.io/blog/distributed-transactions-evolution-present-truetime-multi-raft-sagas-uber-netflix.html",
+  "datePublished": "2026-08-19",
+  "keywords": "Google Spanner, TrueTime, Multi-Raft, Sagas, Uber, Netflix",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/system-design-blackboard-database-shared-state.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/distributed-transactions-evolution-present-truetime-multi-raft-sagas-uber-netflix.html"
 }
   </script>
 
@@ -92,173 +92,304 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft &amp; Event-Driven Sagas at Google, Uber &amp; Netflix Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms</h1>
+            <h1 class="article-title">The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft &amp; Event-Driven Sagas at Google, Uber &amp; Netflix</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> April 26, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 20, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Database Scaling</span><span class="project-badge">System Design</span><span class="project-badge">PostgreSQL</span><span class="project-badge">Concurrency</span></div>
+              <span><i class="fa-regular fa-clock"></i> 11 min read</span>
+              <div class="article-tags"><span class="project-badge">Google Spanner</span><span class="project-badge">TrueTime</span><span class="project-badge">Multi-Raft</span><span class="project-badge">Sagas</span><span class="project-badge">Uber</span><span class="project-badge">Netflix</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms</h1>
-<div class="alert alert-note">
-  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
-  <div class="alert-content"><p><strong>📖 Article Overview</strong>
-As AI agent architectures evolve from simple chain models into complex swarms, state coordination becomes the primary design challenge. Rather than relying solely on direct message exchanges (e.g. HTTP posts, WebSockets) which create coupling and high coordination overhead, advanced multi-agent systems rely on <strong>Blackboard Architectures</strong>. In this article, we analyze shared state patterns, design a PostgreSQL JSONB blackboard schema, and implement a concurrency-safe blackboard storage manager in Python.</p>
-</div>
-</div>
-<hr>
-<h2>The Handoff Problem</h2>
-<p>In a decentralized swarm, agent nodes must transfer execution control and context data to one another. There are two primary architectural paradigms to handle this:</p>
+<h1>The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft &amp; Event-Driven Sagas at Google, Uber &amp; Netflix</h1>
+<p>Following the collapse of monolithic synchronous Two-Phase Commit (2PC) at internet scale, the distributed systems industry bifurcated into two dominant modern paradigms:</p>
 <ol>
-<li><strong>Direct Peer-to-Peer Message Passing</strong>: Agent A calls Agent B&#39;s API. This is easy to set up but highly coupled. If Agent B crashes, the state is lost, and auditing execution paths requires complex trace collectors.</li>
-<li><strong>Blackboard Pattern (Shared State DB)</strong>: A central, persistent memory store—the &quot;Blackboard&quot;—holds the global state, task lists, and execution history. Agent nodes poll or subscribe to this blackboard. They inspect the current board state, write updates, and hand off control by updating the task status.</li>
+<li><strong>Global NewSQL Distributed Databases (Google Spanner, CockroachDB, YugabyteDB)</strong>: Re-architecting distributed ACID transactions using <strong>atomic clocks (TrueTime)</strong>, <strong>Hybrid Logical Clocks (HLC)</strong>, and <strong>Multi-Raft consensus</strong>.</li>
+<li><strong>Event-Driven Saga Orchestration in Microservices (Uber, Netflix, Shopify, DoorDash)</strong>: Decoupling business workflows into asynchronous choreographies and orchestrations using <strong>Transactional Outbox</strong>, <strong>Idempotency Keys</strong>, and <strong>Compensating Transactions</strong>.</li>
 </ol>
-<div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart TD
-    subgraph Blackboard Architecture
-        DB[(Shared Blackboard DB)]
-        Coord[Coordinator Agent] --&gt;|Reads &amp; Schedules Tasks| DB
-        W1[Worker Agent: Researcher] &lt;--&gt;|Fetch task &amp; Write findings| DB
-        W2[Worker Agent: Coder] &lt;--&gt;|Fetch task &amp; Write code| DB
-        W3[Worker Agent: Validator] &lt;--&gt;|Fetch task &amp; Write test reports| DB
-    end</div>
-<p>Using a blackboard database decouples execution nodes, enforces transactional consistency, and provides built-in auditability of the agent swarm’s reasoning path.</p>
+<p>This article examines how Google, Uber, Netflix, and modern e-commerce engineering teams solved distributed consistency at planetary scale.</p>
+<div class="mermaid">graph TD
+  subgraph The Modern Distributed Transaction Landscape (2010s - 2020s)
+    Direction[Two Modern Paradigms] --&gt; NewSQL[Planetary NewSQL DBs]
+    Direction --&gt; MicroSagas[Event-Driven Microservice Sagas]
+    
+    NewSQL --&gt; Spanner[&quot;Google Spanner: TrueTime &amp; Commit-Wait Rule (2ε)&quot;]
+    NewSQL --&gt; Cockroach[&quot;CockroachDB / YugabyteDB: Multi-Raft &amp; HLC MVCC&quot;]
+    
+    MicroSagas --&gt; Uber[&quot;Uber Cadence / Temporal: Trip &amp; Payout Sagas&quot;]
+    MicroSagas --&gt; Netflix[&quot;Netflix Conductor: Outbox CDC &amp; Billing Sagas&quot;]
+    MicroSagas --&gt; Shopify[&quot;Shopify / DoorDash: Idempotency Keys &amp; Capture&quot;]
+  end</div>
 <hr>
-<h2>Designing a Concurrency-Safe Schema</h2>
-<p>When multiple agents write to the same blackboard concurrently, they risk overwrite errors (race conditions). We prevent this using <strong>Transactional Locks</strong>:</p>
+<h2>🛰️ 1. Google Spanner: TrueTime &amp; External Consistency</h2>
+<p>In 2012, Google published <em>Spanner: Google’s Globally-Distributed Database</em> (Corbett et al.), followed by <em>Spanner: Becoming a SQL System</em> (2017).</p>
+<p>Spanner was the first system to achieve <strong>External Consistency (Strict Serializability / Linearizability)</strong> globally while supporting distributed multi-shard transactions.</p>
+<div class="mermaid">sequenceDiagram
+  autonumber
+  participant Client as Client Application
+  participant PaxosLeader as Spanner Paxos Leader
+  participant TrueTime as GPS &amp; Atomic Clock Daemon
+
+  Client-&gt;&gt;PaxosLeader: Commit Transaction Tx1
+  PaxosLeader-&gt;&gt;TrueTime: TT.now() -&gt; [earliest, latest]
+  Note over PaxosLeader: Pick commit timestamp s = latest
+  PaxosLeader-&gt;&gt;PaxosLeader: Replicate commit across Paxos Group
+  Note over PaxosLeader: Commit Wait Rule: Sleep until TT.now().earliest &gt; s
+  PaxosLeader-&gt;&gt;Client: Tx1 Committed at timestamp s
+  Note over Client: Any future Tx2 is guaranteed timestamp s2 &gt; s</div>
+<h3>The TrueTime API &amp; Bounded Clock Uncertainty</h3>
+<p>Standard server clocks drift unpredictably ($100\text{--}500\text{ ms}$). Spanner solved this by installing dedicated GPS receivers and atomic rubidium clocks in every Google datacenter:</p>
+<p>$$\text{TrueTime API: } \text{TT.now}() \to [t_{\text{earliest}}, t_{\text{latest}}] \quad \text{where } \epsilon = \frac{t_{\text{latest}} - t_{\text{earliest}}}{2}$$</p>
+<p>The uncertainty parameter $\epsilon$ is bounded between <strong>$1\text{ ms}$ and $7\text{ ms}$</strong>.</p>
+<h3>The Commit Wait Rule</h3>
+<p>To guarantee that if transaction $T_2$ begins after transaction $T_1$ commits ($T_1 &lt; T_2$), then $T_1$&#39;s timestamp $s_1 &lt; s_2$:</p>
+<ol>
+<li>The transaction leader assigns a commit timestamp $s = \text{TT.now}().\text{latest}$.</li>
+<li>The leader executes the <strong>Commit Wait Rule</strong>: it holds locks and delays responding to the client until:</li>
+</ol>
+<p>$$\text{TT.now}().\text{earliest} &gt; s \quad (\text{Sleep duration } \approx 2 \cdot \epsilon)$$</p>
+<p>This $2\epsilon$ pause guarantees that the commit timestamp $s$ has definitely passed in absolute real-world physical time everywhere on Earth before any subsequent transaction can start.</p>
+<p>Google uses Spanner to power <strong>Google Play Billing</strong>, <strong>Google Ads</strong>, and <strong>Google Cloud Spanner</strong>, serving millions of ACID writes per second without distributed deadlocks.</p>
+<hr>
+<h2>⏱️ 2. CockroachDB &amp; YugabyteDB: Hybrid Logical Clocks (HLC) &amp; Multi-Raft</h2>
+<p>Because commodity cloud environments (AWS, GCP VMs, Azure) lack physical GPS atomic clocks, open-source NewSQL databases (<strong>CockroachDB</strong>, <strong>YugabyteDB</strong>) utilize <strong>Hybrid Logical Clocks (HLC)</strong> (Kulkarni et al., 2014) combined with <strong>Multi-Raft</strong>.</p>
+<pre><code class="language-plaintext">+-----------------------------------------------------------------------+
+|                    Hybrid Logical Clock (HLC) Tuple                   |
+|                        hlc = ( l.physical, c.logical )                |
++-----------------------------------------------------------------------+
+|  l.physical : Highest physical wall-clock timestamp observed so far.  |
+|  c.logical  : Logical sequence counter incremented on causal events. |
++-----------------------------------------------------------------------+</code></pre>
+<h3>Multi-Raft Range Splits &amp; Distributed MVCC Write Intents</h3>
+<p>In CockroachDB and YugabyteDB:</p>
+<ol>
+<li>The global keyspace is partitioned into small contiguous <strong>$64\text{ MB}$ ranges</strong>.</li>
+<li>Each range is independently replicated across 3 or 5 nodes via a dedicated <strong>Raft consensus group</strong> (<strong>Multi-Raft</strong>).</li>
+<li>A cross-range transaction writes provisional <strong>Write Intent records</strong> (inline transactional locks pointing to a central Transaction Record in Raft).</li>
+<li>As soon as the Transaction Record status is committed via Raft quorum, the transaction is atomically committed; subsequent readers convert intents to permanent MVCC values asynchronously.</li>
+</ol>
+<hr>
+<h2>🚗 3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal</h2>
+<p>At <strong>Uber</strong>, a single trip lifecycle spans multiple distributed microservices: Rider Fare Quoting, Driver Matching, Trip In-Progress Tracking, Fraud Check, Rider Payment Capture, and Driver Payout.</p>
+<p>Uber cannot use a single monolithic database lock for a 30-minute ride. Instead, Uber created <strong>Cadence</strong> (which evolved into <strong>Temporal</strong>) to orchestrate <strong>Distributed Sagas</strong>.</p>
+<div class="mermaid">stateDiagram-v2
+  [*] --&gt; AuthorizeRiderHold
+  AuthorizeRiderHold --&gt; MatchDriver : Hold Succeeded
+  AuthorizeRiderHold --&gt; FailTrip : Payment Hold Failed
+  
+  MatchDriver --&gt; StartTrip : Driver Accepted
+  MatchDriver --&gt; ReleaseRiderHold : Driver Cancelled / No Match
+  
+  StartTrip --&gt; CompleteTrip : Destination Reached
+  CompleteTrip --&gt; CapturePayment : Fare Calculated
+  
+  CapturePayment --&gt; PayoutDriver : Card Charged
+  CapturePayment --&gt; TriggerCollectionRetry : Card Declined (Compensate)
+  
+  PayoutDriver --&gt; [*] : Success
+  ReleaseRiderHold --&gt; [*] : Compensated
+  TriggerCollectionRetry --&gt; [*] : Grace Period &amp; Recovery</div>
+<h3>Uber&#39;s Orchestrated Saga Principles:</h3>
+<ol>
+<li><strong>Forward Actions &amp; Compensating Actions</strong>: Every forward step has an explicit undo action:<ul>
+<li><em>Forward</em>: <code>AuthorizeHold($35.00)</code> $\longleftrightarrow$ <em>Compensate</em>: <code>VoidAuthorization($35.00)</code></li>
+<li><em>Forward</em>: <code>AssignDriver(driver_id)</code> $\longleftrightarrow$ <em>Compensate</em>: <code>UnassignAndNotify(driver_id)</code></li>
+</ul>
+</li>
+<li><strong>State Machine Persistence</strong>: Temporal logs every event to a durable event history table in Docstore/Cassandra. If the worker machine crashes, a new worker rehydrates the exact state and resumes execution without re-executing completed financial steps.</li>
+</ol>
+<hr>
+<h2>🎬 4. Netflix Engineering: Conductor &amp; Transactional Outbox with Debezium</h2>
+<p>At <strong>Netflix</strong>, subscription renewals, video transcoding pipelines, and digital rights management (DRM) licensing are orchestrated by <strong>Netflix Conductor</strong>.</p>
+<p>To eliminate the dual-write bug (writing to a database and publishing to Apache Kafka without 2PC), Netflix and large e-commerce platforms employ the <strong>Transactional Outbox Pattern</strong>:</p>
+<div class="mermaid">graph LR
+  subgraph Local Atomic DB Transaction
+    Service[Subscription Service] --&gt;|1. Update Account &amp; Insert Outbox| DB[(PostgreSQL Database)]
+    DB --&gt; Tables[Subscription Table + Outbox Table]
+  end
+  
+  subgraph Change Data Capture CDC
+    DB --&gt;|2. Read WAL Log| Debezium[Debezium CDC Connector]
+    Debezium --&gt;|3. At-Least-Once Delivery| Kafka[Apache Kafka Cluster]
+  end
+  
+  subgraph Consumers &amp; Idempotency
+    Kafka --&gt;|4. Consume Event| BillingWorker[Billing Worker]
+    BillingWorker --&gt;|5. Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
+  end</div>
+<h3>Key Guarantees:</h3>
 <ul>
-<li><strong>Relational Schema (PostgreSQL)</strong>: We represent the blackboard as a table containing a unique <code>task_id</code>, a status column (<code>PENDING</code>, <code>RUNNING</code>, <code>COMPLETED</code>), and a JSONB column containing the execution context.</li>
-<li><strong>Concurrency Locking</strong>: When an agent claims a task, it runs a <code>SELECT ... FOR UPDATE</code> query. This locks the database row, preventing other agent threads from claiming the same task. The agent updates the status and context, then commits the transaction, releasing the lock.</li>
+<li><strong>Zero Dual-Write Inconsistencies</strong>: The application only writes to its local database.</li>
+<li><strong>At-Least-Once Event Delivery</strong>: Debezium streams WAL mutations directly into Kafka topics.</li>
+<li><strong>Idempotent Consumers</strong>: Downstream consumers check unique <code>idempotency_key</code> hashes before processing payments, discarding duplicates caused by network retries.</li>
 </ul>
 <hr>
-<h2>Code Demo: Conactivity-Safe Blackboard Manager</h2>
-<p>Below is a complete Python script demonstrating a Blackboard manager using SQLite (with SQLAlchemy) that simulates concurrent workers processing tasks from a shared state repository using row-level transactional boundaries.</p>
-<pre><code class="language-python">import time
-import threading
-from typing import Dict, Any, List
-from sqlalchemy import create_engine, Column, Integer, String, JSON
-from sqlalchemy.orm import declarative_base, sessionmaker
+<h2>🛠️ TypeScript Implementation: Orchestrated Trip Saga with State Compensations &amp; Idempotency</h2>
+<p>Here is a production-grade TypeScript implementation of an Orchestrated Trip Lifecycle &amp; Payment Saga with automated backward compensation:</p>
+<pre><code class="language-typescript">import { randomUUID } from 'crypto';
 
-Base = declarative_base()
+interface SagaContext {
+  tripId: string;
+  riderId: string;
+  driverId?: string;
+  fareAmount: number;
+  paymentAuthId?: string;
+  idempotencyKey: string;
+}
 
-class BlackboardTask(Base):
-    __tablename__ = 'blackboard_tasks'
-    id = Column(Integer, primary_key=True)
-    status = Column(String(50), default=&quot;PENDING&quot;)
-    assigned_agent = Column(String(100), nullable=True)
-    context = Column(JSON, default=dict)
+interface SagaStep {
+  name: string;
+  execute: (ctx: SagaContext) =&gt; Promise&lt;boolean&gt;;
+  compensate: (ctx: SagaContext) =&gt; Promise&lt;void&gt;;
+}
 
-# Setup Database
-engine = create_engine(&quot;sqlite:///:memory:&quot;, connect_args={&quot;check_same_thread&quot;: False})
-Base.metadata.create_all(engine)
-SessionLocal = sessionmaker(bind=engine)
+export class UberTripSagaOrchestrator {
+  private executedSteps: SagaStep[] = [];
+  private idempotencyStore: Set&lt;string&gt; = new Set();
 
-class BlackboardRepository:
-    @staticmethod
-    def claim_task(agent_name: str, task_id: int) -&gt; bool:
-        session = SessionLocal()
-        try:
-            # In PostgreSQL, we would run: SELECT * FROM blackboard_tasks WHERE id = :id FOR UPDATE
-            task = session.query(BlackboardTask).filter(BlackboardTask.id == task_id).with_for_update().first()
-            
-            if task and task.status == &quot;PENDING&quot;:
-                print(f&quot;[{agent_name}] Row lock acquired. Claiming task {task_id}...&quot;)
-                task.status = &quot;RUNNING&quot;
-                task.assigned_agent = agent_name
-                task.context[&quot;claimed_at&quot;] = time.time()
-                session.commit()
-                return True
-            return False
-        except Exception as e:
-            session.rollback()
-            print(f&quot;[{agent_name}] Error claiming task: {e}&quot;)
-            return False
-        finally:
-            session.close()
+  async runSaga(ctx: SagaContext, steps: SagaStep[]): Promise&lt;boolean&gt; {
+    console.log(`\n🚀 [Saga Orchestrator] Starting Trip Saga ${ctx.tripId} (Idempotency Key: ${ctx.idempotencyKey})`);
 
-    @staticmethod
-    def update_task_results(agent_name: str, task_id: int, results: Dict[str, Any]) -&gt; None:
-        session = SessionLocal()
-        try:
-            task = session.query(BlackboardTask).filter(BlackboardTask.id == task_id).first()
-            if task and task.assigned_agent == agent_name:
-                # Merge existing context data
-                current_context = dict(task.context)
-                current_context.update(results)
-                task.context = current_context
-                task.status = &quot;COMPLETED&quot;
-                session.commit()
-                print(f&quot;[{agent_name}] Successfully submitted results for task {task_id}.&quot;)
-        except Exception as e:
-            session.rollback()
-            print(f&quot;Error updating task: {e}&quot;)
-        finally:
-            session.close()
+    // 1. Idempotency Check
+    if (this.idempotencyStore.has(ctx.idempotencyKey)) {
+      console.log(` ⚠️ [Duplicate Request] Idempotency key '${ctx.idempotencyKey}' already processed. Returning cached success.`);
+      return true;
+    }
 
-# Simulate Agent Worker Node Execution
-def run_worker_node(agent_name: str, task_id: int, task_duration: float, mock_data: Dict[str, Any]):
-    print(f&quot;[{agent_name}] Worker spawned.&quot;)
-    # 1. Attempt to claim task
-    if BlackboardRepository.claim_task(agent_name, task_id):
-        # 2. Simulate processing
-        time.sleep(task_duration)
-        # 3. Write results back
-        BlackboardRepository.update_task_results(agent_name, task_id, mock_data)
-    else:
-        print(f&quot;[{agent_name}] Failed to claim task {task_id} (already locked/claimed).&quot;)
+    for (const step of steps) {
+      console.log(` ⏳ Executing Step: [${step.name}]...`);
+      try {
+        const success = await step.execute(ctx);
+        if (!success) {
+          console.error(` ❌ Step [${step.name}] failed. Initiating backward compensation rollback!`);
+          await this.rollback(ctx);
+          return false;
+        }
+        this.executedSteps.push(step);
+      } catch (err: any) {
+        console.error(` 💥 Exception in [${step.name}]: ${err.message}. Rolling back!`);
+        await this.rollback(ctx);
+        return false;
+      }
+    }
 
-if __name__ == &quot;__main__&quot;:
-    # Seed a task in the blackboard database
-    session = SessionLocal()
-    new_task = BlackboardTask(id=101, context={&quot;input&quot;: &quot;Analyze security vulnerabilities in login.py&quot;})
-    session.add(new_task)
-    session.commit()
-    session.close()
+    // Mark completed in idempotency store
+    this.idempotencyStore.add(ctx.idempotencyKey);
+    console.log(` 🎉 [Saga Complete] Trip ${ctx.tripId} successfully executed and committed!`);
+    return true;
+  }
 
-    # Spawn two concurrent threads attempting to process the same task
-    worker_a = threading.Thread(
-        target=run_worker_node, 
-        args=(&quot;Security_Scanner_A&quot;, 101, 1.0, {&quot;vulnerabilities&quot;: [&quot;SQL Injection on line 42&quot;]})
-    )
-    worker_b = threading.Thread(
-        target=run_worker_node, 
-        args=(&quot;Security_Scanner_B&quot;, 101, 0.5, {&quot;vulnerabilities&quot;: [&quot;XSS on line 12&quot;]})
-    )
+  private async rollback(ctx: SagaContext): Promise&lt;void&gt; {
+    console.log(`\n🔄 [ROLLBACK INITIATED] Reversing ${this.executedSteps.length} completed steps in LIFO order...`);
+    while (this.executedSteps.length &gt; 0) {
+      const step = this.executedSteps.pop()!;
+      try {
+        console.log(`   ↩️ Compensating: [${step.name}]`);
+        await step.compensate(ctx);
+      } catch (compErr: any) {
+        console.error(`   🚨 CRITICAL: Compensation failed on [${step.name}]: ${compErr.message}. Queuing for Manual Dead-Letter Queue (DLQ)!`);
+      }
+    }
+  }
+}
 
-    worker_a.start()
-    worker_b.start()
+// --- DEFINE SAGA STEPS ---
+const AuthorizePaymentStep: SagaStep = {
+  name: &quot;Authorize Payment Hold&quot;,
+  execute: async (ctx) =&gt; {
+    ctx.paymentAuthId = `AUTH_${randomUUID().substring(0, 8)}`;
+    console.log(`     💳 Authorized $${ctx.fareAmount.toFixed(2)} hold on Rider card (${ctx.paymentAuthId})`);
+    return true;
+  },
+  compensate: async (ctx) =&gt; {
+    if (ctx.paymentAuthId) {
+      console.log(`     💸 Voiding Payment Hold ${ctx.paymentAuthId} for $${ctx.fareAmount.toFixed(2)}`);
+    }
+  }
+};
 
-    worker_a.join()
-    worker_b.join()
+const AssignDriverStep: SagaStep = {
+  name: &quot;Assign Driver&quot;,
+  execute: async (ctx) =&gt; {
+    ctx.driverId = &quot;DRIVER_8842&quot;;
+    console.log(`     🚗 Matched Driver ${ctx.driverId} to Trip ${ctx.tripId}`);
+    return true;
+  },
+  compensate: async (ctx) =&gt; {
+    if (ctx.driverId) {
+      console.log(`     🚫 Unassigning Driver ${ctx.driverId} and broadcasting match back to fleet`);
+    }
+  }
+};
 
-    # Read final results from the blackboard
-    session = SessionLocal()
-    final_task = session.query(BlackboardTask).filter(BlackboardTask.id == 101).first()
-    print(&quot;\n--- Final Blackboard State ---&quot;)
-    print(f&quot;Status: {final_task.status}&quot;)
-    print(f&quot;Assigned Agent: {final_task.assigned_agent}&quot;)
-    print(f&quot;Context Payload: {final_task.context}&quot;)
-    session.close()</code></pre>
+const CapturePaymentStep: SagaStep = {
+  name: &quot;Capture Final Payment&quot;,
+  execute: async (ctx) =&gt; {
+    // Simulate payment gateway failure scenario
+    if (ctx.fareAmount &gt; 100) {
+      console.log(`     ❌ Bank Gateway Error: Insufficient funds for fare $${ctx.fareAmount}`);
+      return false; // Triggers rollback
+    }
+    console.log(`     💰 Captured $${ctx.fareAmount.toFixed(2)} from Rider account.`);
+    return true;
+  },
+  compensate: async (ctx) =&gt; {
+    console.log(`     🔄 Issuing credit refund to Rider ${ctx.riderId}`);
+  }
+};
+
+// Demonstration Execution
+if (require.main === module) {
+  const orchestrator = new UberTripSagaOrchestrator();
+
+  const successContext: SagaContext = {
+    tripId: &quot;TRIP_101&quot;,
+    riderId: &quot;RIDER_99&quot;,
+    fareAmount: 32.50,
+    idempotencyKey: &quot;REQ_IDEMPOTENCY_001&quot;
+  };
+
+  const failureContext: SagaContext = {
+    tripId: &quot;TRIP_102&quot;,
+    riderId: &quot;RIDER_77&quot;,
+    fareAmount: 145.00, // Trigger payment decline
+    idempotencyKey: &quot;REQ_IDEMPOTENCY_002&quot;
+  };
+
+  (async () =&gt; {
+    // 1. Run Successful Saga
+    await orchestrator.runSaga(successContext, [AuthorizePaymentStep, AssignDriverStep, CapturePaymentStep]);
+
+    // 2. Run Failing Saga with Compensations
+    await orchestrator.runSaga(failureContext, [AuthorizePaymentStep, AssignDriverStep, CapturePaymentStep]);
+  })();
+}</code></pre>
 <hr>
-<h2>Key Takeaways</h2>
-<ul>
-<li><strong>Decoupled Swarms</strong>: Blackboard systems decouple agent logic. Workers do not need to know which agent takes the task next; they only need to know how to read and write to the database.</li>
-<li><strong>Audit Trail Out of the Box</strong>: Because all intermediate thought tokens, tool execution payloads, and status changes are committed directly to the database, tracing lineage is trivial.</li>
-<li><strong>Strict State Locking</strong>: Utilizing database locks (<code>FOR UPDATE</code>) prevents duplication and race conditions in high-throughput enterprise agent environments.</li>
-</ul>
+<h2>🚨 Modern Architecture Gotchas &amp; Best Practices</h2>
+<div class="alert alert-important">
+  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
+  <div class="alert-content"><p><strong>Compensations Must Be Idempotent and Commutative</strong>: In asynchronous saga failures, compensating actions can be executed multiple times due to retry storms. Ensure every compensating endpoint handles duplicate invocations safely.</p>
+</div>
+</div>
+<div class="alert alert-tip">
+  <div class="alert-title"><i class="fa-solid fa-lightbulb"></i> Tip</div>
+  <div class="alert-content"><p><strong>Use NewSQL for Direct Relational Needs &amp; Sagas for Distributed Workflows</strong>: If your data models naturally fit inside a single cluster (e.g. user authentication or financial balances), use <strong>CockroachDB / Spanner</strong>. If your workflow spans multiple decoupled microservices with external APIs (Stripe, Twilio, Shipping), use <strong>Temporal / Sagas</strong>.</p>
+</div>
+</div>
+<hr>
+<h2>🔮 Next in the Series</h2>
+<p>In <strong>Part 3</strong>, we will explore <strong>The Future (2026 &amp; Beyond)</strong>: How <strong>Deterministic Scheduling (Calvin &amp; FaunaDB)</strong> eliminates 2PC and lock aborts entirely, how hardware-accelerated <strong>RDMA &amp; CXL Pooled Memory</strong> enable sub-microsecond atomic commits, and how <strong>Autonomous AI Agent Swarms</strong> execute self-healing multi-step transactional compensations.</p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-blackboard-database-shared-state.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=The%20Database%20is%20the%20Blackboard%3A%20Shared%20State%20%26%20Session%20Store%20Patterns%20for%20Agent%20Swarms&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fsystem-design-blackboard-database-shared-state.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdistributed-transactions-evolution-present-truetime-multi-raft-sagas-uber-netflix.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=The%20Evolution%20of%20Distributed%20Transactions%20Part%202%3A%20The%20Present%20%E2%80%94%20TrueTime%2C%20Hybrid%20Logical%20Clocks%2C%20Multi-Raft%20%26%20Event-Driven%20Sagas%20at%20Google%2C%20Uber%20%26%20Netflix&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdistributed-transactions-evolution-present-truetime-multi-raft-sagas-uber-netflix.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -281,7 +412,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="distributed-transactions-evolution-present-truetime-multi-raft-sagas-uber-netflix.html">The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft &amp; Event-Driven Sagas at Google, Uber &amp; Netflix<span class="sidebar-post-date">August 20, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -1202,7 +1333,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="system-design-agentic-apis-rate-limiting.html">Designing for Non-Deterministic Workloads: API Design &amp; Rate-Limiting for Agentic Clients<span class="sidebar-post-date">April 27, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="system-design-blackboard-database-shared-state.html">The Database is the Blackboard: Shared State &amp; Session Store Patterns for Agent Swarms<span class="sidebar-post-date">April 26, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
