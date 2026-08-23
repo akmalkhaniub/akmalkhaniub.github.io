@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Write amplification mitigation: implementing Size-Tiered Compaction Strategy (STCS), Leveled Compaction Strategy (LCS), N-way priority queue merge-sorting, and tombstone purging.">
+  <title>LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger) | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/compaction-strategies-size-tiered-vs-leveled-compaction.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/compaction-strategies-size-tiered-vs-leveled-compaction.html">
-  <meta property="og:title" content="Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra">
-  <meta property="og:description" content="Write amplification mitigation: implementing Size-Tiered Compaction Strategy (STCS), Leveled Compaction Strategy (LCS), N-way priority queue merge-sorting, and tombstone purging.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html">
+  <meta property="og:title" content="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)">
+  <meta property="og:description" content="Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-22">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra">
-  <meta name="twitter:description" content="Write amplification mitigation: implementing Size-Tiered Compaction Strategy (STCS), Leveled Compaction Strategy (LCS), N-way priority queue merge-sorting, and tombstone purging.">
+  <meta name="twitter:title" content="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)">
+  <meta name="twitter:description" content="Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB & Cassandra",
-  "description": "Write amplification mitigation: implementing Size-Tiered Compaction Strategy (STCS), Leveled Compaction Strategy (LCS), N-way priority queue merge-sorting, and tombstone purging.",
-  "url": "https://akmalkhaniub.github.io/blog/compaction-strategies-size-tiered-vs-leveled-compaction.html",
-  "datePublished": "2026-08-17",
-  "keywords": "Compaction, RocksDB, Cassandra, Python",
+  "headline": "LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies & Kernel I/O (RocksDB vs WiredTiger)",
+  "description": "Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.",
+  "url": "https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html",
+  "datePublished": "2026-08-22",
+  "keywords": "Database Internals, Storage Engines, LSM-Tree, B-Tree, RocksDB, WiredTiger",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/compaction-strategies-size-tiered-vs-leveled-compaction.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html"
 }
   </script>
 
@@ -92,197 +92,307 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger) Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra</h1>
+            <h1 class="article-title">LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> August 18, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> August 23, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Compaction</span><span class="project-badge">RocksDB</span><span class="project-badge">Cassandra</span><span class="project-badge">Python</span></div>
+              <span><i class="fa-regular fa-clock"></i> 12 min read</span>
+              <div class="article-tags"><span class="project-badge">Database Internals</span><span class="project-badge">Storage Engines</span><span class="project-badge">LSM-Tree</span><span class="project-badge">B-Tree</span><span class="project-badge">RocksDB</span><span class="project-badge">WiredTiger</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra</h1>
-<p>In Log-Structured Merge-Tree (LSM-Tree) databases (<strong>RocksDB</strong>, <strong>LevelDB</strong>, <strong>Apache Cassandra</strong>), flushing in-memory MemTables creates a continuous stream of immutable <strong>Sorted String Table (SSTable)</strong> files on disk.</p>
-<p>Over time, this accumulation introduces severe performance penalties:</p>
+<h1>LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)</h1>
+<p>At the heart of every modern database (<strong>PostgreSQL</strong>, <strong>MySQL/InnoDB</strong>, <strong>MongoDB/WiredTiger</strong>, <strong>RocksDB</strong>, <strong>Apache Cassandra</strong>, <strong>CockroachDB</strong>) lies an embedded storage engine responsible for translating abstract relational or key-value queries into physical byte layouts on NVMe SSDs.</p>
+<p>For decades, database architectures have been defined by a fundamental structural divide:</p>
 <ol>
-<li><strong>Read Amplification</strong>: A single point lookup (<code>GET user_101</code>) may require searching across dozens of un-compacted SSTables on disk.</li>
-<li><strong>Space Amplification</strong>: Duplicate updates and obsolete deletion tombstones waste valuable disk space.</li>
+<li><strong>B+Tree Storage Engines (InnoDB, WiredTiger, SQLite)</strong>: In-place page updates optimized for predictable read latency and low read amplification.</li>
+<li><strong>Log-Structured Merge-Tree (LSM-Tree) Storage Engines (RocksDB, LevelDB, Cassandra)</strong>: Append-only sequential disk writes optimized for extreme write throughput and maximum storage density.</li>
 </ol>
-<p>To bound Read Amplification and reclaim storage space, LSM storage engines run continuous background <strong>Compaction Threads</strong>.</p>
-<p>Compaction reads multiple SSTables, performs an <strong>$N$-Way Merge-Sort</strong>, purges superseded keys and expired tombstones, and writes consolidated SSTables back to disk.</p>
-<p>This article details Size-Tiered Compaction (STCS), Leveled Compaction (LCS), and $N$-Way priority queue merge-sorting algorithms.</p>
-<hr>
-<h2>📖 Leveled Compaction &amp; N-Way Merge Architecture</h2>
-<p>How Leveled Compaction (LCS) organizes SSTables into non-overlapping exponential levels:</p>
+<p>According to the <strong>RUM Conjecture</strong> (Read, Update, Memory trade-off), no storage engine can optimize all three dimensions simultaneously.</p>
+<p>This deep-dive architectural analysis explores the internal mechanics of B+Trees versus LSM-Trees, calculates exact Write, Read, and Space Amplification factors ($WAF, RAF, SAF$), and details the compaction algorithms that prevent disk saturation.</p>
 <div class="mermaid">graph TD
-  subgraph Level 0 (Overlapping Key Ranges from Flushes)
-    L0_1[SST File 1: Keys 'a'..'z'] --- L0_2[SST File 2: Keys 'c'..'m']
-  end
-  
-  subgraph Level 1 (Max 10MB, Strict Non-Overlapping Ranges)
-    L1_1[SST File 3: Keys 'a'..'g'] --- L1_2[SST File 4: Keys 'h'..'p'] --- L1_3[SST File 5: Keys 'q'..'z']
-  end
-  
-  subgraph Compaction Priority Queue Engine
-    L0_1 &amp; L0_2 --&gt;|1. N-Way Merge-Sort Stream| PriorityQueue[Heap Priority Queue: Stream K-V Pairs]
-    PriorityQueue --&gt;|2. Purge Obsolete Keys &amp; Tombstones| L1_1 &amp; L1_2 &amp; L1_3
-  end
-  
-  subgraph Level 2 (Max 100MB, Non-Overlapping Ranges)
-    L1_3 --&gt;|3. Level 1 Overflow (&gt;10MB)| L2_1[SST File 6: Keys 'a'..'m']
+  subgraph Storage Engine Trade-Off (The RUM Conjecture)
+    BTree[&quot;B+Tree (WiredTiger / InnoDB)&quot;] --&gt;|Pros| LowRAF[&quot;Lowest Read Amplification (Point &amp; Range Lookups)&quot;]
+    BTree --&gt;|Cons| HighWAF[&quot;High Write Amplification (Random Page Writes &amp; Doublewrite)&quot;]
+    
+    LSM[&quot;LSM-Tree (RocksDB / Cassandra)&quot;] --&gt;|Pros| LowWriteWAF[&quot;Lowest Write Amplification (Sequential Appends)&quot;]
+    LSM --&gt;|Cons| CompactionOverhead[&quot;Compaction I/O &amp; Background Read Amplification&quot;]
   end</div>
-<h3>Core Compaction Strategies</h3>
+<hr>
+<h2>🌲 1. B+Tree Storage Engine Architecture: The In-Place Page Model</h2>
+<p>B+Trees (used in <strong>MySQL InnoDB</strong> and <strong>MongoDB WiredTiger</strong>) structure data into fixed-size disk blocks called <strong>Pages</strong> (typically $4\text{ KB}$ or $16\text{ KB}$).</p>
+<pre><code class="language-plaintext">B+Tree Structure (16 KB Pages):
+               [ Root Node: Key 100 | Key 200 ]
+                    /              \
+       [ Branch: 50 | 75 ]     [ Branch: 150 | 175 ]
+           /        \              /          \
+     [Leaf: 1-49] [Leaf: 50-74] [Leaf: 100-149] [Leaf: 150-174] &lt;---&gt; Linked List</code></pre>
+<h3>Key Invariants:</h3>
+<ul>
+<li><strong>Interior Nodes</strong>: Store routing keys and child page pointers.</li>
+<li><strong>Leaf Nodes</strong>: Store contiguous sorted key-value payloads and maintain doubly-linked list pointers to adjacent leaves for efficient range scans ($O(\log_B N)$).</li>
+<li><strong>In-Place Updates</strong>: Modifying a single $32\text{-byte}$ record requires locating its containing $16\text{ KB}$ page in the in-memory <strong>Buffer Pool</strong>, modifying it in memory (creating a &quot;dirty page&quot;), and eventually flushing the entire $16\text{ KB}$ page back to disk.</li>
+</ul>
+<h3>The B+Tree Write Amplification Penalty ($WAF$)</h3>
+<p>When a single $64\text{-byte}$ row is updated on an in-place $16\text{ KB}$ page:</p>
+<p>$$WAF = \frac{\text{Bytes Written to Storage}}{\text{Bytes of User Write}} = \frac{16,384 \text{ bytes (Data Page)} + 16,384 \text{ bytes (Doublewrite Buffer)} + \text{WAL}}{64 \text{ bytes}} \approx \mathbf{300\times \text{ to } 500\times}$$</p>
+<p>Under random-write workloads, B+Trees quickly saturate NVMe write bandwidth and cause flash memory endurance degradation.</p>
+<hr>
+<h2>🪵 2. LSM-Tree Storage Engine Architecture: The Append-Only Model</h2>
+<p>Log-Structured Merge-Trees (invented by Patrick O’Neil in 1996 and popularized by Google Bigtable, LevelDB, and Meta&#39;s <strong>RocksDB</strong>) convert all random writes into sequential disk operations.</p>
+<div class="mermaid">graph TD
+  subgraph LSM-Tree Write Path (RocksDB)
+    Write[Client Put Request: key, value] --&gt; WAL[1. Write-Ahead Log WAL (Disk Append)]
+    Write --&gt; MemTable[2. MemTable (In-Memory Concurrent SkipList)]
+    
+    MemTable --&gt;|When full (~64MB)| Flush[3. Flush to Disk (Immutable)]
+    Flush --&gt; L0[&quot;Level 0 (Unsorted SSTables: Range Overlaps)&quot;]
+    L0 --&gt;|Leveled Compaction| L1[&quot;Level 1 (Sorted Disjoint SSTables: 10MB)&quot;]
+    L1 --&gt;|Leveled Compaction 10x| L2[&quot;Level 2 (Sorted Disjoint SSTables: 100MB)&quot;]
+    L2 --&gt;|Leveled Compaction 10x| L3[&quot;Level 3 (Sorted Disjoint SSTables: 1GB)&quot;]
+  end</div>
+<h3>The LSM Write Flow:</h3>
 <ol>
-<li><strong>Size-Tiered Compaction Strategy (STCS)</strong>:<ul>
-<li><em>Mechanics</em>: Groups SSTables into tiers based on file size. When $N$ SSTables of similar size accumulate (e.g. four $64\text{ MB}$ files), STCS merges them into a single $256\text{ MB}$ file.</li>
-<li><em>Trade-offs</em>: Low Write Amplification (fastest writes), but <strong>High Space Amplification</strong>. Merging large files requires keeping up to $50%$ free disk headroom to store temporary intermediate files during compaction!</li>
-</ul>
-</li>
-<li><strong>Leveled Compaction Strategy (LCS)</strong>:<ul>
-<li><em>Mechanics</em>: Organizes disk storage into discrete levels ($L_0, L_1, L_2, \dots, L_k$). Level target capacities grow exponentially (e.g. $L_1 = 10\text{ MB}$, $L_2 = 100\text{ MB}$, $L_3 = 1\text{ GB}$).</li>
-<li><em>Key Feature</em>: Except for $L_0$ (which contains raw MemTable flushes), <strong>SSTables within the same level are guaranteed to have zero overlapping key ranges</strong>.</li>
-<li><em>Trade-offs</em>: Higher Write Amplification (more CPU/disk writes), but <strong>Minimal Read Amplification</strong>. Searching for a key requires inspecting at most <strong>one SSTable per level</strong> ($O(L)$ disk reads total!).</li>
-</ul>
-</li>
-<li><strong>$N$-Way Priority Queue Merge-Sort</strong>: Merging multiple sorted SSTable streams is implemented using a Min-Heap Priority Queue. The heap tracks the current head element of each SSTable iterator, emitting keys in strict lexicographical order while deduplicating older versions.</li>
+<li><strong>WAL Append</strong>: Write operation is appended to an on-disk Write-Ahead Log for crash recovery.</li>
+<li><strong>MemTable Insertion</strong>: Record is inserted into an in-memory sorted data structure (typically a lock-free <strong>Concurrent SkipList</strong>).</li>
+<li><strong>SSTable Flush</strong>: Once the MemTable reaches capacity (e.g. $64\text{ MB}$), it is frozen into an immutable MemTable and flushed sequentially to disk as a <strong>Sorted String Table (SSTable)</strong> in Level 0 ($L_0$).</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: N-Way Merge-Sort Compaction Engine</h2>
-<p>Here is a production-grade Python implementation of an $N$-Way Priority Queue Merge-Sort Compaction Engine for Leveled SSTables:</p>
-<pre><code class="language-python">import heapq
-from typing import List, Dict, Tuple, Optional
-from pydantic import BaseModel
+<h2>🔄 3. Compaction Algorithms: Leveled vs Size-Tiered</h2>
+<p>Because SSTables are immutable, updates and deletes (<code>tombstones</code>) accumulate across levels. <strong>Compaction</strong> is the background engine that merges overlapping SSTables, purges dead records, and re-sorts data.</p>
+<pre><code class="language-plaintext">+--------------------------------------------------------------------------------------------------+
+|                                COMPACTION STRATEGY COMPARISON                                    |
++--------------------------------------------------------------------------------------------------+
+| Feature                     | Leveled Compaction (LCS)         | Size-Tiered Compaction (STCS)   |
+| Primary Database            | RocksDB, CockroachDB, LevelDB    | Apache Cassandra, ScyllaDB      |
+| Space Amplification (SAF)   | Low (~1.1x to 1.3x)              | High (~2.0x, requires 50% free) |
+| Read Amplification (RAF)    | Low (1 SSTable per level max)    | High (Must check all SSTables)  |
+| Write Amplification (WAF)   | Higher (~10x to 30x)             | Lower (~5x to 10x)              |
+| Best Workload               | Read-Heavy / Mixed OLTP          | Write-Heavy Logging / Ingestion |
++--------------------------------------------------------------------------------------------------+</code></pre>
+<h3>Leveled Compaction (LCS) Mechanics:</h3>
+<ul>
+<li>Each level $L_i$ has a strict capacity limit growing by a factor of 10:
+$$L_1 = 10\text{ MB}, \quad L_2 = 100\text{ MB}, \quad L_3 = 1\text{ GB}, \quad L_4 = 10\text{ GB}$$</li>
+<li>In levels $L_1$ and beyond, <strong>no two SSTables within the same level have overlapping key ranges</strong>.</li>
+<li>A point lookup needs to search at most <strong>one SSTable per level</strong>, drastically reducing read amplification.</li>
+</ul>
+<hr>
+<h2>🔍 4. Mitigating Read Amplification: Bloom Filters &amp; Block Caches</h2>
+<p>If a key does not exist in the database, a naive LSM-Tree would search the MemTable and every SSTable across all levels (Read Amplification $RAF = \text{number of SSTables}$).</p>
+<h3>The Mathematical Bloom Filter Defense:</h3>
+<p>RocksDB embeds a <strong>Bloom Filter</strong> in every SSTable header.</p>
+<p>To achieve a false positive probability $p = 1%$ ($0.01$):
+$$\text{Optimal Bits Per Key } m/n = -\frac{\ln p}{(\ln 2)^2} = -\frac{\ln(0.01)}{(0.6931)^2} \approx \mathbf{9.6 \text{ bits/key (10 bits/key)}}$$</p>
+<p>With 10 bits per key, $99%$ of non-existent key lookups terminate in memory without issuing a single NVMe disk I/O.</p>
+<hr>
+<h2>🛠️ Python Implementation: Complete LSM-Tree Storage Engine Simulator</h2>
+<p>Here is a Python implementation of a functional LSM-Tree storage engine featuring a MemTable, on-disk SSTable mock flushing, Bloom filter probes, and Level 0 $\to$ Level 1 merge compaction:</p>
+<pre><code class="language-python">import hashlib
+import os
+import struct
+from typing import Dict, List, Optional, Tuple
 
-TOMBSTONE = &quot;__DELETED__&quot;
+class SimpleBloomFilter:
+    def __init__(self, capacity: int = 1000, bits_per_key: int = 10):
+        self.size = capacity * bits_per_key
+        self.bit_array = bytearray((self.size + 7) // 8)
 
-class KeyValue(BaseModel):
-    key: str
-    value: str
-    sstable_id: int
+    def _hashes(self, key: str) -&gt; List[int]:
+        h1 = int(hashlib.md5(key.encode()).hexdigest(), 16)
+        h2 = int(hashlib.sha1(key.encode()).hexdigest(), 16)
+        return [(h1 + i * h2) % self.size for i in range(4)]
 
-class SSTableIterator:
-    &quot;&quot;&quot;
-    Iterator over an SSTable file's key-value entries.
-    &quot;&quot;&quot;
-    def __init__(self, sstable_id: int, records: List[Tuple[str, str]]):
+    def add(self, key: str):
+        for bit_idx in self._hashes(key):
+            self.bit_array[bit_idx // 8] |= (1 &lt;&lt; (bit_idx % 8))
+
+    def contains(self, key: str) -&gt; bool:
+        for bit_idx in self._hashes(key):
+            if not (self.bit_array[bit_idx // 8] &amp; (1 &lt;&lt; (bit_idx % 8))):
+                return False
+        return True
+
+class MockSSTable:
+    def __init__(self, sstable_id: int, entries: List[Tuple[str, str]], level: int = 0):
         self.sstable_id = sstable_id
-        self.records = records
-        self.index = 0
+        self.level = level
+        self.entries = sorted(entries, key=lambda x: x[0]) # Sorted keys
+        self.bloom_filter = SimpleBloomFilter(capacity=len(entries) + 10)
+        for k, _ in self.entries:
+            self.bloom_filter.add(k)
+        self.min_key = self.entries[0][0] if self.entries else &quot;&quot;
+        self.max_key = self.entries[-1][0] if self.entries else &quot;&quot;
 
-    def has_next(self) -&gt; bool:
-        return self.index &lt; len(self.records)
+    def get(self, key: str) -&gt; Optional[str]:
+        # 1. Check Bloom Filter
+        if not self.bloom_filter.contains(key):
+            return None # Zero disk lookup!
+        
+        # 2. Binary search on sorted key entries
+        low, high = 0, len(self.entries) - 1
+        while low &lt;= high:
+            mid = (low + high) // 2
+            mid_k, mid_v = self.entries[mid]
+            if mid_k == key:
+                return mid_v
+            elif mid_k &lt; key:
+                low = mid + 1
+            else:
+                high = mid - 1
+        return None
 
-    def next(self) -&gt; KeyValue:
-        k, v = self.records[self.index]
-        self.index += 1
-        return KeyValue(key=k, value=v, sstable_id=self.sstable_id)
-
-class LeveledCompactionEngine:
+class LSMTreeEngine:
     &quot;&quot;&quot;
-    Executes N-Way Heap Priority Queue Merge-Sort Compaction across SSTables.
+    Log-Structured Merge-Tree Engine Simulator with Leveled Compaction.
     &quot;&quot;&quot;
-    @staticmethod
-    def compact_sstables(input_sstables: List[SSTableIterator], max_level_purge: bool = False) -&gt; List[Tuple[str, str]]:
-        print(f&quot; 🧹 [Compaction Engine] Merging {len(input_sstables)} SSTables via N-Way Priority Queue Heap...&quot;)
-        print(&quot;=&quot; * 75)
+    def __init__(self, memtable_threshold: int = 4):
+        self.memtable_threshold = memtable_threshold
+        self.memtable: Dict[str, str] = {}
+        self.sstables_level0: List[MockSSTable] = []
+        self.sstables_level1: List[MockSSTable] = []
+        self.next_sst_id = 1
 
-        # Min-Heap Priority Queue tracking (key, sstable_id, value, iterator)
-        min_heap: List[Tuple[str, int, str, SSTableIterator]] = []
+    def put(self, key: str, value: str):
+        self.memtable[key] = value
+        print(f&quot; ✍️ [MemTable Put] Key: '{key}' -&gt; '{value}'&quot;)
+        
+        if len(self.memtable) &gt;= self.memtable_threshold:
+            self._flush_memtable()
 
-        # Populate initial heap state
-        for it in input_sstables:
-            if it.has_next():
-                kv = it.next()
-                heapq.heappush(min_heap, (kv.key, kv.sstable_id, kv.value, it))
+    def get(self, key: str) -&gt; Optional[str]:
+        # 1. Search Active MemTable
+        if key in self.memtable:
+            val = self.memtable[key]
+            print(f&quot; 🎯 [Cache Hit: MemTable] Key '{key}' = '{val}'&quot;)
+            return val if val != &quot;__TOMBSTONE__&quot; else None
 
-        compacted_records: List[Tuple[str, str]] = []
-        last_seen_key: Optional[str] = None
+        # 2. Search Level 0 SSTables (Newest to Oldest)
+        for sst in reversed(self.sstables_level0):
+            val = sst.get(key)
+            if val is not None:
+                print(f&quot; 🎯 [Found in L0 SSTable {sst.sstable_id}] Key '{key}' = '{val}'&quot;)
+                return val if val != &quot;__TOMBSTONE__&quot; else None
 
-        while min_heap:
-            key, sst_id, val, it = heapq.heappop(min_heap)
+        # 3. Search Level 1 SSTables
+        for sst in self.sstables_level1:
+            val = sst.get(key)
+            if val is not None:
+                print(f&quot; 🎯 [Found in L1 SSTable {sst.sstable_id}] Key '{key}' = '{val}'&quot;)
+                return val if val != &quot;__TOMBSTONE__&quot; else None
 
-            # Advance iterator for popped SSTable
-            if it.has_next():
-                next_kv = it.next()
-                heapq.heappush(min_heap, (next_kv.key, next_kv.sstable_id, next_kv.value, it))
+        print(f&quot; 🚫 [Not Found] Key '{key}' does not exist in any level.&quot;)
+        return None
 
-            # Deduplicate Keys (popping newer sstable_id first if keys match)
-            if key == last_seen_key:
-                print(f&quot;   • Skipping Obsolete Key Version: '{key}' -&gt; Value: '{val}' (SSTable #{sst_id})&quot;)
-                continue
+    def delete(self, key: str):
+        print(f&quot; 🗑️ [Tombstone Append] Key '{key}' marked deleted.&quot;)
+        self.put(key, &quot;__TOMBSTONE__&quot;)
 
-            last_seen_key = key
+    def _flush_memtable(self):
+        print(f&quot;\n 💧 [MemTable Flush] Flushing {len(self.memtable)} keys to Level 0 SSTable {self.next_sst_id}...&quot;)
+        entries = list(self.memtable.items())
+        sst = MockSSTable(self.next_sst_id, entries, level=0)
+        self.next_sst_id += 1
+        self.sstables_level0.append(sst)
+        self.memtable.clear()
 
-            # Purge Tombstones during final max-level compaction
-            if val == TOMBSTONE and max_level_purge:
-                print(f&quot; 🗑️ [Purging Tombstone] Evicted Tombstone for Key: '{key}'&quot;)
-                continue
+        # Trigger Compaction if Level 0 has &gt; 2 SSTables
+        if len(self.sstables_level0) &gt;= 2:
+            self._compact_l0_to_l1()
 
-            compacted_records.append((key, val))
-            print(f&quot; 💾 [Compacted Stream] Emitted Key: '{key}' -&gt; Value: '{val}' (SSTable #{sst_id})&quot;)
+    def _compact_l0_to_l1(self):
+        print(&quot;\n 🔄 [Compaction Triggered] Merging overlapping L0 SSTables into Level 1...&quot;)
+        merged_entries: Dict[str, str] = {}
+        
+        # Merge all L0 SSTables (newer entries override older)
+        for sst in self.sstables_level0:
+            for k, v in sst.entries:
+                merged_entries[k] = v
 
-        print(f&quot;\n ✅ Compaction Complete! Consolidated into {len(compacted_records)} clean key-value entries.&quot;)
-        return compacted_records
+        # Remove tombstones in deep levels
+        clean_entries = [(k, v) for k, v in merged_entries.items() if v != &quot;__TOMBSTONE__&quot;]
+
+        new_l1_sst = MockSSTable(self.next_sst_id, clean_entries, level=1)
+        self.next_sst_id += 1
+        self.sstables_level1 = [new_l1_sst]
+        self.sstables_level0.clear()
+        print(f&quot; ✨ [Compaction Complete] Level 1 now contains 1 unified SSTable with {len(clean_entries)} keys.&quot;)
 
 # Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    # Simulate 3 SSTables with overlapping keys and tombstones
-    # Newer SSTables have lower sstable_id in priority sorting
-    sst0 = SSTableIterator(sstable_id=0, records=[
-        (&quot;apple&quot;, &quot;v3_latest&quot;),
-        (&quot;banana&quot;, TOMBSTONE),  # Tombstone update
-        (&quot;elderberry&quot;, &quot;v1&quot;)
-    ])
-    
-    sst1 = SSTableIterator(sstable_id=1, records=[
-        (&quot;apple&quot;, &quot;v2_old&quot;),
-        (&quot;cherry&quot;, &quot;v1&quot;),
-        (&quot;date&quot;, &quot;v1&quot;)
-    ])
-    
-    sst2 = SSTableIterator(sstable_id=2, records=[
-        (&quot;apple&quot;, &quot;v1_oldest&quot;),
-        (&quot;banana&quot;, &quot;v1_old&quot;),
-        (&quot;fig&quot;, &quot;v1&quot;)
-    ])
+    engine = LSMTreeEngine(memtable_threshold=3)
 
-    engine = LeveledCompactionEngine()
-    result = engine.compact_sstables([sst0, sst1, sst2], max_level_purge=True)
+    # 1. Insert records to trigger flushes
+    engine.put(&quot;user_101&quot;, &quot;Alice&quot;)
+    engine.put(&quot;user_102&quot;, &quot;Bob&quot;)
+    engine.put(&quot;user_103&quot;, &quot;Charlie&quot;) # Triggers Flush 1 -&gt; L0 SST 1
 
-    print(&quot;\n📊 Final Compacted Level 1 SSTable Payload:&quot;)
-    for k, v in result:
-        print(f&quot;   • Key: '{k:12s}' | Value: '{v}'&quot;)</code></pre>
+    engine.put(&quot;user_104&quot;, &quot;Dave&quot;)
+    engine.put(&quot;user_101&quot;, &quot;Alice_Updated&quot;) # Update existing key
+    engine.put(&quot;user_105&quot;, &quot;Eve&quot;)     # Triggers Flush 2 -&gt; L0 SST 2 -&gt; Triggers Compaction to L1!
+
+    # 2. Query data across levels
+    print(&quot;\n🔍 Executing Point Lookups:&quot;)
+    engine.get(&quot;user_101&quot;)
+    engine.get(&quot;user_104&quot;)
+    engine.get(&quot;user_999&quot;) # Non-existent key (filtered by Bloom filter)</code></pre>
 <hr>
-<h2>🚨 Compaction Gotchas &amp; Best Practices</h2>
-<p>When tuning LSM compaction strategies:</p>
-<div class="alert alert-important">
-  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Throttle Compaction I/O Bandwidth in Production</strong>: Background compaction threads read and write massive amounts of data to disk. Un-throttled compaction can saturate SSD I/O bandwidth, causing latency spikes for live user read/write queries. Limit compaction throughput (e.g., <code>max_bytes_for_level_base</code> in RocksDB).</p>
-</div>
-</div>
-<div class="alert alert-caution">
-  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Avoid Universal Compaction for Mixed Workloads</strong>: Universal/Size-Tiered Compaction is optimized for 100% write-heavy workloads. Utilizing STCS for read-heavy workloads leads to severe Read Amplification penalties.</p>
-</div>
-</div>
+<h2>📊 Summary: B+Tree vs LSM-Tree Decision Matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Architectural Dimension</th>
+<th>B+Tree (WiredTiger / InnoDB)</th>
+<th>LSM-Tree (RocksDB / Cassandra)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Primary Workload</strong></td>
+<td>Read-Heavy / Low Ingestion OLTP</td>
+<td>High-Throughput Write Ingestion / Time-Series</td>
+</tr>
+<tr>
+<td><strong>Write Path</strong></td>
+<td>In-place random page updates + Doublewrite</td>
+<td>Sequential log append + In-memory SkipList</td>
+</tr>
+<tr>
+<td><strong>Write Amplification ($WAF$)</strong></td>
+<td>High ($30\times\text{--}100\times$)</td>
+<td>Low ($10\times\text{--}30\times$ in Leveled, $&lt; 8\times$ in Tiered)</td>
+</tr>
+<tr>
+<td><strong>Read Amplification ($RAF$)</strong></td>
+<td>Lowest ($O(\log_B N)$, 1 page I/O)</td>
+<td>Higher (Checked across MemTable + SSTables via Bloom filter)</td>
+</tr>
+<tr>
+<td><strong>Space Amplification ($SAF$)</strong></td>
+<td>Moderate (Internal page fragmentation $\approx 30%$)</td>
+<td>Lowest in Leveled ($1.1\times$), High in Size-Tiered ($2.0\times$)</td>
+</tr>
+<tr>
+<td><strong>Flash Endurance Impact</strong></td>
+<td>High wear due to random $16\text{ KB}$ page rewrites</td>
+<td>Low wear due to large contiguous sequential writes</td>
+</tr>
+</tbody></table>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
-<p>Storage engines employing Leveled Compaction (such as <strong>RocksDB</strong> and <strong>CockroachDB</strong>) report:</p>
-<ul>
-<li><strong>Over 70% Reduction in Space Amplification</strong>: Purging obsolete key versions keeps disk utilization within $1.1\times$ to $1.2\times$ of raw data size.</li>
-<li><strong>Predictable p99 Read Latencies</strong>: Guaranteeing non-overlapping key ranges bounds point lookups to a fixed number of disk files per query.</li>
-</ul>
+<h2>🏁 Architectural Conclusion</h2>
+<p>Choosing between an LSM-Tree and a B+Tree is a deliberate trade-off between <strong>write throughput and read predictability</strong>.</p>
+<p>If your application demands high-volume event ingestion, audit logs, or vector embeddings where disk write bandwidth is the bottleneck, <strong>LSM-Trees (RocksDB)</strong> deliver unmatched performance.</p>
+<p>If your application requires deterministic sub-millisecond point reads and deep concurrent transactions across multi-column secondary indexes, <strong>B+Trees (InnoDB / WiredTiger)</strong> remain the gold standard.</p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fcompaction-strategies-size-tiered-vs-leveled-compaction.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=Compaction%20Strategies%3A%20Size-Tiered%20vs%20Leveled%20Compaction%20in%20RocksDB%20%26%20Cassandra&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fcompaction-strategies-size-tiered-vs-leveled-compaction.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=LSM-Tree%20vs%20B%2BTree%20Storage%20Engines%3A%20Write%20Amplification%2C%20Compaction%20Strategies%20%26%20Kernel%20I%2FO%20(RocksDB%20vs%20WiredTiger)&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -305,7 +415,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html">LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)<span class="sidebar-post-date">August 23, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -539,7 +649,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="fast-point-lookups-block-cache-index-block-bloom-filters.html">Fast Point Lookups: Block Cache, Index Block &amp; Counting Bloom Filters<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="compaction-strategies-size-tiered-vs-leveled-compaction.html">Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
