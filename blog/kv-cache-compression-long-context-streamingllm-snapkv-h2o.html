@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Time-series storage engine layouts: implementing 2-hour head memory chunks, write-ahead logs (WAL), append-only active chunks, and background merging compaction into immutable historical block segments (Prometheus TSDB &amp; VictoriaMetrics).">
+  <title>KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How to scale 1M+ token context windows without GPU OOM: the attention sink phenomenon in StreamingLLM, SnapKV positional observation windows, and H2O dynamic heavy-hitter KV-cache eviction.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/kv-cache-compression-long-context-streamingllm-snapkv-h2o.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.html">
-  <meta property="og:title" content="In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts">
-  <meta property="og:description" content="Time-series storage engine layouts: implementing 2-hour head memory chunks, write-ahead logs (WAL), append-only active chunks, and background merging compaction into immutable historical block segments (Prometheus TSDB &amp; VictoriaMetrics).">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/kv-cache-compression-long-context-streamingllm-snapkv-h2o.html">
+  <meta property="og:title" content="KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction">
+  <meta property="og:description" content="How to scale 1M+ token context windows without GPU OOM: the attention sink phenomenon in StreamingLLM, SnapKV positional observation windows, and H2O dynamic heavy-hitter KV-cache eviction.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-31">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts">
-  <meta name="twitter:description" content="Time-series storage engine layouts: implementing 2-hour head memory chunks, write-ahead logs (WAL), append-only active chunks, and background merging compaction into immutable historical block segments (Prometheus TSDB &amp; VictoriaMetrics).">
+  <meta name="twitter:title" content="KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction">
+  <meta name="twitter:description" content="How to scale 1M+ token context windows without GPU OOM: the attention sink phenomenon in StreamingLLM, SnapKV positional observation windows, and H2O dynamic heavy-hitter KV-cache eviction.">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "In-Memory Columnar Chunk Compaction: Prometheus TSDB & VictoriaMetrics Segment Layouts",
-  "description": "Time-series storage engine layouts: implementing 2-hour head memory chunks, write-ahead logs (WAL), append-only active chunks, and background merging compaction into immutable historical block segments (Prometheus TSDB & VictoriaMetrics).",
-  "url": "https://akmalkhaniub.github.io/blog/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.html",
-  "datePublished": "2026-08-17",
-  "keywords": "Prometheus, VictoriaMetrics, TSDB Compaction, Python",
+  "headline": "KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV & H2O Heavy-Hitter Eviction",
+  "description": "How to scale 1M+ token context windows without GPU OOM: the attention sink phenomenon in StreamingLLM, SnapKV positional observation windows, and H2O dynamic heavy-hitter KV-cache eviction.",
+  "url": "https://akmalkhaniub.github.io/blog/kv-cache-compression-long-context-streamingllm-snapkv-h2o.html",
+  "datePublished": "2026-08-31",
+  "keywords": "KV-Cache, StreamingLLM, SnapKV, LLM Inference, GPU Optimization, AI Systems",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/kv-cache-compression-long-context-streamingllm-snapkv-h2o.html"
 }
   </script>
 
@@ -92,226 +92,235 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts</h1>
+            <h1 class="article-title">KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> August 18, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> September 1, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Prometheus</span><span class="project-badge">VictoriaMetrics</span><span class="project-badge">TSDB Compaction</span><span class="project-badge">Python</span></div>
+              <span><i class="fa-regular fa-clock"></i> 12 min read</span>
+              <div class="article-tags"><span class="project-badge">KV-Cache</span><span class="project-badge">StreamingLLM</span><span class="project-badge">SnapKV</span><span class="project-badge">LLM Inference</span><span class="project-badge">GPU Optimization</span><span class="project-badge">AI Systems</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts</h1>
-<p>In cloud-native observability systems (<strong>Prometheus</strong>, <strong>VictoriaMetrics</strong>, <strong>Thanos</strong>, <strong>Cortex</strong>), time-series storage engines must sustain relentless ingestion workloads while serving instant range queries over months of historical telemetry.</p>
-<p>A major engineering challenge in time-series database (TSDB) design is balancing <strong>Low-Latency Write Ingestion</strong> (append-only streaming) with <strong>High-Performance Query Execution</strong> (columnar block scans).</p>
-<p>To optimize memory usage and query throughput, modern engines split metric storage into two distinct tiers: an <strong>In-Memory Head Block</strong> (for real-time ingestion) and <strong>Compacted Block Segments</strong> (for historical disk storage).</p>
-<p>Pioneered by <strong>Prometheus TSDB</strong> and optimized by <strong>VictoriaMetrics</strong>, this architecture uses 2-hour memory chunk freezing and multi-stage background compaction.</p>
-<p>This article details the Prometheus 2-hour Head Block layout, Write-Ahead Log (WAL) crash recovery, inverted postings symbol indices, block compaction merging algorithms, and VictoriaMetrics LSM-part storage.</p>
-<hr>
-<h2>📖 TSDB Architecture &amp; Block Compaction Pipeline</h2>
-<p>How time-series databases handle real-time RAM ingestion, 2-hour block cutting, and multi-tier background compaction:</p>
+<h1>KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction</h1>
+<p>With the emergence of ultra-long context language models (<strong>Gemini 1.5 Pro</strong>, <strong>Claude 3.5 Sonnet</strong>, <strong>Llama 3.1 405B</strong>), autonomous AI agents can ingest entire codebases, legal repositories, and multi-hour audio streams into a single prompt.</p>
+<p>In production inference infrastructure, however, long-context serving hits a catastrophic physical barrier: <strong>the KV-Cache VRAM Memory Wall</strong>.</p>
+<p>During autoregressive generation, the Key-Value (KV) cache stores past token key and value tensors in GPU High Bandwidth Memory (HBM) to avoid recomputing self-attention:</p>
+<p>$$\text{KV-Cache Memory Size} = 2 \times \text{Batch Size} \times \text{Seq Length} \times N_{\text{layers}} \times N_{\text{kv_heads}} \times D_{\text{head}} \times \text{Bytes}$$</p>
+<p>For a 70B parameter model serving a $1,000,000\text{-token}$ context in standard <code>float16</code>:</p>
+<p>$$\text{KV-Cache Size} = 2 \times 1 \times 10^6 \times 80 \text{ layers} \times 8 \text{ heads} \times 128 \times 2 \text{ bytes} \approx \mathbf{163.84 \text{ Gigabytes of GPU VRAM per request!}}$$</p>
+<p>The KV-cache memory footprint <strong>vastly exceeds the size of the model weights themselves ($140\text{ GB}$)</strong>, limiting GPU concurrency to $1$ user per $$30,000$ Nvidia H100 GPU.</p>
+<p>To make long-context agents economically viable, modern inference engines deploy <strong>KV-Cache Compression</strong>: leveraging <strong>StreamingLLM Attention Sinks</strong>, <strong>SnapKV Positional Clustering</strong>, and <strong>H2O Heavy-Hitter Eviction</strong> to reduce VRAM consumption by <strong>$80%\text{ to }90%$</strong> with near-zero degradation in reasoning accuracy.</p>
 <div class="mermaid">graph TD
-  subgraph In-Memory Real-Time Tier (0 - 2 Hours)
-    Metric[Incoming Metric Write] --&gt; WAL[&quot;1. Write-Ahead Log (WAL) on NVMe SSD&quot;]
-    Metric --&gt; HeadBlock[&quot;2. In-Memory Head Block (RAM Gorilla Chunks)&quot;]
-  end
-  
-  subgraph Immutable Block Creation (Every 2 Hours)
-    HeadBlock --&gt;|Cut 2-Hour Chunk| BlockDir[&quot;3. Immutable Disk Block (01H8...)&quot;]
-    BlockDir --&gt; Chunks[&quot;chunks/ (Gorilla Compressed Data)&quot;]
-    BlockDir --&gt; InvertedIndex[&quot;index (Postings List Symbol Map)&quot;]
-  end
-  
-  subgraph Background Multi-Block Compaction Tier
-    BlockDir --&gt; Compactor[&quot;4. Background Compactor Thread&quot;]
-    Compactor --&gt; Block6h[&quot;Compacted 6-Hour Block Segment&quot;]
-    Block6h --&gt; Block24h[&quot;Compacted 24-Hour Block Segment&quot;]
+  subgraph Uncompressed KV-Cache vs StreamingLLM &amp; H2O Compression
+    subgraph 1. Uncompressed 1M Context (164GB VRAM - OOM Crash)
+      FullKV[&quot;Linear KV-Cache: 1,000,000 Tokens (164 GB GPU VRAM)&quot;]
+    end
+
+    subgraph 2. Compressed StreamingLLM &amp; H2O KV-Cache (16GB VRAM - 90% Savings)
+      Sink[&quot;1. Initial 4 Attention Sink Tokens (Fixed Anchor)&quot;]
+      H2O[&quot;2. Heavy-Hitter Important Tokens (Top 10% Attention Weights)&quot;]
+      Local[&quot;3. Rolling Local Window (Latest 2,048 Tokens)&quot;]
+      
+      Sink --- H2O --- Local
+      H2O &amp; Local --&gt; FinalVRAM[&quot;Total Memory: ~16 GB VRAM (10x User Concurrency!)&quot;]
+    end
   end</div>
-<h3>Core TSDB Storage Engine Mechanics</h3>
-<ol>
-<li><strong>The Prometheus 2-Hour Head Block</strong>:<ul>
-<li>All incoming metric data points are initially appended to the active <strong>Head Block</strong> held in memory.</li>
-<li><strong>Write-Ahead Log (WAL)</strong>: To survive power failures or process crashes, writes are sequentially appended to a $128\text{ MB}$ WAL file on disk before updating RAM chunks.</li>
-<li><strong>Active Chunks (<code>memChunk</code>)</strong>: Metrics are accumulated in Gorilla-compressed memory chunks until reaching $120$ samples or a 2-hour boundary.</li>
-</ul>
-</li>
-<li><strong>Immutable 2-Hour Disk Block Directory Layout</strong>:<ul>
-<li>Every 2 hours, the Head Block is frozen, written to a timestamp-named directory (e.g. <code>01H8X...</code>), and replaced by a new Head Block.</li>
-<li><em>Block Anatomy</em>:<ul>
-<li><strong><code>chunks/</code></strong>: Files containing Gorilla-compressed 120-sample metric chunks.</li>
-<li><strong><code>index</code></strong>: Inverted index file mapping metric labels (<code>__name__=&quot;http_requests_total&quot;</code>, <code>job=&quot;api&quot;</code>, <code>status=&quot;500&quot;</code>) to postings lists of chunk offsets.</li>
-<li><strong><code>meta.json</code></strong>: Contains block UUID, minimum/maximum timestamp range ($t_{\text{min}}, t_{\text{max}}$), and sample counts.</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><strong>Background Multi-Block Compaction</strong>:<ul>
-<li>As 2-hour blocks accumulate on disk, query latency over long time ranges (e.g. 30 days) deteriorates because the engine must open hundreds of individual index files.</li>
-<li><strong>Compaction Merge Engine</strong>: Background threads periodically merge adjacent 2-hour blocks into larger 6-hour, 18-hour, and 2-day blocks.</li>
-<li><em>Deduplication &amp; Tombstones</em>: During compaction, tombstone-marked deleted metrics are purged, and overlapping metrics are deduplicated.</li>
-</ul>
-</li>
-<li><strong>VictoriaMetrics MergeTree Architecture</strong>:<ul>
-<li>While Prometheus TSDB uses fixed 2-hour time blocks, <strong>VictoriaMetrics</strong> deploys a specialized <strong>LSM-Tree (Log-Structured Merge-Tree)</strong> variant.</li>
-<li>Incoming metrics are written into small immutable &quot;Parts&quot; that are continuously merged in the background into larger Parts, achieving $2\times$ lower RAM consumption than Prometheus TSDB.</li>
-</ul>
-</li>
-</ol>
 <hr>
-<h2>🛠️ Python Implementation: TSDB Head Block &amp; Compaction Engine</h2>
-<p>Here is a production-grade Python implementation of a Time-Series Database Head Block and Multi-Block Compactor Simulator:</p>
-<pre><code class="language-python">import time
-from typing import Dict, List, Set, Tuple
-from pydantic import BaseModel
+<h2>🛑 1. The Long-Context VRAM Memory Wall</h2>
+<p>Why does KV-cache memory scale so aggressively compared to model weights?</p>
+<h3>Key-Value Cache Scaling Math:</h3>
+<p>Model weights remain <strong>static</strong> regardless of sequence length. The KV-cache, however, grows <strong>linearly ($O(N)$) with every single token generated</strong>.</p>
+<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
+|                        KV-CACHE VRAM FOOTPRINT AT SCALE (Llama-3-70B, FP16)                       |
++---------------------------------------------------------------------------------------------------+
+| Context Length | KV-Cache Size (Single Request) | GPU Hardware Required                           |
+| 4,000 tokens   | 0.65 GB                        | 1x RTX 4090 / A10G                              |
+| 32,000 tokens  | 5.24 GB                        | 1x A100 (80GB)                                  |
+| 128,000 tokens | 20.97 GB                       | 2x A100 (80GB) Tensor Parallel                  |
+| 1,000,000 tokens| 163.84 GB                     | 🚨 Requires 4x H100 (80GB) just for ONE USER!   |
++---------------------------------------------------------------------------------------------------+</code></pre>
+<hr>
+<h2>🚰 2. The Attention Sink Phenomenon &amp; StreamingLLM</h2>
+<p>In early attempts to bound KV-cache size, engineers implemented <strong>Naive Sliding Window Attention</strong> (keeping only the most recent 4,000 tokens and dropping older ones).</p>
+<p>Naive sliding window suffered from a catastrophic failure: <strong>after token 4,001, the model’s perplexity spiked to infinity, outputting complete gibberish</strong>.</p>
+<h3>Why did sliding window fail? The Discovery of Attention Sinks</h3>
+<p>In 2023, researchers at MIT and Meta (Xiao et al.) discovered the <strong>Attention Sink Phenomenon</strong>:</p>
+<ul>
+<li>In Softmax self-attention ($\text{Softmax}(QK^T / \sqrt{d})$), the exponential sum across all keys must equal $1.0$.</li>
+<li>Even when an initial token has no semantic relevance to the current sentence, the model dumps <strong>massive unallocated attention weights ($&gt; 50%$) onto the first 4 tokens of the prompt</strong>.</li>
+<li>When sliding window attention evicted those initial tokens, the softmax denominator destabilized, destroying the model&#39;s internal attention distribution.</li>
+</ul>
+<div class="mermaid">graph LR
+  subgraph StreamingLLM KV-Cache Eviction Policy
+    T0[&quot;Token 0: &lt;s&gt; (Sink Token: 40% Attention)&quot;]
+    T1[&quot;Token 1: System (Sink Token: 15% Attention)&quot;]
+    T2[&quot;Token 2: You (Sink Token: 10% Attention)&quot;]
+    T3[&quot;Token 3: are (Sink Token: 5% Attention)&quot;]
+    
+    Evicted[&quot;[Tokens 4..990,000 EVICTED FROM VRAM]&quot;]
+    
+    Rolling[&quot;Rolling Window: Tokens 998,000..1,000,000&quot;]
+    
+    T0 --- T1 --- T2 --- T3 --- Evicted --- Rolling
+  end</div>
+<p><strong>The StreamingLLM Invariant</strong>: By permanently pinning the <strong>first 4 Attention Sink Tokens</strong> in GPU memory and pairing them with a <strong>rolling local window</strong>, an LLM can generate text infinitely over millions of tokens with a bounded $O(1)$ VRAM memory footprint!</p>
+<hr>
+<h2>🎯 3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</h2>
+<p>While StreamingLLM maintains fluency for streaming dialogue, agents performing code analysis require retaining critical entities and function definitions located midway through a $500\text{k-token}$ prompt.</p>
+<h3>1. H2O (Heavy Hitter Oracle)</h3>
+<ul>
+<li>Tracks the cumulative attention scores assigned to each token over time.</li>
+<li>Retains the <strong>Top 10% Heavy-Hitter (H2) Tokens</strong> (e.g. database schemas, class definitions, specific instructions) while evicting the bottom $90%$ low-attention filler tokens.</li>
+</ul>
+<h3>2. SnapKV (Positional Clustering)</h3>
+<ul>
+<li>Observes the attention patterns during prompt processing and selects key semantic clusters per attention head, compressing the prompt KV-cache by <strong>$85%$</strong> in a single pass before autoregressive decoding begins.</li>
+</ul>
+<hr>
+<h2>🛠️ Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</h2>
+<p>Here is a Python implementation simulating an attention sink retention and H2O Heavy-Hitter dynamic KV-cache eviction engine:</p>
+<pre><code class="language-python">import numpy as np
+from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
-class TSDBChunk(BaseModel):
-    series_id: str
-    min_time: int
-    max_time: int
-    sample_count: int
-    compressed_bytes: int
+@dataclass
+class KVCacheEntry:
+    token_id: int
+    token_str: str
+    cumulative_attention: float
+    is_sink: bool = False
 
-class TSDBDiskBlock(BaseModel):
-    block_id: str
-    min_time: int
-    max_time: int
-    chunks: List[TSDBChunk]
-    postings_index: Dict[str, Set[str]]  # { label_pair -&gt; set(series_ids) }
-
-class TSDBHeadBlockEngine:
+class CompressedKVCache:
     &quot;&quot;&quot;
-    Simulates Prometheus TSDB 2-Hour In-Memory Head Block &amp; Block Compactor.
+    Simulates StreamingLLM (Attention Sinks) + H2O (Heavy Hitter) KV-Cache Eviction.
     &quot;&quot;&quot;
-    def __init__(self, block_duration_sec: int = 7200): # 2-hour blocks
-        self.block_duration = block_duration_sec
-        self.active_wal: List[str] = []
-        self.head_chunks: Dict[str, List[Tuple[int, float]]] = {}
-        self.disk_blocks: List[TSDBDiskBlock] = []
-        self.block_counter = 1
-
-    def ingesting_metric(self, series_id: str, labels: Dict[str, str], timestamp: int, value: float):
-        &quot;&quot;&quot;1. Write to WAL + In-Memory Head Block.&quot;&quot;&quot;
-        self.active_wal.append(f&quot;{series_id},{timestamp},{value}&quot;)
-        if series_id not in self.head_chunks:
-            self.head_chunks[series_id] = []
-        self.head_chunks[series_id].append((timestamp, value))
-
-    def cut_head_block(self) -&gt; TSDBDiskBlock:
-        &quot;&quot;&quot;2. Freezes 2-Hour Head Block and cuts immutable disk block directory.&quot;&quot;&quot;
-        print(f&quot;\n✂️ [TSDB Head Block Cut] Cutting 2-Hour In-Memory Block to Disk Directory #01H8_00{self.block_counter}...&quot;)
+    def __init__(self, max_capacity: int = 8, sink_tokens_count: int = 2, heavy_hitter_ratio: float = 0.5):
+        self.max_capacity = max_capacity
+        self.sink_count = sink_tokens_count
+        self.heavy_hitter_budget = int((max_capacity - sink_tokens_count) * heavy_hitter_ratio)
+        self.rolling_window_budget = (max_capacity - sink_tokens_count) - self.heavy_hitter_budget
         
-        block_chunks: List[TSDBChunk] = []
-        postings: Dict[str, Set[str]] = {}
-        all_times = []
+        self.entries: List[KVCacheEntry] = []
 
-        for s_id, samples in self.head_chunks.items():
-            if not samples:
-                continue
-            t_min = samples[0][0]
-            t_max = samples[-1][0]
-            all_times.extend([t_min, t_max])
-            
-            # Simulate Gorilla compression (approx 1.5 bytes per sample)
-            comp_size = max(10, int(len(samples) * 1.5))
-            chunk = TSDBChunk(series_id=s_id, min_time=t_min, max_time=t_max, sample_count=len(samples), compressed_bytes=comp_size)
-            block_chunks.append(chunk)
+    def append_token(self, token_id: int, token_str: str, attention_score: float):
+        is_sink = len(self.entries) &lt; self.sink_count
+        entry = KVCacheEntry(token_id, token_str, cumulative_attention=attention_score, is_sink=is_sink)
+        self.entries.append(entry)
 
-            # Build inverted index posting
-            postings.setdefault(f&quot;series={s_id}&quot;, set()).add(s_id)
+        # Evict if exceeding capacity
+        if len(self.entries) &gt; self.max_capacity:
+            self._evict_cache()
 
-        min_t = min(all_times) if all_times else 0
-        max_t = max(all_times) if all_times else 0
+    def _evict_cache(self):
+        # 1. Protect Attention Sinks (First N tokens)
+        sinks = self.entries[:self.sink_count]
+        remaining = self.entries[self.sink_count:]
 
-        block = TSDBDiskBlock(
-            block_id=f&quot;01H8_00{self.block_counter}&quot;, min_time=min_t, max_time=max_t, chunks=block_chunks, postings_index=postings
-        )
-        self.disk_blocks.append(block)
-        self.block_counter += 1
+        # 2. Protect Rolling Local Window (Most recent N tokens)
+        recent_window = remaining[-self.rolling_window_budget:]
+        middle_candidates = remaining[:-self.rolling_window_budget]
 
-        # Clear Head Block &amp; WAL
-        self.head_chunks.clear()
-        self.active_wal.clear()
-        print(f&quot; ✅ Block Directory Created: {len(block_chunks)} Chunks | Range: [{min_t}..{max_t}]&quot;)
-        return block
+        # 3. H2O Selection: Keep top heavy-hitters from middle candidates
+        if middle_candidates:
+            # Sort by cumulative attention score
+            middle_candidates.sort(key=lambda x: x.cumulative_attention, reverse=True)
+            kept_heavy_hitters = middle_candidates[:self.heavy_hitter_budget]
+        else:
+            kept_heavy_hitters = []
 
-    def compact_blocks(self):
-        &quot;&quot;&quot;3. Merges adjacent 2-hour blocks into compacted multi-hour blocks.&quot;&quot;&quot;
-        print(f&quot;\n🧹 [Background Compactor] Inspecting {len(self.disk_blocks)} disk blocks for compaction...&quot;)
-        if len(self.disk_blocks) &lt; 2:
-            print(&quot; ℹ️ Insufficient blocks for compaction. Minimum 2 required.&quot;)
-            return
+        # Reconstruct compact KV-cache
+        self.entries = sinks + sorted(kept_heavy_hitters + recent_window, key=lambda x: x.token_id)
 
-        b1 = self.disk_blocks.pop(0)
-        b2 = self.disk_blocks.pop(0)
-
-        merged_chunks = b1.chunks + b2.chunks
-        compacted_block = TSDBDiskBlock(
-            block_id=f&quot;COMPACTED_{b1.block_id}_{b2.block_id}&quot;,
-            min_time=min(b1.min_time, b2.min_time),
-            max_time=max(b1.max_time, b2.max_time),
-            chunks=merged_chunks,
-            postings_index={**b1.postings_index, **b2.postings_index}
-        )
-        self.disk_blocks.append(compacted_block)
-        print(f&quot; 🎉 [Compaction Complete] Merged '{b1.block_id}' + '{b2.block_id}' -&gt; '{compacted_block.block_id}' ({len(merged_chunks)} Chunks)&quot;)
+    def print_cache_state(self):
+        tokens_repr = []
+        for e in self.entries:
+            tag = &quot; [SINK]&quot; if e.is_sink else &quot;&quot;
+            tokens_repr.append(f&quot;'{e.token_str}'(att:{e.cumulative_attention:.2f}){tag}&quot;)
+        print(f&quot; 📦 Active KV-Cache ({len(self.entries)}/{self.max_capacity} tokens): [ {', '.join(tokens_repr)} ]&quot;)
 
 # Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    tsdb = TSDBHeadBlockEngine(block_duration_sec=7200)
+    cache = CompressedKVCache(max_capacity=6, sink_tokens_count=2, heavy_hitter_ratio=0.5)
 
-    print(&quot;🚀 Demonstrating TSDB Head Block Ingestion &amp; Compaction Engine...&quot;)
-    print(&quot;=&quot; * 75)
+    print(&quot;🚀 Ingesting Long Token Sequence into Compressed KV-Cache...&quot;)
+    tokens_stream = [
+        (0, &quot;&lt;s&gt;&quot;, 0.95),          # Sink 1 (High Attention)
+        (1, &quot;System:&quot;, 0.85),      # Sink 2 (High Attention)
+        (2, &quot;import&quot;, 0.10),       # Low Attention
+        (3, &quot;PostgresDB&quot;, 0.90),   # Critical Entity (Heavy Hitter!)
+        (4, &quot;as&quot;, 0.05),           # Filler
+        (5, &quot;db&quot;, 0.20),           # Filler
+        (6, &quot;def&quot;, 0.15),          # Filler
+        (7, &quot;query():&quot;, 0.75),     # Rolling Window
+    ]
 
-    base_time = 1700000000
-    labels_api = {&quot;__name__&quot;: &quot;http_requests_total&quot;, &quot;job&quot;: &quot;api&quot;}
-
-    # 1. Ingest metric data into 1st 2-hour window
-    for i in range(10):
-        tsdb.ingesting_metric(&quot;series_api_500&quot;, labels_api, base_time + (i * 60), 100.0 + i)
-
-    # 2. Cut 1st Block
-    tsdb.cut_head_block()
-
-    # 3. Ingest metric data into 2nd 2-hour window
-    for i in range(10):
-        tsdb.ingesting_metric(&quot;series_api_500&quot;, labels_api, base_time + 7200 + (i * 60), 200.0 + i)
-
-    # 4. Cut 2nd Block
-    tsdb.cut_head_block()
-
-    # 5. Perform Background Multi-Block Compaction
-    tsdb.compact_blocks()</code></pre>
+    for tid, tstr, att in tokens_stream:
+        print(f&quot;\n⚡ Ingesting Token #{tid}: '{tstr}' (Attention: {att})&quot;)
+        cache.append_token(tid, tstr, att)
+        cache.print_cache_state()</code></pre>
 <hr>
-<h2>🚨 TSDB Storage Engine Gotchas &amp; Best Practices</h2>
-<p>When designing time-series storage infrastructure:</p>
-<div class="alert alert-important">
-  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Size In-Memory Head Block RAM for Peak Ingestion Rates</strong>: The Head Block must retain up to 2 hours of un-compacted metric data in RAM. Ensure Prometheus or VictoriaMetrics nodes have at least $30%$ RAM buffer room to prevent OOM crashes during Head Block cuts.</p>
-</div>
-</div>
-<div class="alert alert-caution">
-  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Avoid High-Cardinality Label Explosion</strong>: Inverting indices maps label key-value pairs (<code>user_id=&quot;12345&quot;</code>) to series IDs. Adding unique IDs or GUIDs into metric labels causes exponential index memory bloat, crippling TSDB query performance.</p>
-</div>
-</div>
+<h2>📊 Summary: KV-Cache Compression Matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Technique</th>
+<th>Memory Footprint</th>
+<th>Attention Sinks Kept?</th>
+<th>Needle-in-a-Haystack Recall</th>
+<th>Best Use Case</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Uncompressed KV-Cache</strong></td>
+<td>$100%$ ($164\text{ GB}$ per 1M context)</td>
+<td>N/A</td>
+<td>$100%$</td>
+<td>High-budget offline batch runs</td>
+</tr>
+<tr>
+<td><strong>Naive Sliding Window</strong></td>
+<td>$10%\text{--}20%$</td>
+<td>❌ No (Perplexity spikes)</td>
+<td>$0%$</td>
+<td>🚫 Broken Anti-pattern</td>
+</tr>
+<tr>
+<td><strong>StreamingLLM</strong></td>
+<td><strong>$5%\text{--}10%$</strong> ($O(1)$ bounded)</td>
+<td><strong>✅ Yes (First 4 tokens)</strong></td>
+<td>Local only</td>
+<td>Infinite streaming agents</td>
+</tr>
+<tr>
+<td><strong>H2O Heavy-Hitter</strong></td>
+<td><strong>$15%\text{--}20%$</strong></td>
+<td><strong>✅ Yes</strong></td>
+<td><strong>$&gt; 95%$ Recall</strong></td>
+<td>Long-context coding &amp; document analysis</td>
+</tr>
+<tr>
+<td><strong>SnapKV</strong></td>
+<td><strong>$10%\text{--}15%$</strong></td>
+<td><strong>✅ Yes</strong></td>
+<td><strong>$&gt; 98%$ Recall</strong></td>
+<td>Production prompt compression</td>
+</tr>
+</tbody></table>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
-<p>Time-series storage engines (such as <strong>Prometheus TSDB</strong> and <strong>VictoriaMetrics</strong>) report:</p>
-<ul>
-<li><strong>Sub-Second Range Query Speeds</strong>: Compacted 24-hour block layouts and inverted postings indices allow Prometheus to scan millions of time series per second.</li>
-<li><strong>$10\times$ Lower Disk I/O Overhead</strong>: Batching RAM chunks into 2-hour immutable block cuts eliminates continuous disk write amplification.</li>
-</ul>
+<h2>🏁 Architectural Takeaway</h2>
+<p>Serving 1M+ token context windows is not a hardware brute-force challenge—<strong>it is an attention geometry optimization problem</strong>.</p>
+<p>By locking in <strong>Attention Sinks (StreamingLLM)</strong> and dynamically pruning low-salience tokens with <strong>H2O Heavy-Hitter and SnapKV algorithms</strong>, AI systems engineers unlock multi-million token agent capabilities with an <strong>$80%\text{ to }90%$ reduction in GPU VRAM costs</strong>.</p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fin-memory-columnar-chunk-compaction-prometheus-victoriametrics.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=In-Memory%20Columnar%20Chunk%20Compaction%3A%20Prometheus%20TSDB%20%26%20VictoriaMetrics%20Segment%20Layouts&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fin-memory-columnar-chunk-compaction-prometheus-victoriametrics.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fkv-cache-compression-long-context-streamingllm-snapkv-h2o.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=KV-Cache%20Compression%20for%201M%2B%20Context%20Agents%3A%20StreamingLLM%2C%20SnapKV%20%26%20H2O%20Heavy-Hitter%20Eviction&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fkv-cache-compression-long-context-streamingllm-snapkv-h2o.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -334,7 +343,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="kv-cache-compression-long-context-streamingllm-snapkv-h2o.html">KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction<span class="sidebar-post-date">September 1, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -451,7 +460,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="out-of-order-ingestion-downsampling-retention-rollups.html">Out-of-Order Ingestion &amp; Automated Downsampling: Real-Time Rollups &amp; Retention Policies<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="in-memory-columnar-chunk-compaction-prometheus-victoriametrics.html">In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts<span class="sidebar-post-date">August 18, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
