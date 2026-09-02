@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Achieving ACID durability during unexpected system crashes: implementing Write-Ahead Logging (WAL) and the 3-phase ARIES recovery algorithm (Analysis, Redo, and Undo with CLRs).">
+  <title>Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/wal-recovery-algorithms-aries-protocol-storage-engines.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/distributed-lock-managers-redlock-controversy-fencing-tokens.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/wal-recovery-algorithms-aries-protocol-storage-engines.html">
-  <meta property="og:title" content="WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines">
-  <meta property="og:description" content="Achieving ACID durability during unexpected system crashes: implementing Write-Ahead Logging (WAL) and the 3-phase ARIES recovery algorithm (Analysis, Redo, and Undo with CLRs).">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-lock-managers-redlock-controversy-fencing-tokens.html">
+  <meta property="og:title" content="Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks">
+  <meta property="og:description" content="Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-12">
+  <meta property="article:published_time" content="2026-09-01">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines">
-  <meta name="twitter:description" content="Achieving ACID durability during unexpected system crashes: implementing Write-Ahead Logging (WAL) and the 3-phase ARIES recovery algorithm (Analysis, Redo, and Undo with CLRs).">
+  <meta name="twitter:title" content="Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks">
+  <meta name="twitter:description" content="Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "WAL & Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines",
-  "description": "Achieving ACID durability during unexpected system crashes: implementing Write-Ahead Logging (WAL) and the 3-phase ARIES recovery algorithm (Analysis, Redo, and Undo with CLRs).",
-  "url": "https://akmalkhaniub.github.io/blog/wal-recovery-algorithms-aries-protocol-storage-engines.html",
-  "datePublished": "2026-08-12",
-  "keywords": "Database Internals, WAL, ARIES, Python",
+  "headline": "Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, & Postgres Advisory Locks",
+  "description": "Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.",
+  "url": "https://akmalkhaniub.github.io/blog/distributed-lock-managers-redlock-controversy-fencing-tokens.html",
+  "datePublished": "2026-09-01",
+  "keywords": "Distributed Systems, Distributed Locks, Redis, Redlock, PostgreSQL, System Design",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/wal-recovery-algorithms-aries-protocol-storage-engines.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/distributed-lock-managers-redlock-controversy-fencing-tokens.html"
 }
   </script>
 
@@ -92,178 +92,249 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines</h1>
+            <h1 class="article-title">Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> August 13, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> September 2, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
-              <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Database Internals</span><span class="project-badge">WAL</span><span class="project-badge">ARIES</span><span class="project-badge">Python</span></div>
+              <span><i class="fa-regular fa-clock"></i> 12 min read</span>
+              <div class="article-tags"><span class="project-badge">Distributed Systems</span><span class="project-badge">Distributed Locks</span><span class="project-badge">Redis</span><span class="project-badge">Redlock</span><span class="project-badge">PostgreSQL</span><span class="project-badge">System Design</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines</h1>
-<p>When a database node crashes unexpectedly due to power failure or hardware fault, dirty in-memory database pages that were never flushed to disk are lost, while uncommitted transaction modifications may remain partially written to disk.</p>
-<p>To provide strict <strong>ACID Durability</strong> and atomicity across system crashes, relational and document database engines rely on <strong>Write-Ahead Logging (WAL)</strong> governed by the <strong>ARIES (Algorithms for Recovery and Isolation Exploiting Semantics)</strong> protocol.</p>
-<p>ARIES guarantees that regardless of when or how many times a system crashes during recovery, the database state will recover cleanly to a consistent state.</p>
-<p>This article details the three phases of the ARIES crash recovery algorithm and how to implement a recovery manager.</p>
-<hr>
-<h2>📖 ARIES 3-Phase Crash Recovery Pipeline</h2>
-<p>The execution flow during database reboot after an unexpected crash:</p>
+<h1>Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks</h1>
+<p>In distributed systems engineering (<strong>E-Commerce Inventory</strong>, <strong>Financial Ledger Processing</strong>, <strong>Billing Engines</strong>, <strong>Cluster Master Election</strong>), coordinating exclusive access to a shared resource across multiple machines is a frequent requirement:</p>
+<ul>
+<li>Ensuring only one worker charges a customer&#39;s credit card.</li>
+<li>Ensuring only one batch job generates the daily ledger report.</li>
+<li>Preventing concurrent double-allocation of a limited flight seat.</li>
+</ul>
+<p>To prevent race conditions, software architects frequently implement <strong>Distributed Lock Managers (DLMs)</strong> using <strong>Redis (Redlock)</strong>, <strong>Apache ZooKeeper</strong>, <strong>Google Chubby</strong>, or <strong>PostgreSQL Advisory Locks</strong>.</p>
+<p>In 2016, a legendary computer science debate erupted between <strong>Martin Kleppmann</strong> (Cambridge distributed systems researcher) and <strong>Salvatore Sanfilippo (Antirez)</strong> (creator of Redis).</p>
+<p>Kleppmann mathematically demonstrated that in asynchronous distributed networks subject to <strong>unpredictable network delays</strong>, <strong>process GC pauses</strong>, and <strong>clock drift</strong>, standard distributed locks—including Redis Redlock—<strong>cannot guarantee safety without Monotonically Increasing Fencing Tokens</strong>.</p>
 <div class="mermaid">graph TD
-  A[Database Crash Event / System Reboot] --&gt; B[Phase 1: Analysis Phase]
-  
-  subgraph Recovery Execution Pipeline
-    B --&gt;|Read Log from Checkpoint| B1[Reconstruct Active Transaction Table ATT &amp; Dirty Page Table DPT]
-    B1 --&gt; C[Phase 2: Redo Phase - Repeating History]
-    C --&gt;|Replay all Logged Actions from Smallest recLSN| C1[Bring Database Storage to Crash-Time State]
-    C1 --&gt; D[Phase 3: Undo Phase - Rolling Back Aborts]
-    D --&gt;|Roll Back Uncommitted Transactions in Reverse LSN| D1[Write Compensation Log Records CLRs]
-  end
-  
-  D1 --&gt; E[Database Fully Restored &amp; Ready for Client Connections]</div>
-<h3>Core ARIES Invariants</h3>
-<ol>
-<li><strong>Write-Ahead Logging (WAL) Rule</strong>: A dirty page modification cannot be written to disk until the corresponding log record with Log Sequence Number (LSN) has been flushed to non-volatile disk storage ($PageLSN \le FlushedLSN$).</li>
-<li><strong>Repeating History during Redo</strong>: During the Redo phase, ARIES replays <em>all</em> logged actions—including modifications made by transactions that eventually aborted. This restores the database to the exact state it was in at the instant of the crash.</li>
-<li><strong>Compensation Log Records (CLRs)</strong>: When rolling back an uncommitted transaction during the Undo phase, every undo operation writes a CLR record to the log. If the system crashes again <em>during</em> recovery, CLRs ensure that previously undone actions are never undone a second time.</li>
-</ol>
+  subgraph The Distributed Lock GC Pause Hazard (Split-Brain Write)
+    Client1[&quot;Client 1: Acquires Lock (Lease: 10s)&quot;] --&gt; Pause[&quot;🚨 12-Second GC / VM Pause (Lock Expires!)&quot;]
+    
+    subgraph Lock Server (Redis / DLM)
+      LeaseExpire[&quot;Lock Expires at t=10s&quot;] --&gt; GrantClient2[&quot;Grant Lock to Client 2 at t=11s&quot;]
+    end
+    
+    GrantClient2 --&gt; Client2[&quot;Client 2: Writes Data Safely&quot;]
+    Pause --&gt; Wakeup[&quot;Client 1 Wakes Up at t=12s (Believes it still holds lock!)&quot;]
+    Wakeup --&gt; Corrupt[&quot;Client 1 Overwrites Client 2's Data (💥 CORRUPTION!)&quot;]
+  end</div>
 <hr>
-<h2>🛠️ Python Implementation: ARIES Crash Recovery Engine</h2>
-<p>Here is a production-grade Python simulation of an ARIES Recovery Manager featuring Analysis, Redo, and Undo phase processing with Compensation Log Record (CLR) tracking:</p>
-<pre><code class="language-python">from typing import List, Dict, Optional
-from pydantic import BaseModel, Field
+<h2>🛑 1. Why Distributed Locking is Fundamentally Hard</h2>
+<p>Why can a distributed lock not be implemented simply by setting a key in Redis with a TTL (<code>SET lock_key uuid NX PX 10000</code>)?</p>
+<h3>The 3 Asynchronous Network Realities:</h3>
+<ol>
+<li><strong>Unbounded Process Pauses</strong>: A client running in Python, Java, or Node.js can pause for 15 seconds due to a Stop-the-World Garbage Collection (GC) cycle, page fault thrashing, or OS context switching.</li>
+<li><strong>Unbounded Network Delays</strong>: A TCP packet can be delayed in a router buffer for seconds without being dropped.</li>
+<li><strong>Physical Clock Drift</strong>: Modern cloud servers synchronized via NTP experience clock jumps or drift, causing a 10-second lease to expire prematurely on the lock server while the client believes it has 4 seconds remaining.</li>
+</ol>
+<p>When Client 1 pauses past its lease expiration, the lock manager grants the lock to Client 2. When Client 1 resumes, <strong>two processes believe they hold exclusive access simultaneously (Split-Brain Dual Write)</strong>.</p>
+<hr>
+<h2>⚔️ 2. The Redlock Algorithm &amp; The Kleppmann-Antirez Debate</h2>
+<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
+|                                 THE 2 PURPOSES OF DISTRIBUTED LOCKS                               |
++---------------------------------------------------------------------------------------------------+
+| Purpose 1: For Efficiency (Optimization) | Purpose 2: For Correctness (Safety)                   |
+| If the lock fails, you waste compute     | If the lock fails, you corrupt financial data or bank |
+| (e.g. 2 workers render the same video).  | balances (e.g. Double spending a customer wallet).    |
+| Redis / Redlock is sufficient!           | Redlock FAILS without Fencing Tokens!                 |
++---------------------------------------------------------------------------------------------------+</code></pre>
+<h3>The Redlock Algorithm (Antirez)</h3>
+<p>To eliminate single-point-of-failure in a single Redis node, Redlock deploys $N=5$ independent Redis instances:</p>
+<ol>
+<li>The client acquires the lock by issuing <code>SET NX PX</code> sequentially across all 5 nodes.</li>
+<li>The client considers the lock acquired if it obtains a majority ($Q = 3/5$) within a timeout budget.</li>
+</ol>
+<h3>Martin Kleppmann&#39;s Critique:</h3>
+<p>Kleppmann proved that Redlock relies on an unspoken synchronous network assumption: that the physical clocks across all 5 nodes drift predictably. Under NTP clock jumps or asymmetric network partitions, Redlock can grant the lock to two clients for overlapping validity windows.</p>
+<hr>
+<h2>🛡️ 3. The Fencing Token Invariant (The Kleppmann Solution)</h2>
+<p>To make distributed locking provably safe for mission-critical financial systems, the lock manager and storage layer must implement <strong>Monotonically Increasing Fencing Tokens</strong>:</p>
+<div class="mermaid">sequenceDiagram
+  autonumber
+  participant C1 as Client 1 (Stale)
+  participant C2 as Client 2 (Active)
+  participant Lock as DLM (ZooKeeper / Raft)
+  participant DB as Shared Storage Engine
 
-class WALRecord(BaseModel):
-    lsn: int
-    trans_id: str
-    record_type: str  # BEGIN, UPDATE, COMMIT, ABORT, CLR
-    page_id: Optional[int] = None
-    prev_lsn: Optional[int] = None
-    undo_next_lsn: Optional[int] = None  # Used in CLRs
+  C1-&gt;&gt;Lock: Acquire Lock
+  Lock--&gt;&gt;C1: Granted (Fencing Token = 33)
+  Note over C1: Client 1 enters 12s GC Pause!
+  Note over Lock: Lock Lease Expired
+  C2-&gt;&gt;Lock: Acquire Lock
+  Lock--&gt;&gt;C2: Granted (Fencing Token = 34)
+  C2-&gt;&gt;DB: Write Data (Token = 34)
+  DB-&gt;&gt;DB: Record Highest Token = 34
+  DB--&gt;&gt;C2: Write Accepted ✅
+  Note over C1: Client 1 wakes up from GC Pause!
+  C1-&gt;&gt;DB: Stale Write Attempt (Token = 33)
+  DB-&gt;&gt;DB: Check: 33 &lt; Highest Token (34)
+  DB--&gt;&gt;C1: 🛑 Write REJECTED: Stale Fencing Token!</div>
+<p><strong>The Fencing Rule</strong>: Every time a lock is granted, the DLM increments a monotonic integer token ($33, 34, 35$). The underlying database rejects any write carrying a token lower than the highest token it has already processed.</p>
+<hr>
+<h2>🐘 4. PostgreSQL Advisory Locks: The Pragmatic Alternative</h2>
+<p>If your application already uses a PostgreSQL database, you often do not need to operate a separate ZooKeeper or Redis cluster.</p>
+<p>PostgreSQL provides native <strong>Advisory Locks</strong>:</p>
+<pre><code class="language-sql">-- Acquire an application-level exclusive lock on Resource ID 42
+SELECT pg_advisory_lock(42);
 
-class ARIESRecoveryManager:
+-- Perform critical financial transaction
+UPDATE accounts SET balance = balance - 100 WHERE id = 101;
+
+-- Release lock (or automatically released when DB connection closes!)
+SELECT pg_advisory_unlock(42);</code></pre>
+<ul>
+<li><strong>Session-Level Locks</strong>: Automatically released when the client disconnects or crashes (Zero orphan lock leaks!).</li>
+<li><strong>Transaction-Level Locks (<code>pg_advisory_xact_lock</code>)</strong>: Automatically released when the SQL transaction commits or rolls back.</li>
+</ul>
+<hr>
+<h2>🛠️ Python Implementation: Distributed Lock Manager with Fencing Tokens</h2>
+<p>Here is a Python implementation simulating a Distributed Lock Manager with Monotonic Fencing Tokens and a Protected Storage Engine:</p>
+<pre><code class="language-python">import time
+from dataclasses import dataclass
+from typing import Dict, Optional, Tuple
+
+@dataclass
+class LockLease:
+    resource_name: str
+    owner_id: str
+    fencing_token: int
+    expires_at: float
+
+class FencedDistributedLockManager:
     &quot;&quot;&quot;
-    Simulates the ARIES (Analysis, Redo, Undo) crash recovery algorithm.
+    DLM that issues Monotonically Increasing Fencing Tokens.
     &quot;&quot;&quot;
-    def __init__(self, wal_log: List[WALRecord]):
-        self.wal_log = wal_log
-        self.active_transaction_table: Dict[str, int] = {}  # trans_id -&gt; last_lsn
-        self.dirty_page_table: Dict[int, int] = {}          # page_id -&gt; recLSN
-        self.redone_lsns: List[int] = []
-        self.undone_lsns: List[int] = []
+    def __init__(self):
+        self.current_token_counter = 100
+        self.active_locks: Dict[str, LockLease] = {}
 
-    def run_analysis_phase(self):
-        &quot;&quot;&quot;Phase 1: Reconstructs active transactions and dirty pages.&quot;&quot;&quot;
-        print(&quot;🔍 [ARIES Phase 1: Analysis] Scanning WAL log...&quot;)
-        for record in self.wal_log:
-            self.active_transaction_table[record.trans_id] = record.lsn
-            
-            if record.record_type == &quot;UPDATE&quot; and record.page_id is not None:
-                if record.page_id not in self.dirty_page_table:
-                    self.dirty_page_table[record.page_id] = record.lsn
-            elif record.record_type in (&quot;COMMIT&quot;, &quot;ABORT&quot;):
-                if record.trans_id in self.active_transaction_table:
-                    del self.active_transaction_table[record.trans_id]
+    def acquire_lock(self, resource_name: str, client_id: str, lease_duration_sec: float = 2.0) -&gt; Optional[LockLease]:
+        now = time.time()
+        # Check if currently held and unexpired
+        if resource_name in self.active_locks:
+            lease = self.active_locks[resource_name]
+            if now &lt; lease.expires_at:
+                print(f&quot; ❌ [DLM] Client [{client_id}] rejected: Lock held by [{lease.owner_id}] until t={lease.expires_at:.2f}&quot;)
+                return None
 
-        print(f&quot; 📊 Analysis Complete: Active Uncommitted Transactions = {list(self.active_transaction_table.keys())}&quot;)
-        print(f&quot; 📊 Dirty Page Table (recLSN): {self.dirty_page_table}&quot;)
+        # Issue new monotonic fencing token
+        self.current_token_counter += 1
+        new_lease = LockLease(
+            resource_name=resource_name,
+            owner_id=client_id,
+            fencing_token=self.current_token_counter,
+            expires_at=now + lease_duration_sec
+        )
+        self.active_locks[resource_name] = new_lease
+        print(f&quot; 🔑 [DLM] Lock granted to [{client_id}] for '{resource_name}' (Fencing Token: {new_lease.fencing_token}, Expires in {lease_duration_sec}s)&quot;)
+        return new_lease
 
-    def run_redo_phase(self):
-        &quot;&quot;&quot;Phase 2: Repeats history by replaying all updates from smallest recLSN.&quot;&quot;&quot;
-        if not self.dirty_page_table:
-            return
-        smallest_rec_lsn = min(self.dirty_page_table.values())
-        print(f&quot;\n🔄 [ARIES Phase 2: Redo] Replaying history starting from LSN {smallest_rec_lsn}...&quot;)
+class FencedStorageEngine:
+    &quot;&quot;&quot;
+    Storage Engine protected against stale writes via Fencing Tokens.
+    &quot;&quot;&quot;
+    def __init__(self):
+        self.storage: Dict[str, str] = {}
+        self.highest_fencing_token: int = 0
+
+    def write(self, client_id: str, key: str, value: str, fencing_token: int) -&gt; bool:
+        print(f&quot;\n💾 [Storage Write Attempt] Client [{client_id}] writing '{key}'='{value}' with Token #{fencing_token}...&quot;)
         
-        for record in self.wal_log:
-            if record.lsn &gt;= smallest_rec_lsn:
-                if record.record_type in (&quot;UPDATE&quot;, &quot;CLR&quot;):
-                    self.redone_lsns.append(record.lsn)
-                    print(f&quot; ⏩ [Redo] Replayed LSN {record.lsn} ({record.record_type} for Trans {record.trans_id})&quot;)
+        # Fencing Token Invariant Check
+        if fencing_token &lt; self.highest_fencing_token:
+            print(f&quot; 🛑 [Storage Stale Write Rejected!] Token #{fencing_token} &lt; Current Highest Token #{self.highest_fencing_token} (Dual-write prevented!)&quot;)
+            return False
 
-    def run_undo_phase(self):
-        &quot;&quot;&quot;Phase 3: Rolls back active uncommitted transactions in reverse LSN order emitting CLRs.&quot;&quot;&quot;
-        print(f&quot;\n↩️ [ARIES Phase 3: Undo] Rolling back uncommitted transactions {list(self.active_transaction_table.keys())}...&quot;)
-        
-        # Collect all active transaction last LSNs
-        undo_lsns = [lsn for trans, lsn in self.active_transaction_table.items()]
-        
-        while undo_lsns:
-            undo_lsns.sort(reverse=True)
-            current_lsn = undo_lsns.pop(0)
-            
-            record = next(r for r in self.wal_log if r.lsn == current_lsn)
-            if record.record_type == &quot;UPDATE&quot;:
-                self.undone_lsns.append(record.lsn)
-                # Emit Compensation Log Record (CLR)
-                clr_lsn = self.wal_log[-1].lsn + 1
-                clr_record = WALRecord(
-                    lsn=clr_lsn,
-                    trans_id=record.trans_id,
-                    record_type=&quot;CLR&quot;,
-                    page_id=record.page_id,
-                    undo_next_lsn=record.prev_lsn
-                )
-                self.wal_log.append(clr_record)
-                print(f&quot; 🛠️ [Undo] Undid LSN {record.lsn} (Trans {record.trans_id}) -&gt; Emitted CLR LSN {clr_lsn}&quot;)
-                
-                if record.prev_lsn is not None:
-                    undo_lsns.append(record.prev_lsn)
+        self.highest_fencing_token = fencing_token
+        self.storage[key] = value
+        print(f&quot; ✅ [Storage Write Succeeded] '{key}' updated to '{value}'. (New Highest Token: #{fencing_token})&quot;)
+        return True
 
 # Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    # Simulate WAL log up to crash point
-    # Trans T1 committed, Trans T2 uncommitted at crash time
-    wal = [
-        WALRecord(lsn=1, trans_id=&quot;T1&quot;, record_type=&quot;BEGIN&quot;),
-        WALRecord(lsn=2, trans_id=&quot;T1&quot;, record_type=&quot;UPDATE&quot;, page_id=101, prev_lsn=1),
-        WALRecord(lsn=3, trans_id=&quot;T2&quot;, record_type=&quot;BEGIN&quot;),
-        WALRecord(lsn=4, trans_id=&quot;T2&quot;, record_type=&quot;UPDATE&quot;, page_id=102, prev_lsn=3),
-        WALRecord(lsn=5, trans_id=&quot;T1&quot;, record_type=&quot;COMMIT&quot;, prev_lsn=2),
-        WALRecord(lsn=6, trans_id=&quot;T2&quot;, record_type=&quot;UPDATE&quot;, page_id=101, prev_lsn=4),
-        # ⚡ CRASH OCCURS HERE (T2 is uncommitted!)
-    ]
+    dlm = FencedDistributedLockManager()
+    storage = FencedStorageEngine()
 
-    recovery = ARIESRecoveryManager(wal)
-    print(&quot;🚀 Initiating ARIES Crash Recovery Process...&quot;)
-    print(&quot;=&quot; * 75)
+    # 1. Client 1 acquires lock (Token 101) with 1.0s lease
+    lease1 = dlm.acquire_lock(&quot;bank_account_42&quot;, client_id=&quot;Client-1&quot;, lease_duration_sec=1.0)
 
-    recovery.run_analysis_phase()
-    recovery.run_redo_phase()
-    recovery.run_undo_phase()
+    # 2. Client 1 experiences a 1.5s Garbage Collection Pause!
+    print(&quot;\n⏳ [Client 1 Pauses] Entering 1.5s JVM Stop-the-World GC Pause (Lease will expire!)...&quot;)
+    time.sleep(1.2)
 
-    print(&quot;\n✨ Database successfully restored to consistent state!&quot;)</code></pre>
+    # 3. Client 2 acquires lock while Client 1 is paused (Token 102)
+    lease2 = dlm.acquire_lock(&quot;bank_account_42&quot;, client_id=&quot;Client-2&quot;, lease_duration_sec=2.0)
+    # Client 2 writes successfully with Token 102
+    storage.write(&quot;Client-2&quot;, &quot;balance&quot;, &quot;$10,000&quot;, lease2.fencing_token)
+
+    # 4. Client 1 wakes up and attempts to write with stale Token 101
+    print(&quot;\n⏰ [Client 1 Resumes] Wakes up and attempts to write with old lease...&quot;)
+    storage.write(&quot;Client-1&quot;, &quot;balance&quot;, &quot;$500&quot;, lease1.fencing_token)
+
+    print(f&quot;\n📦 Final Database State: {storage.storage}&quot;)</code></pre>
 <hr>
-<h2>🚨 ARIES Recovery Gotchas &amp; Principles</h2>
-<p>When designing transaction recovery engines:</p>
-<div class="alert alert-important">
-  <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
-  <div class="alert-content"><p><strong>Enforce Checkpointing to Bound Recovery Time</strong>: Without periodic checkpoints, the WAL log grows infinitely, causing the Analysis and Redo phases to take hours on reboot. Engines periodically write <strong>Fuzzy Checkpoints</strong> to the log, recording current DPT and ATT states so recovery can start near the end of the log.</p>
-</div>
-</div>
-<div class="alert alert-caution">
-  <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Always Set <code>undo_next_lsn</code> in Compensation Log Records</strong>: If a system crashes repeatedly <em>during</em> the Undo phase, reading CLR records without <code>undo_next_lsn</code> pointers would cause the engine to re-undo already reverted modifications, leading to infinite recovery loops.</p>
-</div>
-</div>
+<h2>📊 Summary: Distributed Lock Technology Matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Lock Manager</th>
+<th>Consistency Basis</th>
+<th>Fencing Token Support</th>
+<th>Best Used For</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Single Redis Node</strong></td>
+<td>Single thread memory</td>
+<td>❌ No (Prone to GC pause split-brain)</td>
+<td>Non-critical cache regeneration</td>
+</tr>
+<tr>
+<td><strong>Redis Redlock</strong></td>
+<td>Majority Quorum across $N$ nodes</td>
+<td>❌ No (Vulnerable to clock drift)</td>
+<td>Efficiency locks (deduplication)</td>
+</tr>
+<tr>
+<td><strong>ZooKeeper / Chubby</strong></td>
+<td>Raft / Zab Paxos Consensus</td>
+<td><strong>✅ Yes (Sequential Ephemeral Znodes)</strong></td>
+<td>Distributed Master Election</td>
+</tr>
+<tr>
+<td><strong>PostgreSQL Advisory</strong></td>
+<td>Relational ACID Engine</td>
+<td><strong>✅ Session / Transaction bounded</strong></td>
+<td>Single-database enterprise apps</td>
+</tr>
+<tr>
+<td><strong>Fencing Token DLM</strong></td>
+<td>Monotonic Token Guard</td>
+<td><strong>✅ 100% Mathematically Safe</strong></td>
+<td>Financial balances &amp; critical storage</td>
+</tr>
+</tbody></table>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
-<p>Teams utilizing ARIES recovery engines report:</p>
-<ul>
-<li><strong>100% ACID Durability</strong>: Committed transactions survive power outages and kernel panics without data corruption.</li>
-<li><strong>Deterministic Crash Recovery</strong>: Compensation Log Records guarantee that recovery operations are idempotent, even if the server crashes multiple times during reboot.</li>
-</ul>
+<h2>🏁 Architectural Takeaway</h2>
+<p>A distributed lock is only as safe as the storage system that enforces it.</p>
+<p>For non-critical task deduplication, <strong>Redis locks are fast and practical</strong>.</p>
+<p>However, for mission-critical financial balances and data integrity, <strong>always enforce Monotonically Increasing Fencing Tokens</strong> at the storage layer to mathematically prevent split-brain dual-write corruption.</p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fwal-recovery-algorithms-aries-protocol-storage-engines.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=WAL%20%26%20Recovery%20Algorithms%3A%20Implementing%20the%20ARIES%20Protocol%20in%20Custom%20Storage%20Engines&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fwal-recovery-algorithms-aries-protocol-storage-engines.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdistributed-lock-managers-redlock-controversy-fencing-tokens.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Distributed%20Lock%20Managers%20at%20Scale%3A%20The%20Redlock%20Controversy%2C%20Fencing%20Tokens%2C%20%26%20Postgres%20Advisory%20Locks&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fdistributed-lock-managers-redlock-controversy-fencing-tokens.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -286,7 +357,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="distributed-lock-managers-redlock-controversy-fencing-tokens.html">Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks<span class="sidebar-post-date">September 2, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -766,7 +837,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="columnar-storage-engines-apache-arrow-parquet-simd-vectorized.html">Columnar Storage Engines: Apache Arrow, Parquet &amp; SIMD Vectorized Query Execution<span class="sidebar-post-date">August 13, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="wal-recovery-algorithms-aries-protocol-storage-engines.html">WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines<span class="sidebar-post-date">August 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
