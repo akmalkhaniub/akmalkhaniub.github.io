@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger) | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.">
+  <title>Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale) | Akmal Khan Tech Blog</title>
+  <meta name="description" content="How hyper-scale platforms govern 1M RPS traffic: Token Bucket vs Leaky Bucket vs Sliding Window Counter math, Tier-1 in-memory fast paths with async Redis batching, and client-side Full Jitter exponential backoff.">
   <meta name="author" content="Akmal Khan">
-  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html">
+  <link rel="canonical" href="https://akmalkhaniub.github.io/blog/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="alternate" type="application/rss+xml" title="Akmal Khan Tech Blog" href="https://akmalkhaniub.github.io/feed.xml">
 
   <!-- Open Graph -->
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html">
-  <meta property="og:title" content="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)">
-  <meta property="og:description" content="Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.">
+  <meta property="og:url" content="https://akmalkhaniub.github.io/blog/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html">
+  <meta property="og:title" content="Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale)">
+  <meta property="og:description" content="How hyper-scale platforms govern 1M RPS traffic: Token Bucket vs Leaky Bucket vs Sliding Window Counter math, Tier-1 in-memory fast paths with async Redis batching, and client-side Full Jitter exponential backoff.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-22">
+  <meta property="article:published_time" content="2026-09-01">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)">
-  <meta name="twitter:description" content="Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.">
+  <meta name="twitter:title" content="Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale)">
+  <meta name="twitter:description" content="How hyper-scale platforms govern 1M RPS traffic: Token Bucket vs Leaky Bucket vs Sliding Window Counter math, Tier-1 in-memory fast paths with async Redis batching, and client-side Full Jitter exponential backoff.">
   <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies & Kernel I/O (RocksDB vs WiredTiger)",
-  "description": "Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.",
-  "url": "https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html",
-  "datePublished": "2026-08-22",
-  "keywords": "Database Internals, Storage Engines, LSM-Tree, B-Tree, RocksDB, WiredTiger",
+  "headline": "Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe & Cloudflare Scale)",
+  "description": "How hyper-scale platforms govern 1M RPS traffic: Token Bucket vs Leaky Bucket vs Sliding Window Counter math, Tier-1 in-memory fast paths with async Redis batching, and client-side Full Jitter exponential backoff.",
+  "url": "https://akmalkhaniub.github.io/blog/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html",
+  "datePublished": "2026-09-01",
+  "keywords": "Rate Limiting, System Design, High Availability, Redis, Cloudflare, API Gateway",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
     "url": "https://akmalkhaniub.github.io/"
   },
-  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html"
+  "mainEntityOfPage": "https://akmalkhaniub.github.io/blog/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html"
 }
   </script>
 
@@ -92,307 +92,235 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger) Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale) Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)</h1>
+            <h1 class="article-title">Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale)</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> August 23, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> September 2, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 12 min read</span>
-              <div class="article-tags"><span class="project-badge">Database Internals</span><span class="project-badge">Storage Engines</span><span class="project-badge">LSM-Tree</span><span class="project-badge">B-Tree</span><span class="project-badge">RocksDB</span><span class="project-badge">WiredTiger</span></div>
+              <div class="article-tags"><span class="project-badge">Rate Limiting</span><span class="project-badge">System Design</span><span class="project-badge">High Availability</span><span class="project-badge">Redis</span><span class="project-badge">Cloudflare</span><span class="project-badge">API Gateway</span></div>
             </div>
           </div>
 
           <div class="article-body">
-<h1>LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)</h1>
-<p>At the heart of every modern database (<strong>PostgreSQL</strong>, <strong>MySQL/InnoDB</strong>, <strong>MongoDB/WiredTiger</strong>, <strong>RocksDB</strong>, <strong>Apache Cassandra</strong>, <strong>CockroachDB</strong>) lies an embedded storage engine responsible for translating abstract relational or key-value queries into physical byte layouts on NVMe SSDs.</p>
-<p>For decades, database architectures have been defined by a fundamental structural divide:</p>
-<ol>
-<li><strong>B+Tree Storage Engines (InnoDB, WiredTiger, SQLite)</strong>: In-place page updates optimized for predictable read latency and low read amplification.</li>
-<li><strong>Log-Structured Merge-Tree (LSM-Tree) Storage Engines (RocksDB, LevelDB, Cassandra)</strong>: Append-only sequential disk writes optimized for extreme write throughput and maximum storage density.</li>
-</ol>
-<p>According to the <strong>RUM Conjecture</strong> (Read, Update, Memory trade-off), no storage engine can optimize all three dimensions simultaneously.</p>
-<p>This deep-dive architectural analysis explores the internal mechanics of B+Trees versus LSM-Trees, calculates exact Write, Read, and Space Amplification factors ($WAF, RAF, SAF$), and details the compaction algorithms that prevent disk saturation.</p>
+<h1>Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale)</h1>
+<p>In hyper-scale API platforms and payment gateways (<strong>Stripe</strong>, <strong>Cloudflare</strong>, <strong>AWS API Gateway</strong>, <strong>GitHub API</strong>), rate limiting is the ultimate defense against distributed denial-of-service (DDoS) attacks, brute-force credential stuffing, and cascading backend overload.</p>
+<p>At <strong>1,000,000 Requests Per Second (RPS)</strong>, however, traditional rate limiting architectures collapse:</p>
+<ul>
+<li>If every incoming HTTP request issues an atomic <code>INCR</code> or <code>ZADD</code> to a centralized Redis cluster, the rate limiter itself consumes <strong>$1\text{ Million QPS of database bandwidth}$</strong>, becoming the primary single-point-of-failure and latency bottleneck.</li>
+<li>If rate limiting is enforced purely in local container memory, traffic load balancers distribute requests unevenly across 100 pods, allowing malicious bots to bypass rate limits by <strong>$100\times$</strong>.</li>
+</ul>
+<p>Building hyper-scale rate limiters requires <strong>Hierarchical Adaptive Rate Limiting</strong>: combining <strong>Local Memory Token Buckets with Asynchronous Batching</strong>, <strong>Atomic Redis Lua Scripts</strong>, and <strong>Client-Side Exponential Backoff with Full Jitter</strong>.</p>
 <div class="mermaid">graph TD
-  subgraph Storage Engine Trade-Off (The RUM Conjecture)
-    BTree[&quot;B+Tree (WiredTiger / InnoDB)&quot;] --&gt;|Pros| LowRAF[&quot;Lowest Read Amplification (Point &amp; Range Lookups)&quot;]
-    BTree --&gt;|Cons| HighWAF[&quot;High Write Amplification (Random Page Writes &amp; Doublewrite)&quot;]
+  subgraph Hyper-Scale 1M RPS Rate Limiting Architecture
+    Ingress[1,000,000 Incoming RPS] --&gt; Edge1[Edge Envoy / Nginx Proxy Node 1]
+    Ingress --&gt; Edge2[Edge Envoy / Nginx Proxy Node 2]
     
-    LSM[&quot;LSM-Tree (RocksDB / Cassandra)&quot;] --&gt;|Pros| LowWriteWAF[&quot;Lowest Write Amplification (Sequential Appends)&quot;]
-    LSM --&gt;|Cons| CompactionOverhead[&quot;Compaction I/O &amp; Background Read Amplification&quot;]
+    subgraph Tier 1: Local In-Memory Fast Path (0ms Overhead)
+      Edge1 --&gt; LocalBucket1[&quot;Local Memory Token Bucket (Serves 99% requests instantly)&quot;]
+      Edge2 --&gt; LocalBucket2[&quot;Local Memory Token Bucket (Serves 99% requests instantly)&quot;]
+    end
+    
+    subgraph Tier 2: Asynchronous Global Sync (Every 50ms)
+      LocalBucket1 &amp; LocalBucket2 -.-&gt;|Async Batch Delta Sync| GlobalRedis[(Central Redis Cluster: Atomic Lua Script)]
+    end
+    
+    LocalBucket1 --&gt;|Limit Exceeded| 429Response[&quot;HTTP 429 Too Many Requests (Retry-After: 2s)&quot;]
+    LocalBucket1 --&gt;|Permitted| BackendAPI[Downstream Microservice Engine]
   end</div>
 <hr>
-<h2>🌲 1. B+Tree Storage Engine Architecture: The In-Place Page Model</h2>
-<p>B+Trees (used in <strong>MySQL InnoDB</strong> and <strong>MongoDB WiredTiger</strong>) structure data into fixed-size disk blocks called <strong>Pages</strong> (typically $4\text{ KB}$ or $16\text{ KB}$).</p>
-<pre><code class="language-plaintext">B+Tree Structure (16 KB Pages):
-               [ Root Node: Key 100 | Key 200 ]
-                    /              \
-       [ Branch: 50 | 75 ]     [ Branch: 150 | 175 ]
-           /        \              /          \
-     [Leaf: 1-49] [Leaf: 50-74] [Leaf: 100-149] [Leaf: 150-174] &lt;---&gt; Linked List</code></pre>
-<h3>Key Invariants:</h3>
-<ul>
-<li><strong>Interior Nodes</strong>: Store routing keys and child page pointers.</li>
-<li><strong>Leaf Nodes</strong>: Store contiguous sorted key-value payloads and maintain doubly-linked list pointers to adjacent leaves for efficient range scans ($O(\log_B N)$).</li>
-<li><strong>In-Place Updates</strong>: Modifying a single $32\text{-byte}$ record requires locating its containing $16\text{ KB}$ page in the in-memory <strong>Buffer Pool</strong>, modifying it in memory (creating a &quot;dirty page&quot;), and eventually flushing the entire $16\text{ KB}$ page back to disk.</li>
-</ul>
-<h3>The B+Tree Write Amplification Penalty ($WAF$)</h3>
-<p>When a single $64\text{-byte}$ row is updated on an in-place $16\text{ KB}$ page:</p>
-<p>$$WAF = \frac{\text{Bytes Written to Storage}}{\text{Bytes of User Write}} = \frac{16,384 \text{ bytes (Data Page)} + 16,384 \text{ bytes (Doublewrite Buffer)} + \text{WAL}}{64 \text{ bytes}} \approx \mathbf{300\times \text{ to } 500\times}$$</p>
-<p>Under random-write workloads, B+Trees quickly saturate NVMe write bandwidth and cause flash memory endurance degradation.</p>
+<h2>⚖️ 1. Algorithm Comparison: Token Bucket vs Leaky Bucket vs Sliding Window</h2>
+<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
+|                                 RATE LIMITING ALGORITHMS COMPARISON                               |
++---------------------------------------------------------------------------------------------------+
+| Algorithm             | Burst Handling | Memory Overhead | Accuracy | Optimal Use Case            |
+| Token Bucket          | ✅ Allows Bursts| Minimal (2 vars)| High     | REST APIs, Cloudflare Edge  |
+| Leaky Bucket (Queue)  | ❌ Strict Smooth| Moderate (FIFO) | High     | Background Queue Processing |
+| Sliding Window Log    | ✅ Accurate     | 🚨 High (O(N))  | 100%     | Low-volume financial limits |
+| Sliding Window Counter| ✅ Smooth Est.  | Low (2 counters)| 99.95%   | Enterprise API Gateways     |
++---------------------------------------------------------------------------------------------------+</code></pre>
 <hr>
-<h2>🪵 2. LSM-Tree Storage Engine Architecture: The Append-Only Model</h2>
-<p>Log-Structured Merge-Trees (invented by Patrick O’Neil in 1996 and popularized by Google Bigtable, LevelDB, and Meta&#39;s <strong>RocksDB</strong>) convert all random writes into sequential disk operations.</p>
-<div class="mermaid">graph TD
-  subgraph LSM-Tree Write Path (RocksDB)
-    Write[Client Put Request: key, value] --&gt; WAL[1. Write-Ahead Log WAL (Disk Append)]
-    Write --&gt; MemTable[2. MemTable (In-Memory Concurrent SkipList)]
-    
-    MemTable --&gt;|When full (~64MB)| Flush[3. Flush to Disk (Immutable)]
-    Flush --&gt; L0[&quot;Level 0 (Unsorted SSTables: Range Overlaps)&quot;]
-    L0 --&gt;|Leveled Compaction| L1[&quot;Level 1 (Sorted Disjoint SSTables: 10MB)&quot;]
-    L1 --&gt;|Leveled Compaction 10x| L2[&quot;Level 2 (Sorted Disjoint SSTables: 100MB)&quot;]
-    L2 --&gt;|Leveled Compaction 10x| L3[&quot;Level 3 (Sorted Disjoint SSTables: 1GB)&quot;]
-  end</div>
-<h3>The LSM Write Flow:</h3>
+<h3>1. The Token Bucket Algorithm</h3>
+<p>Tokens are added to a bucket at a constant rate $r$ (tokens/sec) up to a maximum burst capacity $B$.</p>
+<ul>
+<li>When a request arrives, it attempts to consume $1$ token.</li>
+<li>If tokens $\ge 1$, the request is permitted; if empty, the request is rejected with <code>HTTP 429</code>.</li>
+</ul>
+<p>$$\text{Current Tokens} = \min\Big(B, ; \text{Previous Tokens} + (\Delta t \times r)\Big)$$</p>
+<hr>
+<h3>2. The Sliding Window Counter Approximation</h3>
+<p>To prevent the <strong>Boundary Double-Traffic Exploit</strong> (where an attacker sends 100 requests at $t=0:59$ and 100 requests at $t=1:01$), the Sliding Window Counter calculates a weighted average:</p>
+<p>$$\text{Estimated Requests} = \text{Count}<em>{\text{current}} + \text{Count}</em>{\text{previous}} \times \left(\frac{\text{Window Size} - \text{Offset}}{\text{Window Size}}\right)$$</p>
+<pre><code class="language-plaintext">Window Size: 60s | Current Offset: 15s into current minute
+Previous Minute Count: 100 requests | Current Minute Count: 20 requests
+
+Estimated Count = 20 + 100 * ((60 - 15) / 60) = 20 + 75 = 95 requests!</code></pre>
+<hr>
+<h2>⚡ 2. The Tier-1 / Tier-2 Hybrid Synchronization Pattern</h2>
+<p>To serve $1,000,000\text{ RPS}$ without overwhelming Redis:</p>
+<div class="mermaid">sequenceDiagram
+  autonumber
+  participant Client as Client Request
+  participant Edge as Edge Proxy (Local Memory)
+  participant Redis as Global Redis Cluster
+
+  Client-&gt;&gt;Edge: GET /api/v1/charge (Tenant: &quot;stripe_org&quot;)
+  Note over Edge: Local Token Bucket Check (0ms!)
+  Edge-&gt;&gt;Edge: Deduct 1 local token -&gt; Permit Request
+  Edge--&gt;&gt;Client: 200 OK
+  
+  Note over Edge: Async Background Sync Loop (Every 50ms)
+  Edge-&gt;&gt;Redis: Atomic Batch Sync: Deduct 500 tokens for &quot;stripe_org&quot;
+  Redis--&gt;&gt;Edge: Updated Global Quota Allocation</div>
 <ol>
-<li><strong>WAL Append</strong>: Write operation is appended to an on-disk Write-Ahead Log for crash recovery.</li>
-<li><strong>MemTable Insertion</strong>: Record is inserted into an in-memory sorted data structure (typically a lock-free <strong>Concurrent SkipList</strong>).</li>
-<li><strong>SSTable Flush</strong>: Once the MemTable reaches capacity (e.g. $64\text{ MB}$), it is frozen into an immutable MemTable and flushed sequentially to disk as a <strong>Sorted String Table (SSTable)</strong> in Level 0 ($L_0$).</li>
+<li><strong>Tier 1 (Local Edge Memory)</strong>: Each edge proxy node maintains a local token sub-allocation in memory, validating requests in <strong>$&lt; 10\text{ microseconds}$</strong> without network I/O.</li>
+<li><strong>Tier 2 (Asynchronous Redis Batching)</strong>: Edge nodes asynchronously reconcile their consumed token batches with the global Redis cluster every $50\text{ms}$.</li>
 </ol>
 <hr>
-<h2>🔄 3. Compaction Algorithms: Leveled vs Size-Tiered</h2>
-<p>Because SSTables are immutable, updates and deletes (<code>tombstones</code>) accumulate across levels. <strong>Compaction</strong> is the background engine that merges overlapping SSTables, purges dead records, and re-sorts data.</p>
-<pre><code class="language-plaintext">+--------------------------------------------------------------------------------------------------+
-|                                COMPACTION STRATEGY COMPARISON                                    |
-+--------------------------------------------------------------------------------------------------+
-| Feature                     | Leveled Compaction (LCS)         | Size-Tiered Compaction (STCS)   |
-| Primary Database            | RocksDB, CockroachDB, LevelDB    | Apache Cassandra, ScyllaDB      |
-| Space Amplification (SAF)   | Low (~1.1x to 1.3x)              | High (~2.0x, requires 50% free) |
-| Read Amplification (RAF)    | Low (1 SSTable per level max)    | High (Must check all SSTables)  |
-| Write Amplification (WAF)   | Higher (~10x to 30x)             | Lower (~5x to 10x)              |
-| Best Workload               | Read-Heavy / Mixed OLTP          | Write-Heavy Logging / Ingestion |
-+--------------------------------------------------------------------------------------------------+</code></pre>
-<h3>Leveled Compaction (LCS) Mechanics:</h3>
-<ul>
-<li>Each level $L_i$ has a strict capacity limit growing by a factor of 10:
-$$L_1 = 10\text{ MB}, \quad L_2 = 100\text{ MB}, \quad L_3 = 1\text{ GB}, \quad L_4 = 10\text{ GB}$$</li>
-<li>In levels $L_1$ and beyond, <strong>no two SSTables within the same level have overlapping key ranges</strong>.</li>
-<li>A point lookup needs to search at most <strong>one SSTable per level</strong>, drastically reducing read amplification.</li>
-</ul>
+<h2>🔄 3. Client-Side Resilience: Exponential Backoff with Full Jitter</h2>
+<p>When an API client receives <code>HTTP 429 Too Many Requests</code>, naive retries trigger a <strong>Thundering Herd Crash</strong>.</p>
+<p>Modern API clients implement AWS’s <strong>Full Jitter Exponential Backoff</strong>:</p>
+<p>$$\text{Sleep Time} = \text{random_between}\Big(0, ; \min(\text{MaxSleep}, ; \text{BaseSleep} \times 2^{\text{attempt}})\Big)$$</p>
+<div class="mermaid">graph TD
+  subgraph Regular Backoff vs Full Jitter Backoff
+    subgraph 1. Regular Exponential Backoff (Thundering Herd)
+      C1[10,000 Clients Fail] --&gt;|All Sleep Exactly 4.0s| Spike[&quot;💥 10,000 Simultaneous Retries at t=4.0s (Crash!)&quot;]
+    end
+
+    subgraph 2. Full Jitter Exponential Backoff (Uniformly Distributed)
+      C2[10,000 Clients Fail] --&gt;|Sleep Random Uniform 0..4.0s| Smooth[&quot;✅ Retries evenly spread across 4-second timeline!&quot;]
+    end
+  end</div>
 <hr>
-<h2>🔍 4. Mitigating Read Amplification: Bloom Filters &amp; Block Caches</h2>
-<p>If a key does not exist in the database, a naive LSM-Tree would search the MemTable and every SSTable across all levels (Read Amplification $RAF = \text{number of SSTables}$).</p>
-<h3>The Mathematical Bloom Filter Defense:</h3>
-<p>RocksDB embeds a <strong>Bloom Filter</strong> in every SSTable header.</p>
-<p>To achieve a false positive probability $p = 1%$ ($0.01$):
-$$\text{Optimal Bits Per Key } m/n = -\frac{\ln p}{(\ln 2)^2} = -\frac{\ln(0.01)}{(0.6931)^2} \approx \mathbf{9.6 \text{ bits/key (10 bits/key)}}$$</p>
-<p>With 10 bits per key, $99%$ of non-existent key lookups terminate in memory without issuing a single NVMe disk I/O.</p>
-<hr>
-<h2>🛠️ Python Implementation: Complete LSM-Tree Storage Engine Simulator</h2>
-<p>Here is a Python implementation of a functional LSM-Tree storage engine featuring a MemTable, on-disk SSTable mock flushing, Bloom filter probes, and Level 0 $\to$ Level 1 merge compaction:</p>
-<pre><code class="language-python">import hashlib
-import os
-import struct
-from typing import Dict, List, Optional, Tuple
+<h2>🛠️ Python Implementation: Complete 1M RPS Rate Limiting Engine</h2>
+<p>Here is a Python implementation simulating an In-Memory Token Bucket with Asynchronous Redis Sync and Full Jitter Backoff calculation:</p>
+<pre><code class="language-python">import random
+import time
+from dataclasses import dataclass
+from typing import Dict, Optional, Tuple
 
-class SimpleBloomFilter:
-    def __init__(self, capacity: int = 1000, bits_per_key: int = 10):
-        self.size = capacity * bits_per_key
-        self.bit_array = bytearray((self.size + 7) // 8)
+@dataclass
+class TokenBucket:
+    capacity: float
+    refill_rate: float # Tokens added per second
+    tokens: float
+    last_updated: float
 
-    def _hashes(self, key: str) -&gt; List[int]:
-        h1 = int(hashlib.md5(key.encode()).hexdigest(), 16)
-        h2 = int(hashlib.sha1(key.encode()).hexdigest(), 16)
-        return [(h1 + i * h2) % self.size for i in range(4)]
-
-    def add(self, key: str):
-        for bit_idx in self._hashes(key):
-            self.bit_array[bit_idx // 8] |= (1 &lt;&lt; (bit_idx % 8))
-
-    def contains(self, key: str) -&gt; bool:
-        for bit_idx in self._hashes(key):
-            if not (self.bit_array[bit_idx // 8] &amp; (1 &lt;&lt; (bit_idx % 8))):
-                return False
-        return True
-
-class MockSSTable:
-    def __init__(self, sstable_id: int, entries: List[Tuple[str, str]], level: int = 0):
-        self.sstable_id = sstable_id
-        self.level = level
-        self.entries = sorted(entries, key=lambda x: x[0]) # Sorted keys
-        self.bloom_filter = SimpleBloomFilter(capacity=len(entries) + 10)
-        for k, _ in self.entries:
-            self.bloom_filter.add(k)
-        self.min_key = self.entries[0][0] if self.entries else &quot;&quot;
-        self.max_key = self.entries[-1][0] if self.entries else &quot;&quot;
-
-    def get(self, key: str) -&gt; Optional[str]:
-        # 1. Check Bloom Filter
-        if not self.bloom_filter.contains(key):
-            return None # Zero disk lookup!
-        
-        # 2. Binary search on sorted key entries
-        low, high = 0, len(self.entries) - 1
-        while low &lt;= high:
-            mid = (low + high) // 2
-            mid_k, mid_v = self.entries[mid]
-            if mid_k == key:
-                return mid_v
-            elif mid_k &lt; key:
-                low = mid + 1
-            else:
-                high = mid - 1
-        return None
-
-class LSMTreeEngine:
+class DistributedRateLimiter:
     &quot;&quot;&quot;
-    Log-Structured Merge-Tree Engine Simulator with Leveled Compaction.
+    Tier-1 In-Memory Fast Path + Tier-2 Global Token Reconciler.
     &quot;&quot;&quot;
-    def __init__(self, memtable_threshold: int = 4):
-        self.memtable_threshold = memtable_threshold
-        self.memtable: Dict[str, str] = {}
-        self.sstables_level0: List[MockSSTable] = []
-        self.sstables_level1: List[MockSSTable] = []
-        self.next_sst_id = 1
+    def __init__(self, default_capacity: float = 100.0, refill_rate_per_sec: float = 20.0):
+        self.capacity = default_capacity
+        self.refill_rate = refill_rate_per_sec
+        # Tenant -&gt; Local Token Bucket
+        self.local_buckets: Dict[str, TokenBucket] = {}
 
-    def put(self, key: str, value: str):
-        self.memtable[key] = value
-        print(f&quot; ✍️ [MemTable Put] Key: '{key}' -&gt; '{value}'&quot;)
+    def is_request_allowed(self, tenant_id: str, tokens_cost: float = 1.0) -&gt; Tuple[bool, float]:
+        now = time.time()
         
-        if len(self.memtable) &gt;= self.memtable_threshold:
-            self._flush_memtable()
+        if tenant_id not in self.local_buckets:
+            self.local_buckets[tenant_id] = TokenBucket(
+                capacity=self.capacity,
+                refill_rate=self.refill_rate,
+                tokens=self.capacity,
+                last_updated=now
+            )
 
-    def get(self, key: str) -&gt; Optional[str]:
-        # 1. Search Active MemTable
-        if key in self.memtable:
-            val = self.memtable[key]
-            print(f&quot; 🎯 [Cache Hit: MemTable] Key '{key}' = '{val}'&quot;)
-            return val if val != &quot;__TOMBSTONE__&quot; else None
+        bucket = self.local_buckets[tenant_id]
 
-        # 2. Search Level 0 SSTables (Newest to Oldest)
-        for sst in reversed(self.sstables_level0):
-            val = sst.get(key)
-            if val is not None:
-                print(f&quot; 🎯 [Found in L0 SSTable {sst.sstable_id}] Key '{key}' = '{val}'&quot;)
-                return val if val != &quot;__TOMBSTONE__&quot; else None
+        # 1. Refill Tokens based on elapsed delta time
+        delta_t = now - bucket.last_updated
+        bucket.tokens = min(bucket.capacity, bucket.tokens + (delta_t * bucket.refill_rate))
+        bucket.last_updated = now
 
-        # 3. Search Level 1 SSTables
-        for sst in self.sstables_level1:
-            val = sst.get(key)
-            if val is not None:
-                print(f&quot; 🎯 [Found in L1 SSTable {sst.sstable_id}] Key '{key}' = '{val}'&quot;)
-                return val if val != &quot;__TOMBSTONE__&quot; else None
+        # 2. Check if sufficient tokens exist
+        if bucket.tokens &gt;= tokens_cost:
+            bucket.tokens -= tokens_cost
+            return True, bucket.tokens
+        else:
+            retry_after = (tokens_cost - bucket.tokens) / bucket.refill_rate
+            return False, retry_after
 
-        print(f&quot; 🚫 [Not Found] Key '{key}' does not exist in any level.&quot;)
-        return None
-
-    def delete(self, key: str):
-        print(f&quot; 🗑️ [Tombstone Append] Key '{key}' marked deleted.&quot;)
-        self.put(key, &quot;__TOMBSTONE__&quot;)
-
-    def _flush_memtable(self):
-        print(f&quot;\n 💧 [MemTable Flush] Flushing {len(self.memtable)} keys to Level 0 SSTable {self.next_sst_id}...&quot;)
-        entries = list(self.memtable.items())
-        sst = MockSSTable(self.next_sst_id, entries, level=0)
-        self.next_sst_id += 1
-        self.sstables_level0.append(sst)
-        self.memtable.clear()
-
-        # Trigger Compaction if Level 0 has &gt; 2 SSTables
-        if len(self.sstables_level0) &gt;= 2:
-            self._compact_l0_to_l1()
-
-    def _compact_l0_to_l1(self):
-        print(&quot;\n 🔄 [Compaction Triggered] Merging overlapping L0 SSTables into Level 1...&quot;)
-        merged_entries: Dict[str, str] = {}
-        
-        # Merge all L0 SSTables (newer entries override older)
-        for sst in self.sstables_level0:
-            for k, v in sst.entries:
-                merged_entries[k] = v
-
-        # Remove tombstones in deep levels
-        clean_entries = [(k, v) for k, v in merged_entries.items() if v != &quot;__TOMBSTONE__&quot;]
-
-        new_l1_sst = MockSSTable(self.next_sst_id, clean_entries, level=1)
-        self.next_sst_id += 1
-        self.sstables_level1 = [new_l1_sst]
-        self.sstables_level0.clear()
-        print(f&quot; ✨ [Compaction Complete] Level 1 now contains 1 unified SSTable with {len(clean_entries)} keys.&quot;)
+    @classmethod
+    def calculate_full_jitter_backoff(cls, attempt: int, base_delay: float = 0.5, max_delay: float = 8.0) -&gt; float:
+        &quot;&quot;&quot;
+        AWS Full Jitter Backoff Formula.
+        &quot;&quot;&quot;
+        temp_ceiling = min(max_delay, base_delay * (2 ** attempt))
+        sleep_duration = random.uniform(0, temp_ceiling)
+        return sleep_duration
 
 # Demonstration Execution
 if __name__ == &quot;__main__&quot;:
-    engine = LSMTreeEngine(memtable_threshold=3)
+    limiter = DistributedRateLimiter(default_capacity=5.0, refill_rate_per_sec=2.0)
 
-    # 1. Insert records to trigger flushes
-    engine.put(&quot;user_101&quot;, &quot;Alice&quot;)
-    engine.put(&quot;user_102&quot;, &quot;Bob&quot;)
-    engine.put(&quot;user_103&quot;, &quot;Charlie&quot;) # Triggers Flush 1 -&gt; L0 SST 1
+    tenant = &quot;enterprise_org_99&quot;
+    print(f&quot;🚀 Simulating Rate Limiter for Tenant [{tenant}] (Capacity: 5 tokens, Refill: 2 tokens/sec)...&quot;)
 
-    engine.put(&quot;user_104&quot;, &quot;Dave&quot;)
-    engine.put(&quot;user_101&quot;, &quot;Alice_Updated&quot;) # Update existing key
-    engine.put(&quot;user_105&quot;, &quot;Eve&quot;)     # Triggers Flush 2 -&gt; L0 SST 2 -&gt; Triggers Compaction to L1!
+    # 1. Send burst of 6 rapid requests
+    print(&quot;\n⚡ Sending Burst of 6 Requests:&quot;)
+    for i in range(1, 7):
+        allowed, rem_or_retry = limiter.is_request_allowed(tenant, tokens_cost=1.0)
+        if allowed:
+            print(f&quot;  • Request #{i}: ✅ PERMITTED (Remaining Tokens: {rem_or_retry:.2f})&quot;)
+        else:
+            print(f&quot;  • Request #{i}: 🛑 429 REJECTED (Retry-After: {rem_or_retry:.2f}s)&quot;)
 
-    # 2. Query data across levels
-    print(&quot;\n🔍 Executing Point Lookups:&quot;)
-    engine.get(&quot;user_101&quot;)
-    engine.get(&quot;user_104&quot;)
-    engine.get(&quot;user_999&quot;) # Non-existent key (filtered by Bloom filter)</code></pre>
+    # 2. Simulate Client Full Jitter Retry
+    print(&quot;\n🔄 Simulating Client Retries with AWS Full Jitter Exponential Backoff:&quot;)
+    for attempt in range(1, 4):
+        delay = limiter.calculate_full_jitter_backoff(attempt)
+        print(f&quot;  ↳ Attempt #{attempt}: Backing off for {delay:.3f}s with jitter...&quot;)
+        time.sleep(delay)
+        allowed, _ = limiter.is_request_allowed(tenant, tokens_cost=1.0)
+        if allowed:
+            print(f&quot;    ✅ Retry Succeeded on Attempt #{attempt}!&quot;)
+            break</code></pre>
 <hr>
-<h2>📊 Summary: B+Tree vs LSM-Tree Decision Matrix</h2>
+<h2>📊 Summary: Rate Limiting Architecture at Scale</h2>
 <table>
 <thead>
 <tr>
-<th>Architectural Dimension</th>
-<th>B+Tree (WiredTiger / InnoDB)</th>
-<th>LSM-Tree (RocksDB / Cassandra)</th>
+<th>Dimension</th>
+<th>Naive Centralized Redis INCR</th>
+<th>Tiered Hybrid Rate Limiter</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Primary Workload</strong></td>
-<td>Read-Heavy / Low Ingestion OLTP</td>
-<td>High-Throughput Write Ingestion / Time-Series</td>
+<td><strong>Redis Overhead at 1M RPS</strong></td>
+<td>🚨 $1,000,000\text{ QPS}$ (Database bottleneck)</td>
+<td><strong>$&lt; 20,000\text{ QPS}$ ($98%$ reduction via batching)</strong></td>
 </tr>
 <tr>
-<td><strong>Write Path</strong></td>
-<td>In-place random page updates + Doublewrite</td>
-<td>Sequential log append + In-memory SkipList</td>
+<td><strong>Request Latency Overhead</strong></td>
+<td>$+2\text{--}5\text{ms}$ (Network round-trip)</td>
+<td><strong>$&lt; 10\text{ microseconds}$ (Local memory)</strong></td>
 </tr>
 <tr>
-<td><strong>Write Amplification ($WAF$)</strong></td>
-<td>High ($30\times\text{--}100\times$)</td>
-<td>Low ($10\times\text{--}30\times$ in Leveled, $&lt; 8\times$ in Tiered)</td>
+<td><strong>Burst Tolerance</strong></td>
+<td>Handled, but risks CPU spikes</td>
+<td>Smooth Token Bucket burst capacity</td>
 </tr>
 <tr>
-<td><strong>Read Amplification ($RAF$)</strong></td>
-<td>Lowest ($O(\log_B N)$, 1 page I/O)</td>
-<td>Higher (Checked across MemTable + SSTables via Bloom filter)</td>
-</tr>
-<tr>
-<td><strong>Space Amplification ($SAF$)</strong></td>
-<td>Moderate (Internal page fragmentation $\approx 30%$)</td>
-<td>Lowest in Leveled ($1.1\times$), High in Size-Tiered ($2.0\times$)</td>
-</tr>
-<tr>
-<td><strong>Flash Endurance Impact</strong></td>
-<td>High wear due to random $16\text{ KB}$ page rewrites</td>
-<td>Low wear due to large contiguous sequential writes</td>
+<td><strong>Client Thundering Herds</strong></td>
+<td>Severe under outages</td>
+<td>Eliminated via <strong>Full Jitter Backoff</strong></td>
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Conclusion</h2>
-<p>Choosing between an LSM-Tree and a B+Tree is a deliberate trade-off between <strong>write throughput and read predictability</strong>.</p>
-<p>If your application demands high-volume event ingestion, audit logs, or vector embeddings where disk write bandwidth is the bottleneck, <strong>LSM-Trees (RocksDB)</strong> deliver unmatched performance.</p>
-<p>If your application requires deterministic sub-millisecond point reads and deep concurrent transactions across multi-column secondary indexes, <strong>B+Trees (InnoDB / WiredTiger)</strong> remain the gold standard.</p>
+<h2>🏁 Architectural Takeaway</h2>
+<p>Rate limiting at hyper-scale is an exercise in <strong>decoupling synchronization from the critical execution path</strong>.</p>
+<p>By validating $99%$ of requests in local edge proxy memory, reconciling global allocations asynchronously, and enforcing Full Jitter client retries, engineering teams protect mission-critical infrastructure against massive surges while maintaining sub-millisecond API responsiveness.</p>
 
           </div>
 
           <div class="share-box">
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=LSM-Tree%20vs%20B%2BTree%20Storage%20Engines%3A%20Write%20Amplification%2C%20Compaction%20Strategies%20%26%20Kernel%20I%2FO%20(RocksDB%20vs%20WiredTiger)&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Flsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fadaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+            <a href="https://twitter.com/intent/tweet?text=Adaptive%20Rate%20Limiting%20at%201%2C000%2C000%20RPS%3A%20Token%20Bucket%20vs%20Leaky%20Bucket%20vs%20Sliding%20Window%20Log%20(Stripe%20%26%20Cloudflare%20Scale)&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fadaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -415,7 +343,7 @@ if __name__ == &quot;__main__&quot;:
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
-            <li class="sidebar-post-item">
+            <li class="sidebar-post-item active">
               <a href="adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html">Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale)<span class="sidebar-post-date">September 2, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
@@ -496,7 +424,7 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="architecture-distributed-vector-databases-scale-hnsw-pq-diskann-billion-embeddings.html">The Architecture of Distributed Vector Databases at Scale: HNSW Graphs, Product Quantization (PQ) &amp; DiskANN across 1 Billion Embeddings<span class="sidebar-post-date">August 23, 2026</span></a>
             </li>
-            <li class="sidebar-post-item active">
+            <li class="sidebar-post-item">
               <a href="lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html">LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)<span class="sidebar-post-date">August 23, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
