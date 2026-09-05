@@ -339,7 +339,12 @@ for (const post of posts) {
     continue;
   }
   const md = readFileSync(mdPath, 'utf8');
-  const bodyHtml = marked.parse(md);
+  let cleanMd = md.trim();
+  // Strip leading H1 title if present to avoid duplicate titles
+  cleanMd = cleanMd.replace(/^#\s+[^\n]+\n+/, '');
+  // Strip leading cover image if present to avoid duplicate hero banners
+  cleanMd = cleanMd.replace(/^!\[[^\]]*\]\([^)]+\)\n+/, '');
+  const bodyHtml = marked.parse(cleanMd);
   writeFileSync(join(ROOT, 'blog', `${post.slug}.html`), pageHtml(post, bodyHtml));
   built++;
 }
