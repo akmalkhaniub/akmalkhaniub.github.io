@@ -1,11 +1,13 @@
 # How to Tame Your Agent(s): 7 Practical Strategies to Turn Chaotic LLMs into Deterministic Workers
 
+![How to Tame Your Agent](/blog/assets/covers/how-to-tame-your-agents.jpg)
+
 In modern software development, building with autonomous AI agents (**Agent Fleet Orchestrator**, **SpecForge**, **Claude Engineer**, **Devin**) often feels like managing a hyperactive genius with amnesia:
-* You ask for a two-line CSS alignment fix $\to$ the agent rewrites 14 backend files and introduces 6 merge conflicts.
-* You run a prompt on Monday and it produces a masterpiece $\to$ you run the exact same prompt on Tuesday and it enters an infinite loop hallucinating non-existent npm packages.
+* You ask for a two-line CSS alignment fix — the agent rewrites 14 backend files and introduces 6 merge conflicts.
+* You run a prompt on Monday and it produces a masterpiece — you run the exact same prompt on Tuesday and it enters an infinite loop hallucinating non-existent npm packages.
 * When tasks fail, the agent apologizes profusely and repeats the exact same mistake.
 
-The fundamental tension of agentic engineering is that **natural language is inherently ambiguous, probabilistic, and lossy**, while **production software engineering demands $100\%$ mathematical determinism**.
+The fundamental tension of agentic engineering is that **natural language is inherently ambiguous, probabilistic, and lossy**, while **production software engineering demands 100% mathematical determinism**.
 
 Taming autonomous AI agents does not require waiting for smarter foundation models.
 
