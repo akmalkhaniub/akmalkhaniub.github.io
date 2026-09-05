@@ -150,18 +150,26 @@ graph TD
 <p>Unlike Bi-Encoders (which embed questions and documents separately), a Cross-Encoder processes the query and document <em>together</em> through self-attention layers, calculating a direct, pairwise relevance score. This is far more accurate but too computationally heavy to run on the entire database, which is why it is used strictly as a secondary filtering step.</p>
 <hr>
 <h2>What&#39;s Good &amp; What&#39;s Not</h2>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------------------------+
-|                                              HYBRID SEARCH TRADE-OFFS MATRIX                                        |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| What's Good (Pros)                                | What's Not (Cons)                                               |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| * Near-Perfect Recall: Combines conceptual search | * Latency Overhead: Running parallel queries and a neural       |
-|   with exact keyword/ID retrieval.                |   reranker adds 80ms–200ms of latency per query.                |
-| * Highly Robust: RRF algorithm merges diverse     | * Index Management Complexity: Requires maintaining both a      |
-|   retrievers without manual score calibration.    |   vector index and a text-search inverted index.                |
-| * Filters Out Noise: Cross-Encoder reranker trims  | * Compute Costs: Reranker execution requires active CPU/GPU     |
-|   retrieved lists down to the absolute best.      |   processing during runtime.                                    |
-+---------------------------------------------------+-----------------------------------------------------------------+</code></pre>
+<table>
+<thead>
+<tr>
+<th>What&#39;s Good (Pros)</th>
+<th>What&#39;s Not (Cons)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>* Near-Perfect Recall: Combines conceptual search with exact keyword/ID retrieval.</td>
+<td>* Latency Overhead: Running parallel queries and a neural reranker adds 80ms–200ms of latency per query.</td>
+</tr>
+<tr>
+<td>* Highly Robust: RRF algorithm merges diverse retrievers without manual score calibration.</td>
+<td>* Index Management Complexity: Requires maintaining both a vector index and a text-search inverted index.</td>
+</tr>
+<tr>
+<td>* Filters Out Noise: Cross-Encoder reranker trims retrieved lists down to the absolute best.</td>
+<td>* Compute Costs: Reranker execution requires active CPU/GPU processing during runtime.</td>
+</tr>
+</tbody></table>
 <hr>
 <h2>Technical Implementation: Hybrid pgvector &amp; tsvector Search</h2>
 <p>The script below demonstrates a complete, hybrid query engine using PostgreSQL (<strong>pgvector</strong> for dense search, and <strong>tsvector</strong> for sparse text search) and the <code>SentenceTransformer</code> Cross-Encoder model to rerank candidates.</p>
@@ -245,7 +253,7 @@ if __name__ == &quot;__main__&quot;:
     #     print(f&quot;[{idx+1}] Score: {doc['relevance_score']:.4f} | Content: {doc['content'][:80]}...&quot;)
     print(&quot;[+] Model loaded successfully. Configure database schemas to run live retrieval queries.&quot;)</code></pre>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>Naive retrieval is a major bottleneck in enterprise RAG pipelines. By deploying hybrid search, we combine the strengths of both semantic and keyword indices, ensuring SKU numbers, precise function names, and structural terms are never missed.</p>
 <ul>
 <li><strong>RRF is a must</strong>: Do not attempt to add vector distance values to BM25 scores directly. Use Reciprocal Rank Fusion to normalize scores cleanly based on rank.</li>

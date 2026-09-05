@@ -14,7 +14,7 @@ This article details ASLR entropy, ROP gadget chaining, ARM PAC instruction sign
 
 ---
 
-## 📖 ARM Pointer Authentication (PAC) & ROP Prevention Architecture
+## ARM Pointer Authentication (PAC) & ROP Prevention Architecture
 
 How ARM PAC signs 64-bit virtual pointers and catches pointer tampering before execution:
 
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Pointer Authentication Code (PAC) Simulator
+## Python Implementation: Pointer Authentication Code (PAC) Simulator
 
 Here is a production-grade Python implementation of an ARM PAC Pointer Sign/Verify Engine and ROP Tampering Detector:
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Memory Security Gotchas & Best Practices
+## Memory Security Gotchas & Best Practices
 
 When deploying memory safety mitigations:
 
@@ -155,7 +155,7 @@ When deploying memory safety mitigations:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Architectures incorporating ARM PAC and Memory Tagging (such as **Apple Silicon M1/M2/M3**, **Android 14 on ARMv9**, and **AWS Graviton3**):
 * **Completely Neutralizes ROP/JOP Attack Vectors**: Cryptographic pointer verification prevents attackers from hijacking program control flow.
 * **Near-Zero Performance Penalty**: Hardware-level `PACIA`/`AUTIA` CPU instructions execute with negligible latency overhead ($<1\%$).

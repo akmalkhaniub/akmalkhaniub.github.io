@@ -128,11 +128,9 @@
     DeterministicRules &amp; MLInference --&gt; DecisionGate[Unified Risk Score &amp; Decision: APPROVE / DECLINE / 3DS CHALLENGE]
   end</div>
 <hr>
-<h2>⏱️ 1. The 10ms Authorization SLA Budget Breakdown</h2>
+<h2>1. The 10ms Authorization SLA Budget Breakdown</h2>
 <p>To prevent checkout timeouts, the internal payment gateway allocates strict time budgets across the authorization pipeline:</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------+
-|                       100ms PAYMENT AUTHORIZATION BUDGET TIMELINE                     |
-+---------------------------------------------------------------------------------------+
+<pre><code class="language-plaintext">&gt; **100ms PAYMENT AUTHORIZATION BUDGET TIMELINE**
 |  0ms - 25ms   : Client Mobile/Web Network Hop to Edge API Gateway                     |
 |  25ms - 35ms  : Token Decryption, Idempotency Check &amp; Account Routing                 |
 |  35ms - 45ms  : &gt;&gt;&gt; REAL-TIME FRAUD DETECTION PIPELINE (10ms HARD BUDGET) &lt;&lt;&lt;        |
@@ -142,9 +140,9 @@
 |                 • 8-10ms: Hard Rules Evaluation &amp; Decision Arbitration                |
 |  45ms - 85ms  : Issuing Bank ISO 8583 Authorization Network Hop                       |
 |  85ms - 100ms : Response Encryption &amp; Gateway Return Hop                              |
-+---------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <hr>
-<h2>🌊 2. Apache Flink: Stateful Event-Time Sliding Windows</h2>
+<h2>2. Apache Flink: Stateful Event-Time Sliding Windows</h2>
 <p>Evaluating transaction velocity (e.g. <em>&quot;Has this card been used more than 4 times in the last 60 seconds across distinct merchant categories?&quot;</em>) requires <strong>Stateful Stream Processing</strong>.</p>
 <h3>Why Apache Flink?</h3>
 <p>Traditional microservices querying SQL databases with <code>SELECT count(*) WHERE card_id = ? AND timestamp &gt; NOW() - INTERVAL 1 MINUTE</code> fail under load due to index lock contention and database CPU exhaustion.</p>
@@ -167,7 +165,7 @@
 <li><strong>Keyed Streams</strong>: Shards transactions by <code>card_token_hash</code>, ensuring that all transactions for a given card route to the same physical Flink TaskManager core for cache locality.</li>
 </ul>
 <hr>
-<h2>🕸️ 3. Real-Time Graph Feature Stores: Uncovering Fraud Rings</h2>
+<h2>3. Real-Time Graph Feature Stores: Uncovering Fraud Rings</h2>
 <p>Organized fraud syndicates use automated bot farms to cycle through thousands of stolen credit card numbers using shared infrastructure:</p>
 <ul>
 <li>500 different card numbers sharing <strong>3 distinct browser fingerprints</strong>.</li>
@@ -192,13 +190,13 @@
 <ol>
 <li>The engine performs a <strong>2-hop neighborhood expansion</strong> in an in-memory graph cache.</li>
 <li>It computes graph topological metrics:<ul>
-<li><strong>Node Degree</strong>: Count of distinct cards linked to the active device fingerprint ($k_{\text{device}} &gt; 5 \implies \text{High Risk}$).</li>
+<li><strong>Node Degree</strong>: Count of distinct cards linked to the active device fingerprint ($k_{\text{device}} &gt; 5 ⟹ \text{High Risk}$).</li>
 <li><strong>Community Density / Fraud Ring Score</strong>: Bipartite clustering coefficient indicating coordinated attack behavior.</li>
 </ul>
 </li>
 </ol>
 <hr>
-<h2>⚡ 4. Low-Latency ML Inference: Treelite &amp; ONNX Embedded Runtime</h2>
+<h2>4. Low-Latency ML Inference: Treelite &amp; ONNX Embedded Runtime</h2>
 <p>Python machine learning runtimes (e.g. standard scikit-learn or PyTorch via HTTP microservices) introduce $20\text{--}50\text{ms}$ of serialization and network overhead.</p>
 <h3>Production Solution: Compiled C++ Decision Forests</h3>
 <ul>
@@ -206,7 +204,7 @@
 <li><strong>Zero Serialization Overhead</strong>: Trees are compiled into static CPU branch instructions (<code>if-else</code> assembly trees) evaluated in <strong>$&lt; 200 \text{ microseconds}$</strong> directly within the transaction process memory space.</li>
 </ul>
 <hr>
-<h2>🛠️ Python Implementation: Real-Time Fraud Stream &amp; Decision Engine</h2>
+<h2>Python Implementation: Real-Time Fraud Stream &amp; Decision Engine</h2>
 <p>Here is a Python implementation simulating an Apache Flink stateful sliding window accumulator, an in-memory bipartite graph ring detector, and a sub-millisecond fraud decision engine:</p>
 <pre><code class="language-python">import time
 from collections import defaultdict, deque
@@ -338,7 +336,7 @@ if __name__ == &quot;__main__&quot;:
         res_attack = engine.evaluate_transaction(tx_attack)
         print(f&quot; Attack Tx {i} Decision: [{res_attack['decision']}] | Score: {res_attack['risk_score']} | Latency: {res_attack['latency_ms']}ms | Reason: {res_attack['reason']}&quot;)</code></pre>
 <hr>
-<h2>📊 Summary: Fraud Architecture Components</h2>
+<h2>Summary: Fraud Architecture Components</h2>
 <table>
 <thead>
 <tr>
@@ -386,7 +384,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Final Architectural Takeaway</h2>
+<h2>Final Architectural Takeaway</h2>
 <p>Real-time fraud detection at Visa and Stripe scale is the ultimate test of <strong>event-driven distributed stream processing and microsecond machine learning inference</strong>.</p>
 <p>By leveraging <strong>Apache Flink stateful windows</strong>, <strong>in-memory identity graphs</strong>, and <strong>compiled C++ decision trees</strong>, fintech platforms protect billions of dollars in daily transaction volume while preserving seamless, sub-second checkout experiences for global consumers.</p>
 

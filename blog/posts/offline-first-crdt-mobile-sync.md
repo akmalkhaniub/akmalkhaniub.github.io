@@ -146,7 +146,7 @@ console.log('Current Document Text:', syncManager.getDocumentText());
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Implementing CRDTs ensures seamless data synchronization across unreliable mobile networks:
 * [ ] **Avoid Last-Write-Wins**: Traditional database updates discard user data during offline sync cycles; CRDTs merge them mathematically.

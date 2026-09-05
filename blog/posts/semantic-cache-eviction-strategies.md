@@ -140,7 +140,7 @@ class SemanticCacheManager:
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 An invalidation strategy is the difference between a secure cache and a stale system:
 * [ ] **Hash the system parameters**: Always include the system prompt template and model name inside the cache key prefix.

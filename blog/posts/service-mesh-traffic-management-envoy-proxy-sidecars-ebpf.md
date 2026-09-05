@@ -12,7 +12,7 @@ This article details Envoy xDS configuration streaming, mTLS certificate managem
 
 ---
 
-## 📖 Service Mesh Control Plane & eBPF Data Plane Architecture
+## Service Mesh Control Plane & eBPF Data Plane Architecture
 
 How the Service Mesh Control Plane manages traffic routing and mTLS via Envoy sidecars and eBPF kernel sockets:
 
@@ -46,11 +46,11 @@ graph TD
    * **CDS (Cluster Discovery Service)**: Maps upstream service pools.
    * **EDS (Endpoint Discovery Service)**: Delivers live IP addresses of healthy pod endpoints.
 3. **Automated mTLS & SPIFFE Identity**: The mesh automatically establishes mutual TLS (mTLS) between sidecars. Cryptographic identity is asserted using **SPIFFE IDs** (e.g. `spiffe://cluster.local/ns/prod/sa/payment-api`), with short-lived X.509 certificates automatically rotated by the control plane.
-4. **eBPF-Powered Sidecar Acceleration (Cilium)**: Traditional sidecar proxies force network packets to travel up and down the OS TCP/IP stack twice (Pod App $\to$ OS Stack $\to$ Envoy $\to$ OS Stack $\to$ Wire), incurring CPU and latency overhead. **eBPF `sockmap`** programs intercept TCP sockets directly at the socket layer in the kernel, transferring memory buffers between sockets in zero-copy mode.
+4. **eBPF-Powered Sidecar Acceleration (Cilium)**: Traditional sidecar proxies force network packets to travel up and down the OS TCP/IP stack twice (Pod App → OS Stack → Envoy → OS Stack → Wire), incurring CPU and latency overhead. **eBPF `sockmap`** programs intercept TCP sockets directly at the socket layer in the kernel, transferring memory buffers between sockets in zero-copy mode.
 
 ---
 
-## 🛠️ Python Implementation: Service Mesh xDS Control Plane & Traffic Splitter
+## Python Implementation: Service Mesh xDS Control Plane & Traffic Splitter
 
 Here is a production-grade Python implementation of a Service Mesh xDS Control Plane and Weight-Based Canary Traffic Splitter Engine:
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Service Mesh Gotchas & Best Practices
+## Service Mesh Gotchas & Best Practices
 
 When deploying a Service Mesh:
 
@@ -143,7 +143,7 @@ When deploying a Service Mesh:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms adopting Service Meshes (such as **Istio** and **Cilium**) report:
 * **Zero-Trust Security Alignment**: Automated mTLS and SPIFFE identities encrypt 100% of internal microservice traffic with dynamic certificate rotation.
 * **Instant Canary Rollouts**: Shifting 1% of live production traffic to new microservice releases using xDS route rules without restarting pods or re-deploying code.

@@ -29,20 +29,18 @@ graph TD
 
 ---
 
-## ⚡ 1. The Physics of Hardware Latency & CPU Caches
+## 1. The Physics of Hardware Latency & CPU Caches
 
 To optimize matching engines, engineers must design with **Mechanical Sympathy**—aligning software data access patterns with the physical microarchitecture of modern CPUs.
 
 ```
-+---------------------------------------------------------------------------------------+
-|                               CPU MEMORY HIERARCHY LATENCY                            |
-+---------------------------------------------------------------------------------------+
+> **CPU MEMORY HIERARCHY LATENCY**
 |  L1 Data Cache (32 KB per core)  : ~1.0 ns  (4-5 clock cycles)   <-- Target for LOB!  |
 |  L2 Cache (1 MB per core)        : ~3.5 ns  (14 clock cycles)                         |
 |  L3 Shared Cache (32 MB)         : ~12.0 ns (50-70 clock cycles)                      |
 |  Main Memory (DDR5 RAM)          : ~65-80 ns (200-300 clock cycles)                   |
 |  OS Thread Context Switch        : ~1,500 - 3,000 ns (Catastrophic for HFT)          |
-+---------------------------------------------------------------------------------------+
+
 ```
 
 ### The False Sharing Disaster
@@ -62,7 +60,7 @@ Cache-Aligned Fix (64-byte Padding):
 
 ---
 
-## 📖 2. Limit Order Book (LOB) Architecture: Price-Time Priority (FIFO)
+## 2. Limit Order Book (LOB) Architecture: Price-Time Priority (FIFO)
 
 A Limit Order Book maintains two sorted ladders:
 1. **Bids (Buy Orders)**: Sorted by **Highest Price First**.
@@ -89,7 +87,7 @@ graph LR
 
 ---
 
-## 🔄 3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer
+## 3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer
 
 To pass market orders from the network thread to the matching core without thread locking, high-frequency systems implement the **LMAX Disruptor circular ring buffer pattern**:
 
@@ -108,7 +106,7 @@ graph TD
 
 ---
 
-## 🛠️ Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book
+## Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book
 
 Here is a Python implementation simulating an ultra-low latency, zero-allocation Limit Order Book with cache-aligned structures and price-time priority matching:
 
@@ -252,7 +250,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Low-Latency Optimization Techniques
+## Summary: Low-Latency Optimization Techniques
 
 | Optimization Technique | Mechanism | Latency Impact | Trade-Off |
 |---|---|---|---|
@@ -260,11 +258,11 @@ if __name__ == "__main__":
 | **Lock-Free Ring Buffer (SPSC)** | Atomic sequence barriers + power-of-2 modulo | Sub-$50\text{ns}$ cross-thread message handoff | Fixed ring buffer capacity |
 | **Zero-Allocation Memory Pools** | Pre-allocates 1,000,000 order objects at startup | Eliminates OS `malloc` and GC pauses ($100\%\text{ deterministic}$) | Fixed maximum active order limit |
 | **CPU Core Pinning & Isolation** | `pthread_setaffinity_np` + `isolcpus` | Eliminates $3\mu\text{s}$ OS context switches | Dedicates physical CPU core solely to matching |
-| **Kernel-Bypass Networking (DPDK)** | Transfers NIC packets directly to userspace | Bypasses Linux TCP/IP stack ($20\mu\text{s} \to 800\text{ns}$) | Requires dedicated Solarflare/Mellanox hardware |
+| **Kernel-Bypass Networking (DPDK)** | Transfers NIC packets directly to userspace | Bypasses Linux TCP/IP stack ($20\mu\text{s} → 800\text{ns}$) | Requires dedicated Solarflare/Mellanox hardware |
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 In high-frequency limit order books, **software design is hardware design**.
 
 By structuring data structures to fit entirely within L1/L2 caches, eliminating lock contention through power-of-two ring buffers, and enforcing zero runtime heap allocations, engineers achieve the sub-microsecond determinism required by global financial exchanges.

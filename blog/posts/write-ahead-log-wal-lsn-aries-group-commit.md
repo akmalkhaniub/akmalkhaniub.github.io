@@ -12,7 +12,7 @@ This article details Log Sequence Numbers (LSN), ARIES 3-phase recovery (Analysi
 
 ---
 
-## 📖 WAL & ARIES Crash Recovery Architecture
+## WAL & ARIES Crash Recovery Architecture
 
 How the ARIES recovery protocol restores database state following a crash:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: WAL Storage Engine & ARIES Recovery Engine
+## Python Implementation: WAL Storage Engine & ARIES Recovery Engine
 
 Here is a production-grade Python implementation of a Write-Ahead Log (WAL) Storage Engine featuring Group Commit and ARIES 3-Phase Crash Recovery:
 
@@ -197,7 +197,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 WAL & Recovery Gotchas & Best Practices
+## WAL & Recovery Gotchas & Best Practices
 
 When tuning WAL and crash recovery:
 
@@ -209,7 +209,7 @@ When tuning WAL and crash recovery:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Storage engines deploying WAL and ARIES recovery (such as **PostgreSQL**, **MySQL InnoDB**, and **SQLite**) report:
 * **Zero Data Corruption During Sudden Power Loss**: ARIES Redo/Undo phases restore database consistency in seconds after abrupt crashes.
 * **$10\times$ Higher Transaction Write Throughput**: Group Commit converts random disk page writes into sequential, high-speed WAL append streams.

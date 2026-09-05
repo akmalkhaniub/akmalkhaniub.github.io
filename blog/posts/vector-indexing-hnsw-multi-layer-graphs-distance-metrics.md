@@ -12,7 +12,7 @@ This article details HNSW multi-layer graph structures, skip-list express lanes,
 
 ---
 
-## 📖 HNSW Multi-Layer Graph & ANN Traversal Architecture
+## HNSW Multi-Layer Graph & ANN Traversal Architecture
 
 How HNSW navigates top-layer sparse express lanes down to dense Layer 0 local clusters for logarithmic ANN search:
 
@@ -56,7 +56,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: HNSW Multi-Layer Vector Graph Engine
+## Python Implementation: HNSW Multi-Layer Vector Graph Engine
 
 Here is a production-grade Python implementation of a Multi-Layer HNSW Vector Graph and ANN Traversal Engine Simulator:
 
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Vector Indexing Gotchas & Best Practices
+## Vector Indexing Gotchas & Best Practices
 
 When tuning HNSW vector indices:
 
@@ -196,7 +196,7 @@ When tuning HNSW vector indices:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 HNSW vector indexing (in **Qdrant**, **Milvus**, **Pinecone**, and **pgvector**) reports:
 * **Sub-10ms Query Latency across Millions of Vectors**: Achieves $O(\log N)$ search complexity via multi-layer skip-graph traversal.
 * **Over $98\%$ Recall Accuracy**: `efSearch` candidate expansion ensures near-exact search quality without brute-force computation.

@@ -6,7 +6,7 @@ This case study details the architecture, deployment decisions, and gotchas of a
 
 ---
 
-## 📖 Case Study Overview: The 10-Part Framework
+## Case Study Overview: The 10-Part Framework
 
 > [!NOTE]
 > **1. Industry**: E-Commerce & Retail
@@ -31,7 +31,7 @@ This case study details the architecture, deployment decisions, and gotchas of a
 
 ---
 
-## 🏗️ Multi-Region Ordering Pipeline Architecture
+## Multi-Region Ordering Pipeline Architecture
 
 The architecture routes checkout requests through regional API endpoints while coordinating orders globally:
 
@@ -61,7 +61,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Jittered Transaction Retry Handler
+## Python Implementation: Jittered Transaction Retry Handler
 
 Here is a production-grade Python implementation of a transactional checkout coordinator that handles transient network errors and Spanner conflict retries using exponential backoff with random jitter:
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 The Incident: Cross-Region Spanner Retry Storms
+## The Incident: Cross-Region Spanner Retry Storms
 
 During a peak seasonal sale, a undersea fiber cable cut degraded bandwidth between our US-East (Virginia) and US-West (Oregon) Spanner replication nodes:
 
@@ -160,7 +160,7 @@ During a peak seasonal sale, a undersea fiber cable cut degraded bandwidth betwe
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 By designing jittered retry pipelines:
 * **Zero Transaction Lockups**: Under-sea network partition recovery time dropped from 24 minutes to under 8 seconds.
 * **Flawless Transaction Integrity**: Configured idempotency keys prevented 100% of potential double-charge events during retry cascades.

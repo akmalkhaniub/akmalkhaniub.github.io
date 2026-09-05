@@ -26,20 +26,18 @@ graph TD
 
 ---
 
-## 📉 1. The Foundation Model Commoditization Curve
+## 1. The Foundation Model Commoditization Curve
 
 Over the past three years, frontier AI labs spent hundreds of millions of dollars training proprietary frontier models.
 
 Yet, empirical industry data reveals an unmistakable economic trend: **the capability half-life of closed-source model moats is shrinking toward zero.**
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                               MODEL CAPABILITY CATCH-UP TIMELINE                                  |
-+---------------------------------------------------------------------------------------------------+
+> **MODEL CAPABILITY CATCH-UP TIMELINE**
 |  Frontier Release (Closed)        : $100M+ Training Run (T = 0 months)                             |
 |  Open-Weights Parity (Llama/DeepSeek): Within 3 to 6 months at 1/10th the inference cost          |
 |  Quantized Edge Execution (GGUF/ONNX): Within 9 months running locally on consumer hardware       |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 When a $\$100\text{M}$ proprietary model's performance on standard benchmarks (MMLU, HumanEval, SWE-bench) is matched within months by open-weight community models, **the model itself becomes a commodity compute utility**—analogous to the steam locomotive.
@@ -48,20 +46,18 @@ Building a defensible business solely around calling an undifferentiated foundat
 
 ---
 
-## 🛤️ 2. The Standard Tracks of the AI Era
+## 2. The Standard Tracks of the AI Era
 
 In the railroad era, the network value was unlocked not by individual locomotives, but by the **tracks that connected factories, farms, and ports**.
 
 In the agentic AI era, value is consolidating around three open, standardized protocols:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 THE 3 OPEN TRACK STANDARDS OF MODERN AI                           |
-+---------------------------------------------------------------------------------------------------+
+> **THE 3 OPEN TRACK STANDARDS OF MODERN AI**
 | 1. Model Context Protocol (MCP)   : Standardized tool, data, and prompt interchange across agents |
 | 2. ONNX & TensorRT Runtimes       : Standardized neural network compilation across GPU hardware   |
 | 3. OpenTelemetry (W3C Tracing)    : Standardized distributed tracing and token metrics            |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### The Model Context Protocol (MCP) as the "Standard Gauge"
@@ -90,7 +86,7 @@ sequenceDiagram
 
 ---
 
-## 📦 3. Where Enduring Economic Value Accrues: Freight Over Engines
+## 3. Where Enduring Economic Value Accrues: Freight Over Engines
 
 In 1850, the enduring fortunes were not in manufacturing steam boilers, but in operating **freight logistics networks** (transporting coal, grain, and manufactured goods across standardized lines).
 
@@ -115,7 +111,7 @@ graph LR
 
 ---
 
-## 🛠️ Python Implementation: Universal Protocol Interchange Engine
+## Python Implementation: Universal Protocol Interchange Engine
 
 Here is a Python implementation demonstrating how an enterprise application leverages an **Interchangeable Model Gateway over Universal MCP-Style Tool Schemas**:
 
@@ -197,7 +193,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: The Industrial Comparison Matrix
+## Summary: The Industrial Comparison Matrix
 
 | Industrial Dimension | 1840s British Railway Mania | 2026 AI Agent Revolution |
 |---|---|---|
@@ -209,7 +205,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 The lesson of the 1840s Railway Mania is clear: **do not build your enterprise on proprietary track gauges**.
 
 By architecting systems around open, model-agnostic protocols like **MCP**, **ONNX**, and **OpenTelemetry**, engineering teams insulate themselves against foundation model commoditization and ensure their software assets remain agile, interoperable, and enduring.

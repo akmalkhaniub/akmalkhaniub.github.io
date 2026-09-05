@@ -8,7 +8,7 @@ To maintain high team capability, modern Tech Leads actively fight cognitive rot
 
 ---
 
-## 📖 The Cognitive Decay Cycle
+## The Cognitive Decay Cycle
 
 Without deliberate intervention, delegating implementation leads to systemic mental model breakdown:
 
@@ -33,7 +33,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Automation: Reverse-Spec Verification Engine
+## Python Automation: Reverse-Spec Verification Engine
 
 To prevent passive code approval, Tech Leads introduce **Reverse-Spec Exercises** into sprint workflows. In a Reverse-Spec drill, a tool strips docstrings and comments from AI-generated modules, requiring developers to inspect the raw code and document its hidden state invariants.
 
@@ -109,7 +109,7 @@ class MemoryCache:
 
 ---
 
-## ⚠️ Important Leadership Guardrails
+## Important Leadership Guardrails
 
 When fighting cognitive rot, balance learning with engineering velocity:
 
@@ -121,7 +121,7 @@ When fighting cognitive rot, balance learning with engineering velocity:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams implementing active anti-cognitive rot practices maintain strong operational capabilities:
 * **60% Faster Incident MTTR (Mean Time to Resolution)**: Engineers retain deep mental models of system internals, allowing them to diagnose production outages instantly.
 * **Higher Engineering Mastery**: Junior developers gain true architectural understanding rather than becoming mere "prompt operators."

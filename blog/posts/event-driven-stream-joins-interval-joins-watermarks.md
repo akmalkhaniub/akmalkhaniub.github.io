@@ -14,7 +14,7 @@ This article details relative interval boundaries ($[t - \tau_1, t + \tau_2]$), 
 
 ---
 
-## 📖 Stream-Stream Interval Join & Watermark Architecture
+## Stream-Stream Interval Join & Watermark Architecture
 
 How Interval Joins restrict state retention to relative time windows $[t - 5\text{min}, t + 10\text{min}]$:
 
@@ -55,7 +55,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Real-Time Interval Stream Join Engine
+## Python Implementation: Real-Time Interval Stream Join Engine
 
 Here is a production-grade Python implementation of a Real-Time Interval Stream Join Engine featuring State Buffering, Match Evaluation, and Watermark State Purging:
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Stream Join Gotchas & Best Practices
+## Stream Join Gotchas & Best Practices
 
 When building stream join pipelines:
 
@@ -177,7 +177,7 @@ When building stream join pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Stream join architectures (such as **Flink SQL**, **Kafka Streams**, and **Spark Structured Streaming**) report:
 * **Sub-Second Ad Conversion Attribution**: Matching millions of mobile ad clicks with real-time in-app purchases as events stream through the system.
 * **Bounded RocksDB Memory Growth**: Interval boundaries and watermark state purging prevent memory bloat, allowing stream joins to run continuously for years without manual intervention.

@@ -14,7 +14,7 @@ This article details Rust ownership rules, reference borrowing, Non-Lexical Life
 
 ---
 
-## 📖 Rust Memory Safety Architecture & Borrow Checker CFG
+## Rust Memory Safety Architecture & Borrow Checker CFG
 
 How the Rust Borrow Checker evaluates Ownership, Immutable/Mutable References, and Lifetime Scopes at compile-time:
 
@@ -55,7 +55,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Rust Borrow Checker & Lifetime Analyzer Simulator
+## Python Implementation: Rust Borrow Checker & Lifetime Analyzer Simulator
 
 Here is a production-grade Python implementation of a Rust Ownership, Borrow Checker, and Lifetime Compiler Analysis Simulator:
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Memory Safety Gotchas & Best Practices
+## Memory Safety Gotchas & Best Practices
 
 When engineering high-reliability systems in Rust:
 
@@ -178,7 +178,7 @@ When engineering high-reliability systems in Rust:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Compiler-enforced memory safety (in **Rust Systems Engineering**, **Linux Kernel 6.1+**, and **Android OS Core**) reports:
 * **Over $70\%$ Reduction in Total CVE Vulnerabilities**: Completely eliminates Use-After-Free, Double-Free, and Buffer Overflow exploits at compile-time.
 * **Bare-Metal C Performance with Zero GC Overhead**: Eliminates runtime garbage collection pause times while guaranteeing thread-safe data race prevention.

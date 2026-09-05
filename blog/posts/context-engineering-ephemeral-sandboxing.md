@@ -17,7 +17,7 @@ This article reviews these containment architectures, drawing from security patt
 
 ---
 
-## 🎨 The Sandboxed Gating Lifecycle
+## The Sandboxed Gating Lifecycle
 
 To prevent prompt injection from reaching host resources, we establish a secure boundary where the agent gateway validates user authorization (JWT roles), filters tool availability, and executes commands inside a locked Docker sandbox.
 
@@ -55,7 +55,7 @@ graph TD
 
 ---
 
-## 🔍 Synthesis: What's Good & What's Not
+## Synthesis: What's Good & What's Not
 
 ### 1. Ephemeral Sandboxing (Docker Containment)
 Isolating execution processes within short-lived, resource-constrained container layers.
@@ -80,7 +80,7 @@ Filtering the JSON-RPC tool schemas sent to the LLM during the initial system pr
 
 ---
 
-## 💻 Implementing a Secure Sandboxing tool in Python
+## Implementing a Secure Sandboxing tool in Python
 
 Here is a Python implementation of an MCP tool that executes arbitrary Python scripts safely inside a temporary, resource-bounded Docker sandbox. This code uses the official Docker SDK for Python, modeled on the file isolation mechanisms in [healthcare-audit-vault](https://github.com/akmalkhaniub/healthcare-audit-vault).
 
@@ -155,7 +155,7 @@ def execute_python_in_sandbox(script_content: str) -> str:
 
 ---
 
-## 📋 Security Containment Checklist
+## Security Containment Checklist
 
 * [ ] **Network Isolation**: Always set `network_disabled=True` on script execution containers to prevent dynamic scripts from querying internal VPC database nodes.
 * [ ] **Read-Only Volumes**: Mount files inside containers as read-only (`mode="ro"`) to prevent the LLM from corrupting original dataset records.
@@ -163,7 +163,7 @@ def execute_python_in_sandbox(script_content: str) -> str:
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Secure Context Engineering mandates that we separate natural language planning from system execution:
 1. **Container Containment:** Sanitization is never sufficient for code execution. Any dynamic code execution tool must run inside ephemeral, resource-constrained sandboxes.
@@ -174,7 +174,7 @@ Secure Context Engineering mandates that we separate natural language planning f
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **Docker Containment for Agents**: Docker Security Guidelines. *Best Practices for Containerizing Sandbox Runtimes*. [Docker Security](https://docs.docker.com/security/).
 * **FastMCP Specification**: Model Context Protocol. *Defining Schemas and Schematized Tools with FastMCP*. [MCP Portal](https://github.com/modelcontextprotocol).

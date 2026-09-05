@@ -14,7 +14,7 @@ This article details TransE entity-relation vector space translation, Graph Conv
 
 ---
 
-## 📖 GraphRAG Architecture: GNN Embeddings & HNSW Hybrid Traversal
+## GraphRAG Architecture: GNN Embeddings & HNSW Hybrid Traversal
 
 How GraphRAG combines vector similarity search with explicit Knowledge Graph traversal to eliminate LLM hallucinations:
 
@@ -56,7 +56,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: TransE Embedding & GraphRAG Engine
+## Python Implementation: TransE Embedding & GraphRAG Engine
 
 Here is a production-grade Python implementation of a TransE Knowledge Graph Embedding Engine and Hybrid HNSW Vector-Graph Traversal Simulator:
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Knowledge Graph AI Gotchas & Best Practices
+## Knowledge Graph AI Gotchas & Best Practices
 
 When deploying GraphRAG and Knowledge Graph AI systems:
 
@@ -170,7 +170,7 @@ When deploying GraphRAG and Knowledge Graph AI systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Knowledge Graph AI and GraphRAG architectures (such as **Microsoft GraphRAG**, **Neo4j Vector Search**, and **Amazon Neptune ML**) report:
 * **Over $95\%$ Reduction in LLM Hallucinations**: Grounding vector retrieval in explicit Knowledge Graph triples guarantees factual precision.
 * **$10\times$ Higher Precision on Multi-Hop Complex Queries**: Combining dense vector embeddings with explicit graph relationship traversal enables deep reasoning across multi-domain datasets.

@@ -133,7 +133,7 @@ flowchart TD
 <h2>3 Safe Migrations Patterns</h2>
 <h3>1. Adding a Column with a Default Value</h3>
 <p>A naive <code>ALTER TABLE users ADD COLUMN active BOOLEAN DEFAULT true;</code> will rewrite the entire table to write the <code>true</code> value into every row, holding an <code>AccessExclusiveLock</code> the entire time.</p>
-<h4>✅ The Safe Approach:</h4>
+<h4>The Safe Approach:</h4>
 <ol>
 <li>Add the column without the default (instant, metadata-only lock).</li>
 <li>Set the default value (also instant, affects new rows only).</li>
@@ -150,7 +150,7 @@ ALTER TABLE users ALTER COLUMN active SET DEFAULT true;
 <hr>
 <h3>2. Creating a Vector or Standard Index</h3>
 <p>Running a standard <code>CREATE INDEX</code> locks the table for both reads and writes. On tables with millions of rows, index building can take minutes or hours.</p>
-<h4>✅ The Safe Approach:</h4>
+<h4>The Safe Approach:</h4>
 <p>Always build indexes concurrently using the <code>CONCURRENTLY</code> flag. This executes the index build in the background, utilizing a low-level lock that allows reads and writes to continue.</p>
 <pre><code class="language-sql">-- Step 1: Set a lock timeout so the migration script fails early rather than blocking the queue
 SET lock_timeout = '3s';
@@ -161,7 +161,7 @@ CREATE INDEX CONCURRENTLY idx_users_email ON users(email);</code></pre>
 <hr>
 <h3>3. Adding a Foreign Key Constraint</h3>
 <p>Adding a foreign key constraint normally locks both the parent and child tables while it scans the child table to validate all existing records.</p>
-<h4>✅ The Safe Approach:</h4>
+<h4>The Safe Approach:</h4>
 <p>Split the constraint addition into two steps:</p>
 <ol>
 <li>Add the constraint as <code>NOT VALID</code> (creates the constraint instantly, locking only new rows).</li>
@@ -175,7 +175,7 @@ ALTER TABLE orders
 -- Step 2: Validate constraint (Safe, no write lock acquired)
 ALTER TABLE orders VALIDATE CONSTRAINT fk_orders_user;</code></pre>
 <hr>
-<h2>🏁 Conclusion &amp; Takeaways</h2>
+<h2>Conclusion &amp; Takeaways</h2>
 <p>Database reliability at scale requires strict lock management:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Always set a <code>lock_timeout</code></strong>: Never let a migration query wait indefinitely; terminate it early to protect the active connection pool.</li>

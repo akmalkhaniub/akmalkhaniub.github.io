@@ -117,7 +117,7 @@
 <p>But execution security is only half the battle when building production-grade agents. The other critical challenge is <strong>resource management</strong>. If your agent queries an MCP resource containing a massive payroll database or codebase repository, sending those thousands of lines of code back and forth to the LLM on every agent cycle will quickly consume your token budget, hit API rate limits, and slow down user response times to a crawl.</p>
 <p>To build responsive, cost-effective agents, we need to optimize our context window using two powerful techniques: <strong>Semantic Prompt Caching</strong> to skip model calls for redundant queries, and <strong>Dynamic Context Pruning</strong> to keep our prompt payloads lean.</p>
 <hr>
-<h2>🎨 The Semantic Cache &amp; Context Optimization Lifecycle</h2>
+<h2>The Semantic Cache &amp; Context Optimization Lifecycle</h2>
 <p>Below is the execution flow of an optimized MCP gateway that intercepts incoming prompt frames, computes semantic embeddings, runs similarity searches against a Redis cache, and dynamically prunes prompt components before executing LLM requests.</p>
 <div class="mermaid">graph TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
@@ -155,7 +155,7 @@
     
     style RedisVec fill:#f0fdf4,stroke:#22c55e,stroke-width:2px;</div>
 <hr>
-<h2>🔍 Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h2>Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
 <h3>1. Semantic Prompt Caching</h3>
 <p>Instead of checking for exact string matches (which fails if a user changes a single character or punctuation mark), we generate vector embeddings of incoming prompts and search for highly similar vectors (using cosine similarity) in a vector database.</p>
 <ul>
@@ -186,7 +186,7 @@
 </li>
 </ul>
 <hr>
-<h2>💻 Implementing a Semantic Redis Cache in TypeScript</h2>
+<h2>Implementing a Semantic Redis Cache in TypeScript</h2>
 <p>Here is a TypeScript implementation of an MCP context gateway middleware that uses Redis Vector Search to cache and retrieve agent prompts based on cosine similarity. This design follows the modular data structures seen in the asynchronous calculations of <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</p>
 <pre><code class="language-typescript">// semantic_cache.ts
 import { Redis } from 'ioredis';
@@ -294,14 +294,14 @@ export class SemanticCacheManager {
   }
 }</code></pre>
 <hr>
-<h2>📋 Context Budget Optimization Checklist</h2>
+<h2>Context Budget Optimization Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Cache Invalidation on Write</strong>: Ensure your cache keys are linked to data version hashes. If a resource changes (e.g., code modifications or payroll runs), purge the corresponding cache entries.</li>
 <li><input disabled="" type="checkbox"> <strong>Local Embeddings for Speed</strong>: Consider running a lightweight local embeddings model (like <code>all-MiniLM-L6-v2</code>) in your gateway to eliminate the network latency of external embeddings APIs.</li>
 <li><input disabled="" type="checkbox"> <strong>Tiered Caching</strong>: Combine exact matching (fast MD5 string hashes in Redis, ~1ms) with semantic matching (vector search, ~50ms) to bypass embedding generation for identical queries.</li>
 </ul>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>Optimal context engineering ensures that agent systems scale sustainably:</p>
 <ol>
 <li><strong>Reduce Before Requesting:</strong> Do not treat the context window as a dumping ground. Always check token size constraints and summarize histories where possible.</li>
@@ -310,7 +310,7 @@ export class SemanticCacheManager {
 </ol>
 <p><em>Takeaway:</em> The fastest and cheapest LLM call is the one that you never have to make.</p>
 <hr>
-<h2>📚 References &amp; Further Reading</h2>
+<h2>References &amp; Further Reading</h2>
 <ul>
 <li><strong>Redis Vector Library</strong>: Redis Developer Documentation. <em>Vector Similarity Search (VSS) with RediSearch</em>. <a href="https://redis.io/docs/latest/develop/interact/search-and-query/vector-search/" target="_blank" rel="noopener">Redis Vector Search</a>.</li>
 <li><strong>LLM Context Limits</strong>: Anthropic Research. <em>Designing Prompts for Large Context Windows</em>. <a href="https://www.anthropic.com/research" target="_blank" rel="noopener">Anthropic Blog</a>.</li>

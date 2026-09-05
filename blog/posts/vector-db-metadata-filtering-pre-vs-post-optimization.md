@@ -8,7 +8,7 @@ Integrating traditional relational filtering (metadata) with Approximate Nearest
 
 ---
 
-## 📖 The Three Filtering Paradigms
+## The Three Filtering Paradigms
 
 ```mermaid
 graph TD
@@ -40,7 +40,7 @@ Single-stage filtering evaluates metadata constraints directly during the HNSW g
 
 ---
 
-## 🛠️ Implementing In-Graph Filtering
+## Implementing In-Graph Filtering
 
 ### 1. Single-Stage Filtering in Qdrant
 Qdrant is built from the ground up to handle in-graph filtering natively. When you submit a filter object alongside your vector query, Qdrant's query engine dynamically decides whether to use a pre-filter scan or an in-graph HNSW traversal depending on the metadata cardinality.
@@ -93,7 +93,7 @@ LIMIT 5;
 
 ---
 
-## ⚠️ Important Pitfalls in Hybrid Search
+## Important Pitfalls in Hybrid Search
 
 Avoid these common index performance traps:
 

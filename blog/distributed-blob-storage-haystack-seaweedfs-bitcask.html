@@ -108,13 +108,13 @@
 <p>Storing billions of small files in traditional POSIX filesystems (<strong>ext4</strong>, <strong>XFS</strong>) leads to severe performance degradation:</p>
 <ul>
 <li><strong>The OS Inode Bottleneck</strong>: Each small file consumes an OS inode block. Storing $1,000,000,000$ files exhausts filesystem metadata limits long before physical disk space fills up.</li>
-<li><strong>Disk Seek Amplification</strong>: Reading a single file requires up to 3 or 4 physical disk seeks (<code>read directory block</code> $\to$ <code>read inode</code> $\to$ <code>read data block</code>).</li>
+<li><strong>Disk Seek Amplification</strong>: Reading a single file requires up to 3 or 4 physical disk seeks (<code>read directory block</code> → <code>read inode</code> → <code>read data block</code>).</li>
 </ul>
 <p>To serve billions of small files with <strong>$O(1)$ single disk seek latency</strong>, high-throughput infrastructure deploys specialized <strong>Blob Storage Engines</strong>.</p>
 <p>Pioneered by <strong>Facebook Haystack</strong>, <strong>SeaweedFS</strong>, and <strong>Riak Bitcask</strong>, these engines bundle millions of small files sequentially into massive, append-only <strong>Volume Files</strong> managed by lightweight in-memory offset indexes.</p>
 <p>This article details the POSIX inode bottleneck, append-only volume files, in-memory KeyDir indexing, single-seek <code>pread()</code> operations, and background volume compaction.</p>
 <hr>
-<h2>📖 Blob Engine Architecture: Inode Bottleneck vs Volume Files</h2>
+<h2>Blob Engine Architecture: Inode Bottleneck vs Volume Files</h2>
 <p>How Facebook Haystack and Bitcask replace POSIX directory trees with single-seek Append-Only Volume Files:</p>
 <div class="mermaid">graph TD
   subgraph Traditional POSIX Filesystem Bottleneck (ext4 / XFS)
@@ -154,7 +154,7 @@ $$\text{KeyDir Map}: \text{Key} \longrightarrow \langle \text{Volume_ID}, \text{
 </li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Bitcask / SeaweedFS Append-Only Engine</h2>
+<h2>Python Implementation: Bitcask / SeaweedFS Append-Only Engine</h2>
 <p>Here is a production-grade Python implementation of an Append-Only Blob Storage Engine with an In-Memory KeyDir Index and Volume Compaction:</p>
 <pre><code class="language-python">import io
 import time
@@ -264,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
     # 4. Verify Read after Compaction
     engine.get_blob(&quot;user102_avatar.jpg&quot;)</code></pre>
 <hr>
-<h2>🚨 Blob Storage Gotchas &amp; Best Practices</h2>
+<h2>Blob Storage Gotchas &amp; Best Practices</h2>
 <p>When engineering blob storage systems:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -277,7 +277,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
+<h2>Real-World Enterprise Impact</h2>
 <p>Distributed blob storage engines (such as <strong>Facebook Haystack</strong>, <strong>SeaweedFS</strong>, and <strong>Riak Bitcask</strong>) report:</p>
 <ul>
 <li><strong>Over $10\times$ Higher Photo Throughput</strong>: Bundling small files into large volume files eliminates OS inode lock contention and directory traversal penalties.</li>

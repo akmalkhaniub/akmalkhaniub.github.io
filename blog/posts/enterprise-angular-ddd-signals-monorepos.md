@@ -172,7 +172,7 @@ By configuring local and remote build caches in `nx.json`, developers and CI run
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To build Angular platforms that scale gracefully across multi-team enterprises:
 * [ ] **Enforce strict library boundaries**: Tag libraries as `shell`, `feature`, `ui`, `data-access`, or `util` and use ESLint rules to block circular inputs.

@@ -110,7 +110,7 @@
 <p>To achieve native execution speeds, Wasm JIT and AOT compilers (<strong>Cranelift</strong>, <strong>LLVM <code>wasm32</code></strong>) lower stack-based Wasm bytecode into explicit <strong>Register Machine Intermediate Representation (SSA)</strong> before emitting target assembly.</p>
 <p>This article details stack-to-register translation, Cranelift IR (CLIF) lowering, SIMD vectorization, and memory bounds checking.</p>
 <hr>
-<h2>📖 Wasm Bytecode Stack to Register Lowering Pipeline Architecture</h2>
+<h2>Wasm Bytecode Stack to Register Lowering Pipeline Architecture</h2>
 <p>How Cranelift lowers stack-based Wasm bytecode into SSA register machine code and native assembly:</p>
 <div class="mermaid">graph TD
   subgraph WebAssembly Bytecode (Stack Machine Model)
@@ -130,18 +130,18 @@
 <h3>Core Wasm Lowering Principles</h3>
 <ol>
 <li><strong>Symbolic Stack Machine to Register Translation</strong>: During single-pass compilation, the compiler maintains a <strong>Symbolic Operand Stack</strong>. Instead of pushing raw values onto a physical RAM stack during execution, the compiler pushes symbolic <strong>SSA Virtual Registers</strong> (<code>v0, v1, v2</code>) onto a compile-time stack.<ul>
-<li><code>i32.const 10</code> $\to$ Emits <code>v0 = iconst.i32 10</code>, pushes <code>v0</code> to symbolic stack.</li>
-<li><code>i32.const 20</code> $\to$ Emits <code>v1 = iconst.i32 20</code>, pushes <code>v1</code> to symbolic stack.</li>
-<li><code>i32.add</code> $\to$ Pops <code>v1</code> and <code>v0</code>, emits <code>v2 = iadd v0, v1</code>, pushes <code>v2</code> to symbolic stack.</li>
+<li><code>i32.const 10</code> → Emits <code>v0 = iconst.i32 10</code>, pushes <code>v0</code> to symbolic stack.</li>
+<li><code>i32.const 20</code> → Emits <code>v1 = iconst.i32 20</code>, pushes <code>v1</code> to symbolic stack.</li>
+<li><code>i32.add</code> → Pops <code>v1</code> and <code>v0</code>, emits <code>v2 = iadd v0, v1</code>, pushes <code>v2</code> to symbolic stack.</li>
 </ul>
 </li>
 <li><strong>Cranelift IR (CLIF)</strong>: A lightweight, safe IR tailored specifically for WebAssembly compilation. Unlike heavyweight LLVM IR (which prioritizes aggressive C++ optimization passes), Cranelift prioritizes <strong>Compilation Speed and Safety</strong>, emitting machine code $10\times$ faster than LLVM.</li>
 <li><strong>Linear Memory Bounds-Check Lowering</strong>: WebAssembly sandboxing requires that all <code>i32.load</code> and <code>i32.store</code> instructions access memory within the linear memory boundary. Compilers lower memory accesses by injecting hardware guard pages (signal handler catching <code>SIGSEGV</code>) or explicit comparison checks:
-$$\text{if } (\text{offset} + \text{bytes} &gt; \text{memory_bound}) \to \text{trap}(\text{out_of_bounds})$$</li>
+$$\text{if } (\text{offset} + \text{bytes} &gt; \text{memory_bound}) → \text{trap}(\text{out_of_bounds})$$</li>
 <li><strong>128-Bit SIMD Vectorization</strong>: Wasm <code>v128</code> vector instructions (<code>i32x4.add</code>, <code>f32x4.mul</code>) are lowered directly to target CPU SIMD vector instructions (x86 SSE/AVX2 <code>PADDD</code> / <code>MULPS</code> or ARM NEON <code>VADD.I32</code>).</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine</h2>
+<h2>Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine</h2>
 <p>Here is a production-grade Python implementation of a Wasm Bytecode Stack Machine to SSA Register Machine Lowering Compiler:</p>
 <pre><code class="language-python">from typing import List, Dict, Tuple, Optional
 from pydantic import BaseModel
@@ -239,7 +239,7 @@ if __name__ == &quot;__main__&quot;:
         else:
             print(f&quot;   • {instr.dest_reg:6s} = {instr.opcode:14s} {instr.arg1}&quot;)</code></pre>
 <hr>
-<h2>🚨 Wasm Compiler Gotchas &amp; Best Practices</h2>
+<h2>Wasm Compiler Gotchas &amp; Best Practices</h2>
 <p>When engineering WebAssembly code generators:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -252,7 +252,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
+<h2>Real-World Enterprise Impact</h2>
 <p>Runtimes utilizing Cranelift and LLVM Wasm lowering (such as <strong>Wasmtime</strong> and <strong>Fastly Compute@Edge</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Compilation &amp; Execution</strong>: Cranelift lowers and compiles WebAssembly binaries to native machine code $10\times$ faster than standard AOT compilers.</li>

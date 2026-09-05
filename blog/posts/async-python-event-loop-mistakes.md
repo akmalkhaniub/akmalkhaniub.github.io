@@ -41,13 +41,13 @@ sequenceDiagram
 ## Anti-Pattern 1: `time.sleep()` Inside a Coroutine
 
 ```python
-# ❌ Blocks the entire event loop for 2 seconds
+# Blocks the entire event loop for 2 seconds
 async def process_document(doc_id: str):
     result = await fetch_document(doc_id)
     time.sleep(2)  # ← BLOCKS — no other requests can run
     return await embed_document(result)
 
-# ✅ Yields control back to the event loop
+# Yields control back to the event loop
 async def process_document(doc_id: str):
     result = await fetch_document(doc_id)
     await asyncio.sleep(2)  # ← Suspends this coroutine, loop runs others
@@ -66,13 +66,13 @@ async def process_document(doc_id: str):
 import requests  # ❌ Synchronous HTTP — blocks event loop
 import psycopg2  # ❌ Synchronous Postgres driver
 
-# ❌ Both of these block the event loop
+# Both of these block the event loop
 async def bad_handler():
     response = requests.get("https://api.example.com/data")  # Blocks!
     conn = psycopg2.connect(DATABASE_URL)                     # Blocks!
     return response.json()
 
-# ✅ Use async equivalents
+# Use async equivalents
 import httpx
 import asyncpg
 
@@ -102,17 +102,17 @@ async def good_handler():
 **Symptom**: `RuntimeError: This event loop is already running` — common when mixing Jupyter notebooks, FastAPI, and async library code.
 
 ```python
-# ❌ asyncio.run() creates a NEW event loop — crashes if one is already running
+# asyncio.run() creates a NEW event loop — crashes if one is already running
 async def call_llm(prompt: str):
     result = asyncio.run(some_async_function())  # RuntimeError in FastAPI context!
     return result
 
-# ✅ Just await it — you're already in an async context
+# Just await it — you're already in an async context
 async def call_llm(prompt: str):
     result = await some_async_function()
     return result
 
-# ✅ If you genuinely need to call async code from sync context:
+# If you genuinely need to call async code from sync context:
 import asyncio
 
 def sync_wrapper(coro):
@@ -137,7 +137,7 @@ def sync_wrapper(coro):
 **Symptom**: Calling 5 embedding APIs takes 5x longer than calling 1. You're awaiting them one at a time.
 
 ```python
-# ❌ Sequential — takes 5 × latency
+# Sequential — takes 5 × latency
 async def embed_all_sequential(texts: list[str]) -> list[list[float]]:
     results = []
     for text in texts:
@@ -145,12 +145,12 @@ async def embed_all_sequential(texts: list[str]) -> list[list[float]]:
         results.append(embedding)
     return results
 
-# ✅ Concurrent — takes max(individual latencies)
+# Concurrent — takes max(individual latencies)
 async def embed_all_concurrent(texts: list[str]) -> list[list[float]]:
     tasks = [embed_single(text) for text in texts]
     return await asyncio.gather(*tasks)
 
-# ✅ With error handling — gather fails fast by default
+# With error handling — gather fails fast by default
 async def embed_all_safe(texts: list[str]) -> list[list[float] | Exception]:
     tasks = [embed_single(text) for text in texts]
     results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -162,7 +162,7 @@ async def embed_all_safe(texts: list[str]) -> list[list[float] | Exception]:
     
     return results
 
-# ✅ Python 3.11+ TaskGroup — cancels all siblings on first failure
+# Python 3.11+ TaskGroup — cancels all siblings on first failure
 async def embed_all_taskgroup(texts: list[str]) -> list[list[float]]:
     results = [None] * len(texts)
     
@@ -185,7 +185,7 @@ async def embed_all_taskgroup(texts: list[str]) -> list[list[float]]:
 **Root cause**: `CancelledError` is how asyncio signals a coroutine to stop. Catching it with a bare `except Exception` swallows it — the coroutine never terminates.
 
 ```python
-# ❌ Swallows CancelledError — coroutine NEVER stops when cancelled
+# Swallows CancelledError — coroutine NEVER stops when cancelled
 async def stream_tokens():
     try:
         async for token in llm_stream():
@@ -193,7 +193,7 @@ async def stream_tokens():
     except Exception:  # CancelledError is a subclass of BaseException, not Exception!
         pass           # ← CancelledError IS caught here in Python < 3.8, silently
 
-# ❌ Also wrong in Python 3.8+
+# Also wrong in Python 3.8+
 async def background_worker():
     while True:
         try:
@@ -202,7 +202,7 @@ async def background_worker():
             print(f"Error: {e}")
             # CancelledError not re-raised — worker loops forever after cancellation
 
-# ✅ Always re-raise CancelledError
+# Always re-raise CancelledError
 async def background_worker():
     while True:
         try:
@@ -214,7 +214,7 @@ async def background_worker():
         except Exception as e:
             print(f"[Worker] Error (continuing): {e}")
 
-# ✅ Or use BaseException to catch everything including CancelledError
+# Or use BaseException to catch everything including CancelledError
 async def stream_tokens():
     try:
         async for token in llm_stream():
@@ -242,11 +242,11 @@ import numpy as np
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# ❌ Blocks the event loop during model inference
+# Blocks the event loop during model inference
 async def embed_blocking(texts: list[str]) -> np.ndarray:
     return model.encode(texts)  # CPU-bound — blocks everything!
 
-# ✅ Run CPU work in a thread pool — releases the event loop
+# Run CPU work in a thread pool — releases the event loop
 thread_pool = ThreadPoolExecutor(max_workers=4)
 
 async def embed_nonblocking(texts: list[str]) -> np.ndarray:
@@ -256,7 +256,7 @@ async def embed_nonblocking(texts: list[str]) -> np.ndarray:
         lambda: model.encode(texts, batch_size=32)
     )
 
-# ✅ For truly CPU-heavy work (no GIL sharing needed): process pool
+# For truly CPU-heavy work (no GIL sharing needed): process pool
 process_pool = ProcessPoolExecutor(max_workers=2)
 
 def cpu_intensive_task(data: bytes) -> dict:
@@ -276,12 +276,12 @@ async def run_cpu_task(data: bytes) -> dict:
 **Symptom**: Background tasks silently disappear. Fire-and-forget tasks get garbage collected before completion.
 
 ```python
-# ❌ Task may be garbage collected before it completes
+# Task may be garbage collected before it completes
 async def handle_request(user_id: str, prompt: str):
     asyncio.create_task(log_to_analytics(user_id, prompt))  # Reference lost immediately!
     return await generate_response(prompt)
 
-# ✅ Keep a strong reference to background tasks
+# Keep a strong reference to background tasks
 _background_tasks: set[asyncio.Task] = set()
 
 async def handle_request(user_id: str, prompt: str):
@@ -299,11 +299,11 @@ async def handle_request(user_id: str, prompt: str):
 **Symptom**: A slow third-party API call hangs indefinitely. Your server runs out of connections waiting for a response that never comes.
 
 ```python
-# ❌ No timeout — hangs forever if external service is unresponsive
+# No timeout — hangs forever if external service is unresponsive
 async def fetch_context(query: str):
     return await external_search_api(query)  # What if this takes 5 minutes?
 
-# ✅ Always set timeouts on external awaited calls
+# Always set timeouts on external awaited calls
 async def fetch_context(query: str, timeout_seconds: float = 5.0):
     try:
         return await asyncio.wait_for(
@@ -314,7 +314,7 @@ async def fetch_context(query: str, timeout_seconds: float = 5.0):
         print(f"[Timeout] Search API exceeded {timeout_seconds}s — using fallback")
         return []  # Return empty context instead of hanging
 
-# ✅ Timeout on gather — cancel all if any exceeds limit
+# Timeout on gather — cancel all if any exceeds limit
 async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
     try:
         return await asyncio.wait_for(
@@ -328,7 +328,7 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Async Python is not automatically fast — it is fast only when every I/O operation correctly yields control back to the event loop. A single blocking call anywhere in a hot code path negates the entire benefit of async architecture.
 

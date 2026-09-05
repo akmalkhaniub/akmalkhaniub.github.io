@@ -12,7 +12,7 @@ This article details Asynchronous replication lag, Synchronous latency penalties
 
 ---
 
-## 📖 Database Replication Modes & Raft Consensus Architecture
+## Database Replication Modes & Raft Consensus Architecture
 
 How Asynchronous, Semi-Synchronous, and Raft Majority Quorum replication models process client write requests:
 
@@ -59,7 +59,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Multi-Mode Replication Engine
+## Python Implementation: Multi-Mode Replication Engine
 
 Here is a production-grade Python implementation of a Distributed Database Replication Engine supporting Async, Semi-Sync, and Raft Majority Quorum Commit Modes:
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Database Replication Gotchas & Best Practices
+## Database Replication Gotchas & Best Practices
 
 When configuring database replication:
 
@@ -180,7 +180,7 @@ When configuring database replication:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Replication engine deployments (such as **CockroachDB**, **TiKV**, and **MySQL InnoDB Cluster**) report:
 * **Zero Data Loss ($RPO = 0$)**: Raft majority quorum replication guarantees that committed transactions survive the crash of any single server node.
 * **Automatic Sub-5 Second Failover**: Conserved consensus groups elect a new leader automatically without human operator intervention.

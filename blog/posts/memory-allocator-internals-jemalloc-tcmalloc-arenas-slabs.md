@@ -14,7 +14,7 @@ This article details `ptmalloc` lock bottlenecks, `tcache` thread-local allocati
 
 ---
 
-## 📖 Memory Allocator Architecture & Thread Caches
+## Memory Allocator Architecture & Thread Caches
 
 How `jemalloc` and `tcmalloc` use Lock-Free Thread-Local Caches (`tcache`) and Per-CPU Arenas to bypass global allocation locks:
 
@@ -58,7 +58,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Thread-Cache Memory Allocator Engine
+## Python Implementation: Thread-Cache Memory Allocator Engine
 
 Here is a production-grade Python implementation of a High-Throughput Memory Allocator featuring Lock-Free Thread Caches, Size Class Bins, and Arena Slabs:
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Memory Allocator Gotchas & Best Practices
+## Memory Allocator Gotchas & Best Practices
 
 When configuring high-performance memory allocators:
 
@@ -171,7 +171,7 @@ When configuring high-performance memory allocators:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Modern high-performance allocators (such as **`jemalloc`** and **`tcmalloc`**) report:
 * **Over $3\times$ Higher Multi-Core Allocation Throughput**: Fulfilling small allocations from lock-free `tcache` arrays avoids glibc `ptmalloc` mutex lock bottlenecks.
 * **$50\%$ Reduction in Memory Fragmentation**: Fixed Bin size classes and Extent Red-Black tree page management prevent long-running server process memory leaks.

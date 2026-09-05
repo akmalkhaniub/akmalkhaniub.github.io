@@ -8,7 +8,7 @@ The stabilization of the **`instrumentation.ts`** file in Next.js 15/16 solves t
 
 ---
 
-## 📖 The Bootstrapping Lifecycle
+## The Bootstrapping Lifecycle
 
 The `instrumentation.ts` file is located at the root of the project (or inside `/src/`). When Next.js compiles the server bundle, it executes the `register()` function exported by this file before handling any requests:
 
@@ -33,7 +33,7 @@ Because `register()` runs once on startup across both Node.js and Edge runtimes,
 
 ---
 
-## 🛠️ Bootstrapping OpenTelemetry & Loading Secrets
+## Bootstrapping OpenTelemetry & Loading Secrets
 
 Here is a production-grade implementation of `instrumentation.ts` that loads API secrets from an external vault on server boot and registers OpenTelemetry tracing.
 
@@ -129,7 +129,7 @@ export function initializeOtel() {
 
 ---
 
-## ⚠️ Important Pitfalls in Production
+## Important Pitfalls in Production
 
 When writing bootstrapping logic, keep execution footprints minimal:
 
@@ -141,7 +141,7 @@ When writing bootstrapping logic, keep execution footprints minimal:
 
 ---
 
-## 📈 Real-World Production Adoption
+## Real-World Production Adoption
 High-traffic portals utilize `instrumentation.ts` to manage tracing:
 * **Trace Verification**: Tracing software (such as Langfuse or Datadog) registers spans on server launch, allowing developers to monitor route latency.
 * **Secure Environment Loading**: Environments running inside Kubernetes load secrets directly to runtime memory rather than embedding plain text strings in configuration files.

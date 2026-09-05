@@ -10,7 +10,7 @@ This article details how to extract AST metadata and populate a Neo4j knowledge 
 
 ---
 
-## 📖 AST-to-Neo4j Property Schema
+## AST-to-Neo4j Property Schema
 
 The code parser translates Abstract Syntax Tree components directly into nodes and edges within the graph database:
 
@@ -53,7 +53,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: AST-to-Neo4j Exporter
+## Python Implementation: AST-to-Neo4j Exporter
 
 Here is a production Python implementation using Python's native `ast` module and the official `neo4j` driver. It extracts structural entity relations from a source code string and generates Cypher query transactions to populate a Neo4j database:
 
@@ -191,7 +191,7 @@ class UserBilling(BaseBilling):
 
 ---
 
-## 📖 Tracing Dependency Chains with Cypher
+## Tracing Dependency Chains with Cypher
 
 Once ingested, engineers and agents can query the property graph using Cypher.
 
@@ -212,7 +212,7 @@ Once ingested, engineers and agents can query the property graph using Cypher.
 
 ---
 
-## ⚠️ Important Ingestion Guardrails
+## Important Ingestion Guardrails
 
 When extracting codebase knowledge graphs:
 
@@ -224,7 +224,7 @@ When extracting codebase knowledge graphs:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying AST Neo4j Code Graphs report:
 * **Instant Structural Auditing**: Agents track architectural side effects across thousands of files in milliseconds instead of reading file texts sequentially.
 * **Accurate Code Refactoring**: Visualizing call graphs helps prevent circular imports and broken references during codebase changes.

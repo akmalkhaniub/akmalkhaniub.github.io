@@ -12,7 +12,7 @@ This article details the Airflow Scheduler loop, task state transitions, Celery/
 
 ---
 
-## 📖 Airflow Architecture & Dynamic Task Mapping
+## Airflow Architecture & Dynamic Task Mapping
 
 How the Airflow Scheduler parses DAG files, dispatches tasks to distributed worker queues, and dynamically expands parallel task instances:
 
@@ -41,7 +41,7 @@ graph TD
    * The Scheduler daemon runs a continuous heartbeat loop:
      1. **DAG Parsing**: Scans the `$AIRFLOW_HOME/dags/` folder, executing Python files to construct **DagBag** dependency objects.
      2. **State Evaluation**: Identifies DAG runs whose `execution_date` is ready and checks if upstream task dependencies are satisfied (`SUCCESS`).
-     3. **Queue Dispatch**: Changes task status from `SCHEDULED` $\to$ `QUEUED` and pushes task messages to Redis/RabbitMQ or invokes the Kubernetes API.
+     3. **Queue Dispatch**: Changes task status from `SCHEDULED` → `QUEUED` and pushes task messages to Redis/RabbitMQ or invokes the Kubernetes API.
 2. **Executor Architecture (Celery vs KubernetesExecutor)**:
    * **CeleryExecutor**: Uses a standing pool of worker machines listening to a Redis queue. High throughput, low latency task startup times, but fixed worker container environments.
    * **KubernetesExecutor**: Dynamically launches a brand-new Kubernetes Pod for *every single task instance*. Provides complete dependency isolation (e.g. PyTorch GPU image vs R statistics image), auto-scaling to zero when idle.
@@ -54,7 +54,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Airflow DAG Scheduler & Dynamic Task Mapper Engine
+## Python Implementation: Airflow DAG Scheduler & Dynamic Task Mapper Engine
 
 Here is a production-grade Python implementation of an Airflow DAG Scheduling Engine featuring Dynamic Task Mapping (`expand()`) and Historical Backfills:
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Workflow Orchestration Gotchas & Best Practices
+## Workflow Orchestration Gotchas & Best Practices
 
 When building enterprise Airflow data pipelines:
 
@@ -173,7 +173,7 @@ When building enterprise Airflow data pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed workflow orchestration architectures (such as **Apache Airflow**, **Dagster**, and **Prefect**) report:
 * **Over $99.99\%$ Data Pipeline Reliability**: Automated retries, idempotency, and backfills ensure zero data loss during cloud infrastructure outages.
 * **$10\times$ Developer Velocity via Dynamic Task Mapping**: `expand()` allows pipelines to process dynamic data partitions without writing boilerplate code for each task.

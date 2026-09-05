@@ -12,7 +12,7 @@ This article details Dijkstra's Tri-Color Abstraction, the Tri-Color Invariant b
 
 ---
 
-## 📖 Tri-Color Abstraction & Hybrid Write Barrier Architecture
+## Tri-Color Abstraction & Hybrid Write Barrier Architecture
 
 How the Go runtime uses White, Grey, and Black object classifications alongside Hybrid Write Barriers to ensure zero object loss during concurrent marking:
 
@@ -47,7 +47,7 @@ graph TD
    * **Dijkstra Write Barrier**: Whenever a pointer write occurs (`*slot = ptr`), color `ptr` Grey (**Insertion Barrier**). Prevents Black objects from pointing to hidden White objects.
    * **Yuasa Write Barrier**: Whenever a pointer is overwritten (`*slot = ptr`), color the *old* pointer `*slot` Grey (**Deletion Barrier**). Preserves reachability of old objects.
    * **Go Hybrid Write Barrier (Go 1.8+)**: Combines Dijkstra and Yuasa barriers:
-     $$\text{WriteBarrier}(\text{slot}, \text{ptr}) \implies \text{shade}(*\text{slot}); \; \text{shade}(\text{ptr})$$
+     $$\text{WriteBarrier}(\text{slot}, \text{ptr}) ⟹ \text{shade}(*\text{slot}); \; \text{shade}(\text{ptr})$$
      Shades both the old overwritten pointer and the new written pointer Grey. *Eliminates the need to re-scan Goroutine stacks at the end of the mark phase, dropping STW pauses to microseconds!*
 4. **Concurrent Sweep & GC CPU Pacer**:
    * **Concurrent Sweep**: Background Goroutines sweep unused White memory blocks back to thread-local allocation caches (`mcache` / `mcentral`) concurrently while application code runs.
@@ -55,7 +55,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Tri-Color GC Engine & Hybrid Write Barrier
+## Python Implementation: Tri-Color GC Engine & Hybrid Write Barrier
 
 Here is a production-grade Python implementation of a Tri-Color Garbage Collection Engine featuring Hybrid Write Barriers and Concurrent Sweep:
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Go GC Gotchas & Best Practices
+## Go GC Gotchas & Best Practices
 
 When optimizing Go garbage collection:
 
@@ -191,7 +191,7 @@ When optimizing Go garbage collection:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Go's concurrent tri-color garbage collector (powering **Kubernetes**, **Docker**, and **CockroachDB**) reports:
 * **Microsecond Max STW Pause Times ($< 500\mu\text{s}$)**: Hybrid write barriers eliminate long stack re-scanning pauses.
 * **Predictable Microservice P99 Latency**: Background concurrent sweeping prevents stop-the-world latency spikes in API gateways and cloud control planes.

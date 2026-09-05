@@ -144,13 +144,13 @@ flowchart LR
 <p>Vulnerable libraries that accept the algorithm from the token header will validate it as legitimate.</p>
 <pre><code class="language-python">import jwt  # PyJWT
 
-# ❌ NEVER trust the algorithm from the token header
+# NEVER trust the algorithm from the token header
 def decode_insecure(token: str, secret: str) -&gt; dict:
     # PyJWT &lt; 2.0 default behaviour — reads alg from header
     # An attacker can set alg=none and bypass signature entirely
     return jwt.decode(token, secret, algorithms=None)  # 🚨 Catastrophic
 
-# ✅ Always explicitly specify allowed algorithms
+# Always explicitly specify allowed algorithms
 def decode_secure(token: str, secret: str) -&gt; dict:
     return jwt.decode(
         token,
@@ -186,11 +186,11 @@ async function verifyToken(token: string, secret: Uint8Array): Promise&lt;{sub: 
 <li>Submit it to a server that accepts both RS256 and HS256</li>
 <li>The server uses the public key to verify — which is correct for HS256 with that key — and accepts it</li>
 </ol>
-<pre><code class="language-python"># ❌ Accepting multiple algorithm families opens the door to confusion attacks
+<pre><code class="language-python"># Accepting multiple algorithm families opens the door to confusion attacks
 def decode_confused(token: str, public_key: str) -&gt; dict:
     return jwt.decode(token, public_key, algorithms=[&quot;RS256&quot;, &quot;HS256&quot;])  # 🚨 Dangerous
 
-# ✅ Each token type must have exactly ONE algorithm
+# Each token type must have exactly ONE algorithm
 def decode_rsa_only(token: str, public_key: str) -&gt; dict:
     return jwt.decode(
         token,
@@ -215,7 +215,7 @@ def create_secure_token(user_id: str, secret: str) -&gt; str:
     }
     return jwt.encode(payload, secret, algorithm=&quot;HS256&quot;)
 
-# ✅ Verify expiry explicitly (belt-and-suspenders for some libraries)
+# Verify expiry explicitly (belt-and-suspenders for some libraries)
 def decode_with_expiry_check(token: str, secret: str) -&gt; dict:
     payload = jwt.decode(token, secret, algorithms=[&quot;HS256&quot;],
                         options={&quot;verify_exp&quot;: True})
@@ -319,10 +319,10 @@ export const TokenStore = {
 <hr>
 <h2>Flaw 6: Missing <code>aud</code> Claim Allows Cross-Service Token Replay</h2>
 <p><strong>Symptom</strong>: A JWT issued for your <code>api.yourdomain.com</code> service is accepted by your <code>admin.yourdomain.com</code> service. An attacker who compromises a low-privilege service can replay its tokens against high-privilege services.</p>
-<pre><code class="language-python"># ❌ No audience check — any service accepts any token
+<pre><code class="language-python"># No audience check — any service accepts any token
 payload = jwt.decode(token, secret, algorithms=[&quot;HS256&quot;])
 
-# ✅ Enforce audience per service
+# Enforce audience per service
 API_AUDIENCE = &quot;api.yourdomain.com&quot;
 ADMIN_AUDIENCE = &quot;admin.yourdomain.com&quot;
 
@@ -353,12 +353,12 @@ def create_api_token(user_id: str, secret: str) -&gt; str:
 <pre><code class="language-python">import secrets
 import os
 
-# ❌ Weak secrets — brute-forceable in minutes
+# Weak secrets — brute-forceable in minutes
 SECRET = &quot;mysecret&quot;          # 8 chars
 SECRET = &quot;your-secret-key&quot;   # Dictionary word
 SECRET = os.environ.get(&quot;JWT_SECRET&quot;, &quot;default&quot;)  # Falls back to 'default'!
 
-# ✅ Cryptographically random secret — 256 bits minimum
+# Cryptographically random secret — 256 bits minimum
 def generate_jwt_secret() -&gt; str:
     return secrets.token_hex(32)  # 256-bit random secret
 
@@ -366,7 +366,7 @@ def generate_jwt_secret() -&gt; str:
 print(generate_jwt_secret())
 # e.g.: &quot;a3f8c2d1e4b7a9f0c8e2d4b6a1f3c5e7d9b1a3f5c7e9d1b3a5f7c9e1d3b5a7f9&quot;
 
-# ✅ For RS256: use 2048-bit RSA minimum (prefer 4096-bit for longevity)
+# For RS256: use 2048-bit RSA minimum (prefer 4096-bit for longevity)
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 
@@ -378,7 +378,7 @@ private_key = rsa.generate_private_key(
 <hr>
 <h2>Flaw 8: No Token Revocation for Sensitive Operations</h2>
 <p><strong>Symptom</strong>: User changes their password. Their old tokens (still valid for 15 minutes) continue to work. Attacker who had the old token retains access.</p>
-<pre><code class="language-python"># ✅ Token revocation via Redis blocklist (fast O(1) lookup)
+<pre><code class="language-python"># Token revocation via Redis blocklist (fast O(1) lookup)
 import redis
 import jwt
 
@@ -405,7 +405,7 @@ def on_password_change(user_id: str, current_token_jti: str, current_token_exp: 
         if blocklist.get(key) == user_id:
             blocklist.delete(key)</code></pre>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>JWT security is not about the library you choose — it&#39;s about whether you understand the attack surface well enough to configure it correctly. Most JWT vulnerabilities are implementation errors, not library bugs.</p>
 <ul>
 <li><strong>Pin your algorithm explicitly</strong> — never accept the algorithm from the token&#39;s own header. Whitelist exactly one algorithm per token type.</li>

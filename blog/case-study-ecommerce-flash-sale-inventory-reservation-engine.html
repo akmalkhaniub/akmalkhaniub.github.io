@@ -107,7 +107,7 @@
 <p>During high-concurrency retail events—such as Black Friday flash sales—e-commerce platforms experience sudden traffic surges that easily overwhelm traditional database systems. If millions of users attempt to purchase a highly limited item simultaneously, standard database row locking leads to connection pool starvation, transaction timeout storms, and catastrophic double-selling outages.</p>
 <p>This case study details the architecture, deployment, and operational gotchas of a high-throughput <strong>Distributed Flash Sale Inventory Reservation Engine</strong> designed to handle extreme transactional concurrency.</p>
 <hr>
-<h2>📖 Case Study Overview: The 10-Part Framework</h2>
+<h2>Case Study Overview: The 10-Part Framework</h2>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>1. Industry</strong>: E-Commerce &amp; Retail</p>
@@ -123,7 +123,7 @@
 </div>
 </div>
 <hr>
-<h2>🏗️ System Architecture &amp; Data Flow</h2>
+<h2>System Architecture &amp; Data Flow</h2>
 <p>The reservation engine separates the high-speed reservation check from the transactional checkout write pathway:</p>
 <div class="mermaid">graph TD
   A[User Flash Sale Request] --&gt; B[API Gateway / Load Balancer]
@@ -146,7 +146,7 @@
 <li><strong>Asynchronous Write-Back</strong>: Approved reservations are pushed as tasks to a GCP Cloud Tasks queue. This queue throttles database writes to a steady 2,000 RPS, protecting the PostgreSQL database from crashing.</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Atomic Redis Lua Reservation</h2>
+<h2>Python Implementation: Atomic Redis Lua Reservation</h2>
 <p>Here is the production-grade Python implementation of the atomic inventory reservation script utilizing Redis Lua commands:</p>
 <pre><code class="language-python">import time
 import uuid
@@ -237,7 +237,7 @@ if __name__ == &quot;__main__&quot;:
         status = &quot;✅ APPROVED&quot; if res.success else &quot;❌ REJECTED&quot;
         print(f&quot;User-{u_idx} ➔ {status} | Message: {res.status_msg} | Token: {res.reservation_token}&quot;)</code></pre>
 <hr>
-<h2>🚨 The Incident: Connection Pool Starvation &amp; The Black Friday Outage</h2>
+<h2>The Incident: Connection Pool Starvation &amp; The Black Friday Outage</h2>
 <p>During our first major Black Friday flash sale, our monitoring alerts fired a critical CPU and latency spike:</p>
 <div class="alert alert-warning">
   <div class="alert-title"><i class="fa-solid fa-triangle-exclamation"></i> Warning</div>
@@ -250,7 +250,7 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>Implemented Circuit Breakers</strong>: Configured the microservice to instantly return a fallback error (<code>HTTP 503 Service Unavailable</code>) when Redis ping times exceeded 100ms, preserving GKE thread capacity for other non-flash-sale catalog requests.</li>
 </ol>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
+<h2>Real-World Enterprise Impact</h2>
 <p>By transitioning from relational row-locking to memory-based Lua reservations:</p>
 <ul>
 <li><strong>Zero Double-Selling Cases</strong>: 100% atomic Lua stock decrements eliminated item over-allocation errors entirely.</li>

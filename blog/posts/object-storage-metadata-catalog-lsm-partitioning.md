@@ -14,7 +14,7 @@ This article details data/metadata decoupling, LSM-Tree metadata indexing, prefi
 
 ---
 
-## 📖 Decoupled Object Storage Architecture & LSM Metadata Index
+## Decoupled Object Storage Architecture & LSM Metadata Index
 
 How frontend S3 API gateways route requests to decoupled LSM Metadata Catalogs and Data Storage Nodes:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: LSM Metadata Catalog & S3 List Bucket Engine
+## Python Implementation: LSM Metadata Catalog & S3 List Bucket Engine
 
 Here is a production-grade Python implementation of an LSM-Tree Metadata Catalog Engine with Prefix Range Scans and Strongly Consistent S3 Bucket Listing:
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Metadata Catalog Gotchas & Best Practices
+## Metadata Catalog Gotchas & Best Practices
 
 When operating object metadata catalogs:
 
@@ -153,7 +153,7 @@ When operating object metadata catalogs:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Decoupled object storage metadata architectures (such as **AWS S3**, **MinIO Enterprise**, and **Ceph RADOS Gateway**) report:
 * **Strong Read-After-Write Consistency**: Immediate global visibility for newly uploaded objects without eventual consistency propagation delays.
 * **Support for Trillions of Objects**: Decoupling metadata into LSM key-value clusters allows object storage systems to scale metadata listing throughput independently of physical data storage capacity.

@@ -30,7 +30,7 @@ graph TD
 
 ---
 
-## 💸 1. The Multi-Agent Exponential Cost Curve
+## 1. The Multi-Agent Exponential Cost Curve
 
 Why do multi-agent systems consume exponentially more tokens than single-turn chatbots?
 
@@ -53,18 +53,16 @@ Without architectural caching and pruning, $90\%$ of dollars are wasted re-trans
 
 ---
 
-## ⚡ 2. Prompt Prefix Caching: The 90% Cost Reduction Engine
+## 2. Prompt Prefix Caching: The 90% Cost Reduction Engine
 
 Modern inference APIs (**Anthropic Claude**, **Google Gemini**, **DeepSeek**) implement **GPU KV-Cache Prompt Caching**.
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                               PROMPT PREFIX CACHING ECONOMICS                                     |
-+---------------------------------------------------------------------------------------------------+
+> **PROMPT PREFIX CACHING ECONOMICS**
 | Standard Uncached Input Rate : $3.00 per Million Tokens                                           |
 | Cache Read Input Rate        : $0.30 per Million Tokens (90% Cost Reduction!)                     |
 | Cache Lifetime               : 5 minutes (Refreshed automatically on every interaction)           |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ```mermaid
@@ -81,23 +79,21 @@ graph TD
 
 ### The Prefix Invariance Law:
 To achieve a $> 95\%$ cache hit rate, prompt buffers must be structured in strict order of volatility:
-1. **Static System Persona** (Never changes $\to$ 100% Cache Hit).
-2. **Static Repository AST & Schemas** (Changes only on Git commit $\to$ Cache Hit).
-3. **Static Skill & Tool Definitions** (Loaded once $\to$ Cache Hit).
+1. **Static System Persona** (Never changes → 100% Cache Hit).
+2. **Static Repository AST & Schemas** (Changes only on Git commit → Cache Hit).
+3. **Static Skill & Tool Definitions** (Loaded once → Cache Hit).
 4. **Dynamic Turn History** (Placed strictly at the *very end* of the prompt).
 
 If you inject a dynamic timestamp at line 1 of your prompt, **you bust the entire KV-cache downstream**, forfeiting the $90\%$ cost discount!
 
 ---
 
-## 🚦 3. Tiered Model Cascades: The 80/20 Routing Rule
+## 3. Tiered Model Cascades: The 80/20 Routing Rule
 
 Not every step in an autonomous software mission requires a frontier reasoning model.
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 TIERED MODEL ROUTING MATRIX                                       |
-+---------------------------------------------------------------------------------------------------+
+> **TIERED MODEL ROUTING MATRIX**
 | Tier | Model Class              | Cost / 1M Tokens | Optimal Tasks Assigned                       |
 | 1    | Flash / 8B Quantized     | $0.05 - $0.15    | Intent classification, Git commit messaging, |
 |      | (Llama-3-8B, Gemini Flash)|                  | AST linting, regex parsing                   |
@@ -105,14 +101,14 @@ Not every step in an autonomous software mission requires a frontier reasoning m
 |      | (Claude 3.5 Haiku, GPT-4o-mini)             | Documentation lookup, JSON translation       |
 | 3    | Frontier Reasoning       | $2.50 - $15.00   | Multi-file architectural planning, root-cause|
 |      | (Claude 3.5 Sonnet, GPT-4o)                 | security debugging, complex logic synthesis  |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 By routing $70\%$ of routine agent steps to Tier 1 and Tier 2 models, overall mission costs drop by an additional **$60\%$**.
 
 ---
 
-## 🧹 4. Context Distillation Daemons: Pruning the Long Tail
+## 4. Context Distillation Daemons: Pruning the Long Tail
 
 When an agent enters turn 15, the verbatim tool outputs from turns 1 through 5 (e.g. initial directory listings and raw test logs) are no longer needed in full fidelity.
 
@@ -130,7 +126,7 @@ Distilled History (150 tokens):
 
 ---
 
-## 🛠️ Python Implementation: Tiered Cost Optimizer & Prompt Caching Engine
+## Python Implementation: Tiered Cost Optimizer & Prompt Caching Engine
 
 Here is a Python implementation simulating a Tiered Token Economics Router with Prompt Prefix Caching and cost tracking:
 
@@ -230,7 +226,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Token Economics Optimization Matrix
+## Summary: Token Economics Optimization Matrix
 
 | Optimization Strategy | Primary Mechanism | Cost Reduction | Complexity |
 |---|---|---|---|
@@ -242,7 +238,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 In autonomous AI engineering, **cost efficiency is an architectural feature, not a finance metric**.
 
 By structuring prompts with **prefix invariance for KV-cache reuse**, deploying **tiered model routing cascades**, and running **context distillation daemons**, engineering organizations scale multi-agent fleets to thousands of daily tasks while maintaining disciplined, sustainable unit economics.

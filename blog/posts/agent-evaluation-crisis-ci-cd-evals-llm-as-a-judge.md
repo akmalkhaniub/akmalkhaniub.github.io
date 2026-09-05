@@ -5,7 +5,7 @@ In modern continuous integration and delivery (CI/CD) pipelines, automated unit 
 You write deterministic assertions (`assert response.status_code == 200`), run `pytest` or `jest`, and if all tests pass, the pull request merges safely to `main`.
 
 When engineering autonomous AI agent systems (**Agent Fleet Orchestrator**, **SpecForge**, **LangGraph**, **Devin**), traditional testing fails completely:
-* You update a system prompt to fix a subtle bug in Python refactoring $\to$ that change silently breaks the agent's ability to edit SQL schemas across **$30\%$ of unrelated workflows**.
+* You update a system prompt to fix a subtle bug in Python refactoring → that change silently breaks the agent's ability to edit SQL schemas across **$30\%$ of unrelated workflows**.
 * Traditional equality assertions (`assert output == expected_string`) trigger false alarms on every run because the LLM changes its phrasing and variable names stochastically.
 * Teams either suffer from **$100\%$ flaky test suites** or stop running CI/CD evals altogether, shipping prompt changes blindly.
 
@@ -30,7 +30,7 @@ graph TD
 
 ---
 
-## 🌪️ 1. Why Traditional Unit Tests Fail on AI Agents
+## 1. Why Traditional Unit Tests Fail on AI Agents
 
 Traditional software testing relies on an invariant assumption: **deterministic inputs yield deterministic outputs ($f(x) = y$)**.
 
@@ -41,16 +41,14 @@ Traditional software testing relies on an invariant assumption: **deterministic 
 
 ---
 
-## 🏛️ 2. The 3-Tier Agent Evaluation Framework
+## 2. The 3-Tier Agent Evaluation Framework
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                  THE 3-TIER EVALUATION PYRAMID                                    |
-+---------------------------------------------------------------------------------------------------+
+> **THE 3-TIER EVALUATION PYRAMID**
 | Tier 1: Deterministic Symbolic Invariants : AST parse validity, 0 linter errors, exit code 0      |
 | Tier 2: Trajectory Graph Assertions       : Did the agent call tools in the correct logical DAG?  |
 | Tier 3: Calibrated LLM-as-a-Judge Rubrics : Semantic goal completion, code readability, safety   |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
@@ -101,7 +99,7 @@ Score 1: Hallucinated dependencies or completely unrelated modifications.
 
 ---
 
-## 🛠️ Python Implementation: Complete CI/CD Agent Evaluation Harness
+## Python Implementation: Complete CI/CD Agent Evaluation Harness
 
 Here is a Python implementation of an automated Agent Evaluation Harness combining AST symbolic checks, trajectory DAG assertions, and calibrated LLM Judge scoring:
 
@@ -220,7 +218,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Traditional CI/CD vs Agent CI/CD Evals
+## Summary: Traditional CI/CD vs Agent CI/CD Evals
 
 | Dimension | Traditional Software CI/CD | Modern Agent CI/CD Evals |
 |---|---|---|
@@ -232,7 +230,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 You cannot build reliable autonomous agent systems without **rigorous, multi-tier evaluation infrastructure**.
 
 By anchoring agent evaluation to **deterministic AST invariants**, **trajectory state graphs**, and **calibrated LLM rubrics**, engineering organizations create robust CI/CD safety nets that catch prompt regressions before they ever reach production.

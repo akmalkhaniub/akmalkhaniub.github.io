@@ -10,7 +10,7 @@ Quantization compresses model weights from 16-bit floating point numbers into lo
 
 ---
 
-## 📖 Quantization Strategy Decision Matrix
+## Quantization Strategy Decision Matrix
 
 Choosing the optimal quantization scheme depends on your deployment target and hardware architecture:
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Quantization Memory & Throughput Calculator
+## Python Implementation: Quantization Memory & Throughput Calculator
 
 Here is a production Python implementation of an engineering calculator that computes VRAM footprints, memory bandwidth requirements, and expected token generation limits across quantization formats:
 
@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Quantization Engineering Guardrails
+## Important Quantization Engineering Guardrails
 
 When selecting quantization strategies for agent production workloads:
 
@@ -121,7 +121,7 @@ When selecting quantization strategies for agent production workloads:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying AWQ and FP8 quantization report:
 * **75% Reduction in GPU Hardware Costs**: Running 7B/14B parameter models on low-cost 24GB GPUs (RTX 4090 / L4) instead of expensive 80GB A100 nodes.
 * **3x Higher Generation Latency Speedups**: Compressed weights drastically reduce VRAM bandwidth congestion, accelerating token generation speeds from 40 tok/s to 125 tok/s per stream.

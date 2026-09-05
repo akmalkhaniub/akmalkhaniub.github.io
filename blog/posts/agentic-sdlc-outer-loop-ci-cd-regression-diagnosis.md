@@ -98,7 +98,7 @@ class CIAgentRunner:
     def diagnose_regression(self, bad_commit: Dict[str, Any], prior_commit: Dict[str, Any]) -> str:
         # Formulate diagnosis report
         return f"""
-### ⚠️ CI Agent Regression Diagnosis
+### CI Agent Regression Diagnosis
 * **Breaking Commit**: `{bad_commit['hash']}`
 * **Author**: {bad_commit['author']}
 * **Commit Message**: "{bad_commit['message']}"

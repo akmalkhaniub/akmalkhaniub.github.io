@@ -10,7 +10,7 @@ This article details the mechanics of SQ and PQ compression algorithms.
 
 ---
 
-## 📖 Product Quantization Compression Flow
+## Product Quantization Compression Flow
 
 Product Quantization splits vectors into sub-spaces and encodes them using codebook cluster IDs:
 
@@ -37,7 +37,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Product Quantization Encoder
+## Python Implementation: Product Quantization Encoder
 
 Here is a production-grade Python implementation of a Product Quantization encoder. It segments high-dimensional vectors, assigns them to simulated codebook centroids, and executes asymmetric distance calculations:
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Quantization Gotchas & Guardrails
+## Quantization Gotchas & Guardrails
 
 When configuring vector compression:
 
@@ -150,7 +150,7 @@ When configuring vector compression:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying quantized index partitions report:
 * **90% Infrastructure Cost Reductions**: Compressing vector indices enables hosting a 1-billion vector dataset on a fraction of the hardware, avoiding massive RAM costs.
 * **Stable Sub-10ms Query Latencies**: Smaller memory footprint increases CPU L3 cache hits, accelerating asymmetric lookup speed.

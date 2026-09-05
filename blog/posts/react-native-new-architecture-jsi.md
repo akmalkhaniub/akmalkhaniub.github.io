@@ -104,7 +104,7 @@ std::string FastMath::hashString(std::string input) {
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 React Native's new architecture bridges the native performance gap completely:
 * [ ] **Eliminate JSON overhead**: Leverage JSI to pass binary data, images, and raw objects directly between JavaScript and native memory.

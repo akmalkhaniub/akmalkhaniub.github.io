@@ -13,7 +13,7 @@ This article reviews the core multi-agent and workflow coordination patterns, dr
 
 ---
 
-## 🧭 The Spectrum: Workflows vs. Agents
+## The Spectrum: Workflows vs. Agents
 
 Before coding, it is critical to distinguish between **Workflows** and **Agents**:
 
@@ -38,7 +38,7 @@ graph LR
 
 ---
 
-## 🛠️ Part 1: Core Workflows (Predictable & Structured)
+## Part 1: Core Workflows (Predictable & Structured)
 
 Workflows are ideal for step-by-step tasks with clear boundaries, such as document processing, data pipelines, or automated triage.
 
@@ -117,7 +117,7 @@ graph TD
 
 ---
 
-## 🌀 Part 2: Core Agentic Loops (Autonomous & Iterative)
+## Part 2: Core Agentic Loops (Autonomous & Iterative)
 
 When tasks are open-ended and the steps to achieve them cannot be predetermined, we transition to autonomous loops.
 
@@ -177,7 +177,7 @@ graph TD
 
 ---
 
-## 🏗️ Production Engineering for Agentic Systems
+## Production Engineering for Agentic Systems
 
 Deploying these architectures requires robust infrastructure. Three components are essential:
 
@@ -195,7 +195,7 @@ If you build code-generating agents (like an Autonomous Developer or DevOps Sent
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Navigating the evolving landscape of AI system design requires a clear understanding of architectural choices.
 1. **Prioritize Predictability with Workflows:** For most enterprise tasks, structured workflows offer higher predictability, lower costs, and easier debugging, making them the default choice for well-defined problems.
@@ -205,7 +205,7 @@ Navigating the evolving landscape of AI system design requires a clear understan
 *Takeaway: The future of enterprise AI lies in intelligently combining structured workflows with judiciously applied autonomous agents, backed by robust production practices.*
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 For a deeper dive into agentic design patterns and research, check out the following resources:
 

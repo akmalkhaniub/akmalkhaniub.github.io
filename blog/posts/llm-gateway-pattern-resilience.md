@@ -184,7 +184,7 @@ gateway.executeChat({ prompt: 'Write an optimized quicksort algorithm in Rust.' 
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To build resilient, scale-ready AI platform backends:
 * [ ] **Decouple upstream APIs**: Never let your product code communicate directly with provider APIs. Route everything through a gateway layer.

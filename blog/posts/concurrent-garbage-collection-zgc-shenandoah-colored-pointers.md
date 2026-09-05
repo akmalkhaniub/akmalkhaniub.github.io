@@ -14,7 +14,7 @@ This article details ZGC colored pointers, region relocation tables, and Load Ba
 
 ---
 
-## 📖 ZGC Low-Latency Architecture & Colored Pointers
+## ZGC Low-Latency Architecture & Colored Pointers
 
 How ZGC uses 64-bit Colored Pointers and JIT Load Barriers to achieve concurrent, self-healing memory compaction:
 
@@ -59,7 +59,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: ZGC Colored Pointer & Load Barrier Engine
+## Python Implementation: ZGC Colored Pointer & Load Barrier Engine
 
 Here is a production-grade Python implementation of a 64-bit Colored Pointer ZGC Memory Allocator and Self-Healing Load Barrier Engine:
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Low-Latency GC Gotchas & Best Practices
+## Low-Latency GC Gotchas & Best Practices
 
 When tuning low-latency garbage collectors:
 
@@ -181,7 +181,7 @@ When tuning low-latency garbage collectors:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Low-latency concurrent garbage collectors (such as **Java ZGC**, **Shenandoah**, and **Azul C4**) report:
 * **Sub-Millisecond Max Pause Times ($< 1\text{ms}$)**: On terabyte heaps, STW pauses drop from multi-second disruptions to sub-millisecond blips.
 * **100% Predictable P99.99 Latency SLAs**: Eliminates garbage collection response time spikes in high-frequency trading platforms and real-time streaming engines.

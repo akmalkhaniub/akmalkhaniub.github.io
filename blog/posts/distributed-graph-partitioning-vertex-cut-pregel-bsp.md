@@ -14,7 +14,7 @@ This article details Power-Law graph distributions, 1D Edge-Cut vs 2D Vertex-Cut
 
 ---
 
-## 📖 Distributed Graph Architecture: Vertex-Cut & Pregel BSP
+## Distributed Graph Architecture: Vertex-Cut & Pregel BSP
 
 How 2D Vertex-Cut partitions high-degree supernodes across worker nodes and how Google Pregel executes synchronous Superstep message passing:
 
@@ -58,7 +58,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Pregel BSP Engine & Distributed PageRank
+## Python Implementation: Pregel BSP Engine & Distributed PageRank
 
 Here is a production-grade Python implementation of a Google Pregel Bulk Synchronous Parallel (BSP) Engine running Distributed PageRank:
 
@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Distributed Graph Gotchas & Best Practices
+## Distributed Graph Gotchas & Best Practices
 
 When operating distributed graph processing frameworks:
 
@@ -166,7 +166,7 @@ When operating distributed graph processing frameworks:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed graph partitioning and Pregel BSP engines (such as **Google Pregel**, **Apache Giraph**, and **Apache Spark GraphX**) report:
 * **Over $10\times$ Reduction in Cross-Network Traffic**: 2D Vertex-Cut eliminates celebrity supernode communication bottlenecks.
 * **Petabyte-Scale Graph Processing**: Bulk Synchronous Parallel message-passing scales PageRank and shortest-path analytics across thousands of cluster nodes.

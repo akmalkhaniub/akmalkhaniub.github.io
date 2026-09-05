@@ -133,7 +133,7 @@ We use `SET LOCAL` instead of `SET` inside the transaction. `SET LOCAL` ensures 
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To secure enterprise RAG search engines:
 * [ ] **Enforce isolation at the database level**: Never rely solely on application filters or post-query filtering.

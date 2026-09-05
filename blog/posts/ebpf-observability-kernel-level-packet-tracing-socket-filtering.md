@@ -12,7 +12,7 @@ This article details eBPF architecture, in-kernel verification, and BPF map data
 
 ---
 
-## 📖 eBPF In-Kernel Execution Pipeline Architecture
+## eBPF In-Kernel Execution Pipeline Architecture
 
 How eBPF bytecode is verified, JIT-compiled, and executed inside Linux kernel hook points:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: eBPF Packet Filter & Map Simulator
+## Python Implementation: eBPF Packet Filter & Map Simulator
 
 Here is a production-grade Python simulation of an eBPF Network Packet Filter and BPF Hash Map metric counter:
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 eBPF Implementation Gotchas & Best Practices
+## eBPF Implementation Gotchas & Best Practices
 
 When writing eBPF programs:
 
@@ -146,7 +146,7 @@ When writing eBPF programs:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms built on eBPF (such as **Cilium**, **Falco**, and **Pixie**) report:
 * **Zero-Sidecar Service Mesh Efficiency**: Replacing heavy Envoy sidecar proxies with kernel-level eBPF socket routing reduces CPU overhead by up to $80\%$ and eliminates sidecar memory footprints.
 * **Bare-Metal DDoS Defense**: Dropping malicious packets using XDP at the network driver layer allows single servers to drop millions of malicious packets per second without exhausting kernel CPU.

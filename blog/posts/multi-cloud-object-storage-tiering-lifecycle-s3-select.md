@@ -6,13 +6,13 @@ Storing petabytes of historical logs, compliance backups, and analytical datalak
 
 To optimize storage expenditure and maintain data mobility, modern architectures deploy **Automated Storage Tiering** and **Multi-Cloud Zero-Downtime Migration**.
 
-By combining **Lifecycle Rules** (moving aged data from Hot $\to$ Cool $\to$ Deep Archive), **Multi-Cloud Proxy Replicators**, and **S3 Select Pushdown Filtering**, engineering teams slash storage costs by over **$80\%$**.
+By combining **Lifecycle Rules** (moving aged data from Hot → Cool → Deep Archive), **Multi-Cloud Proxy Replicators**, and **S3 Select Pushdown Filtering**, engineering teams slash storage costs by over **$80\%$**.
 
 This article details storage class economics, automated lifecycle transition state machines, zero-downtime multi-cloud migration proxying, and S3 Select pushdown query execution.
 
 ---
 
-## 📖 Multi-Tier Lifecycle & Zero-Downtime Migration Architecture
+## Multi-Tier Lifecycle & Zero-Downtime Migration Architecture
 
 How automated lifecycle policies transition objects across storage tiers and how dual-write proxies migrate data across cloud providers without downtime:
 
@@ -39,7 +39,7 @@ graph TD
 2. **Automated Lifecycle Policy State Machines**:
    * Object stores evaluate XML/JSON lifecycle rules periodically across metadata SSTable shards.
    * *Rule Condition*: Objects matching key prefix `/audit-logs/` with `creation_date > 30 days` automatically update their storage class tag in the metadata catalog without copying raw data payload bytes.
-3. **Multi-Cloud Zero-Downtime Migration (AWS S3 $\to$ Cloudflare R2 / MinIO)**:
+3. **Multi-Cloud Zero-Downtime Migration (AWS S3 → Cloudflare R2 / MinIO)**:
    * To migrate petabytes away from high-egress cloud providers without application downtime:
    * **Dual-Write / Read-Through Proxy Pattern**:
      * *Writes*: App writes to the API Gateway proxy, which writes to the new target object store (**Cloudflare R2**) and asynchronously syncs to the legacy store.
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Storage Tiering & S3 Select Pushdown Engine
+## Python Implementation: Storage Tiering & S3 Select Pushdown Engine
 
 Here is a production-grade Python implementation of an Automated Storage Tiering State Machine and an S3 Select Pushdown Query Engine:
 
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Multi-Cloud Tiering Gotchas & Best Practices
+## Multi-Cloud Tiering Gotchas & Best Practices
 
 When engineering object storage tiering:
 
@@ -157,7 +157,7 @@ When engineering object storage tiering:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Multi-cloud tiering and S3 Select infrastructure (such as **Netflix S3 Lifecycle**, **Cloudflare R2**, and **MinIO Multi-Cloud**) report:
 * **Over $80\%$ Reduction in Monthly Cloud Storage Bills**: Automatically moving 90-day-old logs to Glacier Deep Archive slashes cloud infrastructure costs.
 * **Over $95\%$ Bandwidth Savings via S3 Select**: Filtering large CSV/Parquet files directly on storage nodes returns only matching rows over the network, drastically accelerating analytics query speeds.

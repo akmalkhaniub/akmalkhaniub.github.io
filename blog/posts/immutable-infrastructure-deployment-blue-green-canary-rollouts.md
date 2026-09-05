@@ -10,7 +10,7 @@ This article details how to design automated Canary deployments with real-time e
 
 ---
 
-## 📖 Canary Traffic Shifting & Automated Rollback Architecture
+## Canary Traffic Shifting & Automated Rollback Architecture
 
 Progressive traffic shifting and automated rollback monitoring across application versions:
 
@@ -38,11 +38,11 @@ graph TD
 ### Core Deployment Strategies
 1. **Immutable Infrastructure**: Once an artifact (Docker container image or AMI) is built and signed, it is immutable. Configuration values are injected via environment variables at startup, guaranteeing identical behavior across Development, Staging, and Production.
 2. **Blue-Green Deployments**: Provisions a separate, idle environment (**Green**) running the new release alongside the active environment (**Blue**). Once smoke tests pass, the load balancer flips 100% of user traffic from Blue to Green instantly. If an issue is discovered post-switch, flipping back to Blue takes seconds.
-3. **Canary Progressive Rollouts**: Shifts traffic incrementally ($1\% \to 5\% \to 25\% \to 100\%$) over a defined evaluation window. Real-time metric analyzers continuously compare canary error rates and p99 latencies against baseline stable instances. If metrics degrade beyond predefined thresholds, the controller triggers an automated instant rollback.
+3. **Canary Progressive Rollouts**: Shifts traffic incrementally ($1\% → 5\% → 25\% → 100\%$) over a defined evaluation window. Real-time metric analyzers continuously compare canary error rates and p99 latencies against baseline stable instances. If metrics degrade beyond predefined thresholds, the controller triggers an automated instant rollback.
 
 ---
 
-## 🛠️ Python Implementation: Canary Rollout & Automated Rollback Controller
+## Python Implementation: Canary Rollout & Automated Rollback Controller
 
 Here is a production-grade Python simulation of a Canary Deployment Controller featuring progressive traffic weight adjustments and automated error-threshold rollbacks:
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Deployment Gotchas & Best Practices
+## Deployment Gotchas & Best Practices
 
 When engineering immutable canary deployment pipelines:
 
@@ -159,7 +159,7 @@ When engineering immutable canary deployment pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting immutable deployments and automated canary rollbacks report:
 * **Zero System Outages from Bad Code Deploys**: Automated metric analyzers catch bugs during 5% canary shifts and roll back within seconds before most users notice.
 * **100% Reproducible Production Releases**: Immutable container images eliminate "works on my machine" server configuration drift.

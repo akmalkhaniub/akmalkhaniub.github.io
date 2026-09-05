@@ -12,7 +12,7 @@ This article details the WireGuard Noise IK handshake, ChaCha20-Poly1305 packet 
 
 ---
 
-## 📖 Zero-Trust Architecture & WireGuard Noise Handshake
+## Zero-Trust Architecture & WireGuard Noise Handshake
 
 How WireGuard Noise handshakes and SPIFFE/SPIRE workload identities enforce microsegmentation:
 
@@ -49,7 +49,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: WireGuard Noise Handshake & SPIFFE Attestation
+## Python Implementation: WireGuard Noise Handshake & SPIFFE Attestation
 
 Here is a production-grade Python implementation of a WireGuard Noise Handshake Simulator and SPIFFE Workload Identity Attestation Engine:
 
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Zero-Trust Security Gotchas & Best Practices
+## Zero-Trust Security Gotchas & Best Practices
 
 When engineering Zero-Trust systems:
 
@@ -157,7 +157,7 @@ When engineering Zero-Trust systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations implementing Zero-Trust microsegmentation (such as **Google BeyondCorp**, **Cloudflare**, and **Netflix**) report:
 * **100% Elimination of Lateral Attack Movement**: Even if an attacker compromises a frontend web container, identity-aware firewall rules prevent access to internal databases.
 * **$10\times$ Higher Tunnel Throughput**: WireGuard's kernel-space ChaCha20-Poly1305 execution consumes a fraction of the CPU overhead required by legacy IPsec/OpenVPN tunnels.

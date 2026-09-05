@@ -10,7 +10,7 @@ This article details the architecture and implementation of an enterprise-grade 
 
 ---
 
-## 📖 GCP Enterprise Agent Topology
+## GCP Enterprise Agent Topology
 
 The architecture decouples task dispatching, context lookup, model invocation, and state updates using GCP serverless primitives:
 
@@ -38,7 +38,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Eventarc-Triggered GCP Agent Worker
+## Python Implementation: Eventarc-Triggered GCP Agent Worker
 
 Here is a production Python worker implementation that runs inside a Cloud Run container, consumes event-driven task payloads from Pub/Sub, invokes Gemini via Vertex AI SDK, and publishes execution results back to a Pub/Sub topic:
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important GCP Architectural Guardrails
+## Important GCP Architectural Guardrails
 
 When building agentic platforms on GCP, enforce these infrastructure boundaries:
 
@@ -144,7 +144,7 @@ When building agentic platforms on GCP, enforce these infrastructure boundaries:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams migrating agent workflows to GCP report:
 * **99.99% Operational Availability**: Serverless Cloud Run containers handle burst traffic seamlessly without manual server provisioning.
 * **100% Elimination of Hardcoded API Keys**: IAM Workload Identity authenticates model access securely at the infrastructure layer.

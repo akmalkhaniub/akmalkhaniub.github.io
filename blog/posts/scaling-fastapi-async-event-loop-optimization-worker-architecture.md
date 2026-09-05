@@ -10,7 +10,7 @@ This article details how to profile event loop latency, offload CPU workloads, a
 
 ---
 
-## 📖 ASGI Worker & Threadpool Architecture
+## ASGI Worker & Threadpool Architecture
 
 Separating non-blocking async network I/O from blocking CPU-bound computations:
 
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Event Loop Profiler & Threadpool Offloader
+## Python Implementation: Event Loop Profiler & Threadpool Offloader
 
 Here is a production-grade Python script demonstrating how blocking synchronous calls freeze the event loop, and how to offload CPU-bound computations safely to threadpools using `fastapi.concurrency.run_in_threadpool`:
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Event Loop Gotchas & Mitigation
+## Event Loop Gotchas & Mitigation
 
 When scaling FastAPI applications:
 
@@ -140,7 +140,7 @@ When scaling FastAPI applications:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying event-loop optimization strategies report:
 * **Zero Event Loop Lockups**: Offloading CPU tasks prevents single-route spikes from freezing API gateways.
 * **40% Memory Reduction**: Switching to Rust-based Granian ASGI servers reduces baseline memory footprint while maintaining high throughput.

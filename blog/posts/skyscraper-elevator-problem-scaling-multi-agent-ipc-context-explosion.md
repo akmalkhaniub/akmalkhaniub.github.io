@@ -27,7 +27,7 @@ graph TD
 
 ---
 
-## 💥 1. The Multi-Agent Structural Ceiling ($O(N^2)$ Chaos)
+## 1. The Multi-Agent Structural Ceiling ($O(N^2)$ Chaos)
 
 In naive multi-agent frameworks, agents communicate in a flat peer-to-peer mesh.
 
@@ -53,18 +53,16 @@ Flat P2P Mesh (O(N^2) Context Blowup):        Hierarchical IPC Router (O(N) Scal
 
 ---
 
-## 🛗 2. The "Safety Elevator" for Multi-Agent IPC
+## 2. The "Safety Elevator" for Multi-Agent IPC
 
 To scale agent fleets from 5 workers to **500+ coordinated enterprise agents**, modern architectures implement three core Inter-Process Communication (IPC) paradigms:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 THE 3 MULTI-AGENT IPC SCALING PILLARS                             |
-+---------------------------------------------------------------------------------------------------+
+> **THE 3 MULTI-AGENT IPC SCALING PILLARS**
 | 1. Hierarchical Tree Routing      : Strict O(N) Supervisor -> Sub-Supervisor -> Worker delegation |
 | 2. Semantic Delta Compaction      : Passing structured state diffs rather than full chat transcripts|
 | 3. Topic-Filtered Pub/Sub Buses   : Selective event subscriptions (agent.secops.*, agent.db.*)   |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### 1. Hierarchical Tree Routing ($O(N)$ Complexity)
@@ -91,7 +89,7 @@ Agents exchange immutable, strongly typed **Delta Payloads**:
 
 ---
 
-## ⚡ 3. High-Throughput Event-Driven Pub/Sub Routing
+## 3. High-Throughput Event-Driven Pub/Sub Routing
 
 At large scale, agents subscribe to a centralized **Topic-Filtered Event Bus** (backed by Redis Streams or Apache Kafka):
 
@@ -112,7 +110,7 @@ Agents receive *only* the specific domain events required for their next executi
 
 ---
 
-## 🛠️ Python Implementation: Lock-Free Hierarchical Agent IPC Router
+## Python Implementation: Lock-Free Hierarchical Agent IPC Router
 
 Here is a Python implementation demonstrating a **Hierarchical Agent IPC Router with Semantic Delta Compaction and Topic Filtering**:
 
@@ -210,7 +208,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Overcoming the Structural Ceiling
+## Summary: Overcoming the Structural Ceiling
 
 | Scaling Dimension | Flat P2P Agent Mesh | Hierarchical Delta IPC Router |
 |---|---|---|
@@ -222,7 +220,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 Just as the safety elevator transformed urban architecture from 5-story blocks into 100-story skyscrapers, **hierarchical IPC and semantic delta routing unlock the true scale of enterprise multi-agent swarms**.
 
 By eliminating conversational broadcast noise and enforcing structured topic-filtered communication, software architects build massive, collaborative agent fleets that operate with sub-second responsiveness and flawless coordination.

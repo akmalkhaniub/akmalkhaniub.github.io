@@ -127,17 +127,15 @@
     ExecutionRing --&gt; Gateway[&quot;Market Feed Gateway (Zero-Copy Multicast)&quot;]
   end</div>
 <hr>
-<h2>⚡ 1. The Physics of Hardware Latency &amp; CPU Caches</h2>
+<h2>1. The Physics of Hardware Latency &amp; CPU Caches</h2>
 <p>To optimize matching engines, engineers must design with <strong>Mechanical Sympathy</strong>—aligning software data access patterns with the physical microarchitecture of modern CPUs.</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------+
-|                               CPU MEMORY HIERARCHY LATENCY                            |
-+---------------------------------------------------------------------------------------+
+<pre><code class="language-plaintext">&gt; **CPU MEMORY HIERARCHY LATENCY**
 |  L1 Data Cache (32 KB per core)  : ~1.0 ns  (4-5 clock cycles)   &lt;-- Target for LOB!  |
 |  L2 Cache (1 MB per core)        : ~3.5 ns  (14 clock cycles)                         |
 |  L3 Shared Cache (32 MB)         : ~12.0 ns (50-70 clock cycles)                      |
 |  Main Memory (DDR5 RAM)          : ~65-80 ns (200-300 clock cycles)                   |
 |  OS Thread Context Switch        : ~1,500 - 3,000 ns (Catastrophic for HFT)          |
-+---------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <h3>The False Sharing Disaster</h3>
 <p>Modern CPUs load data into caches in <strong>64-byte chunks</strong> called <strong>Cache Lines</strong>.</p>
 <p>If a <code>Producer</code> thread writes to variable <code>head</code> and a <code>Consumer</code> thread reads variable <code>tail</code>, and both variables sit on the same $64\text{-byte}$ cache line:</p>
@@ -151,7 +149,7 @@
 Cache-Aligned Fix (64-byte Padding):
 [ head (8 bytes) | 56 bytes padding ] [ tail (8 bytes) | 56 bytes padding ]</code></pre>
 <hr>
-<h2>📖 2. Limit Order Book (LOB) Architecture: Price-Time Priority (FIFO)</h2>
+<h2>2. Limit Order Book (LOB) Architecture: Price-Time Priority (FIFO)</h2>
 <p>A Limit Order Book maintains two sorted ladders:</p>
 <ol>
 <li><strong>Bids (Buy Orders)</strong>: Sorted by <strong>Highest Price First</strong>.</li>
@@ -176,7 +174,7 @@ Cache-Aligned Fix (64-byte Padding):
 </li>
 </ul>
 <hr>
-<h2>🔄 3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer</h2>
+<h2>3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer</h2>
 <p>To pass market orders from the network thread to the matching core without thread locking, high-frequency systems implement the <strong>LMAX Disruptor circular ring buffer pattern</strong>:</p>
 <div class="mermaid">graph TD
   subgraph Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)
@@ -190,7 +188,7 @@ Cache-Aligned Fix (64-byte Padding):
 <li><strong>Core Pinning (<code>pthread_setaffinity_np</code>)</strong>: The matching engine thread is pinned to an isolated CPU core (<code>isolcpus</code>), preventing the OS scheduler from preempting execution.</li>
 </ol>
 <hr>
-<h2>🛠️ Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book</h2>
+<h2>Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book</h2>
 <p>Here is a Python implementation simulating an ultra-low latency, zero-allocation Limit Order Book with cache-aligned structures and price-time priority matching:</p>
 <pre><code class="language-python">from collections import deque
 from typing import Dict, List, Optional, Tuple
@@ -328,7 +326,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(f&quot; Remaining Taker Rest Quantity on Bid Ladder @ $100.75: {lob.orders.get(105).quantity if 105 in lob.orders else 0}&quot;)</code></pre>
 <hr>
-<h2>📊 Summary: Low-Latency Optimization Techniques</h2>
+<h2>Summary: Low-Latency Optimization Techniques</h2>
 <table>
 <thead>
 <tr>
@@ -365,12 +363,12 @@ if __name__ == &quot;__main__&quot;:
 <tr>
 <td><strong>Kernel-Bypass Networking (DPDK)</strong></td>
 <td>Transfers NIC packets directly to userspace</td>
-<td>Bypasses Linux TCP/IP stack ($20\mu\text{s} \to 800\text{ns}$)</td>
+<td>Bypasses Linux TCP/IP stack ($20\mu\text{s} → 800\text{ns}$)</td>
 <td>Requires dedicated Solarflare/Mellanox hardware</td>
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>In high-frequency limit order books, <strong>software design is hardware design</strong>.</p>
 <p>By structuring data structures to fit entirely within L1/L2 caches, eliminating lock contention through power-of-two ring buffers, and enforcing zero runtime heap allocations, engineers achieve the sub-microsecond determinism required by global financial exchanges.</p>
 

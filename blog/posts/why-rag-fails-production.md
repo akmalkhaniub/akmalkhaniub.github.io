@@ -15,7 +15,7 @@ This article details how to integrate semantic vector search (`pgvector`) with l
 
 ---
 
-## 🛠️ The Hybrid Retrieval & Reranking Pipeline
+## The Hybrid Retrieval & Reranking Pipeline
 
 Rather than relying on a single retrieval method, our pipeline queries the database in parallel using two separate search mechanisms, merges the results mathematically, and sorts them using a deep learning classifier before sending the context to the LLM.
 
@@ -52,7 +52,7 @@ flowchart TD
 
 ---
 
-## 💻 Building a Hybrid Search Engine in PostgreSQL
+## Building a Hybrid Search Engine in PostgreSQL
 
 By keeping both vectors and text inside **PostgreSQL**, we avoid the operational complexity of running separate vector databases (like Pinecone or Milvus) alongside our application DB.
 
@@ -111,7 +111,7 @@ LIMIT 20;
 
 ---
 
-## 📋 RAG Ingestion Guardrails
+## RAG Ingestion Guardrails
 
 * **Chunking Strategies**: Never chunk text arbitrarily by character count. Use semantic layout-aware chunking (splitting on headings, tables, or markdown structural breaks) to keep related context blocks whole.
 * **Metadata Tagging**: Annotate chunks with metadata tags (e.g., `facility_id`, `audit_year`, `billing_code`). Restrict searches using SQL `WHERE` clauses (e.g., `WHERE facility_id = X`) *before* executing vector matches to narrow the search space.
@@ -119,7 +119,7 @@ LIMIT 20;
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Transitioning from basic vector search to a hybrid retrieval and reranking pipeline is essential for deploying robust, production-grade RAG systems.
 1. **Hybrid Search Combines Strengths:** Merging semantic vector search with lexical keyword search ensures the system handles both conceptual queries and exact keyword matches effectively.
@@ -130,7 +130,7 @@ Transitioning from basic vector search to a hybrid retrieval and reranking pipel
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **RRF Scoring**: *Reciprocal Rank Fusion outperforms Single-Representation Information Retrieval*. Foundation paper showing why rank-based aggregation beats score-based aggregation.
 * **Cross-Encoder Reranking**: *Bi-Encoders vs. Cross-Encoders for Semantic Search*. Details the computational trade-offs and accuracy improvements of rerankers. [arXiv:2010.11929](https://arxiv.org/abs/2010.11929)

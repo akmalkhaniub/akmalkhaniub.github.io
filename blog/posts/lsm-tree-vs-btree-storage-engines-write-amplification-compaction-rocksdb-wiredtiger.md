@@ -24,7 +24,7 @@ graph TD
 
 ---
 
-## 🌲 1. B+Tree Storage Engine Architecture: The In-Place Page Model
+## 1. B+Tree Storage Engine Architecture: The In-Place Page Model
 
 B+Trees (used in **MySQL InnoDB** and **MongoDB WiredTiger**) structure data into fixed-size disk blocks called **Pages** (typically $4\text{ KB}$ or $16\text{ KB}$).
 
@@ -51,7 +51,7 @@ Under random-write workloads, B+Trees quickly saturate NVMe write bandwidth and 
 
 ---
 
-## 🪵 2. LSM-Tree Storage Engine Architecture: The Append-Only Model
+## 2. LSM-Tree Storage Engine Architecture: The Append-Only Model
 
 Log-Structured Merge-Trees (invented by Patrick O’Neil in 1996 and popularized by Google Bigtable, LevelDB, and Meta's **RocksDB**) convert all random writes into sequential disk operations.
 
@@ -76,21 +76,19 @@ graph TD
 
 ---
 
-## 🔄 3. Compaction Algorithms: Leveled vs Size-Tiered
+## 3. Compaction Algorithms: Leveled vs Size-Tiered
 
 Because SSTables are immutable, updates and deletes (`tombstones`) accumulate across levels. **Compaction** is the background engine that merges overlapping SSTables, purges dead records, and re-sorts data.
 
 ```
-+--------------------------------------------------------------------------------------------------+
-|                                COMPACTION STRATEGY COMPARISON                                    |
-+--------------------------------------------------------------------------------------------------+
+> **COMPACTION STRATEGY COMPARISON**
 | Feature                     | Leveled Compaction (LCS)         | Size-Tiered Compaction (STCS)   |
 | Primary Database            | RocksDB, CockroachDB, LevelDB    | Apache Cassandra, ScyllaDB      |
 | Space Amplification (SAF)   | Low (~1.1x to 1.3x)              | High (~2.0x, requires 50% free) |
 | Read Amplification (RAF)    | Low (1 SSTable per level max)    | High (Must check all SSTables)  |
 | Write Amplification (WAF)   | Higher (~10x to 30x)             | Lower (~5x to 10x)              |
 | Best Workload               | Read-Heavy / Mixed OLTP          | Write-Heavy Logging / Ingestion |
-+--------------------------------------------------------------------------------------------------+
+
 ```
 
 ### Leveled Compaction (LCS) Mechanics:
@@ -101,7 +99,7 @@ Because SSTables are immutable, updates and deletes (`tombstones`) accumulate ac
 
 ---
 
-## 🔍 4. Mitigating Read Amplification: Bloom Filters & Block Caches
+## 4. Mitigating Read Amplification: Bloom Filters & Block Caches
 
 If a key does not exist in the database, a naive LSM-Tree would search the MemTable and every SSTable across all levels (Read Amplification $RAF = \text{number of SSTables}$).
 
@@ -115,9 +113,9 @@ With 10 bits per key, $99\%$ of non-existent key lookups terminate in memory wit
 
 ---
 
-## 🛠️ Python Implementation: Complete LSM-Tree Storage Engine Simulator
+## Python Implementation: Complete LSM-Tree Storage Engine Simulator
 
-Here is a Python implementation of a functional LSM-Tree storage engine featuring a MemTable, on-disk SSTable mock flushing, Bloom filter probes, and Level 0 $\to$ Level 1 merge compaction:
+Here is a Python implementation of a functional LSM-Tree storage engine featuring a MemTable, on-disk SSTable mock flushing, Bloom filter probes, and Level 0 → Level 1 merge compaction:
 
 ```python
 import hashlib
@@ -272,7 +270,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: B+Tree vs LSM-Tree Decision Matrix
+## Summary: B+Tree vs LSM-Tree Decision Matrix
 
 | Architectural Dimension | B+Tree (WiredTiger / InnoDB) | LSM-Tree (RocksDB / Cassandra) |
 |---|---|---|
@@ -285,7 +283,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Conclusion
+## Architectural Conclusion
 Choosing between an LSM-Tree and a B+Tree is a deliberate trade-off between **write throughput and read predictability**.
 
 If your application demands high-volume event ingestion, audit logs, or vector embeddings where disk write bandwidth is the bottleneck, **LSM-Trees (RocksDB)** deliver unmatched performance.

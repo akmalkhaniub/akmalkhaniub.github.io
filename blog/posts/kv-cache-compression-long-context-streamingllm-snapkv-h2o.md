@@ -36,7 +36,7 @@ graph TD
 
 ---
 
-## 🛑 1. The Long-Context VRAM Memory Wall
+## 1. The Long-Context VRAM Memory Wall
 
 Why does KV-cache memory scale so aggressively compared to model weights?
 
@@ -44,20 +44,18 @@ Why does KV-cache memory scale so aggressively compared to model weights?
 Model weights remain **static** regardless of sequence length. The KV-cache, however, grows **linearly ($O(N)$) with every single token generated**.
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                        KV-CACHE VRAM FOOTPRINT AT SCALE (Llama-3-70B, FP16)                       |
-+---------------------------------------------------------------------------------------------------+
+> **KV-CACHE VRAM FOOTPRINT AT SCALE (Llama-3-70B, FP16)**
 | Context Length | KV-Cache Size (Single Request) | GPU Hardware Required                           |
 | 4,000 tokens   | 0.65 GB                        | 1x RTX 4090 / A10G                              |
 | 32,000 tokens  | 5.24 GB                        | 1x A100 (80GB)                                  |
 | 128,000 tokens | 20.97 GB                       | 2x A100 (80GB) Tensor Parallel                  |
 | 1,000,000 tokens| 163.84 GB                     | 🚨 Requires 4x H100 (80GB) just for ONE USER!   |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
 
-## 🚰 2. The Attention Sink Phenomenon & StreamingLLM
+## 2. The Attention Sink Phenomenon & StreamingLLM
 
 In early attempts to bound KV-cache size, engineers implemented **Naive Sliding Window Attention** (keeping only the most recent 4,000 tokens and dropping older ones).
 
@@ -89,7 +87,7 @@ graph LR
 
 ---
 
-## 🎯 3. H2O (Heavy-Hitter Oracle) & SnapKV
+## 3. H2O (Heavy-Hitter Oracle) & SnapKV
 
 While StreamingLLM maintains fluency for streaming dialogue, agents performing code analysis require retaining critical entities and function definitions located midway through a $500\text{k-token}$ prompt.
 
@@ -102,7 +100,7 @@ While StreamingLLM maintains fluency for streaming dialogue, agents performing c
 
 ---
 
-## 🛠️ Python Implementation: StreamingLLM & H2O KV-Cache Simulator
+## Python Implementation: StreamingLLM & H2O KV-Cache Simulator
 
 Here is a Python implementation simulating an attention sink retention and H2O Heavy-Hitter dynamic KV-cache eviction engine:
 
@@ -190,7 +188,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: KV-Cache Compression Matrix
+## Summary: KV-Cache Compression Matrix
 
 | Technique | Memory Footprint | Attention Sinks Kept? | Needle-in-a-Haystack Recall | Best Use Case |
 |---|---|---|---|---|
@@ -202,7 +200,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 Serving 1M+ token context windows is not a hardware brute-force challenge—**it is an attention geometry optimization problem**.
 
 By locking in **Attention Sinks (StreamingLLM)** and dynamically pruning low-salience tokens with **H2O Heavy-Hitter and SnapKV algorithms**, AI systems engineers unlock multi-million token agent capabilities with an **$80\%\text{ to }90\%$ reduction in GPU VRAM costs**.

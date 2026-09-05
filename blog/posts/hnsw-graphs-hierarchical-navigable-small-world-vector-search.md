@@ -12,7 +12,7 @@ This article details the multi-layer graph architecture and greedy routing algor
 
 ---
 
-## 📖 HNSW Multi-Layer Graph & Greedy Routing Architecture
+## HNSW Multi-Layer Graph & Greedy Routing Architecture
 
 How multi-layer HNSW graphs enable logarithmic $O(\log N)$ vector search:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Multi-Layer HNSW Graph Engine
+## Python Implementation: Multi-Layer HNSW Graph Engine
 
 Here is a production-grade Python simulation of a Multi-Layer HNSW Graph Vector Index with Cosine Distance and greedy nearest-neighbor routing:
 
@@ -208,7 +208,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 HNSW Index Gotchas & Best Practices
+## HNSW Index Gotchas & Best Practices
 
 When building vector search indexes:
 
@@ -220,7 +220,7 @@ When building vector search indexes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Vector databases utilizing HNSW graph indexes report:
 * **Sub-Millisecond $k$-NN Latency**: Searching across millions of high-dimensional embeddings in under $2\text{ms}$.
 * **Over 98% Search Recall**: HNSW delivers near-exact search accuracy while executing $1,000\times$ faster than brute-force linear matrix scans.

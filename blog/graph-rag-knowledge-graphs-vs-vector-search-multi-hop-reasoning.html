@@ -104,222 +104,236 @@
           </div>
 
           <div class="article-body">
-<p>In early enterprise Retrieval-Augmented Generation (<strong>Vector RAG</strong>), the standard implementation pattern was uniform:</p>
-<ol>
-<li>Split unstructured PDFs and documents into $512\text{-token}$ sliding chunks.</li>
-<li>Generate dense vector embeddings using an embedding model (e.g. <code>text-embedding-3-large</code>).</li>
-<li>Store vectors in a vector database (<strong>Pinecone</strong>, <strong>Qdrant</strong>, <strong>Milvus</strong>, <strong>pgvector</strong>) and query using top-$k$ cosine similarity.</li>
-</ol>
-<p>While Baseline Vector RAG excels at localized fact lookup (<em>&quot;What is the cancellation fee in section 4.2?&quot;</em>), it <strong>fails catastrophically on holistic, multi-hop reasoning queries</strong>:</p>
-<ul>
-<li><em>&quot;What are the top 5 recurring security vulnerabilities across all our microservices design documents?&quot;</em></li>
-<li><em>&quot;How does a failure in the Payment Gateway impact the Order Fulfillment pipeline?&quot;</em></li>
-</ul>
-<p>Because dense vector search performs isolated point-to-point semantic similarity, it cannot traverse indirect relationships or synthesize global datasets.</p>
-<p>To overcome this fundamental limitation, modern AI architectures deploy <strong>Graph-RAG</strong> (Graph Retrieval-Augmented Generation).</p>
-<p>By combining <strong>Knowledge Graph Entity-Relationship Extraction</strong>, <strong>Hierarchical Leiden Community Detection</strong>, and <strong>Graph Traversal Engines (Neo4j / Memgraph)</strong>, Graph-RAG enables autonomous agents to perform <strong>deep multi-hop reasoning</strong> across millions of interconnected enterprise documents.</p>
+<p>If you ask a standard enterprise Retrieval-Augmented Generation (RAG) system a localized question—<em>&quot;What is the severance multiplier in Section 4.2 of the employee handbook?&quot;</em>—it succeeds with surgical precision. It calculates cosine similarities between your query and thousands of 512-token chunks, extracts the top three snippets, and summarizes them cleanly.</p>
+<p>Now ask that same system a question that actually matters to executive leadership:</p>
+<blockquote>
+<p><em>&quot;Across our eighty microservices and four years of architecture incident reviews, what single dependency represents our highest systemic risk of cascading failure?&quot;</em></p>
+</blockquote>
+<p>The system collapses.</p>
+<p>It will surface three random paragraphs containing the words &quot;systemic risk&quot; or &quot;cascading failure.&quot; It might cite a post-mortem from 2023 or a billing memo from last week. But it will completely miss the critical insight: that Service A relies on Service B, which talks to an unmonitored legacy Redis cluster, which shares an underlying AWS subnet with the payment gateway.</p>
+<p>This failure is not an accident of model scale. It is a mathematical consequence of how dense vector search works. Vector embeddings measure point-to-point proximity in continuous semantic space; they know nothing about topology, hierarchy, or transitive causality.</p>
+<p>To reason across interconnected domains, modern AI architectures must graduate from flat vector similarity to <strong>Graph-RAG</strong>: the synthesis of knowledge graph entity-relationship extraction, hierarchical community clustering, and graph traversal algorithms.</p>
 <div class="mermaid">graph TD
-  subgraph Naive Vector RAG vs Graph-RAG
-    subgraph 1. Baseline Vector RAG (Isolated Chunks)
-      Q1[&quot;Global Query: 'Summarize all system risks'&quot;] --&gt; Cosine[Top-K Cosine Similarity]
-      Cosine --&gt; C1[&quot;Chunk #14 (Isolated)&quot;]
-      Cosine --&gt; C2[&quot;Chunk #89 (Isolated)&quot;]
-      Cosine --&gt; C3[&quot;Chunk #402 (Isolated)&quot;]
-      Note1[&quot;💥 Fails: Misses global relationships &amp; transitive links&quot;]
+  subgraph Vector RAG vs Graph-RAG Architecture
+    subgraph 1. Flat Vector RAG (Isolated Chunks)
+      Q1[&quot;Holistic Query: 'Identify cross-service failure modes'&quot;] --&gt; VectorSearch[Top-K Cosine Similarity]
+      VectorSearch --&gt; ChunkA[&quot;Chunk 42 (Unlinked)&quot;]
+      VectorSearch --&gt; ChunkB[&quot;Chunk 118 (Unlinked)&quot;]
+      VectorSearch --&gt; ChunkC[&quot;Chunk 804 (Unlinked)&quot;]
+      FailNote[&quot;Fails: Blind to transitive causal links&quot;]
     end
 
-    subgraph 2. Graph-RAG (Connected Knowledge Graph + Communities)
-      Q2[&quot;Global Query: 'Summarize all system risks'&quot;] --&gt; GraphEngine[Graph-RAG Traversal Engine]
-      GraphEngine --&gt; Entities[&quot;Entity Extraction (Nodes: Auth, Billing, DB)&quot;]
-      Entities --&gt; Relationships[&quot;Edges: DEPENDS_ON, CALLS, OWNS&quot;]
-      Relationships --&gt; Communities[&quot;Leiden Community Summaries (Hierarchical Clusters)&quot;]
-      Communities --&gt; GlobalAnswer[&quot;Synthesized Holistic &amp; Multi-Hop Answer!&quot;]
+    subgraph 2. Graph-RAG (Connected Knowledge Graph)
+      Q2[&quot;Holistic Query: 'Identify cross-service failure modes'&quot;] --&gt; GraphEngine[Graph Retrieval Engine]
+      GraphEngine --&gt; Nodes[&quot;Entity Extraction: Services, Databases, Gateways&quot;]
+      Nodes --&gt; Edges[&quot;Directed Edges: CALLS, DEPENDS_ON, WRITES_TO&quot;]
+      Edges --&gt; Clusters[&quot;Leiden Community Summaries&quot;]
+      Clusters --&gt; SynthesizedAnswer[&quot;Synthesized Multi-Hop Causal Discovery&quot;]
     end
   end</div>
 <hr>
-<h2>🛑 1. The Failure Modes of Baseline Vector RAG</h2>
-<p>Why does standard embedding search collapse on enterprise knowledge corpora?</p>
-<h3>The 3 Core Limitations of Vector Chunking:</h3>
+<h2>1. The Three Structural Blindspots of Vector Chunking</h2>
+<p>Splitting documents into fixed-width sliding windows of 512 tokens was an expedient hack from the early days of semantic search. In enterprise corpora, this strategy produces three fatal failure modes:</p>
+<h3>1. Context Fragmentation</h3>
+<p>When an entity is introduced in an architectural design doc on page 3, and its production failure modes are analyzed on page 94, sliding window chunkers sever the connection. The embedding for the page 94 chunk contains the symptom, but lacks the identity of the root cause.</p>
+<h3>2. The Global Haystack Blindspot</h3>
+<p>Vector search answers questions of <em>identity</em> (<em>&quot;Find chunks resembling this phrasing&quot;</em>), but cannot answer questions of <em>aggregation</em> (<em>&quot;What are the recurring themes across these 10,000 documents?&quot;</em>). Because cosine similarity scores individual chunks independently, it cannot summarize systemic patterns distributed evenly across an entire corpus.</p>
+<h3>3. Transitive Multi-Hop Disconnection</h3>
+<p>If entity $A$ connects to entity $B$ (<em>&quot;Service A writes to Cache B&quot;</em>), and entity $B$ connects to entity $C$ (<em>&quot;Cache B shares credentials with Database C&quot;</em>), an agent asked about the security relationship between $A$ and $C$ receives zero vector hits. $A$ and $C$ never co-occur in the same chunk. Flat vector embeddings are topologically blind.</p>
+<hr>
+<h2>2. The Graph-RAG Indexing Pipeline</h2>
+<p>Pioneered by researchers seeking to synthesize meaning across vast, unstructured corpora, Graph-RAG replaces flat vector storage with an interconnected entity-relationship graph.</p>
+<pre><code class="language-plaintext">Raw Documents (Markdown / Architecture Specs / Incident Logs)
+                         │
+                         ▼
+           [ Entity &amp; Relationship Extraction ]
+           LLM parses Nodes (Services, APIs) &amp; Directed Edges
+                         │
+                         ▼
+              [ Entity Disambiguation ]
+       Merges aliases ('K8s', 'Kubernetes', 'Kube cluster')
+                         │
+                         ▼
+          [ Leiden Hierarchical Community Detection ]
+      Partitions dense subgraphs into macro functional modules
+                         │
+                         ▼
+        [ Map-Reduce Community Summarization ]
+  Pre-synthesizes high-level executive summaries for each community</code></pre>
+<h3>The Five Operational Stages:</h3>
 <ol>
-<li><strong>Context Fragmentation</strong>: Breaking documents into fixed 512-token chunks severs relationships that span across pages (e.g. Entity defined on Page 2, referenced on Page 85).</li>
-<li><strong>The &quot;Global Haystack&quot; Blindspot</strong>: Cosine similarity finds the closest localized paragraph. It cannot summarize patterns distributed evenly across 10,000 documents.</li>
-<li><strong>Multi-Hop Disconnection</strong>: If $A \to B$ and $B \to C$, an agent asked about the relationship between $A$ and $C$ gets zero vector hits because $A$ and $C$ never appear in the same paragraph.</li>
+<li><strong>Entity and Relationship Extraction</strong>: A specialized LLM pass reads raw text chunks and emits structured subject-predicate-object triples: <code>(OrderService)-[CALLS]-&gt;(PaymentGateway)</code>.</li>
+<li><strong>Entity Disambiguation and Deduplication</strong>: Identifies synonym collision. Variations like &quot;PostgreSQL&quot;, &quot;Postgres&quot;, and &quot;primary-db&quot; are merged into a canonical node with unified edge degree.</li>
+<li><strong>Leiden Community Clustering</strong>: Using the Leiden algorithm, the graph is partitioned into hierarchical communities: densely interconnected clusters that represent functional domains (e.g., Auth, Billing, Data Pipeline).</li>
+<li><strong>Community Summarization (Map)</strong>: At index time, the system generates comprehensive narrative summaries for each cluster at multiple abstraction levels (Level 0: macro architecture; Level 1: subsystem; Level 2: individual microservices).</li>
+<li><strong>Global Search Synthesis (Reduce)</strong>: When answering macro questions, the query engine evaluates the pre-computed community summaries in parallel, performing a map-reduce aggregation that bypasses individual text chunks entirely.</li>
 </ol>
 <hr>
-<h2>🕸️ 2. The Microsoft Graph-RAG Architecture</h2>
-<p>Pioneered by Microsoft Research in 2024, Graph-RAG constructs a structured semantic graph on top of raw documents:</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 THE GRAPH-RAG INDEXING PIPELINE                                   |
-+---------------------------------------------------------------------------------------------------+
-| 1. Entity &amp; Relationship Extraction : LLM extracts Nodes (Services, People) &amp; Edges (DEPENDS_ON)  |
-| 2. Entity Disambiguation            : Merges aliases ('K8s', 'Kubernetes', 'Kube') into one Node  |
-| 3. Leiden Community Detection       : Clusters densely connected subgraphs into hierarchical groups|
-| 4. Community Summarization (Map)    : Pre-summarizes each cluster at index time                    |
-| 5. Global Search Synthesis (Reduce) : Aggregates community summaries to answer macro questions     |
-+---------------------------------------------------------------------------------------------------+</code></pre>
-<div class="mermaid">graph TD
-  subgraph Hierarchical Leiden Community Clustering
-    subgraph Level 1: Global Macro Theme (Infrastructure)
-      C1[&quot;Community A: Authentication Cluster&quot;]
-      C2[&quot;Community B: Database Sharding Cluster&quot;]
-      C3[&quot;Community C: Payment Processing Cluster&quot;]
-    end
-    
-    C1 --&gt; E1[Node: OAuth Service]
-    C1 --&gt; E2[Node: JWT Secret Vault]
-    C2 --&gt; E3[Node: PostgreSQL Primary]
-    C2 --&gt; E4[Node: Redis Read Replica]
-  end</div>
+<h2>3. Query Paradigms: Local Search vs Global Search</h2>
+<p>Graph-RAG engines operate in two distinct retrieval modalities depending on query intent:</p>
+<table>
+<thead>
+<tr>
+<th>Retrieval Modality</th>
+<th>Target Use Case</th>
+<th>Underlying Mechanism</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Local Search</strong></td>
+<td>Entity-centric, targeted drill-down (<em>&quot;What happens if Kafka topic orders.v1 fills up?&quot;</em>)</td>
+<td>Hybrid vector lookup on entity nodes combined with 2-hop graph neighborhood expansion</td>
+</tr>
+<tr>
+<td><strong>Global Search</strong></td>
+<td>Holistic, corpus-wide synthesis (<em>&quot;What are the top 3 architectural bottlenecks across all teams?&quot;</em>)</td>
+<td>Parallel map-reduce over hierarchical Leiden community summaries</td>
+</tr>
+<tr>
+<td><strong>Hybrid DRIFT Search</strong></td>
+<td>Dynamic combination of macro context and deep entity verification</td>
+<td>Global community routing followed by localized graph traversal</td>
+</tr>
+</tbody></table>
 <hr>
-<h2>⚡ 3. Global Search vs Local Search in Graph-RAG</h2>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 GRAPH-RAG QUERY MODES                                             |
-+---------------------------------------------------------------------------------------------------+
-| Query Mode     | Best For                                     | Retrieval Mechanism               |
-| Local Search   | Specific entities &amp; direct neighbors         | Vector Search + 2-hop Subgraph    |
-|                | (&quot;What permissions does Role X have?&quot;)       | expansion (Cypher queries)        |
-| Global Search  | Macro themes &amp; corpus-wide questions         | Parallel Map-Reduce over Leiden   |
-|                | (&quot;What are the top failure risks?&quot;)          | pre-computed Community Summaries  |
-| Hybrid Search  | Combined reasoning                           | Dynamic routing based on intent   |
-+---------------------------------------------------------------------------------------------------+</code></pre>
-<hr>
-<h2>🛠️ Python Implementation: Complete Graph-RAG Engine</h2>
-<p>Here is a Python implementation demonstrating entity extraction, edge construction, community clustering, and multi-hop graph traversal:</p>
+<h2>Python Implementation: In-Memory Multi-Hop Graph-RAG Engine</h2>
+<p>The following implementation demonstrates how to build an in-memory knowledge graph engine supporting entity extraction, directed edge traversal, multi-hop path discovery, and community aggregation:</p>
 <pre><code class="language-python">from collections import defaultdict, deque
 from dataclasses import dataclass
 from typing import Dict, List, Set, Tuple
 
 @dataclass
-class GraphNode:
+class EntityNode:
     name: str
-    entity_type: str # e.g. &quot;SERVICE&quot;, &quot;DATABASE&quot;, &quot;VULNERABILITY&quot;
+    entity_type: str
     description: str
 
 @dataclass
-class GraphEdge:
+class DirectedEdge:
     source: str
     target: str
-    relation: str # e.g. &quot;DEPENDS_ON&quot;, &quot;STORES_DATA_IN&quot;, &quot;VULNERABLE_TO&quot;
+    relation: str
 
 class GraphRAGEngine:
     &quot;&quot;&quot;
-    Graph-RAG Engine supporting Knowledge Graph Construction,
-    Multi-Hop Traversal, and Community Summary Aggregation.
+    In-memory Knowledge Graph Engine demonstrating multi-hop reasoning
+    and community-level summary aggregation.
     &quot;&quot;&quot;
     def __init__(self):
-        self.nodes: Dict[str, GraphNode] = {}
-        # Adjacency List: source -&gt; list of GraphEdge
-        self.adj_list: Dict[str, List[GraphEdge]] = defaultdict(list)
+        self.nodes: Dict[str, EntityNode] = {}
+        self.adjacency: Dict[str, List[DirectedEdge]] = defaultdict(list)
 
-    def add_node(self, node: GraphNode):
+    def add_entity(self, node: EntityNode) -&gt; None:
         self.nodes[node.name] = node
 
-    def add_edge(self, edge: GraphEdge):
-        self.adj_list[edge.source].append(edge)
+    def add_relationship(self, edge: DirectedEdge) -&gt; None:
+        self.adjacency[edge.source].append(edge)
 
-    def multi_hop_search(self, start_entity: str, max_hops: int = 2) -&gt; List[str]:
+    def multi_hop_traverse(self, start_entity: str, max_depth: int = 2) -&gt; List[str]:
         &quot;&quot;&quot;
-        Traverses knowledge graph starting from an entity up to max_hops.
+        Executes breadth-first traversal discovering transitive causal paths.
         &quot;&quot;&quot;
-        print(f&quot;\n🔍 [Multi-Hop Traversal] Exploring relationships from '{start_entity}' (Max Hops: {max_hops})...&quot;)
-        visited: Set[str] = set([start_entity])
+        visited: Set[str] = {start_entity}
         queue: deque[Tuple[str, int, List[str]]] = deque([(start_entity, 0, [])])
-        discovered_paths = []
+        discovered_chains: List[str] = []
 
         while queue:
-            current_entity, depth, path = queue.popleft()
-            if depth &gt;= max_hops:
+            current, depth, path = queue.popleft()
+            if depth &gt;= max_depth:
                 continue
 
-            for edge in self.adj_list.get(current_entity, []):
-                target = edge.target
-                current_path = path + [f&quot;({edge.source}) -[{edge.relation}]-&gt; ({target})&quot;]
-                discovered_paths.append(&quot; -&gt; &quot;.join(current_path))
+            for edge in self.adjacency.get(current, []):
+                chain = path + [f&quot;({edge.source}) --[{edge.relation}]--&gt; ({edge.target})&quot;]
+                discovered_chains.append(&quot; -&gt; &quot;.join(chain))
 
-                if target not in visited:
-                    visited.add(target)
-                    queue.append((target, depth + 1, current_path))
+                if edge.target not in visited:
+                    visited.add(edge.target)
+                    queue.append((edge.target, depth + 1, chain))
 
-        return discovered_paths
+        return discovered_chains
 
-    def global_community_summary(self) -&gt; Dict[str, List[str]]:
+    def summarize_communities(self) -&gt; Dict[str, List[str]]:
         &quot;&quot;&quot;
-        Groups nodes by entity type into macro community clusters.
+        Aggregates nodes by architectural domain for macro synthesis.
         &quot;&quot;&quot;
-        communities = defaultdict(list)
+        clusters = defaultdict(list)
         for name, node in self.nodes.items():
-            communities[node.entity_type].append(f&quot;{name} ({node.description})&quot;)
-        return dict(communities)
+            clusters[node.entity_type].append(f&quot;{name}: {node.description}&quot;)
+        return dict(clusters)
 
-# Demonstration Execution
+# Demonstration Run
 if __name__ == &quot;__main__&quot;:
     kg = GraphRAGEngine()
 
-    # 1. Register Knowledge Nodes
-    kg.add_node(GraphNode(&quot;AuthService&quot;, &quot;SERVICE&quot;, &quot;Handles user OAuth2 authentication&quot;))
-    kg.add_node(GraphNode(&quot;OrderService&quot;, &quot;SERVICE&quot;, &quot;Processes customer checkout transactions&quot;))
-    kg.add_node(GraphNode(&quot;StripeGateway&quot;, &quot;EXTERNAL_API&quot;, &quot;Third-party credit card processor&quot;))
-    kg.add_node(GraphNode(&quot;UserPostgresDB&quot;, &quot;DATABASE&quot;, &quot;Primary ACID relational customer store&quot;))
-    kg.add_node(GraphNode(&quot;CVE-2026-4401&quot;, &quot;VULNERABILITY&quot;, &quot;Buffer overflow in token parser&quot;))
+    # 1. Register Architecture Nodes
+    kg.add_entity(EntityNode(&quot;CheckoutAPI&quot;, &quot;SERVICE&quot;, &quot;Public checkout endpoint&quot;))
+    kg.add_entity(EntityNode(&quot;OrderProcessor&quot;, &quot;SERVICE&quot;, &quot;Orchestrates order settlement&quot;))
+    kg.add_entity(EntityNode(&quot;LegacyLedger&quot;, &quot;DATABASE&quot;, &quot;Mainframe-backed accounting ledger&quot;))
+    kg.add_entity(EntityNode(&quot;CVE-2026-9011&quot;, &quot;VULNERABILITY&quot;, &quot;Unpatched TLS cipher vulnerability&quot;))
 
-    # 2. Register Semantic Relationships (Edges)
-    kg.add_edge(GraphEdge(&quot;OrderService&quot;, &quot;AuthService&quot;, &quot;AUTHENTICATES_VIA&quot;))
-    kg.add_edge(GraphEdge(&quot;OrderService&quot;, &quot;StripeGateway&quot;, &quot;CHARGES_PAYMENT_ON&quot;))
-    kg.add_edge(GraphEdge(&quot;AuthService&quot;, &quot;UserPostgresDB&quot;, &quot;READS_CREDENTIALS_FROM&quot;))
-    kg.add_edge(GraphEdge(&quot;AuthService&quot;, &quot;CVE-2026-4401&quot;, &quot;AFFECTED_BY&quot;))
+    # 2. Register Causal Dependency Edges
+    kg.add_relationship(DirectedEdge(&quot;CheckoutAPI&quot;, &quot;OrderProcessor&quot;, &quot;DISPATCHES_TO&quot;))
+    kg.add_relationship(DirectedEdge(&quot;OrderProcessor&quot;, &quot;LegacyLedger&quot;, &quot;WRITES_TRANSACTION_TO&quot;))
+    kg.add_relationship(DirectedEdge(&quot;LegacyLedger&quot;, &quot;CVE-2026-9011&quot;, &quot;EXPOSED_TO&quot;))
 
-    # 3. Execute Multi-Hop Reasoning Query:
-    # &quot;How does an order service failure or vulnerability link to our customer database?&quot;
-    paths = kg.multi_hop_search(&quot;OrderService&quot;, max_hops=2)
-    print(&quot;📍 Discovered Multi-Hop Reasoning Chains:&quot;)
+    # 3. Query: Trace transitive risk from CheckoutAPI to vulnerabilities
+    print(&quot;Executing Multi-Hop Causal Discovery from 'CheckoutAPI':&quot;)
+    paths = kg.multi_hop_traverse(&quot;CheckoutAPI&quot;, max_depth=3)
     for p in paths:
         print(f&quot;  • {p}&quot;)
 
-    # 4. Global Macro Summary
-    print(&quot;\n🌐 Global Community Clusters (Map-Reduce Summaries):&quot;)
-    clusters = kg.global_community_summary()
-    for category, entities in clusters.items():
-        print(f&quot; • [{category} Community]: {', '.join(entities)}&quot;)</code></pre>
+    # 4. Global Community Synthesis
+    print(&quot;\nSynthesizing Architectural Communities:&quot;)
+    communities = kg.summarize_communities()
+    for domain, entities in communities.items():
+        print(f&quot;  [{domain} Domain]:&quot;)
+        for e in entities:
+            print(f&quot;    - {e}&quot;)</code></pre>
 <hr>
-<h2>📊 Summary: Baseline Vector RAG vs Graph-RAG</h2>
+<h2>Architectural Comparison: Flat Vector RAG vs Graph-RAG</h2>
 <table>
 <thead>
 <tr>
-<th>Capability</th>
-<th>Baseline Vector RAG</th>
-<th>Graph-RAG Knowledge Architecture</th>
+<th>Dimension</th>
+<th>Flat Vector RAG</th>
+<th>Graph-RAG Architecture</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Localized Fact Lookup</strong></td>
-<td>Excellent (Top-$k$ cosine)</td>
-<td>Excellent</td>
+<td><strong>Primary Index</strong></td>
+<td>High-dimensional dense vectors (HNSW / IVFFlat)</td>
+<td>Knowledge graph nodes, edges, and community hierarchies</td>
 </tr>
 <tr>
-<td><strong>Multi-Hop Transitive Reasoning</strong></td>
-<td>❌ Fails (Disconnected chunks)</td>
-<td><strong>✅ Native Graph Traversals ($A \to B \to C$)</strong></td>
+<td><strong>Lookup Mechanism</strong></td>
+<td>Cosine similarity / Inner product</td>
+<td>Graph traversal (Cypher / BFS) + community map-reduce</td>
+</tr>
+<tr>
+<td><strong>Transitive Reasoning (A → B → C)</strong></td>
+<td>Fails (Chunks isolated in vector space)</td>
+<td>Native traversal across directed graph edges</td>
 </tr>
 <tr>
 <td><strong>Global Corpus Summarization</strong></td>
-<td>❌ Fails (Information lost)</td>
-<td><strong>✅ Leiden Community Clustering &amp; Summaries</strong></td>
+<td>Blind to distributed cross-document patterns</td>
+<td>Built-in hierarchical Leiden community clustering</td>
 </tr>
 <tr>
-<td><strong>Hallucination Rate</strong></td>
-<td>Moderate ($15%\text{--}25%$)</td>
-<td><strong>Ultra-Low ($&lt; 3%$, grounded by explicit edges)</strong></td>
+<td><strong>Grounded Faithfulness</strong></td>
+<td>Susceptible to hallucinated synthesis ($15\text{--}25%$)</td>
+<td>Grounded in explicit entity-relationship facts ($&lt; 3%$ errors)</td>
 </tr>
 <tr>
-<td><strong>Index Complexity</strong></td>
-<td>Low (Single embedding model)</td>
-<td>Moderate-High (Entity extraction + Graph DB)</td>
+<td><strong>Indexing Resource Cost</strong></td>
+<td>Low (Single embedding pass per chunk)</td>
+<td>Moderate to high (LLM extraction pass per chunk)</td>
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
-<p>For enterprise AI agents, <strong>connectivity is intelligence</strong>.</p>
-<p>By graduating from flat vector chunk databases to <strong>structured Knowledge Graph architectures</strong>, engineering teams give their AI agents the structural memory required to reason across interconnected systems, track transitive risks, and synthesize holistic answers from massive document landscapes.</p>
+<h2>The Architectural Horizon</h2>
+<p>Vector embeddings treat human knowledge as a bag of coordinates in high-dimensional space. But human knowledge is not a cloud of points; it is a web of relationships, hierarchies, and causal laws.</p>
+<p>For production AI agents tasked with navigating enterprise architectures, codebases, or legal contracts, <strong>connectivity is intelligence</strong>. By anchoring agent memory in structured knowledge graphs, engineers replace stochastic guessing with deterministic, traversable truth.</p>
 
           </div>
 

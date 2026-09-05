@@ -14,7 +14,7 @@ This article details Size-Tiered Compaction (STCS), Leveled Compaction (LCS), an
 
 ---
 
-## 📖 Leveled Compaction & N-Way Merge Architecture
+## Leveled Compaction & N-Way Merge Architecture
 
 How Leveled Compaction (LCS) organizes SSTables into non-overlapping exponential levels:
 
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: N-Way Merge-Sort Compaction Engine
+## Python Implementation: N-Way Merge-Sort Compaction Engine
 
 Here is a production-grade Python implementation of an $N$-Way Priority Queue Merge-Sort Compaction Engine for Leveled SSTables:
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Compaction Gotchas & Best Practices
+## Compaction Gotchas & Best Practices
 
 When tuning LSM compaction strategies:
 
@@ -174,7 +174,7 @@ When tuning LSM compaction strategies:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Storage engines employing Leveled Compaction (such as **RocksDB** and **CockroachDB**) report:
 * **Over 70% Reduction in Space Amplification**: Purging obsolete key versions keeps disk utilization within $1.1\times$ to $1.2\times$ of raw data size.
 * **Predictable p99 Read Latencies**: Guaranteeing non-overlapping key ranges bounds point lookups to a fixed number of disk files per query.

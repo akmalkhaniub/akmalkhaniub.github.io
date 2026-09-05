@@ -118,7 +118,7 @@
 <p>To build production-ready RAG, we must move beyond pure vector similarity and build a <strong>Hybrid Retrieval and Reranking Pipeline</strong>.</p>
 <p>This article details how to integrate semantic vector search (<code>pgvector</code>) with lexical keyword search (PostgreSQL <code>tsvector</code>), merge results using Reciprocal Rank Fusion (RRF), and apply a Cross-Encoder Reranker, as modeled in my repository <a href="https://github.com/akmalkhaniub/healthcare-audit-vault" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> healthcare-audit-vault</a>.</p>
 <hr>
-<h2>🛠️ The Hybrid Retrieval &amp; Reranking Pipeline</h2>
+<h2>The Hybrid Retrieval &amp; Reranking Pipeline</h2>
 <p>Rather than relying on a single retrieval method, our pipeline queries the database in parallel using two separate search mechanisms, merges the results mathematically, and sorts them using a deep learning classifier before sending the context to the LLM.</p>
 <div class="mermaid">flowchart TD
     UserQuery[User Query: 'Billing code 99214 under audit'] --&gt; InputProc{Input Process}
@@ -150,7 +150,7 @@
 <li><strong>LLM Context Ingestion</strong>: The top 5 reranked documents are injected into the prompt.</li>
 </ol>
 <hr>
-<h2>💻 Building a Hybrid Search Engine in PostgreSQL</h2>
+<h2>Building a Hybrid Search Engine in PostgreSQL</h2>
 <p>By keeping both vectors and text inside <strong>PostgreSQL</strong>, we avoid the operational complexity of running separate vector databases (like Pinecone or Milvus) alongside our application DB.</p>
 <p>Here is the SQL schema and the hybrid search query, utilizing <code>pgvector</code> and native Postgres text search tools:</p>
 <h3>1. Database Table Definition</h3>
@@ -198,14 +198,14 @@ ORDER BY rrf_score DESC
 LIMIT 20;</code></pre>
 <p><em>Note: The constant <code>60</code> in the RRF math prevents high-ranking matches from completely dominating the score, allowing lower ranks to contribute fairly.</em></p>
 <hr>
-<h2>📋 RAG Ingestion Guardrails</h2>
+<h2>RAG Ingestion Guardrails</h2>
 <ul>
 <li><strong>Chunking Strategies</strong>: Never chunk text arbitrarily by character count. Use semantic layout-aware chunking (splitting on headings, tables, or markdown structural breaks) to keep related context blocks whole.</li>
 <li><strong>Metadata Tagging</strong>: Annotate chunks with metadata tags (e.g., <code>facility_id</code>, <code>audit_year</code>, <code>billing_code</code>). Restrict searches using SQL <code>WHERE</code> clauses (e.g., <code>WHERE facility_id = X</code>) <em>before</em> executing vector matches to narrow the search space.</li>
 <li><strong>Lost-in-the-Middle Mitigation</strong>: LLM context windows suffer from recall degradation in the middle of long prompts. Always place the most critical retrieved chunks at the very beginning and very end of your context window.</li>
 </ul>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>Transitioning from basic vector search to a hybrid retrieval and reranking pipeline is essential for deploying robust, production-grade RAG systems.</p>
 <ol>
 <li><strong>Hybrid Search Combines Strengths:</strong> Merging semantic vector search with lexical keyword search ensures the system handles both conceptual queries and exact keyword matches effectively.</li>
@@ -214,7 +214,7 @@ LIMIT 20;</code></pre>
 </ol>
 <p><em>Takeaway:</em> <em>Production-ready RAG requires a multi-layered retrieval strategy that balances semantic depth, keyword precision, and deep-learning reranking.</em></p>
 <hr>
-<h2>📚 References &amp; Further Reading</h2>
+<h2>References &amp; Further Reading</h2>
 <ul>
 <li><strong>RRF Scoring</strong>: <em>Reciprocal Rank Fusion outperforms Single-Representation Information Retrieval</em>. Foundation paper showing why rank-based aggregation beats score-based aggregation.</li>
 <li><strong>Cross-Encoder Reranking</strong>: <em>Bi-Encoders vs. Cross-Encoders for Semantic Search</em>. Details the computational trade-offs and accuracy improvements of rerankers. <a href="https://arxiv.org/abs/2010.11929" target="_blank" rel="noopener">arXiv:2010.11929</a></li>

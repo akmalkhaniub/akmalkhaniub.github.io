@@ -65,22 +65,12 @@ graph TB
 
 ## What's Good & What's Not
 
-```
-+----------------------------------------------------------------------------------------------------------------------+
-|                                       LLM OBSERVABILITY TRADE-OFFS MATRIX                                            |
-+----------------------------------------------------+---------------------------------------------------------------+
-| What's Good (Pros)                                 | What's Not (Cons)                                             |
-+----------------------------------------------------+---------------------------------------------------------------+
-| * Full Trace Reconstruction: Every reasoning step, | * Data Privacy Risk: Traces capture full prompts — any PII   |
-|   tool call, and token count is logged and linked. |   in user inputs must be masked before export.                |
-| * Cost Attribution: Track API spend per user,      | * Storage Overhead: High-volume systems produce gigabytes of  |
-|   per feature, per agent — down to the cent.       |   trace data; retention policies must be defined.             |
-| * Regression Detection: Compare evaluation scores  | * Instrumentation Effort: Retrofitting tracing into existing  |
-|   before/after model or prompt changes.            |   agent code requires non-trivial refactoring.                |
-| * Hallucination Flagging: Automated LLM-as-judge   | * Eval Cost: Running automated evaluation judges adds ~20%    |
-|   scoring on every production response.            |   to your LLM API bill.                                       |
-+----------------------------------------------------+---------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Full Trace Reconstruction: Every reasoning step, tool call, and token count is logged and linked. | * Data Privacy Risk: Traces capture full prompts — any PII in user inputs must be masked before export. |
+| * Cost Attribution: Track API spend per user, per feature, per agent — down to the cent. | * Storage Overhead: High-volume systems produce gigabytes of trace data; retention policies must be defined. |
+| * Regression Detection: Compare evaluation scores before/after model or prompt changes. | * Instrumentation Effort: Retrofitting tracing into existing agent code requires non-trivial refactoring. |
+| * Hallucination Flagging: Automated LLM-as-judge scoring on every production response. | * Eval Cost: Running automated evaluation judges adds ~20% to your LLM API bill. |
 
 ---
 
@@ -412,7 +402,7 @@ mindmap
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 LLM Observability is not optional in production AI systems — it is the foundation of continuous improvement. Without traces, you are debugging by intuition. With Langfuse + OpenTelemetry, every reasoning step, every dollar spent, and every quality regression becomes a queryable, alertable data point.
 

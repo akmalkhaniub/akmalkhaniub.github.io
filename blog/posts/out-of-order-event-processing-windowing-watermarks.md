@@ -12,7 +12,7 @@ This article details Event Time notions, Bounded-Out-Of-Orderness Watermarks, Tu
 
 ---
 
-## 📖 Event Time & Watermark Architecture
+## Event Time & Watermark Architecture
 
 How Watermarks track Event Time progress and trigger window computations despite out-of-order arrivals:
 
@@ -58,7 +58,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Event Time Watermark & Session Window Engine
+## Python Implementation: Event Time Watermark & Session Window Engine
 
 Here is a production-grade Python implementation of an Event Time Watermark Generator and Session Windowing Engine featuring Late Data Side-Outputs:
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Windowing & Watermark Gotchas & Best Practices
+## Windowing & Watermark Gotchas & Best Practices
 
 When configuring Event Time processing:
 
@@ -175,7 +175,7 @@ When configuring Event Time processing:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Event Time streaming architectures (such as **Apache Flink**, **Google Cloud Dataflow**, and **Apache Beam**) report:
 * **100% Deterministic Financial Analytics**: Achieving identical aggregation results during historical data replaying and real-time streaming despite network delays.
 * **Resilience to Mobile Disconnects**: Seamlessly absorbing out-of-order telemetry from millions of connected vehicle sensors and mobile apps without data corruption.

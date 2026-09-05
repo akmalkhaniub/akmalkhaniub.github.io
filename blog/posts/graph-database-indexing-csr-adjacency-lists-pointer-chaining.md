@@ -14,7 +14,7 @@ This article details the relational JOIN bottleneck, Index-Free Adjacency pointe
 
 ---
 
-## 📖 Graph Storage Architecture: Relational JOINs vs Index-Free CSR
+## Graph Storage Architecture: Relational JOINs vs Index-Free CSR
 
 How native graph databases bypass B-Tree index lookups using Index-Free Adjacency and Compressed Sparse Row (CSR) contiguous arrays:
 
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: CSR Storage Engine & Index-Free Traversal
+## Python Implementation: CSR Storage Engine & Index-Free Traversal
 
 Here is a production-grade Python implementation of a Compressed Sparse Row (CSR) Graph Storage Engine with $O(1)$ Index-Free Neighborhood Traversal:
 
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Graph Storage Gotchas & Best Practices
+## Graph Storage Gotchas & Best Practices
 
 When engineering graph databases:
 
@@ -169,7 +169,7 @@ When engineering graph databases:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Native graph indexing architectures (such as **Neo4j Index-Free Adjacency**, **TigerGraph CSR**, and **Memgraph**) report:
 * **Over $1,000\times$ Faster Multi-Hop Queries**: Eliminating relational B-Tree JOIN lookups reduces 4-hop graph query latencies from minutes to milliseconds.
 * **Maximum CPU L1/L2 Cache Prefetching**: Compressed Sparse Row (CSR) memory packing streams neighbor vertices through CPU cache lines at memory bus speeds.

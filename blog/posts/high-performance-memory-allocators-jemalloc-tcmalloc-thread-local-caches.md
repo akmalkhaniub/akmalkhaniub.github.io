@@ -12,7 +12,7 @@ This article details thread-local caches (`tcache`), size class binning, and are
 
 ---
 
-## 📖 Modern Memory Allocator Architecture
+## Modern Memory Allocator Architecture
 
 How jemalloc/tcmalloc route memory requests through fast-path thread caches and slow-path arenas:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Thread-Caching Memory Allocator Simulator
+## Python Implementation: Thread-Caching Memory Allocator Simulator
 
 Here is a production-grade Python simulation of a Thread-Caching Memory Allocator featuring Thread Caches, Size Class Bins, and Arenas:
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Memory Allocator Gotchas & Best Practices
+## Memory Allocator Gotchas & Best Practices
 
 When tuning application memory allocators:
 
@@ -148,7 +148,7 @@ When tuning application memory allocators:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations replacing standard `ptmalloc` with **jemalloc** or **tcmalloc** report:
 * **Over 30% Latency Reduction**: Eliminating `malloc()` lock contention speeds up multi-threaded API response times.
 * **50% Memory Footprint Savings**: Size class binning prevents memory fragmentation in long-running services (like Redis and RocksDB).

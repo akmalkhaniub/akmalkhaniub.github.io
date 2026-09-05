@@ -12,7 +12,7 @@ This article details Write-Ahead Log persistence, MemTable SkipList indexing, an
 
 ---
 
-## 📖 LSM-Tree Write Path & Storage Architecture
+## LSM-Tree Write Path & Storage Architecture
 
 How LSM-Tree storage engines handle writes, maintain ACID durability, and flush SSTables to disk:
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: LSM-Tree Storage Engine with WAL & Flush
+## Python Implementation: LSM-Tree Storage Engine with WAL & Flush
 
 Here is a production-grade Python implementation of an LSM-Tree Storage Engine featuring a Write-Ahead Log, SkipList-style MemTable, and SSTable Flush Engine:
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 LSM-Tree Storage Gotchas & Best Practices
+## LSM-Tree Storage Gotchas & Best Practices
 
 When operating LSM-Tree databases:
 
@@ -183,7 +183,7 @@ When operating LSM-Tree databases:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Storage engines using LSM-Tree architecture (such as **RocksDB** at Meta and **Cassandra** at Netflix) report:
 * **Over $10\times$ Higher Write Throughput**: Turning random disk updates into sequential writes allows nodes to ingest over $500,000$ writes/sec per SSD.
 * **Extended SSD Hardware Lifespan**: Sequential writes minimize SSD Flash Translation Layer (FTL) wear and tear, reducing physical drive failures.

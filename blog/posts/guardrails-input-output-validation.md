@@ -45,23 +45,11 @@ flowchart LR
 
 ## What's Good & What's Not
 
-```
-+----------------------------------------------------------------------------------------------------------------------+
-|                                         GUARDRAILS TRADE-OFFS MATRIX                                                 |
-+----------------------------------------------------+---------------------------------------------------------------+
-| What's Good (Pros)                                 | What's Not (Cons)                                             |
-+----------------------------------------------------+---------------------------------------------------------------+
-| * Attack Surface Reduction: Catches prompt         | * Latency Addition: Each guard (input + output) adds 50-200ms |
-|   injection and jailbreak attempts before the LLM  |   of processing time per request — significant for real-time  |
-|   processes them — eliminating most attack vectors.|   streaming applications.                                     |
-| * Compliance Automation: PII scrubbing and schema  | * False Positive Risk: Aggressive toxicity classifiers may    |
-|   enforcement automate GDPR/HIPAA compliance gates |   block legitimate edge-case content (e.g., medical queries   |
-|   without manual review overhead.                  |   containing anatomical terms).                               |
-| * Schema Reliability: Structured output validation | * Guard Bypass Complexity: Sophisticated adversarial inputs   |
-|   eliminates JSON parsing errors in downstream     |   can evade keyword-based guards; NLP-based classifiers are   |
-|   microservices — reducing production incidents.   |   required for robust coverage.                               |
-+----------------------------------------------------+---------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Attack Surface Reduction: Catches prompt injection and jailbreak attempts before the LLM processes them — eliminating most attack vectors. | * Latency Addition: Each guard (input + output) adds 50-200ms of processing time per request — significant for real-time streaming applications. |
+| * Compliance Automation: PII scrubbing and schema enforcement automate GDPR/HIPAA compliance gates without manual review overhead. | * False Positive Risk: Aggressive toxicity classifiers may block legitimate edge-case content (e.g., medical queries containing anatomical terms). |
+| * Schema Reliability: Structured output validation eliminates JSON parsing errors in downstream microservices — reducing production incidents. | * Guard Bypass Complexity: Sophisticated adversarial inputs can evade keyword-based guards; NLP-based classifiers are required for robust coverage. |
 
 ---
 
@@ -430,7 +418,7 @@ async def guarded_response(user_message: str) -> str:
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Production LLM systems without guardrails are not a question of *if* they will be exploited or produce harmful outputs — but *when*. A layered guardrails architecture that combines fast heuristic-based detection with schema-enforced output contracts gives your system the resilience required for enterprise deployment.
 

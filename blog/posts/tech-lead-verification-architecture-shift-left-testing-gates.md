@@ -8,7 +8,7 @@ To maintain code reliability without slowing down team velocity, modern Tech Lea
 
 ---
 
-## 📖 The 4-Layer Verification Pipeline
+## The 4-Layer Verification Pipeline
 
 Rather than trusting agent code outputs, every generatedPull Request must pass through four automated verification layers:
 
@@ -32,7 +32,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Verification Harness & Coverage Evaluator
+## Python Verification Harness & Coverage Evaluator
 
 To automate this pipeline, Tech Leads build programmatic test harnesses that execute test suites, analyze coverage metrics, and generate machine-readable validation reports for AI agents.
 
@@ -152,7 +152,7 @@ def test_invalid_payment():
 
 ---
 
-## ⚠️ Important Leadership Guardrails
+## Important Leadership Guardrails
 
 When building verification architectures, avoid these operational traps:
 
@@ -164,7 +164,7 @@ When building verification architectures, avoid these operational traps:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations with Automated Verification Architectures achieve:
 * **Zero Critical Bugs Caused by AI Code**: Multi-gate verification catches 99.8% of functional regressions before merge.
 * **90% Faster Review Cycles**: Tech Leads spend review time discussing high-level design decisions rather than checking line syntax.

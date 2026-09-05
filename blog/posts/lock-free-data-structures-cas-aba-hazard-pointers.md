@@ -14,7 +14,7 @@ This article details CAS primitives, the Treiber Stack algorithm, the ABA Proble
 
 ---
 
-## 📖 Lock-Free Concurrency & The ABA Problem
+## Lock-Free Concurrency & The ABA Problem
 
 How atomic Compare-And-Swap (CAS) instructions operate, the ABA problem vulnerability, and Hazard Pointer memory safety:
 
@@ -51,14 +51,14 @@ graph TD
    * Thread 1 reads `head = A`. Before executing CAS, Thread 1 is preempted.
    * Thread 2 pops `A`, pops `B`, and then pushes `A` back onto the stack (`A` is reused memory).
    * Thread 1 resumes and executes `CAS(head, A, B)`. CAS succeeds because memory location holds address `A`! But `A->next` now points to garbage or a freed node `B`!
-   * *Solution 1: Tagged Pointers*: Pair the 64-bit pointer with a 64-bit version counter (`(pointer, version)`). Each mutation increments the version (`A:v1` $\to$ `B:v2` $\to$ `A:v3`). CAS checks both pointer and version.
+   * *Solution 1: Tagged Pointers*: Pair the 64-bit pointer with a 64-bit version counter (`(pointer, version)`). Each mutation increments the version (`A:v1` → `B:v2` → `A:v3`). CAS checks both pointer and version.
 4. **Hazard Pointers (Safe Memory Reclamation)**:
    * In garbage-collected languages (Java/Go), memory reclamation is automatic. In C/C++, deallocating a node popped by Thread 1 while Thread 2 is reading its `next` pointer causes a **Use-After-Free Crash**.
    * *Hazard Pointer Protocol*: Each reader thread publishes the address it is currently reading into a global **Hazard Pointer Array**. A thread popping a node defers calling `free()` until the node address is no longer listed in any thread's Hazard Pointer slot.
 
 ---
 
-## 🛠️ Python Implementation: Lock-Free Treiber Stack & Hazard Pointers
+## Python Implementation: Lock-Free Treiber Stack & Hazard Pointers
 
 Here is a production-grade Python implementation of a Lock-Free Treiber Stack with Tagged Pointers (ABA Mitigation) and a Hazard Pointer Memory Reclamation Engine:
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Lock-Free Concurrency Gotchas & Best Practices
+## Lock-Free Concurrency Gotchas & Best Practices
 
 When designing lock-free data structures:
 
@@ -201,7 +201,7 @@ When designing lock-free data structures:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Lock-free algorithms (such as **Java ConcurrentLinkedQueue**, **Rust crossbeam**, and **Linux Kernel lockless Ring Buffers**) report:
 * **Zero Thread Blocking**: Worker threads never enter OS sleep/wake cycles, eliminating context switch overhead.
 * **Up to $5\times$ Higher Multi-Threaded Throughput**: Eliminating lock acquisition bottlenecks maximizes parallel CPU core execution efficiency.

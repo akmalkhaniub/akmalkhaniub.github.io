@@ -10,7 +10,7 @@ This article details how to manage schema evolution and contract enforcement in 
 
 ---
 
-## 📖 Binary Wire Format & Compatibility Architecture
+## Binary Wire Format & Compatibility Architecture
 
 The binary framing layout and schema validation workflow:
 
@@ -41,7 +41,7 @@ Confluent Schema Registry enforces four primary compatibility rules when produce
 
 ---
 
-## 🛠️ Python Implementation: Schema Registry Serializer & Validator
+## Python Implementation: Schema Registry Serializer & Validator
 
 Here is a production-grade Python simulation of a Confluent Schema Registry client, Avro wire format encoder, and compatibility checker:
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Schema Evolution Gotchas & Guardrails
+## Schema Evolution Gotchas & Guardrails
 
 When enforcing contracts with Schema Registry:
 
@@ -171,7 +171,7 @@ When enforcing contracts with Schema Registry:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams using Confluent Schema Registry report:
 * **80% Payload Compression**: Replacing verbose JSON headers with 5-byte Confluent wire framing reduces network bandwidth costs dramatically across high-throughput Kafka clusters.
 * **Zero Production Deserialization Outages**: Schema compatibility validation catches breaking API contract changes at deployment time before events enter production topics.

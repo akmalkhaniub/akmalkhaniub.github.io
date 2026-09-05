@@ -56,7 +56,7 @@ A framework-agnostic eval harness runs as a continuous gate in your CI/CD pipeli
 
 ---
 
-## 📋 The Eval Stack Checklist
+## The Eval Stack Checklist
 
 *   [ ] **CI/CD Eval Gate**: Integrate automated evaluations (e.g., using DeepEval or custom pytest-llm runners) to run on every commit.
 *   [ ] **Observability Trace Logging**: Enable full telemetry tracing (OTel standards) on all model calls to log input/output prompts, token counts, latency, and system versions.
@@ -64,7 +64,7 @@ A framework-agnostic eval harness runs as a continuous gate in your CI/CD pipeli
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Transitioning to automated evaluation pipelines is the single most important step for moving multi-agent systems from experimental prototypes to production-ready software.
 1. **Evaluate the Topology, Not Just the Model:** Multi-agent systems require system-level evaluations (like MASEval) that assess the entire agent interaction graph rather than isolated LLM prompts.
@@ -75,7 +75,7 @@ Transitioning to automated evaluation pipelines is the single most important ste
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **MASEval Framework**: *MASEval: Extending Multi-Agent Evaluation from Models to Systems* (March 2026). Presents system-level evaluation libraries for topologies. [arXiv:2603.04852](https://arxiv.org/abs/2603.04852) (Needs verification)
 *   **Evaluation Survey**: *A Survey on Evaluation of LLM-based Agents* (April 2026). Explains the emerging metrics and benchmarks for testing agentic workflows. [arXiv:2604.11952](https://arxiv.org/abs/2604.11952) (Needs verification)

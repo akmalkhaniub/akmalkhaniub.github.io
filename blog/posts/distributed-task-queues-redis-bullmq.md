@@ -11,7 +11,7 @@ To build an ingestion pipeline that handles high throughput, we implement a **Di
 
 ---
 
-## 🛠️ The Decoupled Ingestion Pipeline
+## The Decoupled Ingestion Pipeline
 
 The architecture separates the frontend API endpoint (which only schedules jobs and returns a task token) from the dedicated worker processes that coordinate the agentic extraction steps.
 
@@ -58,7 +58,7 @@ sequenceDiagram
 
 ---
 
-## 💻 Building a BullMQ Worker in TypeScript
+## Building a BullMQ Worker in TypeScript
 
 Here is a production-grade implementation of a queue processor designed to ingest unstructured files and run them through our extraction service, modeled on background pipelines found in my projects like [healthcare-audit-vault](https://github.com/akmalkhaniub/healthcare-audit-vault).
 
@@ -137,7 +137,7 @@ documentWorker.on('failed', (job, err) => {
 
 ---
 
-## 📈 Queue Optimization and Backoff Guardrails
+## Queue Optimization and Backoff Guardrails
 
 *   **Handling LLM Rate Limits**: LLM providers (Anthropic, OpenAI) enforce strict rate-limits (TPM and RPM). Using BullMQ’s built-in `limiter` option ensures workers slow down dynamically, staying under token budget caps.
 *   **Exponential Backoff**: When a 429 Too Many Requests error occurs, standard loops fail. Our BullMQ configuration uses `backoff: { type: 'exponential', delay: 5000 }` to wait and retry only when the rate limit cooling period expires.
@@ -145,7 +145,7 @@ documentWorker.on('failed', (job, err) => {
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Implementing a distributed task queue architecture is fundamental for building resilient and scalable AI ingestion pipelines.
 1.  **Asynchronous Processing is Essential:** Decoupling high-latency AI operations from client-facing APIs prevents timeouts, ensures a responsive user experience, and maintains system stability.
@@ -156,7 +156,7 @@ Implementing a distributed task queue architecture is fundamental for building r
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **BullMQ Architecture**: [BullMQ Guides](https://docs.bullmq.io/). Comprehensive documentation on queues, sandboxed workers, and parent-child dependencies.
 *   **Queueing Theory and Backoffs**: *A Study of Backoff Algorithms in Wireless and Distributed Systems*. Explains the efficiency of exponential backoff. [arXiv:1707.02535](https://arxiv.org/abs/1707.02535)

@@ -6,7 +6,7 @@ To achieve sub-10ms search times, production databases use **Approximate Nearest
 
 ---
 
-## 📖 Under the Hood: HNSW's Layered Routing
+## Under the Hood: HNSW's Layered Routing
 
 HNSW organizes vectors into a multi-layered graph, mimicking a skip list:
 * **Upper Layers**: Contain fewer nodes with longer-range links. Queries execute fast, high-level routing to quickly zoom in on the region of interest.
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🛠️ Tuning HNSW Indexes in Production
+## Tuning HNSW Indexes in Production
 
 ### 1. Optimizing pgvector in PostgreSQL
 To create a high-performance HNSW index in PostgreSQL, use the `hnsw` index type and specify your `m` and `ef_construction` parameters during index definition:
@@ -101,7 +101,7 @@ To run queries with optimized search bounds dynamically in Qdrant, pass the runt
 
 ---
 
-## ⚖️ Recall vs. Latency Trade-offs
+## Recall vs. Latency Trade-offs
 
 | Mode | `M` | `efConstruction` | `efSearch` | Latency (p99) | Recall Accuracy |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -111,7 +111,7 @@ To run queries with optimized search bounds dynamically in Qdrant, pass the runt
 
 ---
 
-## ⚠️ Important Pitfalls in Index Configuration
+## Important Pitfalls in Index Configuration
 
 Ensure your configurations avoid these performance bottlenecks:
 

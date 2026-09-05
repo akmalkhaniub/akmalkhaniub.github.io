@@ -252,13 +252,13 @@ ALTER TABLE documents SET (
 **Root cause**: ANN is approximate — the top-5 returned may not be the true top-5. Reranking can only improve ordering within the candidate set. If the true best match is ranked #12 by ANN, it never reaches your reranker.
 
 ```python
-# ❌ Retrieving only top_k for reranking — reranker can't fix ANN misses
+# Retrieving only top_k for reranking — reranker can't fix ANN misses
 async def search_and_rerank_bad(query: str, top_k: int = 5):
     # ANN only returns 5 — if the best match is rank 8, it's never seen
     ann_results = await vector_search(query_embedding, top_k=5)
     return reranker.rerank(query, ann_results)[:top_k]
 
-# ✅ Retrieve a larger candidate set (10-20×), then rerank to top_k
+# Retrieve a larger candidate set (10-20×), then rerank to top_k
 async def search_and_rerank_good(
     query: str,
     top_k: int = 5,
@@ -326,7 +326,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -> str:
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 pgvector's greatest strength — living inside Postgres — is also its greatest trap. When it silently falls back to sequential scan, you get no error, no warning, and no indication that your "fast" vector search is actually O(n). Treat `EXPLAIN ANALYZE` as mandatory, not optional.
 

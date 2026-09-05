@@ -12,7 +12,7 @@ This article details V8 Isolate architecture, memory snapshotting, and Copy-On-W
 
 ---
 
-## 📖 Memory Snapshot & Copy-On-Write Restore Architecture
+## Memory Snapshot & Copy-On-Write Restore Architecture
 
 How edge platforms serialize V8 Isolate heaps and restore pre-warmed snapshots in under 5ms:
 
@@ -42,7 +42,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Memory Snapshot & Copy-On-Write Engine
+## Python Implementation: Memory Snapshot & Copy-On-Write Engine
 
 Here is a production-grade Python simulation of a V8 Isolate Memory Snapshot Serializer and Copy-On-Write Restore Engine:
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Memory Snapshot Gotchas & Best Practices
+## Memory Snapshot Gotchas & Best Practices
 
 When deploying memory snapshot architectures:
 
@@ -144,7 +144,7 @@ When deploying memory snapshot architectures:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Serverless edge platforms utilizing V8 Isolate Heap Snapshotting (such as **AWS Lambda SnapStart**) report:
 * **99% Cold-Start Reduction**: Reducing cold-start startup latencies from $2,500\text{ms}$ down to **under $5\text{ms}$**.
 * **Sub-10ms Tail Latencies (p99)**: Eliminating startup spikes stabilizes p99 API latencies across microservice applications.

@@ -325,7 +325,7 @@ def safe_upsert(doc_id: str, text: str, client, pg_conn):
 **Root cause**: English-only embedding models (many MiniLM variants) project non-English text into a meaningless region of the embedding space. The cosine similarities are numerically valid but semantically meaningless.
 
 ```python
-# ✅ Use multilingual models for international deployments
+# Use multilingual models for international deployments
 MULTILINGUAL_MODELS = {
     "high_quality": "intfloat/multilingual-e5-large",      # 560M params, 100 languages
     "fast": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",  # 118M, 50 languages
@@ -378,7 +378,7 @@ class EmbeddingFreshnessChecker:
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Vector embeddings are deceptively fragile at the boundaries — tokenisation limits, model versioning, distance metric mismatches, and content staleness all fail silently, making them uniquely difficult to debug in production.
 

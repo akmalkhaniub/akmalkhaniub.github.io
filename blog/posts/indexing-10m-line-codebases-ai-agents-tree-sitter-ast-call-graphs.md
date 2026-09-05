@@ -31,7 +31,7 @@ graph TD
 
 ---
 
-## 🛑 1. Why Naive Text Chunking Fails on Source Code
+## 1. Why Naive Text Chunking Fails on Source Code
 
 Source code is fundamentally different from prose documents: **code is a strongly-typed directed graph of symbols, imports, and execution paths**.
 
@@ -42,26 +42,24 @@ Source code is fundamentally different from prose documents: **code is a strongl
 
 ---
 
-## 🌲 2. Layer 1: Tree-sitter AST Incremental Parsing
+## 2. Layer 1: Tree-sitter AST Incremental Parsing
 
 Modern AI IDEs use **Tree-sitter**: an ultrafast, incremental parser generator written in C that builds and updates concrete syntax trees in milliseconds as the user types.
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 TREE-SITTER EXTRACTED SYMBOL METADATA                             |
-+---------------------------------------------------------------------------------------------------+
+> **TREE-SITTER EXTRACTED SYMBOL METADATA**
 | Symbol Type | Extracted Fields                                                                    |
 | Function    | Identifier name, parameters, return type, enclosing class, docstring, line range   |
 | Interface   | Method signatures, exported properties, extended types                              |
 | Import      | Imported symbol, source module path, alias, relative scope                          |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 By parsing at the AST level, every chunk in the vector database corresponds to an **atomic, self-contained semantic unit (a whole function, class, or interface)** rather than an arbitrary slice of lines.
 
 ---
 
-## 🕸️ 3. Layer 2 & 3: Symbol Graphs & Call Hierarchies (SCIP / LSIF)
+## 3. Layer 2 & 3: Symbol Graphs & Call Hierarchies (SCIP / LSIF)
 
 To understand how code executes, the indexer constructs two directed graphs:
 
@@ -85,7 +83,7 @@ Allows the agent to traverse up and down the call stack:
 
 ---
 
-## ⚡ 4. Dynamic Context Budget Assembly
+## 4. Dynamic Context Budget Assembly
 
 When an agent is prompted:
 > *"Fix the 401 Unauthorized bug when refreshing expired JWT tokens."*
@@ -99,7 +97,7 @@ This keeps the prompt under **2,500 tokens**, achieving sub-second TTFT (Time-to
 
 ---
 
-## 🛠️ Python Implementation: Tree-sitter-Style AST Symbol & Call Graph Indexer
+## Python Implementation: Tree-sitter-Style AST Symbol & Call Graph Indexer
 
 Here is a Python implementation of an AST Codebase Indexer that parses code into atomic symbols, builds a directed call hierarchy, and dynamically packs compact agent context:
 
@@ -202,19 +200,19 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Text Chunking vs AST Code Intelligence
+## Summary: Text Chunking vs AST Code Intelligence
 
 | Capability | Naive 512-Token Vector Chunking | Tree-sitter AST & Call Graph Indexing |
 |---|---|---|
 | **Boundary Integrity** | ❌ Arbitrary cuts mid-function | **✅ 100% Atomic method & class boundaries** |
 | **Scope Resolution** | ❌ Confuses identical variable names | **✅ SCIP-based canonical symbol definitions** |
-| **Call Stack Navigation** | ❌ Invisible | **✅ Directed Caller $\to$ Callee Graph Traversal** |
+| **Call Stack Navigation** | ❌ Invisible | **✅ Directed Caller → Callee Graph Traversal** |
 | **Context Window Consumption**| Bloated ($30\text{k--}60\text{k}$ tokens) | **Compact & Focused ($< 4\text{k}$ tokens)** |
 | **Code Refactoring Accuracy** | $60\%\text{--}75\%$ | **$> 95\%$ First-Pass Success** |
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 High-precision AI code generation is a direct consequence of **high-precision code indexing**.
 
 By moving beyond flat text embeddings to **Tree-sitter AST parsing**, **SCIP symbol resolution**, and **directed call hierarchy graphs**, software engineering platforms enable AI agents to navigate and edit multi-million line codebases with surgical accuracy.

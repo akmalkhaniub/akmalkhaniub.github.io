@@ -14,7 +14,7 @@ ClaimPilot pairs **multi-modal vision damage estimation** with a **deterministic
 
 ---
 
-## 📖 ClaimPilot System Architecture & Hybrid Adjudication
+## ClaimPilot System Architecture & Hybrid Adjudication
 
 How ClaimPilot ingests FNOL claims, coordinates multi-modal vision and document models, and enforces deterministic policy guardrails:
 
@@ -53,7 +53,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Multi-Modal FNOL Pipeline & Deterministic Guardrails
+## Python Implementation: Multi-Modal FNOL Pipeline & Deterministic Guardrails
 
 Here is the core Python implementation of ClaimPilot's FNOL structured extractor and deterministic policy guardrail engine:
 
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 InsurTech Engineering Gotchas & Best Practices
+## InsurTech Engineering Gotchas & Best Practices
 
 When building AI claims systems:
 
@@ -187,7 +187,7 @@ When building AI claims systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Deploying ClaimPilot across automated insurance workflows delivers:
 * **$80\%$ Faster First-Notice-of-Loss Resolution**: Routine auto and property claims resolved in under $45\text{ seconds}$.
 * **$100\%$ Audit Compliance**: Deterministic policy validation guarantees zero rogue payouts or unapplied deductibles.

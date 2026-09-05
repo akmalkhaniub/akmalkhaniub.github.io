@@ -48,13 +48,13 @@ Vulnerable libraries that accept the algorithm from the token header will valida
 ```python
 import jwt  # PyJWT
 
-# ❌ NEVER trust the algorithm from the token header
+# NEVER trust the algorithm from the token header
 def decode_insecure(token: str, secret: str) -> dict:
     # PyJWT < 2.0 default behaviour — reads alg from header
     # An attacker can set alg=none and bypass signature entirely
     return jwt.decode(token, secret, algorithms=None)  # 🚨 Catastrophic
 
-# ✅ Always explicitly specify allowed algorithms
+# Always explicitly specify allowed algorithms
 def decode_secure(token: str, secret: str) -> dict:
     return jwt.decode(
         token,
@@ -98,11 +98,11 @@ If your server signs tokens with RS256 (asymmetric — private key signs, public
 3. The server uses the public key to verify — which is correct for HS256 with that key — and accepts it
 
 ```python
-# ❌ Accepting multiple algorithm families opens the door to confusion attacks
+# Accepting multiple algorithm families opens the door to confusion attacks
 def decode_confused(token: str, public_key: str) -> dict:
     return jwt.decode(token, public_key, algorithms=["RS256", "HS256"])  # 🚨 Dangerous
 
-# ✅ Each token type must have exactly ONE algorithm
+# Each token type must have exactly ONE algorithm
 def decode_rsa_only(token: str, public_key: str) -> dict:
     return jwt.decode(
         token,
@@ -133,7 +133,7 @@ def create_secure_token(user_id: str, secret: str) -> str:
     }
     return jwt.encode(payload, secret, algorithm="HS256")
 
-# ✅ Verify expiry explicitly (belt-and-suspenders for some libraries)
+# Verify expiry explicitly (belt-and-suspenders for some libraries)
 def decode_with_expiry_check(token: str, secret: str) -> dict:
     payload = jwt.decode(token, secret, algorithms=["HS256"],
                         options={"verify_exp": True})
@@ -256,10 +256,10 @@ export const TokenStore = {
 **Symptom**: A JWT issued for your `api.yourdomain.com` service is accepted by your `admin.yourdomain.com` service. An attacker who compromises a low-privilege service can replay its tokens against high-privilege services.
 
 ```python
-# ❌ No audience check — any service accepts any token
+# No audience check — any service accepts any token
 payload = jwt.decode(token, secret, algorithms=["HS256"])
 
-# ✅ Enforce audience per service
+# Enforce audience per service
 API_AUDIENCE = "api.yourdomain.com"
 ADMIN_AUDIENCE = "admin.yourdomain.com"
 
@@ -296,12 +296,12 @@ def create_api_token(user_id: str, secret: str) -> str:
 import secrets
 import os
 
-# ❌ Weak secrets — brute-forceable in minutes
+# Weak secrets — brute-forceable in minutes
 SECRET = "mysecret"          # 8 chars
 SECRET = "your-secret-key"   # Dictionary word
 SECRET = os.environ.get("JWT_SECRET", "default")  # Falls back to 'default'!
 
-# ✅ Cryptographically random secret — 256 bits minimum
+# Cryptographically random secret — 256 bits minimum
 def generate_jwt_secret() -> str:
     return secrets.token_hex(32)  # 256-bit random secret
 
@@ -309,7 +309,7 @@ def generate_jwt_secret() -> str:
 print(generate_jwt_secret())
 # e.g.: "a3f8c2d1e4b7a9f0c8e2d4b6a1f3c5e7d9b1a3f5c7e9d1b3a5f7c9e1d3b5a7f9"
 
-# ✅ For RS256: use 2048-bit RSA minimum (prefer 4096-bit for longevity)
+# For RS256: use 2048-bit RSA minimum (prefer 4096-bit for longevity)
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 
@@ -327,7 +327,7 @@ private_key = rsa.generate_private_key(
 **Symptom**: User changes their password. Their old tokens (still valid for 15 minutes) continue to work. Attacker who had the old token retains access.
 
 ```python
-# ✅ Token revocation via Redis blocklist (fast O(1) lookup)
+# Token revocation via Redis blocklist (fast O(1) lookup)
 import redis
 import jwt
 
@@ -357,7 +357,7 @@ def on_password_change(user_id: str, current_token_jti: str, current_token_exp: 
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 JWT security is not about the library you choose — it's about whether you understand the attack surface well enough to configure it correctly. Most JWT vulnerabilities are implementation errors, not library bugs.
 

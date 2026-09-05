@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Self-Reflective loops protect RAG systems from poor vector search results:
 * [ ] **Insert a grader node**: Always evaluate the semantic relevancy of retrieved document fragments before passing them to the generator.

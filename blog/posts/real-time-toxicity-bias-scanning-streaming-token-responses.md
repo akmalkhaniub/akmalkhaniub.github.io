@@ -10,7 +10,7 @@ This article details how to construct a streaming guardrail scanner.
 
 ---
 
-## 📖 Streaming Guardrail Pipeline Architecture
+## Streaming Guardrail Pipeline Architecture
 
 The guardrail scanner buffers token streams, runs parallel classification, and controls client responses:
 
@@ -34,7 +34,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Sliding-Window Token Stream Guardrail
+## Python Implementation: Sliding-Window Token Stream Guardrail
 
 Here is a production-grade Python implementation of a sliding-window token stream guardrail scanner. It simulates a streaming LLM response, buffers tokens into overlapping word groups, evaluates them, and halts execution upon toxicity detection:
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Guardrail Execution Gotchas & Mitigation
+## Guardrail Execution Gotchas & Mitigation
 
 When building streaming classifiers:
 
@@ -139,7 +139,7 @@ When building streaming classifiers:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying real-time stream scanners report:
 * **Zero Policy Violations**: Outbound content breaches are intercepted and blocked before they reach user browsers.
 * **Smooth UI Performance**: Local ONNX model inference overhead remains under 10ms, maintaining natural streaming rendering.

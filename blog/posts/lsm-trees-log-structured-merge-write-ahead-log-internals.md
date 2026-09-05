@@ -12,7 +12,7 @@ This article details the WAL, MemTable, SSTable, and Compaction mechanics of LSM
 
 ---
 
-## 📖 LSM-Tree Write & Compaction Pipeline Architecture
+## LSM-Tree Write & Compaction Pipeline Architecture
 
 How an LSM Tree processes writes via WAL + MemTable and flushes immutable SSTables to disk:
 
@@ -41,11 +41,11 @@ graph TD
 1. **Write-Ahead Log (WAL)**: An append-only file on disk. Every incoming write operation is appended to the WAL before being inserted into memory. If the database crashes, the engine replays the WAL to reconstruct the in-memory state.
 2. **MemTable**: An in-memory concurrent data structure (typically a SkipList or Red-Black Tree) that maintains key-value pairs in sorted order. All `SET` and `DELETE` operations are written to the MemTable.
 3. **Sorted String Tables (SSTables)**: Immutable files stored on disk containing sorted key-value pairs grouped into blocks. SSTables include an index block for binary search lookups and a **Bloom Filter** to quickly reject queries for keys not present in the SSTable.
-4. **Leveled Compaction**: Background processes that merge overlapping SSTables across levels ($L_0 \to L_1 \to L_2$). Compaction reclaims disk space by purging deleted tombstones and overwritten old key versions, maintaining bounded read amplification.
+4. **Leveled Compaction**: Background processes that merge overlapping SSTables across levels ($L_0 → L_1 → L_2$). Compaction reclaims disk space by purging deleted tombstones and overwritten old key versions, maintaining bounded read amplification.
 
 ---
 
-## 🛠️ Python Implementation: LSM-Tree Storage Engine
+## Python Implementation: LSM-Tree Storage Engine
 
 Here is a production-grade Python implementation of an LSM-Tree Storage Engine with WAL logging, in-memory MemTable, SSTables, and Bloom Filter checks:
 
@@ -190,7 +190,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 LSM-Tree Gotchas & Best Practices
+## LSM-Tree Gotchas & Best Practices
 
 When tuning LSM Tree databases:
 
@@ -202,7 +202,7 @@ When tuning LSM Tree databases:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 High-throughput storage engines utilizing LSM Trees (such as **RocksDB**) report:
 * **Over 500,000 Writes per Second per Node**: Transforming random disk I/O into sequential SSTable flushes saturates NVMe SSD write bandwidth.
 * **$3\times$ Lower Disk Wear**: Sequential appends reduce SSD flash write amplification compared to in-place page overwrites.

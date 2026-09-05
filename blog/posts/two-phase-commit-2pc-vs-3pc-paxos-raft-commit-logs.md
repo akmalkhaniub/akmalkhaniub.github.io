@@ -16,7 +16,7 @@ This article details 2PC Prepare/Commit phases, Coordinator blocking vulnerabili
 
 ---
 
-## 📖 Distributed Atomic Commit Architecture
+## Distributed Atomic Commit Architecture
 
 How classic Two-Phase Commit (2PC) operates, its blocking flaw, and how Raft consensus groups make 2PC fault-tolerant:
 
@@ -64,7 +64,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: 2PC Coordinator & Raft Consensus Replicator
+## Python Implementation: 2PC Coordinator & Raft Consensus Replicator
 
 Here is a production-grade Python implementation of a 2PC Transaction Coordinator integrated with a Raft-replicated state log:
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Distributed Transaction Gotchas & Best Practices
+## Distributed Transaction Gotchas & Best Practices
 
 When engineering multi-shard database architectures:
 
@@ -156,7 +156,7 @@ When engineering multi-shard database architectures:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Consensus-backed atomic commit protocols (in **Google Spanner**, **CockroachDB**, and **YugabyteDB**) report:
 * **Zero 2PC Lock Deadlocks on Coordinator Crashes**: Replicating transaction coordinator state via Raft consensus allows instant leader failover without stalling database locks.
 * **$100\%$ Multi-Shard ACID Integrity**: Guarantees zero partial commit corruptions across globally distributed database clusters.

@@ -45,7 +45,7 @@ graph LR
 
 ---
 
-## 🛠️ The Architectural Alignment Guide
+## The Architectural Alignment Guide
 
 ### Use **LangGraph** If:
 1.  Your system requires complex loops, conditional branches, and human-in-the-loop approvals (e.g., procurement pipelines, medical triage).
@@ -69,7 +69,7 @@ graph LR
 
 ---
 
-## 📋 Framework Selection Checklist
+## Framework Selection Checklist
 
 *   [ ] **State Checkpointing requirement**: If your task requires resuming execution from step 8 after a failure, select a framework with first-class database checkpointing (e.g., **LangGraph**).
 *   [ ] **Type-Safety Audit**: If building enterprise Python applications, consider strict validation libraries (e.g., **PydanticAI**) to enforce tool signatures at the compiler level.
@@ -77,7 +77,7 @@ graph LR
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Selecting the right agentic framework requires balancing the trade-offs between developer autonomy and deterministic control.
 1. **Architectural Alignment is Critical:** Graph-based frameworks like LangGraph offer maximum determinism and state persistence for complex enterprise workflows, while declarative frameworks like CrewAI excel at rapid, role-based prototyping.
@@ -86,7 +86,7 @@ Selecting the right agentic framework requires balancing the trade-offs between 
 
 *Takeaway:* *Always prioritize state control and execution determinism over initial prototyping speed when building production-ready multi-agent systems.*
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **MAFBench Study**: *Understanding Multi-Agent LLM Frameworks: A Unified Benchmark and Experimental Analysis* (February 2026). Evaluates frameworks on orchestration overhead, execution accuracy, and memory retention. [arXiv:2602.04952](https://arxiv.org/abs/2602.04952) (Needs verification)
 *   **Engineering MAS Taxonomy**: *Engineering LLM-based Multi-Agent Systems: A Taxonomy of Emerging Frameworks* (June 2026). Compares graph-based, actor-based, and serverless agent frameworks. [diva-portal.org](https://diva-portal.org/) (Needs verification)

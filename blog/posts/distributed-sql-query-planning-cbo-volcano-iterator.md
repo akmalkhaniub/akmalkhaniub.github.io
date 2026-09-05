@@ -12,7 +12,7 @@ This article details Volcano iterator interfaces, Cost-Based Optimization formul
 
 ---
 
-## 📖 Distributed SQL Query Planning & Execution Architecture
+## Distributed SQL Query Planning & Execution Architecture
 
 How SQL queries are transformed from declarative text to a distributed Volcano execution graph:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Distributed SQL Volcano Engine with Hash Join
+## Python Implementation: Distributed SQL Volcano Engine with Hash Join
 
 Here is a production-grade Python implementation of a Distributed SQL Query Execution Engine featuring the Volcano Iterator Model, Physical Hash Join, and Exchange Operators:
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Distributed SQL Gotchas & Best Practices
+## Distributed SQL Gotchas & Best Practices
 
 When engineering distributed query engines:
 
@@ -191,7 +191,7 @@ When engineering distributed query engines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Query engines using CBO and Vectorized Volcano execution (such as **Trino**, **ClickHouse**, and **CockroachDB**) report:
 * **Over $20\times$ Faster Complex Multi-Join Queries**: Cost-Based Optimization selects minimal-network physical join strategies.
 * **Petabyte-Scale Interactive Analytics**: Streaming Exchange operators execute queries across thousands of distributed cluster nodes with sub-second response times.

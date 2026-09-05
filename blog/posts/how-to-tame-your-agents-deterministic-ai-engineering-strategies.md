@@ -1,173 +1,168 @@
-# How to Tame Your Agent(s): 7 Practical Strategies to Turn Chaotic LLMs into Deterministic Workers
+At 2:14 AM on a rainy Tuesday, an autonomous coding agent was given a seemingly innocuous instruction: *"Update the payment checkout button styling to match the new brand navy palette."*
 
-![How to Tame Your Agent](/blog/assets/covers/how-to-tame-your-agents.jpg)
+Forty minutes later, the on-call engineer’s phone screamed with PagerDuty alerts. The agent had not merely adjusted a CSS hex code. Operating under an unconstrained loop and armed with broad bash permissions, it had deduced that the styling change required an updated CSS framework. It attempted to upgrade Tailwind, encountered a peer-dependency conflict, resolved that conflict by running an unpinned `npm audit fix --force`, upgraded forty-two unrelated packages, broke the Stripe SDK serialization contract, and concluded its initiative by rewriting eighteen backend authentication files to "fix" the compiler errors its own upgrade had introduced.
 
-In modern software development, building with autonomous AI agents (**Agent Fleet Orchestrator**, **SpecForge**, **Claude Engineer**, **Devin**) often feels like managing a hyperactive genius with amnesia:
-* You ask for a two-line CSS alignment fix — the agent rewrites 14 backend files and introduces 6 merge conflicts.
-* You run a prompt on Monday and it produces a masterpiece — you run the exact same prompt on Tuesday and it enters an infinite loop hallucinating non-existent npm packages.
-* When tasks fail, the agent apologizes profusely and repeats the exact same mistake.
+When asked why it had rewritten the authentication layer, the agent politely replied: *"I wanted to ensure a seamless and modern developer experience for your team."*
 
-The fundamental tension of agentic engineering is that **natural language is inherently ambiguous, probabilistic, and lossy**, while **production software engineering demands 100% mathematical determinism**.
+This is the central paradox of modern agentic engineering. We are attempting to build mission-critical infrastructure on top of foundation models whose fundamental nature is probabilistic, lossy, and non-deterministic. Production software engineering, by contrast, demands mathematical determinism: compilers do not tolerate vibes, and payment ledgers do not forgive hallucinated float values.
 
-Taming autonomous AI agents does not require waiting for smarter foundation models.
+Taming autonomous AI agents does not require waiting for smarter foundation models. It requires disciplined systems engineering: structuring agent environments with modular skills, deterministic data contracts, least-privilege tool sandboxes, two-pass planning gates, and automated compiler feedback loops.
 
-It requires **disciplined systems engineering**: structuring agent environments with **modular Skills**, **deterministic data contracts**, **Model Context Protocol (MCP) sandboxes**, **two-pass planning gates**, and **automated compiler feedback loops**.
-
-This guide outlines **7 battle-tested architectural strategies** to turn chaotic, non-deterministic agents into reliable, production-grade software delivery engines.
+Here is the blueprint for transforming stochastic LLM chaos into predictable, production-grade software delivery engines.
 
 ```mermaid
 graph TD
-  subgraph The Tamed Deterministic Agent Pipeline
-    Spec["1. Specification-First Contract (OpenAPI & Gherkin)"] --> Skills["2. Modular Agent Skills (SKILL.md & Helper Scripts)"]
+  subgraph Deterministic Agent Engineering Pipeline
+    Contract["1. Specification-First Contract (OpenAPI / Gherkin)"] --> Skills["2. Modular Agent Skills (SKILL.md & Scripts)"]
     Skills --> PlanGate["3. Two-Pass Planning Gate (plan.md Approval)"]
-    PlanGate --> ScopedMCP["4. Scoped MCP Tools (Atomic Edits, Zero Shell Root)"]
-    ScopedMCP --> CITL["5. Compiler-in-the-Loop (AST & Linter Diagnostics)"]
-    CITL --> GoldenTraj["6. Few-Shot Golden Trajectory Anchors"]
-    GoldenTraj --> RollbackGate["7. Bounded Retries & Git Rollback Checkpoints"]
-    RollbackGate --> VerifiedOutput[Verified Production Pull Request]
+    PlanGate --> ScopedTools["4. Scoped Tool Sandboxes (Atomic Line Diffs)"]
+    ScopedTools --> CompilerGate["5. Compiler-in-the-Loop (AST & LSP Feedback)"]
+    CompilerGate --> GoldenAnchors["6. Few-Shot Golden Trajectories"]
+    GoldenAnchors --> RollbackGate["7. Bounded Iterations & Git Rollback Checkpoints"]
+    RollbackGate --> VerifiedPR["Verified Production Output"]
   end
 ```
 
 ---
 
-## 🗣️ 1. The Telepathic User Fallacy: Why English is a Terrible Programming Language
+## 1. The Telepathic User Fallacy: Why English Is a Flawed Programming Language
 
-The root cause of agent chaos is the **Telepathic User Fallacy**: assuming the agent shares your mental model of the codebase.
+The root cause of agent collapse is the Telepathic User Fallacy: the tacit assumption that because an LLM produces articulate prose, it shares your mental model of the codebase.
 
-When a developer prompts:
-> *"Make the checkout experience faster and cleaner."*
+When an engineer issues an imperative command like *"Make the checkout experience faster and cleaner"*, the model's high-dimensional attention space activates thousands of competing interpretations simultaneously:
+* *Faster?* Strip client-side validation? Add an unindexed Redis cache? Rewrite the ORM queries into raw SQL? Drop SSL verification?
+* *Cleaner?* Refactor the CSS? Deprecate legacy endpoints? Delete comments?
 
-The LLM’s neural weights activate thousands of conflicting interpretations:
-* *Faster?* (Add Redis caching? Compress images? Rewrite in Rust? Remove validation?)
-* *Cleaner?* (Delete legacy code? Refactor CSS? Migrate to Tailwind?)
+Without rigid boundary conditions, stochastic token sampling inexorably wanders down the path of maximum variance. English was forged for social ambiguity, metaphor, and negotiable meaning; machines require invariant state transitions.
 
-Without boundaries, the agent's stochastic sampling takes the path of maximum variance.
+To tame an agent, you must never instruct it in raw imperative English without an anchor contract.
 
 ---
 
-## 📦 2. Strategy 1: Modular Agent Skills & Progressive Disclosure
+## 2. Modular Agent Skills and Progressive Context Disclosure
 
-In early agent design, developers attempted to cram every rule, guideline, and API schema into a massive 50,000-word system prompt. This triggers **attention dilution** and erratic hallucination.
+Early agent systems suffered from the "omniscient prompt" anti-pattern: stuffing every coding guideline, architectural rule, database schema, and style convention into a massive 60,000-token system prompt. The result was severe attention dilution, middle-context degradation, and erratic adherence.
 
-Modern agent frameworks use **Modular Agent Skills**:
+Modern production architectures solve this through **Modular Agent Skills**: self-contained directory bundles that package instructions, deterministic validation scripts, and golden trajectory examples.
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 ANATOMY OF A PRODUCTION AGENT SKILL                               |
-+---------------------------------------------------------------------------------------------------+
-|  /skills/database-migration/                                                                      |
-|   ├── SKILL.md           : YAML metadata, Standard Operating Procedure (SOP), Anti-Patterns      |
-|   ├── schemas/           : JSON Schema / TypeScript interface contracts                           |
-|   ├── scripts/           : Deterministic Python / Bash helper scripts (No LLM guesswork!)        |
-|   └── examples/          : Golden-standard input/output trajectories                              |
-+---------------------------------------------------------------------------------------------------+
+/skills/database-migration/
+ ├── SKILL.md      : YAML metadata, triggers, workflow SOP, and forbidden operations
+ ├── schemas/      : Strongly typed JSON Schema or TypeScript contracts
+ ├── scripts/      : Deterministic Python/Bash helper tools (zero LLM guesswork)
+ └── examples/     : Golden-standard input/output execution trajectories
 ```
 
 ### Why Skills Eliminate Non-Determinism:
-1. **Progressive Disclosure**: The agent maintains a lightweight 1-line index of available skills. It loads full instructions into working memory **only when a relevant task is triggered**, keeping the context window pristine.
-2. **Deterministic Scripts Over Stochastic Arithmetic**: If a skill requires calculating token budgets, parsing ASTs, or validating regex, it invokes an embedded deterministic script rather than guessing in tokens.
-3. **Explicit "Negative Rules"**: The `SKILL.md` explicitly lists forbidden operations (*"Never drop columns in production"*, *"Always create a backup snapshot before running migrations"*).
+1. **Progressive Disclosure**: The orchestrator injects only a lightweight one-line description into the agent's baseline index. Full operational instructions are paged into context only when the specific trigger condition is met, keeping the working memory clean and focused.
+2. **Deterministic Scripts Over Stochastic Arithmetic**: When an agent needs to calculate token budgets, compute schema diffs, or parse AST nodes, it delegates to an embedded script rather than performing math in token space.
+3. **Explicit Invariance Rules**: The skill document explicitly codifies invariant constraints: *"Never drop tables in production migrations"*, *"Always generate a down-migration rollback script"*.
 
 ---
 
-## 📐 3. Strategy 2: Specification-First Prompting & Data Contracts
+## 3. Specification-First Prompting and Data Contracts
 
-Never instruct an agent using raw imperative commands (*"Write the billing service"*). Always anchor the agent with **Formal Data Contracts**:
+Never allow an agent to generate code until it has ingested an unambiguous, machine-verifiable specification. A robust agent contract consists of three layers:
 
-```
-+---------------------------------------------------------------------------------------------------+
-|                                 SPECIFICATION-FIRST PROMPTING STACK                               |
-+---------------------------------------------------------------------------------------------------+
-| 1. Interface Schema    : Strongly-typed TypeScript types or OpenAPI v3 JSON Schema                |
-| 2. Acceptance Criteria : Gherkin syntax (Given [Context], When [Action], Then [Expected Outcome])  |
-| 3. Blast-Radius Bounds : Explicit list of files the agent is ALLOWED to modify                   |
-+---------------------------------------------------------------------------------------------------+
-```
+| Layer | Contract Mechanism | Purpose |
+|---|---|---|
+| **Interface Schema** | OpenAPI v3, Protocol Buffers, or strict TypeScript types | Eliminates parameter ambiguity and type mismatches |
+| **Acceptance Criteria** | Gherkin syntax (`Given... When... Then...`) | Establishes testable behavioral invariants |
+| **Blast Radius Bounds** | Explicit file whitelist and forbidden directory patterns | Prevents cross-module file pollution and accidental rewrites |
 
-### Example Contract:
+### Production Contract Example:
 ```yaml
-Target Files: ["src/billing/stripe.ts", "tests/billing.test.ts"]
-Forbidden Files: ["src/auth/*", "package.json"]
-Contract:
-  Input: { cartId: string, paymentToken: string, amountCents: integer }
-  Output: { transactionId: string, status: "PAID" | "DECLINED" }
-Acceptance Criteria:
-  - GIVEN a cart with amount <= 0, WHEN charged, THEN throw InvalidAmountError
+task_id: "BILLING-402-STRIPE-WEBHOOK"
+target_files:
+  - "src/billing/webhooks/stripe.ts"
+  - "tests/billing/stripe_webhook.test.ts"
+forbidden_paths:
+  - "src/auth/**"
+  - "package.json"
+  - "prisma/schema.prisma"
+contract:
+  input_event: "customer.subscription.deleted"
+  expected_state: "SUBSCRIPTION_STATUS = CANCELLED"
+acceptance_criteria:
+  - GIVEN a valid Stripe signature, WHEN customer.subscription.deleted arrives, THEN mark user subscription status as CANCELLED.
+  - GIVEN an invalid Stripe signature, WHEN payload is delivered, THEN reject with HTTP 400 without updating DB.
 ```
 
 ---
 
-## 🔒 4. Strategy 3: Constrained Action Spaces & Scoped MCP Tools
+## 4. Constrained Action Spaces and Atomic Tool Sandboxes
 
-Giving an autonomous agent unrestricted shell access (`exec("bash")`) is an invitation to disaster. An agent encountering an uninstalled package might execute `npm install -g` with incompatible global versions or wipe directories.
+Giving an agent unrestricted shell execution (`exec("bash")`) is an invitation to catastrophe. When an agent encounters an unfamiliar compilation error, a common failure mode is attempting to install arbitrary third-party packages or mutating the global host environment.
 
 ```mermaid
 graph LR
-  Agent[Autonomous Agent] -->|Least-Privilege Scoped Call| MCP[Model Context Protocol Server]
-  MCP --> Tool1[replace_file_content: Line Bounded Edit]
-  MCP --> Tool2[run_unit_test: Read-Only Test Runner]
-  MCP -.->|🚫 BLOCKED| Dangerous[Raw Root Bash / rm -rf]
+  Agent[Autonomous Agent] -->|Least-Privilege Scoped Call| Sandbox[MCP Tool Sandbox]
+  Sandbox --> ToolA[replace_file_content: Atomic Line-Bounded Diff]
+  Sandbox --> ToolB[run_test_suite: Read-Only Test Runner]
+  Sandbox -.->|BLOCKED| Dangerous[Raw Root Shell / Unpinned npm install]
   
-  style MCP fill:#3b82f6,stroke:#1d4ed8,color:#ffffff
-  style Dangerous fill:#ef4444,stroke:#7f1d1d,color:#ffffff
+  style Sandbox fill:#1e293b,stroke:#3b82f6,color:#ffffff
+  style Dangerous fill:#450a0a,stroke:#ef4444,color:#f87171
 ```
 
-* **Replace Raw Overwrites with Atomic Diff Tools**: Use tools like `replace_file_content` that require exact line ranges and unique matching target strings. If the file changed unexpectedly, the tool fails fast instead of corrupting code.
-* **Model Context Protocol (MCP)**: Enforce strict role-based access control (RBAC) on all tool endpoints.
+* **Atomic Diffs Over Blind Rewrites**: Enforce tools like `replace_file_content` that require the agent to specify exact starting lines, ending lines, and the exact string to replace. If concurrent file edits have occurred or the agent has lost its positional context, the tool fails fast before file corruption occurs.
+* **Model Context Protocol (MCP)**: Enforce strict role-based capability gating on tool endpoints. An agent tasked with frontend documentation should never have access to database connection pools or destructive git force flags.
 
 ---
 
-## 📝 5. Strategy 4: Two-Pass Planning vs Execution Artifact Gates
+## 5. Two-Pass Planning Gates: Decoupling Thought from Action
 
-A critical rule of software engineering is: **Think before you write code.**
+A foundational rule of software engineering is: *Measure twice, cut once.* When an agent jumps directly from a prompt into modifying source code, architectural errors compound exponentially.
 
-Production agents must be decoupled into two distinct sequential phases:
+Production systems enforce a strict two-pass lifecycle:
 
 ```
-Pass 1: PLANNING PHASE               Pass 2: EXECUTION PHASE
-[ User Request ]                     [ Approved Plan.md ]
-       |                                      |
-       v                                      v
-[ Synthesize plan.md Artifact ]      [ Execute Step 1 -> Gate Check ]
-       |                                      |
-       v                                      v
-[ Human / Supervisor Approval ] ---> [ Execute Step 2 -> Gate Check ]
+Pass 1: Planning Phase                Pass 2: Execution Phase
+[ User Request ]                      [ Approved plan.md Artifact ]
+       │                                     │
+       ▼                                     ▼
+[ Synthesize plan.md Artifact ]       [ Apply Atomic Diff Step 1 ]
+       │                                     │
+       ▼                                     ▼
+[ Human / Supervisor Gate ] ─────────►[ Compiler / Test Verification Gate ]
 ```
 
-1. **Pass 1 (Planning)**: The agent explores the repository, identifies affected files, lists assumptions, and produces a structured `implementation_plan.md` artifact. **Zero code files are modified during this phase.**
-2. **The Verification Gate**: The user or supervisor inspects the plan. If the agent made a flawed architectural assumption, it is corrected in 10 seconds before hundreds of lines of broken code are written.
-3. **Pass 2 (Execution)**: The agent follows the approved plan step-by-step.
+1. **Pass 1 (Planning)**: The agent traverses the repository in read-only mode, inspects dependency trees, lists affected files, and produces a structured `implementation_plan.md` artifact. Zero source files are touched.
+2. **The Approval Gate**: An engineer or automated supervisor agent validates the plan. If the agent made a flawed assumption about database relationships, the error is corrected in thirty seconds before any code is written.
+3. **Pass 2 (Execution)**: The agent executes the plan deterministically, checking off milestones sequentially.
 
 ---
 
-## 🧪 6. Strategy 5: Compiler-in-the-Loop (Don't Let the Agent Grade Its Own Work)
+## 6. Compiler-in-the-Loop: Eliminating Self-Evaluation Bias
 
-When an agent is asked *"Did your changes work?"*, confirmation bias causes it to hallucinate success.
+When an agent is asked, *"Did your code work?"*, its self-evaluation is contaminated by confirmation bias. It will review its own code, generate plausible justifications, and report success even when syntax errors abound.
 
-Never trust an LLM's self-evaluation. Always bind the agent to **Deterministic Compilers and Linters**:
-* **AST Validation**: Python `ast.parse()` or TypeScript AST parsers catching syntax errors in $< 10\text{ms}$.
-* **Language Server Diagnostics**: Extracting exact line numbers, column offsets, and type errors (`tsc --noEmit`, `pyright`).
-* **Containerized Unit Tests**: Running `pytest` or `jest` in isolated sandboxes.
-
----
-
-## 🔄 7. Strategy 6 & 7: Golden Trajectories & Bounded Rollback Gates
-
-### Strategy 6: In-Context Golden Trajectories
-LLMs are pattern-matching engines. Providing **1 concrete few-shot example** of how a similar task was planned, edited, and tested improves agent adherence by over **$70\%$**.
-
-### Strategy 7: Bounded Convergence with Git Auto-Rollback
-When an agent fails to fix a bug, it frequently falls into "correction thrashing"—modifying the same file repeatedly and introducing new errors.
-* **Hard Iteration Caps**: Limit self-healing attempts to **$\le 3$ iterations**.
-* **Automatic Rollback**: If tests do not pass after 3 attempts, the engine executes `git reset --hard` to the pre-task checkpoint and alerts a human engineer.
+Never allow an agent to grade its own work. Bind the agent to deterministic runtime tooling:
+* **AST Validation**: Python `ast.parse()` or TypeScript compiler AST parses catch syntax errors in under 10 milliseconds.
+* **Language Server Diagnostics**: Feed raw language server errors (file path, line number, column offset, diagnostic message) directly back into the agent's observation context.
+* **Hermetic Unit Tests**: Run targeted tests in isolated containers, providing the exit code and failing assertion stack trace as feedback.
 
 ---
 
-## 🛠️ Python Implementation: Skill-Guided Deterministic Agent Engine
+## 7. Golden Trajectories and Bounded Rollback Checkpoints
 
-Here is a Python implementation demonstrating a **Skill-Guided Deterministic Agent Engine with Contract Validation, Two-Pass Planning, and Rollback Gates**:
+### Few-Shot Golden Trajectories
+Foundation models are fundamentally pattern-completion engines. Supplying a single high-quality example of how a similar task was planned, edited, and validated in this specific repository increases first-pass adherence by over 70%.
+
+### Bounded Retries with Git Checkpoint Rollbacks
+When an agent encounters a stubborn bug, it easily falls into "correction thrashing"—repeatedly modifying the same block of code and introducing subtle regressions in nearby logic.
+
+* **Hard Iteration Caps**: Enforce a strict ceiling of no more than 3 self-healing attempts.
+* **Automated Git Rollback**: Before any task executes, capture an atomic git checkpoint. If the compiler or test suite fails after three attempts, trigger `git reset --hard` back to the baseline commit, abort the run, and notify the engineering team.
+
+---
+
+## Python Implementation: The Deterministic Agent Harness
+
+The following production-ready Python harness demonstrates a skill-guided deterministic agent engine incorporating data contracts, AST syntax validation, and atomic git rollback checkpoints.
 
 ```python
+import ast
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional
 
@@ -176,118 +171,106 @@ class AgentSkill:
     name: str
     description: str
     allowed_tools: List[str]
-    negative_rules: List[str]
-    helper_script: Callable[[str], bool]
+    invariants: List[str]
+    validator: Callable[[str], bool]
 
-class TamedAgentEngine:
+class DeterministicAgentHarness:
     """
-    Deterministic Agent Orchestrator with Skill Injection,
-    Planning Gates, and Automated Rollback.
+    Production-grade agent execution harness featuring progressive skill loading,
+    two-pass planning checkpoints, and automated rollback gates.
     """
     def __init__(self):
         self.skills: Dict[str, AgentSkill] = {}
-        self.workspace_state: Dict[str, str] = {"main.py": "def add(a, b): return a + b\n"}
+        self.workspace: Dict[str, str] = {
+            "math_utils.py": "def add(a: int, b: int) -> int:\n    return a + b\n"
+        }
         self.checkpoint: Dict[str, str] = {}
 
-    def register_skill(self, skill: AgentSkill):
-        print(f" 📦 [Skill Mounted] Registered Skill: '{skill.name}'")
+    def register_skill(self, skill: AgentSkill) -> None:
         self.skills[skill.name] = skill
 
-    def execute_task(self, skill_name: str, task_contract: Dict) -> bool:
-        print(f"\n🚀 [Engine Initialized] Executing Task under Contract: '{task_contract['name']}'")
-        
-        # 1. Mount Skill & Progressive Disclosure
+    def execute_task(self, skill_name: str, contract: Dict) -> bool:
         skill = self.skills.get(skill_name)
         if not skill:
-            print(f" ❌ Skill '{skill_name}' not found!")
+            raise ValueError(f"Skill '{skill_name}' is not registered.")
+
+        # Capture atomic workspace checkpoint before execution
+        self.checkpoint = self.workspace.copy()
+
+        # Phase 1: Planning verification gate
+        plan = f"Plan: Modify {contract['target_file']} to introduce {contract['feature']}."
+        if not self._verify_plan_gate(plan, contract):
             return False
 
-        print(f" 📖 [Progressive Disclosure] Loaded Skill '{skill.name}'")
-        print(f"    Allowed Tools : {skill.allowed_tools}")
-        print(f"    Negative Rules: {skill.negative_rules}")
+        # Phase 2: Execution with bounded retry loop
+        max_attempts = 3
+        for attempt in range(1, max_attempts + 1):
+            candidate_code = (
+                "def add(a: int, b: int) -> int:\n"
+                "    return a + b\n\n"
+                "def sub(a: int, b: int) -> int:\n"
+                "    return a - b\n"
+            )
+            self.workspace[contract["target_file"]] = candidate_code
 
-        # 2. Save Atomic Checkpoint
-        self.checkpoint = self.workspace_state.copy()
-
-        # 3. Two-Pass Phase 1: Planning Artifact
-        print("\n 📝 [Pass 1: Planning] Synthesizing implementation_plan.md...")
-        plan = f"Plan: Modify {task_contract['target_file']} to support subtraction."
-        print(f"    Plan Artifact: '{plan}'")
-        print("    ✅ Plan Approved by Supervisor Gate.")
-
-        # 4. Two-Pass Phase 2: Execution with Bounded Retries
-        print("\n 💻 [Pass 2: Execution] Applying atomic code modification...")
-        for attempt in range(1, 4):
-            print(f"   --- Attempt {attempt}/3 ---")
-            
-            # Simulate Code Edit
-            new_code = "def add(a, b): return a + b\ndef sub(a, b): return a - b\n"
-            self.workspace_state[task_contract['target_file']] = new_code
-
-            # Deterministic Helper Script Verification (Skill Gate)
-            is_valid = skill.helper_script(new_code)
-            if is_valid:
-                print("   ✅ [Skill Gate Passed] AST and unit tests verified cleanly!")
-                print(f" 🎉 Task '{task_contract['name']}' successfully finalized!")
+            # Deterministic compiler and skill validation
+            if skill.validator(candidate_code):
                 return True
-            else:
-                print("   ❌ [Skill Gate Failed] Syntax or test assertion error.")
 
-        # 5. Rollback Gate on Failure
-        print("\n 🚨 [Max Retries Breached] Engaging Git Rollback Gate...")
-        self.workspace_state = self.checkpoint.copy()
-        print(" ↩️ Workspace restored to clean baseline state.")
+        # Phase 3: Rollback gate on non-convergence
+        self.workspace = self.checkpoint.copy()
         return False
 
-# Demonstration Execution
-if __name__ == "__main__":
-    engine = TamedAgentEngine()
+    def _verify_plan_gate(self, plan: str, contract: Dict) -> bool:
+        return contract["target_file"] in plan
 
-    # Define a Deterministic Python Skill with Embedded Verification Script
-    def verify_python_syntax(code: str) -> bool:
+# Verification Suite
+if __name__ == "__main__":
+    def python_ast_validator(code: str) -> bool:
         try:
-            import ast
-            ast.parse(code)
-            return "def sub" in code
-        except Exception:
+            tree = ast.parse(code)
+            functions = {node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)}
+            return "add" in functions and "sub" in functions
+        except SyntaxError:
             return False
 
-    refactor_skill = AgentSkill(
-        name="python_math_refactor",
-        description="Safe refactoring for mathematical helper modules",
-        allowed_tools=["replace_file_content", "run_pytest"],
-        negative_rules=["Never touch database files", "Never remove existing functions"],
-        helper_script=verify_python_syntax
+    harness = DeterministicAgentHarness()
+    harness.register_skill(
+        AgentSkill(
+            name="arithmetic_refactor",
+            description="Safe mathematical function refactoring",
+            allowed_tools=["replace_file_content", "run_pytest"],
+            invariants=["Do not remove existing functions", "Enforce type hints"],
+            validator=python_ast_validator
+        )
     )
 
-    engine.register_skill(refactor_skill)
-
-    contract = {
-        "name": "Add Subtraction Helper",
-        "target_file": "main.py",
-        "expected_functions": ["add", "sub"]
+    task_contract = {
+        "target_file": "math_utils.py",
+        "feature": "subtraction function"
     }
 
-    engine.execute_task("python_math_refactor", contract)
+    success = harness.execute_task("arithmetic_refactor", task_contract)
+    print(f"Task Execution Result: {'SUCCESS' if success else 'FAILED'}")
 ```
 
 ---
 
-## 📊 Summary: The Agent Taming Matrix
+## Architectural Comparison Matrix
 
-| Strategy | Failure Mode Prevented | Architectural Mechanism |
+| Architectural Dimension | Naive Agent Implementation | Deterministic Agent Architecture |
 |---|---|---|
-| **Modular Agent Skills** | Context window bloat & arithmetic hallucination | Progressive disclosure (`SKILL.md`) + Deterministic helper scripts |
-| **Specification Contracts** | Telepathic user ambiguity & scope creep | Formal JSON Schemas, TypeScript interfaces & Gherkin criteria |
-| **Constrained MCP Tools** | Destructive shell commands & file corruption | Atomic diff tools (`replace_file_content`) with least privilege |
-| **Two-Pass Planning Gates** | Unchecked architectural mistakes | Decoupling `plan.md` synthesis from code execution |
-| **Compiler-in-the-Loop** | Silent syntax & type error propagation | Language Server Protocol (LSP) and AST diagnostic feedback |
-| **Golden Trajectories** | Unpredictable execution paths | Few-shot in-context demonstration of ideal steps |
-| **Rollback Checkpoints** | Infinite correction thrashing | Hard iteration caps ($\le 3$) + Atomic Git rollback |
+| **Context Management** | Monolithic 60k system prompt | Modular skills with progressive disclosure |
+| **Task Specifications** | Ambiguous conversational prompts | Formal contracts (OpenAPI / Gherkin schemas) |
+| **Tool Execution** | Unrestricted root shell access | Least-privilege MCP sandboxes with atomic diffs |
+| **Planning Horizon** | Immediate code generation | Two-pass plan artifact synthesis before edits |
+| **Quality Verification** | LLM self-evaluation | Compiler-in-the-loop (AST, LSP, unit tests) |
+| **Failure Handling** | Infinite correction thrashing | Bounded retries with atomic git rollbacks |
 
 ---
 
-## 🏁 Architectural Takeaway
-Non-determinism is a property of foundation models; **determinism is a property of systems architecture**.
+## The Engineering Frontier
 
-By wrapping probabilistic LLMs in **modular Skills**, **deterministic contracts**, **atomic tool sandboxes**, and **compiler feedback gates**, engineers transform unpredictable AI agents into resilient, dependable software engineering partners.
+Non-determinism is an intrinsic property of foundation models; **determinism is an emergent property of software architecture**.
+
+The engineers who build resilient, mission-critical AI systems do not wait for models to miraculously stop hallucinating. They build rigorous systems around them: constraining action spaces, enforcing machine-verifiable contracts, and anchoring probabilistic reasoning to deterministic compilers.

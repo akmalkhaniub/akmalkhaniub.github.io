@@ -6,7 +6,7 @@ To support high-throughput agent loops under 50ms per token, we must optimize se
 
 ---
 
-## 📖 The Production Bottleneck: KV Cache Allocation
+## The Production Bottleneck: KV Cache Allocation
 
 In autoregressive generation, the model predicts tokens one-by-one. To speed up calculations, the key-value (KV) states of all previous tokens are cached in VRAM (the **KV Cache**).
 
@@ -29,7 +29,7 @@ graph TD
 
 ---
 
-## 🛠️ Production-Grade vLLM Serving Configuration
+## Production-Grade vLLM Serving Configuration
 
 Here is a Python script to initialize a high-throughput vLLM engine instance for a quantized 4-bit AWQ model, configuring PagedAttention parameters and KV cache limits for production.
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚖️ Quantization Trade-offs (AWQ vs. GGUF vs. GPTQ)
+## Quantization Trade-offs (AWQ vs. GGUF vs. GPTQ)
 
 When selecting a serving model, developers must choose the appropriate format:
 
@@ -107,7 +107,7 @@ When selecting a serving model, developers must choose the appropriate format:
 
 ---
 
-## ⚠️ Important Pitfalls in Model Serving
+## Important Pitfalls in Model Serving
 
 Keep these constraints in mind to prevent service interruptions:
 

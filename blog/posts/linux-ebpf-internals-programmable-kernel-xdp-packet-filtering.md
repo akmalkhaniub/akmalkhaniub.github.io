@@ -35,29 +35,27 @@ graph TD
 
 ---
 
-## 🔒 1. The In-Kernel Verifier: Mathematical Proof of Safety
+## 1. The In-Kernel Verifier: Mathematical Proof of Safety
 
 Unlike arbitrary kernel modules, the Linux kernel **never runs unverified eBPF bytecode**.
 
 Before an eBPF program is loaded, the **In-Kernel Verifier** performs rigorous Directed Acyclic Graph (DAG) state exploration:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 IN-KERNEL VERIFIER SAFETY CHECKS                                  |
-+---------------------------------------------------------------------------------------------------+
+> **IN-KERNEL VERIFIER SAFETY CHECKS**
 | 1. Guaranteed Termination      : Bounded loop checks (Instruction counter < 1 Million insns)      |
 | 2. Out-of-Bounds Memory Safety : Strict pointer arithmetic boundary validation                    |
 | 3. Uninitialized Read Defense  : All registers must be initialized before reading                 |
 | 4. Type State Invariants       : Socket buffers (sk_buff) accessed strictly via validated offsets |
 | 5. Privilege Separation        : Unprivileged eBPF restricted; CAP_BPF enforced                   |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 If the verifier detects even a single code branch that could dereference an unchecked memory pointer or loop infinitely, the `bpf()` syscall fails immediately with `EACCES` (Permission Denied).
 
 ---
 
-## ⚡ 2. XDP (eXpress Data Path): 10 Million Packets/Second at NIC Level
+## 2. XDP (eXpress Data Path): 10 Million Packets/Second at NIC Level
 
 In the traditional Linux networking stack, when a packet arrives at the Network Interface Card (NIC):
 1. The NIC triggers an interrupt.
@@ -77,20 +75,18 @@ graph LR
 ```
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 XDP ACTION CODES & THROUGHPUT                                     |
-+---------------------------------------------------------------------------------------------------+
+> **XDP ACTION CODES & THROUGHPUT**
 | Action Code    | Functionality                                      | Throughput (pkts/sec/core)  |
 | XDP_DROP       | Drops packet instantly at NIC ring buffer          | ~14,000,000 packets/sec     |
 | XDP_TX         | Bounces packet back out the same NIC port          | ~10,000,000 packets/sec     |
 | XDP_REDIRECT   | Forwards packet to another NIC or AF_XDP socket    | ~9,000,000 packets/sec      |
 | XDP_PASS       | Forwards packet up to standard Linux TCP/IP stack  | ~2,000,000 packets/sec      |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
 
-## 🔄 3. BPF Maps & Ring Buffers: Zero-Copy Kernel-User IPC
+## 3. BPF Maps & Ring Buffers: Zero-Copy Kernel-User IPC
 
 How does an eBPF program running inside the kernel communicate with a user-space monitoring daemon?
 
@@ -99,7 +95,7 @@ How does an eBPF program running inside the kernel communicate with a user-space
 
 ---
 
-## 🛠️ Python Implementation: eBPF Verifier & XDP Packet Filter Simulator
+## Python Implementation: eBPF Verifier & XDP Packet Filter Simulator
 
 Here is a Python implementation simulating an eBPF In-Kernel Verifier and XDP packet filtering engine:
 
@@ -195,7 +191,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: LKM vs User-Space vs eBPF
+## Summary: LKM vs User-Space vs eBPF
 
 | Dimension | Loadable Kernel Module (LKM) | User-Space Monitoring | eBPF in Linux Kernel |
 |---|---|---|---|
@@ -207,7 +203,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 eBPF represents the greatest evolution in operating system architecture since the invention of virtual memory.
 
 By transforming the Linux kernel into a **sandboxed, event-driven programmable platform**, systems engineers achieve unprecedented observability, dynamic security monitoring, and wire-speed packet processing without touching a single line of kernel C code.

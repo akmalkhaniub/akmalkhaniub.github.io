@@ -24,7 +24,7 @@ graph TD
 
 ---
 
-## 🧠 1. The Context Window Fallacy & Cognitive Load
+## 1. The Context Window Fallacy & Cognitive Load
 
 Why can't we simply append all conversation history to a 1M-token context window?
 
@@ -35,28 +35,28 @@ Why can't we simply append all conversation history to a 1M-token context window
 
 ---
 
-## 🏛️ 2. The Three-Tier Memory Hierarchy Architecture
+## 2. The Three-Tier Memory Hierarchy Architecture
 
 ```
-+-----------------------------------------------------------------------------------------+
+
 |                                 TIER 1: WORKING MEMORY                                  |
 |   In-context FIFO buffer: System Persona + Active Plan + ReAct Scratchpad (8k-32k)       |
-+-----------------------------------------------------------------------------------------+
+
                                       |   ^
                     Eviction & Summary|   |Context Injection
                                       v   |
-+-----------------------------------------------------------------------------------------+
+
 |                                 TIER 2: EPISODIC MEMORY                                 |
 |   Vector Embeddings with Temporal Decay: Past Sessions, User Actions, Completed Tasks    |
-+-----------------------------------------------------------------------------------------+
+
                                       |   ^
                           Async Sleep |   |Graph Traversal
                         Consolidation |   |
                                       v   |
-+-----------------------------------------------------------------------------------------+
+
 |                                 TIER 3: SEMANTIC GRAPH-RAG                              |
 |   Entity Knowledge Graph: (Subject)-[Predicate]->(Object), User Preferences, Core Facts  |
-+-----------------------------------------------------------------------------------------+
+
 ```
 
 ### Tier 1: Ephemeral Working Memory (The Active Scratchpad)
@@ -93,7 +93,7 @@ Where:
 
 ---
 
-## ⚡ 3. MemGPT / Letta OS Memory Paging Mechanics
+## 3. MemGPT / Letta OS Memory Paging Mechanics
 
 Inspired by operating system virtual memory management (RAM vs Disk paging), **MemGPT (Letta)** introduced function-calling tools that allow the LLM to actively manage its own memory hierarchy:
 
@@ -117,7 +117,7 @@ sequenceDiagram
 
 ---
 
-## 🛠️ Python Implementation: Multi-Tier Agent Memory Manager
+## Python Implementation: Multi-Tier Agent Memory Manager
 
 Here is a production-grade Python implementation of a 3-tier agent memory manager with working context budgeting, temporal decay scoring, and entity extraction:
 
@@ -260,7 +260,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Memory Architecture Gotchas & Best Practices
+## Memory Architecture Gotchas & Best Practices
 
 > [!IMPORTANT]
 > **Never Rely Solely on Semantic Vector Distance for Time-Sensitive Actions**: In long-running tasks, an action taken $10\text{ seconds ago}$ with moderate semantic relevance is almost always more important than a highly similar action taken $3\text{ weeks ago}$. Always apply **exponential temporal decay** to your vector retrieval scoring.
@@ -270,5 +270,5 @@ if __name__ == "__main__":
 
 ---
 
-## 🔮 Next in the Series
+## Next in the Series
 In **Post 400 (Milestone Special)**, we will synthesize these principles into **The Blueprint for Production AI Agent Swarms: 10 Architectural Principles for 99.9% Reliable Autonomous Workflows**.

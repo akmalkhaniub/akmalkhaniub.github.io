@@ -211,7 +211,7 @@ WHERE x.node_type = 'TOOL_CALL'
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To satisfy audit requirements in enterprise agent networks:
 * [ ] **Enforce parent-child keys**: Ensure every action node captures a `parent_id` reference to preserve the non-linear execution path.

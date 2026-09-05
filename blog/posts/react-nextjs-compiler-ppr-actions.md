@@ -11,7 +11,7 @@ This article reviews these architectural features and details how to build a pro
 
 ---
 
-## 🛠️ The Partial Prerendering (PPR) Request Lifecycle
+## The Partial Prerendering (PPR) Request Lifecycle
 
 Traditional rendering models forced a binary choice: either build a page statically at build time (fast, but static) or render it dynamically on every request (slow, since the user waits for data fetching). 
 
@@ -47,7 +47,7 @@ sequenceDiagram
 
 ---
 
-## 💡 Key Architectural Transformations in 2026
+## Key Architectural Transformations in 2026
 
 ### 1. The React Compiler: The End of `useMemo`
 Historically, developers spent hours debugging rendering cycles, wrapping functions in `useCallback` and objects in `useMemo` to prevent unnecessary re-renders. 
@@ -69,7 +69,7 @@ Many operations (like sending log metrics to databases, recording analytics, or 
 
 ---
 
-## 💻 Building a Server-Action Form in Next.js
+## Building a Server-Action Form in Next.js
 
 Here is a full TSX component demonstrating these features. It mutates database values, manages state via `useActionState`, updates the client instantly using `useOptimistic`, and schedules a logging task using `after()`. This mimics form controls used in frontend dashboards like [portfolio-ai-rota-manager](https://github.com/akmalkhaniub/portfolio-ai-rota-manager).
 
@@ -193,7 +193,7 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
 
 ---
 
-## 📋 Implementation Guardrails
+## Implementation Guardrails
 
 * **Server Action Security**: Always sanitize input parameters within server action scopes. Attackers can execute actions directly, bypassing client forms.
 * **Suspense Fallbacks**: Always provide meaningful skeletons or placeholders for components bounded by Suspense to ensure Partial Prerendering renders an elegant static shell.
@@ -201,7 +201,7 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 The consolidation of the full-stack JavaScript ecosystem in 2026 marks a paradigm shift in how we build and optimize web applications.
 1. **Unified Full-Stack Architecture:** The integration of React 19 Server Actions and Next.js features eliminates the need for boilerplate API routing, bridging the gap between client and server seamlessly.
@@ -212,7 +212,7 @@ The consolidation of the full-stack JavaScript ecosystem in 2026 marks a paradig
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **React 19 Actions**: [React Core Team Updates](https://react.dev/blog/2024/04/25/react-19). Specifications on action states, optimistic state hooks, and compile-time memoization.
 * **Next.js 15 Features**: [Next.js Documentation](https://nextjs.org/blog/next-15). Specifications on Partial Prerendering, server actions, and post-response execution (`after()`).

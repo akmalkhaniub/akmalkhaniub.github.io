@@ -14,7 +14,7 @@ This article details Circuit Breaker states, sliding-window error evaluation, pr
 
 ---
 
-## 📖 Circuit Breaker State Machine & Adaptive Throttling Architecture
+## Circuit Breaker State Machine & Adaptive Throttling Architecture
 
 How Circuit Breaker state transitions protect downstream microservices and how Google SRE Adaptive Throttling dynamically drops excess requests:
 
@@ -55,7 +55,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Circuit Breaker & Google SRE Adaptive Load Shedder
+## Python Implementation: Circuit Breaker & Google SRE Adaptive Load Shedder
 
 Here is a production-grade Python implementation of a Circuit Breaker State Machine and Google SRE Adaptive Load Shedding Engine:
 
@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Resilience Gotchas & Best Practices
+## Resilience Gotchas & Best Practices
 
 When configuring resilience mechanisms:
 
@@ -201,7 +201,7 @@ When configuring resilience mechanisms:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed systems adopting Resilience4j and Google SRE adaptive throttling (such as **Netflix Hystrix**, **Envoy Proxy**, and **Google Cloud**) report:
 * **100% Elimination of Cascading Outages**: Short-circuiting faulty downstream services protects upstream thread pools from queue exhaustion.
 * **Continuous System Availability Under $10\times$ Traffic Spikes**: Adaptive load shedding gracefully drops un-processable requests while keeping backend CPU utilization stable.

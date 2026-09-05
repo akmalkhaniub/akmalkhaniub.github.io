@@ -10,7 +10,7 @@ This article details how to architect a CQRS and Event Sourcing system with Kafk
 
 ---
 
-## 📖 CQRS & Event Sourcing Pipeline Architecture
+## CQRS & Event Sourcing Pipeline Architecture
 
 The flow of write commands, immutable event streams, and projected read models:
 
@@ -39,7 +39,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: CQRS & Event Sourcing Engine
+## Python Implementation: CQRS & Event Sourcing Engine
 
 Here is a production-grade Python simulation of a CQRS and Event Sourcing engine. It handles command processing, appends immutable events to an event store, and projects optimized read models:
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 CQRS & Event Sourcing Gotchas
+## CQRS & Event Sourcing Gotchas
 
 When deploying CQRS and Event Sourcing with Kafka:
 
@@ -155,7 +155,7 @@ When deploying CQRS and Event Sourcing with Kafka:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying CQRS and Event Sourcing with Kafka report:
 * **10x Write Throughput**: Appending events to partitioned Kafka logs eliminates relational database row locks.
 * **Audit-Proof System History**: Retaining immutable event logs provides complete audit trails and enables rebuilding new read models from scratch at any time.

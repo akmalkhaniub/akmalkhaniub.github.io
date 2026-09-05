@@ -36,12 +36,12 @@ flowchart TD
 **Root cause**: WebSocket upgrades require specific HTTP headers that Nginx strips by default: `Connection: Upgrade` and `Upgrade: websocket`.
 
 ```nginx
-# ❌ Standard proxy config — strips Upgrade headers
+# Standard proxy config — strips Upgrade headers
 location /ws {
     proxy_pass http://localhost:3000;
 }
 
-# ✅ WebSocket-aware Nginx config
+# WebSocket-aware Nginx config
 location /ws {
     proxy_pass http://localhost:3000;
     
@@ -390,7 +390,7 @@ function connect() {
 **Symptom**: Server memory grows linearly with total historical connections. After 24 hours, memory usage is 3× baseline.
 
 ```python
-# ❌ Connections added but never removed on disconnect
+# Connections added but never removed on disconnect
 active_connections: dict[str, WebSocket] = {}
 
 @app.websocket("/ws/{room_id}")
@@ -405,7 +405,7 @@ async def room_ws(websocket: WebSocket, room_id: str, client_id: str):
     except WebSocketDisconnect:
         pass  # ← Disconnect caught but connection NEVER removed from dict!
 
-# ✅ Always clean up on disconnect — use try/finally
+# Always clean up on disconnect — use try/finally
 class ConnectionManager:
     def __init__(self):
         self.rooms: dict[str, set[WebSocket]] = {}
@@ -484,7 +484,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) => void) {
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 WebSockets unlock true bidirectional real-time communication but bring a distinct set of production failure modes compared to SSE. The most dangerous are silent: dropped messages from buffer overflow, phantom disconnections from idle proxies, and memory leaks from missing disconnect cleanup.
 

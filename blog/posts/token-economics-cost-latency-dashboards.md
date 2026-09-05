@@ -11,7 +11,7 @@ This article details how to optimize prompt structures for **Prompt Caching**, t
 
 ---
 
-## 🛠️ Telemetry and Cost-Routing Pipeline
+## Telemetry and Cost-Routing Pipeline
 
 To audit and optimize costs, every single model call must pass through a wrapper that logs token metrics and latency data into an analytical database before resolving back to the agent application.
 
@@ -44,13 +44,13 @@ graph TD
 
 ---
 
-## 💡 Context Engineering: Prefix Caching Rules
+## Context Engineering: Prefix Caching Rules
 
 Modern LLMs (like Anthropic Claude and OpenAI GPT models) support **Prompt Caching**. Instead of paying full price to parse the entire prompt on every request, the model retrieves the Key-Value (KV) cache of previous tokens. This reduces input cost by **up to 90%** and cuts Time to First Token (TTFT) by **over 80%**.
 
 However, prompt caching is **prefix-dependent**. The cache is read sequentially from the beginning of the prompt. If a single character changes at the beginning of the prompt, the entire cache is invalidated.
 
-### ❌ Bad Prompt Layout (Invalidates Cache):
+### Bad Prompt Layout (Invalidates Cache):
 ```markdown
 [Dynamic Variable: User Name]
 [Dynamic Variable: Today's Date]
@@ -72,7 +72,7 @@ However, prompt caching is **prefix-dependent**. The cache is read sequentially 
 
 ---
 
-## 💻 Coding LLM Telemetry Middleware in Node.js
+## Coding LLM Telemetry Middleware in Node.js
 
 Here is a backend wrapper designed to intercept LLM completions, calculate costs dynamically based on cache-hit percentages, and log usage statistics, modeled on analytics frameworks in [agentic-apps-portfolio](https://github.com/akmalkhaniub/agentic-apps-portfolio).
 
@@ -137,14 +137,14 @@ async function logLLMUsage({ agentName, model, durationMs, ttftMs, usage }) {
 
 ---
 
-## 📋 Telemetry Dashboard Goals
+## Telemetry Dashboard Goals
 * **P99 Latency Audits**: Drill down into which specific agents run long-running loops or experience deep prefill delays.
 * **Cache-Hit Ratio (CHR)**: Track `(cached_tokens / input_tokens) * 100`. Strive to keep CHR above 70% for system prompts.
 * **Direct Cost Allocation**: Assign dollar figures to specific departments or features (e.g., "Research Agent" vs. "Summarizer Agent") to isolate run-away agent loops.
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Optimizing agentic workflows requires shifting from simple prompt construction to rigorous token management and observability.
 1. **Context Engineering is Critical:** Structuring prompts with static system instructions and tool definitions at the prefix ensures high prompt cache hit rates, reducing input costs by up to 90%.
@@ -155,7 +155,7 @@ Optimizing agentic workflows requires shifting from simple prompt construction t
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **Prompt Caching Benefits**: [Anthropic Prompt Caching Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching). Specifications on minimum tokens and caching performance benchmarks.
 * **Latency Optimizations**: *Tail-Optimized KV Cache Allocations*. Explains how prioritizing cached KV tensors for tail requests minimizes latency spikes. [arXiv:2501.09344](https://arxiv.org/abs/2501.09344)

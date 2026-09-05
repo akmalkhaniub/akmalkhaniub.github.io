@@ -12,7 +12,7 @@ SpecForge decouples requirements synthesis into a **Two-Pass Claude 3.5 Sonnet E
 
 ---
 
-## 📖 SpecForge System Architecture & Two-Pass Pipeline
+## SpecForge System Architecture & Two-Pass Pipeline
 
 How SpecForge ingests raw DOCX/PDF PRDs, performs two-pass hierarchical analysis, and indexes user stories into PostgreSQL:
 
@@ -60,7 +60,7 @@ graph TD
 
 ---
 
-## 🛠️ TypeScript Implementation: Two-Pass Extraction & pgvector Deduplication
+## TypeScript Implementation: Two-Pass Extraction & pgvector Deduplication
 
 Here is a core TypeScript implementation showcasing SpecForge's two-pass pipeline and vector deduplication engine:
 
@@ -194,7 +194,7 @@ export class SpecForgePipeline {
 
 ---
 
-## 🚨 Production Engineering Gotchas & Best Practices
+## Production Engineering Gotchas & Best Practices
 
 When building AI document extraction pipelines:
 
@@ -206,7 +206,7 @@ When building AI document extraction pipelines:
 
 ---
 
-## 📈 Real-World Performance Impact
+## Real-World Performance Impact
 Deploying SpecForge across enterprise engineering workflows delivers:
 * **$92\%$ Reduction in PRD Breakdown Time**: Teams convert 50-page specs into 40+ Gherkin-backed Jira tickets in under 90 seconds.
 * **$100\%$ Schema Determinism**: Structured tool calling eliminates markdown parsing syntax errors.

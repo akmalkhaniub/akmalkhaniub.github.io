@@ -11,7 +11,7 @@ This article reviews the setup, performance tradeoffs, and offline-first databas
 
 ---
 
-## 🛠️ Running Local Models via Ollama
+## Running Local Models via Ollama
 
 Ollama has become the standard execution layer for running open-weight models on local servers. It packages model weights, configurations, and runtime dependencies into a single, unified service exposed via a local HTTP server (`localhost:11434`).
 
@@ -42,7 +42,7 @@ async function generateClinicalSummary(rawTranscription: string) {
 
 ---
 
-## 📊 Cloud vs. Local Inference Performance
+## Cloud vs. Local Inference Performance
 
 Deploying local models requires understanding the performance and resource tradeoffs:
 
@@ -64,7 +64,7 @@ graph TD
 
 ---
 
-## 🔄 Offline-First Syncing: SQLite to Postgres
+## Offline-First Syncing: SQLite to Postgres
 
 A clinical assistant must save records even when the clinic is completely disconnected from the network. We implement a **Local-First Synchronization Pipeline**:
 
@@ -95,7 +95,7 @@ sequenceDiagram
 
 ---
 
-## 📋 Local-First Implementation Guardrails
+## Local-First Implementation Guardrails
 
 *   [ ] **GPU VRAM Checks**: Ensure the edge server has sufficient dedicated VRAM to hold the model weights in memory (minimum 8GB VRAM for 7B models). If memory is exceeded, execution falls back to CPU, increasing latency by 10x.
 *   [ ] **Encryption-at-Rest**: Encrypt the local SQLite database using SQLCipher to ensure patient records remain protected if the physical device is stolen.
@@ -103,7 +103,7 @@ sequenceDiagram
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Transitioning to a local-first architecture empowers healthcare applications to remain resilient, secure, and highly performant without relying on constant cloud connectivity.
 1. **Local-First Privacy & Compliance:** Running open-weight models like Mistral 7B locally via Ollama eliminates external data transmission, ensuring strict adherence to HIPAA and other data privacy regulations.
@@ -114,7 +114,7 @@ Transitioning to a local-first architecture empowers healthcare applications to 
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Local LLM Quantization**: *LLM.int8(): 8-bit Matrix Multiplication for Transformers*. Explains how model weights are compressed to run on consumer hardware. [arXiv:2208.07339](https://arxiv.org/abs/2208.07339)
 *   **Offline-First Data Sync**: [SQLCipher Database Encryption](https://www.zetetic.net/sqlcipher/). Standard for local-first database encryption.

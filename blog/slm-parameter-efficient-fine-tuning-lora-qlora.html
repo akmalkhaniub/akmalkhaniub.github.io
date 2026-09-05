@@ -107,7 +107,7 @@
 <p>To deploy highly specialized AI agents in production, we do not need massive, expensive 70B+ models. Instead, we can distill execution expertise into <strong>Small Language Models (SLMs)</strong> ranging from 1.5B to 8B parameters (such as Llama-3-8B or Qwen-2.5-7B). </p>
 <p>To teach an SLM how to reason and call tools without losing its general language capabilities, we perform <strong>Parameter-Efficient Fine-Tuning (PEFT)</strong>. This article details the mathematical foundations of Low-Rank Adaptation (LoRA/QLoRA) and provides a production-grade Python script to train an SLM on multi-step agent trajectory trees.</p>
 <hr>
-<h2>📖 The Mathematics of LoRA and QLoRA</h2>
+<h2>The Mathematics of LoRA and QLoRA</h2>
 <p>During standard full fine-tuning, every single weight parameter in the model&#39;s weight matrices ($W_0$) is modified. For an 8B model, updating 8 billion parameters requires massive GPU memory ($&gt;160$ GB VRAM) due to storing gradients and optimizer states.</p>
 <p><strong>Low-Rank Adaptation (LoRA)</strong> simplifies this by freezing the original model weights $W_0 \in \mathbb{R}^{d \times k}$ and injects trainable rank decomposition matrices. The weight update $\Delta W$ is decomposed into two low-rank matrices $B$ and $A$:</p>
 <p>$$\Delta W = B \cdot A$$</p>
@@ -121,7 +121,7 @@
   Sum --&gt; Output([Output Vector y])</div>
 <p>By only updating $B$ and $A$, we reduce the number of trainable parameters by <strong>99.9%</strong>, enabling fine-tuning on a single consumer GPU (e.g., 24GB VRAM). <strong>QLoRA</strong> takes this further by quantizing the base model weights ($W_0$) into a specialized 4-bit NormalFloat (NF4) format, reducing memory usage even more.</p>
 <hr>
-<h2>🛠️ Python Trajectory Training Script</h2>
+<h2>Python Trajectory Training Script</h2>
 <p>Here is a production-grade training script utilizing Hugging Face&#39;s <code>trl</code> (SFTTrainer), <code>peft</code>, and <code>transformers</code> to fine-tune an SLM on custom agent trajectories formatted in ChatML.</p>
 <pre><code class="language-python">import torch
 from datasets import load_dataset
@@ -215,7 +215,7 @@ trainer.train()
 print(f&quot;Saving fine-tuned adapter to {OUTPUT_DIR}&quot;)
 trainer.model.save_pretrained(OUTPUT_DIR)</code></pre>
 <hr>
-<h2>⚠️ Important Pitfalls in Fine-Tuning</h2>
+<h2>Important Pitfalls in Fine-Tuning</h2>
 <p>When fine-tuning SLMs on execution trajectories, keep these guardrails in mind:</p>
 <div class="alert alert-warning">
   <div class="alert-title"><i class="fa-solid fa-triangle-exclamation"></i> Warning</div>
@@ -228,7 +228,7 @@ trainer.model.save_pretrained(OUTPUT_DIR)</code></pre>
 </div>
 </div>
 <hr>
-<h2>📈 Real-World Production Adoption</h2>
+<h2>Real-World Production Adoption</h2>
 <p>High-performance AI platforms utilize QLoRA to customize micro-models:</p>
 <ul>
 <li><strong>Edge Diagnostics Swarms</strong>: Train 3B parameter models that interpret local system telemetry, running QLoRA fine-tuning in under 4 hours on commercial workstation GPUs.</li>

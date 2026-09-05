@@ -12,7 +12,7 @@ This article details how to implement an LLM-as-a-Judge calibration pipeline.
 
 ---
 
-## 📖 LLM-as-a-Judge Calibration Architecture
+## LLM-as-a-Judge Calibration Architecture
 
 The calibration pipeline uses human-annotated golden test suites to audit, evaluate, and tune LLM judge prompts:
 
@@ -42,7 +42,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Judge Calibration Engine
+## Python Implementation: Judge Calibration Engine
 
 Here is a production-grade Python implementation of an evaluation calibration engine that computes Cohen's Kappa agreement and performs bootstrap sampling to calculate 95% confidence intervals:
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Common Evaluation Gotchas & Guardrails
+## Common Evaluation Gotchas & Guardrails
 
 When configuring automated LLM judges:
 
@@ -153,7 +153,7 @@ When configuring automated LLM judges:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying calibrated LLM-as-a-Judge systems report:
 * **Automated CI/CD Gates**: Engineering teams run regression tests on thousands of agent traces in minutes instead of paying for slow human reviews.
 * **Rapid Prototype Iteration**: Discovering prompt degradation before releasing updates reduces regressions by 75%.

@@ -110,7 +110,7 @@
 <p>Conversely, Apache Pulsar decouples stateless message brokers from persistent storage nodes using <strong>Apache BookKeeper</strong>, delivering instant cluster scaling and zero-copy partition rebalancing.</p>
 <p>This article details Kafka sequential disk log segments, OS PageCache mechanics, Linux <code>sendfile()</code> zero-copy transfers, Apache Pulsar disaggregated architecture, and BookKeeper quorum ledger writes.</p>
 <hr>
-<h2>📖 Storage Architecture Comparison: Kafka vs Apache Pulsar</h2>
+<h2>Storage Architecture Comparison: Kafka vs Apache Pulsar</h2>
 <p>How Kafka&#39;s coupled PageCache Zero-Copy model compares to Apache Pulsar&#39;s disaggregated BookKeeper ledger architecture:</p>
 <div class="mermaid">graph TD
   subgraph Apache Kafka (Coupled Monolithic Storage &amp; Zero-Copy)
@@ -132,7 +132,7 @@
 <li><strong>Coupled Compute + Storage</strong>: Kafka broker nodes handle both client TCP connections and physical disk log partition storage (<code>/var/lib/kafka/data/topic-0/0000.log</code>).</li>
 <li><strong>OS PageCache Primacy</strong>: Kafka avoids allocating large JVM heap buffers for message caching, relying instead on the Linux kernel PageCache. This avoids JVM GC pause overhead and maximizes available RAM utilization.</li>
 <li><strong><code>sendfile()</code> Zero-Copy Transfer</strong>:<ul>
-<li><em>Traditional I/O (4 Context Switches, 2 CPU Copying Loops)</em>: Read disk to kernel buffer $\to$ Copy to JVM user buffer $\to$ Copy to socket buffer $\to$ Write to NIC.</li>
+<li><em>Traditional I/O (4 Context Switches, 2 CPU Copying Loops)</em>: Read disk to kernel buffer → Copy to JVM user buffer → Copy to socket buffer → Write to NIC.</li>
 <li><em>Linux <code>sendfile()</code> Zero-Copy (2 Context Switches, 0 CPU Copy Loops)</em>: Transfers data directly from kernel PageCache to NIC DMA buffer using Direct Memory Access (DMA), cutting CPU context switching overhead in half!</li>
 </ul>
 </li>
@@ -158,7 +158,7 @@
 </li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Kafka Zero-Copy vs Pulsar BookKeeper Engine</h2>
+<h2>Python Implementation: Kafka Zero-Copy vs Pulsar BookKeeper Engine</h2>
 <p>Here is a production-grade Python implementation of a Kafka Zero-Copy PageCache Replicator and a Pulsar BookKeeper Ledger Quorum Engine Simulator:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Tuple
@@ -243,7 +243,7 @@ if __name__ == &quot;__main__&quot;:
     pulsar = PulsarBookKeeperEngine(write_quorum=3, ack_quorum=2)
     pulsar.write_ledger_entry_quorum(ledger_id=5001, entry_data=&quot;order_fulfilled_event_99&quot;)</code></pre>
 <hr>
-<h2>🚨 Messaging Storage Gotchas &amp; Best Practices</h2>
+<h2>Messaging Storage Gotchas &amp; Best Practices</h2>
 <p>When choosing a streaming storage architecture:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -256,7 +256,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
+<h2>Real-World Enterprise Impact</h2>
 <p>Streaming storage architectures (such as <strong>Kafka PageCache Zero-Copy</strong> and <strong>Pulsar BookKeeper</strong>) report:</p>
 <ul>
 <li><strong>Over $4\times$ Higher Network Transfer Rates via Zero-Copy</strong>: Eliminating CPU user-space copying loops with Linux <code>sendfile()</code> allows Kafka brokers to saturate 100Gbps network interfaces.</li>

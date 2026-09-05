@@ -395,12 +395,12 @@ app.use(compression({
 **Root cause**: Python's async generators buffer `yield` statements depending on the ASGI server configuration and OS socket buffer sizes. You need to yield the newlines as separate flushes.
 
 ```python
-# ❌ May buffer — single yield per event
+# May buffer — single yield per event
 async def event_generator():
     async for chunk in anthropic_stream:
         yield f"data: {chunk}\n\n"  # OS may buffer this
 
-# ✅ Double-newline as separate yield forces flush in most ASGI servers
+# Double-newline as separate yield forces flush in most ASGI servers
 async def event_generator():
     async for chunk in anthropic_stream:
         token = chunk.delta.text if hasattr(chunk, 'delta') else ""
@@ -408,7 +408,7 @@ async def event_generator():
             yield f"data: {json.dumps({'token': token})}\n"
             yield "\n"  # ← Separate yield forces ASGI flush
 
-# ✅ Even better: use sys.stdout.flush() signal for Uvicorn
+# Even better: use sys.stdout.flush() signal for Uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from anthropic import AsyncAnthropic
@@ -645,7 +645,7 @@ mindmap
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 SSE is the right protocol for LLM token streaming — it's simpler than WebSockets, HTTP/2 compatible, and natively auto-reconnecting. But "simple" doesn't mean "trivial to deploy". The pitfalls are infrastructure-level, not code-level, which is why they're so hard to debug.
 

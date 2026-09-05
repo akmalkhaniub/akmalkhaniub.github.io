@@ -14,7 +14,7 @@ This article details the TrueTime API interval mechanics (`TT.now()`), External 
 
 ---
 
-## 📖 Google Spanner & TrueTime Commit Wait Architecture
+## Google Spanner & TrueTime Commit Wait Architecture
 
 How Google TrueTime bounds clock uncertainty $\epsilon$ and uses the Commit Wait Rule to guarantee global External Consistency:
 
@@ -49,7 +49,7 @@ graph TD
    * *Clock Uncertainty ($\epsilon$)*: Defined as $\epsilon = (t_{\text{latest}} - t_{\text{earliest}}) / 2$. In Google datacenters, $\epsilon$ typically ranges between $1\text{ms}$ and $7\text{ms}$.
 3. **External Consistency (Linearizability)**:
    * **Definition**: If a transaction $T_2$ begins in real-world time *after* transaction $T_1$ commits, then $T_2$'s commit timestamp $t_{s2}$ must be strictly greater than $T_1$'s commit timestamp $t_{s1}$:
-     $$\text{If } T_2 \text{ starts after } T_1 \text{ commits} \implies t_{s2} > t_{s1}$$
+     $$\text{If } T_2 \text{ starts after } T_1 \text{ commits} ⟹ t_{s2} > t_{s1}$$
 4. **The TrueTime Commit Wait Rule**:
    * To enforce External Consistency without global locking:
      1. When a Paxos leader processes transaction $T_1$, it fetches `TT.now()` and picks a commit timestamp $t_{s1} = t_{\text{latest}}$.
@@ -61,7 +61,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: TrueTime API & Commit Wait Engine
+## Python Implementation: TrueTime API & Commit Wait Engine
 
 Here is a production-grade Python implementation of a TrueTime API Engine and Spanner Commit Wait Transaction Simulator:
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 TrueTime & Spanner Gotchas & Best Practices
+## TrueTime & Spanner Gotchas & Best Practices
 
 When building globally-distributed database systems:
 
@@ -163,7 +163,7 @@ When building globally-distributed database systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Google Spanner's TrueTime architecture reports:
 * **Global External Consistency (Linearizability)**: Guarantees strict causality for multi-region transactional workloads across global datacenters.
 * **$100\%$ Lock-Free Multi-Region Reads**: Snapshot reads execute at physical TrueTime timestamps without acquiring any write locks.

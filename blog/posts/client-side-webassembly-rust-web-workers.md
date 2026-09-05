@@ -138,7 +138,7 @@ function processLargeImage(rawImageBuffer) {
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To build high-performance client-side web platforms:
 * [ ] **Never run computations on the main thread**: If it takes more than 16ms (1 frame at 60Hz) or 50ms (long task threshold), run it in a Web Worker.

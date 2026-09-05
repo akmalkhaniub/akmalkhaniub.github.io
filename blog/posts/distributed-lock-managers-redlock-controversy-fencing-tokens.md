@@ -28,7 +28,7 @@ graph TD
 
 ---
 
-## 🛑 1. Why Distributed Locking is Fundamentally Hard
+## 1. Why Distributed Locking is Fundamentally Hard
 
 Why can a distributed lock not be implemented simply by setting a key in Redis with a TTL (`SET lock_key uuid NX PX 10000`)?
 
@@ -41,17 +41,15 @@ When Client 1 pauses past its lease expiration, the lock manager grants the lock
 
 ---
 
-## ⚔️ 2. The Redlock Algorithm & The Kleppmann-Antirez Debate
+## 2. The Redlock Algorithm & The Kleppmann-Antirez Debate
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 THE 2 PURPOSES OF DISTRIBUTED LOCKS                               |
-+---------------------------------------------------------------------------------------------------+
+> **THE 2 PURPOSES OF DISTRIBUTED LOCKS**
 | Purpose 1: For Efficiency (Optimization) | Purpose 2: For Correctness (Safety)                   |
 | If the lock fails, you waste compute     | If the lock fails, you corrupt financial data or bank |
 | (e.g. 2 workers render the same video).  | balances (e.g. Double spending a customer wallet).    |
 | Redis / Redlock is sufficient!           | Redlock FAILS without Fencing Tokens!                 |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### The Redlock Algorithm (Antirez)
@@ -64,7 +62,7 @@ Kleppmann proved that Redlock relies on an unspoken synchronous network assumpti
 
 ---
 
-## 🛡️ 3. The Fencing Token Invariant (The Kleppmann Solution)
+## 3. The Fencing Token Invariant (The Kleppmann Solution)
 
 To make distributed locking provably safe for mission-critical financial systems, the lock manager and storage layer must implement **Monotonically Increasing Fencing Tokens**:
 
@@ -95,7 +93,7 @@ sequenceDiagram
 
 ---
 
-## 🐘 4. PostgreSQL Advisory Locks: The Pragmatic Alternative
+## 4. PostgreSQL Advisory Locks: The Pragmatic Alternative
 
 If your application already uses a PostgreSQL database, you often do not need to operate a separate ZooKeeper or Redis cluster.
 
@@ -117,7 +115,7 @@ SELECT pg_advisory_unlock(42);
 
 ---
 
-## 🛠️ Python Implementation: Distributed Lock Manager with Fencing Tokens
+## Python Implementation: Distributed Lock Manager with Fencing Tokens
 
 Here is a Python implementation simulating a Distributed Lock Manager with Monotonic Fencing Tokens and a Protected Storage Engine:
 
@@ -209,7 +207,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Distributed Lock Technology Matrix
+## Summary: Distributed Lock Technology Matrix
 
 | Lock Manager | Consistency Basis | Fencing Token Support | Best Used For |
 |---|---|---|---|
@@ -221,7 +219,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 A distributed lock is only as safe as the storage system that enforces it.
 
 For non-critical task deduplication, **Redis locks are fast and practical**.

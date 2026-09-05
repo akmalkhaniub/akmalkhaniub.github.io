@@ -12,7 +12,7 @@ This article details State-based (CvRDT) semi-lattices, Operation-based (CmRDT) 
 
 ---
 
-## 📖 CRDT Architecture & Bounded Semi-Lattice Merging
+## CRDT Architecture & Bounded Semi-Lattice Merging
 
 How State-Based CRDTs (CvRDT) use mathematical join semi-lattices to achieve deterministic convergence:
 
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: State-Based (CvRDT) PN-Counter & LWW-Set Engine
+## Python Implementation: State-Based (CvRDT) PN-Counter & LWW-Set Engine
 
 Here is a production-grade Python implementation of a State-Based (CvRDT) PN-Counter and LWW-Element-Set Engine Simulator:
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 CRDT Gotchas & Best Practices
+## CRDT Gotchas & Best Practices
 
 When building collaborative local-first applications:
 
@@ -180,7 +180,7 @@ When building collaborative local-first applications:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Conflict-Free Replicated Data Types (in **Figma**, **Notion**, **Linear**, **Apple Notes**, and **Redis CRDTs**) report:
 * **$100\%$ Offline Availability**: Peer-to-peer clients mutate local state instantly without waiting for network round-trips or central server lock approvals.
 * **Deterministic Real-Time Sync Convergence**: Bounded semi-lattice join operations guarantee zero data loss during multi-user concurrent document edits.

@@ -182,7 +182,7 @@ Rather than baking API keys and execution scripts directly into the main agent h
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To scale tool access for enterprise-grade agents:
 * [ ] **Enforce tool schema caching**: Avoid generating tool embeddings dynamically during execution. Cache tool schemas and description vectors inside a fast registry DB.

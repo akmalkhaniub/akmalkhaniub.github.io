@@ -10,7 +10,7 @@ This article details the Tri-Color Abstraction, Write Barriers, and Generational
 
 ---
 
-## 📖 Tri-Color Marking & Write Barrier Architecture
+## Tri-Color Marking & Write Barrier Architecture
 
 How concurrent garbage collectors track live objects while mutator threads mutate heap references:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Tri-Color GC Engine with Write Barrier
+## Python Implementation: Tri-Color GC Engine with Write Barrier
 
 Here is a production-grade Python implementation of a Concurrent Tri-Color Mark-and-Sweep Garbage Collector with Write Barrier interception:
 
@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Garbage Collection Gotchas & Best Practices
+## Garbage Collection Gotchas & Best Practices
 
 When tuning garbage collected runtimes:
 
@@ -179,7 +179,7 @@ When tuning garbage collected runtimes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Runtimes adopting Concurrent Tri-Color GC and Load Barriers (such as **Java ZGC** and **Go GC**) report:
 * **Sub-Millisecond Tail Pauses**: Reducing maximum GC STW pauses from $2,500\text{ms}$ down to **under $1\text{ms}$** across $1\text{ TB}$ heaps.
 * **Predictable p99.9 Service Latencies**: Eliminating GC pause spikes stabilizes SLA guarantees for financial trading platforms and real-time streaming engines.

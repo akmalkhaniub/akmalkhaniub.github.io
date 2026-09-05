@@ -12,7 +12,7 @@ This article details the architecture, memory model, and performance mechanics o
 
 ---
 
-## 📖 `io_uring` Shared Ring Buffer Architecture
+## `io_uring` Shared Ring Buffer Architecture
 
 How user space and kernel space communicate asynchronously via shared memory ring buffers without syscalls:
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: `io_uring` Lockless Ring Buffer Engine
+## Python Implementation: `io_uring` Lockless Ring Buffer Engine
 
 Here is a production-grade Python simulation of the `io_uring` Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffer architecture:
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 `io_uring` Implementation Gotchas
+## `io_uring` Implementation Gotchas
 
 When designing storage and networking systems around `io_uring`:
 
@@ -180,11 +180,11 @@ When designing storage and networking systems around `io_uring`:
 > **Use Fixed Buffers and Registered Files**: Standard `io_uring` requests still perform page-table lookups for buffers and file descriptors. To achieve maximum throughput, pre-register file descriptors (`IORING_REGISTER_FILES`) and pre-pin memory buffers (`IORING_REGISTER_BUFFERS`) to eliminate kernel virtual memory mapping overhead entirely.
 
 > [!CAUTION]
-> **Handle Short Reads and Linked Requests**: Storage or network reads submitted via `io_uring` may complete partially (short reads). Use `IOSQE_IO_LINK` flags to enforce sequential ordering when chaining dependent async I/O requests (e.g. `Read Header` $\to$ `Read Body`).
+> **Handle Short Reads and Linked Requests**: Storage or network reads submitted via `io_uring` may complete partially (short reads). Use `IOSQE_IO_LINK` flags to enforce sequential ordering when chaining dependent async I/O requests (e.g. `Read Header` → `Read Body`).
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Databases and web servers adopting `io_uring` (such as **RocksDB**, **Netty**, and **ScyllaDB**) report:
 * **Over 2,000,000 IOPS per CPU Core**: Achieving more than double the IOPS of traditional `epoll` or `libaio` drivers.
 * **50% Reduction in p99 Latency**: Eliminating syscall context switches stabilizes tail latencies under extreme network concurrency.

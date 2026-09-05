@@ -4,13 +4,13 @@ In distributed multi-agent systems, agents operate across different physical ser
 
 To establish true **causal order** without relying on synchronized physical clocks, systems engineers deploy **Logical Time** mechanisms—specifically **Vector Clocks**.
 
-Vector clocks track the exact causal relationship between events: determining whether Event $A$ happened before Event $B$ ($A \to B$), or whether Event $A$ and Event $B$ occurred concurrently ($A \parallel B$).
+Vector clocks track the exact causal relationship between events: determining whether Event $A$ happened before Event $B$ ($A → B$), or whether Event $A$ and Event $B$ occurred concurrently ($A \parallel B$).
 
 This article details how to construct a Vector Clock tracking engine for asynchronous multi-agent execution trajectories.
 
 ---
 
-## 📖 Causal Time & Vector Clock Architecture
+## Causal Time & Vector Clock Architecture
 
 Vector timestamp progression and concurrency detection across three agent nodes:
 
@@ -45,7 +45,7 @@ For a cluster of $N$ agent processes, each agent $i$ maintains a clock vector $V
 
 ---
 
-## 🛠️ Python Implementation: Multi-Agent Vector Clock Engine
+## Python Implementation: Multi-Agent Vector Clock Engine
 
 Here is a production-grade Python implementation of a Vector Clock engine tracking causal dependencies and detecting concurrent execution conflicts between 3 asynchronous agent workers:
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Vector Clock Gotchas & Mitigation
+## Vector Clock Gotchas & Mitigation
 
 When implementing vector clocks in large swarms:
 
@@ -167,7 +167,7 @@ When implementing vector clocks in large swarms:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams building vector clock tracking report:
 * **Zero Out-of-Order Execution Bugs**: Trajectories are strictly ordered according to true causality, regardless of physical network delay.
 * **Instant Concurrency Detection**: Identifying concurrent execution branches allows swarms to execute parallel task branches safely without state corruption.

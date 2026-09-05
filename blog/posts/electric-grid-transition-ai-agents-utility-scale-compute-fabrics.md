@@ -26,20 +26,18 @@ graph TD
 
 ---
 
-## 🏚️ 1. The Isolated Generator Anti-Pattern in Modern AI
+## 1. The Isolated Generator Anti-Pattern in Modern AI
 
 In early agent prototypes, developers build autonomous agents as self-contained monolithic silos:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                            THE ISOLATED "STEAM ENGINE" AGENT SILO (ANTI-PATTERN)                  |
-+---------------------------------------------------------------------------------------------------+
+> **THE ISOLATED "STEAM ENGINE" AGENT SILO (ANTI-PATTERN)**
 |  [ Bespoke Agent Python Script ]                                                                  |
 |   ├── Private Prompt Loop (Hardcoded ReAct while-loop)                                            |
 |   ├── Private Database Connection Pool (Saturating PostgreSQL)                                    |
 |   ├── Custom Handcrafted API Wrappers (Unshared with other agents)                                |
 |   └── Siloed Local File Memory (No knowledge shared with other enterprise agents)                |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### Why Isolated Agents Break at Enterprise Scale:
@@ -49,7 +47,7 @@ In early agent prototypes, developers build autonomous agents as self-contained 
 
 ---
 
-## ⚡ 2. The Utility-Scale Agent Compute Fabric
+## 2. The Utility-Scale Agent Compute Fabric
 
 Modern agent architecture replaces isolated scripts with a **Decoupled Compute & Tool Fabric**:
 
@@ -83,23 +81,21 @@ graph TD
 
 ---
 
-## 🔌 3. "Plugging into the Grid": Modular Fractional Agents
+## 3. "Plugging into the Grid": Modular Fractional Agents
 
 Just as the electric grid allowed factories to replace a single giant steam engine with hundreds of small, efficient electric motors, the agent grid allows software teams to deploy **hyper-specialized, fractional micro-agents**:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 FRACTIONAL AGENTS ON THE GRID                                     |
-+---------------------------------------------------------------------------------------------------+
+> **FRACTIONAL AGENTS ON THE GRID**
 | • Syntax Validator Agent  : 50ms latency, runs lightweight quantized models for AST checks        |
 | • Security Gatekeeper     : Enforces corporate OWASP / SOC2 compliance rules                      |
 | • Cost Metering Daemon    : Monitors token economics and circuit-breaker budgets in real time     |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
 
-## 🛠️ TypeScript Implementation: Utility-Scale Agent Fabric & Dynamic Hub
+## TypeScript Implementation: Utility-Scale Agent Fabric & Dynamic Hub
 
 Here is a production-grade TypeScript implementation demonstrating a **Utility-Scale Agent Grid Hub** where modular agents connect, discover shared tools, and execute coordinated tasks:
 
@@ -200,7 +196,7 @@ if (require.main === module) {
 
 ---
 
-## 📊 Summary: The Industrial Transition
+## Summary: The Industrial Transition
 
 | Architectural Dimension | 1890s Factory Steam Power | 2026 AI Agentic Grid |
 |---|---|---|
@@ -212,7 +208,7 @@ if (require.main === module) {
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 The lesson of the electrification of industry is that **true scale is unlocked by decoupling energy generation from consumption**.
 
 By retiring isolated, monolithic agent scripts and adopting **utility-scale agent compute fabrics**, engineering organizations create composable, resilient, and collaborative AI systems ready for planetary-scale operations.

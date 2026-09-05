@@ -111,7 +111,7 @@
 <p>Furthermore, next-generation service meshes (<strong>Cilium</strong>, <strong>Istio Ambient Mesh</strong>) leverage Linux <strong>eBPF socket filtering (<code>sockmap</code>)</strong> to achieve <strong>Sidecar-Less</strong> networking at kernel speeds.</p>
 <p>This article details Envoy C++ L7 proxy architecture, Istio xDS dynamic discovery protocols, and eBPF <code>sockmap</code> kernel TCP stack bypass.</p>
 <hr>
-<h2>📖 Service Mesh Architecture &amp; eBPF Socket Redirection</h2>
+<h2>Service Mesh Architecture &amp; eBPF Socket Redirection</h2>
 <p>How traditional Sidecar proxies compare to eBPF-accelerated kernel socket redirection:</p>
 <div class="mermaid">graph TD
   subgraph Traditional Sidecar Service Mesh (iptables + Envoy)
@@ -149,14 +149,14 @@
 </ul>
 </li>
 <li><strong>Sidecar-Less eBPF Optimization (<code>sockmap</code> / <code>sk_msg</code>)</strong>:<ul>
-<li><em>The Sidecar Latency Tax</em>: Traversing <code>iptables</code>, TCP stack overhead, and dual user-space/kernel context switches (Pod $\to$ Kernel $\to$ Envoy $\to$ Kernel $\to$ Wire) adds $1\text{ms}$ to $3\text{ms}$ of latency per hop.</li>
+<li><em>The Sidecar Latency Tax</em>: Traversing <code>iptables</code>, TCP stack overhead, and dual user-space/kernel context switches (Pod → Kernel → Envoy → Kernel → Wire) adds $1\text{ms}$ to $3\text{ms}$ of latency per hop.</li>
 <li><strong>eBPF <code>BPF_MAP_TYPE_SOCKMAP</code></strong>: Attaches an eBPF program directly to Linux kernel TCP sockets (<code>bpf_sock_map</code>).</li>
 <li>When Container A writes to its socket targeting Container B on the same node, the eBPF <code>sk_msg</code> program intercepts the data buffer in kernel space and <strong>redirects it directly to Container B&#39;s socket queue</strong>—bypassing the entire TCP/IP stack and user-space proxy overhead!</li>
 </ul>
 </li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: eBPF Sockmap Bypass &amp; xDS Control Plane Simulator</h2>
+<h2>Python Implementation: eBPF Sockmap Bypass &amp; xDS Control Plane Simulator</h2>
 <p>Here is a production-grade Python implementation of an eBPF Socket Map (<code>sockmap</code>) Kernel Bypass Engine and Istio xDS Control Plane Config Dispatcher:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel
@@ -232,7 +232,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n🌐 Transmitting Inter-Service Data Packet:&quot;)
     ebpf_engine.transmit_data_packet(&quot;10.244.1.10&quot;, 45000, &quot;POST /pay HTTP/1.1&quot;)</code></pre>
 <hr>
-<h2>🚨 Service Mesh Gotchas &amp; Best Practices</h2>
+<h2>Service Mesh Gotchas &amp; Best Practices</h2>
 <p>When operating a service mesh:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -245,7 +245,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
+<h2>Real-World Enterprise Impact</h2>
 <p>Service mesh infrastructure powered by Envoy and eBPF (such as <strong>Cilium Service Mesh</strong>, <strong>Istio Ambient Mesh</strong>, and <strong>Envoy Mobile</strong>) reports:</p>
 <ul>
 <li><strong>Over $80%$ Reduction in Inter-Service Network Latency</strong>: eBPF <code>sockmap</code> kernel socket redirection eliminates <code>iptables</code> and TCP stack traversal penalties.</li>

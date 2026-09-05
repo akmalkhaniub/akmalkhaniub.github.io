@@ -14,7 +14,7 @@ This article details $K+M$ encoding configurations, Galois Field arithmetic, Van
 
 ---
 
-## 📖 Erasure Coding Architecture & Galois Field $GF(2^8)$
+## Erasure Coding Architecture & Galois Field $GF(2^8)$
 
 How Reed-Solomon encoding generates parity blocks and reconstructs missing data chunks following drive failures:
 
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Reed-Solomon Erasure Coding Engine
+## Python Implementation: Reed-Solomon Erasure Coding Engine
 
 Here is a production-grade Python implementation of a Reed-Solomon $(4+2)$ Erasure Coding Engine featuring Galois Field $GF(2^8)$ Arithmetic and Chunk Reconstruction:
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Erasure Coding Gotchas & Best Practices
+## Erasure Coding Gotchas & Best Practices
 
 When deploying erasure coding:
 
@@ -183,7 +183,7 @@ When deploying erasure coding:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Erasure coding deployments (such as **AWS S3**, **MinIO**, **Ceph**, and **Google Cloud Storage**) report:
 * **Over $60\%$ Storage Cost Reduction**: Replacing 3-way replication ($200\%$ overhead) with $8+4$ erasure coding ($50\%$ overhead) slashes raw disk hardware expenses by millions of dollars.
 * **11 Nines of Durability ($99.999999999\%$)**: Mathematically surviving up to 4 concurrent server rack failures without data loss.

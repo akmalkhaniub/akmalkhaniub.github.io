@@ -21,7 +21,7 @@ graph TD
 
 ---
 
-## 🔍 1. How MVCC Achieves Snapshot Isolation
+## 1. How MVCC Achieves Snapshot Isolation
 
 When Transaction $T_1$ executes `BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ`:
 1. The database creates a virtual **Transaction Snapshot**: recording the active transaction IDs at that exact microsecond.
@@ -31,19 +31,17 @@ When Transaction $T_1$ executes `BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE RE
 
 ---
 
-## 🏛️ 2. PostgreSQL vs MySQL InnoDB vs CockroachDB
+## 2. PostgreSQL vs MySQL InnoDB vs CockroachDB
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 MVCC IMPLEMENTATION COMPARISON MATRIX                             |
-+---------------------------------------------------------------------------------------------------+
+> **MVCC IMPLEMENTATION COMPARISON MATRIX**
 | Dimension            | PostgreSQL                | MySQL (InnoDB)            | CockroachDB        |
 | Tuple Storage        | Append-only heap table    | In-place heap page        | LSM-Tree (Pebble)  |
 | Old Version Location | Stored on heap data page  | Stored in Undo Log segment| Stored inline as key@ts|
 | Version Identifiers  | `xmin` / `xmax` TXIDs     | Transaction ID + Roll Ptr | Hybrid Logical Clock|
 | Garbage Collection   | Background Autovacuum     | Purge Threads             | Compaction Filters |
 | Main Failure Mode    | Table bloat & TXID freeze | Long Undo Log traversal   | Write-Intent aborts|
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
@@ -55,10 +53,10 @@ In Postgres, every row on disk contains two hidden system metadata columns:
 
 ```
 PostgreSQL Heap Page:
-+-----------------------------------------------------------------------+
+
 | Tuple 1: [xmin: 100, xmax: 105] -> { id: 1, balance: 500 }  (Dead)   |
 | Tuple 2: [xmin: 105, xmax: 0  ] -> { id: 1, balance: 450 }  (Live)   |
-+-----------------------------------------------------------------------+
+
 ```
 
 When an `UPDATE` occurs, Postgres does not modify Tuple 1. It marks Tuple 1's `xmax = 105` and appends a brand new Tuple 2 with `xmin = 105`.
@@ -97,7 +95,7 @@ In CockroachDB's distributed LSM-Tree storage engine (Pebble):
 
 ---
 
-## 💥 3. The Write-Skew Anomaly in Snapshot Isolation
+## 3. The Write-Skew Anomaly in Snapshot Isolation
 
 While Snapshot Isolation eliminates Dirty Reads and Non-Repeatable Reads, it remains vulnerable to **Write-Skew**:
 
@@ -121,7 +119,7 @@ To eliminate Write-Skew, database architects must upgrade isolation to **Seriali
 
 ---
 
-## 🛠️ Python Implementation: Complete MVCC Storage Engine Simulator
+## Python Implementation: Complete MVCC Storage Engine Simulator
 
 Here is a Python implementation simulating PostgreSQL-style `xmin`/`xmax` tuple versioning, snapshot visibility rules, and vacuum garbage collection:
 
@@ -223,7 +221,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: MVCC Engine Trade-Offs
+## Summary: MVCC Engine Trade-Offs
 
 | System Metric | PostgreSQL Heap Versioning | MySQL InnoDB Undo Logs | CockroachDB Key@TS |
 |---|---|---|---|
@@ -234,7 +232,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 MVCC is one of the most elegant triumphs in computer science: allowing high-throughput concurrent systems to operate without blocking locks.
 
 Understanding whether your database uses **PostgreSQL heap versioning**, **MySQL undo log rollback segments**, or **distributed LSM timestamps** is essential for optimizing query performance, preventing table bloat, and eliminating transactional concurrency bottlenecks.

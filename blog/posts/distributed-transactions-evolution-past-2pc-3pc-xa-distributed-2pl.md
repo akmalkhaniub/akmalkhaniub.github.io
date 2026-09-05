@@ -25,7 +25,7 @@ graph TD
 
 ---
 
-## 🏛️ 1. Jim Gray’s Atomic Commit & Two-Phase Commit (2PC)
+## 1. Jim Gray’s Atomic Commit & Two-Phase Commit (2PC)
 
 In his seminal 1978 paper, *Notes on Data Base Operating Systems*, Turing Award winner **Jim Gray** formalized the fundamental challenge of distributed consensus:
 
@@ -78,7 +78,7 @@ Any other concurrent transactions attempting to access those locked rows are que
 
 ---
 
-## ⚡ 2. Three-Phase Commit (3PC): Skeen's Non-Blocking Attempt
+## 2. Three-Phase Commit (3PC): Skeen's Non-Blocking Attempt
 
 In 1981, **Dale Skeen** introduced the **Three-Phase Commit (3PC)** protocol (*Nonblocking Commit Protocols*). 3PC aimed to eliminate the blocking vulnerability by inserting a buffer state—the `Pre-Commit` phase—and establishing timeout-based transitions.
 
@@ -117,30 +117,19 @@ Because asynchronous networks (like the internet or multi-switch datacenters) ca
 
 ---
 
-## 🔒 3. X/Open XA & Distributed Two-Phase Locking (2PL)
+## 3. X/Open XA & Distributed Two-Phase Locking (2PL)
 
 In 1991, the Open Group published the **X/Open Distributed Transaction Processing (DTP) XA Specification**.
 
 XA standardized the interface between an AP (Application Program), a TM (Transaction Manager, like BEA Tuxedo or IBM CICS), and multiple RMs (Resource Managers, like Oracle, DB2, or Sybase).
 
-```
-+-------------------------------------------------------------+
-|               Application Program (AP)                      |
-+-------------------------------------------------------------+
-         |                                     |
-    tx_begin()                            SQL Queries
-    tx_commit()                                |
-         v                                     v
-+-----------------------+   xa_open()   +---------------------+
-|  Transaction Manager  |-------------->|  Resource Manager   |
-|         (TM)          |<--------------|     (RM: Oracle)    |
-+-----------------------+  xa_prepare() +---------------------+
-         |                 xa_commit()         |
-         |                  xa_end()           v
-         |                              +---------------------+
-         +----------------------------->|  Resource Manager   |
-                                        |     (RM: DB2)       |
-                                        +---------------------+
+```mermaid
+graph TD
+  AP["Application Program (AP)"] -->|tx_begin / tx_commit| TM["Transaction Manager (TM)"]
+  AP -->|SQL Queries| RM1["Resource Manager 1 (Oracle)"]
+  AP -->|SQL Queries| RM2["Resource Manager 2 (DB2)"]
+  TM -->|xa_open / xa_prepare / xa_commit| RM1
+  TM -->|xa_open / xa_prepare / xa_commit| RM2
 ```
 
 ### Distributed Two-Phase Locking (2PL) & Distributed Deadlocks
@@ -169,7 +158,7 @@ Under heavy e-commerce holiday traffic, lock wait timeouts triggered cascading a
 
 ---
 
-## 🛒 4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC
+## 4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC
 
 During the late 1990s and early 2000s, pioneering internet platforms hit a hard architectural wall with classical 2PC and XA transactions:
 
@@ -196,7 +185,7 @@ eBay replaced synchronous XA transactions with **Asynchronous Eventual Consisten
 
 ---
 
-## 🛠️ Python Simulation: Distributed Deadlock Detection & 3PC State Machine
+## Python Simulation: Distributed Deadlock Detection & 3PC State Machine
 
 To understand how classical systems attempted to resolve 2PL lock cycles, here is a Python implementation of a distributed Wait-For Graph (WFG) deadlock cycle detector using Tarjan's Strongly Connected Components (SCC) algorithm:
 
@@ -289,7 +278,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Engineering Lessons from the Classical Era
+## Engineering Lessons from the Classical Era
 
 > [!IMPORTANT]
 > **Synchronous 2PC Locks are Fatal at Scale**: Holding database row locks across remote network roundtrips directly couples the throughput of your fastest service to the latency and failure rate of your slowest dependency.
@@ -302,5 +291,5 @@ if __name__ == "__main__":
 
 ---
 
-## 🔮 Next in the Series
+## Next in the Series
 In **Part 2**, we will explore **The Present (2010s–2020s)**: How Google solved distributed consistency at global scale with **Spanner and TrueTime**, how CockroachDB & YugabyteDB implement **Multi-Raft with Hybrid Logical Clocks**, and how **Uber & Netflix** revolutionized microservices using **Event-Driven Sagas (Cadence / Conductor)**.

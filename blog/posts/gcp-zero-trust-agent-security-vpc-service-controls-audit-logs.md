@@ -10,7 +10,7 @@ This article details how to lock down agentic execution environments on GCP.
 
 ---
 
-## 📖 GCP Zero-Trust Security Architecture
+## GCP Zero-Trust Security Architecture
 
 The platform enforces perimeter isolation, credential rotation, and granular tool tracing:
 
@@ -39,7 +39,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Audited Tool Executor with Secret Manager
+## Python Implementation: Audited Tool Executor with Secret Manager
 
 Here is a production Python implementation of an agent tool executor running within a zero-trust GCP architecture:
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important GCP Security & Audit Guardrails
+## Important GCP Security & Audit Guardrails
 
 When configuring VPC-SC and Secret Manager for agentic systems:
 
@@ -161,7 +161,7 @@ When configuring VPC-SC and Secret Manager for agentic systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams enforcing Zero-Trust Security on GCP achieve:
 * **100% Data Exfiltration Prevention**: VPC Service Controls block unauthorized external egress calls from prompt injections.
 * **SOC2 & ISO-27001 Audit Compliance**: Cloud Audit Logs capture complete end-to-end execution traces for every agent tool invocation.

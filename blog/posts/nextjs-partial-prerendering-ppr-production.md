@@ -8,7 +8,7 @@ In the battle between static and dynamic web rendering, developers have historic
 
 ---
 
-## 📖 Under the Hood: The PPR Compiler Model
+## Under the Hood: The PPR Compiler Model
 
 During the build process (`next build`), when PPR is enabled, the Next.js compiler analyzes the React Server Component (RSC) tree. 
 
@@ -29,7 +29,7 @@ When a user visits the URL, they receive the static HTML shell in under 15ms. In
 
 ---
 
-## 🛠️ Implementing a Dynamic Product Page
+## Implementing a Dynamic Product Page
 
 Here is a real-world production implementation of an e-commerce product page utilizing PPR. The page structure includes static details (title, description) while streaming real-time elements (pricing, cart status, recommendations).
 
@@ -113,7 +113,7 @@ export async function RealtimePricing({ slug }: PricingProps) {
 
 ---
 
-## ⚠️ Important Pitfalls in Production
+## Important Pitfalls in Production
 
 While PPR provides massive UX improvements, developers must design layouts with specific guardrails:
 
@@ -125,7 +125,7 @@ While PPR provides massive UX improvements, developers must design layouts with 
 
 ---
 
-## 📈 Real-World Production Adoption
+## Real-World Production Adoption
 
 Production dashboards and e-commerce platforms have adopted PPR to achieve sub-10ms TTFB while maintaining dynamic capabilities:
 * **E-Commerce Detail Views**: Pre-renders layout outlines, logos, footer maps, and description copy to CDNs, streaming real-time pricing and stock quantities on load.

@@ -17,7 +17,7 @@ This article synthesizes the trade-offs of State Space Models vs. Transformers, 
 
 ---
 
-## 🎨 Memory Complexity: Attention vs. State Space Models
+## Memory Complexity: Attention vs. State Space Models
 
 As context lengths scale into millions of tokens, the VRAM consumption of self-attention diverges quadratically, while SSMs maintain a constant state size, scaling memory usage linearly.
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🔍 Synthesis: What's Good & What's Not
+## Synthesis: What's Good & What's Not
 
 ### What's Good (The Pros)
 *   **Linear $O(N)$ Complexity**: Mamba scales compute and memory footprint linearly with context length, enabling the processing of massive sequence payloads (entire code repositories or textbooks) on modest hardware.
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 💻 Modeling an SSM Selective Scan in Python
+## Modeling an SSM Selective Scan in Python
 
 The core of the Mamba architecture is the **Selective Scan**. Unlike traditional recurrent neural networks (RNNs) which apply static transition matrices, Mamba dynamically varies its transition matrix based on the current input token, choosing what to remember or forget.
 
@@ -119,14 +119,14 @@ class SelectiveScanSSM(nn.Module):
 
 ---
 
-## 📋 SSM Ingestion Guardrails
+## SSM Ingestion Guardrails
 
 * **Hybrid Architectures**: For tasks requiring both long context and exact recall, use hybrid models (like Jamba) that interleave Transformer attention layers (for retrieval) with Mamba SSM layers (for context scaling).
 * **PII/Key Anchoring**: When passing document datasets to SSMs, place key facts or lookup terms at the very beginning of the prompt to maximize the model's initial state activation.
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Breaking the attention memory barrier is essential for the next generation of long-context applications:
 1. **Linear Scaling is Real:** Mamba and other selective state space architectures offer a concrete pathway to processing millions of tokens without linear GPU cluster expansions.
@@ -137,7 +137,7 @@ Breaking the attention memory barrier is essential for the next generation of lo
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **Mamba Architecture**: Gu & Dao, 2023. *Mamba: Linear-Time Sequence Modeling with Selective State Spaces*. [arXiv:2312.00752](https://arxiv.org/abs/2312.00752).
 * **Mamba-2 Updates**: Dao & Gu, 2024. *Transformers are SSMs: Generalized State Space Models*. Details on hardware-aware matrix formulations.

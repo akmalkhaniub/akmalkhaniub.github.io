@@ -14,7 +14,7 @@ This article details Liveness Analysis, Chaitin-Briggs Graph Coloring, and Linea
 
 ---
 
-## 📖 Register Allocation & Live Range Interference Architecture
+## Register Allocation & Live Range Interference Architecture
 
 How compiler backends compute variable liveness intervals and allocate physical CPU registers:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Linear Scan Register Allocator Engine
+## Python Implementation: Linear Scan Register Allocator Engine
 
 Here is a production-grade Python implementation of a Linear Scan Register Allocator featuring Liveness Analysis and Register Spilling:
 
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Register Allocation Gotchas & Best Practices
+## Register Allocation Gotchas & Best Practices
 
 When engineering compiler backends:
 
@@ -169,7 +169,7 @@ When engineering compiler backends:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Compiler backends using Linear Scan and Graph Coloring (such as **LLVM** and **V8 TurboFan**) report:
 * **Over 25% CPU Execution Speedup**: Keeping high-frequency loop variables inside physical CPU registers avoids slow RAM stack memory reads (`MOV EAX, [RBP-8]`).
 * **Microsecond JIT Compilation Latencies**: Linear Scan allocation allows JIT compilers (V8) to emit optimized machine code in a single fast pass.

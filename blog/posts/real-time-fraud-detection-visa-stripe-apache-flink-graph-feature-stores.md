@@ -33,14 +33,12 @@ graph TD
 
 ---
 
-## ⏱️ 1. The 10ms Authorization SLA Budget Breakdown
+## 1. The 10ms Authorization SLA Budget Breakdown
 
 To prevent checkout timeouts, the internal payment gateway allocates strict time budgets across the authorization pipeline:
 
 ```
-+---------------------------------------------------------------------------------------+
-|                       100ms PAYMENT AUTHORIZATION BUDGET TIMELINE                     |
-+---------------------------------------------------------------------------------------+
+> **100ms PAYMENT AUTHORIZATION BUDGET TIMELINE**
 |  0ms - 25ms   : Client Mobile/Web Network Hop to Edge API Gateway                     |
 |  25ms - 35ms  : Token Decryption, Idempotency Check & Account Routing                 |
 |  35ms - 45ms  : >>> REAL-TIME FRAUD DETECTION PIPELINE (10ms HARD BUDGET) <<<        |
@@ -50,12 +48,12 @@ To prevent checkout timeouts, the internal payment gateway allocates strict time
 |                 • 8-10ms: Hard Rules Evaluation & Decision Arbitration                |
 |  45ms - 85ms  : Issuing Bank ISO 8583 Authorization Network Hop                       |
 |  85ms - 100ms : Response Encryption & Gateway Return Hop                              |
-+---------------------------------------------------------------------------------------+
+
 ```
 
 ---
 
-## 🌊 2. Apache Flink: Stateful Event-Time Sliding Windows
+## 2. Apache Flink: Stateful Event-Time Sliding Windows
 
 Evaluating transaction velocity (e.g. *"Has this card been used more than 4 times in the last 60 seconds across distinct merchant categories?"*) requires **Stateful Stream Processing**.
 
@@ -85,7 +83,7 @@ sequenceDiagram
 
 ---
 
-## 🕸️ 3. Real-Time Graph Feature Stores: Uncovering Fraud Rings
+## 3. Real-Time Graph Feature Stores: Uncovering Fraud Rings
 
 Organized fraud syndicates use automated bot farms to cycle through thousands of stolen credit card numbers using shared infrastructure:
 * 500 different card numbers sharing **3 distinct browser fingerprints**.
@@ -113,12 +111,12 @@ Instead of querying slow disk-backed relational joins, platforms like **Stripe R
 When a transaction arrives:
 1. The engine performs a **2-hop neighborhood expansion** in an in-memory graph cache.
 2. It computes graph topological metrics:
-   * **Node Degree**: Count of distinct cards linked to the active device fingerprint ($k_{\text{device}} > 5 \implies \text{High Risk}$).
+   * **Node Degree**: Count of distinct cards linked to the active device fingerprint ($k_{\text{device}} > 5 ⟹ \text{High Risk}$).
    * **Community Density / Fraud Ring Score**: Bipartite clustering coefficient indicating coordinated attack behavior.
 
 ---
 
-## ⚡ 4. Low-Latency ML Inference: Treelite & ONNX Embedded Runtime
+## 4. Low-Latency ML Inference: Treelite & ONNX Embedded Runtime
 
 Python machine learning runtimes (e.g. standard scikit-learn or PyTorch via HTTP microservices) introduce $20\text{--}50\text{ms}$ of serialization and network overhead.
 
@@ -128,7 +126,7 @@ Python machine learning runtimes (e.g. standard scikit-learn or PyTorch via HTTP
 
 ---
 
-## 🛠️ Python Implementation: Real-Time Fraud Stream & Decision Engine
+## Python Implementation: Real-Time Fraud Stream & Decision Engine
 
 Here is a Python implementation simulating an Apache Flink stateful sliding window accumulator, an in-memory bipartite graph ring detector, and a sub-millisecond fraud decision engine:
 
@@ -266,7 +264,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Fraud Architecture Components
+## Summary: Fraud Architecture Components
 
 | Architecture Layer | Technology | Function | Execution Latency |
 |---|---|---|---|
@@ -279,7 +277,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Final Architectural Takeaway
+## Final Architectural Takeaway
 Real-time fraud detection at Visa and Stripe scale is the ultimate test of **event-driven distributed stream processing and microsecond machine learning inference**.
 
 By leveraging **Apache Flink stateful windows**, **in-memory identity graphs**, and **compiled C++ decision trees**, fintech platforms protect billions of dollars in daily transaction volume while preserving seamless, sub-second checkout experiences for global consumers.

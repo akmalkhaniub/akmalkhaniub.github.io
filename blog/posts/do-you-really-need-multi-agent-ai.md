@@ -54,7 +54,7 @@ To determine the simplest architecture capable of solving your task, walk throug
 
 ---
 
-## 📋 The Complexity Reduction Checklist
+## The Complexity Reduction Checklist
 
 Before deploying an agentic squad, verify that you have implemented these latency and cost-saving measures:
 
@@ -64,7 +64,7 @@ Before deploying an agentic squad, verify that you have implemented these latenc
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Navigating the current agentic AI hype requires a critical eye towards architectural choices and their real-world implications.
 1.  **Understand the Hidden Costs:** Multi-agent systems introduce significant trade-offs, including compounding latency, a substantial "token tax" due to shared context, and a non-deterministic state space that complicates testing and debugging.
@@ -75,7 +75,7 @@ Navigating the current agentic AI hype requires a critical eye towards architect
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Autonomy vs Prompting**: *Evaluating External Orchestration vs. In-Context Prompting in Agentic Design* (2025/2026 research). Analyzes how simpler prompting techniques often outperform multi-agent setups on low-to-medium complexity tasks. (Needs verification)
 *   **Benchmarking MAS in Finance**: *Benchmarking Multi-Agent LLM Architectures for Financial Document Processing* (March 2026). Explains the cost-accuracy tradeoffs of agentic systems. [arXiv:2603.09452](https://arxiv.org/abs/2603.09452) (Needs verification)

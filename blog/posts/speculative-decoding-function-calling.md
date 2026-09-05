@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Reducing latency in tool loops makes multi-agent systems feel real-time and responsive:
 * [ ] **Use speculative decoding for structured formats**: Rigid JSON schemas are highly predictable, making them perfect candidates for draft-model speculation.

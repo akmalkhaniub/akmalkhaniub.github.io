@@ -14,7 +14,7 @@ This article details Parquet/ORC file layouts, Dictionary Encoding, RLE compress
 
 ---
 
-## 📖 Columnar Storage File Architecture & Compression Techniques
+## Columnar Storage File Architecture & Compression Techniques
 
 How Apache Parquet organizes Row Groups, Column Chunks, and RLE Dictionary Encoding:
 
@@ -60,7 +60,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Columnar Storage Engine with RLE & Predicate Pushdown
+## Python Implementation: Columnar Storage Engine with RLE & Predicate Pushdown
 
 Here is a production-grade Python implementation of a Columnar File Storage Engine featuring Dictionary Encoding, Run-Length Encoding (RLE), and Predicate Pushdown:
 
@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Columnar Storage Gotchas & Best Practices
+## Columnar Storage Gotchas & Best Practices
 
 When building columnar data systems:
 
@@ -200,7 +200,7 @@ When building columnar data systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Columnar storage deployments (such as **Apache Parquet**, **Snowflake**, **ClickHouse**, and **DuckDB**) report:
 * **Over $90\%$ Disk Space Savings**: Combining dictionary encoding, RLE compression, and Snappy/ZSTD compression slashes petabyte storage footprints.
 * **$100\times$ Faster Analytical Queries**: Reading only required columns and pruning irrelevant row groups via Predicate Pushdown accelerates analytical SQL scans by orders of magnitude.

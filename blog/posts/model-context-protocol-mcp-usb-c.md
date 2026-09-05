@@ -17,7 +17,7 @@ This article reviews the MCP architecture and walks through building a secure, c
 
 ---
 
-## 🛠️ The Model Context Protocol Architecture
+## The Model Context Protocol Architecture
 
 MCP operates on a clean **Client-Server model** over standardized communication channels (Standard Input/Output or Server-Sent Events). The LLM engine is decoupled from tool execution, meaning the model never runs raw system commands directly; instead, it issues structured JSON-RPC requests to the local MCP server.
 
@@ -49,7 +49,7 @@ graph LR
 
 ---
 
-## 💻 Building a PostgreSQL MCP Server in TypeScript
+## Building a PostgreSQL MCP Server in TypeScript
 
 Here is a complete, executable MCP server designed to expose a secure SQL query tool. This server connects to PostgreSQL, parses tool calls, and returns query results in the standardized JSON format expected by MCP clients.
 
@@ -146,7 +146,7 @@ start().catch(console.error);
 
 ---
 
-## 🔒 Security: Hardening your Tool Gates
+## Security: Hardening your Tool Gates
 
 Exposing tools to an LLM introduces prompt injection vectors. An attacker can write queries designed to extract secrets or alter schemas. Follow these security rules:
 * **Least Privilege Database Credentials**: Always connect the MCP server using a read-only database user account. Restrict write/update permissions to block data mutation.
@@ -155,7 +155,7 @@ Exposing tools to an LLM introduces prompt injection vectors. An attacker can wr
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 The Model Context Protocol (MCP) marks a significant advancement in AI application development by standardizing how large language models interact with external tools and data.
 1. **Standardized Tooling for AI:** MCP acts as a universal interface, akin to USB-C, for AI models to securely access and execute external tools and resources, eliminating the previous need for custom, model-specific API wrappers and parsing logic. This standardization greatly simplifies the integration of diverse tools like databases, file systems, and external APIs into AI applications, making them more modular and interoperable across different LLM engines.
@@ -166,7 +166,7 @@ The Model Context Protocol (MCP) marks a significant advancement in AI applicati
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **Model Context Protocol Specification**: [Anthropic Model Context Protocol Documentation](https://modelcontextprotocol.io). Protocol specifications, SDK repositories, and quickstart guides.
 * **Prompt Injection Risks in Tool Callers**: *Not What You Expected: Prompt Injections on LLM APIs and Tool Environments*. Analyzes vulnerabilities in automated tool execution.

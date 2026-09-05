@@ -116,7 +116,7 @@
     Cockroach[&quot;3. CockroachDB: Distributed Timestamped Keys\n• Keys stored as Key@Timestamp in LSM-Tree (Pebble)\n• Hybrid Logical Clocks (HLC) snapshot isolation&quot;]
   end</div>
 <hr>
-<h2>🔍 1. How MVCC Achieves Snapshot Isolation</h2>
+<h2>1. How MVCC Achieves Snapshot Isolation</h2>
 <p>When Transaction $T_1$ executes <code>BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ</code>:</p>
 <ol>
 <li>The database creates a virtual <strong>Transaction Snapshot</strong>: recording the active transaction IDs at that exact microsecond.</li>
@@ -125,17 +125,15 @@
 <li>$T_1$ continues reading the older immutable version without acquiring a single lock!</li>
 </ol>
 <hr>
-<h2>🏛️ 2. PostgreSQL vs MySQL InnoDB vs CockroachDB</h2>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 MVCC IMPLEMENTATION COMPARISON MATRIX                             |
-+---------------------------------------------------------------------------------------------------+
+<h2>2. PostgreSQL vs MySQL InnoDB vs CockroachDB</h2>
+<pre><code class="language-plaintext">&gt; **MVCC IMPLEMENTATION COMPARISON MATRIX**
 | Dimension            | PostgreSQL                | MySQL (InnoDB)            | CockroachDB        |
 | Tuple Storage        | Append-only heap table    | In-place heap page        | LSM-Tree (Pebble)  |
 | Old Version Location | Stored on heap data page  | Stored in Undo Log segment| Stored inline as key@ts|
 | Version Identifiers  | `xmin` / `xmax` TXIDs     | Transaction ID + Roll Ptr | Hybrid Logical Clock|
 | Garbage Collection   | Background Autovacuum     | Purge Threads             | Compaction Filters |
 | Main Failure Mode    | Table bloat &amp; TXID freeze | Long Undo Log traversal   | Write-Intent aborts|
-+---------------------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <hr>
 <h3>1. PostgreSQL: Append-Only Heap Versioning</h3>
 <p>In Postgres, every row on disk contains two hidden system metadata columns:</p>
@@ -144,10 +142,10 @@
 <li><strong><code>xmax</code></strong>: The Transaction ID that deleted or updated this tuple (set to <code>0</code> if active).</li>
 </ul>
 <pre><code class="language-plaintext">PostgreSQL Heap Page:
-+-----------------------------------------------------------------------+
+
 | Tuple 1: [xmin: 100, xmax: 105] -&gt; { id: 1, balance: 500 }  (Dead)   |
 | Tuple 2: [xmin: 105, xmax: 0  ] -&gt; { id: 1, balance: 450 }  (Live)   |
-+-----------------------------------------------------------------------+</code></pre>
+</code></pre>
 <p>When an <code>UPDATE</code> occurs, Postgres does not modify Tuple 1. It marks Tuple 1&#39;s <code>xmax = 105</code> and appends a brand new Tuple 2 with <code>xmin = 105</code>.</p>
 <ul>
 <li><strong>The Trade-Off (Table Bloat &amp; Autovacuum)</strong>: Because old &quot;dead tuples&quot; remain on disk, Postgres requires background <strong>Autovacuum daemons</strong> to reclaim space. If autovacuum falls behind, table size balloons by $10\times$.</li>
@@ -182,7 +180,7 @@
 <li>Obsolete MVCC keys are reclaimed automatically during background LSM-tree storage compactions.</li>
 </ul>
 <hr>
-<h2>💥 3. The Write-Skew Anomaly in Snapshot Isolation</h2>
+<h2>3. The Write-Skew Anomaly in Snapshot Isolation</h2>
 <p>While Snapshot Isolation eliminates Dirty Reads and Non-Repeatable Reads, it remains vulnerable to <strong>Write-Skew</strong>:</p>
 <pre><code class="language-plaintext">The On-Call Doctor Anomaly:
 Constraint: At least 1 doctor must remain active on call.
@@ -199,7 +197,7 @@ Transaction 2 (Doctor B simultaneously goes off call):
 Result: Both commit successfully -&gt; Active Doctors = 0 (Data Corruption!)</code></pre>
 <p>To eliminate Write-Skew, database architects must upgrade isolation to <strong>Serializable Snapshot Isolation (SSI)</strong> or use explicit row locking (<code>SELECT FOR UPDATE</code>).</p>
 <hr>
-<h2>🛠️ Python Implementation: Complete MVCC Storage Engine Simulator</h2>
+<h2>Python Implementation: Complete MVCC Storage Engine Simulator</h2>
 <p>Here is a Python implementation simulating PostgreSQL-style <code>xmin</code>/<code>xmax</code> tuple versioning, snapshot visibility rules, and vacuum garbage collection:</p>
 <pre><code class="language-python">import time
 from dataclasses import dataclass
@@ -295,7 +293,7 @@ if __name__ == &quot;__main__&quot;:
     # 6. Run Vacuum
     db.vacuum_garbage_collect(oldest_active_txid=104)</code></pre>
 <hr>
-<h2>📊 Summary: MVCC Engine Trade-Offs</h2>
+<h2>Summary: MVCC Engine Trade-Offs</h2>
 <table>
 <thead>
 <tr>
@@ -331,7 +329,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>MVCC is one of the most elegant triumphs in computer science: allowing high-throughput concurrent systems to operate without blocking locks.</p>
 <p>Understanding whether your database uses <strong>PostgreSQL heap versioning</strong>, <strong>MySQL undo log rollback segments</strong>, or <strong>distributed LSM timestamps</strong> is essential for optimizing query performance, preventing table bloat, and eliminating transactional concurrency bottlenecks.</p>
 

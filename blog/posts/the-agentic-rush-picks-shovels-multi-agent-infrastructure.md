@@ -22,7 +22,7 @@ graph TD
 
 ---
 
-## 🌊 1. The Prospector’s Dilemma: The Illusion of "Free Gold"
+## 1. The Prospector’s Dilemma: The Illusion of "Free Gold"
 
 Over the past two years, the AI ecosystem exploded with thousands of venture-backed startups and open-source projects promising autonomous "1-click agents" (AI SDRs, AI legal assistants, AutoGPT clones).
 
@@ -38,19 +38,17 @@ Just like the prospectors who arrived at Sutter's Mill with a wooden pan, buildi
 
 ---
 
-## ⛏️ 2. The "Picks and Shovels" of the Agentic Era
+## 2. The "Picks and Shovels" of the Agentic Era
 
 The true value in the 2026 agentic economy is consolidating around the **infrastructure layer**—the tools, execution runtimes, protocols, and security guardrails that make autonomous swarms reliable.
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 THE 4 PICKS & SHOVELS OF THE AGENTIC ERA                          |
-+---------------------------------------------------------------------------------------------------+
+> **THE 4 PICKS & SHOVELS OF THE AGENTIC ERA**
 | 1. Model Context Protocol (MCP)   : Standardized tool discovery & isolated execution interface    |
 | 2. Ephemeral Micro-Sandboxes      : Containerized runtimes (E2B, Firecracker) for safe execution  |
 | 3. State Checkpointers            : PostgresSaver & Redis state persistence for crash recovery    |
 | 4. Hierarchical Memory Engines    : pgvector, Redis & Graph-RAG long-term entity consolidation     |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### 1. The Standard Gauge Railroad: Model Context Protocol (MCP)
@@ -66,7 +64,7 @@ Long-running agent workflows (15 to 45 minutes) cannot afford to restart from sc
 
 ---
 
-## ⚖️ 3. The Assayers: Trust, Verifiability & Token Economics
+## 3. The Assayers: Trust, Verifiability & Token Economics
 
 During the Gold Rush, anyone could claim they found gold dust; miners relied on **Assayers** to chemically verify purity and **Escrow Banks** (like Wells Fargo) to store value safely.
 
@@ -88,20 +86,18 @@ graph LR
 
 ---
 
-## 🌾 4. The Settlers: Building Deep Vertical Moats
+## 4. The Settlers: Building Deep Vertical Moats
 
 Once the initial gold panning frenzy subsided, California's durable economy was built by farmers, infrastructure builders, and manufacturing enterprises.
 
 Similarly, the enduring commercial winners of the agentic revolution will not be generic "do-anything" chatbots, but **deeply integrated vertical autonomous systems**:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 VERTICAL AGENT MOAT EXAMPLES                                      |
-+---------------------------------------------------------------------------------------------------+
+> **VERTICAL AGENT MOAT EXAMPLES**
 | • SpecForge    : Two-pass Claude pipeline transforming business prompts into validated code specs |
 | • LeaseLogic   : Layout-aware PDF extraction with pgvector RAG and 10-year discounted cashflow    |
 | • ClaimPilot   : Multi-modal vision damage adjudication with deterministic fraud rule guardrails  |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### Why Vertical Moats Win:
@@ -111,7 +107,7 @@ Similarly, the enduring commercial winners of the agentic revolution will not be
 
 ---
 
-## 🛠️ Python Simulation: The "Picks & Shovels" Agent Infrastructure Gatekeeper
+## Python Simulation: The "Picks & Shovels" Agent Infrastructure Gatekeeper
 
 Here is a Python implementation demonstrating how modern infrastructure acts as a protective "pick-and-shovel" gatekeeper for autonomous agents:
 
@@ -192,7 +188,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Navigating the Agentic Rush
+## Summary: Navigating the Agentic Rush
 
 | Phase | Gold Rush Paradigm (1849) | Agentic Rush Paradigm (2026) | Winning Strategy |
 |---|---|---|---|
@@ -203,7 +199,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 The lesson of the California Gold Rush is not that gold lacked value—it was that **sustainable wealth accrued to the builders of foundational infrastructure**.
 
 In the Agentic Rush, the ultimate winners will not be the developers building brittle, unconstrained chatbots, but the engineers building the **resilient, verifiable, and economically governed infrastructure** that powers the autonomous enterprise.

@@ -12,7 +12,7 @@ This article details speculative token generation, target parallel verification,
 
 ---
 
-## 📖 Speculative Decoding & Parallel Verification Architecture
+## Speculative Decoding & Parallel Verification Architecture
 
 How Speculative Decoding generates $K+1$ tokens in a single target model forward pass:
 
@@ -45,7 +45,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Speculative Decoding & Rejection Sampler Engine
+## Python Implementation: Speculative Decoding & Rejection Sampler Engine
 
 Here is a production-grade Python implementation of a Speculative Decoding Engine featuring Draft Model Speculation, Target Parallel Verification, and Rejection Sampling:
 
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Speculative Decoding Gotchas & Best Practices
+## Speculative Decoding Gotchas & Best Practices
 
 When configuring speculative inference:
 
@@ -154,7 +154,7 @@ When configuring speculative inference:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms adopting Speculative Decoding (such as **vLLM** and **TensorRT-LLM**) report:
 * **$2\times$ to $3\times$ Faster End-to-End Latency**: Generating up to 3 tokens per target model forward step without altering output text quality.
 * **100% Exact Distribution Match**: Modified rejection sampling mathematically guarantees zero degradation in model perplexity or answer quality.

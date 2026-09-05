@@ -64,7 +64,7 @@ A multi-agent system divides a complex problem space into separate agent nodes, 
 
 ---
 
-## 🚦 The Decision Matrix: When to Keep It Simple
+## The Decision Matrix: When to Keep It Simple
 
 Before building a multi-agent system, walk through this decision path to avoid over-engineering:
 
@@ -96,7 +96,7 @@ Before building a multi-agent system, walk through this decision path to avoid o
 
 ---
 
-## 📋 The Architecture Guardrails Checklist
+## The Architecture Guardrails Checklist
 
 *   [ ] **Autonomy Audit**: Do you have a programmatic escape hatch to break infinite agent loops after a set number of iterations (e.g., max 5 turns)?
 *   [ ] **Routing Review**: Can your router LLM be replaced by a regex, string match, or semantic vector distance check to save tokens and latency?
@@ -104,7 +104,7 @@ Before building a multi-agent system, walk through this decision path to avoid o
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Navigating the spectrum of AI autonomy requires balancing flexibility with predictability to build production-grade systems.
 1. **Match Complexity to Architecture:** Do not default to complex multi-agent systems when a deterministic LLM workflow or a single-agent loop can achieve the same result faster and cheaper.
@@ -115,7 +115,7 @@ Navigating the spectrum of AI autonomy requires balancing flexibility with predi
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **LangGraph Conceptual Docs**: *Workflows vs. Agents*. Discusses the precise boundaries between application control and model control. [Link](https://langchain-ai.github.io/langgraph/concepts/agentic_concepts/)
 *   **Microsoft AutoGen Framework**: *Introduction to Multi-Agent Conversation*. Explains the foundations of actor-based messaging structures. [Link](https://microsoft.github.io/autogen/docs/Use-Cases/agent_chat/)

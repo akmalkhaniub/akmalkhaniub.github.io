@@ -126,7 +126,7 @@
     Wakeup --&gt; Corrupt[&quot;Client 1 Overwrites Client 2's Data (💥 CORRUPTION!)&quot;]
   end</div>
 <hr>
-<h2>🛑 1. Why Distributed Locking is Fundamentally Hard</h2>
+<h2>1. Why Distributed Locking is Fundamentally Hard</h2>
 <p>Why can a distributed lock not be implemented simply by setting a key in Redis with a TTL (<code>SET lock_key uuid NX PX 10000</code>)?</p>
 <h3>The 3 Asynchronous Network Realities:</h3>
 <ol>
@@ -136,15 +136,13 @@
 </ol>
 <p>When Client 1 pauses past its lease expiration, the lock manager grants the lock to Client 2. When Client 1 resumes, <strong>two processes believe they hold exclusive access simultaneously (Split-Brain Dual Write)</strong>.</p>
 <hr>
-<h2>⚔️ 2. The Redlock Algorithm &amp; The Kleppmann-Antirez Debate</h2>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 THE 2 PURPOSES OF DISTRIBUTED LOCKS                               |
-+---------------------------------------------------------------------------------------------------+
+<h2>2. The Redlock Algorithm &amp; The Kleppmann-Antirez Debate</h2>
+<pre><code class="language-plaintext">&gt; **THE 2 PURPOSES OF DISTRIBUTED LOCKS**
 | Purpose 1: For Efficiency (Optimization) | Purpose 2: For Correctness (Safety)                   |
 | If the lock fails, you waste compute     | If the lock fails, you corrupt financial data or bank |
 | (e.g. 2 workers render the same video).  | balances (e.g. Double spending a customer wallet).    |
 | Redis / Redlock is sufficient!           | Redlock FAILS without Fencing Tokens!                 |
-+---------------------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <h3>The Redlock Algorithm (Antirez)</h3>
 <p>To eliminate single-point-of-failure in a single Redis node, Redlock deploys $N=5$ independent Redis instances:</p>
 <ol>
@@ -154,7 +152,7 @@
 <h3>Martin Kleppmann&#39;s Critique:</h3>
 <p>Kleppmann proved that Redlock relies on an unspoken synchronous network assumption: that the physical clocks across all 5 nodes drift predictably. Under NTP clock jumps or asymmetric network partitions, Redlock can grant the lock to two clients for overlapping validity windows.</p>
 <hr>
-<h2>🛡️ 3. The Fencing Token Invariant (The Kleppmann Solution)</h2>
+<h2>3. The Fencing Token Invariant (The Kleppmann Solution)</h2>
 <p>To make distributed locking provably safe for mission-critical financial systems, the lock manager and storage layer must implement <strong>Monotonically Increasing Fencing Tokens</strong>:</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -178,7 +176,7 @@
   DB--&gt;&gt;C1: 🛑 Write REJECTED: Stale Fencing Token!</div>
 <p><strong>The Fencing Rule</strong>: Every time a lock is granted, the DLM increments a monotonic integer token ($33, 34, 35$). The underlying database rejects any write carrying a token lower than the highest token it has already processed.</p>
 <hr>
-<h2>🐘 4. PostgreSQL Advisory Locks: The Pragmatic Alternative</h2>
+<h2>4. PostgreSQL Advisory Locks: The Pragmatic Alternative</h2>
 <p>If your application already uses a PostgreSQL database, you often do not need to operate a separate ZooKeeper or Redis cluster.</p>
 <p>PostgreSQL provides native <strong>Advisory Locks</strong>:</p>
 <pre><code class="language-sql">-- Acquire an application-level exclusive lock on Resource ID 42
@@ -194,7 +192,7 @@ SELECT pg_advisory_unlock(42);</code></pre>
 <li><strong>Transaction-Level Locks (<code>pg_advisory_xact_lock</code>)</strong>: Automatically released when the SQL transaction commits or rolls back.</li>
 </ul>
 <hr>
-<h2>🛠️ Python Implementation: Distributed Lock Manager with Fencing Tokens</h2>
+<h2>Python Implementation: Distributed Lock Manager with Fencing Tokens</h2>
 <p>Here is a Python implementation simulating a Distributed Lock Manager with Monotonic Fencing Tokens and a Protected Storage Engine:</p>
 <pre><code class="language-python">import time
 from dataclasses import dataclass
@@ -280,7 +278,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(f&quot;\n📦 Final Database State: {storage.storage}&quot;)</code></pre>
 <hr>
-<h2>📊 Summary: Distributed Lock Technology Matrix</h2>
+<h2>Summary: Distributed Lock Technology Matrix</h2>
 <table>
 <thead>
 <tr>
@@ -322,7 +320,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>A distributed lock is only as safe as the storage system that enforces it.</p>
 <p>For non-critical task deduplication, <strong>Redis locks are fast and practical</strong>.</p>
 <p>However, for mission-critical financial balances and data integrity, <strong>always enforce Monotonically Increasing Fencing Tokens</strong> at the storage layer to mathematically prevent split-brain dual-write corruption.</p>

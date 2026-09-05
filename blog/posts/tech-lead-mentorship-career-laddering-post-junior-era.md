@@ -10,7 +10,7 @@ To prevent a future shortage of senior engineering talent, modern Tech Leads hav
 
 ---
 
-## 📖 The Evolved Career Progression Ladder
+## The Evolved Career Progression Ladder
 
 In the post-junior era, developer growth shifts from *syntax mastery* to *systems & architectural mastery*:
 
@@ -33,7 +33,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Tooling: Mentorship Code-Decomposition Generator
+## Python Tooling: Mentorship Code-Decomposition Generator
 
 To help junior developers understand complex AI-generated codebases, Tech Leads use automated code-decomposition tools. These tools analyze generated code modules and automatically synthesize architectural learning prompts for team mentoring sessions.
 
@@ -119,7 +119,7 @@ def update_shared_state(data):
 
 ---
 
-## ⚠️ Important Leadership Guardrails
+## Important Leadership Guardrails
 
 When updating career growth structures for AI-native teams, maintain these principles:
 
@@ -131,7 +131,7 @@ When updating career growth structures for AI-native teams, maintain these princ
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations implementing AI-first mentorship models report:
 * **2x Accelerated Time-to-Senior**: Early-career developers reach system architect capability years faster by focusing on architecture and verification from day one.
 * **Resilient Talent Pipeline**: Teams build sustainable, highly skilled engineering cultures capable of designing complex systems for decades to come.

@@ -12,7 +12,7 @@ This article details Bloom Filter bit-array mathematics, binary search Index Blo
 
 ---
 
-## 📖 LSM-Tree Fast Read Acceleration Pipeline
+## LSM-Tree Fast Read Acceleration Pipeline
 
 How Bloom Filters, Index Blocks, and Block Caches intercept read queries before touching disk:
 
@@ -46,7 +46,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Fast LSM Point Lookup Engine
+## Python Implementation: Fast LSM Point Lookup Engine
 
 Here is a production-grade Python implementation of an LSM Read Acceleration Pipeline featuring a Counting Bloom Filter, Index Block Binary Search, and LRU Block Cache:
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Read Acceleration Gotchas & Best Practices
+## Read Acceleration Gotchas & Best Practices
 
 When tuning LSM read path performance:
 
@@ -194,7 +194,7 @@ When tuning LSM read path performance:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Storage engines deploying Bloom Filters, Index Blocks, and Block Caches (such as **RocksDB** and **LevelDB**) report:
 * **Over 99% Reduction in Disk Reads for Negative Queries**: Intercepting non-existent key lookups via Bloom filters saves millions of unnecessary disk IOPS daily.
 * **Sub-100 Microsecond p99 Read Latencies**: Servicing repeated point lookups directly from LRU Block Cache matches in-memory database performance.

@@ -57,20 +57,11 @@ graph TD
 
 ## What's Good & What's Not
 
-```
-+---------------------------------------------------------------------------------------------------------------------+
-|                                              LOCAL RUNTIME TRADE-OFFS MATRIX                                        |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| What's Good (Pros)                                | What's Not (Cons)                                               |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| * Zero API Costs: Unlimited batch token processing| * High Capital Cost: Demands purchasing or leasing expensive     |
-|   without pay-per-token overhead.                 |   GPU servers (Nvidia A100/H100 or high-end consumer cards).   |
-| * High Ingestion Speed: Local vLLM servers process| * System Maintenance: Managing local hardware, model updates,  |
-|   thousands of tokens/sec using PagedAttention.   |   and server health requires dedicated devops resource hours.   |
-| * Data Privacy: Content remains inside local VPCs,| * Reasoning Gap: Quantized open-source models require active    |
-|   complying with strict security constraints.     |   prompt tuning to match frontier API reasoning.                |
-+---------------------------------------------------+-----------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Zero API Costs: Unlimited batch token processing without pay-per-token overhead. | * High Capital Cost: Demands purchasing or leasing expensive GPU servers (Nvidia A100/H100 or high-end consumer cards). |
+| * High Ingestion Speed: Local vLLM servers process thousands of tokens/sec using PagedAttention. | * System Maintenance: Managing local hardware, model updates, and server health requires dedicated devops resource hours. |
+| * Data Privacy: Content remains inside local VPCs, complying with strict security constraints. | * Reasoning Gap: Quantized open-source models require active prompt tuning to match frontier API reasoning. |
 
 ---
 
@@ -152,7 +143,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Running local LLM runtimes changes the economics of agentic applications. By deploying vLLM or Ollama alongside your cloud connections, you ensure maximum uptime and zero variable costs for batch work.
 

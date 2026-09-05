@@ -55,20 +55,11 @@ graph TD
 
 ## What's Good & What's Not
 
-```
-+---------------------------------------------------------------------------------------------------------------------+
-|                                              DECOUPLED QUEUE TRADE-OFFS MATRIX                                      |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| What's Good (Pros)                                | What's Not (Cons)                                               |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| * Infinite Scalability: Decouples server threads  | * Increased State Overhead: Frontends must support active       |
-|   from heavy agent computation tasks.             |   polling, WebSockets, or Server-Sent Events.                   |
-| * Built-In Rate-Limit Gates: Exponential retries   | * Multi-Service Setup: Demands running Redis alongside your      |
-|   prevent model API limits from crashing client runs|   primary application database, increasing DevOps tasks.        |
-| * Job Persistence: Tasks survive backend server   | * Complex Debugging: Distributed execution trace logs are       |
-|   restarts, continuing runs from cache.           |   harder to align than simple synchronous error stacks.         |
-+---------------------------------------------------+-----------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Infinite Scalability: Decouples server threads from heavy agent computation tasks. | * Increased State Overhead: Frontends must support active polling, WebSockets, or Server-Sent Events. |
+| * Built-In Rate-Limit Gates: Exponential retries prevent model API limits from crashing client runs | * Multi-Service Setup: Demands running Redis alongside your primary application database, increasing DevOps tasks. |
+| * Job Persistence: Tasks survive backend server restarts, continuing runs from cache. | * Complex Debugging: Distributed execution trace logs are harder to align than simple synchronous error stacks. |
 
 ---
 
@@ -161,7 +152,7 @@ if (require.main === module) {
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Event-driven queues are the foundation of stable enterprise AI platforms. By transitioning from synchronous block-on-request logic to asynchronous BullMQ workers, you protect your system from API failures, rate-limit blocks, and server crashes.
 

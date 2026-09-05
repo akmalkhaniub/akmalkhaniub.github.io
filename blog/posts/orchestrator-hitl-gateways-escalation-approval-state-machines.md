@@ -10,7 +10,7 @@ This article details how to design **HITL Gateways**, manage **JWT-signed approv
 
 ---
 
-## 📖 The HITL Approval State Machine
+## The HITL Approval State Machine
 
 When a task node inside an orchestrator DAG is marked as `REQUIRES_HUMAN_APPROVAL`, the execution engine transitions into a `WAITING_FOR_APPROVAL` state:
 
@@ -36,7 +36,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: HITL Approval Gateway & State Machine
+## Python Implementation: HITL Approval Gateway & State Machine
 
 Here is a production Python implementation of an Orchestrator State Machine that pauses execution at human approval checkpoints, verifies signed approval tokens, and enforces TTL escalation timeouts.
 
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Security Guardrails
+## Important Security Guardrails
 
 When building HITL Gateways, enforce these critical security boundaries:
 
@@ -164,7 +164,7 @@ When building HITL Gateways, enforce these critical security boundaries:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations implementing HITL Orchestrator Gateways report:
 * **Zero Accidental Destructive Operations**: 100% of sensitive operations (schema drops, payment transfers) require cryptographic human sign-off.
 * **Seamless Automation Balance**: Routine code generation runs autonomously, while high-risk boundaries remain safely controlled by human leads.

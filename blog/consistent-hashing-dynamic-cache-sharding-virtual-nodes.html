@@ -107,12 +107,12 @@
 <p>When scaling distributed cache clusters across multiple server nodes, data must be partitioned (sharded) so that read and write requests reach the correct cache node.</p>
 <p>A naive sharding approach uses simple modulo hashing:
 $$\text{node_index} = \text{hash}(\text{key}) \pmod N$$</p>
-<p>While simple, modulo hashing suffers from a catastrophic flaw: if a single cache node crashes or a new node is added ($N \to N+1$), <strong>nearly 100% of all cache keys map to different nodes</strong>. This triggers a global cache eviction event, overwhelming backend databases.</p>
+<p>While simple, modulo hashing suffers from a catastrophic flaw: if a single cache node crashes or a new node is added ($N → N+1$), <strong>nearly 100% of all cache keys map to different nodes</strong>. This triggers a global cache eviction event, overwhelming backend databases.</p>
 <p>To enable dynamic cluster scaling without invalidating the entire cache, software engineers deploy <strong>Consistent Hashing</strong> with <strong>Virtual Nodes (VNodes)</strong>.</p>
 <p>Consistent Hashing guarantees that when a node is added or removed, only $1/N$ of keys are re-mapped on average.</p>
 <p>This article details the math and implementation of Consistent Hashing hash rings with Virtual Nodes.</p>
 <hr>
-<h2>📖 Consistent Hashing Ring &amp; Virtual Node Architecture</h2>
+<h2>Consistent Hashing Ring &amp; Virtual Node Architecture</h2>
 <p>How keys map to physical cache nodes along a continuous $2^{32}-1$ hash space ring:</p>
 <div class="mermaid">graph TD
   subgraph Continuous Hash Ring Space (0 to 2^32 - 1)
@@ -136,7 +136,7 @@ $$\text{node_index} = \text{hash}(\text{key}) \pmod N$$</p>
 <li><strong>Virtual Nodes (VNodes)</strong>: If physical nodes are directly assigned single positions on the ring, non-uniform hash distributions create &quot;hotspot&quot; partitions where one server receives double the traffic of others. Virtual Nodes map each physical server to $V$ distinct points (e.g. $V = 150 - 250$) across the ring, ensuring uniform traffic distribution and proportional load capacity.</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Consistent Hashing Ring with VNodes</h2>
+<h2>Python Implementation: Consistent Hashing Ring with VNodes</h2>
 <p>Here is a production-grade Python implementation of a Consistent Hashing Ring with Virtual Nodes and load distribution auditing:</p>
 <pre><code class="language-python">import hashlib
 import bisect
@@ -250,7 +250,7 @@ if __name__ == &quot;__main__&quot;:
     
     print(&quot;\n✨ Consistent Hashing localized key movement to newly added node without invalidating full cluster!&quot;)</code></pre>
 <hr>
-<h2>🚨 Consistent Hashing Gotchas &amp; Best Practices</h2>
+<h2>Consistent Hashing Gotchas &amp; Best Practices</h2>
 <p>When deploying consistent hashing rings:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -263,7 +263,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
+<h2>Real-World Enterprise Impact</h2>
 <p>Teams deploying Consistent Hashing with Virtual Nodes report:</p>
 <ul>
 <li><strong>Minimal Cache Invalidation During Cluster Resizing</strong>: Adding or removing server nodes re-maps only $1/N$ of keys, preventing global cache misses.</li>

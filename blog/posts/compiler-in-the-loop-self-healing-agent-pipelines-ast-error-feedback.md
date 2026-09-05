@@ -34,7 +34,7 @@ graph TD
 
 ---
 
-## 💥 1. The Probabilistic Code Generation Trap
+## 1. The Probabilistic Code Generation Trap
 
 Why do large language models generate syntax and type errors even when prompting frontier models?
 
@@ -48,18 +48,16 @@ In a naive agent without compiler feedback, these errors propagate into producti
 
 ---
 
-## 🏛️ 2. The 3-Tier Multi-Stage Verification Gate
+## 2. The 3-Tier Multi-Stage Verification Gate
 
 To maximize speed and minimize token costs, the Compiler-in-the-Loop architecture organizes verification into **three cascading deterministic tiers**:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                3-TIER DETERMINISTIC VERIFICATION GATES                            |
-+---------------------------------------------------------------------------------------------------+
+> **3-TIER DETERMINISTIC VERIFICATION GATES**
 | Tier 1: In-Memory AST Validation (< 10ms)     : Python ast.parse() / TypeScript AST Validator      |
 | Tier 2: Static Type & Linter Suite (100-200ms): Pyright, MyPy, ESLint, TypeScript Compiler (tsc)  |
 | Tier 3: Sandboxed Execution Tests (500-1000ms): Containerized Pytest / Jest test runner in microVM|
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### Why Cascading Tiers Matter:
@@ -71,7 +69,7 @@ To maximize speed and minimize token costs, the Compiler-in-the-Loop architectur
 
 ---
 
-## 🔄 3. Targeted Diagnostic Feedback & Bounded Healing Loops
+## 3. Targeted Diagnostic Feedback & Bounded Healing Loops
 
 When a compiler error is detected, the agent should not receive the entire 10,000-line repository transcript.
 
@@ -104,7 +102,7 @@ sequenceDiagram
 
 ---
 
-## 🛠️ Python Implementation: Compiler-in-the-Loop Self-Healing Engine
+## Python Implementation: Compiler-in-the-Loop Self-Healing Engine
 
 Here is a Python implementation of a Compiler-in-the-Loop engine using Python's native `ast` parser and diagnostic extraction:
 
@@ -204,7 +202,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Raw LLM vs Compiler-in-the-Loop
+## Summary: Raw LLM vs Compiler-in-the-Loop
 
 | Architecture Dimension | Raw Prompting Agent | Compiler-in-the-Loop (CITL) |
 |---|---|---|
@@ -216,7 +214,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 Probabilistic reasoning and deterministic compilation are not opposites—they are **complementary halves of modern autonomous software engineering**.
 
 By placing compilers, language servers, and AST parsers in the loop, software teams transform unpredictable LLM code generators into **resilient, self-healing engineering swarms** capable of delivering pristine, production-ready codebases.

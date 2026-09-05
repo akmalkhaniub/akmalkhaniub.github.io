@@ -4,7 +4,7 @@ In social networks, e-commerce platforms, and messaging applications (**Facebook
 
 Storing billions of small files in traditional POSIX filesystems (**ext4**, **XFS**) leads to severe performance degradation:
 * **The OS Inode Bottleneck**: Each small file consumes an OS inode block. Storing $1,000,000,000$ files exhausts filesystem metadata limits long before physical disk space fills up.
-* **Disk Seek Amplification**: Reading a single file requires up to 3 or 4 physical disk seeks (`read directory block` $\to$ `read inode` $\to$ `read data block`).
+* **Disk Seek Amplification**: Reading a single file requires up to 3 or 4 physical disk seeks (`read directory block` → `read inode` → `read data block`).
 
 To serve billions of small files with **$O(1)$ single disk seek latency**, high-throughput infrastructure deploys specialized **Blob Storage Engines**.
 
@@ -14,7 +14,7 @@ This article details the POSIX inode bottleneck, append-only volume files, in-me
 
 ---
 
-## 📖 Blob Engine Architecture: Inode Bottleneck vs Volume Files
+## Blob Engine Architecture: Inode Bottleneck vs Volume Files
 
 How Facebook Haystack and Bitcask replace POSIX directory trees with single-seek Append-Only Volume Files:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Bitcask / SeaweedFS Append-Only Engine
+## Python Implementation: Bitcask / SeaweedFS Append-Only Engine
 
 Here is a production-grade Python implementation of an Append-Only Blob Storage Engine with an In-Memory KeyDir Index and Volume Compaction:
 
@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Blob Storage Gotchas & Best Practices
+## Blob Storage Gotchas & Best Practices
 
 When engineering blob storage systems:
 
@@ -179,7 +179,7 @@ When engineering blob storage systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed blob storage engines (such as **Facebook Haystack**, **SeaweedFS**, and **Riak Bitcask**) report:
 * **Over $10\times$ Higher Photo Throughput**: Bundling small files into large volume files eliminates OS inode lock contention and directory traversal penalties.
 * **$O(1)$ Single Disk Seek Latency**: Reading any small file from disk requires exactly 1 physical seek, serving billions of media files with sub-millisecond P99 response times.

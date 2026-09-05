@@ -10,7 +10,7 @@ This article details how to design multi-region active-active architectures and 
 
 ---
 
-## 📖 Multi-Region Active-Active Routing Topology
+## Multi-Region Active-Active Routing Topology
 
 Global Anycast DNS routing and cross-region asynchronous database replication:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Multi-Region Traffic Router & Failover Engine
+## Python Implementation: Multi-Region Traffic Router & Failover Engine
 
 Here is a production-grade Python simulation of a Multi-Region Global Traffic Router featuring latency-based routing, health probing, and automated region failover:
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Multi-Region Gotchas & Best Practices
+## Multi-Region Gotchas & Best Practices
 
 When building active-active multi-region systems:
 
@@ -153,7 +153,7 @@ When building active-active multi-region systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying multi-region active-active architectures report:
 * **99.999% High Availability**: Automated regional failover ensures seamless operation even during catastrophic cloud datacenter outages.
 * **Single-Digit Latencies Globally**: Routing requests to the nearest edge datacenter dramatically improves user experience worldwide.

@@ -12,7 +12,7 @@ This article details the mechanics of **Cache-Aside**, **Write-Through**, and **
 
 ---
 
-## 📖 Distributed Cache Architecture & Update Strategies
+## Distributed Cache Architecture & Update Strategies
 
 How Cache-Aside (Lazy Loading) and Write-Behind (Async Batching) handle database synchronization:
 
@@ -58,7 +58,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Cache Engine with XFetch Early Expiration
+## Python Implementation: Cache Engine with XFetch Early Expiration
 
 Here is a production-grade Python implementation of a Distributed Cache Engine featuring Cache-Aside invalidation, Write-Behind batching, and XFetch Probabilistic Early Expiration:
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Cache Architecture Gotchas & Best Practices
+## Cache Architecture Gotchas & Best Practices
 
 When deploying distributed caches:
 
@@ -175,7 +175,7 @@ When deploying distributed caches:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 High-scale caching architectures (such as **Redis Enterprise**, **Dragonfly**, and **Meta Memcached clusters**) report:
 * **Over $100\times$ Latency Improvement**: In-memory cache hits deliver sub-millisecond responses ($<200\mu\text{s}$) compared to relational database disk I/O ($20\text{ms}$).
 * **Zero Database Crashes from Stampedes**: XFetch probabilistic early expiration smooths out cache refreshment spikes, maintaining flat database CPU load during viral traffic events.

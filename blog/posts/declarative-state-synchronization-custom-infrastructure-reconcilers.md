@@ -10,7 +10,7 @@ This article details how to build custom declarative reconcilers using Level-Tri
 
 ---
 
-## 📖 Declarative State Reconciliation Architecture
+## Declarative State Reconciliation Architecture
 
 How a Declarative Reconciler evaluates Level-Triggered state diffs and drives infrastructure convergence:
 
@@ -39,7 +39,7 @@ graph TD
 ```
 
 ### Core Declarative Principles
-1. **Imperative vs Declarative**: Imperative scripts execute sequence steps ($A \to B \to C$) and are not idempotent. Declarative engines define target state ($S_{\text{target}}$) and compute state transition operations ($\Delta = S_{\text{target}} - S_{\text{actual}}$).
+1. **Imperative vs Declarative**: Imperative scripts execute sequence steps ($A → B → C$) and are not idempotent. Declarative engines define target state ($S_{\text{target}}$) and compute state transition operations ($\Delta = S_{\text{target}} - S_{\text{actual}}$).
 2. **Level-Triggered vs Edge-Triggered**:
    * *Edge-Triggered*: Reconciler runs only when an event notification fires (e.g. "File Created"). If the notification message is lost, the system remains out of sync.
    * *Level-Triggered*: Reconciler checks the *current state level* periodically regardless of events. Even if individual event messages are dropped, level-triggered loops guarantee eventual state convergence.
@@ -47,7 +47,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Custom Declarative Infrastructure Reconciler
+## Python Implementation: Custom Declarative Infrastructure Reconciler
 
 Here is a production-grade Python implementation of a Declarative Infrastructure Reconciler featuring Three-Way State Diffing and Level-Triggered execution:
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Declarative Reconciliation Gotchas
+## Declarative Reconciliation Gotchas
 
 When engineering declarative state sync engines:
 
@@ -172,7 +172,7 @@ When engineering declarative state sync engines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying declarative state synchronization report:
 * **Zero Configuration Drift**: Continuous level-triggered reconciliation automatically resets unauthorized manual changes back to verified code specifications.
 * **100% Idempotent Provisioning**: Reconcilers can be executed thousands of times safely without duplicate resource creation or infrastructure corruption.

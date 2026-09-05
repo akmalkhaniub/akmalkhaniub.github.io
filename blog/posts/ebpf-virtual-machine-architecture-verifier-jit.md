@@ -14,7 +14,7 @@ This article details the 64-bit eBPF virtual machine, static verifier safety che
 
 ---
 
-## 📖 eBPF Verification & JIT Execution Architecture
+## eBPF Verification & JIT Execution Architecture
 
 How eBPF programs pass static kernel verification before JIT compilation into native assembly:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: eBPF Bytecode Emulator & Static Verifier
+## Python Implementation: eBPF Bytecode Emulator & Static Verifier
 
 Here is a production-grade Python implementation of an eBPF Bytecode Emulator and Static Safety Verifier Engine:
 
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 eBPF Development Gotchas & Best Practices
+## eBPF Development Gotchas & Best Practices
 
 When writing eBPF kernel programs:
 
@@ -182,7 +182,7 @@ When writing eBPF kernel programs:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 eBPF technology (powering **Cilium**, **Falco**, and **Pixie**) reports:
 * **Over 80% Reduction in Network CPU Overhead**: Bypassing traditional Linux network stack processing via eBPF XDP programs dramatically reduces CPU usage.
 * **Kernel-Level Zero-Day Threat Detection**: Security agents intercept system calls and container process executions in real time with zero kernel panic risk.

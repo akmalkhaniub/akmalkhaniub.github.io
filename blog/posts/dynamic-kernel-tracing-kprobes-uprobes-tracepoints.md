@@ -12,7 +12,7 @@ This article details Kprobe instruction patching, Uprobe user-space symbol track
 
 ---
 
-## 📖 Linux Tracing Subsystems & eBPF Event Pipeline
+## Linux Tracing Subsystems & eBPF Event Pipeline
 
 How Kprobes, Uprobes, and Tracepoints capture telemetry events inside the kernel:
 
@@ -47,7 +47,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Kprobe & Uprobe Event Telemetry Dispatcher
+## Python Implementation: Kprobe & Uprobe Event Telemetry Dispatcher
 
 Here is a production-grade Python implementation of a Kprobe and Uprobe Event Telemetry Dispatcher Engine:
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Dynamic Tracing Gotchas & Best Practices
+## Dynamic Tracing Gotchas & Best Practices
 
 When deploying eBPF tracing programs:
 
@@ -158,7 +158,7 @@ When deploying eBPF tracing programs:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms adopting eBPF dynamic tracing (such as **Datadog**, **New Relic**, and **bpftrace**) report:
 * **Zero Application Modifications**: Instrumenting user-space binaries (OpenSSL, MySQL) delivers deep APM observability without modifying source code or re-deploying containers.
 * **Under 1% Performance Overhead**: Replacing `ptrace()` with in-kernel eBPF probes reduces profiling overhead from $500\times$ down to less than $1\%$.

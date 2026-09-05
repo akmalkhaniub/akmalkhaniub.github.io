@@ -10,7 +10,7 @@ This article details the end-to-end mechanics required to build fault-tolerant E
 
 ---
 
-## 📖 Kafka Two-Phase Commit Transactional Architecture
+## Kafka Two-Phase Commit Transactional Architecture
 
 The two-phase commit protocol coordinating atomic multi-partition writes:
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Transactional Kafka Producer & EOS Pipeline
+## Python Implementation: Transactional Kafka Producer & EOS Pipeline
 
 Here is a production-grade Python simulation of an Idempotent Transactional Kafka Producer and Read-Committed Consumer pipeline:
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 EOS Implementation Gotchas & Guardrails
+## EOS Implementation Gotchas & Guardrails
 
 When configuring Exactly-Once Semantics:
 
@@ -158,7 +158,7 @@ When configuring Exactly-Once Semantics:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying EOS pipelines with Kafka report:
 * **Zero Duplicate Payments**: Idempotent producers and transactional commit markers prevent duplicate financial charges during network socket drops.
 * **Flawless Multi-Topic Consistency**: Atomic transactions guarantee that downstream read databases remain perfectly synchronized with upstream message streams.

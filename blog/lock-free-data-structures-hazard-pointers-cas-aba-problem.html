@@ -111,7 +111,7 @@
 <p>However, lock-free pointer manipulations introduce subtle concurrency pitfalls: <strong>The ABA Problem</strong> and <strong>Safe Memory Reclamation</strong>.</p>
 <p>This article details Atomic CAS loops, Michael-Scott Lock-Free Queues, the ABA problem, and Hazard Pointers.</p>
 <hr>
-<h2>📖 Atomic CAS &amp; Hazard Pointer Protection Architecture</h2>
+<h2>Atomic CAS &amp; Hazard Pointer Protection Architecture</h2>
 <p>How Lock-Free Queues use Compare-And-Swap (CAS) and Hazard Pointers to prevent memory corruption:</p>
 <div class="mermaid">graph TD
   subgraph Lock-Free CAS Retry Loop
@@ -134,7 +134,7 @@
 <h3>Core Lock-Free Concurrency Mechanics</h3>
 <ol>
 <li><strong>Atomic Compare-And-Swap (CAS)</strong>: A hardware-level atomic instruction (<code>LOCK CMPXCHG</code> on x86, <code>LDREX/STREX</code> or <code>CAS</code> on ARM64) that performs an atomic read-modify-write:
-$$\text{CAS}(\text{location}, \text{expected_val}, \text{new_val}) \to \text{bool}$$
+$$\text{CAS}(\text{location}, \text{expected_val}, \text{new_val}) → \text{bool}$$
 If <code>*location == expected_val</code>, the CPU updates <code>*location = new_val</code> and returns <code>True</code>. If another thread modified the location first, CAS fails and returns <code>False</code>, prompting the thread to retry its loop.</li>
 <li><strong>The ABA Problem</strong>: A classic lock-free race condition:<ul>
 <li>Thread 1 reads pointer <code>A</code> from the head of a lock-free stack.</li>
@@ -146,7 +146,7 @@ If <code>*location == expected_val</code>, the CPU updates <code>*location = new
 <li><strong>Hazard Pointers (Safe Memory Reclamation)</strong>: In lock-free data structures, a thread cannot safely call <code>free(node)</code> because another thread might be dereferencing <code>node-&gt;next</code> concurrently. Before reading a node, a thread publishes the node&#39;s memory address to its thread-local <strong>Hazard Pointer slot</strong>. Freeing threads check the global Hazard Pointer list, deferring memory deletion until no reader holds a hazard pointer to that address.</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Lock-Free Stack with ABA Protection &amp; Hazard Pointers</h2>
+<h2>Python Implementation: Lock-Free Stack with ABA Protection &amp; Hazard Pointers</h2>
 <p>Here is a production-grade Python simulation of a Lock-Free Treiber Stack with Tagged Pointers (ABA Protection) and Hazard Pointer memory reclamation:</p>
 <pre><code class="language-python">import threading
 import time
@@ -272,7 +272,7 @@ if __name__ == &quot;__main__&quot;:
     for t in threads: t.start()
     for t in threads: t.join()</code></pre>
 <hr>
-<h2>🚨 Lock-Free Concurrency Gotchas &amp; Best Practices</h2>
+<h2>Lock-Free Concurrency Gotchas &amp; Best Practices</h2>
 <p>When designing lock-free data structures:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -285,7 +285,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
+<h2>Real-World Enterprise Impact</h2>
 <p>High-concurrency systems utilizing lock-free data structures (such as <strong>LMAX Disruptor</strong>, <strong>Linux Kernel RCU</strong>, and <strong>Jellyfish</strong>) report:</p>
 <ul>
 <li><strong>$10\times$ Higher Multi-Core Throughput</strong>: Processing tens of millions of concurrent operations per second without lock acquisition delays.</li>

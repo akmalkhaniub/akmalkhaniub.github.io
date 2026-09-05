@@ -12,7 +12,7 @@ This article details Idempotent Producer sequence deduplication, 2PC Transaction
 
 ---
 
-## 📖 Exactly-Once Semantics (EOS) & DLQ Retry Architecture
+## Exactly-Once Semantics (EOS) & DLQ Retry Architecture
 
 How 2PC Transactions guarantee Exactly-Once processing while DLQ topics safely handle poison pill messages:
 
@@ -54,7 +54,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Idempotent Producer & DLQ Retry Engine
+## Python Implementation: Idempotent Producer & DLQ Retry Engine
 
 Here is a production-grade Python implementation of an Idempotent Transactional Producer and DLQ Retry Engine Simulator:
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Reliable Streaming Gotchas & Best Practices
+## Reliable Streaming Gotchas & Best Practices
 
 When engineering fault-tolerant streaming pipelines:
 
@@ -168,7 +168,7 @@ When engineering fault-tolerant streaming pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Reliable event streaming architectures (in **Financial Systems**, **E-Commerce Order Processing**, and **Telemetry Ingestion**) report:
 * **Zero Duplicate Payment Side-Effects**: Idempotent producer deduplication (`PID` + sequence numbers) guarantees transactional integrity.
 * **$99.999\%$ Pipeline Uptime**: Poison pill isolation via Retry Topics and DLQs prevents crashing worker consumer threads.

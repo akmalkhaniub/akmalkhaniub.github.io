@@ -12,7 +12,7 @@ This article details how to design an intelligent hybrid model router gateway.
 
 ---
 
-## 📖 Dynamic Model Cascading Architecture
+## Dynamic Model Cascading Architecture
 
 The router gateway sits between orchestrator swarms and execution model targets:
 
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Hybrid Model Router Gateway
+## Python Implementation: Hybrid Model Router Gateway
 
 Here is a production Python implementation of a Dynamic Model Router Gateway that classifies incoming tasks, routes them across model tiers, enforces fallback verification, and tracks token costs:
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Router Engineering Guardrails
+## Important Router Engineering Guardrails
 
 When deploying dynamic model cascading in enterprise platforms:
 
@@ -172,7 +172,7 @@ When deploying dynamic model cascading in enterprise platforms:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying Dynamic Model Cascading report:
 * **85% Reduction in Monthly API Bills**: Offloading routine JSON formatting and tool calls to local SLMs saves tens of thousands of dollars in cloud API tokens.
 * **10x Faster Average Task Latency**: Local SLM execution drops median response time from 1,200ms down to 80ms for 70%+ of agent subtasks.

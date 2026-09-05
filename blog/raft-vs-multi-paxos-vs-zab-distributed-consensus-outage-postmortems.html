@@ -120,24 +120,20 @@
     Raft[&quot;Raft (2014)\n• Strong Leader / No Holes\n• Term-Based Quorum\n• Powering: etcd, CockroachDB, KRaft&quot;]
   end</div>
 <hr>
-<h2>🧮 1. Quorum Mechanics &amp; The State Machine Replication Paradigm</h2>
+<h2>1. Quorum Mechanics &amp; The State Machine Replication Paradigm</h2>
 <p>In a replicated state machine, an ensemble of $N$ nodes processes client commands.</p>
 <p>To tolerate $F$ node crash failures or network partitions without split-brain, the cluster requires a <strong>Majority Quorum ($Q$)</strong>:</p>
-<p>$$Q = \left\lfloor \frac{N}{2} \right\rfloor + 1 \quad \implies \quad N \ge 2F + 1$$</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 CLUSTER QUORUM TOLERANCE TABLE                                    |
-+---------------------------------------------------------------------------------------------------+
+<p>$$Q = \left\lfloor \frac{N}{2} \right\rfloor + 1 \quad ⟹ \quad N \ge 2F + 1$$</p>
+<pre><code class="language-plaintext">&gt; **CLUSTER QUORUM TOLERANCE TABLE**
 | Nodes (N) | Majority Quorum (Q) | Tolerable Failures (F) | Why Even Node Counts are Discouraged   |
 | 3         | 2 nodes             | 1 failure              | Baseline production deployment         |
 | 4         | 3 nodes             | 1 failure              | 🚨 Adds 1 node overhead, 0 extra fault |
 | 5         | 3 nodes             | 2 failures             | Standard enterprise high-availability  |
 | 7         | 4 nodes             | 3 failures             | Global geo-distributed control planes  |
-+---------------------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <hr>
-<h2>⚔️ 2. Architectural Comparison: Raft vs Multi-Paxos vs Zab</h2>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 CONSENSUS ALGORITHM COMPARISON MATRIX                             |
-+---------------------------------------------------------------------------------------------------+
+<h2>2. Architectural Comparison: Raft vs Multi-Paxos vs Zab</h2>
+<pre><code class="language-plaintext">&gt; **CONSENSUS ALGORITHM COMPARISON MATRIX**
 | Dimension            | Multi-Paxos               | Raft                      | Zab (ZooKeeper)    |
 | Leader Model         | Weak / Settle-on-demand   | Strong (Log flows 1-way)  | Strong Primary     |
 | Log Holes Permitted? | YES (Out-of-order slots)  | NO (Strict append-only)   | NO (Strict prefix) |
@@ -145,7 +141,7 @@
 | Sequence Identifier  | Ballot Number / Slot ID   | Term + Log Index          | 64-bit zxid (Epoch)|
 | Membership Changes   | Alpha Reconfigurations    | Joint Consensus (Cold/New)| Dynamic Reconfig   |
 | Primary Implementers | Google Spanner, Chubby    | etcd, CockroachDB, TiKV   | Apache ZooKeeper   |
-+---------------------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <hr>
 <h3>1. Multi-Paxos (Lamport)</h3>
 <p>Basic Paxos requires <strong>two network round-trips</strong> per consensus decision:</p>
@@ -194,7 +190,7 @@
 </li>
 </ul>
 <hr>
-<h2>💥 3. Real-World Production Outage Post-Mortems</h2>
+<h2>3. Real-World Production Outage Post-Mortems</h2>
 <h3>Post-Mortem 1: The Kubernetes <code>etcd</code> Split-Brain Partition Thrash</h3>
 <ul>
 <li><strong>Incident</strong>: A network blip severed Node $A$ from the rest of a 3-node etcd cluster. Node $A$ immediately timed out, incremented its term number, and broadcasted <code>RequestVote</code>.</li>
@@ -208,7 +204,7 @@
 <li><strong>The Fix: Read-Index &amp; Lease Verification</strong>: For linearizable reads without writing to disk, the leader queries the quorum to verify its lease before returning read results to clients.</li>
 </ul>
 <hr>
-<h2>🛠️ Python Implementation: Multi-Node Raft Consensus Engine</h2>
+<h2>Python Implementation: Multi-Node Raft Consensus Engine</h2>
 <p>Here is a Python implementation of a 3-node Raft consensus cluster with randomized election timeouts, vote coordination, and log entry quorum replication:</p>
 <pre><code class="language-python">import random
 import time
@@ -302,7 +298,7 @@ if __name__ == &quot;__main__&quot;:
     cluster[&quot;node-1&quot;].propose_command(&quot;SET user:101 = 'Alice'&quot;, cluster)
     cluster[&quot;node-1&quot;].propose_command(&quot;SET balance:101 = 5000&quot;, cluster)</code></pre>
 <hr>
-<h2>📊 Summary: Consensus Trade-Offs</h2>
+<h2>Summary: Consensus Trade-Offs</h2>
 <table>
 <thead>
 <tr>
@@ -338,7 +334,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>Consensus algorithms are the bedrock upon which modern global software is built.</p>
 <p>Whether your architecture relies on <strong>Raft for strict operational clarity</strong>, <strong>Multi-Paxos for parallel multi-slot throughput</strong>, or <strong>Zab for pipelined hierarchical state</strong>, mastering quorum mechanics, pre-vote guards, and read-index leases is essential for building 99.999% resilient distributed platforms.</p>
 

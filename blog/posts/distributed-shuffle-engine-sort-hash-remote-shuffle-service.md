@@ -14,7 +14,7 @@ This article details Map-side shuffle partitioning, Hash vs Sort Shuffle disk st
 
 ---
 
-## 📖 Distributed Shuffle Architecture: Hash vs Sort vs Remote Shuffle
+## Distributed Shuffle Architecture: Hash vs Sort vs Remote Shuffle
 
 How distributed engines manage map-side shuffle output files and how Remote Shuffle Services eliminate executor disk dependencies:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Map-Side Sort Shuffle Engine & Indexer
+## Python Implementation: Map-Side Sort Shuffle Engine & Indexer
 
 Here is a production-grade Python implementation of a Map-Side Sort Shuffle Engine featuring In-Memory Sorting, Single Data File Generation, and Reducer Offset Indexing:
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Distributed Shuffle Gotchas & Best Practices
+## Distributed Shuffle Gotchas & Best Practices
 
 When tuning distributed data pipelines:
 
@@ -163,7 +163,7 @@ When tuning distributed data pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Modern distributed shuffle engine architectures (such as **Apache Spark Sort Shuffle**, **Apache Uniffle**, and **Celeborn**) report:
 * **Over $90\%$ Reduction in Open File Descriptors**: Replacing Hash Shuffle ($M \times R$ files) with Sort Shuffle ($2M$ files) prevents OS file handle exhaustion crashes.
 * **Support for Multi-Petabyte Shuffles**: Remote Shuffle Services enable elastic, diskless cloud Spark execution without local storage capacity limits.

@@ -14,7 +14,7 @@ This article details Envoy C++ L7 proxy architecture, Istio xDS dynamic discover
 
 ---
 
-## 📖 Service Mesh Architecture & eBPF Socket Redirection
+## Service Mesh Architecture & eBPF Socket Redirection
 
 How traditional Sidecar proxies compare to eBPF-accelerated kernel socket redirection:
 
@@ -50,13 +50,13 @@ graph TD
      * **CDS (Cluster Discovery Service)**: Configures upstream service clusters.
      * **EDS (Endpoint Discovery Service)**: Pushes real-time Pod IP addresses.
 3. **Sidecar-Less eBPF Optimization (`sockmap` / `sk_msg`)**:
-   * *The Sidecar Latency Tax*: Traversing `iptables`, TCP stack overhead, and dual user-space/kernel context switches (Pod $\to$ Kernel $\to$ Envoy $\to$ Kernel $\to$ Wire) adds $1\text{ms}$ to $3\text{ms}$ of latency per hop.
+   * *The Sidecar Latency Tax*: Traversing `iptables`, TCP stack overhead, and dual user-space/kernel context switches (Pod → Kernel → Envoy → Kernel → Wire) adds $1\text{ms}$ to $3\text{ms}$ of latency per hop.
    * **eBPF `BPF_MAP_TYPE_SOCKMAP`**: Attaches an eBPF program directly to Linux kernel TCP sockets (`bpf_sock_map`).
    * When Container A writes to its socket targeting Container B on the same node, the eBPF `sk_msg` program intercepts the data buffer in kernel space and **redirects it directly to Container B's socket queue**—bypassing the entire TCP/IP stack and user-space proxy overhead!
 
 ---
 
-## 🛠️ Python Implementation: eBPF Sockmap Bypass & xDS Control Plane Simulator
+## Python Implementation: eBPF Sockmap Bypass & xDS Control Plane Simulator
 
 Here is a production-grade Python implementation of an eBPF Socket Map (`sockmap`) Kernel Bypass Engine and Istio xDS Control Plane Config Dispatcher:
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Service Mesh Gotchas & Best Practices
+## Service Mesh Gotchas & Best Practices
 
 When operating a service mesh:
 
@@ -150,7 +150,7 @@ When operating a service mesh:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Service mesh infrastructure powered by Envoy and eBPF (such as **Cilium Service Mesh**, **Istio Ambient Mesh**, and **Envoy Mobile**) reports:
 * **Over $80\%$ Reduction in Inter-Service Network Latency**: eBPF `sockmap` kernel socket redirection eliminates `iptables` and TCP stack traversal penalties.
 * **100% Zero-Code Polyglot Observability**: Automatic mTLS encryption, Prometheus metrics collection, and distributed tracing without modifying application source code.

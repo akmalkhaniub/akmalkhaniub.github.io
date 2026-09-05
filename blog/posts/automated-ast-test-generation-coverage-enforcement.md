@@ -12,7 +12,7 @@ This article details how to build an AST-driven test generator and enforce cover
 
 ---
 
-## 📖 AST-Driven Test Generation Architecture
+## AST-Driven Test Generation Architecture
 
 The AST Test Synthesizer parses source code into structural nodes before prompting an LLM to generate targeted assertions:
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: AST Structural Test Synthesizer
+## Python Implementation: AST Structural Test Synthesizer
 
 Here is a production Python implementation using Python's native `ast` module (`ast.NodeVisitor`) that analyzes target functions, extracts branch decision paths, and generates structured test templates:
 
@@ -150,7 +150,7 @@ def process_user_order(order_id: str, amount: float, is_vip: bool) -> bool:
 
 ---
 
-## ⚠️ Important AST Test Generation Guardrails
+## Important AST Test Generation Guardrails
 
 When automating AST test generation in CI/CD:
 
@@ -162,7 +162,7 @@ When automating AST test generation in CI/CD:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying AST Automated Test Generation report:
 * **100% Branch Coverage Compliance**: AST branch extraction ensures zero un-tested conditional paths in production pull requests.
 * **10x Faster Test Creation**: Automating structural test template generation saves developers hours of boilerplate setup per feature.

@@ -107,7 +107,7 @@
 <p>After validating and fine-tuning your Small Language Model (SLM) on agent execution datasets, the final challenge is deploying the model into production. Unlike large-scale API endpoints that run on massive server clusters, SLMs are typically hosted on single-GPU instances or edge servers.</p>
 <p>To support high-throughput agent loops under 50ms per token, we must optimize serving latency. This article covers <strong>quantization formats (AWQ, GPTQ, GGUF)</strong>, <strong>PagedAttention memory management</strong>, and production configuration tuning inside high-performance inference engines like <strong>vLLM</strong>.</p>
 <hr>
-<h2>📖 The Production Bottleneck: KV Cache Allocation</h2>
+<h2>The Production Bottleneck: KV Cache Allocation</h2>
 <p>In autoregressive generation, the model predicts tokens one-by-one. To speed up calculations, the key-value (KV) states of all previous tokens are cached in VRAM (the <strong>KV Cache</strong>).</p>
 <p>In traditional serving frameworks (like Hugging Face Transformers), VRAM is allocated statically and contiguously for each request. This causes two massive inefficiencies:</p>
 <ol>
@@ -124,7 +124,7 @@
   F --&gt; G[Supports 4x higher concurrency]</div>
 <p><strong>vLLM</strong> solves this by introducing <strong>PagedAttention</strong>, which partitions the KV cache into logical blocks mapped to non-contiguous physical pages in VRAM, mimicking virtual memory paging in operating systems. This reduces VRAM waste to near zero, enabling 2–4× higher batch sizes and concurrency.</p>
 <hr>
-<h2>🛠️ Production-Grade vLLM Serving Configuration</h2>
+<h2>Production-Grade vLLM Serving Configuration</h2>
 <p>Here is a Python script to initialize a high-throughput vLLM engine instance for a quantized 4-bit AWQ model, configuring PagedAttention parameters and KV cache limits for production.</p>
 <pre><code class="language-python">from vllm import LLM, SamplingParams
 import os
@@ -180,7 +180,7 @@ if __name__ == &quot;__main__&quot;:
     response = execute_agent_prompt(test_query)
     print(f&quot;Engine response:\n{response}&quot;)</code></pre>
 <hr>
-<h2>⚖️ Quantization Trade-offs (AWQ vs. GGUF vs. GPTQ)</h2>
+<h2>Quantization Trade-offs (AWQ vs. GGUF vs. GPTQ)</h2>
 <p>When selecting a serving model, developers must choose the appropriate format:</p>
 <ol>
 <li><strong>AWQ (Activation-aware Weight Quantization)</strong>:<ul>
@@ -200,7 +200,7 @@ if __name__ == &quot;__main__&quot;:
 </li>
 </ol>
 <hr>
-<h2>⚠️ Important Pitfalls in Model Serving</h2>
+<h2>Important Pitfalls in Model Serving</h2>
 <p>Keep these constraints in mind to prevent service interruptions:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>

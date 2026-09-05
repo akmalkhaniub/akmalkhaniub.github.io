@@ -14,7 +14,7 @@ This article details Gorilla **Delta-of-Delta Timestamp Encoding**, **IEEE 754 F
 
 ---
 
-## 📖 Gorilla Time-Series Compression Architecture
+## Gorilla Time-Series Compression Architecture
 
 How Gorilla combines Delta-of-Delta Timestamp Encoding and Floating-Point XOR Bit-Packing to achieve $12\times$ compression:
 
@@ -50,7 +50,7 @@ graph TD
      * If $-2047 \le D_D \le 2048$: Store header `'1110'` followed by $12\text{ bits}$ (16 bits total).
      * Otherwise: Store header `'1111'` followed by $32\text{ bits}$ (36 bits total).
 2. **IEEE 754 Floating-Point XOR Compression**:
-   * Sequential metric values (e.g. CPU temperature $45.10 \to 45.12$) share near-identical 64-bit IEEE 754 bit representations (matching sign, exponent, and high mantissa bits).
+   * Sequential metric values (e.g. CPU temperature $45.10 → 45.12$) share near-identical 64-bit IEEE 754 bit representations (matching sign, exponent, and high mantissa bits).
    * **XOR Delta Computation**: $\text{XOR} = \text{Bits}(V_n) \oplus \text{Bits}(V_{n-1})$.
    * *Float Bit Encoding Rules*:
      * If $\text{XOR} == 0$ (value unchanged): Store a single `'0'` bit!
@@ -62,7 +62,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Gorilla Time-Series Compressor & Decompressor Engine
+## Python Implementation: Gorilla Time-Series Compressor & Decompressor Engine
 
 Here is a production-grade Python implementation of a Gorilla Time-Series Compressor and Bit-Stream Decompressor Simulator:
 
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Time-Series Compression Gotchas & Best Practices
+## Time-Series Compression Gotchas & Best Practices
 
 When configuring time-series telemetry storage:
 
@@ -183,7 +183,7 @@ When configuring time-series telemetry storage:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Time-series compression algorithms (such as **Gorilla**, powering **Prometheus**, **VictoriaMetrics**, and **InfluxDB**) report:
 * **Over $12\times$ Reduction in Memory & Disk Footprint**: Shrinks raw metric data points from $16\text{ Bytes}$ down to an average of $1.37\text{ Bytes}$.
 * **$10\times$ Faster Metric Query Scan Speeds**: Smaller compressed block sizes allow CPU caches to scan millions of metric data points per second with minimal memory bus traffic.

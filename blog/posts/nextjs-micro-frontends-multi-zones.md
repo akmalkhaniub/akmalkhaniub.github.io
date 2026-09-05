@@ -139,7 +139,7 @@ export const config = {
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Next.js transforms micro frontends from a client-side bundle nightmare into a fast, server-orchestrated pattern:
 * [ ] **Always declare an `assetPrefix`**: Prevent client-side JS/CSS chunk collisions by separating static paths for each sub-app.

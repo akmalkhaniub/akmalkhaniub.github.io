@@ -93,7 +93,7 @@ Once running, the container exposes an OpenAI-compatible API on port `8000`, all
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Selecting the right quantization format is critical for local LLM cost and speed:
 * [ ] **Choose GGUF for edge/local client dev**: GGUF is perfect for running on laptops (macOS/Windows) because it allows CPU RAM offloading.

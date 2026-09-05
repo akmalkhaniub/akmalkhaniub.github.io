@@ -12,7 +12,7 @@ This article details Kafka sequential disk log segments, OS PageCache mechanics,
 
 ---
 
-## 📖 Storage Architecture Comparison: Kafka vs Apache Pulsar
+## Storage Architecture Comparison: Kafka vs Apache Pulsar
 
 How Kafka's coupled PageCache Zero-Copy model compares to Apache Pulsar's disaggregated BookKeeper ledger architecture:
 
@@ -38,7 +38,7 @@ graph TD
    * **Coupled Compute + Storage**: Kafka broker nodes handle both client TCP connections and physical disk log partition storage (`/var/lib/kafka/data/topic-0/0000.log`).
    * **OS PageCache Primacy**: Kafka avoids allocating large JVM heap buffers for message caching, relying instead on the Linux kernel PageCache. This avoids JVM GC pause overhead and maximizes available RAM utilization.
    * **`sendfile()` Zero-Copy Transfer**:
-     * *Traditional I/O (4 Context Switches, 2 CPU Copying Loops)*: Read disk to kernel buffer $\to$ Copy to JVM user buffer $\to$ Copy to socket buffer $\to$ Write to NIC.
+     * *Traditional I/O (4 Context Switches, 2 CPU Copying Loops)*: Read disk to kernel buffer → Copy to JVM user buffer → Copy to socket buffer → Write to NIC.
      * *Linux `sendfile()` Zero-Copy (2 Context Switches, 0 CPU Copy Loops)*: Transfers data directly from kernel PageCache to NIC DMA buffer using Direct Memory Access (DMA), cutting CPU context switching overhead in half!
 2. **Apache Pulsar Disaggregated Storage Architecture**:
    * **Decoupled Architecture**: Pulsar separates stateless **Broker Nodes** (which handle pub/sub routing and protocol parsing) from **Storage Nodes (Bookies)** running **Apache BookKeeper**.
@@ -53,7 +53,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Kafka Zero-Copy vs Pulsar BookKeeper Engine
+## Python Implementation: Kafka Zero-Copy vs Pulsar BookKeeper Engine
 
 Here is a production-grade Python implementation of a Kafka Zero-Copy PageCache Replicator and a Pulsar BookKeeper Ledger Quorum Engine Simulator:
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Messaging Storage Gotchas & Best Practices
+## Messaging Storage Gotchas & Best Practices
 
 When choosing a streaming storage architecture:
 
@@ -156,7 +156,7 @@ When choosing a streaming storage architecture:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Streaming storage architectures (such as **Kafka PageCache Zero-Copy** and **Pulsar BookKeeper**) report:
 * **Over $4\times$ Higher Network Transfer Rates via Zero-Copy**: Eliminating CPU user-space copying loops with Linux `sendfile()` allows Kafka brokers to saturate 100Gbps network interfaces.
 * **Instant Elastic Auto-Scaling**: Pulsar's disaggregated BookKeeper architecture enables cluster scaling without moving gigabytes of historical log data.

@@ -11,7 +11,7 @@ This article details how to design and build an SMS-to-AI bridge using **Node.js
 
 ---
 
-## 🛠️ The SMS Fallback Architecture
+## The SMS Fallback Architecture
 
 The SMS bridge translates incoming cellular text messages into standard HTTP requests, routes them to our local offline AI server, and converts the model's text response back into an outgoing SMS payload.
 
@@ -46,7 +46,7 @@ graph TD
 
 ---
 
-## 💻 Building the Express Webhook Receiver
+## Building the Express Webhook Receiver
 
 Here is the core Express controller used to handle incoming SMS requests and route them to our local clinical database:
 
@@ -94,7 +94,7 @@ async function sendSMS(to, message) {
 
 ---
 
-## 🔒 Security: Patient Authentication over Text
+## Security: Patient Authentication over Text
 
 Unlike web interfaces that support OAuth and Multi-Factor Authentication, SMS is inherently insecure. Anyone can spoof a sender ID or find a patient's phone. To protect patient data:
 *   **Zero PII Leakage**: Never transmit raw Personally Identifiable Information (such as names, addresses, or specific diagnostic terms) over SMS.
@@ -103,7 +103,7 @@ Unlike web interfaces that support OAuth and Multi-Factor Authentication, SMS is
 
 ---
 
-## 📋 SMS Bridge Implementation Checklist
+## SMS Bridge Implementation Checklist
 
 *   [ ] **Africa's Talking Sandbox Testing**: Test your webhook locally using Africa's Talking simulator before purchasing a live shortcode.
 *   [ ] **Rate Limiting**: Implement strict IP/Phone rate limiting on your Express controller to prevent denial-of-service billing loops from duplicate incoming text messages.
@@ -111,7 +111,7 @@ Unlike web interfaces that support OAuth and Multi-Factor Authentication, SMS is
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 The 2G SMS Fallback Bridge offers a vital solution for extending AI-powered healthcare access to underserved populations.
 1.  **Accessibility & Inclusion:** This architecture democratizes access to clinical AI assistants, ensuring patients with only 2G feature phones can query information, receive updates, and manage prescriptions, bridging a significant digital divide.
@@ -122,7 +122,7 @@ The 2G SMS Fallback Bridge offers a vital solution for extending AI-powered heal
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Africa's Talking API Docs**: [Africa's Talking SMS Services](https://developers.africastalking.com/docs/sms). Official guide on webhooks and outgoing shortcodes.
 *   **SMS Security Risks**: *Security and Privacy Vulnerabilities in cellular networks*. Explains SS7 vulnerabilities and SMS spoofing mitigation.

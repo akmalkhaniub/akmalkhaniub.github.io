@@ -132,7 +132,7 @@
     end
   end</div>
 <hr>
-<h2>💥 1. The Blast Radius Anatomy in Cloud Systems</h2>
+<h2>1. The Blast Radius Anatomy in Cloud Systems</h2>
 <p>Why do multi-zone regional clusters still suffer from total system collapse?</p>
 <h3>The 4 Fatal Shared-Fate Failure Modes:</h3>
 <ol>
@@ -142,18 +142,16 @@
 <li><strong>Noisy Neighbor Resource Starvation</strong>: A massive enterprise tenant running a viral campaign consumes $90%$ of network bandwidth, starving smaller tenants.</li>
 </ol>
 <hr>
-<h2>🏛️ 2. Anatomy of an Isolated Cell</h2>
+<h2>2. Anatomy of an Isolated Cell</h2>
 <p>In a Cell-Based Architecture, a <strong>Cell</strong> is an independent, complete, self-sufficient instance of the entire platform:</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 ANATOMY OF A PRODUCTION CELL                                      |
-+---------------------------------------------------------------------------------------------------+
+<pre><code class="language-plaintext">&gt; **ANATOMY OF A PRODUCTION CELL**
 |  /Cell-04/ (Hosts 5,000 Specific Tenants)                                                         |
 |   ├── Microservices    : Dedicated pods (Auth, Billing, Order, Inventory)                        |
 |   ├── Database Tier    : Dedicated Primary &amp; Replica DB instances                                 |
 |   ├── Caching Layer    : Dedicated Redis cluster                                                  |
 |   └── Message Queues   : Dedicated Kafka / SQS message brokers                                    |
 |   * ZERO shared runtime dependencies with Cell-01, Cell-02, or Cell-03!                            |
-+---------------------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <h3>The Sizing Law: Fixed Maximum Cell Scale</h3>
 <p>Instead of allowing a cell to grow infinitely with traffic, cells have a <strong>strict hard capacity limit</strong> (e.g. max 5,000 requests/second or 5,000 tenants):</p>
 <ul>
@@ -162,7 +160,7 @@
 <li>Because cells remain small and uniform, performance characteristics and failover times are $100%$ predictable.</li>
 </ul>
 <hr>
-<h2>🚦 3. The Stateless Thin Cell Router</h2>
+<h2>3. The Stateless Thin Cell Router</h2>
 <p>To route incoming HTTP/gRPC traffic to the correct cell, the system deploys a <strong>Thin Cell Router</strong> tier:</p>
 <div class="mermaid">graph LR
   Client[Incoming Request: tenant_id = 'org_89f'] --&gt; Router[Thin Stateless Cell Router]
@@ -174,7 +172,7 @@
 <li><strong>Deterministic Hashing or Cached Directory</strong>: Routes traffic via deterministic consistent hashing (<code>hash(tenant_id) % N</code>) or a local memory-mapped routing table.</li>
 </ul>
 <hr>
-<h2>🚑 4. Zero-Downtime Cell Evacuation</h2>
+<h2>4. Zero-Downtime Cell Evacuation</h2>
 <p>When telemetry detects that <strong>Cell 3</strong> is experiencing hardware degradation or memory pressure:</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -190,7 +188,7 @@
   Note over Cell3: Cell 3 isolated for forensic debugging without user impact!</div>
 <p>By flipping the routing table pointer, the operational control plane evacuates thousands of tenants to a standby cell in <strong>$&lt; 2\text{ seconds}$</strong>, completely bypassing user-facing downtime.</p>
 <hr>
-<h2>🛠️ Python Implementation: Cell-Based Router &amp; Blast Radius Engine</h2>
+<h2>Python Implementation: Cell-Based Router &amp; Blast Radius Engine</h2>
 <p>Here is a Python implementation simulating a Cell-Based Architecture with deterministic tenant routing, cell isolation, and automatic cell evacuation:</p>
 <pre><code class="language-python">import hashlib
 import time
@@ -276,7 +274,7 @@ if __name__ == &quot;__main__&quot;:
         res = router.forward_request(t, &quot;GET /api/v1/orders&quot;)
         print(f&quot; 🟢 Tenant [{t:&lt;12}] -&gt; Routed to [Cell {res['cell_id']}] (Status: {res['status']})&quot;)</code></pre>
 <hr>
-<h2>📊 Summary: Monolith vs Cell-Based Architecture</h2>
+<h2>Summary: Monolith vs Cell-Based Architecture</h2>
 <table>
 <thead>
 <tr>
@@ -312,7 +310,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>In large-scale cloud engineering, <strong>failures are guaranteed; massive blast radiuses are a choice</strong>.</p>
 <p>By partitioning monolithic cloud regions into <strong>independent, isolated Cells</strong>, engineering teams eliminate cascading shared-fate outages, guarantee Five-Nines availability, and protect $95%+$ of their users from ever noticing an infrastructure failure.</p>
 

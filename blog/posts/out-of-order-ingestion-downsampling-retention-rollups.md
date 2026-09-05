@@ -10,11 +10,11 @@ Simultaneously, storing raw 1-second metric resolution across years of historica
 
 To resolve these challenges, modern TSDB platforms implement **Out-of-Order Head Buffers** and **Automated Downsampling Rollups**.
 
-This article details OOO skip-list buffering, background chunk merging, multi-resolution downsampling (1s $\to$ 5m $\to$ 1h), rollup aggregation functions (`min`, `max`, `sum`, `count`), and automated retention tiering.
+This article details OOO skip-list buffering, background chunk merging, multi-resolution downsampling (1s → 5m → 1h), rollup aggregation functions (`min`, `max`, `sum`, `count`), and automated retention tiering.
 
 ---
 
-## 📖 Out-of-Order Ingestion & Downsampling Architecture
+## Out-of-Order Ingestion & Downsampling Architecture
 
 How time-series databases handle late-arriving metrics and execute automated multi-tier downsampling rollups:
 
@@ -55,7 +55,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: OOO Ingestion & Downsampling Engine
+## Python Implementation: OOO Ingestion & Downsampling Engine
 
 Here is a production-grade Python implementation of an Out-of-Order Metric Ingestion Buffer and Multi-Tier Downsampling Rollup Engine:
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Downsampling & OOO Gotchas & Best Practices
+## Downsampling & OOO Gotchas & Best Practices
 
 When managing long-term metric retention:
 
@@ -174,7 +174,7 @@ When managing long-term metric retention:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Downsampling and OOO ingestion engines (in **Thanos**, **VictoriaMetrics**, and **Grafana Mimir**) report:
 * **Over $95\%$ Reduction in Long-Term Cloud Storage Costs**: Downsampling 1-second raw metrics into 5-minute rollups slashes S3 storage volumes.
 * **$50\times$ Faster Multi-Month Dashboard Rendering**: Querying pre-aggregated downsampled buckets eliminates reading billions of raw historical data points.

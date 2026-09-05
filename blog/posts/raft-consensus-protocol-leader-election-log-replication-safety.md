@@ -12,7 +12,7 @@ This article explores the internal state machines, RPC mechanics, and safety inv
 
 ---
 
-## 📖 Raft Node State Transitions & Log Replication Architecture
+## Raft Node State Transitions & Log Replication Architecture
 
 How Raft nodes transition between Follower, Candidate, and Leader roles while replicating log entries:
 
@@ -47,7 +47,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Raft Node State Machine & Log Engine
+## Python Implementation: Raft Node State Machine & Log Engine
 
 Here is a production-grade Python simulation of a Raft Consensus Node featuring term management, leader election voting, and log matching checks:
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Raft Implementation Gotchas & Best Practices
+## Raft Implementation Gotchas & Best Practices
 
 When building Raft-based consensus clusters:
 
@@ -194,7 +194,7 @@ When building Raft-based consensus clusters:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed key-value engines powered by Raft (such as **etcd**) report:
 * **Zero Data Loss under Node Failures**: Surviving node crashes automatically without losing committed state transitions.
 * **Continuous 99.999% Availability**: Electing a new leader in under $300\text{ms}$ during hardware failures ensures seamless client request handling.

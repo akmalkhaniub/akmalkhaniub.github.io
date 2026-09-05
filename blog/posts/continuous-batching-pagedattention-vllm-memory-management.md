@@ -14,7 +14,7 @@ This article details PagedAttention block tables and iteration-level continuous 
 
 ---
 
-## 📖 PagedAttention Virtual Memory & Continuous Batching Architecture
+## PagedAttention Virtual Memory & Continuous Batching Architecture
 
 How vLLM maps logical sequence tokens to non-contiguous physical GPU VRAM memory blocks:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: PagedAttention Block Manager & Scheduler Engine
+## Python Implementation: PagedAttention Block Manager & Scheduler Engine
 
 Here is a production-grade Python implementation of a PagedAttention Block Table Manager and Continuous Batching Scheduler Engine:
 
@@ -169,7 +169,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 LLM Serving Engine Gotchas & Best Practices
+## LLM Serving Engine Gotchas & Best Practices
 
 When deploying high-throughput LLM inference infrastructure:
 
@@ -181,7 +181,7 @@ When deploying high-throughput LLM inference infrastructure:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms adopting PagedAttention and continuous batching (such as **vLLM** and **TGI**) report:
 * **$3.8\times$ Throughput Increase**: Serving $4\times$ more user requests per GPU node compared to traditional static batching.
 * **Over 80% Reduction in GPU Memory Waste**: Eliminating external fragmentation allows maxing out GPU compute utilization cleanly.

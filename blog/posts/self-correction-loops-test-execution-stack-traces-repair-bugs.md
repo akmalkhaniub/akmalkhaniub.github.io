@@ -12,7 +12,7 @@ This article details how to design closed-loop self-healing engines for AI codin
 
 ---
 
-## 📖 Closed-Loop Self-Correction Architecture
+## Closed-Loop Self-Correction Architecture
 
 The self-correction engine executes an iterative repair loop bounded by max retry caps:
 
@@ -41,7 +41,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Closed-Loop Self-Healing Engine
+## Python Implementation: Closed-Loop Self-Healing Engine
 
 Here is a production Python implementation of an Autonomous Code Repair Engine that captures test failure stack traces, constructs structured repair prompts, and iteratively patches failing files until unit tests pass:
 
@@ -155,7 +155,7 @@ def calculate_tax(amount: float, tax_rate: float) -> float:
 
 ---
 
-## ⚠️ Important Self-Healing Design Guardrails
+## Important Self-Healing Design Guardrails
 
 When deploying self-correction loops in production AI agent pipelines:
 
@@ -167,7 +167,7 @@ When deploying self-correction loops in production AI agent pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying Closed-Loop Self-Correction report:
 * **78% Automatic Failure Resolution**: Nearly 4 out of 5 initial test failures are successfully self-repaired on iteration 2 or 3 without human intervention.
 * **Massive Reduction in PR Review Friction**: Human developers only review pull requests after the self-healing loop has verified 100% test pass status.

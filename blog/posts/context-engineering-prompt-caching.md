@@ -15,7 +15,7 @@ To build responsive, cost-effective agents, we need to optimize our context wind
 
 ---
 
-## 🎨 The Semantic Cache & Context Optimization Lifecycle
+## The Semantic Cache & Context Optimization Lifecycle
 
 Below is the execution flow of an optimized MCP gateway that intercepts incoming prompt frames, computes semantic embeddings, runs similarity searches against a Redis cache, and dynamically prunes prompt components before executing LLM requests.
 
@@ -59,7 +59,7 @@ graph TD
 
 ---
 
-## 🔍 Synthesis: What's Good & What's Not
+## Synthesis: What's Good & What's Not
 
 ### 1. Semantic Prompt Caching
 Instead of checking for exact string matches (which fails if a user changes a single character or punctuation mark), we generate vector embeddings of incoming prompts and search for highly similar vectors (using cosine similarity) in a vector database.
@@ -85,7 +85,7 @@ Analyzing the prompt payload size before dispatching it, and using summarization
 
 ---
 
-## 💻 Implementing a Semantic Redis Cache in TypeScript
+## Implementing a Semantic Redis Cache in TypeScript
 
 Here is a TypeScript implementation of an MCP context gateway middleware that uses Redis Vector Search to cache and retrieve agent prompts based on cosine similarity. This design follows the modular data structures seen in the asynchronous calculations of [django-payroll-engine](https://github.com/akmalkhaniub/django-payroll-engine).
 
@@ -199,7 +199,7 @@ export class SemanticCacheManager {
 
 ---
 
-## 📋 Context Budget Optimization Checklist
+## Context Budget Optimization Checklist
 
 * [ ] **Cache Invalidation on Write**: Ensure your cache keys are linked to data version hashes. If a resource changes (e.g., code modifications or payroll runs), purge the corresponding cache entries.
 * [ ] **Local Embeddings for Speed**: Consider running a lightweight local embeddings model (like `all-MiniLM-L6-v2`) in your gateway to eliminate the network latency of external embeddings APIs.
@@ -207,7 +207,7 @@ export class SemanticCacheManager {
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Optimal context engineering ensures that agent systems scale sustainably:
 1. **Reduce Before Requesting:** Do not treat the context window as a dumping ground. Always check token size constraints and summarize histories where possible.
@@ -218,7 +218,7 @@ Optimal context engineering ensures that agent systems scale sustainably:
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **Redis Vector Library**: Redis Developer Documentation. *Vector Similarity Search (VSS) with RediSearch*. [Redis Vector Search](https://redis.io/docs/latest/develop/interact/search-and-query/vector-search/).
 * **LLM Context Limits**: Anthropic Research. *Designing Prompts for Large Context Windows*. [Anthropic Blog](https://www.anthropic.com/research).

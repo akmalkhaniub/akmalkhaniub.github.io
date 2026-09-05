@@ -53,21 +53,14 @@ graph TD
 
 ## What's Good & What's Not
 
-```
-+---------------------------------------------------------------------------------------------------------------------+
-|                                              STREAMING PROTOCOLS MATRIX                                             |
-+---------------------+-------------------------------------------------+---------------------------------------------+
-| Protocol Option     | What's Good (Pros)                              | What's Not (Cons)                           |
-+---------------------+-------------------------------------------------+---------------------------------------------+
-| Server-Sent Events  | * Easy Setup: Runs over standard HTTP/2.        | * Unidirectional: Cannot send client inputs |
-| (SSE)               | * Auto-Reconnect: Native browser reconnection.  |   over the same stream connection.          |
-|                     | * Clean Firewall Pass: Uses port 80/443.        | * Connection limits under HTTP/1.1 (max 6). |
-+---------------------+-------------------------------------------------+---------------------------------------------+
-| WebSockets          | * Full Bidirectional: Supports client inputs.  | * Complex Setup: Demands sticky sessions    |
-|                     | * Binary Support: Streams images/audio easily.  |   and load balancer state sync.             |
-|                     | * Sub-millisecond latency.                      | * No native reconnect/retry mechanism.      |
-+---------------------+-------------------------------------------------+---------------------------------------------+
-```
+| Protocol Option | What's Good (Pros) | What's Not (Cons) |
+| --- | --- | --- |
+| Server-Sent Events | * Easy Setup: Runs over standard HTTP/2. | * Unidirectional: Cannot send client inputs |
+| (SSE) | * Auto-Reconnect: Native browser reconnection. | over the same stream connection. |
+|  | * Clean Firewall Pass: Uses port 80/443. | * Connection limits under HTTP/1.1 (max 6). |
+| WebSockets | * Full Bidirectional: Supports client inputs. | * Complex Setup: Demands sticky sessions |
+|  | * Binary Support: Streams images/audio easily. | and load balancer state sync. |
+|  | * Sub-millisecond latency. | * No native reconnect/retry mechanism. |
 
 ---
 
@@ -127,7 +120,7 @@ export default app;
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Token streaming is essential for any modern AI platform user interface. When picking a protocol:
 

@@ -134,7 +134,7 @@
   StateMachine --&gt; Checkpoint &amp; Idempotency
   Rollback --&gt; CircuitBreaker &amp; HITL &amp; Telemetry</div>
 <hr>
-<h2>🏛️ Principle 1: Enforce Hierarchical Supervisor Topologies over Flat Networks</h2>
+<h2>Principle 1: Enforce Hierarchical Supervisor Topologies over Flat Networks</h2>
 <p>In naive multi-agent demos, agents communicate in a flat peer-to-peer mesh. If Agent $A$ encounters ambiguity, it queries Agent $B$, which asks Agent $C$, which loops back to Agent $A$.</p>
 <p>This creates an <strong>$O(N^2)$ message explosion</strong> and catastrophic hallucination cascades.</p>
 <pre><code class="language-plaintext">Flat P2P Mesh (Anti-Pattern):          Hierarchical Supervisor (Production):
@@ -150,22 +150,22 @@
 </div>
 </div>
 <hr>
-<h2>🔒 Principle 2: Anchor Non-Deterministic LLMs to Deterministic State Machines</h2>
-<p>Pure LLMs cannot be trusted to manage system control flow. If an agent hallucinates a step transition from <code>PLANNING \to DEPLOYED</code> while skipping <code>SECURITY_AUDIT</code>, production is compromised.</p>
+<h2>Principle 2: Anchor Non-Deterministic LLMs to Deterministic State Machines</h2>
+<p>Pure LLMs cannot be trusted to manage system control flow. If an agent hallucinates a step transition from <code>PLANNING → DEPLOYED</code> while skipping <code>SECURITY_AUDIT</code>, production is compromised.</p>
 <p>Production swarms enforce a <strong>Hybrid Neural-Symbolic Architecture</strong>:</p>
 <ul>
 <li><strong>LLM Core</strong>: Responsible solely for natural language reasoning, code synthesis, and perceptual parsing.</li>
 <li><strong>Deterministic Finite State Machine (FSM)</strong>: Evaluates strict boolean transitions (<code>is_compiled == true</code>, <code>security_score == 100</code>, <code>tests_passed == true</code>) in compiled code before allowing state progression.</li>
 </ul>
 <hr>
-<h2>🛡️ Principle 3: Isolate Tool Execution via the Model Context Protocol (MCP)</h2>
+<h2>Principle 3: Isolate Tool Execution via the Model Context Protocol (MCP)</h2>
 <p>Giving an autonomous agent unrestricted access to the host operating system (<code>exec(&quot;rm -rf ...&quot;)</code>) is an unacceptable security vulnerability.</p>
 <ul>
 <li><strong>Tool Sandboxing</strong>: All tool executions (file edits, database queries, bash commands) must execute inside ephemeral, containerized micro-sandboxes (e.g. Docker, E2B, Firecracker microVMs).</li>
 <li><strong>Model Context Protocol (MCP)</strong>: Standardize tool discovery and execution over MCP servers with strict least-privilege role-based access control (RBAC). A Security Auditor subagent receives read-only AST parser tools; only a Deployment subagent receives scoped Kubernetes credentials.</li>
 </ul>
 <hr>
-<h2>💰 Principle 4: Real-Time Token Economics &amp; Cost Metering</h2>
+<h2>Principle 4: Real-Time Token Economics &amp; Cost Metering</h2>
 <p>An autonomous agent running without cost governance can exhaust monthly cloud budgets during a single stuck task.</p>
 <p>Every agent invocation must pass through a <strong>Token Economics Gatekeeper</strong>:</p>
 <ol>
@@ -174,7 +174,7 @@
 <li><strong>Dynamic Context Eviction</strong>: Automatically summarize and flush intermediate scratchpad turns once the working buffer exceeds $80%$ of budget.</li>
 </ol>
 <hr>
-<h2>💾 Principle 5: Persistent State Checkpointing for Instant Crash Recovery</h2>
+<h2>Principle 5: Persistent State Checkpointing for Instant Crash Recovery</h2>
 <p>Autonomous software engineering missions can span 15 to 45 minutes of continuous execution across hundreds of tool steps. If a worker pod crashes due to a spot instance termination, restarting the entire mission from scratch is unviable.</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -191,7 +191,7 @@
   S-&gt;&gt;C: Respawn New Worker -&gt; Resume at Step 5 immediately!</div>
 <p>Every state transition must be atomically serialized to a persistent store (PostgreSQL via <code>PostgresSaver</code> or Redis) keyed by a unique <code>thread_id</code>.</p>
 <hr>
-<h2>🔁 Principle 6: Enforce Idempotency Across All Tool Invocations</h2>
+<h2>Principle 6: Enforce Idempotency Across All Tool Invocations</h2>
 <p>In distributed networks, tool executions time out, triggering automatic retries. If an agent executes a non-idempotent tool (<code>create_aws_vpc()</code> or <code>charge_credit_card()</code>), network retries result in duplicate infrastructure or double charges.</p>
 <ul>
 <li><strong>Idempotency Keys</strong>: Every tool call payload must generate a deterministic idempotency hash:
@@ -199,7 +199,7 @@ $$\text{Idempotency Key} = \text{SHA256}(\text{thread_id} + \text{step_index} + 
 <li>If a tool is re-invoked with an identical key, the tool server returns the cached response rather than re-executing the physical action.</li>
 </ul>
 <hr>
-<h2>🔄 Principle 7: Dynamic Semantic Rollback DAGs for Real-World Side Effects</h2>
+<h2>Principle 7: Dynamic Semantic Rollback DAGs for Real-World Side Effects</h2>
 <p>Unlike local databases where <code>ROLLBACK</code> undoes all writes, autonomous agent swarms trigger <strong>irreversible external side effects</strong> (sending emails, modifying DNS records, purchasing cloud instances).</p>
 <div class="mermaid">graph TD
   subgraph Dynamic Semantic Compensation Graph
@@ -214,14 +214,14 @@ $$\text{Idempotency Key} = \text{SHA256}(\text{thread_id} + \text{step_index} + 
 $$\text{Action: } A_i \longleftrightarrow \text{Compensation: } C_i$$</p>
 <p>If step $k$ fails, the Supervisor halts forward execution and traverses the Directed Acyclic Graph (DAG) in reverse topological order, executing compensations dynamically.</p>
 <hr>
-<h2>🛑 Principle 8: Hard Iteration Ceilings &amp; Loopback Circuit Breakers</h2>
+<h2>Principle 8: Hard Iteration Ceilings &amp; Loopback Circuit Breakers</h2>
 <p>Autonomous agents with self-healing feedback loops frequently fall into &quot;optimistic thrashing&quot;—repeatedly modifying the same line of code or querying the same invalid endpoint.</p>
 <ul>
 <li><strong>Hard Iteration Caps</strong>: Enforce a strict ceiling ($\le 5\text{ iterations}$) on any single sub-task loop.</li>
 <li><strong>Semantic Divergence Detection</strong>: If the code diff between iteration $k$ and iteration $k-1$ has a Levenshtein distance $&lt; 5%$, trip the loopback circuit breaker and halt the subagent.</li>
 </ul>
 <hr>
-<h2>👤 Principle 9: Human-in-the-Loop (HITL) Escalation Gates</h2>
+<h2>Principle 9: Human-in-the-Loop (HITL) Escalation Gates</h2>
 <p>Autonomous swarms should not operate in an unmonitored vacuum. Critical, high-risk operational boundaries must require explicit human authorization.</p>
 <h3>High-Risk Boundary Examples:</h3>
 <ul>
@@ -231,7 +231,7 @@ $$\text{Action: } A_i \longleftrightarrow \text{Compensation: } C_i$$</p>
 </ul>
 <p>When an agent hits a high-risk boundary, it halts, serializes its current state to the checkpoint store, and delivers an interactive diff to the engineering lead via Slack or Web UI with <strong>Approve / Reject / Amend</strong> buttons.</p>
 <hr>
-<h2>📊 Principle 10: Real-Time OpenTelemetry Trajectory Streaming</h2>
+<h2>Principle 10: Real-Time OpenTelemetry Trajectory Streaming</h2>
 <p>Debugging a multi-agent system after a silent failure is impossible without granular, distributed observability.</p>
 <p>Every agent thought, tool execution, LLM token count, and memory lookup must emit structured <strong>OpenTelemetry Spans</strong>:</p>
 <ul>
@@ -239,7 +239,7 @@ $$\text{Action: } A_i \longleftrightarrow \text{Compensation: } C_i$$</p>
 <li><strong>Real-Time Telemetry Streaming</strong>: Stream execution events over WebSockets to provide live visual node graphs of active agent swarms.</li>
 </ul>
 <hr>
-<h2>🛠️ TypeScript Implementation: Production Multi-Agent Swarm Engine</h2>
+<h2>TypeScript Implementation: Production Multi-Agent Swarm Engine</h2>
 <p>Here is a production-grade TypeScript implementation embodying these 10 architectural principles:</p>
 <pre><code class="language-typescript">import { createHash } from 'crypto';
 
@@ -386,7 +386,7 @@ if (require.main === module) {
   swarm.executeMission(&quot;mission-alpha-400&quot;, &quot;Deploy Fault-Tolerant Authentication Microservice&quot;);
 }</code></pre>
 <hr>
-<h2>🏁 The Future of Autonomous Swarms</h2>
+<h2>The Future of Autonomous Swarms</h2>
 <p>The leap from fragile agent experiments to <strong>mission-critical autonomous software systems</strong> is not driven by bigger prompt models, but by <strong>disciplined distributed systems engineering</strong>.</p>
 <p>By grounding multi-agent networks in <strong>hierarchical topologies</strong>, <strong>deterministic state machines</strong>, <strong>idempotent sandboxed tools</strong>, and <strong>real-time telemetry</strong>, engineering teams can unlock autonomous workflows that operate with $99.9%$ enterprise resilience.</p>
 

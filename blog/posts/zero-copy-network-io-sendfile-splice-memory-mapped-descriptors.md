@@ -18,7 +18,7 @@ This article explores the mechanics of zero-copy Linux syscalls.
 
 ---
 
-## 📖 Traditional 4-Copy vs Zero-Copy Transfer Paths
+## Traditional 4-Copy vs Zero-Copy Transfer Paths
 
 Comparing the CPU memory overhead of traditional I/O vs `sendfile()` zero-copy transfers:
 
@@ -45,7 +45,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Zero-Copy Network Transfer Simulator
+## Python Implementation: Zero-Copy Network Transfer Simulator
 
 Here is a production-grade Python simulation comparing traditional 4-copy buffer transfers against Zero-Copy DMA transfer pipelines:
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Zero-Copy Gotchas & Best Practices
+## Zero-Copy Gotchas & Best Practices
 
 When utilizing zero-copy network calls:
 
@@ -162,7 +162,7 @@ When utilizing zero-copy network calls:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 High-throughput event streaming systems (like **Apache Kafka**) use `sendfile()` to stream topic logs directly from disk to network sockets, achieving:
 * **Maxing Out 100Gbps Network Links**: saturating physical network interfaces with minimal CPU usage.
 * **60% Reduction in CPU Utilization**: Eliminating CPU memory copies frees up CPU cycles for application logic.

@@ -14,7 +14,7 @@ This article details traditional 2PC and Google Percolator distributed transacti
 
 ---
 
-## 📖 Google Percolator Distributed Transaction Architecture
+## Google Percolator Distributed Transaction Architecture
 
 How Percolator uses a Timestamp Oracle (TSO) and Primary Lock pointers to execute non-blocking distributed transactions:
 
@@ -49,7 +49,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Google Percolator Transaction Engine
+## Python Implementation: Google Percolator Transaction Engine
 
 Here is a production-grade Python simulation of the Google Percolator Distributed Transaction Protocol featuring $T_{\text{start}} / T_{\text{commit}}$ timestamps, primary lock pointers, and conflict resolution:
 
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Percolator & 2PC Gotchas & Best Practices
+## Percolator & 2PC Gotchas & Best Practices
 
 When implementing distributed transactions:
 
@@ -214,7 +214,7 @@ When implementing distributed transactions:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed databases utilizing Percolator transactions (such as **TiDB** and **CockroachDB**) report:
 * **Zero Coordinator Lock Deadlocks**: Eliminating traditional 2PC blocking bugs allows automatic self-healing crash recovery.
 * **Full ACID Snapshot Isolation**: Supporting multi-key distributed transactions across thousands of server nodes with zero read-lock contention.

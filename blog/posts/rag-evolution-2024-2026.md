@@ -17,7 +17,7 @@ This article traces the architectural journey of RAG from 2024 to 2026, mapping 
 
 ---
 
-## 📊 The RAG Paradigm Shift: 2024 vs. 2026
+## The RAG Paradigm Shift: 2024 vs. 2026
 
 The transition can be summarized as a shift from **passive, linear text matching** to **active, multi-tier structured reasoning**.
 
@@ -56,7 +56,7 @@ graph TD
 
 ---
 
-## 🏛️ Tracing the Core Transformations
+## Tracing the Core Transformations
 
 ### 1. Ingestion: From Static Chunks to Semantic Layouts
 * **The 2024 Approach**: Developers split text using arbitrary token or character counts (e.g., *"every 256 tokens"*). This frequently bisected critical tables, sentences, and code blocks, destroying the retrieval context.
@@ -81,7 +81,7 @@ graph TD
 
 ---
 
-## 💻 Case Study: Hybrid Ingestion and Retrieval
+## Case Study: Hybrid Ingestion and Retrieval
 
 In our enterprise repository [healthcare-audit-vault](https://github.com/akmalkhaniub/healthcare-audit-vault), we consolidate these lessons by maintaining a single **PostgreSQL** backend that manages:
 1. **Semantic Arrays**: Storing 1536-dimensional vectors indexed with `HNSW` for conceptual queries.
@@ -92,7 +92,7 @@ By keeping all layers inside PostgreSQL, we avoid the latency overhead of networ
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 As RAG matures, the focus has shifted from basic vector matching to building resilient, multi-layered cognitive architectures.
 1. **Hybrid & Semantic Retrieval:** Modern RAG demands a combination of semantic layout-aware chunking, hybrid lexical-vector search, and cross-encoder reranking to ensure high-precision retrieval.
@@ -103,7 +103,7 @@ As RAG matures, the focus has shifted from basic vector matching to building res
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **GraphRAG Foundation**: *From Local to Global: A Graph RAG Approach to Query-Focused Summarization*. Introduces entity-relation mapping to resolve global queries. [arXiv:2404.16130](https://arxiv.org/abs/2404.16130)
 * **Late Chunking**: *Late Chunking: Context-Aware Document Embedding*. Details how to retain global text relationships inside localized chunk vectors. [arXiv:2409.04701](https://arxiv.org/abs/2409.04701)

@@ -24,7 +24,7 @@ graph TD
 
 ---
 
-## 🛰️ 1. Google Spanner: TrueTime & External Consistency
+## 1. Google Spanner: TrueTime & External Consistency
 
 In 2012, Google published *Spanner: Google’s Globally-Distributed Database* (Corbett et al.), followed by *Spanner: Becoming a SQL System* (2017).
 
@@ -49,7 +49,7 @@ sequenceDiagram
 ### The TrueTime API & Bounded Clock Uncertainty
 Standard server clocks drift unpredictably ($100\text{--}500\text{ ms}$). Spanner solved this by installing dedicated GPS receivers and atomic rubidium clocks in every Google datacenter:
 
-$$\text{TrueTime API: } \text{TT.now}() \to [t_{\text{earliest}}, t_{\text{latest}}] \quad \text{where } \epsilon = \frac{t_{\text{latest}} - t_{\text{earliest}}}{2}$$
+$$\text{TrueTime API: } \text{TT.now}() → [t_{\text{earliest}}, t_{\text{latest}}] \quad \text{where } \epsilon = \frac{t_{\text{latest}} - t_{\text{earliest}}}{2}$$
 
 The uncertainty parameter $\epsilon$ is bounded between **$1\text{ ms}$ and $7\text{ ms}$**.
 
@@ -67,18 +67,18 @@ Google uses Spanner to power **Google Play Billing**, **Google Ads**, and **Goog
 
 ---
 
-## ⏱️ 2. CockroachDB & YugabyteDB: Hybrid Logical Clocks (HLC) & Multi-Raft
+## 2. CockroachDB & YugabyteDB: Hybrid Logical Clocks (HLC) & Multi-Raft
 
 Because commodity cloud environments (AWS, GCP VMs, Azure) lack physical GPS atomic clocks, open-source NewSQL databases (**CockroachDB**, **YugabyteDB**) utilize **Hybrid Logical Clocks (HLC)** (Kulkarni et al., 2014) combined with **Multi-Raft**.
 
 ```
-+-----------------------------------------------------------------------+
+
 |                    Hybrid Logical Clock (HLC) Tuple                   |
 |                        hlc = ( l.physical, c.logical )                |
-+-----------------------------------------------------------------------+
+
 |  l.physical : Highest physical wall-clock timestamp observed so far.  |
 |  c.logical  : Logical sequence counter incremented on causal events. |
-+-----------------------------------------------------------------------+
+
 ```
 
 ### Multi-Raft Range Splits & Distributed MVCC Write Intents
@@ -90,7 +90,7 @@ In CockroachDB and YugabyteDB:
 
 ---
 
-## 🚗 3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal
+## 3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal
 
 At **Uber**, a single trip lifecycle spans multiple distributed microservices: Rider Fare Quoting, Driver Matching, Trip In-Progress Tracking, Fraud Check, Rider Payment Capture, and Driver Payout.
 
@@ -124,7 +124,7 @@ stateDiagram-v2
 
 ---
 
-## 🎬 4. Netflix Engineering: Conductor & Transactional Outbox with Debezium
+## 4. Netflix Engineering: Conductor & Transactional Outbox with Debezium
 
 At **Netflix**, subscription renewals, video transcoding pipelines, and digital rights management (DRM) licensing are orchestrated by **Netflix Conductor**.
 
@@ -155,7 +155,7 @@ graph LR
 
 ---
 
-## 🛠️ TypeScript Implementation: Orchestrated Trip Saga with State Compensations & Idempotency
+## TypeScript Implementation: Orchestrated Trip Saga with State Compensations & Idempotency
 
 Here is a production-grade TypeScript implementation of an Orchestrated Trip Lifecycle & Payment Saga with automated backward compensation:
 
@@ -302,7 +302,7 @@ if (require.main === module) {
 
 ---
 
-## 🚨 Modern Architecture Gotchas & Best Practices
+## Modern Architecture Gotchas & Best Practices
 
 > [!IMPORTANT]
 > **Compensations Must Be Idempotent and Commutative**: In asynchronous saga failures, compensating actions can be executed multiple times due to retry storms. Ensure every compensating endpoint handles duplicate invocations safely.
@@ -312,5 +312,5 @@ if (require.main === module) {
 
 ---
 
-## 🔮 Next in the Series
+## Next in the Series
 In **Part 3**, we will explore **The Future (2026 & Beyond)**: How **Deterministic Scheduling (Calvin & FaunaDB)** eliminates 2PC and lock aborts entirely, how hardware-accelerated **RDMA & CXL Pooled Memory** enable sub-microsecond atomic commits, and how **Autonomous AI Agent Swarms** execute self-healing multi-step transactional compensations.

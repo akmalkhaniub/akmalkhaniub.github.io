@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To secure tool execution pipelines in enterprise agent swarms:
 * [ ] **Enforce token-based authentication (JWTs)**: Never execute tools on behalf of agents using system-level admin credentials. Propagate the user's active session token.

@@ -6,7 +6,7 @@ This case study details the architecture, deployment, and operational gotchas of
 
 ---
 
-## 📖 Case Study Overview: The 10-Part Framework
+## Case Study Overview: The 10-Part Framework
 
 > [!NOTE]
 > **1. Industry**: E-Commerce & Retail
@@ -31,7 +31,7 @@ This case study details the architecture, deployment, and operational gotchas of
 
 ---
 
-## 🏗️ Global Edge Delivery Flow
+## Global Edge Delivery Flow
 
 The system normalizes incoming client requests at edge nodes, serving static caches locally whenever possible:
 
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 🛠️ JavaScript Implementation: Cloudflare Workers Edge Normalizer
+## JavaScript Implementation: Cloudflare Workers Edge Normalizer
 
 Here is the production-grade JavaScript code for a Cloudflare Workers Edge Middleware script that normalizes request queries, filters marketing noise, and generates custom cache keys:
 
@@ -119,7 +119,7 @@ if (typeof addEventListener !== 'undefined') {
 
 ---
 
-## 🚨 The Incident: The Query-String Cache-Busting Loop
+## The Incident: The Query-String Cache-Busting Loop
 
 During a promotion campaign, we experienced a sudden outage due to cache evasion:
 
@@ -132,7 +132,7 @@ During a promotion campaign, we experienced a sudden outage due to cache evasion
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 By moving routing logic and cache key normalization to edge middleware:
 * **94% Reduction in Origin Traffic**: Normalizing URL queries stopped invalidation loops and protected origin servers.
 * **Sub-50ms Catalog Load Times**: Cache hit ratios rose from 68% to 99.98% globally, speeding up user product discovery.

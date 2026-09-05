@@ -10,7 +10,7 @@ This article details how to design immutable trajectory audit logging pipelines 
 
 ---
 
-## 📖 Trajectory Audit & Forensic Pipeline Architecture
+## Trajectory Audit & Forensic Pipeline Architecture
 
 The forensic logging pipeline captures immutable telemetry at every step of the agent execution lifecycle:
 
@@ -41,7 +41,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Trajectory Forensic Parser & Reconstructor
+## Python Implementation: Trajectory Forensic Parser & Reconstructor
 
 Here is a production Python implementation of a Trajectory Forensic Parser that analyzes JSONL audit logs, reconstructs the causal chain of a compromised agent run, and pinpoints the exact prompt injection entry point:
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Forensic Audit Guardrails
+## Important Forensic Audit Guardrails
 
 When implementing trajectory logging pipelines:
 
@@ -170,7 +170,7 @@ When implementing trajectory logging pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams establishing Trajectory Audit Logging report:
 * **Rapid Incident Root-Cause Identification**: Forensic parsers locate the exact prompt injection entry point in seconds rather than hours.
 * **Complete Audit Trail for Compliance**: Full step-by-step causal records satisfy enterprise SOC2 Type II and FedRAMP security requirements.

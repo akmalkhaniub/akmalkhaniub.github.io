@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Rerankers are one of the most effective ways to boost your RAG system's accuracy:
 * [ ] **Combine dense and sparse search**: Use hybrid search (vector similarity + keyword matching) as your initial retrieval pass.

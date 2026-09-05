@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To build production-grade document ingestion engines:
 * [ ] **Keep tables whole**: Extract tables using coordinate extraction and convert them to Markdown tables before vectorizing.

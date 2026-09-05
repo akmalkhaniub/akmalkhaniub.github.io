@@ -128,21 +128,19 @@
     end
   end</div>
 <hr>
-<h2>🛑 1. The Long-Context VRAM Memory Wall</h2>
+<h2>1. The Long-Context VRAM Memory Wall</h2>
 <p>Why does KV-cache memory scale so aggressively compared to model weights?</p>
 <h3>Key-Value Cache Scaling Math:</h3>
 <p>Model weights remain <strong>static</strong> regardless of sequence length. The KV-cache, however, grows <strong>linearly ($O(N)$) with every single token generated</strong>.</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                        KV-CACHE VRAM FOOTPRINT AT SCALE (Llama-3-70B, FP16)                       |
-+---------------------------------------------------------------------------------------------------+
+<pre><code class="language-plaintext">&gt; **KV-CACHE VRAM FOOTPRINT AT SCALE (Llama-3-70B, FP16)**
 | Context Length | KV-Cache Size (Single Request) | GPU Hardware Required                           |
 | 4,000 tokens   | 0.65 GB                        | 1x RTX 4090 / A10G                              |
 | 32,000 tokens  | 5.24 GB                        | 1x A100 (80GB)                                  |
 | 128,000 tokens | 20.97 GB                       | 2x A100 (80GB) Tensor Parallel                  |
 | 1,000,000 tokens| 163.84 GB                     | 🚨 Requires 4x H100 (80GB) just for ONE USER!   |
-+---------------------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <hr>
-<h2>🚰 2. The Attention Sink Phenomenon &amp; StreamingLLM</h2>
+<h2>2. The Attention Sink Phenomenon &amp; StreamingLLM</h2>
 <p>In early attempts to bound KV-cache size, engineers implemented <strong>Naive Sliding Window Attention</strong> (keeping only the most recent 4,000 tokens and dropping older ones).</p>
 <p>Naive sliding window suffered from a catastrophic failure: <strong>after token 4,001, the model’s perplexity spiked to infinity, outputting complete gibberish</strong>.</p>
 <h3>Why did sliding window fail? The Discovery of Attention Sinks</h3>
@@ -167,7 +165,7 @@
   end</div>
 <p><strong>The StreamingLLM Invariant</strong>: By permanently pinning the <strong>first 4 Attention Sink Tokens</strong> in GPU memory and pairing them with a <strong>rolling local window</strong>, an LLM can generate text infinitely over millions of tokens with a bounded $O(1)$ VRAM memory footprint!</p>
 <hr>
-<h2>🎯 3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</h2>
+<h2>3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</h2>
 <p>While StreamingLLM maintains fluency for streaming dialogue, agents performing code analysis require retaining critical entities and function definitions located midway through a $500\text{k-token}$ prompt.</p>
 <h3>1. H2O (Heavy Hitter Oracle)</h3>
 <ul>
@@ -179,7 +177,7 @@
 <li>Observes the attention patterns during prompt processing and selects key semantic clusters per attention head, compressing the prompt KV-cache by <strong>$85%$</strong> in a single pass before autoregressive decoding begins.</li>
 </ul>
 <hr>
-<h2>🛠️ Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</h2>
+<h2>Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</h2>
 <p>Here is a Python implementation simulating an attention sink retention and H2O Heavy-Hitter dynamic KV-cache eviction engine:</p>
 <pre><code class="language-python">import numpy as np
 from dataclasses import dataclass
@@ -261,7 +259,7 @@ if __name__ == &quot;__main__&quot;:
         cache.append_token(tid, tstr, att)
         cache.print_cache_state()</code></pre>
 <hr>
-<h2>📊 Summary: KV-Cache Compression Matrix</h2>
+<h2>Summary: KV-Cache Compression Matrix</h2>
 <table>
 <thead>
 <tr>
@@ -309,7 +307,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>Serving 1M+ token context windows is not a hardware brute-force challenge—<strong>it is an attention geometry optimization problem</strong>.</p>
 <p>By locking in <strong>Attention Sinks (StreamingLLM)</strong> and dynamically pruning low-salience tokens with <strong>H2O Heavy-Hitter and SnapKV algorithms</strong>, AI systems engineers unlock multi-million token agent capabilities with an <strong>$80%\text{ to }90%$ reduction in GPU VRAM costs</strong>.</p>
 

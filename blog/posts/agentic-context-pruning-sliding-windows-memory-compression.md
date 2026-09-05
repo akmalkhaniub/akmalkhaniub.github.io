@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Implementing context compression controls ensures runtime cost efficiency and model focus:
 * [ ] **Run semantic pruning immediately**: Do not let raw, verbose data outputs persist in the message array. Condense them to structured outcomes immediately after invocation.

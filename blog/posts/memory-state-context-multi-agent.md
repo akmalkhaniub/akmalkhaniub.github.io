@@ -60,7 +60,7 @@ To prevent this, enforce **Strict Context Isolation**:
 
 ---
 
-## 📋 Memory Architecture Checklist
+## Memory Architecture Checklist
 
 *   [ ] **Database-Backed Checkpointing**: Use database checkpointers (e.g., LangGraph Postgres checkpointer) to persist session state at every node transition. This ensures your agents can resume execution seamlessly after a crash.
 *   [ ] **Token Budget Filters**: Implement prompt compressors or token filters to prune message histories inside worker nodes, keeping ephemeral contexts under 2,000 tokens.
@@ -68,7 +68,7 @@ To prevent this, enforce **Strict Context Isolation**:
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Building sophisticated multi-agent LLM applications demands a deliberate approach to memory management beyond simple linear context.
 1. **Multi-Tiered Memory Architecture:** Implement a Multi-Tiered Memory Architecture, separating ephemeral task state, shared session data, and long-term semantic memory to optimize context relevance and reduce token costs.
@@ -79,7 +79,7 @@ Building sophisticated multi-agent LLM applications demands a deliberate approac
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Theory of Mind in MAS**: *Evaluating Theory of Mind and Internal Beliefs in LLM-Based Multi-Agent Systems* (February 2026). Analyzes how structured belief-state tables and memory layers improve coordination accuracy. [arXiv:2602.09432](https://arxiv.org/abs/2602.09432) (Needs verification)
 *   **MemGPT Research**: Packer et al., 2023. *MemGPT: Towards LLMs as Operating Systems*. Introduces OS-style virtual memory management for LLM context windows. [arXiv:2310.08560](https://arxiv.org/abs/2310.08560)

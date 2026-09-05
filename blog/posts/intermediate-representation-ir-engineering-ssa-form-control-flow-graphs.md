@@ -12,7 +12,7 @@ This article details SSA form, $\Phi$ (Phi) nodes, Control Flow Graphs, and midd
 
 ---
 
-## 📖 Compiler Middle-End & SSA Control Flow Graph Architecture
+## Compiler Middle-End & SSA Control Flow Graph Architecture
 
 How compilers construct Control Flow Graphs and optimize SSA Intermediate Representation:
 
@@ -43,13 +43,13 @@ graph TD
    The $\Phi$ node dynamically selects $a_1$ or $a_2$ depending on which control flow edge preceded the join block.
 3. **Control Flow Graphs (CFG)**: A representation of a program using graph theory. Nodes are **Basic Blocks** (sequences of instructions with a single entry point and a single exit point). Edges represent control flow jumps and conditional branches.
 4. **Middle-End Optimization Passes**:
-   * **Constant Folding & Propagation**: Evaluates static expressions at compile time ($x = 3 + 5 \to x = 8$) and propagates known constant values down the CFG.
+   * **Constant Folding & Propagation**: Evaluates static expressions at compile time ($x = 3 + 5 → x = 8$) and propagates known constant values down the CFG.
    * **Dead Code Elimination (DCE)**: Traverses the SSA dependency graph, deleting instructions whose output registers are never consumed by any live instruction or side-effecting return statement.
    * **Common Subexpression Elimination (CSE)**: Identifies duplicate calculations ($a = b + c; d = b + c$) and replaces subsequent expressions with references to the previously computed register ($d = a$).
 
 ---
 
-## 🛠️ Python Implementation: SSA Form CFG Builder & Optimization Engine
+## Python Implementation: SSA Form CFG Builder & Optimization Engine
 
 Here is a production-grade Python implementation of an SSA Form Control Flow Graph Builder featuring Constant Folding and Dead Code Elimination Passes:
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Compiler IR Gotchas & Best Practices
+## Compiler IR Gotchas & Best Practices
 
 When designing compiler intermediate representations:
 
@@ -175,7 +175,7 @@ When designing compiler intermediate representations:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Compiler middle-ends utilizing SSA form and CFG optimization passes (such as **LLVM `opt`**) report:
 * **Over 40% Reduction in Generated Binary Size**: Eliminating dead code, unrolling constant expressions, and merging redundant loops.
 * **$3\times$ Execution Speedup**: Transforming high-level abstractions into lean, optimized register machine code.

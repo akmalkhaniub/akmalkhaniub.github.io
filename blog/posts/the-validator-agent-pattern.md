@@ -63,7 +63,7 @@ This critique is piped back to the Worker, which runs again with the critique as
 
 ---
 
-## 📋 The Validation Gate Checklist
+## The Validation Gate Checklist
 
 *   [ ] **Strict Pipeline Sequence**: Always run programmatic checks (linters, test suites) *first*. If a test fails, terminate or loop back immediately without calling the expensive validator model.
 *   [ ] **Model Decoupling**: If the Worker uses Claude Opus, use a faster, cheaper model (like Claude Sonnet or GPT-4o-mini) for the validator node to optimize latency and costs.
@@ -71,7 +71,7 @@ This critique is piped back to the Worker, which runs again with the critique as
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Implementing a robust validation architecture is essential for transitioning generative AI agents from experimental prototypes to production-ready systems.
 1. **Overcoming Confirmation Bias:** LLMs suffer from systemic confirmation bias and cannot reliably evaluate their own outputs in the same context window. Separating the worker and validator roles is critical for accuracy.
@@ -82,7 +82,7 @@ Implementing a robust validation architecture is essential for transitioning gen
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Reflexion Framework**: Shinn et al., 2023. *Reflexion: Language Agents with Active Generative Feedback*. Explains the systematic benefits of separating execution from critic loops. [arXiv:2303.11366](https://arxiv.org/abs/2303.11366)
 *   **LLM-as-a-Judge**: Zheng et al., 2023. *Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena*. System evaluation guidelines and biases when using model judges. [arXiv:2306.05685](https://arxiv.org/abs/2306.05685)

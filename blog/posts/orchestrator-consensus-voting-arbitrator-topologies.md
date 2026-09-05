@@ -8,7 +8,7 @@ This article compares multi-agent delegation topologies and details how to build
 
 ---
 
-## 📖 Comparing Multi-Agent Delegations
+## Comparing Multi-Agent Delegations
 
 ```mermaid
 graph TD
@@ -37,7 +37,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Consensus Arbitrator Engine
+## Python Implementation: Consensus Arbitrator Engine
 
 Here is a production Python implementation of an Orchestrator Consensus Arbitrator. It dispatches a task to three independent worker instances, calculates solution similarity, scores test verification, and selects the consensus winner.
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Architectural Guardrails
+## Important Architectural Guardrails
 
 When building consensus arbitrator loops, keep these operational limits in mind:
 
@@ -152,7 +152,7 @@ When building consensus arbitrator loops, keep these operational limits in mind:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations implementing Debate & Consensus Arbitrators achieve:
 * **99.2% Accuracy on Critical Tasks**: Multi-model consensus eliminates single-model bias and edge-case hallucinations.
 * **Automated Quality Filtering**: Arbitrator nodes automatically discard sub-optimal proposals before code reaches human reviewers.

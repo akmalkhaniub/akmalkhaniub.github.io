@@ -17,7 +17,7 @@ This article synthesizes the trade-offs of MLA vs. GQA, detailing **what is good
 
 ---
 
-## 🎨 Attention Projections: GQA vs. MLA
+## Attention Projections: GQA vs. MLA
 
 GQA groups multiple Query heads to share single Key/Value heads, while MLA compresses keys and values into a shared low-rank latent vector space, expanding them dynamically during computation.
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🔍 Synthesis: What's Good & What's Not
+## Synthesis: What's Good & What's Not
 
 ### 1. Grouped-Query Attention (GQA)
 Used as the standard attention mechanism in Meta's LLaMA-3 and Mistral's Mixtral models.
@@ -68,7 +68,7 @@ Introduced in DeepSeek-V3 and utilized in the DeepSeek-R1 reasoning models.
 
 ---
 
-## 💻 Profiling KV-Cache Memory in TypeScript
+## Profiling KV-Cache Memory in TypeScript
 
 To monitor and scale high-concurrency systems, you must track the active memory footprint of your model's context caches. 
 
@@ -148,14 +148,14 @@ deepseekProfiler.profileCluster(100, 32768);
 
 ---
 
-## 📋 KV-Cache Management Guardrails
+## KV-Cache Management Guardrails
 
 * **vLLM PagedAttention**: Always deploy KV Cache configurations inside dynamic paging engines (like vLLM PagedAttention) to prevent fragmentation crashes.
 * **Prefill Decoupling**: Separate prefill instances (which compute KV tensors) from decoding instances (which iterate token generation) to prevent latency spikes during high-concurrency request bursts.
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Optimizing memory utilization during token decoding is the key to scaling LLM deployments:
 1. **The Concurrency Revolution:** DeepSeek's MLA demonstrates that low-rank compression of keys and values allows a single server to handle up to 10x more concurrent users, drastically lowering hosting costs.
@@ -166,7 +166,7 @@ Optimizing memory utilization during token decoding is the key to scaling LLM de
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **DeepSeek MLA Specification**: DeepSeek-AI. *DeepSeek-V3 Technical Report*. Details Multi-head Latent Attention math and low-rank projections. [DeepSeek Portal](https://github.com/deepseek-ai/DeepSeek-V3).
 * **Meta LLaMA GQA**: Meta AI. *LLaMA 3 Model Architecture*. Details on Grouped-Query Attention scaling. [Meta AI Blog](https://ai.meta.com/blog/meta-llama-3/).

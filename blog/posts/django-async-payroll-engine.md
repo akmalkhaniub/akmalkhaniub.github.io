@@ -17,7 +17,7 @@ This article details how I engineered the [django-payroll-engine](https://github
 
 ---
 
-## 🛠️ The Architecture: Dynamic Parallel Fan-Out
+## The Architecture: Dynamic Parallel Fan-Out
 
 The engine is split into a **synchronous state coordinator** (Django) and a **scalable asynchronous computation grid** (Celery & Redis).
 
@@ -192,7 +192,7 @@ During local stress testing, the architecture demonstrated significant performan
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Building robust financial software demands meticulous attention to accuracy, concurrency, and scalability.
 1. **Mathematical Precision:** The `Decimal` library ensures absolute financial accuracy by preventing floating-point errors, crucial for maintaining ledger integrity in payroll calculations.

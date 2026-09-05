@@ -124,7 +124,7 @@
     Rerank --&gt; Reduce[K-Way Merge &amp; Top-K Results]
   end</div>
 <hr>
-<h2>🗜️ 1. Product Quantization (PQ) &amp; Asymmetric Distance Math</h2>
+<h2>1. Product Quantization (PQ) &amp; Asymmetric Distance Math</h2>
 <p><strong>Product Quantization (PQ)</strong> (Jégou et al.) is the algorithmic cornerstone of vector compression, reducing RAM footprints by up to <strong>$95%$</strong> with minimal loss in search recall.</p>
 <pre><code class="language-plaintext">Original Vector (1536-dim float32 = 6,144 bytes):
 [ -0.042, 0.183, ... | 0.921, -0.401, ... | ... | 0.005, 0.771, ... ]
@@ -139,7 +139,7 @@
 Compressed Vector Code = [ 42, 189, ..., 12 ]  ---&gt; Total: 96 bytes (64x Compression!)</code></pre>
 <h3>The PQ Algorithm:</h3>
 <ol>
-<li><strong>Space Decomposition</strong>: Divide the $D$-dimensional vector space ($D = 1536$) into $M$ orthogonal sub-vectors of dimension $d = D/M$ (e.g., $M = 96 \implies d = 16$).</li>
+<li><strong>Space Decomposition</strong>: Divide the $D$-dimensional vector space ($D = 1536$) into $M$ orthogonal sub-vectors of dimension $d = D/M$ (e.g., $M = 96 ⟹ d = 16$).</li>
 <li><strong>K-Means Clustering</strong>: Run K-Means independently on each sub-space to identify $K = 256$ centroids ($2^8 = 8\text{ bits} = 1\text{ byte}$ per sub-vector).</li>
 <li><strong>Vector Quantization</strong>: Replace each $16\text{-dimensional}$ sub-vector with the $1\text{-byte}$ index of its closest centroid.</li>
 <li><strong>Compression Ratio</strong>:
@@ -153,7 +153,7 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 </ol>
 <p>$$\text{Dist}(\vec{q}, \vec{x}<em>{\text{compressed}}) \approx \sum</em>{m=1}^M \text{LookupTable}[m][\vec{x}_{\text{compressed}}[m]]$$</p>
 <hr>
-<h2>💾 2. DiskANN &amp; The Vamana Graph Protocol</h2>
+<h2>2. DiskANN &amp; The Vamana Graph Protocol</h2>
 <p>To completely overcome the RAM ceiling, <strong>DiskANN</strong> (Microsoft Research, Subramanya et al.) stores the graph structure and compressed vectors on fast <strong>NVMe SSDs</strong> rather than in RAM.</p>
 <div class="mermaid">graph LR
   subgraph In-Memory Cache (~10% RAM)
@@ -177,7 +177,7 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 </li>
 </ul>
 <hr>
-<h2>🌐 3. Distributed Cluster Topology: Milvus &amp; Qdrant at Scale</h2>
+<h2>3. Distributed Cluster Topology: Milvus &amp; Qdrant at Scale</h2>
 <p>At enterprise scale, vector databases decouple stateful storage from stateless compute nodes:</p>
 <div class="mermaid">graph TD
   subgraph Client Ingestion &amp; Query Layer
@@ -204,7 +204,7 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 <li><strong>Indexer Nodes</strong>: Asynchronously pull raw vector segments from S3, compute K-Means PQ centroids, construct Vamana graph files, and upload immutable indexed segments back to S3.</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: Product Quantization (PQ) &amp; ADC Search Engine</h2>
+<h2>Python Implementation: Product Quantization (PQ) &amp; ADC Search Engine</h2>
 <p>Here is a complete Python implementation demonstrating a Product Quantization (PQ) encoder and Asymmetric Distance Computation (ADC) search engine:</p>
 <pre><code class="language-python">import numpy as np
 from typing import List, Tuple
@@ -320,7 +320,7 @@ if __name__ == &quot;__main__&quot;:
     for rank, (idx, dist) in enumerate(results, 1):
         print(f&quot;   Rank {rank}: Vector ID #{idx:&lt;5} | Approx L2 Sq Distance: {dist:.4f}&quot;)</code></pre>
 <hr>
-<h2>📊 Summary: Vector Indexing Trade-Offs</h2>
+<h2>Summary: Vector Indexing Trade-Offs</h2>
 <table>
 <thead>
 <tr>
@@ -361,7 +361,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>Scaling vector databases to 1 billion embeddings is fundamentally a problem of <strong>memory economics and I/O layout</strong>.</p>
 <p>By combining <strong>Product Quantization</strong> to reduce vector dimensionality in memory with <strong>DiskANN Vamana graphs</strong> on high-throughput NVMe SSDs, modern AI engineering platforms achieve sub-10ms similarity search at a fraction of traditional cloud infrastructure costs.</p>
 

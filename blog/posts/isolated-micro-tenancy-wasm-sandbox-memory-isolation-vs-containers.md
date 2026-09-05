@@ -14,7 +14,7 @@ This article contrasts Linux Container isolation with Wasm Software Fault Isolat
 
 ---
 
-## 📖 Linux Container vs Wasm Multi-Tenant Isolation Architecture
+## Linux Container vs Wasm Multi-Tenant Isolation Architecture
 
 Comparing OS process boundaries against single-process WebAssembly Software Fault Isolation:
 
@@ -49,7 +49,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Software Fault Isolation (SFI) Engine
+## Python Implementation: Software Fault Isolation (SFI) Engine
 
 Here is a production-grade Python simulation of a Software Fault Isolation (SFI) Memory Guard and Multi-Tenant Sandbox Manager:
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Isolated Micro-Tenancy Gotchas & Best Practices
+## Isolated Micro-Tenancy Gotchas & Best Practices
 
 When designing multi-tenant Wasm runtimes:
 
@@ -138,7 +138,7 @@ When designing multi-tenant Wasm runtimes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms adopting Wasm Isolated Micro-Tenancy (such as **Fastly Compute@Edge**) report:
 * **Sub-Millisecond Total Latency**: Eliminating container cold-starts delivers end-to-end request latencies under $10\text{ms}$.
 * **100x Lower Server Hardware Infrastructure Costs**: Running $50,000$ active tenant sandboxes per host node reduces edge cloud server fleets by over $80\%$.

@@ -69,20 +69,11 @@ graph TD
 
 To make an informed architectural decision, we must weigh the system's pros against its operational overhead:
 
-```
-+---------------------------------------------------------------------------------------------------------------------+
-|                                              GRAPHRAG TRADE-OFFS MATRIX                                             |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| What's Good (Pros)                                | What's Not (Cons)                                               |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| * Multi-Hop Context Navigation: Traverses graph   | * Extreme Indexing Cost: LLM-based entity extraction            |
-|   edges to resolve multi-file dependency flows.   |   requires hundreds of API calls per document.                  |
-| * Thematic Synthesis: Leiden clustering creates   | * Index Construction Latency: Graph generation for a large      |
-|   accurate global summaries of massive corpora.   |   repository can take hours of compute.                         |
-| * Structured Data Governance: Properties can contain| * High Memory/Hardware Load: Demands graph databases like       |
-|   strict schema constraints, types, and scopes.   |   Neo4j alongside vector indexes, increasing stack complexity.  |
-+---------------------------------------------------+-----------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Multi-Hop Context Navigation: Traverses graph edges to resolve multi-file dependency flows. | * Extreme Indexing Cost: LLM-based entity extraction requires hundreds of API calls per document. |
+| * Thematic Synthesis: Leiden clustering creates accurate global summaries of massive corpora. | * Index Construction Latency: Graph generation for a large repository can take hours of compute. |
+| * Structured Data Governance: Properties can contain strict schema constraints, types, and scopes. | * High Memory/Hardware Load: Demands graph databases like Neo4j alongside vector indexes, increasing stack complexity. |
 
 ---
 
@@ -170,7 +161,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 GraphRAG is not a drop-in replacement for standard vector search, but a powerful extension for complex environments. It transforms the context window from a collection of isolated text fragments into an interconnected web of structured knowledge.
 

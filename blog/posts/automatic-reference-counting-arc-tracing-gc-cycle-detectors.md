@@ -14,7 +14,7 @@ This article details ARC retain/release operations, strong reference cycles, Swi
 
 ---
 
-## 📖 ARC Architecture & Reference Cycle Detection
+## ARC Architecture & Reference Cycle Detection
 
 How Automatic Reference Counting operates, how strong reference cycles leak memory, and how Swift weak side-tables prevent use-after-free crashes:
 
@@ -60,7 +60,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: ARC Engine & Cycle Collector
+## Python Implementation: ARC Engine & Cycle Collector
 
 Here is a production-grade Python implementation of an Automatic Reference Counting (ARC) Engine featuring Strong/Weak References and a Bacon-Rajan Cycle Collector:
 
@@ -195,7 +195,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 ARC Gotchas & Best Practices
+## ARC Gotchas & Best Practices
 
 When developing in ARC environments (Swift / Objective-C / Rust):
 
@@ -207,7 +207,7 @@ When developing in ARC environments (Swift / Objective-C / Rust):
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Automatic Reference Counting and Swift side-table architectures (powering **iOS Apps**, **macOS Kernel**, and **Rust `Arc` / C++ `std::shared_ptr`**) report:
 * **0ms Predictable Deallocation Latency**: Memory is freed instantaneously the moment references drop to zero, eliminating Stop-The-World GC stutter in mobile games and audio processing.
 * **$50\%$ Lower Peak Memory Footprint**: Immediate reclamation prevents dead objects from lingering in memory until the next GC sweep.

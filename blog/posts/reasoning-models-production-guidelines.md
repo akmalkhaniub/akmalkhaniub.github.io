@@ -161,7 +161,7 @@ async def chat_endpoint(request: ChatRequest):
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To build production-ready systems on top of reasoning models:
 * [ ] **Never stream reasoning directly to the content block**: Demultiplex `reasoning_content` and standard `content` at the gateway level.

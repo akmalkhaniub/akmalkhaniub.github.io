@@ -71,7 +71,7 @@ For each pattern, this article defines what it is, when to use it, the real-worl
 
 ---
 
-## 🛠️ Matching Architecture to Task: Performance Data
+## Matching Architecture to Task: Performance Data
 
 A recent 2026 paper, *Benchmarking Multi-Agent LLM Architectures for Financial Document Processing*, analyzed the tradeoffs between these patterns. The researchers found:
 *   **Sequential chains** have the lowest token cost but fail on complex reasoning.
@@ -82,7 +82,7 @@ The golden rule: **Start with sequential pipelines or supervisor-worker. Only mo
 
 ---
 
-## 📋 The Architectural Selection Checklist
+## The Architectural Selection Checklist
 
 *   [ ] **Define the Predictability Factor**: If the workflow is 100% predictable, use a **Sequential Pipeline**.
 *   [ ] **Identify High-Risk Gates**: Place a **Human-in-the-Loop Breakpoint** before any action that mutates external databases or executes financial transactions.
@@ -90,7 +90,7 @@ The golden rule: **Start with sequential pipelines or supervisor-worker. Only mo
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Designing robust multi-agent systems requires balancing reasoning capabilities against latency and cost.
 1. **Start Simple:** Begin with predictable sequential pipelines or supervisor-worker patterns before escalating to complex, decentralized architectures like swarms or debates.
@@ -101,7 +101,7 @@ Designing robust multi-agent systems requires balancing reasoning capabilities a
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Benchmarking MAS in Finance**: *Benchmarking Multi-Agent LLM Architectures for Financial Document Processing* (March 2026). Comparative study of cost-accuracy tradeoffs across sequential, hierarchical, and evaluator topologies. [arXiv:2603.09452](https://arxiv.org/abs/2603.09452) (Needs verification)
 *   **Anthropic Architecture Guide**: [Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) (December 2024). Explains workflow structures and basic routing patterns.

@@ -143,19 +143,26 @@ graph LR
     style G fill:#052e16,stroke:#10b981,stroke-width:2px</div>
 <hr>
 <h2>What&#39;s Good &amp; What&#39;s Not</h2>
-<pre><code class="language-plaintext">+----------------------------------------------------------------------------------------------------------------------+
-|                                      PROMPT CACHING TRADE-OFFS MATRIX                                                |
-+----------------------------------------------------+---------------------------------------------------------------+
-| What's Good (Pros)                                 | What's Not (Cons)                                             |
-+----------------------------------------------------+---------------------------------------------------------------+
-| * Dramatic Cost Reduction: Cached tokens billed at | * Cache TTL Constraints: Anthropic caches for 5 minutes;      |
-|   10% of full input price (Anthropic: $0.003/1K    |   infrequent users won't benefit from cache hits.             |
-|   cached vs. $0.015/1K fresh for Sonnet).          |                                                               |
-| * Zero Latency Overhead: Cache reads are faster    | * Prefix Rigidity: The cached portion MUST be a static        |
-|   than fresh token processing — sub-10ms.          |   prefix. Dynamic content must come after the cache boundary. |
-| * Transparent Integration: Caching is opt-in via   | * Min Token Floor: Anthropic requires ≥1024 tokens for a      |
-|   a single API flag — no architecture changes.     |   cache block; small prompts won't qualify.                   |
-+----------------------------------------------------+---------------------------------------------------------------+</code></pre>
+<table>
+<thead>
+<tr>
+<th>What&#39;s Good (Pros)</th>
+<th>What&#39;s Not (Cons)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>* Dramatic Cost Reduction: Cached tokens billed at 10% of full input price (Anthropic: $0.003/1K cached vs. $0.015/1K fresh for Sonnet).</td>
+<td>* Cache TTL Constraints: Anthropic caches for 5 minutes; infrequent users won&#39;t benefit from cache hits.</td>
+</tr>
+<tr>
+<td>* Zero Latency Overhead: Cache reads are faster than fresh token processing — sub-10ms.</td>
+<td>* Prefix Rigidity: The cached portion MUST be a static prefix. Dynamic content must come after the cache boundary.</td>
+</tr>
+<tr>
+<td>* Transparent Integration: Caching is opt-in via a single API flag — no architecture changes.</td>
+<td>* Min Token Floor: Anthropic requires ≥1024 tokens for a cache block; small prompts won&#39;t qualify.</td>
+</tr>
+</tbody></table>
 <hr>
 <h2>Anthropic Cache Control: Complete Implementation</h2>
 <p>Anthropic&#39;s API uses a <code>cache_control</code> flag on individual message blocks. Blocks marked with <code>{&quot;type&quot;: &quot;ephemeral&quot;}</code> are cached server-side for 5 minutes. Only the <strong>prefix</strong> of the prompt can be cached — variable user content must appear after all cached blocks.</p>
@@ -370,7 +377,7 @@ def query_openai_cached(system_prompt: str, static_context: str, user_query: str
 <p><strong>Key Difference</strong>: OpenAI caches at <strong>50% discount</strong> (vs Anthropic&#39;s 90% discount), but requires no configuration. Anthropic&#39;s cache is more powerful but demands explicit prefix design.</p>
 </blockquote>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>Prompt Caching is the single highest-ROI optimisation available to teams running LLM applications at scale. By redesigning your prompts to front-load static content (system prompts, RAG context, tool definitions), you can cut input token costs by 80-90% with minimal engineering effort.</p>
 <ul>
 <li><strong>Design for prefix stability</strong>: Any content that changes per-request must go at the end. Reorganise your message construction pipeline accordingly.</li>

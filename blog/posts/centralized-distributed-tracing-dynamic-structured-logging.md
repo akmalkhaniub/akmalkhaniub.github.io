@@ -10,7 +10,7 @@ This article details how to build a context-aware structured logging framework w
 
 ---
 
-## 📖 Distributed Context Propagation Pipeline
+## Distributed Context Propagation Pipeline
 
 Tracing incoming requests and correlating structured logs across microservices:
 
@@ -42,7 +42,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Context-Aware JSON Logger & Dynamic Level Controller
+## Python Implementation: Context-Aware JSON Logger & Dynamic Level Controller
 
 Here is a production-grade Python implementation of a context-aware JSON logger that binds OpenTelemetry trace IDs and supports dynamic runtime log-level changes:
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Observability Implementation Gotchas
+## Observability Implementation Gotchas
 
 When building logging and tracing infrastructure:
 
@@ -161,7 +161,7 @@ When building logging and tracing infrastructure:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying correlated tracing and structured logging report:
 * **70% Reduction in Troubleshooting Time**: Searching central log aggregators by `trace_id` instantly isolates all microservice logs associated with a single failed request.
 * **Cost-Efficient Log Storage**: Running production services at `INFO` level saves terabytes of storage, while dynamic log-level toggling enables instant deep debugging when needed.

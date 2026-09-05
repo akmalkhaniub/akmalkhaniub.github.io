@@ -419,12 +419,12 @@ app.use(compression({
 <h2>Gotcha 7: Python FastAPI — asyncio Generator Must Explicitly Flush</h2>
 <p><strong>Symptom</strong>: FastAPI SSE streams in development but not in production with Gunicorn/Uvicorn workers. Tokens batch in groups of ~20 instead of arriving one by one.</p>
 <p><strong>Root cause</strong>: Python&#39;s async generators buffer <code>yield</code> statements depending on the ASGI server configuration and OS socket buffer sizes. You need to yield the newlines as separate flushes.</p>
-<pre><code class="language-python"># ❌ May buffer — single yield per event
+<pre><code class="language-python"># May buffer — single yield per event
 async def event_generator():
     async for chunk in anthropic_stream:
         yield f&quot;data: {chunk}\n\n&quot;  # OS may buffer this
 
-# ✅ Double-newline as separate yield forces flush in most ASGI servers
+# Double-newline as separate yield forces flush in most ASGI servers
 async def event_generator():
     async for chunk in anthropic_stream:
         token = chunk.delta.text if hasattr(chunk, 'delta') else &quot;&quot;
@@ -432,7 +432,7 @@ async def event_generator():
             yield f&quot;data: {json.dumps({'token': token})}\n&quot;
             yield &quot;\n&quot;  # ← Separate yield forces ASGI flush
 
-# ✅ Even better: use sys.stdout.flush() signal for Uvicorn
+# Even better: use sys.stdout.flush() signal for Uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from anthropic import AsyncAnthropic
@@ -624,7 +624,7 @@ mindmap
       Always close on DONE signal
       Close on component unmount</div>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>SSE is the right protocol for LLM token streaming — it&#39;s simpler than WebSockets, HTTP/2 compatible, and natively auto-reconnecting. But &quot;simple&quot; doesn&#39;t mean &quot;trivial to deploy&quot;. The pitfalls are infrastructure-level, not code-level, which is why they&#39;re so hard to debug.</p>
 <ul>
 <li><strong><code>X-Accel-Buffering: no</code> is your most important header</strong> — set it on every SSE response and it protects you from Nginx, Varnish, and most CDN buffering with a single line.</li>

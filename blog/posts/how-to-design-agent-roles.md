@@ -62,7 +62,7 @@ If an agent needs more than 3 tools to execute its task, its scope is too broad.
 
 ---
 
-## 📋 The Role Design Checklist
+## The Role Design Checklist
 
 *   [ ] **Strict Prompts**: Remove generic words like "help," "assist," or "smart" from system instructions. Replace them with operational verbs: "extract," "query," "generate," "validate."
 *   [ ] **Interface Validation**: Enforce Pydantic schema contracts on all messages exchanged between agent nodes.
@@ -70,7 +70,7 @@ If an agent needs more than 3 tools to execute its task, its scope is too broad.
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Building robust multi-agent systems hinges on meticulously defined agent roles and communication protocols.
 1.  **Fuzzy Roles Lead to System Drift:** Undefined or overlapping agent responsibilities result in "cognitive duplication," context contamination, infinite communication loops, and tool list bloat, severely impacting system reliability and efficiency.
@@ -81,7 +81,7 @@ Building robust multi-agent systems hinges on meticulously defined agent roles a
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **SOPs in Multi-Agent Systems**: Hong et al., 2023. *MetaGPT: Meta Programming for Multi-Agent Collaborative Framework*. Explains how standard operating procedures (SOPs) eliminate role confusion in agent networks. [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)
 *   **Engineering MAS Taxonomy**: *Engineering LLM-based Multi-Agent Systems: A Taxonomy of Emerging Frameworks* (June 2026). Explains task decomposition and interface design between agents. [diva-portal.org](https://diva-portal.org/) (Needs verification)

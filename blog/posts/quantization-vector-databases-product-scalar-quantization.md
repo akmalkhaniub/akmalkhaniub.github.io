@@ -14,7 +14,7 @@ This article explores the mathematical mechanics of SQ8, Product Quantization, a
 
 ---
 
-## 📖 Product Quantization (PQ) Sub-Vector Decomposition Architecture
+## Product Quantization (PQ) Sub-Vector Decomposition Architecture
 
 How Product Quantization splits high-dimensional vectors into sub-vectors and encodes them into byte codes:
 
@@ -46,7 +46,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: SQ8 & Product Quantization Engine
+## Python Implementation: SQ8 & Product Quantization Engine
 
 Here is a production-grade Python implementation of Scalar Quantization (SQ8), Product Quantization (PQ), and Asymmetric Distance Computation (ADC):
 
@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Vector Quantization Gotchas & Best Practices
+## Vector Quantization Gotchas & Best Practices
 
 When configuring vector database quantization:
 
@@ -185,7 +185,7 @@ When configuring vector database quantization:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Vector database deployments utilizing Product Quantization report:
 * **Over 90% RAM Cost Reduction**: Compressing 100M float32 vectors from $614\text{ GB}$ down to $25\text{ GB}$ allows hosting billion-scale vector indexes on modest single-node servers.
 * **$5\times$ Faster Query Latencies**: Smaller byte code sizes fit entirely within CPU L3 cache lines, eliminating RAM bus memory bandwidth bottlenecks during SIMD matrix evaluations.

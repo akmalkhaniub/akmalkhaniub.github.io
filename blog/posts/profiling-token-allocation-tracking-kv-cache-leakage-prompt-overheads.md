@@ -10,7 +10,7 @@ This article details how to build a token profiling and auditing engine.
 
 ---
 
-## 📖 Memory vs. Token Allocation Lifecycle
+## Memory vs. Token Allocation Lifecycle
 
 Managing active context requires balancing model memory footprint against prompt reuse:
 
@@ -42,7 +42,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Token Allocation Profiler
+## Python Implementation: Token Allocation Profiler
 
 Here is a production-grade Python implementation of a Token Allocation Profiler. It simulates multi-turn chat interactions, tracks prompt caching efficiency, and audits memory overheads:
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Optimization Guardrails & Mitigation
+## Optimization Guardrails & Mitigation
 
 When managing token memory:
 
@@ -160,7 +160,7 @@ When managing token memory:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams profiling token allocations report:
 * **55% Reduction in API Bills**: Normalizing prompt layouts to maximize prefix caching cuts input token computation costs.
 * **Double Host Capacity**: Proactive KV-cache eviction policies reclaim idle GPU memory, allowing servers to handle twice the concurrent user sessions.

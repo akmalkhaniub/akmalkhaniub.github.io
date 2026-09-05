@@ -10,7 +10,7 @@ This article details how to architect and implement an enterprise context engine
 
 ---
 
-## 📖 GCP Enterprise RAG Architecture
+## GCP Enterprise RAG Architecture
 
 The platform unifies structured relational data, vector embeddings, and analytical telemetry across Google Cloud's data stack:
 
@@ -46,7 +46,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: AlloyDB RLS Vector Retriever & BigQuery Logger
+## Python Implementation: AlloyDB RLS Vector Retriever & BigQuery Logger
 
 Here is a production Python implementation of an enterprise context retriever querying AlloyDB AI with tenant isolation, and logging trajectory embeddings into BigQuery:
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important GCP Security & Performance Guardrails
+## Important GCP Security & Performance Guardrails
 
 When configuring RLS and vector search on GCP:
 
@@ -172,7 +172,7 @@ When configuring RLS and vector search on GCP:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams building GCP RAG pipelines report:
 * **Zero Cross-Tenant Data Leaks**: Relational SQL Row-Level Security guarantees 100% tenant context separation.
 * **4x Faster Query Speeds**: AlloyDB ScaNN indexing reduces P99 vector search latency under 15 milliseconds.

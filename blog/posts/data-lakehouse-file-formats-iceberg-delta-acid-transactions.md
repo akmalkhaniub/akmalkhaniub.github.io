@@ -16,7 +16,7 @@ This article details the Apache Iceberg metadata tree, Optimistic Concurrency Co
 
 ---
 
-## 📖 Apache Iceberg Metadata Tree & OCC Transaction Architecture
+## Apache Iceberg Metadata Tree & OCC Transaction Architecture
 
 How Apache Iceberg organizes table metadata into an immutable tree hierarchy to deliver atomic transactions on object storage:
 
@@ -59,7 +59,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Apache Iceberg Metadata Tree & OCC Commit Engine
+## Python Implementation: Apache Iceberg Metadata Tree & OCC Commit Engine
 
 Here is a production-grade Python implementation of an Apache Iceberg Metadata Tree and an Optimistic Concurrency Control (OCC) ACID Transaction Commit Engine:
 
@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Data Lakehouse Gotchas & Best Practices
+## Data Lakehouse Gotchas & Best Practices
 
 When operating Apache Iceberg or Delta Lake tables:
 
@@ -199,7 +199,7 @@ When operating Apache Iceberg or Delta Lake tables:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Modern Data Lakehouse table formats (such as **Apache Iceberg**, **Delta Lake**, and **Apache Hudi**) report:
 * **100% ACID Concurrency Safety**: Eliminates dirty reads and corrupted table states on AWS S3 / Google Cloud Storage.
 * **$100\times$ Faster Metadata Queries**: Column-level min/max statistics in manifest files prune unneeded Parquet files without making expensive cloud S3 LIST calls.

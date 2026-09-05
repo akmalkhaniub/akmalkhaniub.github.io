@@ -22,34 +22,30 @@ graph TD
 
 ---
 
-## 🧮 1. Quorum Mechanics & The State Machine Replication Paradigm
+## 1. Quorum Mechanics & The State Machine Replication Paradigm
 
 In a replicated state machine, an ensemble of $N$ nodes processes client commands.
 
 To tolerate $F$ node crash failures or network partitions without split-brain, the cluster requires a **Majority Quorum ($Q$)**:
 
-$$Q = \left\lfloor \frac{N}{2} \right\rfloor + 1 \quad \implies \quad N \ge 2F + 1$$
+$$Q = \left\lfloor \frac{N}{2} \right\rfloor + 1 \quad ⟹ \quad N \ge 2F + 1$$
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 CLUSTER QUORUM TOLERANCE TABLE                                    |
-+---------------------------------------------------------------------------------------------------+
+> **CLUSTER QUORUM TOLERANCE TABLE**
 | Nodes (N) | Majority Quorum (Q) | Tolerable Failures (F) | Why Even Node Counts are Discouraged   |
 | 3         | 2 nodes             | 1 failure              | Baseline production deployment         |
 | 4         | 3 nodes             | 1 failure              | 🚨 Adds 1 node overhead, 0 extra fault |
 | 5         | 3 nodes             | 2 failures             | Standard enterprise high-availability  |
 | 7         | 4 nodes             | 3 failures             | Global geo-distributed control planes  |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
 
-## ⚔️ 2. Architectural Comparison: Raft vs Multi-Paxos vs Zab
+## 2. Architectural Comparison: Raft vs Multi-Paxos vs Zab
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 CONSENSUS ALGORITHM COMPARISON MATRIX                             |
-+---------------------------------------------------------------------------------------------------+
+> **CONSENSUS ALGORITHM COMPARISON MATRIX**
 | Dimension            | Multi-Paxos               | Raft                      | Zab (ZooKeeper)    |
 | Leader Model         | Weak / Settle-on-demand   | Strong (Log flows 1-way)  | Strong Primary     |
 | Log Holes Permitted? | YES (Out-of-order slots)  | NO (Strict append-only)   | NO (Strict prefix) |
@@ -57,7 +53,7 @@ $$Q = \left\lfloor \frac{N}{2} \right\rfloor + 1 \quad \implies \quad N \ge 2F +
 | Sequence Identifier  | Ballot Number / Slot ID   | Term + Log Index          | 64-bit zxid (Epoch)|
 | Membership Changes   | Alpha Reconfigurations    | Joint Consensus (Cold/New)| Dynamic Reconfig   |
 | Primary Implementers | Google Spanner, Chubby    | etcd, CockroachDB, TiKV   | Apache ZooKeeper   |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
@@ -109,7 +105,7 @@ Zab is designed specifically for tree-structured state replication.
 
 ---
 
-## 💥 3. Real-World Production Outage Post-Mortems
+## 3. Real-World Production Outage Post-Mortems
 
 ### Post-Mortem 1: The Kubernetes `etcd` Split-Brain Partition Thrash
 * **Incident**: A network blip severed Node $A$ from the rest of a 3-node etcd cluster. Node $A$ immediately timed out, incremented its term number, and broadcasted `RequestVote`.
@@ -123,7 +119,7 @@ Zab is designed specifically for tree-structured state replication.
 
 ---
 
-## 🛠️ Python Implementation: Multi-Node Raft Consensus Engine
+## Python Implementation: Multi-Node Raft Consensus Engine
 
 Here is a Python implementation of a 3-node Raft consensus cluster with randomized election timeouts, vote coordination, and log entry quorum replication:
 
@@ -223,7 +219,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Consensus Trade-Offs
+## Summary: Consensus Trade-Offs
 
 | System Goal | Multi-Paxos | Raft | Zab |
 |---|---|---|---|
@@ -234,7 +230,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 Consensus algorithms are the bedrock upon which modern global software is built.
 
 Whether your architecture relies on **Raft for strict operational clarity**, **Multi-Paxos for parallel multi-slot throughput**, or **Zab for pipelined hierarchical state**, mastering quorum mechanics, pre-vote guards, and read-index leases is essential for building 99.999% resilient distributed platforms.

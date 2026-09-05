@@ -10,7 +10,7 @@ To solve this, modern vector engines utilize **Vector Quantization** to compress
 
 ---
 
-## 📖 Quantization Mechanics: SQ vs. PQ
+## Quantization Mechanics: SQ vs. PQ
 
 ```mermaid
 graph TD
@@ -44,7 +44,7 @@ Product Quantization is a lossy compression technique that clusters multidimensi
 
 ---
 
-## 🛠️ Configuring Quantization in Qdrant Collections
+## Configuring Quantization in Qdrant Collections
 
 Qdrant supports native Scalar and Product Quantization configurations on collection startup.
 
@@ -89,7 +89,7 @@ Here is a configuration for high-ratio Product Quantization, dividing 1536 dimen
 
 ---
 
-## ⚖️ Memory and Latency Footprints
+## Memory and Latency Footprints
 
 | Index Type | VRAM per 1M Vectors | Query Latency | Search Recall Accuracy |
 | :--- | :---: | :---: | :---: |
@@ -99,7 +99,7 @@ Here is a configuration for high-ratio Product Quantization, dividing 1536 dimen
 
 ---
 
-## ⚠️ Important Pitfalls in Quantization
+## Important Pitfalls in Quantization
 
 Ensure your configuration balances compression and precision:
 

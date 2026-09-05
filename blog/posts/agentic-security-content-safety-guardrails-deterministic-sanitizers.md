@@ -10,7 +10,7 @@ This article details how to architect a multi-layered content safety and output 
 
 ---
 
-## 📖 Multi-Layered Guardrail Architecture
+## Multi-Layered Guardrail Architecture
 
 The security architecture enforces deterministic checks at both entry and exit points of model execution:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Multi-Layered Guardrail Engine
+## Python Implementation: Multi-Layered Guardrail Engine
 
 Here is a production Python implementation of a Deterministic Guardrail Engine that enforces input PII masking, AST command validation, and Pydantic output schema compliance:
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Guardrail Design Rules
+## Important Guardrail Design Rules
 
 When implementing content safety guardrails, adhere to these design principles:
 
@@ -163,7 +163,7 @@ When implementing content safety guardrails, adhere to these design principles:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying Deterministic Guardrails report:
 * **Zero Prohibited Command Executions**: Native code regex filters prevent 100% of malicious shell and SQL injection attempts.
 * **Structural Reliability**: Pydantic schema validators eliminate malformed JSON tool call crashes.

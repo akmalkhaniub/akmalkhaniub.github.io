@@ -35,7 +35,7 @@ graph TD
 
 ---
 
-## 💥 1. The Blast Radius Anatomy in Cloud Systems
+## 1. The Blast Radius Anatomy in Cloud Systems
 
 Why do multi-zone regional clusters still suffer from total system collapse?
 
@@ -47,21 +47,19 @@ Why do multi-zone regional clusters still suffer from total system collapse?
 
 ---
 
-## 🏛️ 2. Anatomy of an Isolated Cell
+## 2. Anatomy of an Isolated Cell
 
 In a Cell-Based Architecture, a **Cell** is an independent, complete, self-sufficient instance of the entire platform:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 ANATOMY OF A PRODUCTION CELL                                      |
-+---------------------------------------------------------------------------------------------------+
+> **ANATOMY OF A PRODUCTION CELL**
 |  /Cell-04/ (Hosts 5,000 Specific Tenants)                                                         |
 |   ├── Microservices    : Dedicated pods (Auth, Billing, Order, Inventory)                        |
 |   ├── Database Tier    : Dedicated Primary & Replica DB instances                                 |
 |   ├── Caching Layer    : Dedicated Redis cluster                                                  |
 |   └── Message Queues   : Dedicated Kafka / SQS message brokers                                    |
 |   * ZERO shared runtime dependencies with Cell-01, Cell-02, or Cell-03!                            |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### The Sizing Law: Fixed Maximum Cell Scale
@@ -72,7 +70,7 @@ Instead of allowing a cell to grow infinitely with traffic, cells have a **stric
 
 ---
 
-## 🚦 3. The Stateless Thin Cell Router
+## 3. The Stateless Thin Cell Router
 
 To route incoming HTTP/gRPC traffic to the correct cell, the system deploys a **Thin Cell Router** tier:
 
@@ -89,7 +87,7 @@ graph LR
 
 ---
 
-## 🚑 4. Zero-Downtime Cell Evacuation
+## 4. Zero-Downtime Cell Evacuation
 
 When telemetry detects that **Cell 3** is experiencing hardware degradation or memory pressure:
 
@@ -112,7 +110,7 @@ By flipping the routing table pointer, the operational control plane evacuates t
 
 ---
 
-## 🛠️ Python Implementation: Cell-Based Router & Blast Radius Engine
+## Python Implementation: Cell-Based Router & Blast Radius Engine
 
 Here is a Python implementation simulating a Cell-Based Architecture with deterministic tenant routing, cell isolation, and automatic cell evacuation:
 
@@ -204,7 +202,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Monolith vs Cell-Based Architecture
+## Summary: Monolith vs Cell-Based Architecture
 
 | Dimension | Regional Monolithic Cluster | Cell-Based Architecture |
 |---|---|---|
@@ -216,7 +214,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 In large-scale cloud engineering, **failures are guaranteed; massive blast radiuses are a choice**.
 
 By partitioning monolithic cloud regions into **independent, isolated Cells**, engineering teams eliminate cascading shared-fate outages, guarantee Five-Nines availability, and protect $95\%+$ of their users from ever noticing an infrastructure failure.

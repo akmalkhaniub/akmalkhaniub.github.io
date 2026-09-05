@@ -12,7 +12,7 @@ This article details how to architect a hybrid GraphRAG retrieval pipeline.
 
 ---
 
-## 📖 GraphRAG Retrieval Pipeline Architecture
+## GraphRAG Retrieval Pipeline Architecture
 
 The GraphRAG pipeline merges dense semantic retrieval with explicit property graph relationships:
 
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: In-Memory Semantic Graph RAG Retriever
+## Python Implementation: In-Memory Semantic Graph RAG Retriever
 
 Here is a production Python implementation of an in-memory Property Graph index. Each node has a dense vector embedding, and the retriever combines semantic cosine similarity with explicit relationship traversal to solve multi-hop codebase queries:
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important GraphRAG Design Guardrails
+## Important GraphRAG Design Guardrails
 
 When architecting GraphRAG pipelines:
 
@@ -168,7 +168,7 @@ When architecting GraphRAG pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying GraphRAG report:
 * **90% Reduction in Context Recall Errors**: GraphRAG successfully captures multi-file dependencies that flat vector search chunking misses entirely.
 * **Streamlined Agent Prompts**: Restricting RAG queries to exact entity-relationship subgraphs reduces overall context token usage, cutting LLM cost-per-query.

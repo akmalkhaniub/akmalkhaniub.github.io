@@ -12,7 +12,7 @@ This article details the mechanics of columnar memory structures and SIMD vector
 
 ---
 
-## 📖 Row-Oriented vs. Columnar Memory Layout
+## Row-Oriented vs. Columnar Memory Layout
 
 Comparing memory layout topologies for analytical queries:
 
@@ -38,12 +38,12 @@ graph TD
 
 ### Core Columnar Engine Technologies
 1. **Contiguous Memory Slices (Apache Arrow)**: Apache Arrow defines a standardized, zero-copy in-memory format for columnar arrays. Because values of data type `Float64` sit adjacently in RAM, CPU cache pre-fetchers achieve near 100% cache hit rates during iteration.
-2. **Dictionary & Run-Length Encoding (RLE)**: Columnar data contains repeating values. Dictionary encoding maps distinct strings to small integer IDs (e.g. `"San Francisco"` $\to 0$, `"New York"` $\to 1$), drastically compressing data sizes and allowing string queries to operate on fast integer arrays.
+2. **Dictionary & Run-Length Encoding (RLE)**: Columnar data contains repeating values. Dictionary encoding maps distinct strings to small integer IDs (e.g. `"San Francisco"` → 0, `"New York"` → 1), drastically compressing data sizes and allowing string queries to operate on fast integer arrays.
 3. **SIMD Vectorized Execution**: Modern CPUs contain wide vector registers (AVX-256, AVX-512, ARM Neon) capable of processing multiple data elements in a single clock cycle. Instead of processing tuples one by one through a row-by-row iterator (`Volcano Iterator`), SIMD vectorized execution passes batches of column arrays directly to hardware vector pipelines.
 
 ---
 
-## 🛠️ Python Implementation: Columnar Engine with Dictionary Encoding & SIMD Vectorization
+## Python Implementation: Columnar Engine with Dictionary Encoding & SIMD Vectorization
 
 Here is a production-grade Python simulation of a Columnar Memory Table with Dictionary Encoding and SIMD Vectorized Batch Aggregation:
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Columnar Storage Gotchas & Best Practices
+## Columnar Storage Gotchas & Best Practices
 
 When engineering columnar storage pipelines:
 
@@ -143,7 +143,7 @@ When engineering columnar storage pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting columnar memory engines (Arrow/Parquet/DuckDB) report:
 * **100x Speedup on Analytical Queries**: Eliminating un-needed row attributes and utilizing SIMD vectorization reduces aggregation query execution times from minutes to milliseconds.
 * **85% Disk Storage Savings**: Combining dictionary encoding, RLE, and Snappy/ZSTD compression shrinks raw CSV/JSON datasets to a fraction of their original size.

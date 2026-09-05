@@ -64,20 +64,11 @@ Unlike Bi-Encoders (which embed questions and documents separately), a Cross-Enc
 
 ## What's Good & What's Not
 
-```
-+---------------------------------------------------------------------------------------------------------------------+
-|                                              HYBRID SEARCH TRADE-OFFS MATRIX                                        |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| What's Good (Pros)                                | What's Not (Cons)                                               |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| * Near-Perfect Recall: Combines conceptual search | * Latency Overhead: Running parallel queries and a neural       |
-|   with exact keyword/ID retrieval.                |   reranker adds 80ms–200ms of latency per query.                |
-| * Highly Robust: RRF algorithm merges diverse     | * Index Management Complexity: Requires maintaining both a      |
-|   retrievers without manual score calibration.    |   vector index and a text-search inverted index.                |
-| * Filters Out Noise: Cross-Encoder reranker trims  | * Compute Costs: Reranker execution requires active CPU/GPU     |
-|   retrieved lists down to the absolute best.      |   processing during runtime.                                    |
-+---------------------------------------------------+-----------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Near-Perfect Recall: Combines conceptual search with exact keyword/ID retrieval. | * Latency Overhead: Running parallel queries and a neural reranker adds 80ms–200ms of latency per query. |
+| * Highly Robust: RRF algorithm merges diverse retrievers without manual score calibration. | * Index Management Complexity: Requires maintaining both a vector index and a text-search inverted index. |
+| * Filters Out Noise: Cross-Encoder reranker trims retrieved lists down to the absolute best. | * Compute Costs: Reranker execution requires active CPU/GPU processing during runtime. |
 
 ---
 
@@ -169,7 +160,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Naive retrieval is a major bottleneck in enterprise RAG pipelines. By deploying hybrid search, we combine the strengths of both semantic and keyword indices, ensuring SKU numbers, precise function names, and structural terms are never missed.
 

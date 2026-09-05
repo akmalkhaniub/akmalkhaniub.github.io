@@ -10,7 +10,7 @@ This article details how to construct rate limiters and finite state machine cir
 
 ---
 
-## 📖 Circuit Breaker Finite State Machine Architecture
+## Circuit Breaker Finite State Machine Architecture
 
 The operational state transitions of a resilience Circuit Breaker:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Rate Limiter & Circuit Breaker Engine
+## Python Implementation: Rate Limiter & Circuit Breaker Engine
 
 Here is a production-grade Python simulation of a Sliding Window Rate Limiter and a finite state machine Circuit Breaker with fallback:
 
@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Resilience Implementation Gotchas & Guardrails
+## Resilience Implementation Gotchas & Guardrails
 
 When configuring rate limiters and circuit breakers:
 
@@ -198,7 +198,7 @@ When configuring rate limiters and circuit breakers:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying resilience circuit breakers and rate limiters report:
 * **Zero Cascading Outages**: Circuit breakers stop failing services from locking up upstream API gateways.
 * **Stable p99 Latencies**: Failing fast on unresponsive dependencies preserves system memory and keeps API responses fast even during partial outages.

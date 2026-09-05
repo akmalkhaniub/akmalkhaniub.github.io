@@ -12,7 +12,7 @@ Mutation testing programmatically modifies production code by introducing synthe
 
 ---
 
-## 📖 Mutation Testing Pipeline Architecture
+## Mutation Testing Pipeline Architecture
 
 The mutation engine acts as an automated adversary that attempts to break production code without getting caught by test suites:
 
@@ -46,7 +46,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: AST Mutation Testing Engine
+## Python Implementation: AST Mutation Testing Engine
 
 Here is a production Python implementation using Python's native `ast` module (`ast.NodeTransformer`) that injects synthetic mutations into source code and measures test suite kill rates:
 
@@ -175,7 +175,7 @@ def test_ineligible():
 
 ---
 
-## ⚠️ Important Mutation Testing Guardrails
+## Important Mutation Testing Guardrails
 
 When running mutation testing on AI-generated codebases:
 
@@ -187,7 +187,7 @@ When running mutation testing on AI-generated codebases:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams integrating Mutation Testing into AI agent pipelines report:
 * **Detection of Blind Test Suites**: Mutation testing uncovers tests with incomplete assertions that line coverage tools miss.
 * **Resilient Production Code**: Codebases validated against mutation engines exhibit 80% fewer post-release regression outages.

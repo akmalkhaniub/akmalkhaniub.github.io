@@ -14,7 +14,7 @@ This article details indexless log aggregation architecture and columnar chunk c
 
 ---
 
-## 📖 Indexless Log Aggregation Architecture
+## Indexless Log Aggregation Architecture
 
 How Loki-style indexless log engines partition streams and execute parallel query scans:
 
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Indexless Log Aggregation Engine
+## Python Implementation: Indexless Log Aggregation Engine
 
 Here is a production-grade Python implementation of an Indexless Log Aggregation Engine featuring Stream Label Sharding, Compressed Chunk Archiving, and Parallel Regexp Query Scanners:
 
@@ -186,7 +186,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Indexless Log Engine Gotchas & Best Practices
+## Indexless Log Engine Gotchas & Best Practices
 
 When designing petabyte-scale logging pipelines:
 
@@ -198,7 +198,7 @@ When designing petabyte-scale logging pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Log aggregation systems utilizing indexless compressed chunks (such as **Grafana Loki**) report:
 * **Over 90% Storage Cost Reduction**: Storing raw compressed log chunks on cloud object storage (S3) costs $10\times$ less than maintaining full-text inverted indexes on SSDs.
 * **Unstoppable Log Ingestion Rates**: Eliminating word-level inverted indexing allows log ingestors to ingest millions of log lines per second without suffering write-throttling during system outages.

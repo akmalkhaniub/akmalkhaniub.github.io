@@ -14,7 +14,7 @@ This article explores how to architect clean, decoupled microservices using Aspe
 
 ---
 
-## 📖 AOP Interceptor Pipeline Architecture
+## AOP Interceptor Pipeline Architecture
 
 How Aspect interceptors wrap business domain methods without altering core business code:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Decoupled AOP Interceptor Framework
+## Python Implementation: Decoupled AOP Interceptor Framework
 
 Here is a production-grade Python implementation of an Aspect-Oriented Decorator Framework that cleanly isolates logging, input validation, execution profiling, and exception handling from a core payment processing domain:
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 AOP Implementation Gotchas & Guardrails
+## AOP Implementation Gotchas & Guardrails
 
 When applying Aspect-Oriented Architecture:
 
@@ -156,7 +156,7 @@ When applying Aspect-Oriented Architecture:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting Aspect-Oriented Architecture report:
 * **75% Reduction in Boilerplate Code**: Removing repetitive logging, validation, and error-handling code from domain services makes business logic dramatically cleaner and easier to read.
 * **100% Consistent Observability**: Centralized Aspects ensure that every single microservice endpoint emits identical structured telemetry and error formats.

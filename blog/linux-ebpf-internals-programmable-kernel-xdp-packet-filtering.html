@@ -133,21 +133,19 @@
     RingBuffer --&gt; UserMetrics[User Space Metrics &amp; Tracing Dashboard]
   end</div>
 <hr>
-<h2>🔒 1. The In-Kernel Verifier: Mathematical Proof of Safety</h2>
+<h2>1. The In-Kernel Verifier: Mathematical Proof of Safety</h2>
 <p>Unlike arbitrary kernel modules, the Linux kernel <strong>never runs unverified eBPF bytecode</strong>.</p>
 <p>Before an eBPF program is loaded, the <strong>In-Kernel Verifier</strong> performs rigorous Directed Acyclic Graph (DAG) state exploration:</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 IN-KERNEL VERIFIER SAFETY CHECKS                                  |
-+---------------------------------------------------------------------------------------------------+
+<pre><code class="language-plaintext">&gt; **IN-KERNEL VERIFIER SAFETY CHECKS**
 | 1. Guaranteed Termination      : Bounded loop checks (Instruction counter &lt; 1 Million insns)      |
 | 2. Out-of-Bounds Memory Safety : Strict pointer arithmetic boundary validation                    |
 | 3. Uninitialized Read Defense  : All registers must be initialized before reading                 |
 | 4. Type State Invariants       : Socket buffers (sk_buff) accessed strictly via validated offsets |
 | 5. Privilege Separation        : Unprivileged eBPF restricted; CAP_BPF enforced                   |
-+---------------------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <p>If the verifier detects even a single code branch that could dereference an unchecked memory pointer or loop infinitely, the <code>bpf()</code> syscall fails immediately with <code>EACCES</code> (Permission Denied).</p>
 <hr>
-<h2>⚡ 2. XDP (eXpress Data Path): 10 Million Packets/Second at NIC Level</h2>
+<h2>2. XDP (eXpress Data Path): 10 Million Packets/Second at NIC Level</h2>
 <p>In the traditional Linux networking stack, when a packet arrives at the Network Interface Card (NIC):</p>
 <ol>
 <li>The NIC triggers an interrupt.</li>
@@ -161,24 +159,22 @@
   XDP --&gt;|DDoS Signature Match| Drop[&quot;XDP_DROP (Zero CPU / RAM overhead!)&quot;]
   XDP --&gt;|Fast Forwarding| TX[&quot;XDP_TX / XDP_REDIRECT (Bypass Kernel Stack)&quot;]
   XDP --&gt;|Legitimate Traffic| Pass[&quot;XDP_PASS (Standard Linux sk_buff Stack)&quot;]</div>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 XDP ACTION CODES &amp; THROUGHPUT                                     |
-+---------------------------------------------------------------------------------------------------+
+<pre><code class="language-plaintext">&gt; **XDP ACTION CODES &amp; THROUGHPUT**
 | Action Code    | Functionality                                      | Throughput (pkts/sec/core)  |
 | XDP_DROP       | Drops packet instantly at NIC ring buffer          | ~14,000,000 packets/sec     |
 | XDP_TX         | Bounces packet back out the same NIC port          | ~10,000,000 packets/sec     |
 | XDP_REDIRECT   | Forwards packet to another NIC or AF_XDP socket    | ~9,000,000 packets/sec      |
 | XDP_PASS       | Forwards packet up to standard Linux TCP/IP stack  | ~2,000,000 packets/sec      |
-+---------------------------------------------------------------------------------------------------+</code></pre>
+</code></pre>
 <hr>
-<h2>🔄 3. BPF Maps &amp; Ring Buffers: Zero-Copy Kernel-User IPC</h2>
+<h2>3. BPF Maps &amp; Ring Buffers: Zero-Copy Kernel-User IPC</h2>
 <p>How does an eBPF program running inside the kernel communicate with a user-space monitoring daemon?</p>
 <ol>
 <li><strong>BPF Maps (Hash, Array, LRU)</strong>: Key-value storage structures allocated in kernel memory, accessible from both kernel eBPF programs (via helper functions) and user-space applications (via the <code>bpf()</code> syscall).</li>
 <li><strong>BPF Ring Buffer (<code>BPF_MAP_TYPE_RINGBUF</code>)</strong>: A lock-free, single-producer multi-consumer memory-mapped circular buffer that streams telemetry events to user space with sub-microsecond latency and zero memory allocations.</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: eBPF Verifier &amp; XDP Packet Filter Simulator</h2>
+<h2>Python Implementation: eBPF Verifier &amp; XDP Packet Filter Simulator</h2>
 <p>Here is a Python implementation simulating an eBPF In-Kernel Verifier and XDP packet filtering engine:</p>
 <pre><code class="language-python">import time
 from dataclasses import dataclass
@@ -268,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
 
     xdp.process_packet_stream(traffic)</code></pre>
 <hr>
-<h2>📊 Summary: LKM vs User-Space vs eBPF</h2>
+<h2>Summary: LKM vs User-Space vs eBPF</h2>
 <table>
 <thead>
 <tr>
@@ -310,7 +306,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>eBPF represents the greatest evolution in operating system architecture since the invention of virtual memory.</p>
 <p>By transforming the Linux kernel into a <strong>sandboxed, event-driven programmable platform</strong>, systems engineers achieve unprecedented observability, dynamic security monitoring, and wire-speed packet processing without touching a single line of kernel C code.</p>
 

@@ -322,7 +322,7 @@ mindmap
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Next.js App Router caching is powerful when understood and dangerous when not. The core mental shift: **everything is cached by default** — you must explicitly opt out of caching for dynamic data, not opt in.
 

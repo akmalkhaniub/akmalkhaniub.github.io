@@ -10,7 +10,7 @@ This article details how to implement a Raft-backed decentralized agent registry
 
 ---
 
-## 📖 Raft State Machine Architecture
+## Raft State Machine Architecture
 
 The lifecycle states and transition pathways of a Raft cluster node:
 
@@ -37,7 +37,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Raft Agent Registry Node
+## Python Implementation: Raft Agent Registry Node
 
 Here is a production-grade Python simulation of a Raft Node for an agent registry. It demonstrates term-based leader election, voting rules, and log entry replication across a 3-node cluster:
 
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Raft Implementation Gotchas & Guardrails
+## Raft Implementation Gotchas & Guardrails
 
 When deploying Raft consensus in agent networks:
 
@@ -169,7 +169,7 @@ When deploying Raft consensus in agent networks:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams building Raft-backed agent clusters report:
 * **Zero Split-Brain Outages**: Strict quorum requirements prevent isolated network partitions from executing conflicting agent operations.
 * **Fault-Tolerant Registration**: The agent registry remains fully operational as long as a majority of nodes ($\lfloor N/2 \rfloor + 1$) remain online.

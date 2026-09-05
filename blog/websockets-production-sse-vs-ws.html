@@ -131,12 +131,12 @@ flowchart TD
 <h2>Failure 1: Nginx Doesn&#39;t Upgrade to WebSocket Protocol</h2>
 <p><strong>Symptom</strong>: WebSocket handshake returns <code>400 Bad Request</code> or <code>101 Switching Protocols</code> never fires. Works on <code>localhost</code>, broken in production.</p>
 <p><strong>Root cause</strong>: WebSocket upgrades require specific HTTP headers that Nginx strips by default: <code>Connection: Upgrade</code> and <code>Upgrade: websocket</code>.</p>
-<pre><code class="language-nginx"># ❌ Standard proxy config — strips Upgrade headers
+<pre><code class="language-nginx"># Standard proxy config — strips Upgrade headers
 location /ws {
     proxy_pass http://localhost:3000;
 }
 
-# ✅ WebSocket-aware Nginx config
+# WebSocket-aware Nginx config
 location /ws {
     proxy_pass http://localhost:3000;
     
@@ -442,7 +442,7 @@ function connect() {
 <hr>
 <h2>Failure 7: No Room Cleanup — Memory Leak on Disconnect</h2>
 <p><strong>Symptom</strong>: Server memory grows linearly with total historical connections. After 24 hours, memory usage is 3× baseline.</p>
-<pre><code class="language-python"># ❌ Connections added but never removed on disconnect
+<pre><code class="language-python"># Connections added but never removed on disconnect
 active_connections: dict[str, WebSocket] = {}
 
 @app.websocket(&quot;/ws/{room_id}&quot;)
@@ -457,7 +457,7 @@ async def room_ws(websocket: WebSocket, room_id: str, client_id: str):
     except WebSocketDisconnect:
         pass  # ← Disconnect caught but connection NEVER removed from dict!
 
-# ✅ Always clean up on disconnect — use try/finally
+# Always clean up on disconnect — use try/finally
 class ConnectionManager:
     def __init__(self):
         self.rooms: dict[str, set[WebSocket]] = {}
@@ -528,7 +528,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
   return source;
 }</code></pre>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>WebSockets unlock true bidirectional real-time communication but bring a distinct set of production failure modes compared to SSE. The most dangerous are silent: dropped messages from buffer overflow, phantom disconnections from idle proxies, and memory leaks from missing disconnect cleanup.</p>
 <ul>
 <li><strong>Always implement heartbeats at 25-second intervals</strong> — most proxies and load balancers have 60-second idle timeouts. Heartbeats keep connections alive and detect dead clients.</li>

@@ -13,7 +13,7 @@ This article explores high-cardinality TSDB indexing and Gorilla float compressi
 
 ---
 
-## 📖 TSDB Inverted Label Index & Gorilla Compression Architecture
+## TSDB Inverted Label Index & Gorilla Compression Architecture
 
 How Time Series Databases compress metrics and index label combinations:
 
@@ -42,7 +42,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Gorilla XOR TSDB Compressor Engine
+## Python Implementation: Gorilla XOR TSDB Compressor Engine
 
 Here is a production-grade Python implementation of Gorilla XOR Float Compression and a High-Cardinality TSDB Label Indexer:
 
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 High-Cardinality TSDB Gotchas & Best Practices
+## High-Cardinality TSDB Gotchas & Best Practices
 
 When designing metrics infrastructure:
 
@@ -164,7 +164,7 @@ When designing metrics infrastructure:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms implementing Gorilla XOR TSDB compression report:
 * **Over 85% Disk Storage Savings**: Compressing float64 metrics down to $1.37$ bytes per sample allows storing petabytes of telemetry at low cost.
 * **$10\times$ Faster Metric Graphing**: Compact compressed blocks fit directly into CPU L3 memory caches, executing PromQL queries across millions of series in under $50\text{ms}$.

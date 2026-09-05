@@ -9,7 +9,7 @@ To build resilient, highly scalable agent swarms, production systems use **Apach
 
 ---
 
-## 📖 The Kafka Swarm Coordination Model
+## The Kafka Swarm Coordination Model
 
 Rather than invoking downstream services directly, agents write status and command events to Kafka topics. Downstream workers subscribe to these topics and process events asynchronously:
 
@@ -37,7 +37,7 @@ Because events cross thread and network boundaries, we must propagate tracing co
 
 ---
 
-## 🛠️ Implementing a Resilient Kafka Agent Consumer
+## Implementing a Resilient Kafka Agent Consumer
 
 Here is a Python implementation of an event-driven Kafka consumer for agent swarms. It demonstrates context propagation and uses Redis-based idempotency checks to prevent duplicate execution (replay security).
 
@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Pitfalls in Kafka Swarm Coordination
+## Important Pitfalls in Kafka Swarm Coordination
 
 Ensure your event-driven routing avoids these production issues:
 

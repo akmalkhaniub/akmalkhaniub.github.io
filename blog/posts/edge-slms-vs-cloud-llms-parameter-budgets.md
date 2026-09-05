@@ -17,7 +17,7 @@ This article synthesizes the trade-offs of Edge SLMs vs. Cloud LLMs, detailing *
 
 ---
 
-## 🎨 The Edge-First Decision Routing Pipeline
+## The Edge-First Decision Routing Pipeline
 
 Deploying a hybrid model requires an intelligent router that evaluates security, network state, and query complexity to decide whether to dispatch a job to a local SLM or trigger a cloud API.
 
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🔍 Synthesis: What's Good & What's Not
+## Synthesis: What's Good & What's Not
 
 ### 1. Small Edge SLMs (Gemma 2 / Phi-4)
 Edge SLMs are highly optimized models (typically ranging from 2B to 14B parameters) quantized to run on local laptops, smartphones, or edge servers.
@@ -80,7 +80,7 @@ Frontier models hosted behind high-throughput cloud endpoints.
 
 ---
 
-## 💻 Coding an Edge-First Router in TypeScript
+## Coding an Edge-First Router in TypeScript
 
 Here is a TypeScript middleware representing an edge-first routing pipeline. The controller analyzes a query's complexity (e.g. token length or keyword indicators) and privacy flags to decide whether to query a local **Ollama** runtime or fall back to the **Anthropic Claude API**. This is modeled on routing systems designed in [MedEdge](https://github.com/akmalkhaniub/MedEdge).
 
@@ -147,7 +147,7 @@ export async function executeRouter(query: string): Promise<string> {
 
 ---
 
-## 📋 Edge-First Implementation Checklist
+## Edge-First Implementation Checklist
 
 * [ ] **Local Quantization checks**: Validate that local machines have sufficient unified memory or dedicated VRAM (minimum 8GB for 7B-9B models) to hold quantized GGUF weights.
 * [ ] **Network State listeners**: Integrate offline network state listeners (`navigator.onLine` in web clients) to force local SLM execution if cellular network connectivity drops.
@@ -155,7 +155,7 @@ export async function executeRouter(query: string): Promise<string> {
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Optimizing the parameter budget is the most critical design pattern for high-performance, cost-sensitive AI systems:
 1. **Match Scale to Need:** Standard text processing and parsing are highly suited for local SLMs like Phi-4 or Gemma 2. Do not pay cloud markup or accept network round-trip overhead for basic classifications.
@@ -166,7 +166,7 @@ Optimizing the parameter budget is the most critical design pattern for high-per
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **Google Gemma 2 Architecture**: Google DeepMind Gemma Team. *Gemma 2: Improving Open Language Models*. Details parameters, distillation techniques, and edge performance. [Google Discover Gemma](https://deepmind.google/technologies/gemma/).
 * **Microsoft Phi Small Models**: Microsoft Research. *Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone*. [Microsoft Research Phi](https://www.microsoft.com/en-us/research/).

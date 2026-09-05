@@ -12,7 +12,7 @@ This article details the Cgroups v2 unified tree hierarchy, memory boundary cont
 
 ---
 
-## 📖 Cgroups v2 Unified Memory Architecture & OOM Mechanics
+## Cgroups v2 Unified Memory Architecture & OOM Mechanics
 
 How Linux Cgroups v2 enforces multi-tiered memory boundaries and triggers group-level OOM eviction:
 
@@ -53,7 +53,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Linux Cgroups v2 & OOM Killer Simulator
+## Python Implementation: Linux Cgroups v2 & OOM Killer Simulator
 
 Here is a production-grade Python implementation of a Linux Cgroups v2 Memory Controller and OOM Killer Badness Score Calculator:
 
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Cgroups v2 Gotchas & Best Practices
+## Cgroups v2 Gotchas & Best Practices
 
 When configuring Linux container memory limits:
 
@@ -182,7 +182,7 @@ When configuring Linux container memory limits:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Linux Cgroups v2 memory isolation (powering **Kubernetes 1.25+**, **Docker Systemd Drivers**, and **Flatpak**) reports:
 * **Zero Host Node OOM Collapses**: Multi-tiered `memory.high` throttling and `memory.max` hard caps protect host Linux kernel stability.
 * **$10\times$ Faster Pod Recovery**: Group OOM eviction (`memory.oom.group = 1`) ensures clean, deterministic container restarts without leaving zombie orphan processes.

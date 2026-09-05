@@ -6,7 +6,7 @@ Next.js 15/16 marks a milestone in native compilation with **Turbopack** (stabil
 
 ---
 
-## 📖 The Compilation Bottleneck: Webpack vs. Turbopack
+## The Compilation Bottleneck: Webpack vs. Turbopack
 
 The primary limitation of Webpack is its dependency on a JavaScript runtime (Node.js) to execute compilation steps. Node.js's single-threaded nature and garbage collection cycles limit compile speed in large codebases.
 
@@ -32,7 +32,7 @@ graph TD
 
 ---
 
-## 🛠️ Migrating to Turbopack in Local Development
+## Migrating to Turbopack in Local Development
 
 To run your Next.js local development server with Turbopack, append the `--turbo` flag to your next command inside `package.json`:
 
@@ -73,7 +73,7 @@ module.exports = nextConfig;
 
 ---
 
-## ⚠️ Known Production Constraints
+## Known Production Constraints
 
 While Turbopack is stabilized for dynamic local development, production builds (`next build`) still rely on Webpack optimizations in some legacy code paths:
 
@@ -82,7 +82,7 @@ While Turbopack is stabilized for dynamic local development, production builds (
 
 ---
 
-## 📈 Real-World Production Adoption
+## Real-World Production Adoption
 
 Development teams have adopted Turbopack to restore rapid feedback loops:
 * **Monorepo Operations**: Massive codebases with hundreds of pages compile files lazily on request, reducing initial boot times from 2 minutes down to under 5 seconds.

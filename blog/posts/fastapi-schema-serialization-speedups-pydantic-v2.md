@@ -8,7 +8,7 @@ This article explores the internal Rust-backed architecture of Pydantic v2, key 
 
 ---
 
-## 📖 Pydantic v1 vs. Pydantic v2 Architecture
+## Pydantic v1 vs. Pydantic v2 Architecture
 
 The architectural evolution from pure Python loops to Rust-compiled validation graphs:
 
@@ -35,7 +35,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Pydantic v2 High-Throughput Serialization
+## Python Implementation: Pydantic v2 High-Throughput Serialization
 
 Here is a production-grade Python script demonstrating Pydantic v2 validation patterns, custom field validators, and JSON dump benchmarks:
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Migration Gotchas: Pydantic v1 ➔ v2
+## Migration Gotchas: Pydantic v1 ➔ v2
 
 When upgrading legacy FastAPI projects to Pydantic v2:
 
@@ -118,7 +118,7 @@ When upgrading legacy FastAPI projects to Pydantic v2:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams migrating FastAPI services to Pydantic v2 report:
 * **80% Lower Serialization Latency**: High-volume JSON APIs experience dramatic latency drops when returning large array responses.
 * **Reduced Memory Allocations**: Lower memory churn reduces Python Garbage Collection (GC) pauses, smoothing out response tail latencies (p99).

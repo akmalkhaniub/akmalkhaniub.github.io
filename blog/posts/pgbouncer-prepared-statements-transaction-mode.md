@@ -42,7 +42,7 @@ When Client A prepares a query, the driver names it (e.g. `S_1`) and registers i
 ### Solution 1: Disable Prepared Statements Client-Side (Recommended)
 The cleanest fix is to tell your database driver **not** to use prepared statements at all. Instead, force it to send raw queries with inline parameter scaling (parameterized queries sent as single-pass executions).
 
-#### ✅ Node.js (node-postgres / pg) Config:
+#### Node.js (node-postgres / pg) Config:
 If using the popular `pg` driver, disable query caching by telling it not to name queries, which forces it to execute them via the simple query protocol:
 
 ```typescript
@@ -59,7 +59,7 @@ const client = new Client({
 
 ---
 
-#### ✅ Python (psycopg2 / psycopg3) Config:
+#### Python (psycopg2 / psycopg3) Config:
 In Python's `psycopg3`, you can disable prepared statements globally by setting `prepare_threshold` to `None`. This prevents the driver from automatically preparing queries that are executed multiple times:
 
 ```python
@@ -98,7 +98,7 @@ track_extra_parameters = onload
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 When scaling PostgreSQL with PgBouncer:
 * [ ] **Always match database configs to pooling modes**: If you run PgBouncer in Transaction Mode, you *must* disable client-side prepared statements or configure modern statement tracking.

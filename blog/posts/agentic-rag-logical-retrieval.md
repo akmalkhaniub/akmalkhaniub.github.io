@@ -17,7 +17,7 @@ This article reviews the core patterns of Agentic RAG, examines how to structure
 
 ---
 
-## 🛠️ The Agentic RAG Loop
+## The Agentic RAG Loop
 
 Unlike linear RAG pipelines, an Agentic RAG architecture functions as a state machine where the model executes tools iteratively, grades search results, and rewrites queries when data is insufficient.
 
@@ -67,7 +67,7 @@ stateDiagram-v2
 
 ---
 
-## 🔬 Breaking Research: Hierarchical Interfaces & Logical Retrieval
+## Breaking Research: Hierarchical Interfaces & Logical Retrieval
 
 Two recent 2026 arXiv papers outline the theoretical and practical frameworks for scaling Agentic RAG:
 
@@ -83,7 +83,7 @@ By allowing the agent to formulate logical intents directly and executing them o
 
 ---
 
-## 💻 Coding an Agentic RAG Router in TypeScript
+## Coding an Agentic RAG Router in TypeScript
 
 Here is a TypeScript routing controller showing how an agent evaluates a user query, constructs logical database filters, and grades the relevance of retrieved chunks before constructing the prompt. This pattern is modeled on retrieval strategies in [enterprise-procurement-agent](https://github.com/akmalkhaniub/enterprise-procurement-agent).
 
@@ -151,7 +151,7 @@ export async function agenticRetrieveAndAnswer(userQuery: string): Promise<strin
 
 ---
 
-## 📋 Implementation Checklist for Agentic RAG
+## Implementation Checklist for Agentic RAG
 
 * [ ] **Define Hierarchical Tools**: Ensure your agent has access to low-level text search (keyword matching), high-level semantics (vector similarity), and specific document section reading (chunk read).
 * [ ] **Implement Loop Escape Gates**: Always cap agentic retrieval loops (max 3-5 iterations) to prevent infinite token-consuming lookup cycles if query data simply does not exist.
@@ -159,7 +159,7 @@ export async function agenticRetrieveAndAnswer(userQuery: string): Promise<strin
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Agentic RAG represents a significant evolution in how LLMs interact with data, moving beyond passive retrieval to active, intelligent coordination.
 1. **Active Coordination & Tool Use**: Agentic RAG empowers LLMs to actively steer retrieval, utilizing diverse tools (semantic, logical, keyword) and dynamically refining queries based on relevance feedback. This contrasts sharply with the single-shot, passive nature of traditional RAG.
@@ -170,7 +170,7 @@ Agentic RAG represents a significant evolution in how LLMs interact with data, m
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **A-RAG Framework**: Du et al., 2026. *A-RAG: Scaling Agentic Retrieval-Augmented Generation via Hierarchical Retrieval Interfaces*. Exposes adaptive, multi-granularity retrieval interfaces directly to LLMs. [arXiv:2602.03442](https://arxiv.org/abs/2602.03442)
 * **Logical Retrieval**: Zeng et al., 2026. *Rethinking Agentic RAG: Toward LLM-Driven Logical Retrieval Beyond Embeddings*. Explores replacing complex dense vector layers with logical query synthesis. [arXiv:2605.27123](https://arxiv.org/abs/2605.27123)

@@ -55,22 +55,12 @@ graph TD
 
 ## What's Good & What's Not
 
-```
-+----------------------------------------------------------------------------------------------------------------------+
-|                                       SUPERVISOR-WORKER ARCHITECTURE TRADE-OFFS                                      |
-+----------------------------------------------------+---------------------------------------------------------------+
-| What's Good (Pros)                                 | What's Not (Cons)                                             |
-+----------------------------------------------------+---------------------------------------------------------------+
-| * Context Isolation: Each worker has a fresh,      | * Orchestration Overhead: The Supervisor adds 1-2 extra LLM  |
-|   small context window — no cross-task pollution.  |   round-trips to plan and synthesise tasks.                   |
-| * Parallel Execution: Workers run concurrently,    | * Dependency on Supervisor Quality: If the Supervisor's task  |
-|   dramatically reducing total wall-clock latency.  |   decomposition is poor, all workers inherit the flaw.        |
-| * Specialisation: Workers can be fine-tuned or     | * State Synchronisation Cost: Merging structured JSON results |
-|   prompted for their exact domain competency.      |   from parallel workers requires careful schema enforcement.  |
-| * Failure Containment: One worker failure does not | * Debugging Complexity: Tracing a failure across 3+ agents is |
-|   cascade to the Supervisor or other workers.      |   significantly harder than debugging a single loop.          |
-+----------------------------------------------------+---------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Context Isolation: Each worker has a fresh, small context window — no cross-task pollution. | * Orchestration Overhead: The Supervisor adds 1-2 extra LLM round-trips to plan and synthesise tasks. |
+| * Parallel Execution: Workers run concurrently, dramatically reducing total wall-clock latency. | * Dependency on Supervisor Quality: If the Supervisor's task decomposition is poor, all workers inherit the flaw. |
+| * Specialisation: Workers can be fine-tuned or prompted for their exact domain competency. | * State Synchronisation Cost: Merging structured JSON results from parallel workers requires careful schema enforcement. |
+| * Failure Containment: One worker failure does not cascade to the Supervisor or other workers. | * Debugging Complexity: Tracing a failure across 3+ agents is significantly harder than debugging a single loop. |
 
 ---
 
@@ -303,7 +293,7 @@ print(result.raw)
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 The Supervisor-Worker pattern transforms fragile single-agent loops into resilient, specialised teams that mirror how elite human engineering squads operate. By separating concerns into Supervisor (planning) and Workers (execution), you gain context isolation, parallel throughput, and structural quality review.
 

@@ -14,7 +14,7 @@ This article details Cypher query AST compilation, variable-length BFS path expa
 
 ---
 
-## 📖 Cypher Traversal Architecture & VF2 Subgraph Matching
+## Cypher Traversal Architecture & VF2 Subgraph Matching
 
 How graph engines parse Cypher ASTs and use VF2 Subgraph Isomorphism backtracking to match patterns against graph storage:
 
@@ -41,7 +41,7 @@ graph TD
      * `MatchPatternNode`: `(a:User) -[:KNOWS]-> (b:User)`
      * `WhereFilterNode`: `a.age > 25`
      * `ReturnProjectionNode`: `b.name`
-   * **Planner**: Translates AST patterns into operator pipelines (`NodeByLabelScan` $\to$ `ExpandAllEdges` $\to$ `Filter` $\to$ `ProduceResults`).
+   * **Planner**: Translates AST patterns into operator pipelines (`NodeByLabelScan` → `ExpandAllEdges` → `Filter` → `ProduceResults`).
 2. **Variable-Length Path Expansion (`-[:FRIEND*1..N]->`)**:
    * When queries request variable-length hops (`MATCH (a)-[:FRIEND*1..3]->(b)`), the traversal engine executes **Breadth-First Search (BFS)**.
    * *Visited Bitsets & Cycle Prevention*: To prevent infinite loops in cyclic graphs (`A -> B -> C -> A`), the BFS queue maintains a bitset tracking visited vertex IDs per path execution.
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Cypher Pattern Matcher & VF2 Engine
+## Python Implementation: Cypher Pattern Matcher & VF2 Engine
 
 Here is a production-grade Python implementation of a Cypher Query AST Matcher and VF2 Subgraph Isomorphism Engine with BFS Path Expansion:
 
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Graph Query Gotchas & Best Practices
+## Graph Query Gotchas & Best Practices
 
 When writing Cypher graph queries:
 
@@ -189,7 +189,7 @@ When writing Cypher graph queries:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Declarative graph query engines (such as **Neo4j openCypher**, **Memgraph**, and **FalkorDB**) report:
 * **Over $100\times$ Faster Graph Pattern Queries**: VF2 Subgraph Isomorphism backtracking prunes invalid search branches early.
 * **Declarative Developer Productivity**: Replaces 50-line SQL nested JOIN queries with intuitive 3-line Cypher ASCII graph pattern expressions.

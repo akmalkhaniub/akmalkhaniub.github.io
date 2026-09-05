@@ -63,20 +63,11 @@ To isolate failure modes, we must score three distinct vectors (popularized by t
 
 ## What's Good & What's Not
 
-```
-+---------------------------------------------------------------------------------------------------------------------+
-|                                              RAG EVALUATION TRADE-OFFS MATRIX                                       |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| What's Good (Pros)                                | What's Not (Cons)                                               |
-+---------------------------------------------------+-----------------------------------------------------------------+
-| * Regression Security: Catches subtle changes in  | * Token Cost Inflation: LLM-as-a-judge evaluation calls         |
-|   output formatting, hallucination, and recall.   |   generate substantial API bills during test runs.              |
-| * Quantitative Verification: Replaces subjective  | * Non-Deterministic Judges: Evaluators can output slightly      |
-|   review with concrete mathematical scores (0-1). |   different scores for identical runs.                          |
-| * CI/CD Ingestion: Easily blocks deployments that  | * Test Maintenance Overhead: Requires generating and updating   |
-|   fall below specified relevance thresholds.      |   realistic reference ground truths.                            |
-+---------------------------------------------------+-----------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Regression Security: Catches subtle changes in output formatting, hallucination, and recall. | * Token Cost Inflation: LLM-as-a-judge evaluation calls generate substantial API bills during test runs. |
+| * Quantitative Verification: Replaces subjective review with concrete mathematical scores (0-1). | * Non-Deterministic Judges: Evaluators can output slightly different scores for identical runs. |
+| * CI/CD Ingestion: Easily blocks deployments that fall below specified relevance thresholds. | * Test Maintenance Overhead: Requires generating and updating realistic reference ground truths. |
 
 ---
 
@@ -145,7 +136,7 @@ def test_rag_accuracy():
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Running evaluations is what separates toy AI projects from robust enterprise platforms. By writing automated test suites, you ensure your pipeline's search quality remains consistent as you scale.
 

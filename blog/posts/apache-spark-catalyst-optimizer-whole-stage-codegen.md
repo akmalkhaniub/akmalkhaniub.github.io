@@ -14,7 +14,7 @@ This article details the 4-phase Catalyst pipeline, expression tree manipulation
 
 ---
 
-## 📖 Catalyst Optimization Architecture & Whole-Stage Codegen
+## Catalyst Optimization Architecture & Whole-Stage Codegen
 
 How Apache Spark translates SQL/DataFrame ASTs through Catalyst logical transformations into JIT-compiled Whole-Stage Java Loops:
 
@@ -42,7 +42,7 @@ graph TD
    * **Phase 3: Optimized Logical Plan (Rule-Based Optimization - RBO)**: Applies a series of algebraic tree transformation rules:
      * *Predicate Pushdown*: Moves `FILTER` nodes down below `JOIN` and `PROJECT` nodes so data is filtered directly inside file readers (Parquet/ORC).
      * *Column Pruning*: Eliminates unreferenced columns early in the pipeline to reduce memory payload sizes.
-     * *Constant Folding*: Pre-calculates static expressions (e.g. `WHERE age > 18 + 2` $\to$ `WHERE age > 20`).
+     * *Constant Folding*: Pre-calculates static expressions (e.g. `WHERE age > 18 + 2` → `WHERE age > 20`).
    * **Phase 4: Physical Plan**: Translates logical operators into executable physical operators. The Cost-Based Optimizer (CBO) uses column histograms to choose between **Broadcast Hash Join** (for small tables) and **Sort-Merge Join** (for large datasets).
 2. **Project Tungsten & Off-Heap Unsafe Memory**:
    * Traditional JVM objects incur massive GC overhead ($24\text{ bytes}$ header per object).
@@ -53,7 +53,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Catalyst Logical Optimizer & Codegen Engine
+## Python Implementation: Catalyst Logical Optimizer & Codegen Engine
 
 Here is a production-grade Python implementation of a Catalyst Rule-Based Optimizer and a Whole-Stage Java Codegen Compiler Simulator:
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Catalyst Optimizer Gotchas & Best Practices
+## Catalyst Optimizer Gotchas & Best Practices
 
 When tuning Apache Spark SQL queries:
 
@@ -160,7 +160,7 @@ When tuning Apache Spark SQL queries:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Apache Spark Catalyst and Tungsten whole-stage codegen engines (powering **Databricks**, **AWS EMR**, and **Snowflake**) report:
 * **Over $10\times$ Execution Speedup**: Fusing operator trees into single Whole-Stage Java loops eliminates virtual function call overhead.
 * **$100\times$ Reduction in Memory Payload**: Pushing down predicates directly into Parquet/ORC file metadata pruning avoids reading petabytes of unneeded raw data from cloud storage.

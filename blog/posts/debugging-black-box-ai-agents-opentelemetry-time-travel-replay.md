@@ -4,7 +4,7 @@ In traditional software engineering, debugging a crash is straightforward: you r
 
 In autonomous multi-agent engineering (**Agent Fleet Orchestrator**, **LangGraph**, **Devin**, **Claude Engineer**), traditional debugging breaks down completely:
 * An agent runs for 18 steps across 5 tools over 12 minutes, then silently fails on Step 15 by corrupting a configuration file.
-* You re-run the exact same prompt with the exact same inputs $\to$ due to LLM stochasticity, the agent takes an entirely different 8-step path, never hitting the bug, while burning **$\$10.00$ in API credits**.
+* You re-run the exact same prompt with the exact same inputs → due to LLM stochasticity, the agent takes an entirely different 8-step path, never hitting the bug, while burning **$\$10.00$ in API credits**.
 * You are left with zero visibility into why the model made a catastrophic reasoning leap on Step 15.
 
 Debugging production AI agent swarms requires treating agent trajectories as **distributed, stateful, event-sourced distributed systems**.
@@ -29,7 +29,7 @@ graph TD
 
 ---
 
-## 🌪️ 1. The Stochastic Debugging Crisis
+## 1. The Stochastic Debugging Crisis
 
 Why is debugging an autonomous agent fundamentally harder than debugging traditional distributed microservices?
 
@@ -40,7 +40,7 @@ Why is debugging an autonomous agent fundamentally harder than debugging traditi
 
 ---
 
-## 📡 2. Distributed Tracing for Agent Swarms with OpenTelemetry
+## 2. Distributed Tracing for Agent Swarms with OpenTelemetry
 
 To gain end-to-end visibility, every agent decision, tool execution, and memory retrieval must be instrumented as an **OpenTelemetry (OTel) Span**:
 
@@ -71,7 +71,7 @@ sequenceDiagram
 
 ---
 
-## ⏳ 3. Time-Travel Trajectory Replay: Zero-Cost Deterministic Debugging
+## 3. Time-Travel Trajectory Replay: Zero-Cost Deterministic Debugging
 
 The most powerful technique for taming agent failures is **Event-Sourced Time-Travel Replay**.
 
@@ -96,26 +96,24 @@ Recorded Trajectory (200KB JSON):
 
 ---
 
-## 📊 4. Context Window Flame Graphs: Profiling Token Bloat
+## 4. Context Window Flame Graphs: Profiling Token Bloat
 
 Just as CPU flame graphs identify functions consuming excessive processor cycles, **Context Flame Graphs** visualize which execution turns are consuming the context window:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                               CONTEXT WINDOW FLAME GRAPH (32k Tokens Max)                         |
-+---------------------------------------------------------------------------------------------------+
+> **CONTEXT WINDOW FLAME GRAPH (32k Tokens Max)**
 | [System Persona: 1.5k tokens (5%)]                                                                |
 | [Step 1-3 Dialogue History: 3.2k tokens (10%)]                                                     |
 | [Step 4 Unfiltered PostgreSQL Dump: 22.8k tokens (71%)]  <-- 🚨 BOTTLENECK: ATTENTION COLLAPSE!   |
 | [Step 5-14 Active Scratchpad: 4.5k tokens (14%)]                                                  |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 By profiling the flame graph, developers immediately spot that Step 4’s raw database dump consumed $71\%$ of the context, allowing them to introduce an automated summarization filter before Step 5.
 
 ---
 
-## 🛠️ Python Implementation: Time-Travel Agent Replay Engine with OTel Spans
+## Python Implementation: Time-Travel Agent Replay Engine with OTel Spans
 
 Here is a Python implementation of an agent execution recorder and deterministic time-travel replay engine:
 
@@ -216,7 +214,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Traditional Debugging vs Agent Time-Travel Debugging
+## Summary: Traditional Debugging vs Agent Time-Travel Debugging
 
 | Dimension | Traditional Software Debugging | Agent Time-Travel Debugging |
 |---|---|---|
@@ -228,7 +226,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 You cannot optimize or debug what you cannot observe.
 
 By instrumenting agent swarms with **OpenTelemetry spans**, **Context Flame Graphs**, and **Event-Sourced Time-Travel Replay**, engineering teams illuminate the AI black box—turning chaotic, unpredictable agent runs into transparent, reproducible, and verifiable distributed systems.

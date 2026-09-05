@@ -13,7 +13,7 @@ This article details `O_DIRECT` page cache bypass, lockless ring buffer queues, 
 
 ---
 
-## 📖 Linux `io_uring` Shared Memory Ring Buffer Architecture
+## Linux `io_uring` Shared Memory Ring Buffer Architecture
 
 How `io_uring` uses kernel-shared Submission (SQ) and Completion (CQ) ring buffers for zero-syscall I/O:
 
@@ -47,7 +47,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Asynchronous `io_uring` Storage Engine Simulator
+## Python Implementation: Asynchronous `io_uring` Storage Engine Simulator
 
 Here is a production-grade Python implementation of an Asynchronous Storage Engine Simulator featuring `O_DIRECT` Page-Aligned Memory Buffers and `io_uring` Lockless Ring Buffers:
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Direct I/O & `io_uring` Gotchas & Best Practices
+## Direct I/O & `io_uring` Gotchas & Best Practices
 
 When building storage engines with `io_uring`:
 
@@ -159,7 +159,7 @@ When building storage engines with `io_uring`:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Storage engines leveraging `O_DIRECT` and `io_uring` (such as **ScyllaDB** and **TigerBeetle**) report:
 * **Over 2,000,000 IOPS per Server Node**: Eliminating system call overhead and Page Cache lock contention unlocks maximum physical NVMe device speed.
 * **$5\times$ Lower p99 Tail Latency**: Bypassing OS dirty page background writebacks eliminates sudden multi-millisecond disk latency spikes.

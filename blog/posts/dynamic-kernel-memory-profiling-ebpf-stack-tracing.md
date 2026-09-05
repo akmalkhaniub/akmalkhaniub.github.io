@@ -14,7 +14,7 @@ This article details eBPF probe instrumentation, `BPF_MAP_TYPE_HASH` allocation 
 
 ---
 
-## 📖 eBPF Memory Profiling Architecture & Probe Hooks
+## eBPF Memory Profiling Architecture & Probe Hooks
 
 How eBPF attaches kprobes and uprobes to record heap allocations and generate memory leak stack traces:
 
@@ -56,7 +56,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: eBPF Memory Leak Tracker Simulator
+## Python Implementation: eBPF Memory Leak Tracker Simulator
 
 Here is a production-grade Python implementation of an eBPF Memory Leak Tracker and Call Stack Trace Profiler Simulator:
 
@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 eBPF Memory Profiling Gotchas & Best Practices
+## eBPF Memory Profiling Gotchas & Best Practices
 
 When deploying eBPF memory profiling in production:
 
@@ -166,7 +166,7 @@ When deploying eBPF memory profiling in production:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 eBPF memory profiling tools (such as **BCC `memleak`**, **bpftrace**, and **Parca**) report:
 * **Near-Zero Production Overhead ($< 1\%$)**: Replaces Valgrind's $50\times$ slowdown with non-intrusive in-kernel eBPF probe execution.
 * **Instant Root Cause Pinpointing**: Hashing stack backtraces directly in BPF maps allows engineers to identify exact line-of-code memory leaks in live production clusters.

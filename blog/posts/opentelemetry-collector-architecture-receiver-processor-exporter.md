@@ -12,7 +12,7 @@ This article details the internal Receiver, Processor, and Exporter pipeline arc
 
 ---
 
-## 📖 OpenTelemetry Collector Internal Pipeline Architecture
+## OpenTelemetry Collector Internal Pipeline Architecture
 
 How the OTel Collector ingests, transforms, batches, and exports telemetry streams:
 
@@ -49,7 +49,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: OpenTelemetry Collector Pipeline Engine
+## Python Implementation: OpenTelemetry Collector Pipeline Engine
 
 Here is a production-grade Python simulation of an OpenTelemetry Collector Pipeline featuring Receivers, Attribute Scrubbing, Batching, and Fan-Out Exporters:
 
@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 OTel Collector Gotchas & Best Practices
+## OTel Collector Gotchas & Best Practices
 
 When deploying the OpenTelemetry Collector:
 
@@ -165,7 +165,7 @@ When deploying the OpenTelemetry Collector:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations adopting the OpenTelemetry Collector report:
 * **Zero Vendor Lock-In**: Switching telemetry backends (e.g. from Datadog to Grafana Tempo) requires only updating collector exporter YAML configs without altering application code.
 * **40% Reduction in Telemetry Egress Costs**: Pre-scrubbing unused metrics and batching trace payloads at the collector layer reduces network egress fees significantly.

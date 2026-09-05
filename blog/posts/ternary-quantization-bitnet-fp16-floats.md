@@ -17,7 +17,7 @@ This article reviews the trade-offs of ternary quantization vs. standard float r
 
 ---
 
-## 🎨 Compute Mechanics: FP16 Floats vs. BitNet Ternary
+## Compute Mechanics: FP16 Floats vs. BitNet Ternary
 
 Standard floating-point representation requires complex multiplier circuits, while ternary representation simplifies the matrix kernel to simple sign-swaps and additions.
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🔍 Synthesis: What's Good & What's Not
+## Synthesis: What's Good & What's Not
 
 ### What's Good (The Pros)
 *   **Extreme Energy Efficiency**: Replacing matrix multiplications with integer additions cuts hardware energy consumption by up to **89%**, which is crucial for mobile and edge deployments.
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 💻 Coding a Ternary Quantization Layer in PyTorch
+## Coding a Ternary Quantization Layer in PyTorch
 
 To implement 1.58-bit weights, we use **Quantization-Aware Training (QAT)**. During the forward pass, the weights are scaled and rounded to the nearest ternary value $\{-1, 0, 1\}$. During the backward pass, we bypass the rounding function using a **Straight-Through Estimator (STE)** to allow continuous gradients to update the underlying FP16 weights.
 
@@ -106,14 +106,14 @@ class BitNetLinear(nn.Module):
 
 ---
 
-## 📋 Ternary Implementation Guardrails
+## Ternary Implementation Guardrails
 
 * **Gradual Quantization**: Never apply ternary quantization directly to a pre-trained FP16 model. Doing so destroys the parameter representations. Instead, use a gradual quantization schedule during fine-tuning.
 * **Feature Scaling**: Scale input activations carefully before passing them to ternary layers to prevent values from saturating the discrete weight channels.
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 The transition to 1-bit or ternary architectures represents a massive co-design opportunity:
 1. **Additive Kernels:** Restricting weight parameters to $\{-1, 0, 1\}$ replaces GPU-heavy floating-point multipliers with simple integer accumulators, reducing hardware power consumption by up to 89%.
@@ -124,7 +124,7 @@ The transition to 1-bit or ternary architectures represents a massive co-design 
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **BitNet 1.58b Paper**: Ma et al., 2024. *The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits*. [arXiv:2402.17764](https://arxiv.org/abs/2402.17764).
 * **Quantization Workshops**: ICML/NeurIPS tracks on parameter-efficient compression and low-bit representations.

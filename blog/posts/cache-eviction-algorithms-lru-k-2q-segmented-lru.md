@@ -14,7 +14,7 @@ This article details LRU-K $K$-th backward reference math, 2Q FIFO/LRU separatio
 
 ---
 
-## 📖 Cache Eviction & Scan Resistance Architecture
+## Cache Eviction & Scan Resistance Architecture
 
 How Segmented LRU (SLRU) isolates cold single-access scan items from hot protected items:
 
@@ -56,7 +56,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Segmented LRU (SLRU) Eviction Engine
+## Python Implementation: Segmented LRU (SLRU) Eviction Engine
 
 Here is a production-grade Python implementation of a Segmented LRU (SLRU) Cache Engine featuring Probationary vs Protected segment state transitions:
 
@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Eviction Algorithm Gotchas & Best Practices
+## Eviction Algorithm Gotchas & Best Practices
 
 When tuning cache eviction policies:
 
@@ -205,7 +205,7 @@ When tuning cache eviction policies:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Databases and caching frameworks deploying SLRU / 2Q (such as **PostgreSQL Buffer Pool**, **SQLite Page Cache**, and **Caffeine Cache**) report:
 * **Over $30\%$ Increase in Cache Hit Ratios**: Preventing scan pollution keeps hot frequency data pinned in RAM during heavy background batch runs.
 * **$O(1)$ Constant Time Operations**: 2Q and SLRU execute gets, puts, and promotions in constant time without locks.

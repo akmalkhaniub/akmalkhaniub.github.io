@@ -12,7 +12,7 @@ This article details Sequential Consistency, x86 Total Store Order (TSO), ARM We
 
 ---
 
-## 📖 Memory Consistency Architecture & Acquire-Release Synchronization
+## Memory Consistency Architecture & Acquire-Release Synchronization
 
 How CPU Store Buffers cause Store-Load reordering and how Acquire-Release semantics establish synchronization barriers:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Memory Store Buffer & Acquire-Release Simulator
+## Python Implementation: Memory Store Buffer & Acquire-Release Simulator
 
 Here is a production-grade Python implementation simulating CPU Store Buffers, Store-Load Reordering, and Acquire-Release Synchronization Barriers:
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Memory Model Gotchas & Best Practices
+## Memory Model Gotchas & Best Practices
 
 When writing low-level lock-free code:
 
@@ -147,7 +147,7 @@ When writing low-level lock-free code:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 High-performance runtimes mastering hardware memory models (such as **Rust Tokio**, **Go Runtime Garbage Collector**, and **JVM C2 Compiler**) report:
 * **Up to $40\%$ Lower Lock-Free Overhead**: Replacing expensive `seq_cst` memory fences with lightweight `acquire-release` atomic operations eliminates CPU pipeline flush stalls.
 * **100% Cross-Platform Concurrency Correctness**: Eliminates subtle multi-core data races when compiling low-level code across x86-64 and ARM64 servers.

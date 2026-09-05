@@ -8,7 +8,7 @@ In 2026, Tech Leads must operate as **Compute Engineers**. This article details 
 
 ---
 
-## 📖 Cost-Aware Model Routing Architecture
+## Cost-Aware Model Routing Architecture
 
 Not every code generation task requires a 200B+ parameter frontier model. The core principle of Token Economics is matching task complexity with model tier:
 
@@ -32,7 +32,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Automation: Cost-Aware Router & Budget Manager
+## Python Automation: Cost-Aware Router & Budget Manager
 
 To enforce model selection budgets automatically, Tech Leads implement router middleware that inspects prompt complexity and assigns the optimal model target.
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Economic Guardrails
+## Important Economic Guardrails
 
 When optimizing token economics, avoid these financial traps:
 
@@ -123,7 +123,7 @@ When optimizing token economics, avoid these financial traps:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Engineering teams implementing Token Economics & Model Routing report:
 * **70% Lower Monthly AI Compute Bills**: Routing 80% of repetitive tasks to mid-tier and local models cuts operational overhead drastically.
 * **Predictable Feature Cost Modeling**: Product managers can forecast compute costs per user feature before initiating development.

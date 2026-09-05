@@ -14,7 +14,7 @@ This article details Group Coordinator broker heartbeats, Eager vs Cooperative S
 
 ---
 
-## 📖 Consumer Group Coordination & Cooperative Sticky Rebalancing
+## Consumer Group Coordination & Cooperative Sticky Rebalancing
 
 How Incremental Cooperative Sticky Rebalancing eliminates Stop-the-World processing pauses during consumer pod auto-scaling:
 
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Incremental Cooperative Sticky Rebalancer Engine
+## Python Implementation: Incremental Cooperative Sticky Rebalancer Engine
 
 Here is a production-grade Python implementation of a Distributed Consumer Group Coordinator and Incremental Cooperative Sticky Rebalance Engine:
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Consumer Group Gotchas & Best Practices
+## Consumer Group Gotchas & Best Practices
 
 When tuning real-time consumer groups:
 
@@ -173,7 +173,7 @@ When tuning real-time consumer groups:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Incremental Cooperative Sticky Rebalancing (in **Apache Kafka**, **Kafka Streams**, and **Apache Flink**) reports:
 * **Zero Stop-the-World Processing Pauses**: Unaffected topic partitions continue streaming messages without interruption during container deployment rollouts.
 * **$90\%$ Reduction in State Store Download Bandwidth**: Sticky partition assignment preserves local RocksDB state stores across rebalances.

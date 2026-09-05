@@ -8,7 +8,7 @@ Tech Leads have evolved into **Architects of Intent**. This article details how 
 
 ---
 
-## 📖 The "Architect of Intent" Workflow
+## The "Architect of Intent" Workflow
 
 Instead of jumping straight into IDE code files, the modern Tech Lead operates at a higher level of abstraction:
 
@@ -31,7 +31,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Automation: Context & Spec Bundle Generator
+## Python Automation: Context & Spec Bundle Generator
 
 To ensure AI agents receive clean, authoritative context without hitting token limit bloat, Tech Leads use automated scripts to parse dependency graphs and build structured prompt payloads.
 
@@ -134,7 +134,7 @@ class PaymentGateway:
 
 ---
 
-## ⚠️ Important Leadership Traps
+## Important Leadership Traps
 
 When transitioning from code author to architect of intent, avoid these operational anti-patterns:
 
@@ -146,7 +146,7 @@ When transitioning from code author to architect of intent, avoid these operatio
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Engineering teams implementing "Architect of Intent" workflows report dramatic improvements:
 * **80% Reduction in PR Rejections**: Tasks defined with clear AST context bundles pass automated verification checks on the first attempt.
 * **10x Scaling of Engineering Output**: A single Tech Lead can effectively orchestrate 5 concurrent agent execution runs, maintaining complete control over code quality and system architecture.

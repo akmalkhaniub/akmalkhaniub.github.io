@@ -8,7 +8,7 @@ This article details how to operationalize and optimize agent compute budgets on
 
 ---
 
-## 📖 GCP Agent Operations & FinOps Architecture
+## GCP Agent Operations & FinOps Architecture
 
 The operational telemetry loop buffers requests, monitors token expenditure, and tracks SLO performance:
 
@@ -41,7 +41,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Cloud Tasks Rate-Limiting Dispatcher & SLO Monitor
+## Python Implementation: Cloud Tasks Rate-Limiting Dispatcher & SLO Monitor
 
 Here is a production Python implementation of a Cloud Tasks rate-limited task dispatcher with integrated SLO health metrics reporting to Cloud Monitoring:
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important GCP FinOps & Operational Guardrails
+## Important GCP FinOps & Operational Guardrails
 
 When managing agent operations on GCP:
 
@@ -146,7 +146,7 @@ When managing agent operations on GCP:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams operationalizing agentic workflows on GCP achieve:
 * **75% Reduction in LLM Compute Costs**: Model routing cascades and BigQuery billing analytics optimize token expenditure.
 * **99.9% Reliable API Invocations**: Cloud Tasks rate-limiting queues eliminate third-party 429 rate-limit errors completely.

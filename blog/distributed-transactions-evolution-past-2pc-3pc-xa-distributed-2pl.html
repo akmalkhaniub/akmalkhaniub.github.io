@@ -121,7 +121,7 @@
   
   style Locks fill:#f43f5e,stroke:#881337,color:#ffffff</div>
 <hr>
-<h2>🏛️ 1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</h2>
+<h2>1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</h2>
 <p>In his seminal 1978 paper, <em>Notes on Data Base Operating Systems</em>, Turing Award winner <strong>Jim Gray</strong> formalized the fundamental challenge of distributed consensus:</p>
 <blockquote>
 <p><em>How can multiple independent computing nodes, communicating over unreliable networks, agree to commit a transaction atomically if any single node can crash or vote to abort?</em></p>
@@ -164,7 +164,7 @@
 <p>$$\text{Lock Hold Duration } T_{\text{lock}} = \infty \quad (\text{until Coordinator recovery})$$</p>
 <p>Any other concurrent transactions attempting to access those locked rows are queued indefinitely, leading to resource exhaustion, thread pool starvation, and total system outage.</p>
 <hr>
-<h2>⚡ 2. Three-Phase Commit (3PC): Skeen&#39;s Non-Blocking Attempt</h2>
+<h2>2. Three-Phase Commit (3PC): Skeen&#39;s Non-Blocking Attempt</h2>
 <p>In 1981, <strong>Dale Skeen</strong> introduced the <strong>Three-Phase Commit (3PC)</strong> protocol (<em>Nonblocking Commit Protocols</em>). 3PC aimed to eliminate the blocking vulnerability by inserting a buffer state—the <code>Pre-Commit</code> phase—and establishing timeout-based transitions.</p>
 <div class="mermaid">stateDiagram-v2
   [*] --&gt; Init
@@ -197,26 +197,15 @@
 </ul>
 <p>Because asynchronous networks (like the internet or multi-switch datacenters) cannot distinguish between a dead node and a slow network partition, <strong>3PC was virtually never adopted in production databases</strong>.</p>
 <hr>
-<h2>🔒 3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</h2>
+<h2>3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</h2>
 <p>In 1991, the Open Group published the <strong>X/Open Distributed Transaction Processing (DTP) XA Specification</strong>.</p>
 <p>XA standardized the interface between an AP (Application Program), a TM (Transaction Manager, like BEA Tuxedo or IBM CICS), and multiple RMs (Resource Managers, like Oracle, DB2, or Sybase).</p>
-<pre><code class="language-plaintext">+-------------------------------------------------------------+
-|               Application Program (AP)                      |
-+-------------------------------------------------------------+
-         |                                     |
-    tx_begin()                            SQL Queries
-    tx_commit()                                |
-         v                                     v
-+-----------------------+   xa_open()   +---------------------+
-|  Transaction Manager  |--------------&gt;|  Resource Manager   |
-|         (TM)          |&lt;--------------|     (RM: Oracle)    |
-+-----------------------+  xa_prepare() +---------------------+
-         |                 xa_commit()         |
-         |                  xa_end()           v
-         |                              +---------------------+
-         +-----------------------------&gt;|  Resource Manager   |
-                                        |     (RM: DB2)       |
-                                        +---------------------+</code></pre>
+<div class="mermaid">graph TD
+  AP[&quot;Application Program (AP)&quot;] --&gt;|tx_begin / tx_commit| TM[&quot;Transaction Manager (TM)&quot;]
+  AP --&gt;|SQL Queries| RM1[&quot;Resource Manager 1 (Oracle)&quot;]
+  AP --&gt;|SQL Queries| RM2[&quot;Resource Manager 2 (DB2)&quot;]
+  TM --&gt;|xa_open / xa_prepare / xa_commit| RM1
+  TM --&gt;|xa_open / xa_prepare / xa_commit| RM2</div>
 <h3>Distributed Two-Phase Locking (2PL) &amp; Distributed Deadlocks</h3>
 <p>XA enforced serializability across databases using <strong>Strict Distributed Two-Phase Locking (Strict 2PL)</strong>:</p>
 <ul>
@@ -236,7 +225,7 @@
 <p>Neither Oracle Node 1 nor Oracle Node 2 has the global graph in its local memory. Without expensive global deadlock detection algorithms (like Obermarck’s path-pushing algorithm or Chandy-Misra-Haas probe computation), systems were forced to rely on <strong>lock wait timeouts</strong>.</p>
 <p>Under heavy e-commerce holiday traffic, lock wait timeouts triggered cascading abort storms, consuming CPU while completing zero useful work.</p>
 <hr>
-<h2>🛒 4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC</h2>
+<h2>4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC</h2>
 <p>During the late 1990s and early 2000s, pioneering internet platforms hit a hard architectural wall with classical 2PC and XA transactions:</p>
 <h3>The Early Amazon &quot;Gurupa&quot; Bottleneck</h3>
 <p>In Amazon’s original monolithic architecture, the central Oracle database (internally named <em>&quot;Gurupa&quot;</em>) handled customer accounts, orders, inventory, and payment tracking.</p>
@@ -256,7 +245,7 @@
 <li>Asynchronously deliver messages to Inventory and Payment services with idempotency checks and compensating refunds.</li>
 </ol>
 <hr>
-<h2>🛠️ Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</h2>
+<h2>Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</h2>
 <p>To understand how classical systems attempted to resolve 2PL lock cycles, here is a Python implementation of a distributed Wait-For Graph (WFG) deadlock cycle detector using Tarjan&#39;s Strongly Connected Components (SCC) algorithm:</p>
 <pre><code class="language-python">from typing import Dict, List, Set
 
@@ -343,7 +332,7 @@ if __name__ == &quot;__main__&quot;:
     else:
         print(&quot; ✅ No distributed deadlocks found.&quot;)</code></pre>
 <hr>
-<h2>🚨 Engineering Lessons from the Classical Era</h2>
+<h2>Engineering Lessons from the Classical Era</h2>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
   <div class="alert-content"><p><strong>Synchronous 2PC Locks are Fatal at Scale</strong>: Holding database row locks across remote network roundtrips directly couples the throughput of your fastest service to the latency and failure rate of your slowest dependency.</p>
@@ -360,7 +349,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>🔮 Next in the Series</h2>
+<h2>Next in the Series</h2>
 <p>In <strong>Part 2</strong>, we will explore <strong>The Present (2010s–2020s)</strong>: How Google solved distributed consistency at global scale with <strong>Spanner and TrueTime</strong>, how CockroachDB &amp; YugabyteDB implement <strong>Multi-Raft with Hybrid Logical Clocks</strong>, and how <strong>Uber &amp; Netflix</strong> revolutionized microservices using <strong>Event-Driven Sagas (Cadence / Conductor)</strong>.</p>
 
           </div>

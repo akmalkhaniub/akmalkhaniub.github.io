@@ -101,7 +101,7 @@ print(f"Title: {result.current_title}")
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To ensure reliable, crash-free structured data ingestion:
 * [ ] **Enforce structured outputs at the engine level**: Stop relying on post-generation regex or JSON parse try-catch blocks. Mask invalid tokens before they are selected.

@@ -13,7 +13,7 @@ This article details how to implement PBFT voting protocols for agent swarms.
 
 ---
 
-## 📖 PBFT Three-Phase Voting Flow
+## PBFT Three-Phase Voting Flow
 
 The three-phase voting pipeline used to validate proposed agent execution states:
 
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: PBFT 4-Node Agent Swarm Validator
+## Python Implementation: PBFT 4-Node Agent Swarm Validator
 
 Here is a production-grade Python implementation of a 4-node PBFT validator ($N=4$, $f=1$). It handles a scenario where 1 agent node emits hallucinated/corrupted output, successfully filtering out the faulty vote to achieve consensus:
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 BFT Implementation Gotchas & Guardrails
+## BFT Implementation Gotchas & Guardrails
 
 When deploying BFT consensus in AI swarms:
 
@@ -184,7 +184,7 @@ When deploying BFT consensus in AI swarms:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying PBFT agent validation report:
 * **100% Elimination of Bad Automated Edits**: Multi-node threshold voting prevents hallucinated or malicious code changes from reaching production pipelines.
 * **Resilient Infrastructure Swarms**: Workflows remain fully reliable even when individual agent workers output corrupted or incomplete tool responses.

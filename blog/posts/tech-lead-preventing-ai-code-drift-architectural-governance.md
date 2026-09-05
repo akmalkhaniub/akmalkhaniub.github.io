@@ -8,7 +8,7 @@ Over time, this local optimization causes architectural degradation. This articl
 
 ---
 
-## 📖 Local Optimization vs. Global Architectural Entropy
+## Local Optimization vs. Global Architectural Entropy
 
 ```mermaid
 graph TD
@@ -34,7 +34,7 @@ graph TD
 
 ---
 
-## 🛠️ Python AST Governance: Automated Drift Detector
+## Python AST Governance: Automated Drift Detector
 
 To enforce global architectural invariants automatically, Tech Leads implement custom Abstract Syntax Tree (AST) linters in pre-commit hooks and CI/CD pipelines.
 
@@ -122,7 +122,7 @@ def get_user():
 
 ---
 
-## ⚠️ Important Governance Guardrails
+## Important Governance Guardrails
 
 When establishing governance rules to prevent code drift, keep these boundaries in mind:
 
@@ -134,7 +134,7 @@ When establishing governance rules to prevent code drift, keep these boundaries 
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Engineering organizations using AST governance linters report:
 * **75% Reduction in Code Duplication**: Pre-commit AST rules force AI agents to reuse existing corporate utility modules.
 * **Preserved Systems Integrity**: Architecture retains clean domain separation even after hundreds of AI-generated pull requests.

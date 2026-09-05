@@ -12,7 +12,7 @@ This article details hot loop profiling, speculative type specialization, and de
 
 ---
 
-## 📖 JIT Compilation & Deoptimization Pipeline Architecture
+## JIT Compilation & Deoptimization Pipeline Architecture
 
 How JIT engines profile hot loops, emit specialized machine code, and deoptimize when type guards fail:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Tracing JIT Engine with Deoptimization Guards
+## Python Implementation: Tracing JIT Engine with Deoptimization Guards
 
 Here is a production-grade Python implementation of a Tracing JIT Engine featuring Hot Loop Profiling, Speculative Type Specialization, and Deoptimization Bailouts:
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 JIT Compiler Gotchas & Best Practices
+## JIT Compiler Gotchas & Best Practices
 
 When designing or tuning JIT-compiled runtimes:
 
@@ -153,7 +153,7 @@ When designing or tuning JIT-compiled runtimes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Runtimes adopting dynamic JIT compilation (such as **V8 TurboFan**, **PyPy**, and **Java HotSpot C2**) report:
 * **$10\times$ to $50\times$ Execution Speedup**: Accelerating dynamic scripting languages to match compiled C/C++ execution speeds.
 * **Seamless Dynamic Flexibility**: Developers retain high-level dynamic language features while benefiting from hardware-level CPU instruction optimizations.

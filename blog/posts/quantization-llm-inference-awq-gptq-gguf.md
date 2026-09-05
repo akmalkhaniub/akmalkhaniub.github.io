@@ -14,7 +14,7 @@ This article explores Post-Training Quantization (PTQ), Activation-aware Weight 
 
 ---
 
-## 📖 LLM Quantization & AWQ Salient Weight Architecture
+## LLM Quantization & AWQ Salient Weight Architecture
 
 How AWQ identifies salient weights based on activation magnitudes to preserve accuracy at 4-bit precision:
 
@@ -47,7 +47,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Uniform Linear Quantizer & AWQ Engine
+## Python Implementation: Uniform Linear Quantizer & AWQ Engine
 
 Here is a production-grade Python implementation of a 4-Bit Uniform Linear Quantizer and AWQ Salient Weight Protection Engine:
 
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 LLM Quantization Gotchas & Best Practices
+## LLM Quantization Gotchas & Best Practices
 
 When deploying quantized LLM inference:
 
@@ -151,7 +151,7 @@ When deploying quantized LLM inference:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms adopting 4-bit LLM quantization (such as **AWQ** and **GGUF**) report:
 * **75% Reduction in GPU VRAM Costs**: Running Llama-3-70B on a single $40\text{GB}$ GPU node instead of requiring multi-GPU $140\text{GB}$ clusters.
 * **$3\times$ Faster Generation Speeds**: 4-bit weights reduce GPU memory bandwidth pressure, allowing token generation to run at higher tokens/sec.

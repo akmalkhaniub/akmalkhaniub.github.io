@@ -17,7 +17,7 @@ This article synthesizes the trade-offs of inference-time scaling, analyzing **w
 
 ---
 
-## 🎨 System 1 vs. System 2 Execution Paths
+## System 1 vs. System 2 Execution Paths
 
 Unlike standard token generation, System 2 reasoning models execute a multi-turn, hidden computation loop before delivering the first user-facing token.
 
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 🔍 Synthesis: What's Good & What's Not
+## Synthesis: What's Good & What's Not
 
 ### What's Good (The Pros)
 *   **Logical Precision**: System 2 scaling solves multi-step reasoning puzzles (complex math proofs, competitive coding, scientific calculations) with unprecedented accuracy.
@@ -71,7 +71,7 @@ graph TD
 
 ---
 
-## 💻 Auditing Thinking Tokens in Node.js
+## Auditing Thinking Tokens in Node.js
 
 Because reasoning models bill for both hidden thinking tokens and user-facing output tokens, your API tracking layer must separate these metrics to calculate costs accurately. 
 
@@ -115,7 +115,7 @@ async function logReasoningUsage(userId, query, responsePayload) {
 
 ---
 
-## 📋 System 2 Implementation Checklist
+## System 2 Implementation Checklist
 
 * [ ] **Separate Thinking Token Budgets**: Always set a `max_completion_tokens` limit on reasoning calls to prevent the model from entering long, expensive self-critique loops.
 * [ ] **Implement Client-Side Loading UI**: Replace standard typing indicators with a thinking log or progress bar showing the user that the model is actively reasoning in the background.
@@ -123,7 +123,7 @@ async function logReasoningUsage(userId, query, responsePayload) {
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 The shift from training-time scaling to inference-time scaling marks a major milestone in AI architecture:
 1. **Reasoning on Demand:** System 2 models allow us to trade runtime compute (latency and cost) for task accuracy. Complex math and competitive programming no longer require giant pre-trained weights.
@@ -134,7 +134,7 @@ The shift from training-time scaling to inference-time scaling marks a major mil
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **Scaling Laws**: Kaplan et al., 2020. *Scaling Laws for Neural Language Models*. [arXiv:2001.08361](https://arxiv.org/abs/2001.08361).
 * **DeepSeek R1 & GRPO**: Xiong et al., 2025. *DeepSeek: Paradigm Shifts and Technical Evolution in Large AI Models*. Outlines Group Relative Policy Optimization (GRPO) for reasoning. [arXiv:2507.09955](https://arxiv.org/abs/2507.09955).

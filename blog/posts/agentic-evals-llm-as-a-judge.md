@@ -130,7 +130,7 @@ pytest -s -v test_agent_evals.py
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Automating agent evaluations is the only way to ship changes with confidence:
 * [ ] **Log the execution trajectory**: Design your agent framework (LangGraph, Autogen) to record all tool inputs, outputs, and internal thoughts.

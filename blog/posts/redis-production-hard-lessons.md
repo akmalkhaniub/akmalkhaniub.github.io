@@ -54,7 +54,7 @@ redis-cli CONFIG GET maxmemory-policy
 # "maxmemory-policy"
 # "allkeys-lru"  ← DANGER for job queues
 
-# ✅ Correct policy for mixed cache + persistent data workloads
+# Correct policy for mixed cache + persistent data workloads
 redis-cli CONFIG SET maxmemory-policy volatile-lru
 # Evicts only keys WITH an expiry set — leaves keys without TTL (job queues!) untouched
 ```
@@ -112,11 +112,11 @@ print(audit_redis_config(r))
 **Root cause**: Redis is single-threaded. `KEYS *` on a keyspace with 1 million keys takes 500ms–2s — during which **no other command can execute**. Same for `SMEMBERS` on a very large set.
 
 ```python
-# ❌ NEVER in production — blocks Redis for all clients during scan
+# NEVER in production — blocks Redis for all clients during scan
 all_keys = redis_client.keys("agent:session:*")     # O(N) — dangerous
 all_members = redis_client.smembers("all_user_ids")  # O(N) — dangerous
 
-# ✅ Use SCAN — cursor-based, non-blocking, runs in small O(1) batches
+# Use SCAN — cursor-based, non-blocking, runs in small O(1) batches
 def scan_keys_safe(client: redis.Redis, pattern: str, count: int = 100):
     """Iterates keys without blocking the server. Safe for production."""
     cursor = 0
@@ -130,7 +130,7 @@ def scan_keys_safe(client: redis.Redis, pattern: str, count: int = 100):
 for key in scan_keys_safe(r, "agent:session:*"):
     print(key)
 
-# ✅ For sets: use SSCAN instead of SMEMBERS
+# For sets: use SSCAN instead of SMEMBERS
 def scan_set_safe(client: redis.Redis, key: str, count: int = 100):
     cursor = 0
     while True:
@@ -139,7 +139,7 @@ def scan_set_safe(client: redis.Redis, key: str, count: int = 100):
         if cursor == 0:
             break
 
-# ✅ Async version for FastAPI / asyncio contexts
+# Async version for FastAPI / asyncio contexts
 import redis.asyncio as aioredis
 
 async def scan_keys_async(client: aioredis.Redis, pattern: str):
@@ -167,16 +167,16 @@ end
 return count
 """
 
-# ❌ In cluster mode: KEYS[1] might be on node A, KEYS[2] on node B
+# In cluster mode: KEYS[1] might be on node A, KEYS[2] on node B
 # result = client.eval(script, 2, key1, key2, ttl)  # CROSSSLOT error or non-atomic
 
-# ✅ Fix: Use hash tags {} to force keys to the same slot
+# Fix: Use hash tags {} to force keys to the same slot
 # All keys with the same {tag} hash to the same slot — guaranteed co-location
 def get_rate_limit_keys(user_id: str) -> tuple[str, str]:
     # {user_id} forces both keys to the same hash slot
     return f"{{rl:{user_id}}}:count", f"{{rl:{user_id}}}:window"
 
-# ✅ Atomic sliding window rate limiter — cluster-safe
+# Atomic sliding window rate limiter — cluster-safe
 SLIDING_WINDOW_SCRIPT = """
 local key = KEYS[1]
 local now = tonumber(ARGV[1])
@@ -227,17 +227,17 @@ def check_rate_limit(
 **Root cause**: Multi-key commands (`MGET`, `MSET`, `DEL` with multiple keys) require all keys to reside on the same cluster node. Arbitrary keys hash to different slots.
 
 ```python
-# ❌ Fails in cluster mode if keys hash to different slots
+# Fails in cluster mode if keys hash to different slots
 values = client.mget(["user:1", "user:2", "user:3"])  # CROSSSLOT error
 
-# ✅ Option A: Pipeline individual GETs — same performance, cluster-safe
+# Option A: Pipeline individual GETs — same performance, cluster-safe
 def cluster_safe_mget(client: redis.Redis, keys: list[str]) -> list:
     pipeline = client.pipeline()
     for key in keys:
         pipeline.get(key)
     return pipeline.execute()
 
-# ✅ Option B: Force to same slot with hash tags
+# Option B: Force to same slot with hash tags
 # Use {user} tag if you know these keys logically belong together
 def get_user_fields(client: redis.Redis, user_id: str) -> dict:
     keys = {
@@ -302,7 +302,7 @@ def check_persistence(client: redis.Redis) -> dict:
 **Root cause**: Each concurrent request that touches Redis needs a connection. LLM workloads are bursty — 10 simultaneous agent runs each making 20 Redis calls = 200 concurrent connections needed. Without pool tuning, the default pool size (10) is exhausted instantly.
 
 ```python
-# ✅ Production Redis pool configuration
+# Production Redis pool configuration
 import redis.asyncio as aioredis
 from redis.asyncio import ConnectionPool
 
@@ -348,7 +348,7 @@ async def pool_health_check(client: aioredis.Redis) -> dict:
 ```python
 from datetime import timedelta
 
-# ✅ Always set TTL on transient data — use a TTL policy function
+# Always set TTL on transient data — use a TTL policy function
 TTL_POLICIES = {
     "session": 3600 * 24 * 7,       # 7 days
     "agent_state": 3600 * 2,         # 2 hours (agent run max time)
@@ -364,7 +364,7 @@ def store_with_ttl(client: redis.Redis, key_type: str, key: str, value: str) -> 
                          f"Add it to TTL_POLICIES or use PERSIST intentionally.")
     client.setex(key, ttl, value)
 
-# ✅ Audit keys without TTL (find memory leaks)
+# Audit keys without TTL (find memory leaks)
 def find_immortal_keys(client: redis.Redis, pattern: str = "*", sample_size: int = 1000) -> list[str]:
     """Find keys with no expiry — potential memory leak candidates."""
     immortal = []
@@ -384,7 +384,7 @@ print(f"Found {len(immortal)} keys with no TTL — review for memory leaks")
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Redis is extraordinary when configured correctly and treacherous when not. The failures are subtle — no exceptions, no alerts, just gradually degrading reliability and eventually lost data or frozen queues.
 

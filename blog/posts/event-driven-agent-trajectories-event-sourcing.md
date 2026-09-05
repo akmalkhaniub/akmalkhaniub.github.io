@@ -11,7 +11,7 @@ To solve this, production agent systems use **Event Sourcing**. Instead of stori
 
 ---
 
-## 📖 The Event Sourcing Model
+## The Event Sourcing Model
 
 In an event-sourced agent architecture, the system state is reconstructed dynamically by reading the event stream from the beginning and applying each event to a blank state object—a process called **Projection**:
 
@@ -33,7 +33,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Trajectory Event Store & Projection
+## Python Trajectory Event Store & Projection
 
 Here is a Python implementation of an event-sourced trajectory store, defining structured lifecycle events and demonstrating how to project the current aggregate state dynamically.
 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Pitfalls in Event Sourcing
+## Important Pitfalls in Event Sourcing
 
 Keep these constraints in mind to ensure storage efficiency:
 

@@ -6,7 +6,7 @@ This case study details the architecture, deployment, and operational gotchas of
 
 ---
 
-## 📖 Case Study Overview: The 10-Part Framework
+## Case Study Overview: The 10-Part Framework
 
 > [!NOTE]
 > **1. Industry**: E-Commerce & Retail
@@ -31,7 +31,7 @@ This case study details the architecture, deployment, and operational gotchas of
 
 ---
 
-## 🏗️ System Architecture & Data Flow
+## System Architecture & Data Flow
 
 The reservation engine separates the high-speed reservation check from the transactional checkout write pathway:
 
@@ -59,7 +59,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Atomic Redis Lua Reservation
+## Python Implementation: Atomic Redis Lua Reservation
 
 Here is the production-grade Python implementation of the atomic inventory reservation script utilizing Redis Lua commands:
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 The Incident: Connection Pool Starvation & The Black Friday Outage
+## The Incident: Connection Pool Starvation & The Black Friday Outage
 
 During our first major Black Friday flash sale, our monitoring alerts fired a critical CPU and latency spike:
 
@@ -169,7 +169,7 @@ During our first major Black Friday flash sale, our monitoring alerts fired a cr
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 By transitioning from relational row-locking to memory-based Lua reservations:
 * **Zero Double-Selling Cases**: 100% atomic Lua stock decrements eliminated item over-allocation errors entirely.
 * **Stable Database Loads**: Decoupled write-back queue controls reduced PostgreSQL average CPU utilization from 98% down to a stable 35% during high traffic.

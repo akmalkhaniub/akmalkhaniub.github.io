@@ -8,7 +8,7 @@ This article details how to design an automated red-teaming fuzzer for agent wor
 
 ---
 
-## 📖 Automated Red Teaming Architecture
+## Automated Red Teaming Architecture
 
 The red-teaming pipeline operates as an automated adversary inside CI/CD test runners:
 
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Automated Agent Red Teaming Engine
+## Python Implementation: Automated Agent Red Teaming Engine
 
 Here is a production Python implementation of an automated red-teaming fuzzer that executes adversarial attack suites against a target agent worker and generates a security evaluation report:
 
@@ -162,7 +162,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Red-Teaming Guardrails
+## Important Red-Teaming Guardrails
 
 When automating security fuzzing for agentic codebases:
 
@@ -174,7 +174,7 @@ When automating security fuzzing for agentic codebases:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying Automated Red Teaming in CI/CD pipelines report:
 * **95% Reduction in Zero-Day Prompt Injection Risks**: Automated fuzzing catches system prompt leaks before code reaches production branches.
 * **Continuous SOC2 Security Validation**: Automated evaluation logs provide empirical proof of security testing for enterprise compliance audits.

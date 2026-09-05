@@ -6,7 +6,7 @@ Next.js 15 flipped this model on its head by introducing **uncached-by-default**
 
 ---
 
-## 📖 The Caching Dilemma: Static by Default vs. Uncached
+## The Caching Dilemma: Static by Default vs. Uncached
 
 In Next.js 13 and 14, standard network requests defaulted to `force-cache`. This decision was designed to make applications fast by generating static HTML at build time, but it severely violated the principle of least surprise:
 
@@ -25,7 +25,7 @@ In the modern Next.js 15/16 architecture:
 
 ---
 
-## 🛠️ Implementing Selective Caching with `unstable_cache`
+## Implementing Selective Caching with `unstable_cache`
 
 To achieve sub-50ms render times without serving stale data, production systems use Next.js's low-level `unstable_cache` API to wrap database and external API operations.
 
@@ -66,7 +66,7 @@ export const getProducts = unstable_cache(
 
 ---
 
-## 🔄 Dynamic On-Demand Revalidation
+## Dynamic On-Demand Revalidation
 
 When an administrator updates a product's price or stock, the cache must be purged instantly without waiting for the 3600-second TTL to expire. Production applications handle this via Server Actions and route-handler webhooks utilizing `revalidateTag` or `revalidatePath`:
 
@@ -99,7 +99,7 @@ export async function updateProductStock(productId: string, newStock: number) {
 
 ---
 
-## 📈 Real-World Production Adoption
+## Real-World Production Adoption
 
 Production sites have adapted to the uncached-by-default shift by implementing tiered caching layouts:
 

@@ -14,7 +14,7 @@ This article details XDP driver hooks, packet action codes (`XDP_DROP`, `XDP_TX`
 
 ---
 
-## 📖 XDP Networking Ingress & BPF Map State Architecture
+## XDP Networking Ingress & BPF Map State Architecture
 
 How XDP intercepts raw ethernet frames at the NIC driver layer before traditional Linux kernel stack processing:
 
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: XDP DDoS Packet Filter & BPF Map Engine
+## Python Implementation: XDP DDoS Packet Filter & BPF Map Engine
 
 Here is a production-grade Python implementation of an XDP Packet Processing Engine with DDoS IP Filtering and BPF Map State Management:
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 XDP Networking Gotchas & Best Practices
+## XDP Networking Gotchas & Best Practices
 
 When engineering XDP networking drivers:
 
@@ -161,7 +161,7 @@ When engineering XDP networking drivers:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms implementing XDP packet filtering (such as **Cloudflare** and **Meta Katran**) report:
 * **Over $100\times$ Higher DDoS Mitigating Capacity**: Dropping malicious packets before `sk_buff` memory allocation allows nodes to withstand multi-terabit volumetric attacks.
 * **Low-Latency Edge Load Balancing**: Hairpinning packets (`XDP_TX`) processes over $20,000,000$ load-balanced requests per second on standard commodity hardware.

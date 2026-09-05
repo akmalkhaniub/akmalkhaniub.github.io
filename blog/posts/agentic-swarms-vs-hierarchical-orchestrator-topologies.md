@@ -182,7 +182,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Selecting the right multi-agent architecture requires balancing control against speed:
 * [ ] **Enforce loop safety boundaries**: In decentralized swarms, always implement a global execution counter to force-terminate states if routing loops develop.

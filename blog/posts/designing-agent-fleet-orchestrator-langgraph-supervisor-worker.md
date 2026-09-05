@@ -12,7 +12,7 @@ Agent Fleet Orchestrator implements a **Hierarchical Supervisor-Worker Topology*
 
 ---
 
-## 📖 Agent Fleet Orchestrator System Architecture
+## Agent Fleet Orchestrator System Architecture
 
 How the Supervisor Agent plans missions, dispatches tasks to parallel worker nodes, and recovers state via persistent checkpoints:
 
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: LangGraph Supervisor-Worker State Machine
+## Python Implementation: LangGraph Supervisor-Worker State Machine
 
 Here is the core Python implementation showcasing the LangGraph Supervisor-Worker coordination engine and conditional routing:
 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Multi-Agent Engineering Gotchas & Best Practices
+## Multi-Agent Engineering Gotchas & Best Practices
 
 When deploying multi-agent swarms:
 
@@ -190,7 +190,7 @@ When deploying multi-agent swarms:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Agent Fleet Orchestrator streamlines autonomous operations:
 * **$70\%$ Faster Software Feature Delivery**: Automated parallel coding, security scanning, and unit test generation shorten PR cycles.
 * **$100\%$ Deterministic Checkpoint Recovery**: Resumes failed sub-tasks instantly without re-running completed upstream nodes.

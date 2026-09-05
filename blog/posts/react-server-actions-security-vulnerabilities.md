@@ -45,7 +45,7 @@ export async function deleteProject(projectId: string) {
 }
 ```
 
-#### ✅ Secure Pattern: Enforce Authentication & Encrypted ID checks
+#### Secure Pattern: Enforce Authentication & Encrypted ID checks
 Always query the authenticated user session from within the Server Action using a secure server utility, and verify ownership of the resource before making mutations:
 
 ```typescript
@@ -89,7 +89,7 @@ export async function deleteProject(rawData: unknown) {
 ### 2. Parameter Injection (Schema Validation)
 Form inputs are easily manipulated in the browser dev tools. A malicious user can append hidden fields or input strings that cause database indexing failures or SQL injection risks.
 
-#### ✅ Fix: Always parse inputs via Zod
+#### Fix: Always parse inputs via Zod
 Never trust the payload shape. Parse raw data objects immediately using a schema parser like Zod, and only pass the structured output keys to your database driver.
 
 ---
@@ -97,12 +97,12 @@ Never trust the payload shape. Parse raw data objects immediately using a schema
 ### 3. Missing CSRF / Double Submit Cookie Protections
 Traditional Next.js API routes require custom CORS/CSRF configurations. Next.js Server Actions include built-in protection against CSRF by validating the `Origin` header against the host header. However, if your application runs behind multiple proxies or has custom domain mapping, this origin validation can be accidentally disabled or bypassed.
 
-#### ✅ Fix: Enforce Strict Header Checks
+#### Fix: Enforce Strict Header Checks
 Ensure your deployment gateway or reverse proxy correctly forwards `Host` and `X-Forwarded-Host` headers, and verify that Next.js's native CORS/CSRF middleware is active in your configuration.
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Next.js Server Actions make data fetching and mutation incredibly clean, but you must treat them with the same security parameters as standard API endpoints:
 * [ ] **Never trust client-passed IDs directly**: Validate ownership of the target record using the user context retrieved on the server.

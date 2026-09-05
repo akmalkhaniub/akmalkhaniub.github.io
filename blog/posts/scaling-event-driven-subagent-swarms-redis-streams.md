@@ -10,7 +10,7 @@ This article details how to architect and scale an event-driven subagent swarm u
 
 ---
 
-## 📖 Redis Streams Swarm Architecture
+## Redis Streams Swarm Architecture
 
 The architecture decouples task dispatchers, subagent worker pools, and result aggregators using Redis Streams Consumer Groups:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Redis Streams Agent Swarm Engine
+## Python Implementation: Redis Streams Agent Swarm Engine
 
 Here is a production Python implementation using `redis-py` demonstrating an event-driven agent worker consumer group with automatic task claiming (`XCLAIM`) for crashed workers:
 
@@ -185,7 +185,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Redis Streams Architecture Guardrails
+## Important Redis Streams Architecture Guardrails
 
 When scaling agentic swarms with Redis Streams:
 
@@ -197,7 +197,7 @@ When scaling agentic swarms with Redis Streams:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying Redis Streams for subagent orchestration report:
 * **100% Zero-Loss Fault Tolerance**: Pending Entries List (PEL) and `XCLAIM` automatically recover 100% of tasks from crashed worker containers.
 * **Massive Horizontal Scalability**: Adding 20 new Cloud Run worker containers automatically scales task throughput without reconfiguring the orchestrator.

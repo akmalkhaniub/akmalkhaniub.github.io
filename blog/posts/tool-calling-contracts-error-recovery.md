@@ -51,23 +51,11 @@ flowchart TD
 
 ## What's Good & What's Not
 
-```
-+----------------------------------------------------------------------------------------------------------------------+
-|                                  TOOL CONTRACT & ERROR RECOVERY TRADE-OFFS                                           |
-+----------------------------------------------------+---------------------------------------------------------------+
-| What's Good (Pros)                                 | What's Not (Cons)                                             |
-+----------------------------------------------------+---------------------------------------------------------------+
-| * Hallucination Containment: Pydantic validation   | * Schema Complexity Cost: Detailed JSON schemas with          |
-|   catches invalid args before execution, returning |   descriptions and constraints consume extra input tokens     |
-|   structured feedback the LLM can correct.         |   on every planning call.                                     |
-| * Graceful Degradation: Retry + fallback logic     | * Retry Amplification: Exponential retries on flaky external  |
-|   keeps agent runs alive through transient         |   APIs (rate limits, network) can multiply total latency     |
-|   failures without human intervention.             |   from 5s to 60s+ in worst-case scenarios.                   |
-| * Typed Contracts: Returning Pydantic models       | * Error Loop Risk: Poorly designed error feedback messages    |
-|   (not raw dicts) from tools prevents downstream   |   can confuse the LLM into repeatedly calling the same        |
-|   attribute-access bugs in multi-step agents.      |   broken tool instead of pivoting to an alternative.          |
-+----------------------------------------------------+---------------------------------------------------------------+
-```
+| What's Good (Pros) | What's Not (Cons) |
+| --- | --- |
+| * Hallucination Containment: Pydantic validation catches invalid args before execution, returning structured feedback the LLM can correct. | * Schema Complexity Cost: Detailed JSON schemas with descriptions and constraints consume extra input tokens on every planning call. |
+| * Graceful Degradation: Retry + fallback logic keeps agent runs alive through transient failures without human intervention. | * Retry Amplification: Exponential retries on flaky external APIs (rate limits, network) can multiply total latency from 5s to 60s+ in worst-case scenarios. |
+| * Typed Contracts: Returning Pydantic models (not raw dicts) from tools prevents downstream attribute-access bugs in multi-step agents. | * Error Loop Risk: Poorly designed error feedback messages can confuse the LLM into repeatedly calling the same broken tool instead of pivoting to an alternative. |
 
 ---
 
@@ -436,7 +424,7 @@ print(json.dumps(search_tool_def, indent=2))
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Robust tool-calling is the difference between a demo agent and a production agent. By encoding contracts in Pydantic models, validating at runtime, and returning structured error feedback, you give the LLM everything it needs to self-correct without human intervention.
 

@@ -10,7 +10,7 @@ This article details how Tech Leads build **Cross-Functional Alignment**, transl
 
 ---
 
-## 📖 The Technical-to-Executive Alignment Bridge
+## The Technical-to-Executive Alignment Bridge
 
 Tech Leads must translate internal engineering mechanics into strategic business metrics:
 
@@ -44,7 +44,7 @@ graph LR
 
 ---
 
-## 🛠️ Python Automation: Executive ROI & Velocity Dashboard Generator
+## Python Automation: Executive ROI & Velocity Dashboard Generator
 
 To present clear data to executive leadership, Tech Leads build automated telemetry scripts that translate raw git and token logs into high-level business reports.
 
@@ -87,12 +87,12 @@ class ExecutiveDashboardCompiler:
         
         md = f"""# Executive Engineering ROI & Velocity Report
         
-## 📊 Strategic Business Summary
+## Strategic Business Summary
 * **Net Value Generated**: ${metrics['net_financial_value_generated_usd']:,.2f}
 * **AI Investment ROI**: **{metrics['ai_investment_roi_multiplier']}**
 * **Monthly Compute Investment**: ${metrics['monthly_ai_compute_spend_usd']:,.2f}
 
-## 🚀 Delivery & Reliability Metrics
+## Delivery & Reliability Metrics
 * **Production Deployments**: {metrics['production_deployment_frequency']}
 * **Estimated Engineering Hours Reallocated**: {metrics['estimated_dev_hours_saved']} hrs
 * **Production Reliability Status**: **{metrics['system_reliability_rating']}** (Change Failure Rate: {self.failure_rate}%)
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Executive Alignment Guardrails
+## Important Executive Alignment Guardrails
 
 When communicating with executive stakeholders, observe these alignment guidelines:
 
@@ -127,7 +127,7 @@ When communicating with executive stakeholders, observe these alignment guidelin
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams establishing Cross-Functional Alignment experience:
 * **Complete Executive Trust & Support**: Transparent ROI modeling justifies AI infrastructure investments.
 * **Realistic Product Roadmaps**: Engineering teams deliver on 95%+ of committed quarterly milestones without burnout.

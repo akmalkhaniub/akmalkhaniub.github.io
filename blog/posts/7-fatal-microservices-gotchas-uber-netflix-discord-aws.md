@@ -23,10 +23,10 @@ graph TD
 
 ---
 
-## 🌪️ 1. Cascading Retry Storms & The Amplification Factor
+## 1. Cascading Retry Storms & The Amplification Factor
 
 ### The Real-World Incident
-During an AWS S3 and DynamoDB partial degradation, a small fraction of read requests experienced elevated latency ($10\text{ms} \to 500\text{ms}$). Because upstream caller microservices were configured with aggressive retry policies without backoff or global coordination, the total request volume surged by nearly an order of magnitude within seconds, causing a complete system outage.
+During an AWS S3 and DynamoDB partial degradation, a small fraction of read requests experienced elevated latency ($10\text{ms} → 500\text{ms}$). Because upstream caller microservices were configured with aggressive retry policies without backoff or global coordination, the total request volume surged by nearly an order of magnitude within seconds, causing a complete system outage.
 
 ### The Mathematical Breakdown
 If Service $A$ calls Service $B$, and Service $B$ calls Service $C$, and each service is configured to retry $3\text{ times}$ on timeout:
@@ -55,7 +55,7 @@ sequenceDiagram
   Note over C: DB Collapses under 9x amplified queries!
 ```
 
-### 🛠️ The Production Fix
+### The Production Fix
 1. **Exponential Backoff with Full Jitter**:
    $$\text{Sleep Time } t = \text{random}(0, \min(M, \text{base} \cdot 2^{\text{attempt}}))$$
    *Full Jitter* breaks synchronization cycles, smoothing out retry spikes across a uniform time distribution.
@@ -66,7 +66,7 @@ sequenceDiagram
 
 ---
 
-## 💣 2. The Distributed Dual-Write Trap
+## 2. The Distributed Dual-Write Trap
 
 ### The Real-World Incident
 At high-volume e-commerce platforms (**Shopify**, **Stripe**), a service must update its internal database and publish an event to Apache Kafka for downstream fulfillment:
@@ -100,7 +100,7 @@ graph LR
   end
 ```
 
-### 🛠️ The Production Fix: Transactional Outbox Pattern + CDC
+### The Production Fix: Transactional Outbox Pattern + CDC
 Write the domain event to an `outbox` table within the **same local ACID database transaction**:
 
 ```sql
@@ -115,10 +115,10 @@ A Change Data Capture (CDC) engine (such as **Debezium**) tails the PostgreSQL W
 
 ---
 
-## ⛓️ 3. The Synchronous Deep Call Chain ("The Distributed Monolith")
+## 3. The Synchronous Deep Call Chain ("The Distributed Monolith")
 
 ### The Real-World Incident
-In **Segment’s** well-documented architecture post-mortem (*Goodbye Microservices*), developers split their application into dozens of granular microservices that invoked each other synchronously via HTTP/gRPC in deep trees ($A \to B \to C \to D \to E \to F$).
+In **Segment’s** well-documented architecture post-mortem (*Goodbye Microservices*), developers split their application into dozens of granular microservices that invoked each other synchronously via HTTP/gRPC in deep trees ($A → B → C → D → E → F$).
 
 ### The Mathematical Penalty: Multiplicative Availability Collapse
 If each microservice delivers an impressive $99.5\%$ SLA ($A_i = 0.995$):
@@ -132,13 +132,13 @@ Synchronous Monolith:  [ Client ] -> [ A ] -> [ B ] -> [ C ] -> [ D ] -> [ E ]
                          Availability = (0.995)^5 = 97.5% | Latency = L_A + L_B + L_C + L_D + L_E
 ```
 
-### 🛠️ The Production Fix
+### The Production Fix
 * **CQRS Local Read Caches**: Instead of querying Service $B$ synchronously on every user request, Service $A$ subscribes to $B$'s Kafka events and maintains a local read-optimized projection in Redis or PostgreSQL.
 * **Asynchronous Event Choreography**: Convert request-reply chains into asynchronous event emissions.
 
 ---
 
-## 🔥 4. Hot-Key Partitioning & The "Celebrity" Problem
+## 4. Hot-Key Partitioning & The "Celebrity" Problem
 
 ### The Real-World Incident
 At **Discord** (serving 500k-member guilds) and **Twitter/X** (serving accounts with 100M+ followers), sharding data by `user_id` or `guild_id` resulted in severe node hotspots.
@@ -163,13 +163,13 @@ graph TD
   style Shard3 fill:#22c55e,stroke:#14532d,color:#ffffff
 ```
 
-### 🛠️ The Production Fix: Two-Tier Hybrid Fan-Out
+### The Production Fix: Two-Tier Hybrid Fan-Out
 * **For Standard Users ($< 25\text{k}$ followers)**: **Fan-Out on Write (Push Model)**. When a user posts, push the tweet directly into their 50 followers' timeline inbox tables.
 * **For Celebrity Users ($> 25\text{k}$ followers)**: **Fan-Out on Read (Pull Model)**. Never push to 100M inboxes. Instead, when a follower opens their home feed, query the user's normal timeline and dynamically merge the celebrity's recent tweets from a high-throughput Redis cluster.
 
 ---
 
-## ⏳ 5. Out-of-Order Events & Ghost State Resurrections
+## 5. Out-of-Order Events & Ghost State Resurrections
 
 ### The Real-World Incident
 In **Uber’s** driver status tracking and e-commerce order lifecycles, network rebalancing or multi-partition Kafka processing causes messages to arrive out of order:
@@ -186,7 +186,7 @@ Actual Timeline:   [ t1: OrderCreated ] ---------------> [ t2: OrderCancelled ]
 Arrival Order:     [ 1. Recv OrderCancelled -> CANCELLED ] -> [ 2. Recv OrderCreated -> ACTIVE (BUG!) ]
 ```
 
-### 🛠️ The Production Fix: Monotonic Versioning & State Transition Guards
+### The Production Fix: Monotonic Versioning & State Transition Guards
 1. **Optimistic Version Checks**:
    ```sql
    UPDATE orders 
@@ -194,11 +194,11 @@ Arrival Order:     [ 1. Recv OrderCancelled -> CANCELLED ] -> [ 2. Recv OrderCre
    WHERE id = 'ORD-101' AND version = 1;
    ```
 2. **State Machine Invariant Guards**:
-   Enforce state machine constraints at the application layer: a transition from `CANCELLED \to ACTIVE` is strictly rejected and routed to a Dead-Letter Queue (DLQ).
+   Enforce state machine constraints at the application layer: a transition from `CANCELLED → ACTIVE` is strictly rejected and routed to a Dead-Letter Queue (DLQ).
 
 ---
 
-## 🔌 6. Database Connection Pool Multiplication under K8s HPA
+## 6. Database Connection Pool Multiplication under K8s HPA
 
 ### The Real-World Incident
 At **DoorDash** and **GitHub**, deploying microservices on Kubernetes with Horizontal Pod Autoscaling (HPA) triggered catastrophic database connection exhaustion during peak traffic surges.
@@ -207,7 +207,7 @@ At **DoorDash** and **GitHub**, deploying microservices on Kubernetes with Horiz
 Each microservice pod is configured with a default connection pool size of **20 connections** to PostgreSQL.
 
 During a lunch rush:
-$$\text{Pods scaled from } 10 \to 400 \text{ pods}$$
+$$\text{Pods scaled from } 10 → 400 \text{ pods}$$
 $$\text{Active DB Connections} = 400 \times 20 = 8,000 \text{ concurrent connections}$$
 
 PostgreSQL forks a dedicated operating system process per connection. At 8,000 connections, CPU time is entirely consumed by OS process context-switching rather than query execution, driving database throughput to zero.
@@ -217,12 +217,12 @@ PostgreSQL forks a dedicated operating system process per connection. At 8,000 c
 400 Kubernetes Pods  ==[ 8,000 ]==> [ PgBouncer ] ==[ 100 Multiplexed Connections ]==> [ PostgreSQL DB ] (Stable)
 ```
 
-### 🛠️ The Production Fix
+### The Production Fix
 Deploy a connection multiplexer (**PgBouncer** or **AWS RDS Proxy**) between Kubernetes and the database. PgBouncer maintains transaction-level pooling, allowing 10,000 microservice client connections to share **~100 backend PostgreSQL connections**.
 
 ---
 
-## 🕵️ 7. W3C Trace Context Propagation Loss in Async Pipelines
+## 7. W3C Trace Context Propagation Loss in Async Pipelines
 
 ### The Real-World Incident
 During critical production incidents across **Uber** and **Airbnb**, on-call engineers querying distributed tracing platforms (Jaeger / Datadog / OpenTelemetry) found that trace spans suddenly terminated midway through request processing.
@@ -242,12 +242,12 @@ graph LR
   style Worker fill:#f43f5e,stroke:#881337,color:#ffffff
 ```
 
-### 🛠️ The Production Fix
+### The Production Fix
 Enforce automated **Trace Context Injection and Extraction** in all message producers and consumers using OpenTelemetry Baggage Carriers.
 
 ---
 
-## 💻 Production Implementation: Token Bucket Retry Budget & State Machine Guard
+## Production Implementation: Token Bucket Retry Budget & State Machine Guard
 
 Here is a production-grade TypeScript implementation demonstrating a **Token Bucket Retry Budgeter** and a **Monotonic State Machine Guard**:
 
@@ -340,7 +340,7 @@ if (require.main === module) {
 
 ---
 
-## 📊 Summary: Microservices Gotchas Matrix
+## Summary: Microservices Gotchas Matrix
 
 | Gotcha | Primary Mechanism | Downstream Penalty | Battle-Tested Fix |
 |---|---|---|---|
@@ -354,7 +354,7 @@ if (require.main === module) {
 
 ---
 
-## 🏁 Final Architectural Takeaway
+## Final Architectural Takeaway
 Microservices do not eliminate complexity; they **shift complexity from compiler-checked in-memory calls to untrusted, non-deterministic distributed networks**.
 
 By designing for partial failure with **retry budgets, transactional outboxes, monotonic state guards, and connection multiplexers**, engineering teams can build resilient distributed systems that thrive at internet scale.

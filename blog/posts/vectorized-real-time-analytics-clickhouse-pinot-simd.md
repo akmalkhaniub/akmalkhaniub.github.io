@@ -12,7 +12,7 @@ This article details Columnar vs Row-oriented layouts, ClickHouse sparse primary
 
 ---
 
-## 📖 Vectorized OLAP Architecture & SIMD Processing Pipeline
+## Vectorized OLAP Architecture & SIMD Processing Pipeline
 
 How ClickHouse and Apache Pinot prune data segments and utilize CPU SIMD vector registers to process billions of rows in milliseconds:
 
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Columnar Vectorized Execution & SIMD Simulator
+## Python Implementation: Columnar Vectorized Execution & SIMD Simulator
 
 Here is a production-grade Python implementation of a Columnar Storage Engine and Vectorized SIMD Aggregator Simulator:
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Vectorized Analytics Gotchas & Best Practices
+## Vectorized Analytics Gotchas & Best Practices
 
 When tuning real-time OLAP engines:
 
@@ -156,7 +156,7 @@ When tuning real-time OLAP engines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Vectorized OLAP engines (such as **ClickHouse**, **Apache Pinot**, and **DuckDB**) report:
 * **Sub-100ms Query Speeds across Billions of Rows**: Combining sparse index pruning with AVX-512 SIMD vector execution delivers sub-second dashboard rendering.
 * **$100\times$ Higher CPU Efficiency over Row Stores**: Amortizing loop control flow overhead across 4096-element vectors maximizes CPU pipeline throughput.

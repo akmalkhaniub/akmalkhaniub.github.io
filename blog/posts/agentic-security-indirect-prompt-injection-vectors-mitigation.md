@@ -8,7 +8,7 @@ This article analyzes the attack mechanics of Indirect Prompt Injection in multi
 
 ---
 
-## 📖 Anatomy of an Indirect Prompt Injection Attack
+## Anatomy of an Indirect Prompt Injection Attack
 
 Indirect Prompt Injections exploit the fact that foundation models process system instructions, user prompts, and retrieved tool data within the exact same context window:
 
@@ -39,7 +39,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Indirect Prompt Injection Defense Pipeline
+## Python Implementation: Indirect Prompt Injection Defense Pipeline
 
 Here is a production Python implementation of an Indirect Prompt Injection Defense Pipeline that uses strict context sanitization, privilege separation, and tool-access boundaries:
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Security Guardrails
+## Important Security Guardrails
 
 When defending against Indirect Prompt Injections, maintain these strict boundaries:
 
@@ -155,7 +155,7 @@ When defending against Indirect Prompt Injections, maintain these strict boundar
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams enforcing Indirect Prompt Injection defenses report:
 * **100% Elimination of Data Exfiltration Vectors**: Privilege separation prevents untrusted data readers from executing network egress tools.
 * **SOC2 & ISO Security Compliance**: Automated context sanitization neutralizes zero-day prompt injection payloads in RAG pipelines.

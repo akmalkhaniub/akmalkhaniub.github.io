@@ -116,7 +116,7 @@
 <p>To build reliable clinical assistants, we must shift from cloud APIs to <strong>Local-First AI Architectures</strong>. This means deploying open-weight models (like Gemma 2 or Mistral 7B) directly on local edge hardware and managing database synchronization locally.</p>
 <p>This article reviews the setup, performance tradeoffs, and offline-first database synchronization strategies modeled on my clinical decision assistant, <a href="https://github.com/akmalkhaniub/MedEdge" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> MedEdge</a>.</p>
 <hr>
-<h2>🛠️ Running Local Models via Ollama</h2>
+<h2>Running Local Models via Ollama</h2>
 <p>Ollama has become the standard execution layer for running open-weight models on local servers. It packages model weights, configurations, and runtime dependencies into a single, unified service exposed via a local HTTP server (<code>localhost:11434</code>).</p>
 <h3>1. Local CLI Deployment</h3>
 <p>To run a clinical-grade Mistral model locally, we pull and run it directly on the edge machine:</p>
@@ -138,7 +138,7 @@
   return data.response;
 }</code></pre>
 <hr>
-<h2>📊 Cloud vs. Local Inference Performance</h2>
+<h2>Cloud vs. Local Inference Performance</h2>
 <p>Deploying local models requires understanding the performance and resource tradeoffs:</p>
 <div class="mermaid">graph TD
     subgraph Cloud [Cloud APIs: Claude / GPT]
@@ -155,7 +155,7 @@
 <li><strong>Latency</strong>: While cloud calls are highly optimized, they require a round-trip network call. Under offline conditions, a local Nvidia RTX GPU executing Mistral at <strong>45 tokens per second</strong> delivers sub-500ms response times without any external dependencies.</li>
 </ul>
 <hr>
-<h2>🔄 Offline-First Syncing: SQLite to Postgres</h2>
+<h2>Offline-First Syncing: SQLite to Postgres</h2>
 <p>A clinical assistant must save records even when the clinic is completely disconnected from the network. We implement a <strong>Local-First Synchronization Pipeline</strong>:</p>
 <div class="mermaid">sequenceDiagram
     actor Doctor as Physician
@@ -181,14 +181,14 @@
 <li><strong>Acknowledge and Clear</strong>: Upon receiving a success status from the cloud API gateway, the local sync worker updates the local SQLite records to <code>sync_status = &#39;synced&#39;</code>.</li>
 </ol>
 <hr>
-<h2>📋 Local-First Implementation Guardrails</h2>
+<h2>Local-First Implementation Guardrails</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>GPU VRAM Checks</strong>: Ensure the edge server has sufficient dedicated VRAM to hold the model weights in memory (minimum 8GB VRAM for 7B models). If memory is exceeded, execution falls back to CPU, increasing latency by 10x.</li>
 <li><input disabled="" type="checkbox"> <strong>Encryption-at-Rest</strong>: Encrypt the local SQLite database using SQLCipher to ensure patient records remain protected if the physical device is stolen.</li>
 <li><input disabled="" type="checkbox"> <strong>Conflict Resolution Policies</strong>: Implement a &quot;last-write-wins&quot; policy using local timestamp UUIDs to handle synchronization conflict cases.</li>
 </ul>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>Transitioning to a local-first architecture empowers healthcare applications to remain resilient, secure, and highly performant without relying on constant cloud connectivity.</p>
 <ol>
 <li><strong>Local-First Privacy &amp; Compliance:</strong> Running open-weight models like Mistral 7B locally via Ollama eliminates external data transmission, ensuring strict adherence to HIPAA and other data privacy regulations.</li>
@@ -197,7 +197,7 @@
 </ol>
 <p><em>Takeaway:</em> <em>By shifting to local-first AI, developers can build highly secure, zero-cost, and resilient clinical assistants that perform reliably in any environment.</em></p>
 <hr>
-<h2>📚 References &amp; Further Reading</h2>
+<h2>References &amp; Further Reading</h2>
 <ul>
 <li><strong>Local LLM Quantization</strong>: <em>LLM.int8(): 8-bit Matrix Multiplication for Transformers</em>. Explains how model weights are compressed to run on consumer hardware. <a href="https://arxiv.org/abs/2208.07339" target="_blank" rel="noopener">arXiv:2208.07339</a></li>
 <li><strong>Offline-First Data Sync</strong>: <a href="https://www.zetetic.net/sqlcipher/" target="_blank" rel="noopener">SQLCipher Database Encryption</a>. Standard for local-first database encryption.</li>

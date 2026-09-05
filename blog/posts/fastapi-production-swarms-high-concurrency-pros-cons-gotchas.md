@@ -8,7 +8,7 @@ This article presents an objective architectural review of FastAPI in high-concu
 
 ---
 
-## 📖 Microservice Architectural Trade-offs Matrix
+## Microservice Architectural Trade-offs Matrix
 
 Evaluating FastAPI's strengths, limitations, and operational risks:
 
@@ -39,7 +39,7 @@ graph TD
 
 ---
 
-## ⚖️ Architectural Pros vs. Cons
+## Architectural Pros vs. Cons
 
 ### The Pros
 * **Rust-Backed High Performance**: With Pydantic v2 handling parsing in C-compiled Rust binaries and Starlette managing ASGI routing, FastAPI achieves throughput comparable to Node.js and Go.
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Production Guardrails & Health Inspector
+## Python Implementation: Production Guardrails & Health Inspector
 
 Here is a production-grade Python module demonstrating how to inspect worker process safety, validate connection pool bounds, and detect un-awaited coroutine risks:
 
@@ -112,7 +112,7 @@ def get_inspector() -> ProductionSafetyInspector:
 async def run_health_audit(inspector: ProductionSafetyInspector = Depends(get_inspector)):
     return inspector.audit_connection_limits()
 
-# 🚨 GOTCHA DEMO: Un-awaited Coroutine Detection
+# GOTCHA DEMO: Un-awaited Coroutine Detection
 async def background_logging_task(msg: str):
     await asyncio.sleep(0.01)
     print(f"📝 [Background Log] {msg}")
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Critical Production Gotchas
+## Critical Production Gotchas
 
 When deploying FastAPI at scale:
 
@@ -152,7 +152,7 @@ When deploying FastAPI at scale:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams applying production guardrails report:
 * **Zero Database Connection Crashes**: Deploying PgBouncer alongside audited worker connection pool limits prevents database starvation during autoscaling events.
 * **Predictable Tail Latency (p99)**: Auditing async codebases for un-awaited coroutines and blocking synchronous calls stabilizes p99 response times under peak load.

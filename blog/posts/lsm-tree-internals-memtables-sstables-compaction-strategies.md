@@ -10,7 +10,7 @@ This article details the low-level internals of LSM-Tree storage engines.
 
 ---
 
-## 📖 LSM-Tree Write & Read Architecture
+## LSM-Tree Write & Read Architecture
 
 The write path vs read path execution flow in an LSM-Tree storage engine:
 
@@ -45,7 +45,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Complete LSM-Tree Storage Engine
+## Python Implementation: Complete LSM-Tree Storage Engine
 
 Here is a production-grade Python implementation of an LSM-Tree storage engine featuring a MemTable, disk SSTables, Bloom Filters, and background compaction:
 
@@ -182,7 +182,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 LSM-Tree Compaction Gotchas & Trade-offs
+## LSM-Tree Compaction Gotchas & Trade-offs
 
 When operating LSM-tree engines:
 
@@ -194,7 +194,7 @@ When operating LSM-tree engines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying LSM-tree engines report:
 * **10x Higher Write Performance**: Sequential disk writes achieve maximum physical hardware throughput on NVMe SSD drives.
 * **Low Space Amplification**: Leveled compaction continuously purges overwritten values and tombstones, maintaining tight disk storage footprints.

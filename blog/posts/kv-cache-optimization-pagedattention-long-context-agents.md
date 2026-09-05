@@ -12,7 +12,7 @@ This article details how PagedAttention virtual memory mapping works and how to 
 
 ---
 
-## 📖 PagedAttention Virtual Memory Architecture
+## PagedAttention Virtual Memory Architecture
 
 PagedAttention adapts classic Operating System virtual memory paging to GPU VRAM management:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Paged KV-Cache Virtual Memory Simulator
+## Python Implementation: Paged KV-Cache Virtual Memory Simulator
 
 Here is a production Python implementation of a Paged KV-Cache Memory Allocator simulating logical-to-physical block mapping, prefix cache sharing, and VRAM fragmentation metrics:
 
@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important KV-Cache Optimization Guardrails
+## Important KV-Cache Optimization Guardrails
 
 When configuring KV-cache settings for long-context workloads:
 
@@ -165,7 +165,7 @@ When configuring KV-cache settings for long-context workloads:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting PagedAttention and KV-Cache Quantization report:
 * **96% Reduction in VRAM Memory Waste**: Eliminating static pre-allocation drops KV memory waste from 80% down to under 4%.
 * **3x Higher Subagent Concurrency**: Prefix caching allows dozens of subagent workers to share system prompt KV blocks, tripling active concurrent sessions per GPU.

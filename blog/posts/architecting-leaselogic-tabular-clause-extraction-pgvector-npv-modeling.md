@@ -14,7 +14,7 @@ LeaseLogic combines **layout-aware tabular extraction**, **Claude 3.5 Sonnet Too
 
 ---
 
-## 📖 LeaseLogic System Architecture
+## LeaseLogic System Architecture
 
 How LeaseLogic processes 120-page commercial lease contracts, verifies clause citations via multi-tenant vector search, and computes 10-year financial cashflows:
 
@@ -58,7 +58,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Lease Extraction & NPV Cashflow Engine
+## Python Implementation: Lease Extraction & NPV Cashflow Engine
 
 Here is the core Python implementation showcasing LeaseLogic's Pydantic schema validation and 10-year discounted cashflow valuation engine:
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 CRE Legal Tech Gotchas & Best Practices
+## CRE Legal Tech Gotchas & Best Practices
 
 When building AI legal extraction pipelines:
 
@@ -178,7 +178,7 @@ When building AI legal extraction pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 LeaseLogic accelerates institutional real estate workflows:
 * **$85\%$ Reduction in Lease Abstracting Turnaround**: Abstracts 120-page complex leases in under $3\text{ minutes}$ instead of $4\text{ hours}$.
 * **$100\%$ Verifiable Audit Trail**: Instant interactive bounding-box overlays eliminate manual page searching during due diligence.

@@ -10,7 +10,7 @@ To mark this milestone, this article synthesizes the **10 foundational architect
 
 ---
 
-## 📖 The Ultra-Scale Systems Architecture Blueprint
+## The Ultra-Scale Systems Architecture Blueprint
 
 How modern distributed software stacks combine consensus, storage, networking, edge compute, and AI:
 
@@ -39,7 +39,7 @@ graph TD
 
 ---
 
-## 🏛️ The 10 Foundational System Design Patterns
+## The 10 Foundational System Design Patterns
 
 ### 1. Distributed Consensus & Replicated State Machines
 * **Core Primitives**: Raft Protocol, Multi-Paxos, Quorum Voting ($\lfloor N/2 \rfloor + 1$).
@@ -83,7 +83,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: System Pattern Benchmark Synthesizer
+## Python Implementation: System Pattern Benchmark Synthesizer
 
 Here is a Python benchmarking suite demonstrating the synthesis of these architectural patterns:
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📈 Looking Forward: The Future of Systems Engineering
+## Looking Forward: The Future of Systems Engineering
 As we look ahead past Post 300, software engineering will continue to coalesce around **Hardware-Software Co-Design**, **Kernel-Bypassing I/O**, **Edge-Native Computing**, and **Self-Healing Agentic Systems**.
 
 Thank you to all readers and engineers following this journey!

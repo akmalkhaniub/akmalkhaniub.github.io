@@ -30,7 +30,7 @@ graph TD
 
 ---
 
-## 🗜️ 1. Product Quantization (PQ) & Asymmetric Distance Math
+## 1. Product Quantization (PQ) & Asymmetric Distance Math
 
 **Product Quantization (PQ)** (Jégou et al.) is the algorithmic cornerstone of vector compression, reducing RAM footprints by up to **$95\%$** with minimal loss in search recall.
 
@@ -49,7 +49,7 @@ Compressed Vector Code = [ 42, 189, ..., 12 ]  ---> Total: 96 bytes (64x Compres
 ```
 
 ### The PQ Algorithm:
-1. **Space Decomposition**: Divide the $D$-dimensional vector space ($D = 1536$) into $M$ orthogonal sub-vectors of dimension $d = D/M$ (e.g., $M = 96 \implies d = 16$).
+1. **Space Decomposition**: Divide the $D$-dimensional vector space ($D = 1536$) into $M$ orthogonal sub-vectors of dimension $d = D/M$ (e.g., $M = 96 ⟹ d = 16$).
 2. **K-Means Clustering**: Run K-Means independently on each sub-space to identify $K = 256$ centroids ($2^8 = 8\text{ bits} = 1\text{ byte}$ per sub-vector).
 3. **Vector Quantization**: Replace each $16\text{-dimensional}$ sub-vector with the $1\text{-byte}$ index of its closest centroid.
 4. **Compression Ratio**:
@@ -64,7 +64,7 @@ $$\text{Dist}(\vec{q}, \vec{x}_{\text{compressed}}) \approx \sum_{m=1}^M \text{L
 
 ---
 
-## 💾 2. DiskANN & The Vamana Graph Protocol
+## 2. DiskANN & The Vamana Graph Protocol
 
 To completely overcome the RAM ceiling, **DiskANN** (Microsoft Research, Subramanya et al.) stores the graph structure and compressed vectors on fast **NVMe SSDs** rather than in RAM.
 
@@ -91,7 +91,7 @@ graph LR
 
 ---
 
-## 🌐 3. Distributed Cluster Topology: Milvus & Qdrant at Scale
+## 3. Distributed Cluster Topology: Milvus & Qdrant at Scale
 
 At enterprise scale, vector databases decouple stateful storage from stateless compute nodes:
 
@@ -123,7 +123,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Product Quantization (PQ) & ADC Search Engine
+## Python Implementation: Product Quantization (PQ) & ADC Search Engine
 
 Here is a complete Python implementation demonstrating a Product Quantization (PQ) encoder and Asymmetric Distance Computation (ADC) search engine:
 
@@ -245,7 +245,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Vector Indexing Trade-Offs
+## Summary: Vector Indexing Trade-Offs
 
 | Vector Index | RAM Footprint | Search Latency (p99) | Recall @ 10 | Scaling Limit |
 |---|---|---|---|---|
@@ -256,7 +256,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 Scaling vector databases to 1 billion embeddings is fundamentally a problem of **memory economics and I/O layout**.
 
 By combining **Product Quantization** to reduce vector dimensionality in memory with **DiskANN Vamana graphs** on high-throughput NVMe SSDs, modern AI engineering platforms achieve sub-10ms similarity search at a fraction of traditional cloud infrastructure costs.

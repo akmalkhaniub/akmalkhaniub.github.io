@@ -12,7 +12,7 @@ This article details the Prometheus 2-hour Head Block layout, Write-Ahead Log (W
 
 ---
 
-## 📖 TSDB Architecture & Block Compaction Pipeline
+## TSDB Architecture & Block Compaction Pipeline
 
 How time-series databases handle real-time RAM ingestion, 2-hour block cutting, and multi-tier background compaction:
 
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: TSDB Head Block & Compaction Engine
+## Python Implementation: TSDB Head Block & Compaction Engine
 
 Here is a production-grade Python implementation of a Time-Series Database Head Block and Multi-Block Compactor Simulator:
 
@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 TSDB Storage Engine Gotchas & Best Practices
+## TSDB Storage Engine Gotchas & Best Practices
 
 When designing time-series storage infrastructure:
 
@@ -199,7 +199,7 @@ When designing time-series storage infrastructure:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Time-series storage engines (such as **Prometheus TSDB** and **VictoriaMetrics**) report:
 * **Sub-Second Range Query Speeds**: Compacted 24-hour block layouts and inverted postings indices allow Prometheus to scan millions of time series per second.
 * **$10\times$ Lower Disk I/O Overhead**: Batching RAM chunks into 2-hour immutable block cuts eliminates continuous disk write amplification.

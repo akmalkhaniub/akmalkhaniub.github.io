@@ -10,7 +10,7 @@ This article explores the trade-offs of modern caching patterns—**Cache-Aside*
 
 ---
 
-## 📖 CDC-Driven Cache Invalidation Architecture
+## CDC-Driven Cache Invalidation Architecture
 
 How database transaction log streaming guarantees eventual consistency between primary storage and distributed caches:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: CDC-Backed Cache Invalidator
+## Python Implementation: CDC-Backed Cache Invalidator
 
 Here is a production-grade Python simulation of a CDC-driven cache invalidation worker processing database Write-Ahead Log events:
 
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Invalidation Gotchas & Best Practices
+## Invalidation Gotchas & Best Practices
 
 When engineering distributed cache invalidation pipelines:
 
@@ -143,7 +143,7 @@ When engineering distributed cache invalidation pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying CDC-driven cache invalidation report:
 * **Zero Application Code Tangling**: Decoupling cache invalidation into background CDC streams keeps core application code focused solely on business logic.
 * **Guaranteed Eventual Consistency**: Processing database WAL transaction logs guarantees that all committed database updates trigger accurate cache invalidations.

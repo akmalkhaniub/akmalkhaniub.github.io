@@ -144,21 +144,21 @@ flowchart LR
 <h2>Blind Spot 1: PID 1 and the SIGTERM That Never Arrives</h2>
 <p><strong>Symptom</strong>: <code>docker stop</code> takes exactly 10 seconds before force-killing the container. Database connections are severed mid-transaction. BullMQ jobs are abandoned mid-execution. Your &quot;graceful shutdown&quot; code never runs.</p>
 <p><strong>Root cause</strong>: When you run <code>CMD python app.py</code>, Docker makes <code>python</code> PID 1. Linux only sends <code>SIGTERM</code> to PID 1. But <code>python</code> (and <code>node</code>, <code>uvicorn</code>, etc.) don&#39;t forward signals to child processes by default. After 10 seconds, Docker escalates to <code>SIGKILL</code> — no cleanup possible.</p>
-<pre><code class="language-dockerfile"># ❌ Python/Node becomes PID 1 — doesn't handle signals correctly
+<pre><code class="language-dockerfile"># Python/Node becomes PID 1 — doesn't handle signals correctly
 CMD [&quot;python&quot;, &quot;app.py&quot;]
 CMD [&quot;node&quot;, &quot;server.js&quot;]
 
-# ✅ Option A: Use exec form (not shell form) — this IS correct for single processes
+# Option A: Use exec form (not shell form) — this IS correct for single processes
 # exec form runs the process as PID 1 directly, signals work
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
 
-# ✅ Option B: Use tini as a proper init process (handles zombie reaping too)
+# Option B: Use tini as a proper init process (handles zombie reaping too)
 # Install in your Dockerfile:
 RUN apt-get install -y tini
 ENTRYPOINT [&quot;/usr/bin/tini&quot;, &quot;--&quot;]
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
 
-# ✅ Option C: Use --init flag on docker run / compose
+# Option C: Use --init flag on docker run / compose
 # docker run --init myimage
 # compose.yml:
 # init: true</code></pre>
@@ -183,13 +183,13 @@ app = FastAPI(lifespan=lifespan)</code></pre>
 <h2>Blind Spot 2: Layer Cache Busted by Wrong COPY Order</h2>
 <p><strong>Symptom</strong>: Every CI build reinstalls all Python packages from scratch even when you only changed a single <code>.py</code> file. 8-minute builds instead of 30-second ones.</p>
 <p><strong>Root cause</strong>: Docker layer cache is invalidated when any file in a <code>COPY</code> command changes. If you <code>COPY . .</code> before <code>RUN pip install</code>, any code change invalidates the pip install layer.</p>
-<pre><code class="language-dockerfile"># ❌ COPY . . before pip install — any code change busts the cache
+<pre><code class="language-dockerfile"># COPY . . before pip install — any code change busts the cache
 FROM python:3.11-slim
 WORKDIR /app
 COPY . .                          # ← Every file change invalidates next layer
 RUN pip install -r requirements.txt  # ← Reinstalls everything every time
 
-# ✅ Copy dependency files FIRST, install, THEN copy source code
+# Copy dependency files FIRST, install, THEN copy source code
 FROM python:3.11-slim
 WORKDIR /app
 
@@ -201,7 +201,7 @@ RUN pip install --no-cache-dir -r requirements.txt  # ← Cached unless requirem
 COPY . .
 
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]</code></pre>
-<pre><code class="language-dockerfile"># ✅ Same pattern for Node.js
+<pre><code class="language-dockerfile"># Same pattern for Node.js
 FROM node:20-slim
 WORKDIR /app
 
@@ -218,7 +218,7 @@ CMD [&quot;node&quot;, &quot;dist/server.js&quot;]</code></pre>
 <h2>Blind Spot 3: Running as Root Is a Security Incident Waiting to Happen</h2>
 <p><strong>Symptom</strong>: A dependency vulnerability or code execution bug inside your container gives attackers root access to the host in misconfigured environments.</p>
 <p><strong>Root cause</strong>: Docker containers run as <code>root</code> (UID 0) by default. If your container is ever compromised — through a vulnerable npm package, a deserialization exploit, or a path traversal — the attacker has root inside the container, which may translate to host root depending on Docker daemon configuration.</p>
-<pre><code class="language-dockerfile"># ❌ Running as root (Docker default)
+<pre><code class="language-dockerfile"># Running as root (Docker default)
 FROM python:3.11-slim
 WORKDIR /app
 COPY . .
@@ -226,7 +226,7 @@ RUN pip install -r requirements.txt
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
 # docker inspect → &quot;User&quot;: &quot;&quot; → runs as root
 
-# ✅ Create and use a non-root user
+# Create and use a non-root user
 FROM python:3.11-slim
 
 # Create non-root user with no home directory and no shell
@@ -248,19 +248,19 @@ CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.
 <h2>Blind Spot 4: Secrets Baked Into Image Layers Are Permanent</h2>
 <p><strong>Symptom</strong>: You delete the <code>ENV API_KEY=secret</code> line from your Dockerfile and rebuild. The secret is still retrievable from the old image layer with <code>docker history</code> or <code>docker save</code>.</p>
 <p><strong>Root cause</strong>: Docker image layers are immutable and cumulative. Even if you <code>RUN unset API_KEY</code> in a later layer, the secret exists in the earlier layer forever — visible to anyone who can pull the image.</p>
-<pre><code class="language-dockerfile"># ❌ Secret in ENV — permanent in image history
+<pre><code class="language-dockerfile"># Secret in ENV — permanent in image history
 ENV ANTHROPIC_API_KEY=&quot;sk-ant-...&quot;
 ENV DATABASE_URL=&quot;postgresql://user:password@host/db&quot;
 
-# ❌ Secret in RUN — also permanent even if deleted later
+# Secret in RUN — also permanent even if deleted later
 RUN pip install -r requirements.txt --extra-index-url https://user:token@pypi.company.com/simple
 
-# ✅ Never bake secrets — use runtime environment injection
+# Never bake secrets — use runtime environment injection
 # In production: pass via Docker secrets, Kubernetes secrets, or env at runtime
 # docker run --env-file .env myimage
 # docker run -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY myimage
 
-# ✅ For build-time secrets (private PyPI, npm registries): use BuildKit secrets
+# For build-time secrets (private PyPI, npm registries): use BuildKit secrets
 # syntax=docker/dockerfile:1
 FROM python:3.11-slim
 RUN --mount=type=secret,id=pip_config,target=/root/.pip/pip.conf \
@@ -328,10 +328,10 @@ Thumbs.db</code></pre>
 <hr>
 <h2>Blind Spot 6: No HEALTHCHECK = Kubernetes Sends Traffic to Dead Containers</h2>
 <p><strong>Symptom</strong>: Your pod is running (Kubernetes shows <code>Running</code> status) but returning 500 errors. Kubernetes keeps sending traffic because it doesn&#39;t know the app is broken.</p>
-<pre><code class="language-dockerfile"># ❌ No health check — orchestrators assume &quot;running&quot; = &quot;healthy&quot;
+<pre><code class="language-dockerfile"># No health check — orchestrators assume &quot;running&quot; = &quot;healthy&quot;
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
 
-# ✅ Add HEALTHCHECK so Docker/Kubernetes knows when the app is truly ready
+# Add HEALTHCHECK so Docker/Kubernetes knows when the app is truly ready
 HEALTHCHECK --interval=30s \
             --timeout=10s \
             --start-period=15s \
@@ -362,7 +362,7 @@ async def health_check():
 <hr>
 <h2>Blind Spot 7: Multi-Stage Builds — Shipping Dev Dependencies to Production</h2>
 <p><strong>Symptom</strong>: Your Python or Node.js production image is 1.8GB. It contains pytest, mypy, eslint, TypeScript compiler, and test fixtures that have no business running in production.</p>
-<pre><code class="language-dockerfile"># ✅ Multi-stage build — lean production image
+<pre><code class="language-dockerfile"># Multi-stage build — lean production image
 # Stage 1: Builder (has dev tools, compilers, test deps)
 FROM node:20-slim AS builder
 WORKDIR /app
@@ -393,7 +393,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 EXPOSE 3000
 CMD [&quot;node&quot;, &quot;dist/server.js&quot;]
 # Result: ~180MB instead of 1.8GB</code></pre>
-<pre><code class="language-dockerfile"># ✅ Multi-stage Python with UV package manager (fastest Python builds)
+<pre><code class="language-dockerfile"># Multi-stage Python with UV package manager (fastest Python builds)
 FROM python:3.11-slim AS builder
 RUN pip install uv
 WORKDIR /app
@@ -417,7 +417,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
 EXPOSE 8000
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;, &quot;--workers&quot;, &quot;2&quot;]</code></pre>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>Docker&#39;s simplicity is a double-edged sword — it hides complexity that resurfaces as production incidents. The failures above follow a pattern: they&#39;re invisible in development (fast machine, no proxy, running as you) and catastrophic in production (slow CI, proxied, rootless Kubernetes).</p>
 <ul>
 <li><strong>Always use exec form <code>CMD [&quot;executable&quot;, &quot;arg&quot;]</code></strong> — never shell form <code>CMD executable arg</code>. Exec form is PID 1, receives signals correctly, and is the only form that enables graceful shutdown.</li>

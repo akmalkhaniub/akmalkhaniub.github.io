@@ -6,7 +6,7 @@ This article details the architectural reasons behind this change, why it is cri
 
 ---
 
-## 📖 The Architectural Catalyst: Concurrent Rendering
+## The Architectural Catalyst: Concurrent Rendering
 
 In earlier versions of Next.js, parameters and headers were synchronous:
 ```typescript
@@ -41,7 +41,7 @@ sequenceDiagram
 
 ---
 
-## 🛠️ Implementing Asynchronous Parameters in Production
+## Implementing Asynchronous Parameters in Production
 
 ### 1. Migrating Dynamic Route Layouts
 In your dynamic page components, `params` and `searchParams` must be declared as Promises and awaited:
@@ -105,7 +105,7 @@ export async function DashboardWidget() {
 
 ---
 
-## 🚀 Transitioning Production Repositories Safely
+## Transitioning Production Repositories Safely
 
 To migrate large codebases with hundreds of routes to the new async paradigms, production teams rely on codemods to automate the update cycle.
 
@@ -120,7 +120,7 @@ To migrate large codebases with hundreds of routes to the new async paradigms, p
 
 ---
 
-## 📈 Production Adoption Case Studies
+## Production Adoption Case Studies
 High-traffic applications have adopted the async request APIs to maximize server efficiency:
 1. **Parallel Layout Streaming**: Sub-sections of dashboards (sidebar, top bar, user status) fetch headers and cookies in parallel, avoiding waterfall rendering bottlenecks.
 2. **Predictable Edge Routing**: Edge middleware and layout renderers compile static page shells instantly, resolving route query parameters concurrently as dynamic content finishes loading.

@@ -6,7 +6,7 @@ To teach an SLM how to reason and call tools without losing its general language
 
 ---
 
-## 📖 The Mathematics of LoRA and QLoRA
+## The Mathematics of LoRA and QLoRA
 
 During standard full fine-tuning, every single weight parameter in the model's weight matrices ($W_0$) is modified. For an 8B model, updating 8 billion parameters requires massive GPU memory ($>160$ GB VRAM) due to storing gradients and optimizer states.
 
@@ -30,7 +30,7 @@ By only updating $B$ and $A$, we reduce the number of trainable parameters by **
 
 ---
 
-## 🛠️ Python Trajectory Training Script
+## Python Trajectory Training Script
 
 Here is a production-grade training script utilizing Hugging Face's `trl` (SFTTrainer), `peft`, and `transformers` to fine-tune an SLM on custom agent trajectories formatted in ChatML.
 
@@ -130,7 +130,7 @@ trainer.model.save_pretrained(OUTPUT_DIR)
 
 ---
 
-## ⚠️ Important Pitfalls in Fine-Tuning
+## Important Pitfalls in Fine-Tuning
 
 When fine-tuning SLMs on execution trajectories, keep these guardrails in mind:
 
@@ -142,7 +142,7 @@ When fine-tuning SLMs on execution trajectories, keep these guardrails in mind:
 
 ---
 
-## 📈 Real-World Production Adoption
+## Real-World Production Adoption
 High-performance AI platforms utilize QLoRA to customize micro-models:
 * **Edge Diagnostics Swarms**: Train 3B parameter models that interpret local system telemetry, running QLoRA fine-tuning in under 4 hours on commercial workstation GPUs.
 * **Specialized Code Generators**: Fine-tune SLMs to generate SQL queries matching specific enterprise database schemas, achieving 95% execution accuracy while completely ignoring out-of-domain knowledge.

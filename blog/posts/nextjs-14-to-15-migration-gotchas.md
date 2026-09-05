@@ -15,7 +15,7 @@ This article reviews the **Top 5 gotchas** when migrating from Next.js 14 to 15,
 
 ---
 
-## 🎨 Caching Behavior Shift: Next.js 14 vs. Next.js 15
+## Caching Behavior Shift: Next.js 14 vs. Next.js 15
 
 The most dangerous gotcha in Next.js 15 is the silent flip in default caching behaviors. In Next.js 14, standard `fetch` queries, GET Route Handlers, and Client-Side Page cache paths were **cached by default**. In Next.js 15, they are **uncached by default**.
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ The Top 5 Gotchas and How to Fix Them
+## The Top 5 Gotchas and How to Fix Them
 
 ### Gotcha 1: Uncached Fetch by Default
 * **The Problem**: Next.js 14 cached API requests globally. Upgrading to Next.js 15 immediately disables this. Every user visit will query your database directly, causing high server costs and slow loading times.
@@ -172,7 +172,7 @@ export async function updateTaskStatus(rawInput: unknown) {
 
 ---
 
-## 📋 Migration Steps Checklist
+## Migration Steps Checklist
 
 * [ ] **Run Next Codemods**: Use `npx @next/codemod@latest next-async-request-api` to automatically convert synchronous dynamic API parameters to async awaits.
 * [ ] **Audit Fetch Headers**: Audit every standard `fetch()` call across your layout tree. Explicitly declare `cache: 'force-cache'` or `next: { revalidate: X }` where data is static.
@@ -181,7 +181,7 @@ export async function updateTaskStatus(rawInput: unknown) {
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Upgrading to Next.js 15 unlocks powerful features like Turbopack and the React Compiler, but it requires a careful, deliberate migration strategy to avoid production issues.
 1. **Explicit Caching is Essential:** Because Next.js 15 defaults to uncached operations, you must manually audit and opt back into caching to protect your database from sudden traffic spikes.
@@ -192,7 +192,7 @@ Upgrading to Next.js 15 unlocks powerful features like Turbopack and the React C
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **Next.js 15 Upgrade Guide**: [Next.js Migration Documentation](https://nextjs.org/docs/app/building-your-application/upgrading/version-15). Detailed, API-by-API specifications for Next.js 15 transitions.
 * **React 19 Breaking Updates**: [React 19 Release Notes](https://react.dev/blog/2024/12/05/react-19). Details on `ref` prop bindings and `forwardRef` deprecation timelines.

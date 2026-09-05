@@ -12,7 +12,7 @@ This article details TrueTime atomic clock uncertainty bounds ($\epsilon$), Comm
 
 ---
 
-## 📖 TrueTime & Hybrid Logical Clock Architecture
+## TrueTime & Hybrid Logical Clock Architecture
 
 How TrueTime Commit Wait ($2\epsilon$) and Hybrid Logical Clocks (HLC) guarantee global transaction ordering:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Hybrid Logical Clock (HLC) Engine
+## Python Implementation: Hybrid Logical Clock (HLC) Engine
 
 Here is a production-grade Python implementation of a Hybrid Logical Clock (HLC) Engine featuring Causality Tracking and Physical Clock Skew Enforcement:
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 TrueTime & HLC Gotchas & Best Practices
+## TrueTime & HLC Gotchas & Best Practices
 
 When engineering time synchronization in distributed databases:
 
@@ -158,7 +158,7 @@ When engineering time synchronization in distributed databases:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Global distributed databases utilizing TrueTime and HLC (such as **Google Spanner**, **CockroachDB**, and **YugabyteDB**) report:
 * **Global External Consistency (Strict Serializability)**: Executing multi-region transactions across US, Europe, and Asia with 100% real-world timestamp ordering.
 * **Consistent Multi-Region Read Snapshots**: Reading consistent historical snapshots from local regional read-replicas with zero network latency to remote master regions.

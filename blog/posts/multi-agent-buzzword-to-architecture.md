@@ -78,7 +78,7 @@ By isolating tasks, we ensure that each agent's system prompt is small (often un
 
 ---
 
-## 📋 Transition Checklist for Builders
+## Transition Checklist for Builders
 
 If you are looking to refactor your current LLM system from prompt hacks to a multi-agent team, use this checklist:
 
@@ -89,7 +89,7 @@ If you are looking to refactor your current LLM system from prompt hacks to a mu
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Transitioning from monolithic prompts to modular multi-agent systems is essential for building robust, production-ready AI applications.
 1. **Embrace Separation of Concerns:** Dividing complex tasks among specialized, narrow agents with limited tools drastically reduces cognitive overload and tool hallucinations.
@@ -100,7 +100,7 @@ Transitioning from monolithic prompts to modular multi-agent systems is essentia
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Anthropic Research**: [Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) (December 2024). Explains workflows, agents, and the benefits of modular orchestration over single-agent complexity.
 *   **MetaGPT Paper**: Hong et al., 2023. *MetaGPT: Meta Programming for Multi-Agent Collaborative Framework*. Introduces how encoding human SOPs (Standard Operating Procedures) into multi-agent systems reduces chaos. [arXiv:2308.08155](https://arxiv.org/abs/2308.08155)

@@ -59,7 +59,7 @@ The Validator takes the Worker's output and matches it against the Verification 
 
 ---
 
-## 📋 Architectural Rules for Production Builders
+## Architectural Rules for Production Builders
 
 *   [ ] **Strict Context Partitioning**: Ensure your Worker and Validator prompts do *not* share system instructions, variable memory, or history files.
 *   [ ] **Rule-Based Precedence**: Always execute programmatic validation (tests, compilers, regex schema checks) *before* invoking LLM-as-judge validators. Save tokens and ensure 100% accuracy on structural checks.
@@ -67,7 +67,7 @@ The Validator takes the Worker's output and matches it against the Verification 
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Adopting a structured multi-agent architecture is the key to overcoming the inherent cognitive biases of single-LLM systems.
 1. **Deconstruct the Self-Review Loop:** LLMs cannot reliably grade their own work due to confirmation bias, making a separate Validator agent essential for objective quality control.
@@ -78,7 +78,7 @@ Adopting a structured multi-agent architecture is the key to overcoming the inhe
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Factory.ai Architecture Blog**: *The Multi-Agent Architecture That Ships*. Luke Alvoeiro details the separation of planning, execution, and validation in automated software development squads. *(Technical Case Study)*
 *   **Reflexion Paper**: Shinn et al., 2023. *Reflexion: Language Agents with Active Generative Feedback*. Explains the mathematical and systemic benefit of separate critic models in agentic loops. [Link](https://arxiv.org/abs/2303.11366)

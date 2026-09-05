@@ -12,7 +12,7 @@ This article details V8 heap spaces, Cheney's Scavenger algorithm, From-Space/To
 
 ---
 
-## 📖 V8 Generational Architecture & Cheney's Scavenger
+## V8 Generational Architecture & Cheney's Scavenger
 
 How V8 organizes New Space semi-spaces and executes Cheney's Copying Scavenger to promote surviving objects to Old Space:
 
@@ -58,7 +58,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: V8 Generational Heap & Cheney's Scavenger Engine
+## Python Implementation: V8 Generational Heap & Cheney's Scavenger Engine
 
 Here is a production-grade Python implementation of a V8 Generational Heap featuring Cheney's Copying Scavenger and Old Space Promotion:
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 V8 Memory Gotchas & Best Practices
+## V8 Memory Gotchas & Best Practices
 
 When optimizing Node.js and V8 application memory:
 
@@ -172,7 +172,7 @@ When optimizing Node.js and V8 application memory:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 V8's Orinoco generational garbage collector (powering **Google Chrome**, **Node.js**, and **Electron**) reports:
 * **Over $90\%$ Faster Minor GC Times**: Cheney's Copying Scavenger reclaims short-lived nursery objects in under $1\text{ millisecond}$.
 * **$40\%$ Reduced Heap Footprint**: 32-bit Pointer Compression slashes RAM utilization across millions of active Chrome browser tabs.

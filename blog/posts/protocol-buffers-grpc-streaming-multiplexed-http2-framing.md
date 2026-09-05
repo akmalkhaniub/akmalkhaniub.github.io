@@ -13,7 +13,7 @@ This article details how Protobuf varint encoding works and how gRPC frames mess
 
 ---
 
-## 📖 gRPC Binary Framing & HTTP/2 Stream Architecture
+## gRPC Binary Framing & HTTP/2 Stream Architecture
 
 How gRPC packages Protobuf payloads into 5-byte framed messages over HTTP/2 streams:
 
@@ -46,7 +46,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Protobuf Varint & gRPC Framing Engine
+## Python Implementation: Protobuf Varint & gRPC Framing Engine
 
 Here is a production-grade Python implementation of Protobuf Varint encoding/decoding and the gRPC 5-byte framing protocol:
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 gRPC & Protobuf Gotchas & Best Practices
+## gRPC & Protobuf Gotchas & Best Practices
 
 When building gRPC APIs:
 
@@ -171,7 +171,7 @@ When building gRPC APIs:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Microservice platforms migrating from REST/JSON to gRPC report:
 * **70% Network Bandwidth Savings**: Binary Protobuf serialization reduces payload sizes by up to $70\%$ compared to JSON text.
 * **$7\times$ Faster Deserialization**: Binary wire parsing eliminates string allocations, dramatically reducing CPU overhead on microservice API gateways.

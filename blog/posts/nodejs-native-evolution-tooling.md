@@ -125,7 +125,7 @@ node --experimental-strip-types --test test/**/*.test.ts
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 The native evolution of Node.js dramatically simplifies backend architectures:
 * [ ] **Remove legacy dev dependencies**: Eliminate `dotenv`, `ts-node`, and transpiler setups from simple API projects.

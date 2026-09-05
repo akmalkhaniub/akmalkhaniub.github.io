@@ -10,7 +10,7 @@ This article details how to design and build a sharded database router with scat
 
 ---
 
-## 📖 Sharded Database Data Routing Architecture
+## Sharded Database Data Routing Architecture
 
 How the Global Data Router intercepts application queries and routes transactions across isolated shard nodes:
 
@@ -45,7 +45,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Global Data Router & Scatter-Gather Engine
+## Python Implementation: Global Data Router & Scatter-Gather Engine
 
 Here is a production-grade Python implementation of a Global Data Router featuring Hash-based sharding and a parallel Scatter-Gather execution pool:
 
@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Sharding Gotchas & Guardrails
+## Sharding Gotchas & Guardrails
 
 When architecture sharded database systems:
 
@@ -179,7 +179,7 @@ When architecture sharded database systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams implementing database sharding report:
 * **Linear Scale-Out Capability**: Adding physical database shards increases write throughput linearly without hitting single-node hardware ceilings.
 * **Blast Radius Isolation**: If a physical database shard crashes, only a fraction ($1/N$) of users are impacted, keeping the remaining system operational.

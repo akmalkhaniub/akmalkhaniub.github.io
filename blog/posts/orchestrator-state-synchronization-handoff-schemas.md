@@ -8,7 +8,7 @@ To build production-grade agentic platforms, engineering teams enforce **Structu
 
 ---
 
-## 📖 The Blackboard & Handoff Architecture
+## The Blackboard & Handoff Architecture
 
 Instead of passing massive state payloads back and forth between agents, multi-agent swarms store execution artifacts in a central **Blackboard Store**. The Orchestrator passes lightweight, typed **Handoff Tokens**:
 
@@ -35,7 +35,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Handoff Schema & Blackboard Lock Synchronizer
+## Python Implementation: Handoff Schema & Blackboard Lock Synchronizer
 
 Here is a production Python implementation of a Pydantic-validated Handoff Protocol with a Blackboard State Store and simulated lock arbitration:
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Architectural Guardrails
+## Important Architectural Guardrails
 
 When implementing state synchronization and handoff contracts, observe these guardrails:
 
@@ -163,7 +163,7 @@ When implementing state synchronization and handoff contracts, observe these gua
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations enforcing Structured Handoff Contracts and Blackboard Stores report:
 * **Zero Handoff State Corruption**: Typed Pydantic contracts eliminate 100% of missing argument errors between agent layers.
 * **Race-Condition Safety**: Distributed locks prevent concurrent worker subagents from overwriting shared code files during parallel sprint runs.

@@ -14,7 +14,7 @@ This article details Enclave Page Cache (EPC) encryption, AMD SEV-SNP memory iso
 
 ---
 
-## 📖 Confidential Computing & Remote Attestation Architecture
+## Confidential Computing & Remote Attestation Architecture
 
 How Secure Enclaves isolate memory and provide cryptographic Remote Attestation quotes to verify binary integrity:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Hardware Attestation & Enclave Encryption Engine
+## Python Implementation: Hardware Attestation & Enclave Encryption Engine
 
 Here is a production-grade Python implementation of a Confidential Computing Enclave Memory Encryption Engine and Remote Hardware Attestation Simulator:
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Confidential Computing Gotchas & Best Practices
+## Confidential Computing Gotchas & Best Practices
 
 When building enclave applications:
 
@@ -170,7 +170,7 @@ When building enclave applications:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Confidential Computing deployments (such as **Azure Confidential VMs**, **AWS Nitro Enclaves**, and **Google Cloud Confidential Space**) report:
 * **Zero-Trust Cloud Processing**: Processing sensitive healthcare and financial data in public clouds without trusting the cloud provider's infrastructure or personnel.
 * **Multiparty Privacy-Preserving AI**: Multiple competing financial institutions training joint machine learning models on combined private data without exposing raw data to any party.

@@ -14,7 +14,7 @@ This article details `rcu_read_lock`, Copy-On-Write pointer swaps, Quiescent Sta
 
 ---
 
-## 📖 Read-Copy-Update (RCU) Architecture & Grace Periods
+## Read-Copy-Update (RCU) Architecture & Grace Periods
 
 How RCU enables zero-overhead lockless reads while deferring memory reclamation until a Grace Period completes:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Read-Copy-Update (RCU) Engine
+## Python Implementation: Read-Copy-Update (RCU) Engine
 
 Here is a production-grade Python implementation of a Read-Copy-Update (RCU) Engine with Quiescent State Detection and Grace Period Memory Reclamation:
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 RCU Synchronization Gotchas & Best Practices
+## RCU Synchronization Gotchas & Best Practices
 
 When deploying Read-Copy-Update:
 
@@ -177,7 +177,7 @@ When deploying Read-Copy-Update:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Read-Copy-Update infrastructure (such as **Linux Kernel VFS**, **DPDK Packet Processing**, and **User-Space RCU (URCU)**) reports:
 * **Zero Read-Side Locking Overhead**: Lockless reader execution eliminates atomic instruction overhead and CPU cache line invalidations.
 * **Linear Multi-Core Read Scaling**: Adding 128 CPU cores scales read throughput linearly without hitting lock contention limits.

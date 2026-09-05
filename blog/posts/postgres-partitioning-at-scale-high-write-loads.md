@@ -116,7 +116,7 @@ The output should show a `Seq Scan` or `Index Scan` **only** on the child table 
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Scaling relational datasets requires structured partition management:
 * [ ] **Include partition keys in constraints**: Any primary or unique index on a partitioned table must include the partition key column.

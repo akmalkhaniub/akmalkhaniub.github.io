@@ -10,7 +10,7 @@ This article details the mechanics of HNSW parameters and how to tune them.
 
 ---
 
-## 📖 HNSW Layered Graph Architecture
+## HNSW Layered Graph Architecture
 
 HNSW acts as a multi-layer skip-list for high-dimensional vector spaces:
 
@@ -48,7 +48,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Simulation: Analyzing HNSW Tuning Configurations
+## Python Simulation: Analyzing HNSW Tuning Configurations
 
 Here is a production-grade Python simulation that evaluates search recall and query latency across different parameter values, illustrating how to construct recall-latency curves:
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Parameter Tuning Guardrails
+## Parameter Tuning Guardrails
 
 When configuring HNSW indexes:
 
@@ -147,7 +147,7 @@ When configuring HNSW indexes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams profiling HNSW graph tuning report:
 * **Tailored Performance Profiles**: Tuning search parameters allows hosting platforms to serve high-speed queries (90% recall at 1ms TTFB) and high-accuracy queries (99% recall at 8ms TTFB) using the same index.
 * **40% Index Size Reduction**: Adjusting $M$ parameters based on dimensionality constraints reduces index memory consumption by gigabytes across shards.

@@ -22,24 +22,22 @@ graph LR
 
 ---
 
-## 📊 1. The 5-Level Agentic Complexity Spectrum
+## 1. The 5-Level Agentic Complexity Spectrum
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 THE 5-LEVEL AI ARCHITECTURE SPECTRUM                              |
-+---------------------------------------------------------------------------------------------------+
+> **THE 5-LEVEL AI ARCHITECTURE SPECTRUM**
 | Level | Pattern Name       | Mechanism                          | Best Used For                   |
 | 1     | Zero-Shot Prompt   | Single LLM Forward Pass            | Classification, Summarization   |
 | 2     | Chain-of-Thought   | Step-by-step reasoning tokens      | Math, Logic, Simple SQL queries |
 | 3     | ReAct Tool Loop    | Reason -> Act -> Observe Loop      | API lookup, Database search     |
 | 4     | Plan-and-Solve     | Two-Pass: Plan.md -> Execute steps | Single-service feature addition |
 | 5     | Hierarchical Swarm | Supervisor -> Specialized Workers  | Full-stack codebase refactors   |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
 
-## 🧮 2. The Compounding Error Probability Law
+## 2. The Compounding Error Probability Law
 
 The primary reason naive multi-agent systems fail in production is **Compound Probability Decay**.
 
@@ -48,15 +46,13 @@ If an autonomous agent workflow requires $N$ sequential reasoning steps or tool 
 $$\text{Total Pipeline Reliability} = P^N$$
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                        COMPOUNDING ERROR PROBABILITY IN AGENTIC LOOPS                             |
-+---------------------------------------------------------------------------------------------------+
+> **COMPOUNDING ERROR PROBABILITY IN AGENTIC LOOPS**
 | Steps (N) | Step Accuracy (P=95%) | Step Accuracy (P=90%) | Architectural Mitigation Required     |
 | 1 step    | 95.0%                 | 90.0%                 | Single Zero-Shot Prompt               |
 | 5 steps   | 77.4%                 | 59.0%                 | ReAct with Tool Validation            |
 | 10 steps  | 59.8%                 | 34.8%                 | Plan-and-Solve + Quality Gates        |
 | 20 steps  | 🚨 35.8%              | 🚨 12.1%              | Hierarchical Swarm + Compiler-in-Loop |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 > [!IMPORTANT]
@@ -64,7 +60,7 @@ $$\text{Total Pipeline Reliability} = P^N$$
 
 ---
 
-## 🧭 3. The Architectural Decision Matrix
+## 3. The Architectural Decision Matrix
 
 ```mermaid
 graph TD
@@ -84,7 +80,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Agentic Pattern Decision Engine
+## Python Implementation: Agentic Pattern Decision Engine
 
 Here is a Python implementation of an Architectural Pattern Decision Engine that evaluates task requirements, estimates latency/token costs, and routes tasks to the optimal complexity tier:
 
@@ -186,7 +182,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Agentic Architecture Comparison
+## Summary: Agentic Architecture Comparison
 
 | Architecture | Latency | Token Cost | Failure Modes | When to Choose |
 |---|---|---|---|---|
@@ -198,7 +194,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 The best AI systems are not the ones with the most autonomous agents—**they are the ones that use the simplest pattern capable of reliably solving the problem**.
 
 By applying disciplined decision matrix routing, engineering teams build AI architectures that deliver sub-second responses when possible and orchestrate resilient multi-agent swarms only when necessary.

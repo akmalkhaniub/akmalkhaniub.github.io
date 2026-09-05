@@ -12,7 +12,7 @@ This article details Circuit Breaker state machines, Bulkhead thread isolation, 
 
 ---
 
-## 📖 Circuit Breaker Finite State Machine & Bulkhead Architecture
+## Circuit Breaker Finite State Machine & Bulkhead Architecture
 
 How Circuit Breakers trip and isolate resource pools during downstream outages:
 
@@ -45,7 +45,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Circuit Breaker & Bulkhead Engine
+## Python Implementation: Circuit Breaker & Bulkhead Engine
 
 Here is a production-grade Python implementation of a Circuit Breaker State Machine Engine with Bulkhead Semaphore Isolation:
 
@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Resiliency Pattern Gotchas & Best Practices
+## Resiliency Pattern Gotchas & Best Practices
 
 When implementing resiliency patterns:
 
@@ -206,7 +206,7 @@ When implementing resiliency patterns:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Microservice architectures implementing Circuit Breakers and Bulkheads report:
 * **Zero Cascading Outages**: Isolating failing microservice instances prevents regional platform crashes.
 * **$10\times$ Faster Mean Time to Recovery (MTTR)**: Automatic fail-fast responses allow degraded dependencies time to self-heal without manual human intervention.

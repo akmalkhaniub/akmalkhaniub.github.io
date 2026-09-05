@@ -14,7 +14,7 @@ This article details Atomic CAS loops, Michael-Scott Lock-Free Queues, the ABA p
 
 ---
 
-## 📖 Atomic CAS & Hazard Pointer Protection Architecture
+## Atomic CAS & Hazard Pointer Protection Architecture
 
 How Lock-Free Queues use Compare-And-Swap (CAS) and Hazard Pointers to prevent memory corruption:
 
@@ -41,7 +41,7 @@ graph TD
 
 ### Core Lock-Free Concurrency Mechanics
 1. **Atomic Compare-And-Swap (CAS)**: A hardware-level atomic instruction (`LOCK CMPXCHG` on x86, `LDREX/STREX` or `CAS` on ARM64) that performs an atomic read-modify-write:
-   $$\text{CAS}(\text{location}, \text{expected\_val}, \text{new\_val}) \to \text{bool}$$
+   $$\text{CAS}(\text{location}, \text{expected\_val}, \text{new\_val}) → \text{bool}$$
    If `*location == expected_val`, the CPU updates `*location = new_val` and returns `True`. If another thread modified the location first, CAS fails and returns `False`, prompting the thread to retry its loop.
 2. **The ABA Problem**: A classic lock-free race condition:
    * Thread 1 reads pointer `A` from the head of a lock-free stack.
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Lock-Free Stack with ABA Protection & Hazard Pointers
+## Python Implementation: Lock-Free Stack with ABA Protection & Hazard Pointers
 
 Here is a production-grade Python simulation of a Lock-Free Treiber Stack with Tagged Pointers (ABA Protection) and Hazard Pointer memory reclamation:
 
@@ -184,7 +184,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Lock-Free Concurrency Gotchas & Best Practices
+## Lock-Free Concurrency Gotchas & Best Practices
 
 When designing lock-free data structures:
 
@@ -196,7 +196,7 @@ When designing lock-free data structures:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 High-concurrency systems utilizing lock-free data structures (such as **LMAX Disruptor**, **Linux Kernel RCU**, and **Jellyfish**) report:
 * **$10\times$ Higher Multi-Core Throughput**: Processing tens of millions of concurrent operations per second without lock acquisition delays.
 * **Zero Deadlocks or Priority Inversion**: Lock-free progress guarantees ensure high-priority threads are never blocked by low-priority worker threads.

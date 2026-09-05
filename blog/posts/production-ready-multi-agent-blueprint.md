@@ -72,7 +72,7 @@ graph TD
 
 ---
 
-## 🛠️ Implementation Rules for Production
+## Implementation Rules for Production
 
 To build this architecture on your local workspace (e.g., using FastAPI and LangGraph):
 1.  **State Checkpoints**: Set up PostgreSQL checkpointers. If a step fails due to API timeouts, the graph resumes from the last completed node without re-executing previous steps.
@@ -87,7 +87,7 @@ Multi-agent AI is not about prompt engineering. It is about applying **systems e
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Transitioning from experimental agent prompts to a production-grade multi-agent system requires shifting from prompt engineering to robust software architecture.
 1. **Decoupled Orchestration:** Utilizing a centralized supervisor agent that tracks state via lightweight JSON status receipts prevents context window bloat and keeps agent interactions predictable.
@@ -98,7 +98,7 @@ Transitioning from experimental agent prompts to a production-grade multi-agent 
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **VMAO Framework**: *Verified Multi-Agent Orchestration: A Plan-Execute-Verify-Replan Framework* (March 2026). Explains the detailed mathematical orchestration of verification loops. [arXiv:2603.10952](https://arxiv.org/abs/2603.10952) (Needs verification)
 *   **LangGraph Multi-Agent Architecture**: [LangGraph Multi-Agent Systems](https://langchain-ai.github.io/langgraph/concepts/multi_agent/) (2024). Developer blueprints for stateful graphs.

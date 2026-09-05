@@ -10,7 +10,7 @@ This article details how to implement a graph-traversal engine to enable multi-h
 
 ---
 
-## 📖 Multi-Hop Dependency Traversal Architecture
+## Multi-Hop Dependency Traversal Architecture
 
 Graph traversal algorithms navigate codebase invocation pathways to map transitive relations:
 
@@ -36,7 +36,7 @@ graph LR
 
 ---
 
-## 🛠️ Python Implementation: Code Call Graph Traversal Engine
+## Python Implementation: Code Call Graph Traversal Engine
 
 Here is a production Python implementation of an in-memory Code Call Graph Traversal Engine. It builds a directed graph of function invocations and executes BFS path-finding to trace multi-hop dependencies:
 
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Traversal Guardrails
+## Important Traversal Guardrails
 
 When executing multi-hop graph retrievals:
 
@@ -164,7 +164,7 @@ When executing multi-hop graph retrievals:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying Code Graph Traversal report:
 * **Accurate Impact Analyses**: Autonomous agents correctly identify 100% of upstream functions affected by a schema refactor.
 * **Safe Deprecation Cycles**: Automated code cleanup agents successfully trace and delete unused legacy call chains without breaking production.

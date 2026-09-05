@@ -14,7 +14,7 @@ This article details classic 2PC state machines, Percolator Primary/Secondary lo
 
 ---
 
-## 📖 Percolator Primary-Lock Distributed Transaction Architecture
+## Percolator Primary-Lock Distributed Transaction Architecture
 
 How Percolator designates a Primary Lock to achieve non-blocking atomic commits across distributed shards:
 
@@ -54,7 +54,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Distributed Percolator Transaction Engine
+## Python Implementation: Distributed Percolator Transaction Engine
 
 Here is a production-grade Python implementation of a Distributed Percolator Primary-Lock Transaction Engine featuring Prewrite, Primary Lock Commit, and Lock Resolution:
 
@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Distributed Transaction Gotchas & Best Practices
+## Distributed Transaction Gotchas & Best Practices
 
 When operating distributed transaction engines:
 
@@ -191,7 +191,7 @@ When operating distributed transaction engines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed SQL engines utilizing Percolator and Raft (such as **TiDB** and **CockroachDB**) report:
 * **Zero 2PC Blocking Deadlocks**: Primary Lock delegation allows concurrent readers to resolve orphan locks asynchronously without waiting for coordinator heartbeats.
 * **Global Multi-Shard ACID Compliance**: Scaling horizontally to thousands of database nodes while providing strict serializable ACID transactions.

@@ -5,7 +5,7 @@ When scaling distributed cache clusters across multiple server nodes, data must 
 A naive sharding approach uses simple modulo hashing:
 $$\text{node\_index} = \text{hash}(\text{key}) \pmod N$$
 
-While simple, modulo hashing suffers from a catastrophic flaw: if a single cache node crashes or a new node is added ($N \to N+1$), **nearly 100% of all cache keys map to different nodes**. This triggers a global cache eviction event, overwhelming backend databases.
+While simple, modulo hashing suffers from a catastrophic flaw: if a single cache node crashes or a new node is added ($N → N+1$), **nearly 100% of all cache keys map to different nodes**. This triggers a global cache eviction event, overwhelming backend databases.
 
 To enable dynamic cluster scaling without invalidating the entire cache, software engineers deploy **Consistent Hashing** with **Virtual Nodes (VNodes)**.
 
@@ -15,7 +15,7 @@ This article details the math and implementation of Consistent Hashing hash ring
 
 ---
 
-## 📖 Consistent Hashing Ring & Virtual Node Architecture
+## Consistent Hashing Ring & Virtual Node Architecture
 
 How keys map to physical cache nodes along a continuous $2^{32}-1$ hash space ring:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Consistent Hashing Ring with VNodes
+## Python Implementation: Consistent Hashing Ring with VNodes
 
 Here is a production-grade Python implementation of a Consistent Hashing Ring with Virtual Nodes and load distribution auditing:
 
@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Consistent Hashing Gotchas & Best Practices
+## Consistent Hashing Gotchas & Best Practices
 
 When deploying consistent hashing rings:
 
@@ -176,7 +176,7 @@ When deploying consistent hashing rings:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying Consistent Hashing with Virtual Nodes report:
 * **Minimal Cache Invalidation During Cluster Resizing**: Adding or removing server nodes re-maps only $1/N$ of keys, preventing global cache misses.
 * **Uniform Traffic Balance**: Virtual nodes distribute key traffic evenly across all physical servers, eliminating hotspot nodes.

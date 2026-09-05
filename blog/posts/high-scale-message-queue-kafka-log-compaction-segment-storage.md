@@ -14,7 +14,7 @@ This article details Kafka segment indexing, zero-copy network reads, and log co
 
 ---
 
-## 📖 Apache Kafka Log Segment & Compaction Architecture
+## Apache Kafka Log Segment & Compaction Architecture
 
 How Kafka structures partition log segments and executes background key-based compaction:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Kafka Segment Storage & Log Compactor Engine
+## Python Implementation: Kafka Segment Storage & Log Compactor Engine
 
 Here is a production-grade Python implementation of a Kafka Partition Segment Storage Engine with Sparse Indexing and Key-Based Log Compactor:
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Kafka Storage Gotchas & Best Practices
+## Kafka Storage Gotchas & Best Practices
 
 When operating Kafka clusters at scale:
 
@@ -173,7 +173,7 @@ When operating Kafka clusters at scale:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Kafka distributed log architecture enables:
 * **Multi-Gigabit Event Streaming**: Zero-copy `sendfile()` network reads allow a single Kafka broker node to stream over $1\text{ GB/sec}$ of events.
 * **Infinite Event Replayability**: Retaining immutable log segments allows new analytical microservices to replay historical events from offset zero without impacting production databases.

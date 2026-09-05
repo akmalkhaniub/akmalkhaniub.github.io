@@ -6,7 +6,7 @@ This case study details the architecture, optimization strategies, and gotchas o
 
 ---
 
-## 📖 Case Study Overview: The 10-Part Framework
+## Case Study Overview: The 10-Part Framework
 
 > [!NOTE]
 > **1. Industry**: E-Commerce & Retail
@@ -31,7 +31,7 @@ This case study details the architecture, optimization strategies, and gotchas o
 
 ---
 
-## 🏗️ Search & Recommendation Engine Flow
+## Search & Recommendation Engine Flow
 
 The system coordinates standard lexical search queries and real-time recommendation routing:
 
@@ -61,7 +61,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Secured Query Builder & Reranker
+## Python Implementation: Secured Query Builder & Reranker
 
 Here is a production-grade Python implementation of a secure Elasticsearch Query DSL builder that enforces query validation gates (blocking leading wildcards) and applies basic semantic vector reranking:
 
@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 The Incident: The Scraper Wildcard Lockup
+## The Incident: The Scraper Wildcard Lockup
 
 During a markdown clearance event, a competitor's pricing scraper script flooded our search gateways:
 
@@ -172,7 +172,7 @@ During a markdown clearance event, a competitor's pricing scraper script flooded
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 By securing query patterns and implementing hybrid semantic reranking:
 * **100% Zero-Lock Uptime**: Restricting leading wildcards completely eliminated CPU locks during scraper surges.
 * **12% Conversion Rate Increase**: Context-aware vector reranking surface more relevant products, increasing user purchases.

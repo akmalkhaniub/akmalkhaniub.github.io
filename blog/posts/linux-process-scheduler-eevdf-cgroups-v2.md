@@ -12,7 +12,7 @@ This article details EEVDF virtual deadline math, lag eligibility, and Cgroups v
 
 ---
 
-## 📖 EEVDF Scheduling & Cgroups v2 Architecture
+## EEVDF Scheduling & Cgroups v2 Architecture
 
 How the EEVDF scheduler selects tasks based on Lag Eligibility and Virtual Deadlines:
 
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: EEVDF Scheduler & Cgroup Quota Simulator
+## Python Implementation: EEVDF Scheduler & Cgroup Quota Simulator
 
 Here is a production-grade Python implementation of an EEVDF CPU Process Scheduler and Cgroups v2 Quota Controller Simulator:
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Scheduler & Cgroup Gotchas & Best Practices
+## Scheduler & Cgroup Gotchas & Best Practices
 
 When configuring Linux process scheduling:
 
@@ -178,7 +178,7 @@ When configuring Linux process scheduling:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Upgrading to Linux kernel 6.6+ EEVDF and Cgroups v2 (such as **Fedora**, **Ubuntu 24.04**, and **AWS Bottlerocket**) reports:
 * **Over 50% Reduction in Tail Latency for Interactive Services**: Earliest Virtual Deadline sorting allows audio, video, and HTTP API workloads to pre-empt batch background processing instantly.
 * **Deterministic Container Resource Isolation**: Cgroups v2 memory and CPU controllers prevent noisy neighbor containers from crashing co-located mission-critical services.

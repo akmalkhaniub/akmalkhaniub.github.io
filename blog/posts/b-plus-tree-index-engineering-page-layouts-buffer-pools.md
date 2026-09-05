@@ -10,7 +10,7 @@ This article explores the low-level disk page layouts, buffer pool eviction stra
 
 ---
 
-## 📖 Slotted Page Layout & B+ Tree Architecture
+## Slotted Page Layout & B+ Tree Architecture
 
 The binary memory layout of an 8KB/16KB slotted page and leaf node linkage:
 
@@ -41,7 +41,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Slotted Page & Buffer Pool Engine
+## Python Implementation: Slotted Page & Buffer Pool Engine
 
 Here is a production-grade Python simulation of a Slotted Page data layout and LRU Buffer Pool Manager:
 
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 B+ Tree Production Gotchas & Mitigation
+## B+ Tree Production Gotchas & Mitigation
 
 When configuring B+ Tree storage engines:
 
@@ -154,7 +154,7 @@ When configuring B+ Tree storage engines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams leveraging B+ Tree index optimizations report:
 * **Sub-Millisecond Single-Key Lookups**: High fanout internal nodes enable reaching target leaf tuples in 3 to 4 page hops across multi-gigabyte tables.
 * **Efficient Range Scans**: Doubly-linked leaf nodes allow executing SQL range queries (`WHERE id BETWEEN 100 AND 500`) without traversing root index nodes repeatedly.

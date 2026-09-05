@@ -10,7 +10,7 @@ This article details how to architect resilient background task queues with Dead
 
 ---
 
-## 📖 Asynchronous Task Queue & DLQ Lifecycle
+## Asynchronous Task Queue & DLQ Lifecycle
 
 How tasks transition through brokers, worker threads, retries, and Dead-Letter Queues:
 
@@ -45,7 +45,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Asynchronous Task Queue Engine with DLQ
+## Python Implementation: Asynchronous Task Queue Engine with DLQ
 
 Here is a production-grade Python implementation of an Asynchronous Task Queue Engine featuring exponential backoff retries, thread-safe worker execution, and a Dead-Letter Queue:
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Task Queue Gotchas & Best Practices
+## Task Queue Gotchas & Best Practices
 
 When designing asynchronous background worker systems:
 
@@ -180,7 +180,7 @@ When designing asynchronous background worker systems:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting asynchronous background task queues report:
 * **Sub-100ms HTTP API Latency**: Offloading heavy background tasks keeps web application endpoints fast and responsive.
 * **100% Resilience to Third-Party Outages**: Retrying background jobs with exponential backoff guarantees eventual task completion when external vendor APIs recover.

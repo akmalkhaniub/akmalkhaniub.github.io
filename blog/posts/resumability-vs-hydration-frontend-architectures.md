@@ -109,7 +109,7 @@ Astro supports various hydration triggers:
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 When architecting high-performance web systems:
 * [ ] **Avoid monolithic SPA frameworks for landing pages**: Standard hydration kills mobile performance and SEO page speed scores.

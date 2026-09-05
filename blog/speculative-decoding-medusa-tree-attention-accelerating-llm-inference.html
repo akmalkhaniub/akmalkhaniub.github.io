@@ -122,7 +122,7 @@
     end
   end</div>
 <hr>
-<h2>🛑 1. The Memory Bandwidth Bottleneck in Autoregressive LLMs</h2>
+<h2>1. The Memory Bandwidth Bottleneck in Autoregressive LLMs</h2>
 <p>During standard autoregressive generation, generating $N$ tokens requires $N$ sequential forward passes:</p>
 <p>$$\text{Time per Token} = \frac{\text{Model Weights Size (Bytes)}}{\text{GPU Memory Bandwidth (Bytes/sec)}} + \text{Compute Latency}$$</p>
 <p>On an Nvidia H100 GPU ($3.35\text{ TB/s}$ memory bandwidth) running a 70B model ($140\text{ GB}$ weights):</p>
@@ -130,7 +130,7 @@
 <p>Notice that whether we compute 1 token or 5 tokens simultaneously, the time required to read the $140\text{ GB}$ weights across the GPU bus is almost identical.</p>
 <p>The core insight of speculative decoding is to <strong>turn memory-bound waiting time into useful parallel tensor compute</strong>.</p>
 <hr>
-<h2>🎲 2. The Mathematical Foundation of Speculative Sampling</h2>
+<h2>2. The Mathematical Foundation of Speculative Sampling</h2>
 <p>Introduced independently by Leviathan et al. (Google) and Chen et al. (DeepMind) in 2022, speculative decoding pairs a massive <strong>Target Model ($M_{\text{target}}$, e.g. 70B)</strong> with a lightweight, ultrafast <strong>Draft Model ($M_{\text{draft}}$, e.g. 8B)</strong>.</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -162,17 +162,16 @@ $$P_{\text{residual}}(x) = \text{normalize}\left(\max\left(0, P_{\text{target}}(
 </div>
 </div>
 <hr>
-<h2>🐍 3. Medusa Multi-Head Tree Attention</h2>
+<h2>3. Medusa Multi-Head Tree Attention</h2>
 <p>While speculative decoding with a draft model is powerful, managing two separate models in GPU memory introduces deployment friction (dual KV-caches, model loading overhead).</p>
 <p><strong>Medusa</strong> (Cai et al., 2023) eliminates the draft model entirely by adding <strong>multiple lightweight Feed-Forward prediction heads</strong> directly on top of the target model’s final transformer layer:</p>
-<pre><code class="language-plaintext">                      [ Target Transformer Backbone (70B) ]
-                                       |
-                   +-------------------+-------------------+
-                   |                   |                   |
-               [ Head 0 ]          [ Head 1 ]          [ Head 2 ]
-               (Predicts t+1)      (Predicts t+2)      (Predicts t+3)
-                   |                   |                   |
-                Token w1            Token w2            Token w3</code></pre>
+<div class="mermaid">graph TD
+  Backbone[&quot;Target Transformer Backbone (70B)&quot;] --&gt; H0[&quot;Head 0: Predicts t+1&quot;]
+  Backbone --&gt; H1[&quot;Head 1: Predicts t+2&quot;]
+  Backbone --&gt; H2[&quot;Head 2: Predicts t+3&quot;]
+  H0 --&gt; T1[&quot;Token w1&quot;]
+  H1 --&gt; T2[&quot;Token w2&quot;]
+  H2 --&gt; T3[&quot;Token w3&quot;]</div>
 <h3>Tree-Structured Attention Verification</h3>
 <p>Rather than predicting a single linear chain of tokens, Medusa heads generate top-$k$ candidates for each position, forming a <strong>Candidate Prefix Tree</strong>.</p>
 <div class="mermaid">graph TD
@@ -189,7 +188,7 @@ $$P_{\text{residual}}(x) = \text{normalize}\left(\max\left(0, P_{\text{target}}(
   end</div>
 <p>By applying a custom <strong>2D Tree Attention Mask</strong>, the target model verifies all candidate branches (e.g. 64 simultaneous paths) in a <strong>single forward pass</strong>, accepting the longest valid path.</p>
 <hr>
-<h2>🛠️ Python Implementation: Speculative Decoding &amp; Verification Simulator</h2>
+<h2>Python Implementation: Speculative Decoding &amp; Verification Simulator</h2>
 <p>Here is a Python implementation simulating speculative drafting, parallel target verification, and speedup measurement:</p>
 <pre><code class="language-python">import time
 import numpy as np
@@ -288,7 +287,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot; • Standard Target Time      : {standard_target_time:.3f}s&quot;)
     print(f&quot; • Effective Speedup         : {speedup:.2f}x Faster (Lossless)&quot;)</code></pre>
 <hr>
-<h2>📊 Summary: Inference Acceleration Comparison</h2>
+<h2>Summary: Inference Acceleration Comparison</h2>
 <table>
 <thead>
 <tr>
@@ -329,7 +328,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
+<h2>Architectural Takeaway</h2>
 <p>By decoupling token proposal from verification, <strong>Speculative Decoding and Medusa Tree Attention break the fundamental memory bandwidth bottleneck of modern LLMs</strong>.</p>
 <p>Inference frameworks running speculative sampling deliver dramatically lower Time-to-First-Token and higher sustained throughput, driving down AI operating costs without compromising a single ounce of model intelligence.</p>
 

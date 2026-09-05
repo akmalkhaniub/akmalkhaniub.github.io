@@ -10,7 +10,7 @@ This article analyzes the technical trade-offs of each protocol and details how 
 
 ---
 
-## 📖 Real-Time Streaming Architecture Matrix
+## Real-Time Streaming Architecture Matrix
 
 Selecting the right streaming protocol depends on the directional requirements and client infrastructure of your agentic system:
 
@@ -46,7 +46,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Hybrid FastAPI SSE & WebSocket Server
+## Python Implementation: Hybrid FastAPI SSE & WebSocket Server
 
 Here is a production Python implementation of an agent server using `FastAPI` that provides both an SSE endpoint for trajectory streaming and a full-duplex WebSocket endpoint for interactive agent sessions:
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Protocol Design Guardrails
+## Important Protocol Design Guardrails
 
 When architecting real-time streaming for agentic platforms:
 
@@ -150,7 +150,7 @@ When architecting real-time streaming for agentic platforms:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting hybrid real-time agent protocols report:
 * **Zero HTTP Connection Timeouts**: SSE and WebSockets eliminate 100% of 504 Gateway Timeouts during multi-minute subagent runs.
 * **Superior User UX**: Real-time trajectory streaming provides instant visual feedback to users, increasing developer trust in autonomous tool calls.

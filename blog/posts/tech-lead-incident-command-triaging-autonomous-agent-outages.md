@@ -8,7 +8,7 @@ When an autonomous agent enters a feedback loop, it can generate thousands of in
 
 ---
 
-## 📖 The AI Incident Response Architecture
+## The AI Incident Response Architecture
 
 When an autonomous agent runaway occurs, the Incident Commander must execute a strict containment protocol:
 
@@ -30,7 +30,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Automation: Swarm Circuit Breaker & Incident Commander
+## Python Automation: Swarm Circuit Breaker & Incident Commander
 
 To protect production infrastructure from runaway loops, Tech Leads deploy automated circuit breakers that monitor worker error rates and toggle execution flags in Redis.
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Incident Protocols
+## Important Incident Protocols
 
 When managing AI-driven operational incidents, follow these strict rules:
 
@@ -118,7 +118,7 @@ When managing AI-driven operational incidents, follow these strict rules:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams with AI Incident Command protocols report:
 * **Sub-10 Second Anomaly Containment**: Automated circuit breakers halt runaway agent loops before they affect production users.
 * **100% Post-Mortem Traceability**: Full trajectory audits allow Tech Leads to update prompt specs and prevent repeat failures.

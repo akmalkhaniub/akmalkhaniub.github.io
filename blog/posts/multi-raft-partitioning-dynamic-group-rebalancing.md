@@ -12,7 +12,7 @@ This article details Multi-Raft architecture, range splitting, and dynamic repli
 
 ---
 
-## 📖 Multi-Raft Architecture & Key-Range Routing Topology
+## Multi-Raft Architecture & Key-Range Routing Topology
 
 How physical database nodes host hundreds of independent Raft consensus groups:
 
@@ -53,7 +53,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Multi-Raft Router & Range Split Engine
+## Python Implementation: Multi-Raft Router & Range Split Engine
 
 Here is a production-grade Python simulation of a Multi-Raft Range Router with automated Range Splitting and Leader Transfer balancing:
 
@@ -175,7 +175,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Multi-Raft Gotchas & Best Practices
+## Multi-Raft Gotchas & Best Practices
 
 When architecting Multi-Raft storage engines:
 
@@ -187,7 +187,7 @@ When architecting Multi-Raft storage engines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed databases utilizing Multi-Raft architecture (such as **TiKV** and **CockroachDB**) report:
 * **Linear Horizontal Scalability**: Scaling write throughput linearly by adding physical server nodes, expanding beyond $1,000,000$ transactions per second.
 * **Granular Failure Isolation**: A hardware crash on a single server node only impacts leadership for a fraction of ranges, which re-elect new leaders in under $300\text{ms}$ while the rest of the cluster operates uninterrupted.

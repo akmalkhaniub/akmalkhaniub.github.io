@@ -8,7 +8,7 @@ To solve this, high-performance RAG architectures apply **Command Query Responsi
 
 ---
 
-## 📖 The RAG CQRS Architecture
+## The RAG CQRS Architecture
 
 In a RAG CQRS model, document ingestion (Command) and user querying (Query) are decoupled into isolated pipelines with dedicated databases:
 
@@ -37,7 +37,7 @@ graph TD
 
 ---
 
-## 🛠️ Implementing a Decoupled RAG CQRS Pattern
+## Implementing a Decoupled RAG CQRS Pattern
 
 Here is a Python implementation showing how to decouple the write command handler (processing incoming chunks) from the read query service.
 
@@ -102,7 +102,7 @@ class VectorSearchQuery:
 
 ---
 
-## ⚠️ Important Pitfalls in RAG CQRS
+## Important Pitfalls in RAG CQRS
 
 When decoupling reads and writes, keep these consistency rules in mind:
 

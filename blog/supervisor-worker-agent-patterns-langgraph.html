@@ -151,20 +151,30 @@ graph TD
 </ul>
 <hr>
 <h2>What&#39;s Good &amp; What&#39;s Not</h2>
-<pre><code class="language-plaintext">+----------------------------------------------------------------------------------------------------------------------+
-|                                       SUPERVISOR-WORKER ARCHITECTURE TRADE-OFFS                                      |
-+----------------------------------------------------+---------------------------------------------------------------+
-| What's Good (Pros)                                 | What's Not (Cons)                                             |
-+----------------------------------------------------+---------------------------------------------------------------+
-| * Context Isolation: Each worker has a fresh,      | * Orchestration Overhead: The Supervisor adds 1-2 extra LLM  |
-|   small context window — no cross-task pollution.  |   round-trips to plan and synthesise tasks.                   |
-| * Parallel Execution: Workers run concurrently,    | * Dependency on Supervisor Quality: If the Supervisor's task  |
-|   dramatically reducing total wall-clock latency.  |   decomposition is poor, all workers inherit the flaw.        |
-| * Specialisation: Workers can be fine-tuned or     | * State Synchronisation Cost: Merging structured JSON results |
-|   prompted for their exact domain competency.      |   from parallel workers requires careful schema enforcement.  |
-| * Failure Containment: One worker failure does not | * Debugging Complexity: Tracing a failure across 3+ agents is |
-|   cascade to the Supervisor or other workers.      |   significantly harder than debugging a single loop.          |
-+----------------------------------------------------+---------------------------------------------------------------+</code></pre>
+<table>
+<thead>
+<tr>
+<th>What&#39;s Good (Pros)</th>
+<th>What&#39;s Not (Cons)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>* Context Isolation: Each worker has a fresh, small context window — no cross-task pollution.</td>
+<td>* Orchestration Overhead: The Supervisor adds 1-2 extra LLM round-trips to plan and synthesise tasks.</td>
+</tr>
+<tr>
+<td>* Parallel Execution: Workers run concurrently, dramatically reducing total wall-clock latency.</td>
+<td>* Dependency on Supervisor Quality: If the Supervisor&#39;s task decomposition is poor, all workers inherit the flaw.</td>
+</tr>
+<tr>
+<td>* Specialisation: Workers can be fine-tuned or prompted for their exact domain competency.</td>
+<td>* State Synchronisation Cost: Merging structured JSON results from parallel workers requires careful schema enforcement.</td>
+</tr>
+<tr>
+<td>* Failure Containment: One worker failure does not cascade to the Supervisor or other workers.</td>
+<td>* Debugging Complexity: Tracing a failure across 3+ agents is significantly harder than debugging a single loop.</td>
+</tr>
+</tbody></table>
 <hr>
 <h2>LangGraph Implementation: Stateful Supervisor-Worker Graph</h2>
 <p>LangGraph models multi-agent systems as directed state graphs. Each node is an agent; edges define control flow. Below is a complete, runnable Python implementation.</p>
@@ -378,7 +388,7 @@ crew = Crew(
 result = crew.kickoff()
 print(result.raw)</code></pre>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>The Supervisor-Worker pattern transforms fragile single-agent loops into resilient, specialised teams that mirror how elite human engineering squads operate. By separating concerns into Supervisor (planning) and Workers (execution), you gain context isolation, parallel throughput, and structural quality review.</p>
 <ul>
 <li><strong>Use LangGraph</strong> when you need fine-grained control over state transitions, custom edge routing logic, and enterprise-grade checkpointing.</li>

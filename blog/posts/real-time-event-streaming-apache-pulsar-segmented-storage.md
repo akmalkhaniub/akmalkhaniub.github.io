@@ -16,7 +16,7 @@ This article details Pulsar's stateless broker layer, BookKeeper ledger segments
 
 ---
 
-## 📖 Apache Pulsar Decoupled Segmented Architecture
+## Apache Pulsar Decoupled Segmented Architecture
 
 How Pulsar separates stateless serve brokers from Apache BookKeeper ledger segments and S3 Tiered Storage:
 
@@ -61,7 +61,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Segmented Ledger Storage & Tiered Offloader
+## Python Implementation: Segmented Ledger Storage & Tiered Offloader
 
 Here is a production-grade Python implementation of a Segmented Ledger Event Storage Engine featuring Quorum Writes and Cloud Tiered Storage Offloading:
 
@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Segmented Streaming Gotchas & Best Practices
+## Segmented Streaming Gotchas & Best Practices
 
 When deploying decoupled event streaming:
 
@@ -188,7 +188,7 @@ When deploying decoupled event streaming:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Decoupled streaming architectures (such as **Apache Pulsar**, **Splunk DSP**, and **WarpStream**) report:
 * **Zero-Rebalance Scaling**: Adding or removing storage nodes takes seconds without re-replicating terabytes of historical partition logs across the network.
 * **Over $80\%$ Reduction in Storage Costs**: Automatically tiering historical event logs to S3 object storage slashes cluster storage infrastructure expenses compared to holding all logs on local NVMe SSDs.

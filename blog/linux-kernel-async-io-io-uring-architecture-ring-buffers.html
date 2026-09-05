@@ -110,7 +110,7 @@
 <p><code>io_uring</code> eliminates system call overhead by creating two lockless circular <strong>ring buffers</strong> shared directly between user memory and kernel memory: the <strong>Submission Queue (SQ)</strong> and the <strong>Completion Queue (CQ)</strong>.</p>
 <p>This article details the architecture, memory model, and performance mechanics of <code>io_uring</code>.</p>
 <hr>
-<h2>📖 <code>io_uring</code> Shared Ring Buffer Architecture</h2>
+<h2><code>io_uring</code> Shared Ring Buffer Architecture</h2>
 <p>How user space and kernel space communicate asynchronously via shared memory ring buffers without syscalls:</p>
 <div class="mermaid">graph TD
   subgraph User Space Memory
@@ -136,7 +136,7 @@
 <li><strong>SQPOLL (Submission Queue Polling) Mode</strong>: In SQPOLL mode, a dedicated kernel thread continuously polls the Submission Queue ring. User space appends SQEs to the ring in memory without invoking a single <code>sys_enter</code> syscall, enabling <strong>Zero-Syscall I/O</strong>.</li>
 </ol>
 <hr>
-<h2>🛠️ Python Implementation: <code>io_uring</code> Lockless Ring Buffer Engine</h2>
+<h2>Python Implementation: <code>io_uring</code> Lockless Ring Buffer Engine</h2>
 <p>Here is a production-grade Python simulation of the <code>io_uring</code> Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffer architecture:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional, Any
@@ -259,7 +259,7 @@ if __name__ == &quot;__main__&quot;:
             break
         print(f&quot; ✅ [User Space] Harvested CQE Tag #{cqe.user_data} -&gt; Transferred {cqe.res} bytes&quot;)</code></pre>
 <hr>
-<h2>🚨 <code>io_uring</code> Implementation Gotchas</h2>
+<h2><code>io_uring</code> Implementation Gotchas</h2>
 <p>When designing storage and networking systems around <code>io_uring</code>:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -268,11 +268,11 @@ if __name__ == &quot;__main__&quot;:
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Handle Short Reads and Linked Requests</strong>: Storage or network reads submitted via <code>io_uring</code> may complete partially (short reads). Use <code>IOSQE_IO_LINK</code> flags to enforce sequential ordering when chaining dependent async I/O requests (e.g. <code>Read Header</code> $\to$ <code>Read Body</code>).</p>
+  <div class="alert-content"><p><strong>Handle Short Reads and Linked Requests</strong>: Storage or network reads submitted via <code>io_uring</code> may complete partially (short reads). Use <code>IOSQE_IO_LINK</code> flags to enforce sequential ordering when chaining dependent async I/O requests (e.g. <code>Read Header</code> → <code>Read Body</code>).</p>
 </div>
 </div>
 <hr>
-<h2>📈 Real-World Enterprise Impact</h2>
+<h2>Real-World Enterprise Impact</h2>
 <p>Databases and web servers adopting <code>io_uring</code> (such as <strong>RocksDB</strong>, <strong>Netty</strong>, and <strong>ScyllaDB</strong>) report:</p>
 <ul>
 <li><strong>Over 2,000,000 IOPS per CPU Core</strong>: Achieving more than double the IOPS of traditional <code>epoll</code> or <code>libaio</code> drivers.</li>

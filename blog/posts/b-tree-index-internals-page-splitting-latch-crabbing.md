@@ -12,7 +12,7 @@ This article details B+Tree slotted page layouts, Page Splitting algorithms, Lat
 
 ---
 
-## 📖 B+Tree Page Layout & Latch Crabbing Architecture
+## B+Tree Page Layout & Latch Crabbing Architecture
 
 How Slotted-Page layouts organize tuples inside $8\text{ KB}$ disk blocks and how Latch Crabbing lock coupling navigates concurrent trees:
 
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Slotted-Page B+Tree & Latch Crabbing Engine
+## Python Implementation: Slotted-Page B+Tree & Latch Crabbing Engine
 
 Here is a production-grade Python implementation of a Slotted-Page B+Tree Node Layout and Latch Crabbing Traversal Engine:
 
@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 B+Tree Storage Gotchas & Best Practices
+## B+Tree Storage Gotchas & Best Practices
 
 When tuning B+Tree indexes:
 
@@ -185,7 +185,7 @@ When tuning B+Tree indexes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Storage engines deploying B+Tree slotted pages and latch crabbing (such as **PostgreSQL**, **MySQL InnoDB**, and **SQLite**) report:
 * **$O(\log_B N)$ Lightning-Fast Point Lookups**: Reading keys from a billion-row table in under $4$ physical disk block seeks.
 * **Deadlock-Free Concurrent Index Operations**: Latch crabbing lock coupling enables thousands of concurrent threads to traverse and modify index pages simultaneously.

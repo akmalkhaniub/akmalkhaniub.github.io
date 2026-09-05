@@ -10,7 +10,7 @@ This article details the math and implementation of both anti-stampede strategie
 
 ---
 
-## 📖 Single-Flight Request Coalescing Topology
+## Single-Flight Request Coalescing Topology
 
 How Single-Flight coalesces 1,000 concurrent cache misses into a single database query:
 
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Single-Flight & XFetch Engine
+## Python Implementation: Single-Flight & XFetch Engine
 
 Here is a production-grade Python implementation of Single-Flight Request Coalescing and the XFetch Probabilistic Early Expiration algorithm:
 
@@ -176,19 +176,19 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Anti-Stampede Gotchas & Best Practices
+## Anti-Stampede Gotchas & Best Practices
 
 When implementing anti-stampede protections:
 
 > [!IMPORTANT]
-> **Set $\beta$ According to Read Volume**: In the XFetch formula ($-\beta \cdot \delta \cdot \ln(u)$), increasing $\beta > 1.0$ makes early refresh more aggressive, while setting $\beta \to 0$ disables early expiration. For ultra-high traffic keys, a $\beta$ value between $1.0$ and $2.0$ guarantees that hot keys are seamlessly recomputed before expiration.
+> **Set $\beta$ According to Read Volume**: In the XFetch formula ($-\beta \cdot \delta \cdot \ln(u)$), increasing $\beta > 1.0$ makes early refresh more aggressive, while setting $\beta → 0$ disables early expiration. For ultra-high traffic keys, a $\beta$ value between $1.0$ and $2.0$ guarantees that hot keys are seamlessly recomputed before expiration.
 
 > [!CAUTION]
 > **Handle Exceptions in Single-Flight Callbacks**: If the primary database query inside `singleflight` raises an unhandled exception, ensure the error is propagated safely to all waiting threads and the single-flight key is cleaned up immediately. Otherwise, subsequent calls will deadlock waiting on an abandoned event.
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams implementing Single-Flight and XFetch report:
 * **Zero Database Crashes During Cache Expirations**: Request coalescing prevents thousands of concurrent requests from overwhelming backend databases during key expirations.
 * **Seamless Zero-Latency Refresh**: Probabilistic early expiration refreshes hot cache keys in the background, maintaining near 100% cache hit rates for end users.

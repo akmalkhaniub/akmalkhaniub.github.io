@@ -26,7 +26,7 @@ graph TD
 
 ---
 
-## 🛑 1. The Memory Bandwidth Bottleneck in Autoregressive LLMs
+## 1. The Memory Bandwidth Bottleneck in Autoregressive LLMs
 
 During standard autoregressive generation, generating $N$ tokens requires $N$ sequential forward passes:
 
@@ -42,7 +42,7 @@ The core insight of speculative decoding is to **turn memory-bound waiting time 
 
 ---
 
-## 🎲 2. The Mathematical Foundation of Speculative Sampling
+## 2. The Mathematical Foundation of Speculative Sampling
 
 Introduced independently by Leviathan et al. (Google) and Chen et al. (DeepMind) in 2022, speculative decoding pairs a massive **Target Model ($M_{\text{target}}$, e.g. 70B)** with a lightweight, ultrafast **Draft Model ($M_{\text{draft}}$, e.g. 8B)**.
 
@@ -79,21 +79,20 @@ $$\alpha = \min\left(1, \frac{P_{\text{target}}(x_k \mid x_{<k})}{P_{\text{draft
 
 ---
 
-## 🐍 3. Medusa Multi-Head Tree Attention
+## 3. Medusa Multi-Head Tree Attention
 
 While speculative decoding with a draft model is powerful, managing two separate models in GPU memory introduces deployment friction (dual KV-caches, model loading overhead).
 
 **Medusa** (Cai et al., 2023) eliminates the draft model entirely by adding **multiple lightweight Feed-Forward prediction heads** directly on top of the target model’s final transformer layer:
 
-```
-                      [ Target Transformer Backbone (70B) ]
-                                       |
-                   +-------------------+-------------------+
-                   |                   |                   |
-               [ Head 0 ]          [ Head 1 ]          [ Head 2 ]
-               (Predicts t+1)      (Predicts t+2)      (Predicts t+3)
-                   |                   |                   |
-                Token w1            Token w2            Token w3
+```mermaid
+graph TD
+  Backbone["Target Transformer Backbone (70B)"] --> H0["Head 0: Predicts t+1"]
+  Backbone --> H1["Head 1: Predicts t+2"]
+  Backbone --> H2["Head 2: Predicts t+3"]
+  H0 --> T1["Token w1"]
+  H1 --> T2["Token w2"]
+  H2 --> T3["Token w3"]
 ```
 
 ### Tree-Structured Attention Verification
@@ -118,7 +117,7 @@ By applying a custom **2D Tree Attention Mask**, the target model verifies all c
 
 ---
 
-## 🛠️ Python Implementation: Speculative Decoding & Verification Simulator
+## Python Implementation: Speculative Decoding & Verification Simulator
 
 Here is a Python implementation simulating speculative drafting, parallel target verification, and speedup measurement:
 
@@ -223,7 +222,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Inference Acceleration Comparison
+## Summary: Inference Acceleration Comparison
 
 | Technique | Memory Footprint | Accuracy Impact | Production Speedup | Implementation Complexity |
 |---|---|---|---|---|
@@ -234,7 +233,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 By decoupling token proposal from verification, **Speculative Decoding and Medusa Tree Attention break the fundamental memory bandwidth bottleneck of modern LLMs**.
 
 Inference frameworks running speculative sampling deliver dramatically lower Time-to-First-Token and higher sustained throughput, driving down AI operating costs without compromising a single ounce of model intelligence.

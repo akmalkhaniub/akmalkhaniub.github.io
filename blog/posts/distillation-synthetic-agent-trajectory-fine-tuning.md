@@ -8,7 +8,7 @@ This article details how to build a programmatic **Synthetic Trajectory Curation
 
 ---
 
-## 📖 The Curation Pipeline Architecture
+## The Curation Pipeline Architecture
 
 Rather than relying on human review to verify thousands of multi-step logs, we implement a automated, programmatic verification funnel:
 
@@ -30,7 +30,7 @@ graph TD
 
 ---
 
-## 🛠️ Implementing a Trajectory Curation Pipeline
+## Implementing a Trajectory Curation Pipeline
 
 Here is a production-ready Python script that parses agent execution trajectories, verifies their JSON schemas, executes the tool outputs inside a validation sandbox, and outputs a sanitized training dataset.
 
@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Pitfalls in Data Synthesis
+## Important Pitfalls in Data Synthesis
 
 When curating synthetic datasets, developers must establish strict filtering bounds:
 
@@ -155,7 +155,7 @@ When curating synthetic datasets, developers must establish strict filtering bou
 
 ---
 
-## 📈 Real-World Production Adoption
+## Real-World Production Adoption
 Enterprise development teams rely on trajectory curation to build domain-specific models:
 * **Private Finance Dashboards**: Distill small models to orchestrate banking databases locally, filtering training logs to ensure no private client data leaks into the training pipeline.
 * **Embedded Robotics Systems**: Compile lightweight models that parse sensory inputs, utilizing synthetic loops to teach the model how to recovery from network call errors without crashing.

@@ -10,7 +10,7 @@ This article analyzes the underlying architecture of high-throughput LLM serving
 
 ---
 
-## 📖 Continuous Batching vs. Static Batching Architecture
+## Continuous Batching vs. Static Batching Architecture
 
 The core breakthrough in modern LLM serving is **Continuous Batching** (also known as iteration-level or dynamic batching):
 
@@ -39,7 +39,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Async vLLM Engine Benchmark Client
+## Python Implementation: Async vLLM Engine Benchmark Client
 
 Here is a production Python implementation using `vLLM`'s async engine API (`AsyncLLMEngine`) to benchmark concurrent token generation throughput and request latency:
 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Serving Performance Guardrails
+## Important Serving Performance Guardrails
 
 When configuring LLM inference engines for production:
 
@@ -153,7 +153,7 @@ When configuring LLM inference engines for production:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying vLLM and TensorRT-LLM report:
 * **4x–8x Higher Token Throughput**: Continuous batching increases GPU token generation throughput from 350 tok/s to 2,400+ tok/s on an NVIDIA H100.
 * **60% Reduction in Serving Infrastructure Costs**: Consolidating multi-tenant agent workloads onto high-throughput inference engines drastically reduces total GPU node counts.

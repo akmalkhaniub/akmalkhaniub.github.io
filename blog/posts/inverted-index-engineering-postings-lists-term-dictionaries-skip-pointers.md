@@ -12,7 +12,7 @@ This article details the internal data structures of inverted indexes and skip p
 
 ---
 
-## 📖 Inverted Index & Skip Pointer Architecture
+## Inverted Index & Skip Pointer Architecture
 
 How a Term Dictionary maps tokens to sorted Postings Lists with Skip Pointers for fast list intersection:
 
@@ -45,11 +45,11 @@ graph TD
 ### Core Inverted Index Primitives
 1. **Term Dictionary**: A compressed, sorted index mapping string tokens to offset pointers in the postings file. Modern search engines store term dictionaries as **Finite State Transducers (FST)** in memory, enabling sub-millisecond prefix, fuzzy, and exact token lookups.
 2. **Postings Lists**: A sorted sequence of integer Document IDs (`[4, 12, 18, 45, 89, 120]`) where a term appears. Postings lists are compressed on disk using delta encoding (**VByte** or **Elias-Fano** compression) to minimize disk I/O.
-3. **Skip Pointers**: Auxiliary pointers placed at fixed intervals $S = \lfloor \sqrt{N} \rfloor$ along the postings list. During a Boolean `AND` list intersection, if the current doc ID in List B is 80, the intersector inspects the skip pointer target on List A ($18 \to 120$). Because $120 > 80$, the algorithm skips evaluating intermediate nodes ($45, 89$), bypassing unnecessary comparisons.
+3. **Skip Pointers**: Auxiliary pointers placed at fixed intervals $S = \lfloor \sqrt{N} \rfloor$ along the postings list. During a Boolean `AND` list intersection, if the current doc ID in List B is 80, the intersector inspects the skip pointer target on List A ($18 → 120$). Because $120 > 80$, the algorithm skips evaluating intermediate nodes ($45, 89$), bypassing unnecessary comparisons.
 
 ---
 
-## 🛠️ Python Implementation: Inverted Index & Skip Pointer Engine
+## Python Implementation: Inverted Index & Skip Pointer Engine
 
 Here is a production-grade Python implementation of an Inverted Index with Skip Pointer Postings Lists and an $O(\sqrt{N})$ list intersection engine:
 
@@ -181,7 +181,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Inverted Index Gotchas & Best Practices
+## Inverted Index Gotchas & Best Practices
 
 When building search engine indexes:
 
@@ -193,7 +193,7 @@ When building search engine indexes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Search platforms implementing skip pointer inverted indexes report:
 * **$10\times$ Faster Boolean Query Processing**: Skipping non-matching document ID ranges during multi-term intersections speeds up complex filter queries dramatically.
 * **Compact Index Footprints**: Combining delta VByte compression with FST term dictionaries reduces full-text index sizes to less than 20% of original raw text files.

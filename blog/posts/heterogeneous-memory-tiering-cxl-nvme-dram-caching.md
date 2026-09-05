@@ -14,7 +14,7 @@ This article details CXL 3.0 `CXL.mem` protocols, NUMA tiering hierarchies, and 
 
 ---
 
-## 📖 Heterogeneous Memory Tiering Architecture
+## Heterogeneous Memory Tiering Architecture
 
 How CXL 3.0 and AutoNUMA tier hot and cold memory pages across hardware tiers:
 
@@ -62,7 +62,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Heterogeneous Memory Tiering Engine
+## Python Implementation: Heterogeneous Memory Tiering Engine
 
 Here is a production-grade Python implementation of a Heterogeneous Memory Tiering Manager featuring NUMA page tracking, cold page demotion, and hot page promotion:
 
@@ -189,7 +189,7 @@ When configuring CXL and memory tiering:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Datacenters deploying CXL 3.0 memory tiering (such as **AWS**, **Microsoft Azure**, and **Meta Hyperscale AI clusters**) report:
 * **Over $50\%$ Reduction in Total Cost of Ownership (TCO)**: Expanding memory capacity using lower-cost CXL expansion modules instead of high-cost DDR5 DRAM DIMMs.
 * **$3\times$ Larger In-Memory Database Datasets**: Running terabyte-scale Redis and vector search engines without encountering CPU pin or motherboard memory slot limits.

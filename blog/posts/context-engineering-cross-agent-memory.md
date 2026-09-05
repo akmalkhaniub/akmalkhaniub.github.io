@@ -17,7 +17,7 @@ To solve this, we implement a **Blackboard Memory Architecture** using **MCP Res
 
 ---
 
-## 🎨 The Blackboard Memory Sync Lifecycle
+## The Blackboard Memory Sync Lifecycle
 
 Below is the architecture of a multi-agent system coordinating through a central MCP memory resource. The Supervisor routes work while specialized agents read from and write to the shared blackboard.
 
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-## 🔍 Synthesis: What's Good & What's Not
+## Synthesis: What's Good & What's Not
 
 ### 1. Centralized Blackboard Memory
 A centralized repository where agents post their inputs, intermediate results, and output structures. Agents query the blackboard on-demand via URI schemas.
@@ -82,7 +82,7 @@ Agents communicate directly with each other by appending their results directly 
 
 ---
 
-## 💻 Implementing an MCP Memory Resource Server in Python
+## Implementing an MCP Memory Resource Server in Python
 
 Here is a Python implementation of an MCP server that exposes a shared blackboard using the `FastMCP` framework. This server exposes a dynamic MCP resource (`mcp://state/blackboard`) that multi-agent frameworks like LangGraph can query, along with write tools to update variables. This architecture mimics the multi-service synchronization patterns of [agentic-apps-portfolio](https://github.com/akmalkhaniub/agentic-apps-portfolio).
 
@@ -146,7 +146,7 @@ def append_blackboard_log(log_entry: str) -> str:
     return "Log entry appended."
 ```
 
-### 🤖 Integrating the Memory Resource into LangGraph
+### Integrating the Memory Resource into LangGraph
 
 Here is how a LangGraph agent retrieves the blackboard state dynamically before processing a node:
 
@@ -186,7 +186,7 @@ def coder_node(state):
 
 ---
 
-## 📋 Swarm State Management Checklist
+## Swarm State Management Checklist
 
 * [ ] **Strict Locking Mechanisms**: Ensure all blackboard write operations are thread-safe (`threading.Lock` or Redis transaction locks) to prevent race conditions during parallel execution.
 * [ ] **State Compaction**: Keep state manageable by archiving completed logs or truncating old variable versions to prevent blackboard resource files from growing indefinitely.
@@ -194,7 +194,7 @@ def coder_node(state):
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Cross-agent memory synchronization keeps multi-agent networks lightweight and accurate:
 1. **Blackboard Isolation:** Do not pass massive code files or logs directly in message lists. Place them in a central, structured blackboard space instead.
@@ -205,7 +205,7 @@ Cross-agent memory synchronization keeps multi-agent networks lightweight and ac
 
 ---
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 * **LangGraph State Management**: LangChain Blog. *Agent Coordination Patterns with StateGraph*. [LangGraph Docs](https://langchain-ai.github.io/langgraph/).
 * **Model Context Protocol Resources**: Model Context Protocol Specifications. *Exposing Context Files, Logs, and Data via Resources*. [MCP Specification](https://modelcontextprotocol.io).

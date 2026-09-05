@@ -12,7 +12,7 @@ This article details how modern Tech Leads construct an **Automated Security, Su
 
 ---
 
-## 📖 The AI Security Defense Pipeline
+## The AI Security Defense Pipeline
 
 To protect proprietary software from AI-introduced vulnerabilities, every agent-generated pull request must pass through a strict security boundary:
 
@@ -35,7 +35,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Tooling: Dependency & License Compliance Auditor
+## Python Tooling: Dependency & License Compliance Auditor
 
 To automate supply chain governance, Tech Leads deploy AST and dependency scanners into pre-commit hooks.
 
@@ -127,7 +127,7 @@ def execute_task():
 
 ---
 
-## ⚠️ Important Security Guardrails
+## Important Security Guardrails
 
 When securing AI-driven codebases, enforce these non-negotiable boundaries:
 
@@ -139,7 +139,7 @@ When securing AI-driven codebases, enforce these non-negotiable boundaries:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations implementing AI Supply Chain & IP Governance achieve:
 * **Zero Malicious Package Injections**: Automated lockfile scanners prevent typosquatted dependencies from reaching production servers.
 * **100% License Compliance Assurance**: Copyleft licensing audits ensure proprietary IP is protected against open-source legal disputes.

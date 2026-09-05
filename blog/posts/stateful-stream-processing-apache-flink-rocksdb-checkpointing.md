@@ -10,7 +10,7 @@ This article details how to architect stateful stream processors using Flink and
 
 ---
 
-## 📖 Asynchronous Barrier Snapshot (ABS) Architecture
+## Asynchronous Barrier Snapshot (ABS) Architecture
 
 How Flink streams inject checkpoint barriers to capture consistent distributed state:
 
@@ -40,7 +40,7 @@ graph LR
 
 ---
 
-## 🛠️ Python Implementation: PyFlink Sliding Window Aggregator
+## Python Implementation: PyFlink Sliding Window Aggregator
 
 Here is a production-grade Python simulation of a PyFlink stateful stream processing operator with RocksDB state management and incremental checkpointing:
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Flink & RocksDB Production Gotchas
+## Flink & RocksDB Production Gotchas
 
 When managing stateful streams with Flink and RocksDB:
 
@@ -149,7 +149,7 @@ When managing stateful streams with Flink and RocksDB:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying Flink with RocksDB state backends report:
 * **Terabyte-Scale Stream Processing**: Offloading state to NVMe SSDs enables processing multi-terabyte state streams without JVM Garbage Collection stalls.
 * **Sub-Second Failover Times**: Incremental checkpointing uploads lightweight SSTable diffs every few seconds, allowing fast recovery during node failures.

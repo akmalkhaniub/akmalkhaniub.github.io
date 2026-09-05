@@ -14,7 +14,7 @@ This article details Flink's DAG execution engine, embedded state backends, Chan
 
 ---
 
-## 📖 Stateful Stream Processing & Chandy-Lamport Snapshot Architecture
+## Stateful Stream Processing & Chandy-Lamport Snapshot Architecture
 
 How Flink injects Stream Barriers into continuous data streams to capture consistent global snapshots:
 
@@ -55,7 +55,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Stateful Stream Operator & Chandy-Lamport Engine
+## Python Implementation: Stateful Stream Operator & Chandy-Lamport Engine
 
 Here is a production-grade Python implementation of a Stateful Stream Operator featuring RocksDB-style local state management and Chandy-Lamport Stream Barrier Snapshotting:
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Stream Processing Gotchas & Best Practices
+## Stream Processing Gotchas & Best Practices
 
 When operating stateful stream processing clusters:
 
@@ -167,7 +167,7 @@ When operating stateful stream processing clusters:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Streaming platforms utilizing Flink and Chandy-Lamport ABS (such as **Uber**, **Netflix**, **Alibaba**, and **Stripe**) report:
 * **Sub-10ms Processing Latency**: Continuous pipelined operators process millions of events per second with instant state updates.
 * **100% Reliable Exactly-Once Guarantees**: Automatic recovery from node failures in seconds by restoring local RocksDB states from recent ABS S3 snapshots.

@@ -172,21 +172,26 @@ flowchart TD
     style QC fill:#1e293b,stroke:#f59e0b,stroke-width:2px</div>
 <hr>
 <h2>What&#39;s Good &amp; What&#39;s Not</h2>
-<pre><code class="language-plaintext">+----------------------------------------------------------------------------------------------------------------------+
-|                                         MODEL ROUTING TRADE-OFFS MATRIX                                              |
-+----------------------------------------------------+---------------------------------------------------------------+
-| What's Good (Pros)                                 | What's Not (Cons)                                             |
-+----------------------------------------------------+---------------------------------------------------------------+
-| * Dramatic Cost Reduction: Routing 70% of simple   | * Classifier Accuracy Risk: A miscalibrated complexity        |
-|   requests to cheap models cuts total spend by     |   classifier may route hard tasks to cheap models, degrading  |
-|   60-80% with minimal quality loss.                |   output quality in ways that are hard to detect.             |
-| * Latency Wins: Gemini Flash / GPT-4o-mini respond | * Cascading Latency: When quality-check escalation triggers,  |
-|   2-5x faster than frontier models — improving UX  |   total latency doubles (cheap call + frontier retry).         |
-|   for simple, frequent queries.                    |                                                               |
-| * Provider Redundancy: A unified proxy (LiteLLM)   | * Routing Overhead: The complexity classification call itself  |
-|   enables automatic failover across OpenAI,        |   adds ~100-300ms of latency and ~200 input tokens of cost.   |
-|   Anthropic, Google — no single point of failure.  |                                                               |
-+----------------------------------------------------+---------------------------------------------------------------+</code></pre>
+<table>
+<thead>
+<tr>
+<th>What&#39;s Good (Pros)</th>
+<th>What&#39;s Not (Cons)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>* Dramatic Cost Reduction: Routing 70% of simple requests to cheap models cuts total spend by 60-80% with minimal quality loss.</td>
+<td>* Classifier Accuracy Risk: A miscalibrated complexity classifier may route hard tasks to cheap models, degrading output quality in ways that are hard to detect.</td>
+</tr>
+<tr>
+<td>* Latency Wins: Gemini Flash / GPT-4o-mini respond 2-5x faster than frontier models — improving UX for simple, frequent queries.</td>
+<td>* Cascading Latency: When quality-check escalation triggers, total latency doubles (cheap call + frontier retry).</td>
+</tr>
+<tr>
+<td>* Provider Redundancy: A unified proxy (LiteLLM) enables automatic failover across OpenAI, Anthropic, Google — no single point of failure.</td>
+<td>* Routing Overhead: The complexity classification call itself adds ~100-300ms of latency and ~200 input tokens of cost.</td>
+</tr>
+</tbody></table>
 <hr>
 <h2>Implementation Part 1: LiteLLM Unified Proxy</h2>
 <p>LiteLLM provides a single, OpenAI-compatible interface over 100+ LLM providers. Switching between Claude, GPT-4o, and Gemini requires only changing a model string — not rewriting your API integration.</p>
@@ -478,7 +483,7 @@ xychart-beta
     line [820, 820, 820, 820]</div>
 <p><em>Routing 70% simple + 20% mid + 10% frontier = <strong>~$820/month</strong> vs <strong>~$2,700/month</strong> routing everything to Claude 3.5 Sonnet — a <strong>70% cost reduction</strong>.</em></p>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>Model routing is one of the most impactful and underutilised techniques in production AI engineering. A well-calibrated routing layer keeps your AI platform economically sustainable as request volume scales.</p>
 <ul>
 <li><strong>Start with heuristics, not ML</strong>: Token count, keyword signals, and multi-step indicators catch 80% of routing decisions without any classifier overhead.</li>

@@ -14,7 +14,7 @@ This article details HTTP/2 multiplexing, Protobuf Varint encoding, binary field
 
 ---
 
-## 📖 gRPC Architecture & HTTP/2 Multiplexing
+## gRPC Architecture & HTTP/2 Multiplexing
 
 How gRPC multiplexes multiple concurrent streams over a single TCP connection using Protobuf binary frames:
 
@@ -54,14 +54,14 @@ graph TD
      * If `MSB == 0`, this is the final byte of the integer.
      * *Example*: Integer `300` ($0b00000001\,00101100$) encodes into just **2 bytes**: `0xAC 0x02`!
 4. **Streaming RPC Modes**:
-   * **Unary RPC**: Standard Request $\to$ Response.
+   * **Unary RPC**: Standard Request → Response.
    * **Server Streaming**: Client sends 1 request; Server returns a continuous stream of responses.
    * **Client Streaming**: Client streams records; Server returns 1 aggregated response.
    * **Bidirectional Streaming**: Both Client and Server stream records independently over a full-duplex HTTP/2 connection.
 
 ---
 
-## 🛠️ Python Implementation: Protobuf Varint & HTTP/2 Frame Simulator
+## Python Implementation: Protobuf Varint & HTTP/2 Frame Simulator
 
 Here is a production-grade Python implementation of a Protobuf Varint Encoder/Decoder and HTTP/2 Stream Multiplexer:
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 gRPC Gotchas & Best Practices
+## gRPC Gotchas & Best Practices
 
 When engineering gRPC microservices:
 
@@ -184,7 +184,7 @@ When engineering gRPC microservices:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Microservice architectures transitioning to gRPC (such as **Netflix**, **Uber**, and **Salesforce**) report:
 * **Over $70\%$ Reduction in Network Payload Size**: Protobuf binary Varint encoding slashes JSON wire payload bloat.
 * **$10\times$ Higher Inter-Service RPC Throughput**: HTTP/2 multiplexing handles thousands of parallel RPCs over single persistent TCP connections without connection creation overhead.

@@ -12,7 +12,7 @@ This article details stack-to-register translation, Cranelift IR (CLIF) lowering
 
 ---
 
-## 📖 Wasm Bytecode Stack to Register Lowering Pipeline Architecture
+## Wasm Bytecode Stack to Register Lowering Pipeline Architecture
 
 How Cranelift lowers stack-based Wasm bytecode into SSA register machine code and native assembly:
 
@@ -36,17 +36,17 @@ graph TD
 
 ### Core Wasm Lowering Principles
 1. **Symbolic Stack Machine to Register Translation**: During single-pass compilation, the compiler maintains a **Symbolic Operand Stack**. Instead of pushing raw values onto a physical RAM stack during execution, the compiler pushes symbolic **SSA Virtual Registers** (`v0, v1, v2`) onto a compile-time stack.
-   * `i32.const 10` $\to$ Emits `v0 = iconst.i32 10`, pushes `v0` to symbolic stack.
-   * `i32.const 20` $\to$ Emits `v1 = iconst.i32 20`, pushes `v1` to symbolic stack.
-   * `i32.add` $\to$ Pops `v1` and `v0`, emits `v2 = iadd v0, v1`, pushes `v2` to symbolic stack.
+   * `i32.const 10` → Emits `v0 = iconst.i32 10`, pushes `v0` to symbolic stack.
+   * `i32.const 20` → Emits `v1 = iconst.i32 20`, pushes `v1` to symbolic stack.
+   * `i32.add` → Pops `v1` and `v0`, emits `v2 = iadd v0, v1`, pushes `v2` to symbolic stack.
 2. **Cranelift IR (CLIF)**: A lightweight, safe IR tailored specifically for WebAssembly compilation. Unlike heavyweight LLVM IR (which prioritizes aggressive C++ optimization passes), Cranelift prioritizes **Compilation Speed and Safety**, emitting machine code $10\times$ faster than LLVM.
 3. **Linear Memory Bounds-Check Lowering**: WebAssembly sandboxing requires that all `i32.load` and `i32.store` instructions access memory within the linear memory boundary. Compilers lower memory accesses by injecting hardware guard pages (signal handler catching `SIGSEGV`) or explicit comparison checks:
-   $$\text{if } (\text{offset} + \text{bytes} > \text{memory\_bound}) \to \text{trap}(\text{out\_of\_bounds})$$
+   $$\text{if } (\text{offset} + \text{bytes} > \text{memory\_bound}) → \text{trap}(\text{out\_of\_bounds})$$
 4. **128-Bit SIMD Vectorization**: Wasm `v128` vector instructions (`i32x4.add`, `f32x4.mul`) are lowered directly to target CPU SIMD vector instructions (x86 SSE/AVX2 `PADDD` / `MULPS` or ARM NEON `VADD.I32`).
 
 ---
 
-## 🛠️ Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine
+## Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine
 
 Here is a production-grade Python implementation of a Wasm Bytecode Stack Machine to SSA Register Machine Lowering Compiler:
 
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Wasm Compiler Gotchas & Best Practices
+## Wasm Compiler Gotchas & Best Practices
 
 When engineering WebAssembly code generators:
 
@@ -162,7 +162,7 @@ When engineering WebAssembly code generators:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Runtimes utilizing Cranelift and LLVM Wasm lowering (such as **Wasmtime** and **Fastly Compute@Edge**) report:
 * **Sub-Millisecond Compilation & Execution**: Cranelift lowers and compiles WebAssembly binaries to native machine code $10\times$ faster than standard AOT compilers.
 * **100% Memory Safety**: Injecting hardware guard pages and explicit bounds checks guarantees that untrusted tenant code cannot break sandboxing boundaries.

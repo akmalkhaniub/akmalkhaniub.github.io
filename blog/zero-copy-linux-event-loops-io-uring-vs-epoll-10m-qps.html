@@ -104,231 +104,228 @@
           </div>
 
           <div class="article-body">
-<p>In 2002, the Linux kernel introduced <code>epoll</code> to conquer the famous <strong>C10K Problem</strong> (handling 10,000 concurrent network connections).</p>
-<p>By replacing the $O(N)$ linear scanning of <code>select()</code> and <code>poll()</code> with $O(1)$ red-black tree readiness notifications, <code>epoll</code> powered two decades of internet infrastructure (<strong>Nginx</strong>, <strong>Node.js libuv</strong>, <strong>Redis</strong>, <strong>Netty</strong>).</p>
-<p>In modern high-throughput architectures (<strong>Scoring 10 Million QPS</strong>, <strong>NVMe-oF storage</strong>, <strong>Ultra-low latency trading</strong>), <code>epoll</code> has hit an insurmountable scalability wall:</p>
-<ul>
-<li><code>epoll</code> is merely a <strong>readiness notification mechanism</strong>, not an asynchronous execution engine.</li>
-<li>Handling a single network transaction requires multiple user-kernel context switches: <code>epoll_wait()</code> $\to$ <code>read()</code> $\to$ <code>write()</code>.</li>
-<li>Each syscall transition forces CPU pipeline flushes, kernel stack switching, and Meltdown/Spectre page-table isolation penalties.</li>
-</ul>
-<p>Introduced by Linux kernel maintainer Jens Axboe in Linux 5.1, <strong><code>io_uring</code></strong> fundamentally reinvents Linux I/O.</p>
-<p>By using <strong>lock-free shared memory ring buffers</strong> mapped directly between user space and kernel space, <code>io_uring</code> enables <strong>true asynchronous zero-copy execution</strong>, allowing applications to submit thousands of I/O operations with <strong>zero system calls</strong>.</p>
+<p>In the autumn of 2002, the Linux kernel received a patch from Davide Libenzi that changed the topology of the internet. It was called <code>epoll</code>.</p>
+<p>Until that moment, web servers buckled under the weight of ten thousand concurrent connections—the legendary C10K problem. Traditional system calls like <code>select()</code> and <code>poll()</code> were linear scavengers: to find out which socket had received a packet, the kernel had to traverse an $O(N)$ array of file descriptors on every single wake-up. <code>epoll</code> replaced this linear scan with an in-kernel red-black tree and an active ready-list. Sockets registered once; when packets arrived at the network interface card (NIC), hardware interrupts queued readiness events into the ready-list in $O(1)$ time.</p>
+<p>For twenty years, <code>epoll</code> was the load-bearing pillar beneath Nginx, Redis, Node.js (<code>libuv</code>), and Netty. But in high-throughput modern infrastructure—systems pushing ten million queries per second over 100GbE NICs and NVMe-over-Fabrics storage arrays—<code>epoll</code> has hit an insurmountable physical wall.</p>
+<p>The problem is not that <code>epoll</code> is slow. The problem is that <code>epoll</code> is fundamentally a <strong>readiness notification engine</strong>, not an <strong>asynchronous execution engine</strong>.</p>
+<p>To service a single client request under <code>epoll</code>, an application still has to execute multiple synchronous system calls: <code>epoll_wait()</code> to learn that data is ready, <code>read()</code> to pull bytes across the kernel boundary, and <code>write()</code> to push the response back out. At line rate, the CPU ceases to be a computational engine; it becomes a traffic cop spending its life trapped in the toll booths of kernel context transitions.</p>
+<p>Enter <strong><code>io_uring</code></strong>. Introduced by Jens Axboe in Linux 5.1, <code>io_uring</code> re-architects Linux I/O from first principles by eliminating system calls entirely from the hot path.</p>
 <div class="mermaid">graph TD
-  subgraph epoll Readiness Loop vs io_uring Zero-Copy Ring Buffers
+  subgraph epoll Readiness Model vs io_uring Zero-Copy Ring Geometry
     subgraph 1. Traditional epoll (Syscall Heavy)
       UserApp[User Application] --&gt;|1. epoll_wait syscall| Kernel1[Kernel: Check Readiness]
-      Kernel1 --&gt;|2. Wakeup Context Switch| UserApp
-      UserApp --&gt;|3. read/write syscall| Kernel2[Kernel: Copy Data]
+      Kernel1 --&gt;|2. Context Switch Wakeup| UserApp
+      UserApp --&gt;|3. read/write syscall| Kernel2[Kernel: Copy Payload]
       Kernel2 --&gt;|4. Return Context Switch| UserApp
     end
 
-    subgraph 2. io_uring (Zero Syscall / Lock-Free Rings)
+    subgraph 2. io_uring (Zero Syscall / Lock-Free Shared Rings)
       App[User Application] --&gt;|Push SQE: Non-blocking write| SQ[Shared Submission Queue Ring]
       SQ --&gt;|Kernel Polling Worker: SQPOLL| KernelAsync[Kernel Worker Thread (Ring 0)]
-      KernelAsync --&gt;|Direct DMA Copy| CQ[Shared Completion Queue Ring]
-      CQ --&gt;|Pop CQE: 0ms Memory Read| App
+      KernelAsync --&gt;|Direct DMA Transfer| CQ[Shared Completion Queue Ring]
+      CQ --&gt;|Pop CQE: Read Memory Pointer| App
     end
   end</div>
 <hr>
-<h2>🛑 1. The Epoll Scalability Wall (The C10M Barrier)</h2>
-<p>Why can <code>epoll</code> not scale to 10 Million Queries Per Second?</p>
-<h3>The Context Switching Tax</h3>
-<p>During high packet rates, CPU cycles are predominantly wasted on kernel boundary crossing:</p>
-<p>$$\text{Total CPU Time} = \text{Application Logic} + \mathbf{N \times (\text{Syscall Context Switch} + \text{Kernel Memory Copy})}$$</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 THE COST OF A MODERN LINUX SYSCALL                                |
-+---------------------------------------------------------------------------------------------------+
-| Operation                                  | CPU Cycle Cost (x86_64)                              |
-| Basic sys_enter / sys_exit                 | ~150 - 300 cycles                                    |
-| Page-Table Isolation (KPTI Meltdown Fix)   | +200 - 400 cycles                                    |
-| CPU L1/L2 Cache &amp; TLB Pollution            | +500 - 1500 cycles                                   |
-| Total Latency Penalty                      | ~1.2 - 2.5 microseconds per syscall                  |
-+---------------------------------------------------------------------------------------------------+</code></pre>
-<p>At $1,000,000\text{ operations/sec}$, syscall transitions alone consume over <strong>$30%\text{ of total CPU compute}$</strong> before a single line of business logic executes.</p>
+<h2>1. The Epoll Scalability Wall (The C10M Barrier)</h2>
+<p>To understand why <code>epoll</code> cannot conquer ten million queries per second, examine the anatomy of a single x86_64 system call under modern CPU microarchitectures.</p>
+<p>When userspace invokes <code>read()</code> or <code>write()</code>, the CPU executes a <code>syscall</code> instruction. Hardware transitions from Ring 3 (unprivileged user space) to Ring 0 (kernel space). Registers are saved to the thread&#39;s kernel stack. The kernel switches address spaces. Since the Meltdown and Spectre hardware mitigations (KPTI), page table isolation forces additional TLB (Translation Lookaside Buffer) flushes.</p>
+<table>
+<thead>
+<tr>
+<th>Syscall Overhead Phase</th>
+<th>Hardware Cycle Cost (x86_64)</th>
+<th>Physical Mechanism</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Trap &amp; Privilege Transition</strong></td>
+<td>~150 – 300 cycles</td>
+<td><code>sys_enter</code> / <code>sys_exit</code> hardware transition</td>
+</tr>
+<tr>
+<td><strong>Kernel Page Table Isolation (KPTI)</strong></td>
+<td>+200 – 400 cycles</td>
+<td>CR3 register reload to swap user/kernel page tables</td>
+</tr>
+<tr>
+<td><strong>L1/L2 Cache &amp; TLB Eviction</strong></td>
+<td>+500 – 1500 cycles</td>
+<td>Memory access latency while reloading cold lines</td>
+</tr>
+<tr>
+<td><strong>Total Syscall Tax</strong></td>
+<td><strong>~1.2 – 2.5 microseconds</strong></td>
+<td><strong>Incurred per invocation, 2–4 times per network transaction</strong></td>
+</tr>
+</tbody></table>
+<p>At one million requests per second, a server spending 2 microseconds per round trip loses over <strong>60% of its total CPU execution capacity</strong> purely transitioning back and forth across the privilege boundary before executing a single line of business logic.</p>
 <hr>
-<h2>⚡ 2. The <code>io_uring</code> Architecture: Shared Ring Geometry</h2>
-<p><code>io_uring</code> eliminates syscall overhead by establishing two <strong>lock-free circular ring buffers</strong> in shared memory mapped via <code>mmap()</code>:</p>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 IO_URING SHARED MEMORY RINGS                                      |
-+---------------------------------------------------------------------------------------------------+
-| 1. Submission Queue (SQ) : User writes Submission Queue Entries (SQE) -&gt; Kernel consumes          |
-| 2. Completion Queue (CQ) : Kernel writes Completion Queue Entries (CQE) -&gt; User consumes          |
-+---------------------------------------------------------------------------------------------------+</code></pre>
-<div class="mermaid">graph LR
-  subgraph User Space Memory
-    User[User Process] --&gt;|Writes Entry at Tail| SQE[SQ Ring Buffer: Head -&gt; Tail]
-  end
-
-  subgraph Kernel Space Memory
-    SQE --&gt;|Kernel reads at Head| Worker[SQPOLL Kernel Thread]
-    Worker --&gt;|Writes Result at Tail| CQE[CQ Ring Buffer: Head -&gt; Tail]
-  end
-
-  CQE --&gt;|User reads at Head (0ms)| User</div>
-<h3>The Lock-Free Head/Tail Pointer Invariant</h3>
-<p>The Submission Queue uses separate <code>head</code> and <code>tail</code> atomic integer pointers:</p>
-<ul>
-<li>The <strong>User Application</strong> updates <code>sq.tail</code> after appending new requests.</li>
-<li>The <strong>Linux Kernel</strong> advances <code>sq.head</code> as it reaps requests.</li>
-<li>Because only one party modifies each pointer, operations proceed <strong>completely lock-free and memory-barrier synchronized</strong> without thread contention.</li>
-</ul>
+<h2>2. The <code>io_uring</code> Architecture: Shared Ring Geometry</h2>
+<p><code>io_uring</code> eliminates this tax by abandoning the concept of per-operation system calls. Instead of asking the kernel to perform an operation immediately, userspace and kernel space communicate through two <strong>lock-free circular ring buffers</strong> mapped directly into shared memory via <code>mmap()</code>:</p>
+<pre><code class="language-plaintext">           USER SPACE (Ring 3)                  KERNEL SPACE (Ring 0)
+    ┌───────────────────────────────┐     ┌───────────────────────────────┐
+    │  Submission Queue (SQ Ring)   │     │   Completion Queue (CQ Ring)  │
+    │  User App appends new SQEs    │     │   Kernel appends new CQEs     │
+    └──────────────┬────────────────┘     └───────────────▲───────────────┘
+                   │                                      │
+                   └─────────────►[ SQPOLL Thread ]───────┘
+                               Kernel worker reaps SQ
+                               without syscall interrupts</code></pre>
+<h3>The Invariants of the Submission and Completion Rings</h3>
+<ol>
+<li><strong>Submission Queue (SQ)</strong>: The user application writes <strong>Submission Queue Entries (SQEs)</strong> describing the requested operation (<code>IORING_OP_READV</code>, <code>IORING_OP_WRITEV</code>, <code>IORING_OP_ACCEPT</code>). The application updates <code>sq.tail</code>. The kernel consumes entries from <code>sq.head</code>.</li>
+<li><strong>Completion Queue (CQ)</strong>: When hardware DMA transfers complete, the kernel writes <strong>Completion Queue Entries (CQEs)</strong> to the completion ring, advancing <code>cq.tail</code>. The user application reaps results from <code>cq.head</code>.</li>
+<li><strong>Lock-Free Single-Producer Single-Consumer</strong>: Because only userspace mutates <code>sq.tail</code> and <code>cq.head</code>, and only the kernel mutates <code>sq.head</code> and <code>cq.tail</code>, both rings operate completely lock-free without spinlocks or mutex contention.</li>
+</ol>
 <hr>
-<h2>🚀 3. Advanced Zero-Copy Optimization Flags</h2>
-<pre><code class="language-plaintext">+---------------------------------------------------------------------------------------------------+
-|                                 IO_URING HIGH-THROUGHPUT FLAGS                                    |
-+---------------------------------------------------------------------------------------------------+
-| Flag / Mechanism          | Performance Benefit                                                   |
-| IORING_SETUP_SQPOLL       | Dedicated kernel thread polls SQ ring -&gt; ZERO syscalls required!      |
-| IORING_REGISTER_BUFFERS   | Pre-pins virtual memory pages -&gt; Eliminates page table walks (DMA)    |
-| IORING_REGISTER_FILES     | Pre-registers open file descriptors -&gt; Bypasses fget()/fput() locks   |
-| Multishot Receives (recv) | Single SQE keeps reading socket continuously without re-submitting    |
-+---------------------------------------------------------------------------------------------------+</code></pre>
+<h2>3. High-Throughput Kernel Modes: SQPOLL and Fixed Buffers</h2>
+<p>To push past the 10-million QPS threshold, <code>io_uring</code> introduces three architectural capabilities:</p>
+<h3>1. Kernel Polling (<code>IORING_SETUP_SQPOLL</code>)</h3>
+<p>When initialized with the <code>IORING_SETUP_SQPOLL</code> flag, the kernel spawns a dedicated kernel thread (<code>io_uring-sq</code>) pinned to an isolated CPU core. This thread continuously polls the shared Submission Queue ring. </p>
+<p>The application simply writes SQEs into shared RAM and updates the atomic tail index with a release memory barrier. The kernel picks up the work immediately. The total number of system calls executed to service millions of requests drops to <strong>exactly zero</strong>.</p>
+<h3>2. Registered Zero-Copy Buffers (<code>IORING_REGISTER_BUFFERS</code>)</h3>
+<p>In standard POSIX I/O, the kernel must validate user virtual memory pointers, lock the underlying physical pages into RAM (<code>get_user_pages()</code>), and build scatter-gather lists for the NIC&#39;s DMA engine on every call.</p>
+<p>With <code>io_uring</code>, the application pre-registers a pool of memory buffers during startup. The kernel locks the pages and pins the physical page-table mappings once. Future reads and writes skip all page validation and DMA setup overhead.</p>
+<h3>3. Registered File Descriptors (<code>IORING_REGISTER_FILES</code>)</h3>
+<p>Every time an application calls <code>read(fd)</code> or <code>write(fd)</code>, the kernel must acquire a reference lock on the file descriptor table (<code>fget()</code> / <code>fput()</code>). When thousands of threads access shared sockets, lock contention on the descriptor table degrades multicore throughput. Pre-registering file arrays into the ring instance replaces table lookups with direct array indexing.</p>
 <hr>
-<h2>🛠️ Python Implementation: Lock-Free SQ/CQ Ring Buffer Engine</h2>
-<p>Here is a Python implementation simulating an <code>io_uring</code> lock-free Submission Queue (SQ) and Completion Queue (CQ) event loop:</p>
-<pre><code class="language-python">import time
-from dataclasses import dataclass
-from typing import Dict, List, Optional
+<h2>Python Simulation: The Lock-Free Ring Engine</h2>
+<p>The following Python script models the memory geometry and head/tail index mechanics of an <code>io_uring</code> event loop operating with a simulated kernel SQPOLL worker:</p>
+<pre><code class="language-python">from dataclasses import dataclass
+from typing import List, Optional
+import time
 
 @dataclass
-class SQE: # Submission Queue Entry
-    opcode: str # e.g. &quot;READ&quot;, &quot;WRITE&quot;, &quot;ACCEPT&quot;
+class SQE:
+    opcode: str
     fd: int
-    buffer_data: str
-    user_data: int # Identifier tagged to request
+    payload: bytes
+    user_tag: int
 
 @dataclass
-class CQE: # Completion Queue Entry
-    user_data: int
-    result_bytes: int
-    status_code: int
+class CQE:
+    user_tag: int
+    bytes_transferred: int
+    status: int
 
-class LockFreeRingBuffer:
+class LockFreeRing:
     &quot;&quot;&quot;
-    Simulates io_uring lock-free shared memory ring buffer.
+    Simulates a power-of-two circular ring buffer mapped into shared memory.
     &quot;&quot;&quot;
-    def __init__(self, capacity: int = 8):
+    def __init__(self, capacity: int = 16):
         self.capacity = capacity
-        self.buffer: List[Optional[any]] = [None] * capacity
+        self.mask = capacity - 1
+        self.entries: List[Optional[any]] = [None] * capacity
         self.head = 0
         self.tail = 0
 
     def push(self, item: any) -&gt; bool:
         if (self.tail - self.head) &gt;= self.capacity:
-            return False # Ring full
-        index = self.tail % self.capacity
-        self.buffer[index] = item
+            return False  # Ring is full
+        self.entries[self.tail &amp; self.mask] = item
         self.tail += 1
         return True
 
     def pop(self) -&gt; Optional[any]:
         if self.head &gt;= self.tail:
-            return None # Ring empty
-        index = self.head % self.capacity
-        item = self.buffer[index]
-        self.buffer[index] = None
+            return None  # Ring is empty
+        idx = self.head &amp; self.mask
+        item = self.entries[idx]
+        self.entries[idx] = None
         self.head += 1
         return item
 
 class IOUringEngine:
     &quot;&quot;&quot;
-    io_uring Core with Kernel SQPOLL Worker Thread Simulation.
+    Userspace event loop communicating with a simulated kernel SQPOLL worker.
     &quot;&quot;&quot;
     def __init__(self):
-        self.sq = LockFreeRingBuffer(capacity=16)
-        self.cq = LockFreeRingBuffer(capacity=16)
+        self.sq = LockFreeRing(capacity=32)
+        self.cq = LockFreeRing(capacity=32)
 
-    def submit_sqe(self, sqe: SQE) -&gt; bool:
-        success = self.sq.push(sqe)
-        if success:
-            print(f&quot; 📥 [User SQ Push] Queued {sqe.opcode} on FD={sqe.fd} (Tag: {sqe.user_data})&quot;)
-        return success
+    def submit_request(self, opcode: str, fd: int, data: bytes, tag: int) -&gt; bool:
+        sqe = SQE(opcode=opcode, fd=fd, payload=data, user_tag=tag)
+        return self.sq.push(sqe)
 
-    def kernel_sqpoll_process(self):
-        &quot;&quot;&quot;
-        Simulates kernel SQPOLL thread reaping SQ entries without syscalls.
-        &quot;&quot;&quot;
-        processed_count = 0
+    def kernel_sqpoll_tick(self) -&gt; int:
+        reaped = 0
         while True:
             sqe: Optional[SQE] = self.sq.pop()
             if not sqe:
                 break
             
-            # Process asynchronous operation in kernel space
-            time.sleep(0.001) # Simulate hardware DMA
-            result_len = len(sqe.buffer_data)
-            cqe = CQE(user_data=sqe.user_data, result_bytes=result_len, status_code=0)
+            # Kernel hardware DMA transfer simulation
+            transferred = len(sqe.payload)
+            cqe = CQE(user_tag=sqe.user_tag, bytes_transferred=transferred, status=0)
             self.cq.push(cqe)
-            processed_count += 1
-            print(f&quot; ⚙️ [Kernel Worker] Executed {sqe.opcode} -&gt; Emitted CQE for Tag {sqe.user_data}&quot;)
+            reaped += 1
+        return reaped
 
-        return processed_count
-
-    def reap_cqe(self) -&gt; Optional[CQE]:
+    def reap_completion(self) -&gt; Optional[CQE]:
         return self.cq.pop()
 
-# Demonstration Execution
+# Demonstration Run
 if __name__ == &quot;__main__&quot;:
-    ring = IOUringEngine()
+    engine = IOUringEngine()
 
-    print(&quot;🚀 Submitting Batch of Async I/O Requests to SQ Ring (Zero Syscalls)...&quot;)
-    # User pushes 3 requests to Submission Queue
-    ring.submit_sqe(SQE(opcode=&quot;WRITE&quot;, fd=4, buffer_data=&quot;HTTP/1.1 200 OK\r\n\r\n&quot;, user_data=1001))
-    ring.submit_sqe(SQE(opcode=&quot;READ&quot;, fd=5, buffer_data=&quot;1024_bytes_read&quot;, user_data=1002))
-    ring.submit_sqe(SQE(opcode=&quot;WRITE&quot;, fd=6, buffer_data=&quot;Cache-Control: no-cache&quot;, user_data=1003))
+    # Userspace submits a batch of operations without invoking syscalls
+    print(&quot;Enqueuing batch of 3 async requests into SQ ring...&quot;)
+    engine.submit_request(&quot;WRITE&quot;, fd=10, data=b&quot;HTTP/1.1 200 OK\r\n\r\n&quot;, tag=101)
+    engine.submit_request(&quot;READ&quot;,  fd=11, data=b&quot;0&quot; * 4096,              tag=102)
+    engine.submit_request(&quot;WRITE&quot;, fd=12, data=b&quot;{\&quot;status\&quot;:\&quot;active\&quot;}&quot;, tag=103)
 
-    # Kernel thread asynchronously processes ring buffer
-    print(&quot;\n⚡ Kernel SQPOLL Worker Reaping SQ Entries...&quot;)
-    ring.kernel_sqpoll_process()
+    # Simulated kernel worker reaps entries asynchronously
+    reaped = engine.kernel_sqpoll_tick()
+    print(f&quot;Kernel worker reaped {reaped} requests via shared ring buffer.&quot;)
 
-    # User reaps completion events from CQ Ring
-    print(&quot;\n📦 User Application Reading Completed Events from CQ Ring:&quot;)
+    # Userspace harvests completions
     while True:
-        cqe = ring.reap_cqe()
+        cqe = engine.reap_completion()
         if not cqe:
             break
-        print(f&quot; ✅ [User CQ Read] Request Tag [{cqe.user_data}] completed: {cqe.result_bytes} bytes (Status: {cqe.status_code})&quot;)</code></pre>
+        print(f&quot;Reaped Completion: Tag {cqe.user_tag} | Transferred: {cqe.bytes_transferred} bytes&quot;)</code></pre>
 <hr>
-<h2>📊 Summary: epoll vs io_uring Benchmarks</h2>
+<h2>Architectural Comparison: epoll vs io_uring</h2>
 <table>
 <thead>
 <tr>
-<th>Dimension</th>
+<th>Performance Dimension</th>
 <th>epoll Event Loop</th>
-<th>io_uring Asynchronous Engine</th>
+<th>io_uring Engine (<code>SQPOLL</code>)</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>I/O Model</strong></td>
-<td>Readiness Notification (Synchronous read)</td>
-<td><strong>True Asynchronous Execution (Kernel DMA)</strong></td>
+<td><strong>I/O Paradigm</strong></td>
+<td>Readiness notification (synchronous read)</td>
+<td>Asynchronous completion (kernel DMA)</td>
 </tr>
 <tr>
-<td><strong>Syscall Overhead</strong></td>
-<td>2–4 syscalls per transaction</td>
-<td><strong>0 Syscalls (via SQPOLL thread)</strong></td>
+<td><strong>Syscall Overhead per Transaction</strong></td>
+<td>2 – 4 system calls</td>
+<td><strong>Zero system calls</strong></td>
 </tr>
 <tr>
-<td><strong>Memory Buffer Copy</strong></td>
-<td>User-to-kernel memory copy</td>
-<td><strong>Zero-Copy Registered Buffers</strong></td>
+<td><strong>Storage (Disk) I/O Support</strong></td>
+<td>Synchronous only (requires worker threads)</td>
+<td>Unified async support across network and NVMe</td>
 </tr>
 <tr>
-<td><strong>Storage I/O Support</strong></td>
-<td>Synchronous (Forces thread pools)</td>
-<td><strong>Native Async NVMe / File I/O</strong></td>
+<td><strong>Buffer Management</strong></td>
+<td>User-to-kernel copies on every invocation</td>
+<td>Pre-registered zero-copy memory buffers</td>
 </tr>
 <tr>
-<td><strong>Peak Throughput</strong></td>
-<td>$\approx 2.5\text{M QPS / core}$</td>
-<td><strong>$&gt; 10\text{M QPS / core}$</strong></td>
+<td><strong>Scalability Limit</strong></td>
+<td>~2.5 Million QPS per core</td>
+<td><strong>&gt; 10 Million QPS per core</strong></td>
 </tr>
 </tbody></table>
 <hr>
-<h2>🏁 Architectural Takeaway</h2>
-<p><code>epoll</code> conquered the C10K era, but <strong><code>io_uring</code> is the architecture of the C10M era</strong>.</p>
-<p>By replacing blocking syscall context switches with <strong>lock-free shared memory ring buffers</strong>, systems engineers unlock the full hardware capabilities of modern multicore CPUs and PCIe Gen5 NVMe storage arrays.</p>
+<h2>The Paradigm Shift</h2>
+<p><code>epoll</code> solved the connection scale problem: it allowed a single thread to observe millions of idle connections without melting the CPU.</p>
+<p><code>io_uring</code> solves the throughput density problem: it allows a single CPU core to saturate modern 100-gigabit network interfaces and PCIe Gen5 NVMe arrays by dismantling the syscall barrier.</p>
+<p>For high-throughput systems architects, the era of polling readiness is over. The era of lock-free shared memory ring execution has arrived.</p>
 
           </div>
 

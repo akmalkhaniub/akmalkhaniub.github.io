@@ -10,7 +10,7 @@ This article explores the internal stack-based virtual machine, linear memory mo
 
 ---
 
-## 📖 WebAssembly Compilation & Sandboxed Execution Architecture
+## WebAssembly Compilation & Sandboxed Execution Architecture
 
 How a WebAssembly engine parses binary bytecode, manages linear memory, and compiles to host native code:
 
@@ -39,7 +39,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Stack-Based Wasm VM & Linear Memory
+## Python Implementation: Stack-Based Wasm VM & Linear Memory
 
 Here is a production-grade Python simulation of a Stack-Based WebAssembly Virtual Machine Interpreter featuring linear memory bounds checking:
 
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Wasm Engine Gotchas & Best Practices
+## Wasm Engine Gotchas & Best Practices
 
 When building serverless Wasm runtimes:
 
@@ -152,7 +152,7 @@ When building serverless Wasm runtimes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Edge compute platforms leveraging Wasm micro-runtimes (such as **Cloudflare Workers**) report:
 * **Microsecond Cold Starts ($<1\text{ms}$)**: Wasm modules start $100\times$ faster than traditional Docker containers.
 * **$10\times$ Density per Server**: Software Fault Isolation (SFI) allows running tens of thousands of isolated Wasm tenant sandboxes on a single physical edge server.

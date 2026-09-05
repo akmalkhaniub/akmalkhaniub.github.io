@@ -330,13 +330,13 @@ ALTER TABLE documents SET (
 <h2>Trap 6: <code>LIMIT</code> Without Enough Candidates for Reranking</h2>
 <p><strong>Symptom</strong>: You retrieve top-5 vectors to feed into a cross-encoder reranker. Reranker outputs poor results because the top-5 ANN results don&#39;t include the actually-best matches.</p>
 <p><strong>Root cause</strong>: ANN is approximate — the top-5 returned may not be the true top-5. Reranking can only improve ordering within the candidate set. If the true best match is ranked #12 by ANN, it never reaches your reranker.</p>
-<pre><code class="language-python"># ❌ Retrieving only top_k for reranking — reranker can't fix ANN misses
+<pre><code class="language-python"># Retrieving only top_k for reranking — reranker can't fix ANN misses
 async def search_and_rerank_bad(query: str, top_k: int = 5):
     # ANN only returns 5 — if the best match is rank 8, it's never seen
     ann_results = await vector_search(query_embedding, top_k=5)
     return reranker.rerank(query, ann_results)[:top_k]
 
-# ✅ Retrieve a larger candidate set (10-20×), then rerank to top_k
+# Retrieve a larger candidate set (10-20×), then rerank to top_k
 async def search_and_rerank_good(
     query: str,
     top_k: int = 5,
@@ -392,7 +392,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
     
     return plan</code></pre>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>pgvector&#39;s greatest strength — living inside Postgres — is also its greatest trap. When it silently falls back to sequential scan, you get no error, no warning, and no indication that your &quot;fast&quot; vector search is actually O(n). Treat <code>EXPLAIN ANALYZE</code> as mandatory, not optional.</p>
 <ul>
 <li><strong>Build the right index for your distance metric</strong> — <code>vector_cosine_ops</code> for cosine, <code>vector_l2_ops</code> for L2. Mismatching operator and index class means the index is never used.</li>

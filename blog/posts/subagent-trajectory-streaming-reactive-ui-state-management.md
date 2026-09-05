@@ -10,7 +10,7 @@ This article details how to manage frontend state for streaming subagent swarms.
 
 ---
 
-## 📖 Reactive Trajectory Stream Architecture
+## Reactive Trajectory Stream Architecture
 
 The frontend architecture decouples high-frequency WebSocket/SSE events from React render cycles using a buffered state store:
 
@@ -36,7 +36,7 @@ graph TD
 
 ---
 
-## 🛠️ TypeScript / React Implementation: `useAgentTrajectoryStream` Hook
+## TypeScript / React Implementation: `useAgentTrajectoryStream` Hook
 
 Here is a production TypeScript/React implementation of a custom hook that manages SSE trajectory streaming with sequence-based reconnection and render batching:
 
@@ -164,7 +164,7 @@ export function useAgentTrajectoryStream(taskId: string, streamUrl: string) {
 
 ---
 
-## ⚠️ Important Frontend Performance Guardrails
+## Important Frontend Performance Guardrails
 
 When rendering real-time subagent streams in web applications:
 
@@ -176,7 +176,7 @@ When rendering real-time subagent streams in web applications:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting Reactive Trajectory State Management report:
 * **60 FPS Smooth UI Rendering**: RAF batching eliminates main-thread lag during high-frequency token streams.
 * **Zero Lost Events on Network Drops**: Sequence ID tracking guarantees 100% trajectory stream recovery after transient Wi-Fi drops.

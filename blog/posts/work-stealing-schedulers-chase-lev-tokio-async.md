@@ -12,7 +12,7 @@ This article details per-thread local deques, the Chase-Lev lock-free algorithm,
 
 ---
 
-## 📖 Work-Stealing Scheduling & Chase-Lev Deque Architecture
+## Work-Stealing Scheduling & Chase-Lev Deque Architecture
 
 How the Chase-Lev Deque balances owner LIFO operations and thief FIFO stealing:
 
@@ -56,7 +56,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Chase-Lev Deque & Work-Stealing Scheduler
+## Python Implementation: Chase-Lev Deque & Work-Stealing Scheduler
 
 Here is a production-grade Python implementation of a Lock-Free Chase-Lev Work-Stealing Deque and a Multi-Worker Async Scheduler:
 
@@ -198,7 +198,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Work-Stealing Gotchas & Best Practices
+## Work-Stealing Gotchas & Best Practices
 
 When designing work-stealing schedulers:
 
@@ -210,7 +210,7 @@ When designing work-stealing schedulers:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Work-stealing schedulers (such as **Rust Tokio**, **Go Runtime**, and **Java ForkJoinPool**) report:
 * **Over $90\%$ Reduction in Thread Lock Contention**: Per-thread local deques allow worker threads to push and pop tasks without acquiring global mutex locks.
 * **Optimal CPU Multi-Core Utilization**: Dynamic work stealing ensures zero CPU core idle time even during unbalanced async workloads.

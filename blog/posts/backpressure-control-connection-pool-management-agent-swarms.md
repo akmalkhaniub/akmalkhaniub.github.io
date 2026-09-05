@@ -10,7 +10,7 @@ This article details how to design backpressure throttling engines and manage co
 
 ---
 
-## 📖 Backpressure Flow Control Architecture
+## Backpressure Flow Control Architecture
 
 Backpressure acts as a reactive brake pedal, slowing down upstream event producers when downstream consumer queues reach capacity:
 
@@ -38,7 +38,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Backpressure Throttler & Connection Pool Manager
+## Python Implementation: Backpressure Throttler & Connection Pool Manager
 
 Here is a production Python implementation of an Agent Swarm Flow Controller that enforces high/low watermark backpressure and manages active connection pools:
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Flow Control Guardrails
+## Important Flow Control Guardrails
 
 When configuring backpressure and connection pools for agent swarms:
 
@@ -148,7 +148,7 @@ When configuring backpressure and connection pools for agent swarms:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams implementing Backpressure Control & Connection Pooling report:
 * **100% Elimination of Out-Of-Memory (OOM) Crashes**: Flow control prevents upstream orchestrators from flooding worker queues.
 * **Stable Connection Pools under Peak Load**: Connection reapers prevent socket leaks, maintaining reliable real-time streams during traffic spikes.

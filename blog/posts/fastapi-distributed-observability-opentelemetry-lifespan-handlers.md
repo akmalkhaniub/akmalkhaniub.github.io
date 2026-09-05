@@ -10,7 +10,7 @@ This article details how to construct an production-ready observable FastAPI ser
 
 ---
 
-## 📖 Lifespan Resource & Tracing Architecture
+## Lifespan Resource & Tracing Architecture
 
 The execution lifecycle of a FastAPI service managed by async lifespan generators and OpenTelemetry context propagation:
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Observable FastAPI Microservice
+## Python Implementation: Observable FastAPI Microservice
 
 Here is a production-grade Python script demonstrating a FastAPI application with lifespan database pool management and OpenTelemetry distributed tracing middleware:
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Observability & Lifespan Gotchas
+## Observability & Lifespan Gotchas
 
 When implementing telemetry and lifespan handlers:
 
@@ -167,7 +167,7 @@ When implementing telemetry and lifespan handlers:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying lifespan context management and OpenTelemetry report:
 * **Zero Resource Leaks**: Managing database pools within lifespan context guarantees clean connection teardowns during rolling deployment reloads.
 * **End-to-End Tracing Visibility**: OpenTelemetry headers allow tracing a single request across dozens of microservices, cutting mean time to resolution (MTTR) by 60%.

@@ -12,7 +12,7 @@ This article details API Gateway reverse proxying, Token Bucket vs Leaky Bucket 
 
 ---
 
-## 📖 Distributed API Gateway & Token Bucket Rate Limiter
+## Distributed API Gateway & Token Bucket Rate Limiter
 
 How edge API Gateways perform distributed rate limiting using Redis Lua scripts and route requests to backend microservices:
 
@@ -59,7 +59,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: API Gateway & Redis Lua Token Bucket Limiter
+## Python Implementation: API Gateway & Redis Lua Token Bucket Limiter
 
 Here is a production-grade Python implementation of a Distributed API Gateway with a Redis Lua Token Bucket Rate Limiter and Dynamic Reverse Proxy Routing Engine:
 
@@ -180,7 +180,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 API Gateway Gotchas & Best Practices
+## API Gateway Gotchas & Best Practices
 
 When operating distributed API Gateways:
 
@@ -192,7 +192,7 @@ When operating distributed API Gateways:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed API Gateways (such as **Cloudflare Edge**, **Kong Gateway**, and **AWS API Gateway**) report:
 * **Sub-Millisecond Edge Enforcement**: Redis Lua atomic token bucket scripts enforce rate limits in under $1\text{ms}$.
 * **Protection Against Distributed Denial-of-Service (DDoS)**: Perimeter rate limiting drops malicious traffic spikes at the cloud edge before hitting internal microservice infrastructure.

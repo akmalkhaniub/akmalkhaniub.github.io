@@ -8,7 +8,7 @@ To build robust multi-agent systems, modern architectures adopt **The Orchestrat
 
 ---
 
-## 📖 The Orchestrator DAG Lifecycle
+## The Orchestrator DAG Lifecycle
 
 The Orchestrator operates as a meta-controller, isolating execution contexts across specialized worker nodes:
 
@@ -33,7 +33,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Dynamic Orchestrator & Self-Healing DAG Engine
+## Python Implementation: Dynamic Orchestrator & Self-Healing DAG Engine
 
 Here is a production Python implementation of an Orchestrator DAG engine that manages task node execution, enforces dependency order, and dynamically injects recovery nodes when worker subagents report failures.
 
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Architectural Guardrails
+## Important Architectural Guardrails
 
 When designing orchestrator DAG engines, keep these boundaries in mind:
 
@@ -169,7 +169,7 @@ When designing orchestrator DAG engines, keep these boundaries in mind:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Organizations implementing The Orchestrator Paradigm report:
 * **94% Task Completion Success**: Dynamic recovery node injection recovers from transient LLM syntax bugs automatically.
 * **80% Reduction in Context Costs**: Isolated sub-contexts prevent worker nodes from loading irrelevant conversation history.

@@ -14,7 +14,7 @@ This article details AES-NI assembly instructions, PCLMULQDQ carryless multiplic
 
 ---
 
-## 📖 AES-NI Hardware Instruction & Constant-Time Architecture
+## AES-NI Hardware Instruction & Constant-Time Architecture
 
 How Intel AES-NI hardware assembly instructions execute AES rounds in 1 clock cycle without cache side-channels:
 
@@ -53,7 +53,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: AES-NI Hardware Acceleration & Constant-Time Engine
+## Python Implementation: AES-NI Hardware Acceleration & Constant-Time Engine
 
 Here is a production-grade Python implementation of an AES-NI Hardware Instruction Simulator and Constant-Time Bitwise Operations Engine:
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Cryptographic Engineering Gotchas & Best Practices
+## Cryptographic Engineering Gotchas & Best Practices
 
 When deploying high-performance cryptography:
 
@@ -173,7 +173,7 @@ When deploying high-performance cryptography:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Utilizing hardware-accelerated AES-NI and AVX-512 crypto (such as **OpenSSL**, **BoringSSL**, and **Cloudflare TLS Edge**):
 * **Over $10\times$ Cryptographic Throughput Acceleration**: Hardware AES-NI assembly instructions encrypt data at rates exceeding $10\text{ Gbps}$ per CPU core.
 * **100% Immunity to Microarchitectural Cache Timing Attacks**: Hardware silicon execution eliminates software S-box RAM lookups, rendering cache timing key extraction impossible.

@@ -55,7 +55,7 @@ Emerging **Agent-to-Agent (A2A)** protocols are defining standard schemas for th
 
 ---
 
-## 📋 The Interoperability Checklist
+## The Interoperability Checklist
 
 *   **Standardize on MCP**: Instead of writing ad-hoc tool functions inside your Python or Node.js code, wrap tools as standard MCP servers. This ensures they can be reused by Claude, OpenAI, or custom LangGraph clients without code modifications.
 *   **Implement Input Gating**: Treat every MCP tool call as an untrusted user input. Enforce strict parameter validation (regex, bounds checkers) to prevent prompt injection attacks from compromising your local systems.
@@ -63,7 +63,7 @@ Emerging **Agent-to-Agent (A2A)** protocols are defining standard schemas for th
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 The shift towards standardized protocols like MCP and emerging A2A frameworks is critical for building scalable, secure, and interoperable AI systems.
 1.  **Standardized Integration with MCP:** MCP acts as a universal interface, decoupling LLMs from tools and data sources, significantly reducing integration complexity and enabling seamless model swapping.
@@ -72,7 +72,7 @@ The shift towards standardized protocols like MCP and emerging A2A frameworks is
 
 *Takeaway: Embracing standardized protocols is the key to unlocking the full potential of interoperable, secure, and scalable AI agent ecosystems.*
 
-## 📚 References & Further Reading
+## References & Further Reading
 
 *   **Model Context Protocol Specification**: Anthropic, 2024. [Model Context Protocol Website](https://modelcontextprotocol.io/).
 *   **A2A Interoperability**: *Agent-to-Agent Communication Protocols: Deconstructing the Standards for Multi-Agent Negotiations* (2025/2026 research). Analyzes emerging agentic data exchange formats. (Needs verification)

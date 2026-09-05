@@ -150,7 +150,7 @@ export default function BookmarkButton({ id, isBookmarkedInitial }: BookmarkProp
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 The combination of Server Actions and `useOptimistic` provides desktop-like speeds in modern web interfaces:
 * [ ] **Enforce `startTransition`**: Remember that `useOptimistic` triggers *must* be wrapped inside a React transition scope to run correctly.

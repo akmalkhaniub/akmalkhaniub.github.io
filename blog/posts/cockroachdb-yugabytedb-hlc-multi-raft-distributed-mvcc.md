@@ -12,7 +12,7 @@ This article details Hybrid Logical Clock math, Multi-Raft $64\text{ MB}$ range 
 
 ---
 
-## 📖 Distributed SQL Architecture & HLC Multi-Raft Mechanics
+## Distributed SQL Architecture & HLC Multi-Raft Mechanics
 
 How CockroachDB and YugabyteDB combine Hybrid Logical Clocks and Multi-Raft consensus to execute distributed ACID transactions:
 
@@ -55,7 +55,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Hybrid Logical Clock & Multi-Raft Simulator
+## Python Implementation: Hybrid Logical Clock & Multi-Raft Simulator
 
 Here is a production-grade Python implementation of a Hybrid Logical Clock (HLC) and Multi-Raft Range Partitioning Engine Simulator:
 
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Distributed SQL Gotchas & Best Practices
+## Distributed SQL Gotchas & Best Practices
 
 When deploying open-source Distributed SQL clusters:
 
@@ -175,7 +175,7 @@ When deploying open-source Distributed SQL clusters:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Distributed SQL internals (in **CockroachDB**, **YugabyteDB**, and **TiDB**) report:
 * **Spanner-Grade Reliability on Commodity Cloud Hardware**: Delivers multi-region ACID transactions without requiring atomic clock GPS hardware.
 * **Elastic Horizontal Auto-Scaling**: $64\text{ MB}$ Multi-Raft range splits allow clusters to scale linearly across hundreds of nodes.

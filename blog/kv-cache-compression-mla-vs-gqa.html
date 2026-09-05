@@ -118,7 +118,7 @@
 <p>To resolve this bottleneck, framework developers use key cache compression strategies: Meta&#39;s <strong>Grouped-Query Attention (GQA)</strong> and DeepSeek&#39;s <strong>Multi-head Latent Attention (MLA)</strong>.</p>
 <p>This article synthesizes the trade-offs of MLA vs. GQA, detailing <strong>what is good (pros)</strong>, <strong>what is not (cons)</strong>, and how to write a TypeScript telemetry profiling script, drawing from high-throughput optimization designs modeled in my async engine, <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</p>
 <hr>
-<h2>🎨 Attention Projections: GQA vs. MLA</h2>
+<h2>Attention Projections: GQA vs. MLA</h2>
 <p>GQA groups multiple Query heads to share single Key/Value heads, while MLA compresses keys and values into a shared low-rank latent vector space, expanding them dynamically during computation.</p>
 <div class="mermaid">graph TD
     classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
@@ -138,7 +138,7 @@
     class PathGQA,HBM_Save1 gqaStyle;
     class PathMLA,HBM_Save2 mlaStyle;</div>
 <hr>
-<h2>🔍 Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h2>Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
 <h3>1. Grouped-Query Attention (GQA)</h3>
 <p>Used as the standard attention mechanism in Meta&#39;s LLaMA-3 and Mistral&#39;s Mixtral models.</p>
 <ul>
@@ -168,7 +168,7 @@
 </li>
 </ul>
 <hr>
-<h2>💻 Profiling KV-Cache Memory in TypeScript</h2>
+<h2>Profiling KV-Cache Memory in TypeScript</h2>
 <p>To monitor and scale high-concurrency systems, you must track the active memory footprint of your model&#39;s context caches. </p>
 <p>Here is a TypeScript class that calculates the KV Cache memory footprint of a serving cluster under concurrent user requests, using the structural principles found in our asynchronous transaction processors in <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</p>
 <pre><code class="language-typescript">interface ModelSpec {
@@ -241,13 +241,13 @@ const deepseekProfiler = new KVCacheProfiler({
 llama3Profiler.profileCluster(100, 32768);
 deepseekProfiler.profileCluster(100, 32768);</code></pre>
 <hr>
-<h2>📋 KV-Cache Management Guardrails</h2>
+<h2>KV-Cache Management Guardrails</h2>
 <ul>
 <li><strong>vLLM PagedAttention</strong>: Always deploy KV Cache configurations inside dynamic paging engines (like vLLM PagedAttention) to prevent fragmentation crashes.</li>
 <li><strong>Prefill Decoupling</strong>: Separate prefill instances (which compute KV tensors) from decoding instances (which iterate token generation) to prevent latency spikes during high-concurrency request bursts.</li>
 </ul>
 <hr>
-<h2>🏁 Conclusion &amp; Key Takeaways</h2>
+<h2>Conclusion &amp; Key Takeaways</h2>
 <p>Optimizing memory utilization during token decoding is the key to scaling LLM deployments:</p>
 <ol>
 <li><strong>The Concurrency Revolution:</strong> DeepSeek&#39;s MLA demonstrates that low-rank compression of keys and values allows a single server to handle up to 10x more concurrent users, drastically lowering hosting costs.</li>
@@ -256,7 +256,7 @@ deepseekProfiler.profileCluster(100, 32768);</code></pre>
 </ol>
 <p><em>Takeaway:</em> Choose GQA for out-of-the-box framework compatibility; choose MLA to maximize active concurrent user densities.</p>
 <hr>
-<h2>📚 References &amp; Further Reading</h2>
+<h2>References &amp; Further Reading</h2>
 <ul>
 <li><strong>DeepSeek MLA Specification</strong>: DeepSeek-AI. <em>DeepSeek-V3 Technical Report</em>. Details Multi-head Latent Attention math and low-rank projections. <a href="https://github.com/deepseek-ai/DeepSeek-V3" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> DeepSeek Portal</a>.</li>
 <li><strong>Meta LLaMA GQA</strong>: Meta AI. <em>LLaMA 3 Model Architecture</em>. Details on Grouped-Query Attention scaling. <a href="https://ai.meta.com/blog/meta-llama-3/" target="_blank" rel="noopener">Meta AI Blog</a>.</li>

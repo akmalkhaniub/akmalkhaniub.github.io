@@ -2,7 +2,7 @@
 
 In large-scale distributed caching clusters (**Memcached**, **Redis Cluster**, **DynamoDB**, **Cassandra**), horizontal scaling requires partitioning millions of keys across hundreds of cache storage nodes.
 
-If a cluster uses naive **Modulo Hashing** ($\text{node} = \text{hash}(\text{key}) \pmod N$), adding or removing a single cache node changes $N \to N+1$.
+If a cluster uses naive **Modulo Hashing** ($\text{node} = \text{hash}(\text{key}) \pmod N$), adding or removing a single cache node changes $N → N+1$.
 
 This causes over **99% of all existing keys to remap to different nodes**, completely wiping out cluster cache hit rates and triggering massive database outages.
 
@@ -14,7 +14,7 @@ This article details Hash Rings with Virtual Nodes, Google's $O(1)$ memory Jump 
 
 ---
 
-## 📖 Consistent Hashing & Maglev Router Architecture
+## Consistent Hashing & Maglev Router Architecture
 
 How Hash Rings with Virtual Nodes and Google Jump Consistent Hash route keys to cluster nodes:
 
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Consistent Hash Ring & Google Jump Hash
+## Python Implementation: Consistent Hash Ring & Google Jump Hash
 
 Here is a production-grade Python implementation of Ring-Based Consistent Hashing (with Virtual Nodes) and Google Jump Consistent Hash:
 
@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Consistent Hashing Gotchas & Best Practices
+## Consistent Hashing Gotchas & Best Practices
 
 When engineering distributed hash routers:
 
@@ -185,7 +185,7 @@ When engineering distributed hash routers:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Consistent hashing deployment (such as in **Amazon DynamoDB**, **Apache Cassandra**, and **Google Maglev routers**) reports:
 * **Over 90% Remapping Reduction**: Adding a 10th node to a 9-node cluster remaps only $10\%$ of cached keys, keeping $90\%$ of cache entries active and preventing database load spikes.
 * **$O(1)$ Memory Routing**: Jump Consistent Hash routes billions of network requests using 0 bytes of hash ring memory storage.

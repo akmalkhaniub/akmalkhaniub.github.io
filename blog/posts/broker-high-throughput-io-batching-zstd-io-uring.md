@@ -12,7 +12,7 @@ This article details client record batching parameters (`batch.size`, `linger.ms
 
 ---
 
-## 📖 High-Throughput I/O Architecture: Batching & io_uring
+## High-Throughput I/O Architecture: Batching & io_uring
 
 How Client Batching, Zstd Compression, and Linux `io_uring` Ring Buffers eliminate syscall overhead:
 
@@ -51,7 +51,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Record Batching & Linux io_uring Simulator
+## Python Implementation: Record Batching & Linux io_uring Simulator
 
 Here is a production-grade Python implementation of a High-Throughput Record Batching Engine and Linux `io_uring` Ring Buffer Simulator:
 
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 High-Throughput I/O Gotchas & Best Practices
+## High-Throughput I/O Gotchas & Best Practices
 
 When tuning broker network and storage I/O:
 
@@ -169,7 +169,7 @@ When tuning broker network and storage I/O:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 High-Throughput I/O architectures (in **Kafka Brokers**, **Redpanda**, and **Linux 5.1+ io_uring Engines**) report:
 * **Over $3\times$ Higher Storage IOPS via `io_uring`**: Shared Submission/Completion ring buffers eliminate syscall context switching overhead.
 * **$80\%$ Reduction in Network Bandwidth via Zstd Compression**: Dictionary-based streaming compression reduces data transfer costs across multi-region cloud clusters.

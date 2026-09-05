@@ -19,7 +19,7 @@ graph TD
 
 ---
 
-## 🔮 1. Deterministic Transaction Scheduling: The Calvin Protocol
+## 1. Deterministic Transaction Scheduling: The Calvin Protocol
 
 In 2012, researchers at Yale (Alexander Thomson, Daniel J. Abadi, et al.) published *Calvin: Fast Distributed Transactions for Partitioned Database Systems*, providing the architectural foundation for modern deterministic engines like **FaunaDB**.
 
@@ -56,21 +56,19 @@ Because every replica node receives the exact same sequenced transaction stream 
 * **Zero Contention Aborts**: A transaction never aborts due to lock conflict.
 
 ### Handling Dynamic Transactions (OLLP)
-For transactions where read values determine future write keys (e.g. `SELECT balance FROM accounts WHERE id = 1` $\to$ `UPDATE tier SET ...`), Calvin uses **Optimistic Lock Location Prediction (OLLP)**: an initial low-cost read phase guesses the Read/Write sets. If predictions match, it executes deterministically; if state changed, it re-sequences.
+For transactions where read values determine future write keys (e.g. `SELECT balance FROM accounts WHERE id = 1` → `UPDATE tier SET ...`), Calvin uses **Optimistic Lock Location Prediction (OLLP)**: an initial low-cost read phase guesses the Read/Write sets. If predictions match, it executes deterministically; if state changed, it re-sequences.
 
 ---
 
-## ⚡ 2. Hardware-Accelerated Transactions: RDMA & CXL 3.0 Pooled Memory
+## 2. Hardware-Accelerated Transactions: RDMA & CXL 3.0 Pooled Memory
 
 For decades, distributed transaction latency was constrained by the TCP/IP kernel networking stack ($100\mu\text{s}\text{--}5\text{ms}$). Today, modern datacenter hardware architectures bypass the operating system entirely.
 
 ```
-+-----------------------------------------------------------------------------------+
-|                        TCP/IP vs RDMA Network Latency                             |
-+-----------------------------------------------------------------------------------+
+> **TCP/IP vs RDMA Network Latency**
 |  Standard TCP/IP Stack : [App] -> [OS Kernel] -> [NIC Driver] -> Wire (~100-500µs) |
 |  One-Sided RDMA / RoCE : [App] --------------------------------> Wire (~1-2µs)   |
-+-----------------------------------------------------------------------------------+
+
 ```
 
 ### Remote Direct Memory Access (RDMA & RoCE v2)
@@ -87,7 +85,7 @@ In a CXL-backed database architecture:
 
 ---
 
-## 🤖 3. Autonomous AI Agent Sagas: Dynamic Semantic Compensation
+## 3. Autonomous AI Agent Sagas: Dynamic Semantic Compensation
 
 With the rise of autonomous AI agent networks in 2026 (**Agent Fleet Orchestrator**, **Enterprise Workflow Swarms**), agents execute complex multi-step workflows across dozens of external APIs (Stripe, Twilio, Salesforce, AWS, Snowflake, Physical Robotics).
 
@@ -121,7 +119,7 @@ Modern agentic architectures address this via **Dynamic Semantic Compensation Gr
 
 ---
 
-## 🛠️ Python Implementation: Calvin-Style Deterministic Sequencer & Agentic Compensation Graph
+## Python Implementation: Calvin-Style Deterministic Sequencer & Agentic Compensation Graph
 
 Here is a Python implementation demonstrating a **Calvin-Style Deterministic Sequencer** with pre-ordered lock allocation and an **Agentic Semantic Compensation Graph**:
 
@@ -235,7 +233,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🧭 Comparative Summary: The 50-Year Evolution
+## Comparative Summary: The 50-Year Evolution
 
 | Era | Core Paradigm | Coordination Mechanism | Latency / Throughput | Failure Vulnerability |
 |---|---|---|---|---|
@@ -245,7 +243,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion
+## Conclusion
 Distributed transactions have evolved from monolithic synchronous lock managers to planetary NewSQL consensus, and now toward **hardware-accelerated, deterministic, and self-healing agentic workflows**.
 
 By understanding the historical failure modes of 2PC and the modern principles of deterministic sequencing, engineers can design distributed architectures that are fast, resilient, and mathematically sound.

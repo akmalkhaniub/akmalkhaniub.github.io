@@ -12,7 +12,7 @@ This article details the W3C `traceparent` specification, span DAG reconstructio
 
 ---
 
-## 📖 W3C Trace Context Propagation Architecture
+## W3C Trace Context Propagation Architecture
 
 How W3C `traceparent` headers propagate context across microservice RPC boundaries:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: W3C Context Propagator & Tail Sampler Engine
+## Python Implementation: W3C Context Propagator & Tail Sampler Engine
 
 Here is a production-grade Python implementation of W3C `traceparent` header injection/extraction and a Tail-Based Sampling Engine:
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Distributed Tracing Gotchas & Best Practices
+## Distributed Tracing Gotchas & Best Practices
 
 When implementing distributed tracing:
 
@@ -161,7 +161,7 @@ When implementing distributed tracing:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms adopting W3C Trace Context and Tail-Based Sampling report:
 * **$10\times$ Faster Mean Time to Resolution (MTTR)**: Instantly pinpointing the exact microservice and database query responsible for cascaded $5\text{xx}$ errors.
 * **80% Telemetry Storage Reduction**: Tail-based sampling discards millions of repetitive successful HTTP requests while preserving $100\%$ of actionable error traces.

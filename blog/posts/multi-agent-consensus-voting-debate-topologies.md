@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Implementing consensus in agent pools mitigates model bias and secures execution paths:
 * [ ] **Use Voting for low-latency tasks**: Tallying votes is fast and cheap, making it perfect for high-throughput classification.

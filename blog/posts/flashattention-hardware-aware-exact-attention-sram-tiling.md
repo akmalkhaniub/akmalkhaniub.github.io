@@ -16,7 +16,7 @@ This article details GPU memory hierarchy, SRAM tiling, and online softmax algor
 
 ---
 
-## 📖 FlashAttention GPU Memory Hierarchy & Tiling Architecture
+## FlashAttention GPU Memory Hierarchy & Tiling Architecture
 
 How FlashAttention loads blocks into high-speed GPU SRAM to avoid HBM memory bandwidth bottlenecks:
 
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Tiled Online Softmax FlashAttention Engine
+## Python Implementation: Tiled Online Softmax FlashAttention Engine
 
 Here is a production-grade Python simulation of the Tiled Online Softmax FlashAttention algorithm:
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 FlashAttention Gotchas & Best Practices
+## FlashAttention Gotchas & Best Practices
 
 When integrating FlashAttention into LLM inference pipelines:
 
@@ -168,7 +168,7 @@ When integrating FlashAttention into LLM inference pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Platforms adopting FlashAttention (such as **PyTorch 2.0 `sdpa`**, **vLLM**, and **Triton**) report:
 * **$2\times$ to $4\times$ Faster Transformer Training**: Eliminating HBM read/write bottlenecks speeds up large-scale LLM training runs.
 * **$10\times$ Memory Reduction for Long Contexts**: Enables processing $128\text{K}+$ token context windows on standard GPU clusters without OOM crashes.

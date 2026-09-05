@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 To build safe, enterprise-compliant agentic workflows:
 * [ ] **Define clear threshold gates**: Never allow agents to make un-audited state updates or calls for sensitive tasks. Enforce gates at the configuration level.

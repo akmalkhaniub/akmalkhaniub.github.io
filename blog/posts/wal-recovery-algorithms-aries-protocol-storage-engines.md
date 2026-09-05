@@ -10,7 +10,7 @@ This article details the three phases of the ARIES crash recovery algorithm and 
 
 ---
 
-## 📖 ARIES 3-Phase Crash Recovery Pipeline
+## ARIES 3-Phase Crash Recovery Pipeline
 
 The execution flow during database reboot after an unexpected crash:
 
@@ -36,7 +36,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: ARIES Crash Recovery Engine
+## Python Implementation: ARIES Crash Recovery Engine
 
 Here is a production-grade Python simulation of an ARIES Recovery Manager featuring Analysis, Redo, and Undo phase processing with Compensation Log Record (CLR) tracking:
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 ARIES Recovery Gotchas & Principles
+## ARIES Recovery Gotchas & Principles
 
 When designing transaction recovery engines:
 
@@ -160,7 +160,7 @@ When designing transaction recovery engines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams utilizing ARIES recovery engines report:
 * **100% ACID Durability**: Committed transactions survive power outages and kernel panics without data corruption.
 * **Deterministic Crash Recovery**: Compensation Log Records guarantee that recovery operations are idempotent, even if the server crashes multiple times during reboot.

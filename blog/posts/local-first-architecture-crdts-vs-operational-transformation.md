@@ -31,14 +31,12 @@ graph TD
 
 ---
 
-## 🏛️ 1. The 7 Local-First Software Principles (Kleppmann et al.)
+## 1. The 7 Local-First Software Principles (Kleppmann et al.)
 
 Coined in 2019 by Martin Kleppmann, Adam Wiggins, Peter van Hardenberg, and Mark McGranaghan, the Local-First Manifesto defines the standard for modern reactive applications:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 THE 7 LOCAL-FIRST CORE PRINCIPLES                                 |
-+---------------------------------------------------------------------------------------------------+
+> **THE 7 LOCAL-FIRST CORE PRINCIPLES**
 | 1. No Waiting (0ms Local I/O) : All reads and writes hit local memory/disk instantly.              |
 | 2. Multi-Device Sync          : Changes sync seamlessly across phone, laptop, and tablet.          |
 | 3. Network Optional (Offline) : App retains 100% functionality without internet connection.       |
@@ -46,26 +44,24 @@ Coined in 2019 by Martin Kleppmann, Adam Wiggins, Peter van Hardenberg, and Mark
 | 5. Longevity / Data Ownership : Users retain physical copies of data even if company shuts down.   |
 | 6. Security & Privacy         : End-to-end encryption (E2EE) possible because server is a dumb pipe|
 | 7. Ultimate User Control      : Clear migration, backup, and local file access.                    |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
 
-## ⚔️ 2. Operational Transformation (OT) vs CRDTs
+## 2. Operational Transformation (OT) vs CRDTs
 
 To support real-time collaborative text editing, computer scientists invented two competing paradigms:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                                 OT vs CRDT COMPARISON MATRIX                                      |
-+---------------------------------------------------------------------------------------------------+
+> **OT vs CRDT COMPARISON MATRIX**
 | Dimension            | Operational Transformation (OT) | Conflict-Free Replicated Data Types (CRDT)|
 | Central Server?      | MANDATORY (Single sequencer)    | OPTIONAL (True Peer-to-Peer / Decentralized) |
 | Mathematical Basis   | Transformation Functions T(a,b) | Join-Semilattice (Partial Order Sets)    |
 | Offline Scaling      | Poor (Huge transformation trees)| Flawless (State merges deterministically) |
 | Memory Overhead      | Low (Stores raw text + history) | Higher (Unique IDs + Tombstones)          |
 | Leading Engines      | Google Docs, Etherpad           | Yjs, Automerge, Loro, Figma, Linear       |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ---
@@ -94,7 +90,7 @@ graph TD
 
 ---
 
-## 🏗️ 3. State-Based (CvRDT) vs Operation-Based (CmRDT)
+## 3. State-Based (CvRDT) vs Operation-Based (CmRDT)
 
 ### 1. State-Based CRDTs (CvRDT)
 * Replicas synchronize by transmitting their **entire local state** (or state delta) to peers.
@@ -107,7 +103,7 @@ graph TD
 
 ---
 
-## 🪦 4. The Tombstone Problem & Compact Run-Length Encoding
+## 4. The Tombstone Problem & Compact Run-Length Encoding
 
 When a user deletes a character in a sequence CRDT, the system cannot simply erase the memory address—because a concurrent peer might insert a character relative to that deleted item.
 
@@ -118,7 +114,7 @@ The system marks the character as a **Tombstone** (`visible = false`).
 
 ---
 
-## 🛠️ Python Implementation: State-Based LWW-Element-Set CRDT Engine
+## Python Implementation: State-Based LWW-Element-Set CRDT Engine
 
 Here is a Python implementation of a **Last-Write-Wins Element-Set (LWW-Element-Set) CRDT** demonstrating concurrent offline mutations, network partition healing, and mathematical convergence:
 
@@ -221,7 +217,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Cloud Monolith vs Local-First CRDTs
+## Summary: Cloud Monolith vs Local-First CRDTs
 
 | Dimension | Centralized Cloud Architecture | Local-First CRDT Architecture |
 |---|---|---|
@@ -233,7 +229,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 Local-First is not merely an optimization—**it is the future of collaborative software engineering**.
 
 By replacing fragile client-server request/response loops with **Conflict-Free Replicated Data Types**, developers deliver consumer software that feels instantaneous, operates reliably anywhere on Earth, and guarantees flawless mathematical data convergence.

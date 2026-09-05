@@ -12,7 +12,7 @@ This article details how to instrument an agentic pipeline.
 
 ---
 
-## 📖 OpenTelemetry Agent Trace Architecture
+## OpenTelemetry Agent Trace Architecture
 
 Semantic tracing wraps every model call and tool invocation inside nested tracer spans:
 
@@ -39,7 +39,7 @@ To ensure interoperability with observability frontends (like Jaeger, Honeycomb,
 
 ---
 
-## 🛠️ Python Implementation: OpenTelemetry Agent Wrapper
+## Python Implementation: OpenTelemetry Agent Wrapper
 
 Here is a production-grade Python implementation of an agent tracing wrapper using the official OpenTelemetry SDK. It tracks nested spans for LLM calls and tool executions, recording semantic metadata:
 
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Observability Gotchas & Guardrails
+## Observability Gotchas & Guardrails
 
 When tracing distributed agent swarms:
 
@@ -167,7 +167,7 @@ When tracing distributed agent swarms:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying semantic telemetry report:
 * **Instant Outage Diagnostics**: Debugging times for stuck agents drop from hours to seconds by visualizing exactly which tool span hung.
 * **Cost Allocation Auditing**: Dynamically calculating prompt token span attributes allows precise billing attribution per user tenant.

@@ -12,7 +12,7 @@ This article explores the Okapi BM25 formula and Reciprocal Rank Fusion algorith
 
 ---
 
-## 📖 Hybrid Search & Reciprocal Rank Fusion Architecture
+## Hybrid Search & Reciprocal Rank Fusion Architecture
 
 How a Hybrid Search Engine executes parallel Sparse + Dense queries and merges rank positions:
 
@@ -46,7 +46,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: BM25 & RRF Hybrid Search Engine
+## Python Implementation: BM25 & RRF Hybrid Search Engine
 
 Here is a production-grade Python implementation of an Okapi BM25 Keyword Ranker, Dense Vector Simulator, and Reciprocal Rank Fusion Engine:
 
@@ -173,7 +173,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Hybrid Search Gotchas & Best Practices
+## Hybrid Search Gotchas & Best Practices
 
 When building hybrid search pipelines:
 
@@ -185,7 +185,7 @@ When building hybrid search pipelines:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Search platforms switching to BM25 + Vector Hybrid Search report:
 * **30% Increase in Search Relevance (NDCG@10)**: Combining semantic understanding with exact term matching outperforms pure vector search on real-world search benchmarks.
 * **100% Exact Match Accuracy for Product SKUs**: Hybrid search guarantees that users searching for exact part numbers receive exact catalog matches every time.

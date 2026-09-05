@@ -10,7 +10,7 @@ This article details how to build a dynamic vector ingestion engine.
 
 ---
 
-## 📖 Dynamic Vector Ingestion & Search Flow
+## Dynamic Vector Ingestion & Search Flow
 
 The write pipeline buffers new vectors in memory, while the search gateway queries both indexes concurrently:
 
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Real-Time Dynamic Ingestion Engine
+## Python Implementation: Real-Time Dynamic Ingestion Engine
 
 Here is a production-grade Python implementation of a dynamic vector ingestion engine. It buffers new vectors in a MemTable, simulates background index merging, and executes a unified query across both the static index and the write buffer:
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Ingestion Gotchas & Mitigation
+## Ingestion Gotchas & Mitigation
 
 When building dynamic vector indices:
 
@@ -160,7 +160,7 @@ When building dynamic vector indices:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying dynamic write-buffer vector engines report:
 * **High-Throughput Ingestion**: Databases handle continuous write rates of 10,000+ vector insertions per second without dropping requests.
 * **Instant Document Visibility**: De-coupling indexing updates from ingestion allows newly added documents to be searchable within milliseconds of write completion.

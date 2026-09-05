@@ -37,7 +37,7 @@ If a migration transaction is blocked waiting for an exclusive lock, it blocks t
 ### 1. Adding a Column with a Default Value
 A naive `ALTER TABLE users ADD COLUMN active BOOLEAN DEFAULT true;` will rewrite the entire table to write the `true` value into every row, holding an `AccessExclusiveLock` the entire time.
 
-#### ✅ The Safe Approach:
+#### The Safe Approach:
 1. Add the column without the default (instant, metadata-only lock).
 2. Set the default value (also instant, affects new rows only).
 3. Backfill the existing rows in small batches using a script to avoid lock escalation.
@@ -58,7 +58,7 @@ ALTER TABLE users ALTER COLUMN active SET DEFAULT true;
 ### 2. Creating a Vector or Standard Index
 Running a standard `CREATE INDEX` locks the table for both reads and writes. On tables with millions of rows, index building can take minutes or hours.
 
-#### ✅ The Safe Approach:
+#### The Safe Approach:
 Always build indexes concurrently using the `CONCURRENTLY` flag. This executes the index build in the background, utilizing a low-level lock that allows reads and writes to continue.
 
 ```sql
@@ -76,7 +76,7 @@ CREATE INDEX CONCURRENTLY idx_users_email ON users(email);
 ### 3. Adding a Foreign Key Constraint
 Adding a foreign key constraint normally locks both the parent and child tables while it scans the child table to validate all existing records.
 
-#### ✅ The Safe Approach:
+#### The Safe Approach:
 Split the constraint addition into two steps:
 1. Add the constraint as `NOT VALID` (creates the constraint instantly, locking only new rows).
 2. Validate the constraint in a separate step (scans existing data using a low-level lock, allowing writes to continue).
@@ -93,7 +93,7 @@ ALTER TABLE orders VALIDATE CONSTRAINT fk_orders_user;
 
 ---
 
-## 🏁 Conclusion & Takeaways
+## Conclusion & Takeaways
 
 Database reliability at scale requires strict lock management:
 * [ ] **Always set a `lock_timeout`**: Never let a migration query wait indefinitely; terminate it early to protect the active connection pool.

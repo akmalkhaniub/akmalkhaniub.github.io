@@ -12,7 +12,7 @@ This article details how to design and build scalable real-time communication ga
 
 ---
 
-## 📖 Real-Time WebSocket/SSE Gateway Architecture
+## Real-Time WebSocket/SSE Gateway Architecture
 
 How a Pub/Sub message bus fans out real-time events across stateless connection gateway pods:
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Real-Time Gateway & Pub/Sub Engine
+## Python Implementation: Real-Time Gateway & Pub/Sub Engine
 
 Here is a production-grade Python simulation of a Real-Time Connection Gateway with local socket registration and Pub/Sub fanout broadcasting:
 
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Real-Time Gateway Gotchas & Best Practices
+## Real-Time Gateway Gotchas & Best Practices
 
 When engineering real-time WebSocket and SSE gateways:
 
@@ -156,7 +156,7 @@ When engineering real-time WebSocket and SSE gateways:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying real-time Pub/Sub communication gateways report:
 * **Sub-50ms Real-Time Push Latency**: Eliminating HTTP polling delivers instant updates to end users while reducing network bandwidth by up to 80%.
 * **Horizontal Scalability to Millions of Connections**: Decoupling socket connections into stateless Gateway Pods allows scaling connection capacity seamlessly by adding container instances.

@@ -27,18 +27,16 @@ graph TD
 
 ---
 
-## 🤯 1. The "Lone Polymath Agent" Fallacy
+## 1. The "Lone Polymath Agent" Fallacy
 
 In early autonomous agent experiments (AutoGPT, generic coding assistants), developers tasked a single LLM prompt with acting as a full-stack engineering team:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                           THE LONE POLYMATH AGENT ANTI-PATTERN                                    |
-+---------------------------------------------------------------------------------------------------+
+> **THE LONE POLYMATH AGENT ANTI-PATTERN**
 |  System Prompt: "You are an expert full-stack engineer, product manager, security architect,     |
 |                  database admin, and QA lead. Decompose this prompt, write backend code,         |
 |                  write frontend UI, optimize SQL queries, audit security, and deploy to AWS."     |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 ### Why Lone Polymath Agents Fail on Complex Tasks:
@@ -48,7 +46,7 @@ In early autonomous agent experiments (AutoGPT, generic coding assistants), deve
 
 ---
 
-## 🏭 2. The Multi-Agent Software Assembly Line
+## 2. The Multi-Agent Software Assembly Line
 
 Production agent systems (**Agent Fleet Orchestrator**, **SpecForge**) abandon the lone polymath paradigm in favor of **Specialized Multi-Agent Assembly Lines**:
 
@@ -81,28 +79,26 @@ graph LR
 
 ---
 
-## 🔒 3. Conveyor Belts & Deterministic Quality Gates
+## 3. Conveyor Belts & Deterministic Quality Gates
 
 In Ford’s factory, a car chassis only moved to the next station if the previous station’s work was completed correctly.
 
 In an agentic assembly line, transitions between stations are governed by **Deterministic Symbolic Gates**:
 
 ```
-+---------------------------------------------------------------------------------------------------+
-|                               DETERMINISTIC QUALITY GATES                                         |
-+---------------------------------------------------------------------------------------------------+
+> **DETERMINISTIC QUALITY GATES**
 | Gate 1 (Spec -> Coder)   : OpenAPI Schema compiles with zero JSON Schema validation errors        |
 | Gate 2 (Coder -> Auditor): Code compiles with zero TypeScript / AST parser syntax errors          |
 | Gate 3 (Auditor -> QA)   : Static analysis reports 0 CVE vulnerabilities and passes linter        |
 | Gate 4 (QA -> Release)   : Automated test suite reports 100% pass rate & > 90% code coverage     |
-+---------------------------------------------------------------------------------------------------+
+
 ```
 
 If an assembly station fails its quality gate, the work order is automatically routed backward to the specific subagent responsible, preventing error cascades.
 
 ---
 
-## 🛠️ Python Implementation: Multi-Agent Software Assembly Line Engine
+## Python Implementation: Multi-Agent Software Assembly Line Engine
 
 Here is a Python implementation demonstrating a 4-station Software Assembly Line with deterministic quality gates and automated rework loops:
 
@@ -194,7 +190,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Summary: Craft Artisan vs Industrial Assembly Line
+## Summary: Craft Artisan vs Industrial Assembly Line
 
 | Metric | Lone Polymath Agent (Craft) | Multi-Agent Assembly Line (Ford) |
 |---|---|---|
@@ -206,7 +202,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🏁 Architectural Takeaway
+## Architectural Takeaway
 Henry Ford proved that complex machines cannot be built reliably by a lone artisan trying to master every trade.
 
 By structuring autonomous AI agents into **disciplined, specialized assembly lines linked by deterministic quality gates**, software organizations transform chaotic LLM outputs into predictable, enterprise-grade software delivery pipelines.

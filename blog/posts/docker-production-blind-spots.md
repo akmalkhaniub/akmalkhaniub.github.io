@@ -48,21 +48,21 @@ flowchart LR
 **Root cause**: When you run `CMD python app.py`, Docker makes `python` PID 1. Linux only sends `SIGTERM` to PID 1. But `python` (and `node`, `uvicorn`, etc.) don't forward signals to child processes by default. After 10 seconds, Docker escalates to `SIGKILL` — no cleanup possible.
 
 ```dockerfile
-# ❌ Python/Node becomes PID 1 — doesn't handle signals correctly
+# Python/Node becomes PID 1 — doesn't handle signals correctly
 CMD ["python", "app.py"]
 CMD ["node", "server.js"]
 
-# ✅ Option A: Use exec form (not shell form) — this IS correct for single processes
+# Option A: Use exec form (not shell form) — this IS correct for single processes
 # exec form runs the process as PID 1 directly, signals work
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# ✅ Option B: Use tini as a proper init process (handles zombie reaping too)
+# Option B: Use tini as a proper init process (handles zombie reaping too)
 # Install in your Dockerfile:
 RUN apt-get install -y tini
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# ✅ Option C: Use --init flag on docker run / compose
+# Option C: Use --init flag on docker run / compose
 # docker run --init myimage
 # compose.yml:
 # init: true
@@ -97,13 +97,13 @@ app = FastAPI(lifespan=lifespan)
 **Root cause**: Docker layer cache is invalidated when any file in a `COPY` command changes. If you `COPY . .` before `RUN pip install`, any code change invalidates the pip install layer.
 
 ```dockerfile
-# ❌ COPY . . before pip install — any code change busts the cache
+# COPY . . before pip install — any code change busts the cache
 FROM python:3.11-slim
 WORKDIR /app
 COPY . .                          # ← Every file change invalidates next layer
 RUN pip install -r requirements.txt  # ← Reinstalls everything every time
 
-# ✅ Copy dependency files FIRST, install, THEN copy source code
+# Copy dependency files FIRST, install, THEN copy source code
 FROM python:3.11-slim
 WORKDIR /app
 
@@ -118,7 +118,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ```dockerfile
-# ✅ Same pattern for Node.js
+# Same pattern for Node.js
 FROM node:20-slim
 WORKDIR /app
 
@@ -142,7 +142,7 @@ CMD ["node", "dist/server.js"]
 **Root cause**: Docker containers run as `root` (UID 0) by default. If your container is ever compromised — through a vulnerable npm package, a deserialization exploit, or a path traversal — the attacker has root inside the container, which may translate to host root depending on Docker daemon configuration.
 
 ```dockerfile
-# ❌ Running as root (Docker default)
+# Running as root (Docker default)
 FROM python:3.11-slim
 WORKDIR /app
 COPY . .
@@ -150,7 +150,7 @@ RUN pip install -r requirements.txt
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 # docker inspect → "User": "" → runs as root
 
-# ✅ Create and use a non-root user
+# Create and use a non-root user
 FROM python:3.11-slim
 
 # Create non-root user with no home directory and no shell
@@ -179,19 +179,19 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 **Root cause**: Docker image layers are immutable and cumulative. Even if you `RUN unset API_KEY` in a later layer, the secret exists in the earlier layer forever — visible to anyone who can pull the image.
 
 ```dockerfile
-# ❌ Secret in ENV — permanent in image history
+# Secret in ENV — permanent in image history
 ENV ANTHROPIC_API_KEY="sk-ant-..."
 ENV DATABASE_URL="postgresql://user:password@host/db"
 
-# ❌ Secret in RUN — also permanent even if deleted later
+# Secret in RUN — also permanent even if deleted later
 RUN pip install -r requirements.txt --extra-index-url https://user:token@pypi.company.com/simple
 
-# ✅ Never bake secrets — use runtime environment injection
+# Never bake secrets — use runtime environment injection
 # In production: pass via Docker secrets, Kubernetes secrets, or env at runtime
 # docker run --env-file .env myimage
 # docker run -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY myimage
 
-# ✅ For build-time secrets (private PyPI, npm registries): use BuildKit secrets
+# For build-time secrets (private PyPI, npm registries): use BuildKit secrets
 # syntax=docker/dockerfile:1
 FROM python:3.11-slim
 RUN --mount=type=secret,id=pip_config,target=/root/.pip/pip.conf \
@@ -275,10 +275,10 @@ Thumbs.db
 **Symptom**: Your pod is running (Kubernetes shows `Running` status) but returning 500 errors. Kubernetes keeps sending traffic because it doesn't know the app is broken.
 
 ```dockerfile
-# ❌ No health check — orchestrators assume "running" = "healthy"
+# No health check — orchestrators assume "running" = "healthy"
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-# ✅ Add HEALTHCHECK so Docker/Kubernetes knows when the app is truly ready
+# Add HEALTHCHECK so Docker/Kubernetes knows when the app is truly ready
 HEALTHCHECK --interval=30s \
             --timeout=10s \
             --start-period=15s \
@@ -318,7 +318,7 @@ async def health_check():
 **Symptom**: Your Python or Node.js production image is 1.8GB. It contains pytest, mypy, eslint, TypeScript compiler, and test fixtures that have no business running in production.
 
 ```dockerfile
-# ✅ Multi-stage build — lean production image
+# Multi-stage build — lean production image
 # Stage 1: Builder (has dev tools, compilers, test deps)
 FROM node:20-slim AS builder
 WORKDIR /app
@@ -352,7 +352,7 @@ CMD ["node", "dist/server.js"]
 ```
 
 ```dockerfile
-# ✅ Multi-stage Python with UV package manager (fastest Python builds)
+# Multi-stage Python with UV package manager (fastest Python builds)
 FROM python:3.11-slim AS builder
 RUN pip install uv
 WORKDIR /app
@@ -379,7 +379,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", 
 
 ---
 
-## 🏁 Conclusion & Key Takeaways
+## Conclusion & Key Takeaways
 
 Docker's simplicity is a double-edged sword — it hides complexity that resurfaces as production incidents. The failures above follow a pattern: they're invisible in development (fast machine, no proxy, running as you) and catastrophic in production (slow CI, proxied, rootless Kubernetes).
 

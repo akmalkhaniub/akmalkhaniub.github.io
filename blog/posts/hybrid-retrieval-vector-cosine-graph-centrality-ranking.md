@@ -12,7 +12,7 @@ This article details how to build a hybrid reranking engine.
 
 ---
 
-## 📖 Hybrid Context Reranking Architecture
+## Hybrid Context Reranking Architecture
 
 The hybrid retrieval engine merges vector similarity ranks with graph centrality topological ranks:
 
@@ -38,7 +38,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Hybrid Reranker with PageRank
+## Python Implementation: Hybrid Reranker with PageRank
 
 Here is a production Python implementation of a Hybrid Code Retriever. It computes semantic vector similarity and PageRank centrality scores, and applies Reciprocal Rank Fusion (RRF) to output the final ranked context list:
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Hybrid Retrieval Guardrails
+## Important Hybrid Retrieval Guardrails
 
 When configuring hybrid context retrievers:
 
@@ -147,7 +147,7 @@ When configuring hybrid context retrievers:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting Hybrid Vector-Centrality Retrieval report:
 * **Perfect Architectural Context Selection**: Retrievers consistently locate and include critical system-wide routing configurations alongside code snippet matches.
 * **45% Drop in Agent Refactoring Failures**: Providing the LLM with both local snippet semantics and global import paths eliminates broken references during codebase updates.

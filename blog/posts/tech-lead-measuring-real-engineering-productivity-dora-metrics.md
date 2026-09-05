@@ -8,7 +8,7 @@ To measure true team leverage in the AI era, Tech Leads must discard vanity metr
 
 ---
 
-## 📖 Vanity Metrics vs. True DORA Velocity
+## Vanity Metrics vs. True DORA Velocity
 
 Measuring developer productivity by lines of code in an AI-driven environment is like measuring aircraft efficiency by how much fuel it burns:
 
@@ -35,7 +35,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Tooling: DORA Metric & Deployment Health Calculator
+## Python Tooling: DORA Metric & Deployment Health Calculator
 
 To track true engineering leverage automatically, Tech Leads implement telemetry pipelines that analyze deployment events and git commit logs.
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Leadership Guardrails
+## Important Leadership Guardrails
 
 When evaluating developer productivity in AI-driven teams, maintain these principles:
 
@@ -131,7 +131,7 @@ When evaluating developer productivity in AI-driven teams, maintain these princi
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams measuring DORA metrics rather than vanity volume report:
 * **45% Drop in Change Failure Rates**: Shifting focus to verification and small deployment batches prevents production regressions.
 * **Sustained High Team Morale**: Developers avoid review burnout by working within automated verification pipelines.

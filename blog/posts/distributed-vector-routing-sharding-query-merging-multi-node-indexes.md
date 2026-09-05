@@ -10,7 +10,7 @@ This article details how to design partition schemes and execute scatter-gather 
 
 ---
 
-## 📖 Distributed Vector Search Pipeline
+## Distributed Vector Search Pipeline
 
 The query coordinator broadcasts queries to shards and resolves local lists into a global output:
 
@@ -43,7 +43,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Simulation: Distributed Scatter-Gather Coordinator
+## Python Simulation: Distributed Scatter-Gather Coordinator
 
 Here is a production-grade Python implementation of a distributed query coordinator. It simulates parallel shard index searches and performs a heap-based multi-way merge sort to resolve local candidate lists into the global top-$k$ results:
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Distributed Search Gotchas & Guardrails
+## Distributed Search Gotchas & Guardrails
 
 When sharding vector indexes:
 
@@ -146,7 +146,7 @@ When sharding vector indexes:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying distributed vector sharding report:
 * **Horizontal Scalability**: Clusters easily scale to billions of vectors by adding more index shard instances.
 * **Low Merge Overhead**: Using heap-based multi-way merge sort on the coordinator limits latency additions during the gather phase to under 2ms.

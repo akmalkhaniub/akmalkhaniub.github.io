@@ -8,7 +8,7 @@ This structural shift renders traditional story-point estimation obsolete. This 
 
 ---
 
-## 📖 The Hybrid Sprint Lifecycle
+## The Hybrid Sprint Lifecycle
 
 In a hybrid team model, task allocation is driven by **Task Complexity & Determinism**:
 
@@ -39,7 +39,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Scheduler: Hybrid Task DAG Dispatcher
+## Python Scheduler: Hybrid Task DAG Dispatcher
 
 To manage asynchronous execution across background subagent pools without overloading CI queues or API rate limits, Tech Leads build DAG-based task dispatchers.
 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
 ---
 
-## ⚠️ Important Pitfalls in Hybrid Sprint Management
+## Important Pitfalls in Hybrid Sprint Management
 
 When managing hybrid human-agent sprint cycles, keep these guardrails in mind:
 
@@ -141,7 +141,7 @@ When managing hybrid human-agent sprint cycles, keep these guardrails in mind:
 > **Context-Swapping Overload**: Do not assign human engineers to review 50 small agent pull requests per day. Group agent-generated outputs into consolidated feature branches so code reviews occur at logical milestone boundaries.
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams adopting Hybrid Swarm Sprint Planning experience:
 * **3x Increase in Feature Throughput**: Repetitive glue code and test expansions run asynchronously in the background.
 * **Eliminated Developer Burnout**: Human engineers focus strictly on high-leverage architectural design and security reviews.

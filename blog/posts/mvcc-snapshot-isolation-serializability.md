@@ -14,7 +14,7 @@ This article details tuple versioning (`xmin`/`xmax`), Read Snapshots, Snapshot 
 
 ---
 
-## 📖 MVCC Tuple Versioning & Read Snapshot Architecture
+## MVCC Tuple Versioning & Read Snapshot Architecture
 
 How MVCC maintains tuple version chains to provide consistent Read Snapshots without locking:
 
@@ -47,7 +47,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: MVCC Storage Engine with Read Snapshots
+## Python Implementation: MVCC Storage Engine with Read Snapshots
 
 Here is a production-grade Python implementation of an MVCC Storage Engine featuring Tuple Versioning, Read Snapshots, and Write-Write Conflict Detection:
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 MVCC Gotchas & Best Practices
+## MVCC Gotchas & Best Practices
 
 When operating MVCC databases:
 
@@ -173,7 +173,7 @@ When operating MVCC databases:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Databases utilizing MVCC (such as **PostgreSQL**, **MySQL InnoDB**, and **CockroachDB**) report:
 * **Over $10\times$ Higher Read Throughput**: Readers executing long analytical queries never block short concurrent write transactions.
 * **Consistently Fast Snapshot Backups**: Taking database snapshots requires zero table locks, allowing online backups during peak production traffic.

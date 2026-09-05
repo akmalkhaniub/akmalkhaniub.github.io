@@ -12,7 +12,7 @@ This article details how to implement CRDT state synchronization engines for mul
 
 ---
 
-## 📖 State-Based CRDT (CvRDT) Semi-Lattice Architecture
+## State-Based CRDT (CvRDT) Semi-Lattice Architecture
 
 Mathematical properties of State-Based CRDT merge operations ($\sqcup$):
 
@@ -42,7 +42,7 @@ For a state-based CRDT, the merge function ($\sqcup$) must form a **Bounded Semi
 
 ---
 
-## 🛠️ Python Implementation: LWW-Element-Set CRDT for Agent Editors
+## Python Implementation: LWW-Element-Set CRDT for Agent Editors
 
 Here is a production-grade Python implementation of a **Last-Write-Wins Element-Set (LWW-Element-Set) CRDT**. It tracks additions and removals of code functions across independent agent replicas, allowing non-blocking concurrent edits and deterministic conflict resolution:
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 CRDT Implementation Gotchas
+## CRDT Implementation Gotchas
 
 When deploying CRDTs in agent environments:
 
@@ -161,7 +161,7 @@ When deploying CRDTs in agent environments:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying CRDT agent state synchronization report:
 * **Zero Locking Overhead**: Autonomous agents edit shared codebases concurrently with zero lock contention.
 * **Guaranteed State Convergence**: Replicas operating over unstable network connections automatically converge to identical final states as soon as network connectivity is restored.

@@ -12,7 +12,7 @@ This article details how to design and build a multi-tier L1/L2 caching engine.
 
 ---
 
-## 📖 Multi-Tier L1/L2 Caching & Invalidation Architecture
+## Multi-Tier L1/L2 Caching & Invalidation Architecture
 
 The read path hierarchy and cross-node L1 invalidation bus:
 
@@ -44,7 +44,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Multi-Tier L1/L2 Caching Engine
+## Python Implementation: Multi-Tier L1/L2 Caching Engine
 
 Here is a production-grade Python implementation of a Multi-Tier Cache Manager featuring an L1 Process Cache, L2 Distributed Cache, and Redis Pub/Sub invalidation synchronization:
 
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Multi-Tier Caching Gotchas & Best Practices
+## Multi-Tier Caching Gotchas & Best Practices
 
 When operating multi-tier caching architectures:
 
@@ -190,7 +190,7 @@ When operating multi-tier caching architectures:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Teams deploying multi-tier hybrid caching report:
 * **Sub-Microsecond Latency**: Serving 90% of reads directly from L1 in-memory process caches delivers $100\times$ faster response times than single-tier Redis lookups.
 * **90% Network Socket Reduction**: Co-locating L1 caches inside application processes dramatically reduces TCP socket overhead on Redis clusters.

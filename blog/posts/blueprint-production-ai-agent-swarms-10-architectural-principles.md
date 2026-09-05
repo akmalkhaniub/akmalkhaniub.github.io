@@ -38,7 +38,7 @@ graph TD
 
 ---
 
-## 🏛️ Principle 1: Enforce Hierarchical Supervisor Topologies over Flat Networks
+## Principle 1: Enforce Hierarchical Supervisor Topologies over Flat Networks
 
 In naive multi-agent demos, agents communicate in a flat peer-to-peer mesh. If Agent $A$ encounters ambiguity, it queries Agent $B$, which asks Agent $C$, which loops back to Agent $A$.
 
@@ -59,9 +59,9 @@ Flat P2P Mesh (Anti-Pattern):          Hierarchical Supervisor (Production):
 
 ---
 
-## 🔒 Principle 2: Anchor Non-Deterministic LLMs to Deterministic State Machines
+## Principle 2: Anchor Non-Deterministic LLMs to Deterministic State Machines
 
-Pure LLMs cannot be trusted to manage system control flow. If an agent hallucinates a step transition from `PLANNING \to DEPLOYED` while skipping `SECURITY_AUDIT`, production is compromised.
+Pure LLMs cannot be trusted to manage system control flow. If an agent hallucinates a step transition from `PLANNING → DEPLOYED` while skipping `SECURITY_AUDIT`, production is compromised.
 
 Production swarms enforce a **Hybrid Neural-Symbolic Architecture**:
 * **LLM Core**: Responsible solely for natural language reasoning, code synthesis, and perceptual parsing.
@@ -69,7 +69,7 @@ Production swarms enforce a **Hybrid Neural-Symbolic Architecture**:
 
 ---
 
-## 🛡️ Principle 3: Isolate Tool Execution via the Model Context Protocol (MCP)
+## Principle 3: Isolate Tool Execution via the Model Context Protocol (MCP)
 
 Giving an autonomous agent unrestricted access to the host operating system (`exec("rm -rf ...")`) is an unacceptable security vulnerability.
 
@@ -78,7 +78,7 @@ Giving an autonomous agent unrestricted access to the host operating system (`ex
 
 ---
 
-## 💰 Principle 4: Real-Time Token Economics & Cost Metering
+## Principle 4: Real-Time Token Economics & Cost Metering
 
 An autonomous agent running without cost governance can exhaust monthly cloud budgets during a single stuck task.
 
@@ -89,7 +89,7 @@ Every agent invocation must pass through a **Token Economics Gatekeeper**:
 
 ---
 
-## 💾 Principle 5: Persistent State Checkpointing for Instant Crash Recovery
+## Principle 5: Persistent State Checkpointing for Instant Crash Recovery
 
 Autonomous software engineering missions can span 15 to 45 minutes of continuous execution across hundreds of tool steps. If a worker pod crashes due to a spot instance termination, restarting the entire mission from scratch is unviable.
 
@@ -113,7 +113,7 @@ Every state transition must be atomically serialized to a persistent store (Post
 
 ---
 
-## 🔁 Principle 6: Enforce Idempotency Across All Tool Invocations
+## Principle 6: Enforce Idempotency Across All Tool Invocations
 
 In distributed networks, tool executions time out, triggering automatic retries. If an agent executes a non-idempotent tool (`create_aws_vpc()` or `charge_credit_card()`), network retries result in duplicate infrastructure or double charges.
 
@@ -123,7 +123,7 @@ In distributed networks, tool executions time out, triggering automatic retries.
 
 ---
 
-## 🔄 Principle 7: Dynamic Semantic Rollback DAGs for Real-World Side Effects
+## Principle 7: Dynamic Semantic Rollback DAGs for Real-World Side Effects
 
 Unlike local databases where `ROLLBACK` undoes all writes, autonomous agent swarms trigger **irreversible external side effects** (sending emails, modifying DNS records, purchasing cloud instances).
 
@@ -146,7 +146,7 @@ If step $k$ fails, the Supervisor halts forward execution and traverses the Dire
 
 ---
 
-## 🛑 Principle 8: Hard Iteration Ceilings & Loopback Circuit Breakers
+## Principle 8: Hard Iteration Ceilings & Loopback Circuit Breakers
 
 Autonomous agents with self-healing feedback loops frequently fall into "optimistic thrashing"—repeatedly modifying the same line of code or querying the same invalid endpoint.
 
@@ -155,7 +155,7 @@ Autonomous agents with self-healing feedback loops frequently fall into "optimis
 
 ---
 
-## 👤 Principle 9: Human-in-the-Loop (HITL) Escalation Gates
+## Principle 9: Human-in-the-Loop (HITL) Escalation Gates
 
 Autonomous swarms should not operate in an unmonitored vacuum. Critical, high-risk operational boundaries must require explicit human authorization.
 
@@ -168,7 +168,7 @@ When an agent hits a high-risk boundary, it halts, serializes its current state 
 
 ---
 
-## 📊 Principle 10: Real-Time OpenTelemetry Trajectory Streaming
+## Principle 10: Real-Time OpenTelemetry Trajectory Streaming
 
 Debugging a multi-agent system after a silent failure is impossible without granular, distributed observability.
 
@@ -178,7 +178,7 @@ Every agent thought, tool execution, LLM token count, and memory lookup must emi
 
 ---
 
-## 🛠️ TypeScript Implementation: Production Multi-Agent Swarm Engine
+## TypeScript Implementation: Production Multi-Agent Swarm Engine
 
 Here is a production-grade TypeScript implementation embodying these 10 architectural principles:
 
@@ -331,7 +331,7 @@ if (require.main === module) {
 
 ---
 
-## 🏁 The Future of Autonomous Swarms
+## The Future of Autonomous Swarms
 The leap from fragile agent experiments to **mission-critical autonomous software systems** is not driven by bigger prompt models, but by **disciplined distributed systems engineering**.
 
 By grounding multi-agent networks in **hierarchical topologies**, **deterministic state machines**, **idempotent sandboxed tools**, and **real-time telemetry**, engineering teams can unlock autonomous workflows that operate with $99.9\%$ enterprise resilience.

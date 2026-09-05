@@ -4,7 +4,7 @@ In high-performance database storage engines (such as PostgreSQL, Redis, MongoDB
 
 By default, the Linux kernel divides physical memory into **4 KB Page Frames**.
 
-To translate a virtual memory address used by an application to a physical RAM address, the CPU Memory Management Unit (MMU) traverses a 4-level page table hierarchy (PGD $\to$ PUD $\to$ PMD $\to$ PTE).
+To translate a virtual memory address used by an application to a physical RAM address, the CPU Memory Management Unit (MMU) traverses a 4-level page table hierarchy (PGD → PUD → PMD → PTE).
 
 For an application utilizing $512\text{ GB}$ of RAM, the Linux kernel must track over **134 million page table entries**, consuming over $1\text{ GB}$ of RAM just for page tables!
 
@@ -14,7 +14,7 @@ This article details Linux virtual memory page translation, Explicit HugePages, 
 
 ---
 
-## 📖 Linux Virtual Memory Translation & HugePages Architecture
+## Linux Virtual Memory Translation & HugePages Architecture
 
 How 4-Level Page Table Translation works and how HugePages reduce TLB cache misses by 512x:
 
@@ -49,7 +49,7 @@ graph TD
 
 ---
 
-## 🛠️ Python Implementation: Virtual Memory Page Table & TLB Simulator
+## Python Implementation: Virtual Memory Page Table & TLB Simulator
 
 Here is a production-grade Python simulation of a 4-Level Virtual Memory Page Table Translator comparing 4KB Standard Pages vs 2MB HugePages:
 
@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚨 Linux Memory Architecture Gotchas & Best Practices
+## Linux Memory Architecture Gotchas & Best Practices
 
 When operating Linux production servers:
 
@@ -160,7 +160,7 @@ When operating Linux production servers:
 
 ---
 
-## 📈 Real-World Enterprise Impact
+## Real-World Enterprise Impact
 Systems optimizing Linux virtual memory and HugePages report:
 * **Over 15% CPU Performance Boost**: Reducing TLB cache misses allows CPU cores to execute application instructions without stalling on page table walks.
 * **Elimination of 500ms Database Latency Spikes**: Disabling Transparent Huge Pages (THP) eliminates periodic allocation locks in Redis and MongoDB clusters.
