@@ -104,226 +104,223 @@
           </div>
 
           <div class="article-body">
-<p>In distributed systems engineering (<strong>E-Commerce Inventory</strong>, <strong>Financial Ledger Processing</strong>, <strong>Billing Engines</strong>, <strong>Cluster Master Election</strong>), coordinating exclusive access to a shared resource across multiple machines is a frequent requirement:</p>
-<ul>
-<li>Ensuring only one worker charges a customer&#39;s credit card.</li>
-<li>Ensuring only one batch job generates the daily ledger report.</li>
-<li>Preventing concurrent double-allocation of a limited flight seat.</li>
-</ul>
-<p>To prevent race conditions, software architects frequently implement <strong>Distributed Lock Managers (DLMs)</strong> using <strong>Redis (Redlock)</strong>, <strong>Apache ZooKeeper</strong>, <strong>Google Chubby</strong>, or <strong>PostgreSQL Advisory Locks</strong>.</p>
-<p>In 2016, a legendary computer science debate erupted between <strong>Martin Kleppmann</strong> (Cambridge distributed systems researcher) and <strong>Salvatore Sanfilippo (Antirez)</strong> (creator of Redis).</p>
-<p>Kleppmann mathematically demonstrated that in asynchronous distributed networks subject to <strong>unpredictable network delays</strong>, <strong>process GC pauses</strong>, and <strong>clock drift</strong>, standard distributed locks—including Redis Redlock—<strong>cannot guarantee safety without Monotonically Increasing Fencing Tokens</strong>.</p>
+<p>In February 2016, a debate broke out in the distributed systems community that should be required reading for every software engineer who has ever written code touching a shared database.</p>
+<p>On one side was Salvatore Sanfilippo, known to the world as <strong>Antirez</strong>, the brilliant Italian creator of Redis. On the other was <strong>Martin Kleppmann</strong>, a distributed systems researcher at the University of Cambridge and author of <em>Designing Data-Intensive Applications</em>.</p>
+<p>At issue was <strong>Redlock</strong>: an algorithm proposed by Antirez to provide fault-tolerant distributed locking across multiple Redis instances without requiring consensus protocols like Paxos or Raft.</p>
+<p>Antirez argued that by acquiring a lock across a majority of independent Redis nodes with a time-to-live (TTL) expiration lease, engineers could safely coordinate distributed access to mission-critical resources.</p>
+<p>Kleppmann replied with a surgical mathematical critique that dismantled the premise. In asynchronous networks subject to unbounded network latency, garbage collection pauses, and physical clock drift, <strong>no lock based on wall-clock time can ever guarantee safety without monotonically increasing fencing tokens</strong>.</p>
 <div class="mermaid">graph TD
-  subgraph The Distributed Lock GC Pause Hazard (Split-Brain Write)
-    Client1[&quot;Client 1: Acquires Lock (Lease: 10s)&quot;] --&gt; Pause[&quot;🚨 12-Second GC / VM Pause (Lock Expires!)&quot;]
+  subgraph The Distributed Lock GC Pause Hazard (Split-Brain Corruption)
+    ClientA[&quot;Client 1: Acquires Lock Lease (10s)&quot;] --&gt; GC[&quot;🚨 12-Second GC / VM Pause (Lock Expires!)&quot;]
     
-    subgraph Lock Server (Redis / DLM)
-      LeaseExpire[&quot;Lock Expires at t=10s&quot;] --&gt; GrantClient2[&quot;Grant Lock to Client 2 at t=11s&quot;]
+    subgraph Central Lock Service (Redis / DLM)
+      Expire[&quot;Lease expires at t=10s&quot;] --&gt; GrantB[&quot;Grant Lock to Client 2 at t=11s&quot;]
     end
     
-    GrantClient2 --&gt; Client2[&quot;Client 2: Writes Data Safely&quot;]
-    Pause --&gt; Wakeup[&quot;Client 1 Wakes Up at t=12s (Believes it still holds lock!)&quot;]
-    Wakeup --&gt; Corrupt[&quot;Client 1 Overwrites Client 2's Data (💥 CORRUPTION!)&quot;]
+    GrantB --&gt; ClientB[&quot;Client 2: Writes to Shared Storage&quot;]
+    GC --&gt; Wakeup[&quot;Client 1 Wakes Up at t=12s (Believes lease is still valid!)&quot;]
+    Wakeup --&gt; Overwrite[&quot;Client 1 Overwrites Storage (💥 DATA CORRUPTION)&quot;]
   end</div>
 <hr>
-<h2>1. Why Distributed Locking is Fundamentally Hard</h2>
-<p>Why can a distributed lock not be implemented simply by setting a key in Redis with a TTL (<code>SET lock_key uuid NX PX 10000</code>)?</p>
-<h3>The 3 Asynchronous Network Realities:</h3>
-<ol>
-<li><strong>Unbounded Process Pauses</strong>: A client running in Python, Java, or Node.js can pause for 15 seconds due to a Stop-the-World Garbage Collection (GC) cycle, page fault thrashing, or OS context switching.</li>
-<li><strong>Unbounded Network Delays</strong>: A TCP packet can be delayed in a router buffer for seconds without being dropped.</li>
-<li><strong>Physical Clock Drift</strong>: Modern cloud servers synchronized via NTP experience clock jumps or drift, causing a 10-second lease to expire prematurely on the lock server while the client believes it has 4 seconds remaining.</li>
-</ol>
-<p>When Client 1 pauses past its lease expiration, the lock manager grants the lock to Client 2. When Client 1 resumes, <strong>two processes believe they hold exclusive access simultaneously (Split-Brain Dual Write)</strong>.</p>
+<h2>1. Why Distributed Locking Is Fundamentally Difficult</h2>
+<p>Why can a distributed lock not be implemented simply by setting a key in Redis with a TTL (<code>SET resource_id client_uuid NX PX 10000</code>)?</p>
+<p>In a single operating system process, locks rely on shared physical hardware: atomic compare-and-swap (<code>CAS</code>) instructions, memory bus arbitration, and kernel thread schedulers. If a thread holds a mutex, the CPU hardware guarantees that no other thread can execute that critical section.</p>
+<p>In a distributed network, there is no shared memory, no shared bus, and no shared clock. The physical universe introduces three unavoidable realities:</p>
+<h3>1. Unbounded Process Pauses</h3>
+<p>A client running on Java, Node.js, Python, or Go can pause execution at any line of code without warning. A Stop-the-World garbage collection cycle, an OS page-table fault, or virtualization hypervisor CPU-throttling can suspend a thread for twenty seconds.</p>
+<h3>2. Unbounded Network Delays</h3>
+<p>A TCP packet traversing switches, routers, and firewalls can be delayed for arbitrary durations. A client may believe its network request was dropped, while the packet is simply waiting in a congested top-of-rack buffer.</p>
+<h3>3. Physical Clock Drift and NTP Jumps</h3>
+<p>Physical quartz clocks on modern motherboards drift due to heat and manufacturing variances. Network Time Protocol (NTP) daemons synchronize clocks by stepping or slewing time. A lock server&#39;s clock may jump forward by two seconds, expiring a lease while the client’s local clock still shows three seconds of valid time.</p>
+<p>When Client 1 pauses past its lease expiration, the lock server assumes it died and grants the lock to Client 2. When Client 1 wakes up, <strong>two independent nodes believe they hold exclusive ownership simultaneously</strong>.</p>
 <hr>
-<h2>2. The Redlock Algorithm &amp; The Kleppmann-Antirez Debate</h2>
-<pre><code class="language-plaintext">&gt; **THE 2 PURPOSES OF DISTRIBUTED LOCKS**
-| Purpose 1: For Efficiency (Optimization) | Purpose 2: For Correctness (Safety)                   |
-| If the lock fails, you waste compute     | If the lock fails, you corrupt financial data or bank |
-| (e.g. 2 workers render the same video).  | balances (e.g. Double spending a customer wallet).    |
-| Redis / Redlock is sufficient!           | Redlock FAILS without Fencing Tokens!                 |
-</code></pre>
-<h3>The Redlock Algorithm (Antirez)</h3>
-<p>To eliminate single-point-of-failure in a single Redis node, Redlock deploys $N=5$ independent Redis instances:</p>
-<ol>
-<li>The client acquires the lock by issuing <code>SET NX PX</code> sequentially across all 5 nodes.</li>
-<li>The client considers the lock acquired if it obtains a majority ($Q = 3/5$) within a timeout budget.</li>
-</ol>
-<h3>Martin Kleppmann&#39;s Critique:</h3>
-<p>Kleppmann proved that Redlock relies on an unspoken synchronous network assumption: that the physical clocks across all 5 nodes drift predictably. Under NTP clock jumps or asymmetric network partitions, Redlock can grant the lock to two clients for overlapping validity windows.</p>
+<h2>2. The Two Purposes of Distributed Locks: Efficiency vs Correctness</h2>
+<p>Kleppmann began his analysis by drawing an essential distinction that architects routinely conflate:</p>
+<table>
+<thead>
+<tr>
+<th>Lock Objective</th>
+<th>Failure Consequence</th>
+<th>Required Guarantee</th>
+<th>Suitable Implementation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Efficiency (Optimization)</strong></td>
+<td>Redundant compute (e.g., two background workers render the same video or send duplicate reminder emails).</td>
+<td>Best-effort mutual exclusion. Minor race conditions cause wasted CPU, but zero data loss.</td>
+<td>Single-instance Redis (<code>SET NX PX</code>), Memcached, or Redlock.</td>
+</tr>
+<tr>
+<td><strong>Correctness (Safety)</strong></td>
+<td>Data corruption, financial double-spending, or inventory over-allocation.</td>
+<td><strong>Strict linearizable safety invariants.</strong> A split-brain write is catastrophic.</td>
+<td>Consensus engines (ZooKeeper, etcd) paired with <strong>Monotonically Increasing Fencing Tokens</strong>.</td>
+</tr>
+</tbody></table>
+<p>If you are locking for efficiency, simple Redis keys are fine. If you are locking for correctness, simple leases are a ticking time bomb.</p>
 <hr>
-<h2>3. The Fencing Token Invariant (The Kleppmann Solution)</h2>
-<p>To make distributed locking provably safe for mission-critical financial systems, the lock manager and storage layer must implement <strong>Monotonically Increasing Fencing Tokens</strong>:</p>
+<h2>3. The Fencing Token Invariant: Kleppmann&#39;s Solution</h2>
+<p>To make distributed locking provably safe in the presence of process pauses, the storage layer must participate in mutual exclusion using <strong>Monotonically Increasing Fencing Tokens</strong>:</p>
 <div class="mermaid">sequenceDiagram
   autonumber
   participant C1 as Client 1 (Stale)
   participant C2 as Client 2 (Active)
-  participant Lock as DLM (ZooKeeper / Raft)
-  participant DB as Shared Storage Engine
+  participant Lock as Lock Service (etcd / Raft)
+  participant DB as Storage Engine (Postgres / S3)
 
   C1-&gt;&gt;Lock: Acquire Lock
-  Lock--&gt;&gt;C1: Granted (Fencing Token = 33)
-  Note over C1: Client 1 enters 12s GC Pause!
-  Note over Lock: Lock Lease Expired
+  Lock--&gt;&gt;C1: Granted (Token = 33)
+  Note over C1: Client 1 enters 10-second GC pause!
+  Note over Lock: Lease expires -&gt; Lock released
+  
   C2-&gt;&gt;Lock: Acquire Lock
-  Lock--&gt;&gt;C2: Granted (Fencing Token = 34)
+  Lock--&gt;&gt;C2: Granted (Token = 34)
   C2-&gt;&gt;DB: Write Data (Token = 34)
-  DB-&gt;&gt;DB: Record Highest Token = 34
-  DB--&gt;&gt;C2: Write Accepted ✅
-  Note over C1: Client 1 wakes up from GC Pause!
-  C1-&gt;&gt;DB: Stale Write Attempt (Token = 33)
-  DB-&gt;&gt;DB: Check: 33 &lt; Highest Token (34)
-  DB--&gt;&gt;C1: 🛑 Write REJECTED: Stale Fencing Token!</div>
-<p><strong>The Fencing Rule</strong>: Every time a lock is granted, the DLM increments a monotonic integer token ($33, 34, 35$). The underlying database rejects any write carrying a token lower than the highest token it has already processed.</p>
+  DB--&gt;&gt;C2: Write Accepted (Highest Token: 34)
+  
+  Note over C1: Client 1 wakes up and resumes write!
+  C1-&gt;&gt;DB: Write Data (Token = 33)
+  Note over DB: Check: 33 &lt; 34 -&gt; REJECT STALE WRITE!
+  DB--&gt;&gt;C1: Error: Fencing Token Outdated (Write Aborted)</div>
+<h3>The Invariant</h3>
+<p>Every time the lock service grants a lock, it returns a monotonically increasing integer sequence number ($T = 1, 2, 3, \dots$).</p>
+<p>When a client mutates the underlying storage system, it attaches its fencing token to the write payload. The storage system enforces an invariant: <strong>reject any write with a token less than or equal to the highest token it has already processed</strong>.</p>
+<p>Even if Client 1 pauses for ten minutes, wakes up, and sends its write, the database rejects the payload because it has already accepted Token 34. Correctness is maintained at the data layer, where it belongs.</p>
 <hr>
-<h2>4. PostgreSQL Advisory Locks: The Pragmatic Alternative</h2>
-<p>If your application already uses a PostgreSQL database, you often do not need to operate a separate ZooKeeper or Redis cluster.</p>
-<p>PostgreSQL provides native <strong>Advisory Locks</strong>:</p>
-<pre><code class="language-sql">-- Acquire an application-level exclusive lock on Resource ID 42
-SELECT pg_advisory_lock(42);
+<h2>4. The Practical Alternative: PostgreSQL Advisory Locks</h2>
+<p>For teams that already run a relational database (PostgreSQL) and do not wish to maintain a separate ZooKeeper or etcd cluster, <strong>Postgres Advisory Locks</strong> provide an elegant, ACID-backed alternative:</p>
+<pre><code class="language-sql">-- Transaction-scoped exclusive advisory lock
+BEGIN;
+  -- Acquires lock on integer ID 402; blocks until acquired
+  SELECT pg_advisory_xact_lock(402);
 
--- Perform critical financial transaction
-UPDATE accounts SET balance = balance - 100 WHERE id = 101;
+  -- Perform mission-critical ledger mutation safely
+  UPDATE accounts SET balance = balance - 100 WHERE id = 10;
+  INSERT INTO audit_log (account_id, delta) VALUES (10, -100);
 
--- Release lock (or automatically released when DB connection closes!)
-SELECT pg_advisory_unlock(42);</code></pre>
-<ul>
-<li><strong>Session-Level Locks</strong>: Automatically released when the client disconnects or crashes (Zero orphan lock leaks!).</li>
-<li><strong>Transaction-Level Locks (<code>pg_advisory_xact_lock</code>)</strong>: Automatically released when the SQL transaction commits or rolls back.</li>
-</ul>
+-- Lock is automatically and atomically released when transaction commits or rolls back
+COMMIT;</code></pre>
+<h3>Why Postgres Advisory Locks Guarantee Safety:</h3>
+<ol>
+<li><strong>Tied to Database Connection</strong>: If the application worker crashes or enters an infinite GC pause, the PostgreSQL backend detects the broken TCP socket via keepalives and automatically aborts the transaction, releasing the lock.</li>
+<li><strong>Atomic Serialization</strong>: Lock acquisition and data updates execute within the same database engine, eliminating distributed two-phase commit overhead.</li>
+</ol>
 <hr>
-<h2>Python Implementation: Distributed Lock Manager with Fencing Tokens</h2>
-<p>Here is a Python implementation simulating a Distributed Lock Manager with Monotonic Fencing Tokens and a Protected Storage Engine:</p>
-<pre><code class="language-python">import time
-from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+<h2>Python Implementation: Fencing Token Storage Engine</h2>
+<p>The following Python script simulates a distributed locking engine that enforces monotonic fencing token validation to block stale, paused workers from corrupting storage:</p>
+<pre><code class="language-python">from dataclasses import dataclass
+from typing import Optional, Tuple
 
 @dataclass
-class LockLease:
-    resource_name: str
-    owner_id: str
+class WritePayload:
+    client_id: str
     fencing_token: int
-    expires_at: float
+    data: str
 
-class FencedDistributedLockManager:
+class StorageEngine:
     &quot;&quot;&quot;
-    DLM that issues Monotonically Increasing Fencing Tokens.
-    &quot;&quot;&quot;
-    def __init__(self):
-        self.current_token_counter = 100
-        self.active_locks: Dict[str, LockLease] = {}
-
-    def acquire_lock(self, resource_name: str, client_id: str, lease_duration_sec: float = 2.0) -&gt; Optional[LockLease]:
-        now = time.time()
-        # Check if currently held and unexpired
-        if resource_name in self.active_locks:
-            lease = self.active_locks[resource_name]
-            if now &lt; lease.expires_at:
-                print(f&quot; ❌ [DLM] Client [{client_id}] rejected: Lock held by [{lease.owner_id}] until t={lease.expires_at:.2f}&quot;)
-                return None
-
-        # Issue new monotonic fencing token
-        self.current_token_counter += 1
-        new_lease = LockLease(
-            resource_name=resource_name,
-            owner_id=client_id,
-            fencing_token=self.current_token_counter,
-            expires_at=now + lease_duration_sec
-        )
-        self.active_locks[resource_name] = new_lease
-        print(f&quot; 🔑 [DLM] Lock granted to [{client_id}] for '{resource_name}' (Fencing Token: {new_lease.fencing_token}, Expires in {lease_duration_sec}s)&quot;)
-        return new_lease
-
-class FencedStorageEngine:
-    &quot;&quot;&quot;
-    Storage Engine protected against stale writes via Fencing Tokens.
+    Storage layer that enforces Monotonic Fencing Token safety invariants.
     &quot;&quot;&quot;
     def __init__(self):
-        self.storage: Dict[str, str] = {}
+        self.committed_data: Optional[str] = None
         self.highest_fencing_token: int = 0
 
-    def write(self, client_id: str, key: str, value: str, fencing_token: int) -&gt; bool:
-        print(f&quot;\n💾 [Storage Write Attempt] Client [{client_id}] writing '{key}'='{value}' with Token #{fencing_token}...&quot;)
+    def write(self, payload: WritePayload) -&gt; bool:
+        print(f&quot;  -&gt; Storage evaluating write from [{payload.client_id}] with Token={payload.fencing_token}...&quot;)
         
-        # Fencing Token Invariant Check
-        if fencing_token &lt; self.highest_fencing_token:
-            print(f&quot; 🛑 [Storage Stale Write Rejected!] Token #{fencing_token} &lt; Current Highest Token #{self.highest_fencing_token} (Dual-write prevented!)&quot;)
+        # Enforce the Kleppmann Fencing Invariant
+        if payload.fencing_token &lt;= self.highest_fencing_token:
+            print(f&quot;     REJECTED: Stale Token ({payload.fencing_token} &lt;= {self.highest_fencing_token}). Write blocked!&quot;)
             return False
 
-        self.highest_fencing_token = fencing_token
-        self.storage[key] = value
-        print(f&quot; ✅ [Storage Write Succeeded] '{key}' updated to '{value}'. (New Highest Token: #{fencing_token})&quot;)
+        self.committed_data = payload.data
+        self.highest_fencing_token = payload.fencing_token
+        print(f&quot;     ACCEPTED: Data committed successfully. New High Token: {self.highest_fencing_token}&quot;)
         return True
 
-# Demonstration Execution
+class LockManager:
+    &quot;&quot;&quot;
+    Simulates a centralized DLM issuing monotonically increasing tokens.
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._counter: int = 0
+        self.current_holder: Optional[str] = None
+
+    def acquire_lock(self, client_id: str) -&gt; Tuple[bool, int]:
+        self._counter += 1
+        self.current_holder = client_id
+        return True, self._counter
+
+# Demonstration Run
 if __name__ == &quot;__main__&quot;:
-    dlm = FencedDistributedLockManager()
-    storage = FencedStorageEngine()
+    dlm = LockManager()
+    storage = StorageEngine()
 
-    # 1. Client 1 acquires lock (Token 101) with 1.0s lease
-    lease1 = dlm.acquire_lock(&quot;bank_account_42&quot;, client_id=&quot;Client-1&quot;, lease_duration_sec=1.0)
+    # Step 1: Client 1 acquires lock and receives Token 1
+    _, token_c1 = dlm.acquire_lock(&quot;Client_1&quot;)
+    print(f&quot;Client 1 acquired lock. Assigned Fencing Token: {token_c1}&quot;)
 
-    # 2. Client 1 experiences a 1.5s Garbage Collection Pause!
-    print(&quot;\n⏳ [Client 1 Pauses] Entering 1.5s JVM Stop-the-World GC Pause (Lease will expire!)...&quot;)
-    time.sleep(1.2)
+    # Step 2: Client 1 experiences an unexpected 15-second GC pause!
+    print(&quot;ALERT: Client 1 enters an unexpected Garbage Collection pause...&quot;)
 
-    # 3. Client 2 acquires lock while Client 1 is paused (Token 102)
-    lease2 = dlm.acquire_lock(&quot;bank_account_42&quot;, client_id=&quot;Client-2&quot;, lease_duration_sec=2.0)
-    # Client 2 writes successfully with Token 102
-    storage.write(&quot;Client-2&quot;, &quot;balance&quot;, &quot;$10,000&quot;, lease2.fencing_token)
+    # Step 3: Lock expires. Client 2 acquires lock and receives Token 2
+    _, token_c2 = dlm.acquire_lock(&quot;Client_2&quot;)
+    print(f&quot;Client 2 acquired lock. Assigned Fencing Token: {token_c2}&quot;)
 
-    # 4. Client 1 wakes up and attempts to write with stale Token 101
-    print(&quot;\n⏰ [Client 1 Resumes] Wakes up and attempts to write with old lease...&quot;)
-    storage.write(&quot;Client-1&quot;, &quot;balance&quot;, &quot;$500&quot;, lease1.fencing_token)
+    # Step 4: Client 2 performs write successfully
+    storage.write(WritePayload(client_id=&quot;Client_2&quot;, fencing_token=token_c2, data=&quot;ORDER_SETTLED_V2&quot;))
 
-    print(f&quot;\n📦 Final Database State: {storage.storage}&quot;)</code></pre>
+    # Step 5: Client 1 wakes up and attempts to commit stale write!
+    print(&quot;\nClient 1 wakes up from GC pause and attempts to complete its write:&quot;)
+    storage.write(WritePayload(client_id=&quot;Client_1&quot;, fencing_token=token_c1, data=&quot;ORDER_STALE_OVERWRITE&quot;))
+
+    print(f&quot;\nFinal Verified Storage State: '{storage.committed_data}'&quot;)</code></pre>
 <hr>
-<h2>Summary: Distributed Lock Technology Matrix</h2>
+<h2>Architectural Comparison Matrix</h2>
 <table>
 <thead>
 <tr>
-<th>Lock Manager</th>
-<th>Consistency Basis</th>
-<th>Fencing Token Support</th>
-<th>Best Used For</th>
+<th>Locking Strategy</th>
+<th>Fault Tolerance</th>
+<th>Split-Brain Immunity</th>
+<th>Operational Footprint</th>
+<th>Recommended Use Case</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Single Redis Node</strong></td>
-<td>Single thread memory</td>
-<td>❌ No (Prone to GC pause split-brain)</td>
-<td>Non-critical cache regeneration</td>
+<td><strong>Redis <code>SET NX PX</code></strong></td>
+<td>Low (Single instance)</td>
+<td>None (Lease expiry hazard)</td>
+<td>Very Low (Existing Redis)</td>
+<td>Non-critical efficiency locks (cron deduplication)</td>
 </tr>
 <tr>
-<td><strong>Redis Redlock</strong></td>
-<td>Majority Quorum across $N$ nodes</td>
-<td>❌ No (Vulnerable to clock drift)</td>
-<td>Efficiency locks (deduplication)</td>
+<td><strong>Redlock (5 Redis Nodes)</strong></td>
+<td>Medium (Quorum over 5 nodes)</td>
+<td>None without fencing tokens</td>
+<td>Moderate</td>
+<td>Distributed caching synchronization</td>
 </tr>
 <tr>
-<td><strong>ZooKeeper / Chubby</strong></td>
-<td>Raft / Zab Paxos Consensus</td>
-<td><strong>✅ Yes (Sequential Ephemeral Znodes)</strong></td>
-<td>Distributed Master Election</td>
+<td><strong>ZooKeeper / etcd</strong></td>
+<td>High (Multi-node Paxos/Raft)</td>
+<td><strong>Complete (with <code>zxid</code> / <code>raft_index</code>)</strong></td>
+<td>High</td>
+<td>Distributed cluster master election</td>
 </tr>
 <tr>
-<td><strong>PostgreSQL Advisory</strong></td>
-<td>Relational ACID Engine</td>
-<td><strong>✅ Session / Transaction bounded</strong></td>
-<td>Single-database enterprise apps</td>
-</tr>
-<tr>
-<td><strong>Fencing Token DLM</strong></td>
-<td>Monotonic Token Guard</td>
-<td><strong>✅ 100% Mathematically Safe</strong></td>
-<td>Financial balances &amp; critical storage</td>
+<td><strong>Postgres Advisory Locks</strong></td>
+<td>High (Within DB instance)</td>
+<td><strong>Complete (Connection lifecycle bound)</strong></td>
+<td>Zero (Uses existing DB)</td>
+<td>Financial transactions, ledger updates</td>
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
-<p>A distributed lock is only as safe as the storage system that enforces it.</p>
-<p>For non-critical task deduplication, <strong>Redis locks are fast and practical</strong>.</p>
-<p>However, for mission-critical financial balances and data integrity, <strong>always enforce Monotonically Increasing Fencing Tokens</strong> at the storage layer to mathematically prevent split-brain dual-write corruption.</p>
+<h2>The Distributed Systems Truth</h2>
+<p>A distributed lock cannot guarantee correctness in isolation. </p>
+<p>True safety in distributed architectures is an <strong>end-to-end contract between the lock coordinator and the storage layer</strong>. If your storage layer blindly accepts writes without validating version counters or fencing tokens, a single pause in a garbage collection thread will eventually corrupt your data.</p>
 
           </div>
 
