@@ -104,6 +104,14 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-event-sourcing-model">The Event Sourcing Model</a></li>
+                <li><a href="#python-trajectory-event-store-projection">Python Trajectory Event Store &amp; Projection</a></li>
+                <li><a href="#important-pitfalls-in-event-sourcing">Important Pitfalls in Event Sourcing</a></li>
+              </ul>
+            </details>
 <p>In traditional software architectures, database state is typically managed using CRUD (Create, Read, Update, Delete) patterns. In this model, the database only stores the <strong>current state</strong> of a record. If a row is updated, the previous state is overwritten and lost forever.</p>
 <p>When designing complex multi-agent swarms, CRUD database patterns are a major liability. If an agent fails after 15 tool execution steps, a simple state table cannot answer critical questions:</p>
 <ul>
@@ -113,7 +121,7 @@
 </ul>
 <p>To solve this, production agent systems use <strong>Event Sourcing</strong>. Instead of storing the agent&#39;s current state, we record every intermediate thought, tool invocation, and handoff as a sequence of <strong>immutable delta events</strong>. This article explains how to build an event-sourced trajectory store for distributed swarms.</p>
 <hr>
-<h2>The Event Sourcing Model</h2>
+<h2 id="the-event-sourcing-model">The Event Sourcing Model</h2>
 <p>In an event-sourced agent architecture, the system state is reconstructed dynamically by reading the event stream from the beginning and applying each event to a blank state object—a process called <strong>Projection</strong>:</p>
 <div class="mermaid">graph TD
   A[TaskStartedEvent] --&gt;|Project| State1[State: Active]
@@ -123,14 +131,14 @@
   C --&gt;|Project| State3[State: Awaiting Tool Output]
   State3 --&gt; D[ToolCompletedEvent]
   D --&gt;|Project| CurrentState[Final Reconstructed Agent State]</div>
-<h3>Key Architectural Benefits</h3>
+<h3 id="key-architectural-benefits">Key Architectural Benefits</h3>
 <ol>
 <li><strong>100% Audit Trace</strong>: Full execution history is preserved. Every decision is auditable down to the millisecond.</li>
 <li><strong>Time-Travel Debugging</strong>: Developers can replay any past execution path step-by-step to diagnose edge-case errors.</li>
 <li><strong>Optimistic Concurrency</strong>: Prevents concurrent database write conflicts by ensuring events are only appended, never modified.</li>
 </ol>
 <hr>
-<h2>Python Trajectory Event Store &amp; Projection</h2>
+<h2 id="python-trajectory-event-store-projection">Python Trajectory Event Store &amp; Projection</h2>
 <p>Here is a Python implementation of an event-sourced trajectory store, defining structured lifecycle events and demonstrating how to project the current aggregate state dynamically.</p>
 <pre><code class="language-python">import json
 import uuid
@@ -221,7 +229,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;\nFinal State - Status: {aggregate.status}, Steps Evaluated: {aggregate.current_step}&quot;)
     print(f&quot;Executed Tools: {aggregate.executed_tools}&quot;)</code></pre>
 <hr>
-<h2>Important Pitfalls in Event Sourcing</h2>
+<h2 id="important-pitfalls-in-event-sourcing">Important Pitfalls in Event Sourcing</h2>
 <p>Keep these constraints in mind to ensure storage efficiency:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -260,6 +268,16 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-event-sourcing-model" class="toc-link">The Event Sourcing Model</a></li>
+              <li class="toc-item toc-h2"><a href="#python-trajectory-event-store-projection" class="toc-link">Python Trajectory Event Store &amp; Projection</a></li>
+              <li class="toc-item toc-h2"><a href="#important-pitfalls-in-event-sourcing" class="toc-link">Important Pitfalls in Event Sourcing</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

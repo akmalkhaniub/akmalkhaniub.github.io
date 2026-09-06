@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#opentelemetry-agent-trace-architecture">OpenTelemetry Agent Trace Architecture</a></li>
+                <li><a href="#python-implementation-opentelemetry-agent-wrapper">Python Implementation: OpenTelemetry Agent Wrapper</a></li>
+                <li><a href="#observability-gotchas-guardrails">Observability Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Debugging autonomous AI agents in production is notoriously difficult. Unlike standard microservices that execute short, linear requests, agents run long-lived, stateful loops that involve multiple sequential LLM calls, vector database retrievers, and recursive local tool executions.</p>
 <p>If a customer request takes 12 seconds to complete, traditional Application Performance Monitoring (APM) tools cannot pinpoint whether the delay was caused by a slow database query, model generation timeouts, or recursive tool call loopbacks.</p>
 <p>To solve this, we must implement <strong>Semantic Latency Tracing</strong> using <strong>OpenTelemetry</strong>.</p>
 <p>By instrumenting our agent tool chains with OpenTelemetry span structures, we can capture model parameters, prompt context, and nested execution paths, creating visual trace trees of the agent&#39;s reasoning trajectory.</p>
 <p>This article details how to instrument an agentic pipeline.</p>
 <hr>
-<h2>OpenTelemetry Agent Trace Architecture</h2>
+<h2 id="opentelemetry-agent-trace-architecture">OpenTelemetry Agent Trace Architecture</h2>
 <p>Semantic tracing wraps every model call and tool invocation inside nested tracer spans:</p>
 <div class="mermaid">graph TD
   subgraph Trace ID: 77d43bf0-4278
@@ -123,7 +132,7 @@
     
     A --&gt; E[Sub-Span 3: model/synthesize_answer]
   end</div>
-<h3>Trace Span Attributes for AI</h3>
+<h3 id="trace-span-attributes-for-ai">Trace Span Attributes for AI</h3>
 <p>To ensure interoperability with observability frontends (like Jaeger, Honeycomb, or Grafana Tempo), spans should record specific <strong>Semantic Conventions</strong>:</p>
 <ul>
 <li><code>gen_ai.model</code>: The target model name (e.g. <code>gpt-4o</code>, <code>claude-3-5-sonnet</code>).</li>
@@ -132,7 +141,7 @@
 <li><code>tool.status</code>: Identifies failures in local integrations before they break the agent.</li>
 </ul>
 <hr>
-<h2>Python Implementation: OpenTelemetry Agent Wrapper</h2>
+<h2 id="python-implementation-opentelemetry-agent-wrapper">Python Implementation: OpenTelemetry Agent Wrapper</h2>
 <p>Here is a production-grade Python implementation of an agent tracing wrapper using the official OpenTelemetry SDK. It tracks nested spans for LLM calls and tool executions, recording semantic metadata:</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, Callable
@@ -242,7 +251,7 @@ if __name__ == &quot;__main__&quot;:
     agent = TraceableAgent(agent_name=&quot;BillingAssistantSwarm&quot;)
     agent.execute_task(&quot;Check the account ledger balance for user-887&quot;)</code></pre>
 <hr>
-<h2>Observability Gotchas &amp; Guardrails</h2>
+<h2 id="observability-gotchas-guardrails">Observability Gotchas &amp; Guardrails</h2>
 <p>When tracing distributed agent swarms:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -255,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying semantic telemetry report:</p>
 <ul>
 <li><strong>Instant Outage Diagnostics</strong>: Debugging times for stuck agents drop from hours to seconds by visualizing exactly which tool span hung.</li>
@@ -288,6 +297,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#opentelemetry-agent-trace-architecture" class="toc-link">OpenTelemetry Agent Trace Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-opentelemetry-agent-wrapper" class="toc-link">Python Implementation: OpenTelemetry Agent Wrapper</a></li>
+              <li class="toc-item toc-h2"><a href="#observability-gotchas-guardrails" class="toc-link">Observability Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#tri-color-abstraction-hybrid-write-barrier-architecture">Tri-Color Abstraction &amp; Hybrid Write Barrier Architecture</a></li>
+                <li><a href="#python-implementation-tri-color-gc-engine-hybrid-write-barrier">Python Implementation: Tri-Color GC Engine &amp; Hybrid Write Barrier</a></li>
+                <li><a href="#go-gc-gotchas-best-practices">Go GC Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In cloud-native microservices (<strong>Kubernetes</strong>, <strong>Docker</strong>, <strong>CockroachDB</strong>, <strong>Terraform</strong>), the <strong>Go Runtime</strong> powers high-concurrency networking workloads.</p>
 <p>To serve millions of concurrent Goroutines without latency disruptions, Go features a low-latency <strong>Concurrent Tri-Color Mark-and-Sweep Garbage Collector</strong>.</p>
 <p>Unlike generational collectors that require complex object relocation, Go&#39;s GC collector operates concurrently alongside active Goroutines (<strong>Mutators</strong>), keeping Stop-The-World (STW) pauses well under <strong>$1\text{ millisecond}$</strong>.</p>
 <p>To prevent Mutator threads from hiding live objects during concurrent marking, the Go runtime enforces strict memory invariants using <strong>Hybrid Write Barriers</strong>.</p>
 <p>This article details Dijkstra&#39;s Tri-Color Abstraction, the Tri-Color Invariant breakdown, Dijkstra vs Yuasa vs Hybrid Write Barriers, concurrent sweep mechanics, and the GC CPU Pacer.</p>
 <hr>
-<h2>Tri-Color Abstraction &amp; Hybrid Write Barrier Architecture</h2>
+<h2 id="tri-color-abstraction-hybrid-write-barrier-architecture">Tri-Color Abstraction &amp; Hybrid Write Barrier Architecture</h2>
 <p>How the Go runtime uses White, Grey, and Black object classifications alongside Hybrid Write Barriers to ensure zero object loss during concurrent marking:</p>
 <div class="mermaid">graph TD
   subgraph Tri-Color Abstraction Classification
@@ -127,7 +136,7 @@
     DangerCheck --&gt;|Go Hybrid Write Barrier Intercepts!| Shade[✨ Shade Target White Object -&gt; Turn GREY!]
     Shade --&gt; SafeMark[🎉 Tri-Color Invariant Preserved: Zero Live Object Loss!]
   end</div>
-<h3>Core Go GC Principles</h3>
+<h3 id="core-go-gc-principles">Core Go GC Principles</h3>
 <ol>
 <li><strong>The Tri-Color Marking Abstraction</strong>:<ul>
 <li><strong>White Objects</strong>: Unvisited objects. At the end of the Mark phase, all remaining White objects are unreachable garbage and will be freed during the Sweep phase.</li>
@@ -158,7 +167,7 @@ Shades both the old overwritten pointer and the new written pointer Grey. <em>El
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Tri-Color GC Engine &amp; Hybrid Write Barrier</h2>
+<h2 id="python-implementation-tri-color-gc-engine-hybrid-write-barrier">Python Implementation: Tri-Color GC Engine &amp; Hybrid Write Barrier</h2>
 <p>Here is a production-grade Python implementation of a Tri-Color Garbage Collection Engine featuring Hybrid Write Barriers and Concurrent Sweep:</p>
 <pre><code class="language-python">from typing import Dict, List, Set, Optional
 from pydantic import BaseModel
@@ -276,7 +285,7 @@ if __name__ == &quot;__main__&quot;:
     # 4. Run Concurrent Sweep Phase
     gc.run_concurrent_sweep_phase()</code></pre>
 <hr>
-<h2>Go GC Gotchas &amp; Best Practices</h2>
+<h2 id="go-gc-gotchas-best-practices">Go GC Gotchas &amp; Best Practices</h2>
 <p>When optimizing Go garbage collection:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -289,7 +298,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Go&#39;s concurrent tri-color garbage collector (powering <strong>Kubernetes</strong>, <strong>Docker</strong>, and <strong>CockroachDB</strong>) reports:</p>
 <ul>
 <li><strong>Microsecond Max STW Pause Times ($&lt; 500\mu\text{s}$)</strong>: Hybrid write barriers eliminate long stack re-scanning pauses.</li>
@@ -322,6 +331,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#tri-color-abstraction-hybrid-write-barrier-architecture" class="toc-link">Tri-Color Abstraction &amp; Hybrid Write Barrier Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-tri-color-gc-engine-hybrid-write-barrier" class="toc-link">Python Implementation: Tri-Color GC Engine &amp; Hybrid Write Barrier</a></li>
+              <li class="toc-item toc-h2"><a href="#go-gc-gotchas-best-practices" class="toc-link">Go GC Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

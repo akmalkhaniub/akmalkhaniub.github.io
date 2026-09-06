@@ -104,6 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#how-one-blocking-call-destroys-async-performance">How One Blocking Call Destroys Async Performance</a></li>
+                <li><a href="#anti-pattern-1-timesleep-inside-a-coroutine">Anti-Pattern 1: time.sleep() Inside a Coroutine</a></li>
+                <li><a href="#anti-pattern-2-synchronous-io-in-async-context">Anti-Pattern 2: Synchronous I/O in Async Context</a></li>
+                <li><a href="#anti-pattern-3-asynciorun-inside-an-already-running-loop">Anti-Pattern 3: asyncio.run() Inside an Already-Running Loop</a></li>
+                <li><a href="#anti-pattern-4-sequential-await-when-you-need-concurrency">Anti-Pattern 4: Sequential await When You Need Concurrency</a></li>
+                <li><a href="#anti-pattern-5-swallowing-cancellederror">Anti-Pattern 5: Swallowing CancelledError</a></li>
+                <li><a href="#anti-pattern-6-blocking-cpu-work-without-runinexecutor">Anti-Pattern 6: Blocking CPU Work Without run_in_executor</a></li>
+                <li><a href="#anti-pattern-7-creating-tasks-without-storing-references">Anti-Pattern 7: Creating Tasks Without Storing References</a></li>
+                <li><a href="#anti-pattern-8-not-setting-timeouts-on-awaited-calls">Anti-Pattern 8: Not Setting Timeouts on Awaited Calls</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +126,7 @@ Python&#39;s <code>asyncio</code> is the backbone of every high-performance AI A
 </div>
 </div>
 <hr>
-<h2>How One Blocking Call Destroys Async Performance</h2>
+<h2 id="how-one-blocking-call-destroys-async-performance">How One Blocking Call Destroys Async Performance</h2>
 <p>The event loop is a single-threaded scheduler. When you call a blocking function inside a coroutine, the entire loop stalls — <strong>no other coroutines run until the blocking call returns</strong>. In a server handling 100 concurrent requests, one accidental <code>time.sleep(2)</code> inside a coroutine stalls all 100 requests for 2 seconds.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 sequenceDiagram
@@ -137,7 +152,7 @@ sequenceDiagram
     L-&gt;&gt;R3: now starts
     Note over L: Total wall time: ~4.5s</div>
 <hr>
-<h2>Anti-Pattern 1: <code>time.sleep()</code> Inside a Coroutine</h2>
+<h2 id="anti-pattern-1-timesleep-inside-a-coroutine">Anti-Pattern 1: <code>time.sleep()</code> Inside a Coroutine</h2>
 <pre><code class="language-python"># Blocks the entire event loop for 2 seconds
 async def process_document(doc_id: str):
     result = await fetch_document(doc_id)
@@ -151,7 +166,7 @@ async def process_document(doc_id: str):
     return await embed_document(result)</code></pre>
 <p><strong>Detection</strong>: Search your codebase for <code>time.sleep</code> in any file containing <code>async def</code>. Every hit is a latency bomb.</p>
 <hr>
-<h2>Anti-Pattern 2: Synchronous I/O in Async Context</h2>
+<h2 id="anti-pattern-2-synchronous-io-in-async-context">Anti-Pattern 2: Synchronous I/O in Async Context</h2>
 <p><strong>Symptom</strong>: FastAPI endpoint is slower than a synchronous Flask equivalent. Adding more workers doesn&#39;t help.</p>
 <pre><code class="language-python">import requests  # ❌ Synchronous HTTP — blocks event loop
 import psycopg2  # ❌ Synchronous Postgres driver
@@ -206,7 +221,7 @@ async def good_handler():
 </tr>
 </tbody></table>
 <hr>
-<h2>Anti-Pattern 3: <code>asyncio.run()</code> Inside an Already-Running Loop</h2>
+<h2 id="anti-pattern-3-asynciorun-inside-an-already-running-loop">Anti-Pattern 3: <code>asyncio.run()</code> Inside an Already-Running Loop</h2>
 <p><strong>Symptom</strong>: <code>RuntimeError: This event loop is already running</code> — common when mixing Jupyter notebooks, FastAPI, and async library code.</p>
 <pre><code class="language-python"># asyncio.run() creates a NEW event loop — crashes if one is already running
 async def call_llm(prompt: str):
@@ -235,7 +250,7 @@ def sync_wrapper(coro):
     except RuntimeError:
         return asyncio.run(coro)</code></pre>
 <hr>
-<h2>Anti-Pattern 4: Sequential <code>await</code> When You Need Concurrency</h2>
+<h2 id="anti-pattern-4-sequential-await-when-you-need-concurrency">Anti-Pattern 4: Sequential <code>await</code> When You Need Concurrency</h2>
 <p><strong>Symptom</strong>: Calling 5 embedding APIs takes 5x longer than calling 1. You&#39;re awaiting them one at a time.</p>
 <pre><code class="language-python"># Sequential — takes 5 × latency
 async def embed_all_sequential(texts: list[str]) -&gt; list[list[float]]:
@@ -275,7 +290,7 @@ async def embed_all_taskgroup(texts: list[str]) -&gt; list[list[float]]:
     
     return results</code></pre>
 <hr>
-<h2>Anti-Pattern 5: Swallowing <code>CancelledError</code></h2>
+<h2 id="anti-pattern-5-swallowing-cancellederror">Anti-Pattern 5: Swallowing <code>CancelledError</code></h2>
 <p><strong>Symptom</strong>: FastAPI takes 30+ seconds to shut down gracefully. Uvicorn hangs on SIGTERM. Background tasks run indefinitely after shutdown is requested.</p>
 <p><strong>Root cause</strong>: <code>CancelledError</code> is how asyncio signals a coroutine to stop. Catching it with a bare <code>except Exception</code> swallows it — the coroutine never terminates.</p>
 <pre><code class="language-python"># Swallows CancelledError — coroutine NEVER stops when cancelled
@@ -318,7 +333,7 @@ async def stream_tokens():
     except Exception as e:
         print(f&quot;Stream error: {e}&quot;)</code></pre>
 <hr>
-<h2>Anti-Pattern 6: Blocking CPU Work Without <code>run_in_executor</code></h2>
+<h2 id="anti-pattern-6-blocking-cpu-work-without-runinexecutor">Anti-Pattern 6: Blocking CPU Work Without <code>run_in_executor</code></h2>
 <p><strong>Symptom</strong>: Embedding large batches with a local SentenceTransformer model blocks your entire FastAPI server during inference — all other requests queue up for 2-10 seconds.</p>
 <p><strong>Root cause</strong>: CPU-bound work (numpy operations, PyTorch inference, JSON serialisation of huge payloads) holds the GIL and blocks the event loop just like I/O blocking calls.</p>
 <pre><code class="language-python">import asyncio
@@ -354,7 +369,7 @@ async def run_cpu_task(data: bytes) -&gt; dict:
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(process_pool, cpu_intensive_task, data)</code></pre>
 <hr>
-<h2>Anti-Pattern 7: Creating Tasks Without Storing References</h2>
+<h2 id="anti-pattern-7-creating-tasks-without-storing-references">Anti-Pattern 7: Creating Tasks Without Storing References</h2>
 <p><strong>Symptom</strong>: Background tasks silently disappear. Fire-and-forget tasks get garbage collected before completion.</p>
 <pre><code class="language-python"># Task may be garbage collected before it completes
 async def handle_request(user_id: str, prompt: str):
@@ -371,7 +386,7 @@ async def handle_request(user_id: str, prompt: str):
     
     return await generate_response(prompt)</code></pre>
 <hr>
-<h2>Anti-Pattern 8: Not Setting Timeouts on Awaited Calls</h2>
+<h2 id="anti-pattern-8-not-setting-timeouts-on-awaited-calls">Anti-Pattern 8: Not Setting Timeouts on Awaited Calls</h2>
 <p><strong>Symptom</strong>: A slow third-party API call hangs indefinitely. Your server runs out of connections waiting for a response that never comes.</p>
 <pre><code class="language-python"># No timeout — hangs forever if external service is unresponsive
 async def fetch_context(query: str):
@@ -399,7 +414,7 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
         print(&quot;[Timeout] Parallel task group exceeded time limit&quot;)
         return [None] * len(tasks)</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Async Python is not automatically fast — it is fast only when every I/O operation correctly yields control back to the event loop. A single blocking call anywhere in a hot code path negates the entire benefit of async architecture.</p>
 <ul>
 <li><strong>Audit aggressively</strong>: Use <code>pytest-asyncio</code> with <code>anyio</code> or <code>asyncio-debugger</code> to detect accidental blocking calls in your test suite before they hit production.</li>
@@ -407,7 +422,7 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
 <li><strong>Never suppress <code>CancelledError</code></strong> — it is how graceful shutdown works in every async Python server, including Uvicorn and Gunicorn with worker class <code>uvicorn.workers.UvicornWorker</code>.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>Python asyncio Documentation</strong>: <a href="https://docs.python.org/3/library/asyncio-task.html" target="_blank" rel="noopener">Coroutines and Tasks</a></li>
 <li><strong>FastAPI Concurrency Guide</strong>: <a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noopener">Async and Await</a></li>
@@ -440,6 +455,23 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#how-one-blocking-call-destroys-async-performance" class="toc-link">How One Blocking Call Destroys Async Performance</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-pattern-1-timesleep-inside-a-coroutine" class="toc-link">Anti-Pattern 1: time.sleep() Inside a Coroutine</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-pattern-2-synchronous-io-in-async-context" class="toc-link">Anti-Pattern 2: Synchronous I/O in Async Context</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-pattern-3-asynciorun-inside-an-already-running-loop" class="toc-link">Anti-Pattern 3: asyncio.run() Inside an Already-Running Loop</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-pattern-4-sequential-await-when-you-need-concurrency" class="toc-link">Anti-Pattern 4: Sequential await When You Need Concurrency</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-pattern-5-swallowing-cancellederror" class="toc-link">Anti-Pattern 5: Swallowing CancelledError</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-pattern-6-blocking-cpu-work-without-runinexecutor" class="toc-link">Anti-Pattern 6: Blocking CPU Work Without run_in_executor</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-pattern-7-creating-tasks-without-storing-references" class="toc-link">Anti-Pattern 7: Creating Tasks Without Storing References</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-pattern-8-not-setting-timeouts-on-awaited-calls" class="toc-link">Anti-Pattern 8: Not Setting Timeouts on Awaited Calls</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

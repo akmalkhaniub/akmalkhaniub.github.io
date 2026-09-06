@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#continuous-batching-vs-static-batching-architecture">Continuous Batching vs. Static Batching Architecture</a></li>
+                <li><a href="#python-implementation-async-vllm-engine-benchmark-client">Python Implementation: Async vLLM Engine Benchmark Client</a></li>
+                <li><a href="#important-serving-performance-guardrails">Important Serving Performance Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Deploying self-hosted Small Language Models (SLMs) and open-weights foundation models (such as Llama 3, Mistral, or Qwen) in enterprise agent production environments requires specialized inference engineering. </p>
 <p>If developers deploy LLMs using standard PyTorch loops or basic HuggingFace pipelines, GPU hardware utilization frequently hovers at a miserable <strong>15–20%</strong>. Naive HTTP servers stall under concurrent load because static batching forces fast short-response requests to wait for slow long-generation requests to finish.</p>
 <p>To achieve maximum throughput (thousands of tokens per second per GPU node), high-scale engineering teams utilize dedicated inference serving engines like <strong>vLLM</strong> and NVIDIA <strong>TensorRT-LLM</strong>.</p>
 <p>This article analyzes the underlying architecture of high-throughput LLM serving engines and demonstrates how to benchmark multi-tenant inference workloads.</p>
 <hr>
-<h2>Continuous Batching vs. Static Batching Architecture</h2>
+<h2 id="continuous-batching-vs-static-batching-architecture">Continuous Batching vs. Static Batching Architecture</h2>
 <p>The core breakthrough in modern LLM serving is <strong>Continuous Batching</strong> (also known as iteration-level or dynamic batching):</p>
 <div class="mermaid">graph TD
   subgraph Traditional Static Batching (High Latency)
@@ -126,14 +135,14 @@
     G --&gt;|Every Generation Step| J[Inject New Request Instantly Into Open Slot]
     J --&gt; K[100% GPU Compute Utilization]
   end</div>
-<h3>Key Architectural Pillars</h3>
+<h3 id="key-architectural-pillars">Key Architectural Pillars</h3>
 <ol>
 <li><strong>Iteration-Level Scheduling</strong>: Instead of operating on fixed batch boundaries, the engine schedules inference at every individual token generation step. As soon as Request 1 generates its end-of-sequence token (<code>&lt;EOS&gt;</code>), Request 3 is immediately inserted into that open memory slot without pausing the GPU pipeline.</li>
 <li><strong>CUDA Graph Execution</strong>: Launching individual CUDA kernels from Python introduces CPU-GPU synchronization overhead. High-throughput engines capture repetitive model execution graphs into compiled <strong>CUDA Graphs</strong>, executing entire forward passes with zero CPU launch latency.</li>
 <li><strong>Tensor Parallelism (TP) &amp; Pipeline Parallelism (PP)</strong>: For large models that exceed single GPU VRAM, TensorRT-LLM and vLLM split matrix multiplications across GPUs using NCCL inter-GPU communication primitives.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Async vLLM Engine Benchmark Client</h2>
+<h2 id="python-implementation-async-vllm-engine-benchmark-client">Python Implementation: Async vLLM Engine Benchmark Client</h2>
 <p>Here is a production Python implementation using <code>vLLM</code>&#39;s async engine API (<code>AsyncLLMEngine</code>) to benchmark concurrent token generation throughput and request latency:</p>
 <pre><code class="language-python">import asyncio
 import time
@@ -229,7 +238,7 @@ if __name__ == &quot;__main__&quot;:
 
     # asyncio.run(demo())</code></pre>
 <hr>
-<h2>Important Serving Performance Guardrails</h2>
+<h2 id="important-serving-performance-guardrails">Important Serving Performance Guardrails</h2>
 <p>When configuring LLM inference engines for production:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -242,7 +251,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying vLLM and TensorRT-LLM report:</p>
 <ul>
 <li><strong>4x–8x Higher Token Throughput</strong>: Continuous batching increases GPU token generation throughput from 350 tok/s to 2,400+ tok/s on an NVIDIA H100.</li>
@@ -275,6 +284,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#continuous-batching-vs-static-batching-architecture" class="toc-link">Continuous Batching vs. Static Batching Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-async-vllm-engine-benchmark-client" class="toc-link">Python Implementation: Async vLLM Engine Benchmark Client</a></li>
+              <li class="toc-item toc-h2"><a href="#important-serving-performance-guardrails" class="toc-link">Important Serving Performance Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

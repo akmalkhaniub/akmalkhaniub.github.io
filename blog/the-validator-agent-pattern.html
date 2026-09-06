@@ -104,8 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#programmatic-vs-model-based-validators">Programmatic vs. Model-Based Validators</a></li>
+                <li><a href="#designing-the-verification-contract">Designing the Verification Contract</a></li>
+                <li><a href="#the-validation-gate-checklist">The Validation Gate Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article explains how to overcome LLM confirmation bias by separating generation from verification using the Validator Agent Pattern.</li>
 <li><strong>Why it matters:</strong> Relying on a single agent for both generation and self-evaluation leads to bug-ridden deployments, whereas a dedicated validation layer ensures reliable, secure, and cost-effective AI outputs.</li>
@@ -117,7 +127,7 @@
 <p>This self-evaluation pattern fails because Large Language Models suffer from a systemic <strong>confirmation bias</strong>. Once a model outputs a generation, it tends to read past its own bugs in subsequent steps, declaring its own work &quot;valid.&quot;</p>
 <p>To build reliable systems, we must separate generation from verification using the <strong>Validator Agent Pattern</strong>.</p>
 <hr>
-<h2>Programmatic vs. Model-Based Validators</h2>
+<h2 id="programmatic-vs-model-based-validators">Programmatic vs. Model-Based Validators</h2>
 <p>A validator agent is a dedicated node in your system design whose sole responsibility is to evaluate a worker&#39;s output against a <strong>Verification Contract</strong>. Validators should be structured in two distinct layers, executing in a strict sequence:</p>
 <div class="mermaid">graph TD
     Output[Worker Output] --&gt; Layer1[1. Programmatic Validator]
@@ -129,21 +139,21 @@
     
     style Layer1 fill:#f8fafc,stroke:#64748b,stroke-width:2px
     style Layer2 fill:#f0fdf4,stroke:#22c55e,stroke-width:2px</div>
-<h3>1. Programmatic Validators (Rule-Based Gates)</h3>
+<h3 id="1-programmatic-validators-rule-based-gates">1. Programmatic Validators (Rule-Based Gates)</h3>
 <p>Before invoking a model to evaluate output, run strict, rule-based code checks. Programmatic checks are deterministic, execute in milliseconds, and consume zero tokens.</p>
 <ul>
 <li><strong>Syntax &amp; Compilers</strong>: Run compilers (e.g., <code>tsc</code> for TypeScript) or syntax parsers (e.g., python&#39;s <code>ast.parse</code>) to verify code compiles.</li>
 <li><strong>Testing Suites</strong>: Execute unit tests (e.g., <code>pytest</code>, <code>vitest</code>) inside a sandboxed container, capturing the exact stack traces.</li>
 <li><strong>Schema Checkers</strong>: Validate that JSON outputs match Pydantic or JSON Schema structures exactly.</li>
 </ul>
-<h3>2. Model-Based Validators (LLM-as-a-Judge)</h3>
+<h3 id="2-model-based-validators-llm-as-a-judge">2. Model-Based Validators (LLM-as-a-Judge)</h3>
 <p>If the output compiles and passes structural checks, route it to a separate model-based validator. This node evaluates subjective quality, compliance, and semantic drift.</p>
 <ul>
 <li><strong>Role Isolation</strong>: The model-based validator must use a distinct system prompt configured for criticism. It should <em>never</em> share the generation history or prompt files of the worker.</li>
 <li><strong>Strict Grading Rubrics</strong>: Provide the validator with a structured rubric (e.g., &quot;Score the explanation from 1 to 5 on clarity, safety, and source alignment. Reject any score below 4&quot;).</li>
 </ul>
 <hr>
-<h2>Designing the Verification Contract</h2>
+<h2 id="designing-the-verification-contract">Designing the Verification Contract</h2>
 <p>When the Orchestrator delegates a task to a Worker, it must output a <strong>Verification Contract</strong> alongside the task instructions. The contract defines:</p>
 <ol>
 <li><strong>Structural Bounds</strong>: Required variables, import statements, or JSON keys.</li>
@@ -159,14 +169,14 @@
 }</code></pre>
 <p>This critique is piped back to the Worker, which runs again with the critique as context.</p>
 <hr>
-<h2>The Validation Gate Checklist</h2>
+<h2 id="the-validation-gate-checklist">The Validation Gate Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Strict Pipeline Sequence</strong>: Always run programmatic checks (linters, test suites) <em>first</em>. If a test fails, terminate or loop back immediately without calling the expensive validator model.</li>
 <li><input disabled="" type="checkbox"> <strong>Model Decoupling</strong>: If the Worker uses Claude Opus, use a faster, cheaper model (like Claude Sonnet or GPT-4o-mini) for the validator node to optimize latency and costs.</li>
 <li><input disabled="" type="checkbox"> <strong>Loop Escape Valve</strong>: Enforce a hard ceiling on the critique loop (maximum 3 iterations). If the worker cannot satisfy the validator after 3 turns, escalate to a <strong>Human-in-the-Loop breakpoint</strong>.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Implementing a robust validation architecture is essential for transitioning generative AI agents from experimental prototypes to production-ready systems.</p>
 <ol>
 <li><strong>Overcoming Confirmation Bias:</strong> LLMs suffer from systemic confirmation bias and cannot reliably evaluate their own outputs in the same context window. Separating the worker and validator roles is critical for accuracy.</li>
@@ -175,7 +185,7 @@
 </ol>
 <p><em>Takeaway: Decoupling generation from verification is the key to eliminating LLM confirmation bias and building highly reliable, self-correcting agentic workflows.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Reflexion Framework</strong>: Shinn et al., 2023. <em>Reflexion: Language Agents with Active Generative Feedback</em>. Explains the systematic benefits of separating execution from critic loops. <a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">arXiv:2303.11366</a></li>
 <li><strong>LLM-as-a-Judge</strong>: Zheng et al., 2023. <em>Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</em>. System evaluation guidelines and biases when using model judges. <a href="https://arxiv.org/abs/2306.05685" target="_blank" rel="noopener">arXiv:2306.05685</a></li>
@@ -209,6 +219,18 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#programmatic-vs-model-based-validators" class="toc-link">Programmatic vs. Model-Based Validators</a></li>
+              <li class="toc-item toc-h2"><a href="#designing-the-verification-contract" class="toc-link">Designing the Verification Contract</a></li>
+              <li class="toc-item toc-h2"><a href="#the-validation-gate-checklist" class="toc-link">The Validation Gate Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

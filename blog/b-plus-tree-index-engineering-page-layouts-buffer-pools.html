@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#slotted-page-layout-b-tree-architecture">Slotted Page Layout &amp; B+ Tree Architecture</a></li>
+                <li><a href="#python-implementation-slotted-page-buffer-pool-engine">Python Implementation: Slotted Page &amp; Buffer Pool Engine</a></li>
+                <li><a href="#b-tree-production-gotchas-mitigation">B+ Tree Production Gotchas &amp; Mitigation</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Relational database management systems (RDBMS) like <strong>PostgreSQL</strong>, <strong>MySQL (InnoDB)</strong>, and <strong>SQLite</strong> have relied on <strong>B+ Trees</strong> as their core storage engine representation for over four decades. Unlike standard binary search trees, B+ Trees are self-balancing, high-fanout $N$-ary trees specifically optimized for block-based disk storage hardware.</p>
 <p>In a B+ Tree, all actual table records reside exclusively in doubly-linked <strong>leaf nodes</strong>, while <strong>internal nodes</strong> hold only routing keys.</p>
 <p>To manage disk pages in memory without exhausting RAM or triggering operating system page faults, storage engines deploy a <strong>Buffer Pool Manager</strong> operating over <strong>Slotted Page</strong> binary disk layouts.</p>
 <p>This article explores the low-level disk page layouts, buffer pool eviction strategies, and node split mechanics of B+ Tree engines.</p>
 <hr>
-<h2>Slotted Page Layout &amp; B+ Tree Architecture</h2>
+<h2 id="slotted-page-layout-b-tree-architecture">Slotted Page Layout &amp; B+ Tree Architecture</h2>
 <p>The binary memory layout of an 8KB/16KB slotted page and leaf node linkage:</p>
 <div class="mermaid">graph TD
   subgraph Slotted Page Binary Layout (8KB / 16KB Page)
@@ -128,14 +137,14 @@
     G &lt;--&gt;|Doubly-Linked Range Scan| H
     H &lt;--&gt;|Doubly-Linked Range Scan| I
   end</div>
-<h3>Core B+ Tree Engineering Primitives</h3>
+<h3 id="core-b-tree-engineering-primitives">Core B+ Tree Engineering Primitives</h3>
 <ol>
 <li><strong>Slotted-Page Architecture</strong>: Disk pages are divided into fixed sizes (e.g. 8KB in Postgres, 16KB in InnoDB). The slot array grows from the top down (storing 2-byte tuple offsets), while tuple bytes are written from the bottom up. This design allows variable-length records to be inserted or deleted without re-organizing the entire page file.</li>
 <li><strong>Buffer Pool Manager</strong>: Intercepts page requests from the execution engine. If a requested <code>page_id</code> is in the buffer pool frame array, it pins the page in RAM. If missing (cache miss), it fetches the page from disk, evicting cold &quot;dirty&quot; pages using <strong>LRU-K</strong> or <strong>Clock-Sweep</strong> algorithms.</li>
 <li><strong>Latch Crabbing</strong>: To allow concurrent thread queries without corruption, threads traverse the B+ Tree using latch crabbing: acquiring a read/write latch on a child node before releasing the latch on its parent.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Slotted Page &amp; Buffer Pool Engine</h2>
+<h2 id="python-implementation-slotted-page-buffer-pool-engine">Python Implementation: Slotted Page &amp; Buffer Pool Engine</h2>
 <p>Here is a production-grade Python simulation of a Slotted Page data layout and LRU Buffer Pool Manager:</p>
 <pre><code class="language-python">import struct
 from typing import Dict, List, Optional, Tuple
@@ -230,7 +239,7 @@ if __name__ == &quot;__main__&quot;:
     bpm.fetch_page(101, disk_storage)  # Hit, moves 101 to MRU
     bpm.fetch_page(103, disk_storage)  # Miss, evicts 102 (LRU)</code></pre>
 <hr>
-<h2>B+ Tree Production Gotchas &amp; Mitigation</h2>
+<h2 id="b-tree-production-gotchas-mitigation">B+ Tree Production Gotchas &amp; Mitigation</h2>
 <p>When configuring B+ Tree storage engines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -243,7 +252,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams leveraging B+ Tree index optimizations report:</p>
 <ul>
 <li><strong>Sub-Millisecond Single-Key Lookups</strong>: High fanout internal nodes enable reaching target leaf tuples in 3 to 4 page hops across multi-gigabyte tables.</li>
@@ -276,6 +285,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#slotted-page-layout-b-tree-architecture" class="toc-link">Slotted Page Layout &amp; B+ Tree Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-slotted-page-buffer-pool-engine" class="toc-link">Python Implementation: Slotted Page &amp; Buffer Pool Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#b-tree-production-gotchas-mitigation" class="toc-link">B+ Tree Production Gotchas &amp; Mitigation</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,9 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-spectrum-workflows-vs-agents">The Spectrum: Workflows vs. Agents</a></li>
+                <li><a href="#part-1-core-workflows-predictable-structured">Part 1: Core Workflows (Predictable &amp; Structured)</a></li>
+                <li><a href="#part-2-core-agentic-loops-autonomous-iterative">Part 2: Core Agentic Loops (Autonomous &amp; Iterative)</a></li>
+                <li><a href="#production-engineering-for-agentic-systems">Production Engineering for Agentic Systems</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#takeaway-the-future-of-enterprise-ai-lies-in-intelligently-combining-structured-workflows-with-judiciously-applied-autonomous-agents-backed-by-robust-production-practices">*Takeaway: The future of enterprise AI lies in intelligently combining structured workflows with judiciously applied autonomous agents, backed by robust production practices.*</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <p>The software engineering landscape is undergoing a massive shift. We are moving from simple <strong>single-prompt LLM utilities</strong>—where a user sends a query and receives a text response—to <strong>stateful, collaborative AI Agents and Workflows</strong>. These systems plan execution paths, invoke specialized tools, evaluate intermediate outputs, and self-correct when errors occur.</p>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article delineates the critical differences between structured AI Workflows and autonomous AI Agents, exploring their respective architectural patterns.</li>
 <li><strong>Why it matters:</strong> Choosing the correct pattern is crucial for building predictable, cost-effective, and reliable enterprise-grade AI systems, avoiding issues like attention dispersion and hallucinations.</li>
@@ -117,7 +129,7 @@
 <p>To build reliable systems, we must choose the right architectural pattern. As highlighted in Anthropic&#39;s research, the gold standard is to <strong>design for predictability, using workflows for structured paths, and reserving autonomous agent loops only for highly open-ended tasks.</strong></p>
 <p>This article reviews the core multi-agent and workflow coordination patterns, drawing architectural design concepts from my central <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a> repository.</p>
 <hr>
-<h2>The Spectrum: Workflows vs. Agents</h2>
+<h2 id="the-spectrum-workflows-vs-agents">The Spectrum: Workflows vs. Agents</h2>
 <p>Before coding, it is critical to distinguish between <strong>Workflows</strong> and <strong>Agents</strong>:</p>
 <ul>
 <li><strong>Workflows</strong> are systems where LLMs and code paths are orchestrated through predefined, structured state transitions. They offer high predictability, lower token cost, and easy debugging.</li>
@@ -137,9 +149,9 @@
     style Workflows fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px
     style Autonomous fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px</div>
 <hr>
-<h2>Part 1: Core Workflows (Predictable &amp; Structured)</h2>
+<h2 id="part-1-core-workflows-predictable-structured">Part 1: Core Workflows (Predictable &amp; Structured)</h2>
 <p>Workflows are ideal for step-by-step tasks with clear boundaries, such as document processing, data pipelines, or automated triage.</p>
-<h3>1. Prompt Chaining</h3>
+<h3 id="1-prompt-chaining">1. Prompt Chaining</h3>
 <p>Prompt Chaining executes a sequence of LLM steps, where each step’s output becomes the input for the next. Intermediate programmatic checks can format or filter data between steps.</p>
 <div class="mermaid">graph LR
     Query[User Query] --&gt; Step1[Step 1: Extract Context]
@@ -151,7 +163,7 @@
 <li><strong>Best Used For</strong>: Multi-stage generation where breaking the task down into sub-problems improves output quality (e.g., extracting key terms, then writing a summary, then translating).</li>
 </ul>
 <hr>
-<h3>2. Routing</h3>
+<h3 id="2-routing">2. Routing</h3>
 <p>Routing classifies a user query and directs it to a specialized downstream LLM prompt or code path. It ensures that specialized tasks are handled by prompts configured specifically for them.</p>
 <div class="mermaid">graph TD
     Input[User Input] --&gt; Router{Router LLM}
@@ -166,7 +178,7 @@
 <li><strong>Best Used For</strong>: Customer support portals, query dispatch systems, and intent detection gates where a single prompt cannot handle all possible queries.</li>
 </ul>
 <hr>
-<h3>3. Parallelization</h3>
+<h3 id="3-parallelization">3. Parallelization</h3>
 <p>Parallelization runs multiple LLM tasks concurrently and aggregates their results. There are two primary sub-patterns:</p>
 <ol>
 <li><strong>Sectioning (Division of Labor)</strong>: Splawning separate prompts to generate different components of an output (e.g., Introduction, Core Analysis, and Conclusion) in parallel.</li>
@@ -185,7 +197,7 @@
 <li><strong>Best Used For</strong>: Fast document summarization, security code auditing, and checking consensus on ambiguous classification tasks.</li>
 </ul>
 <hr>
-<h3>4. Orchestrator-Workers</h3>
+<h3 id="4-orchestrator-workers">4. Orchestrator-Workers</h3>
 <p>An Orchestrator LLM breaks a complex user query into dynamically-determined sub-tasks, dispatches them to parallel worker agents, and aggregates their outputs.</p>
 <div class="mermaid">graph TD
     User[User Goal] --&gt; Orch[Orchestrator LLM]
@@ -200,9 +212,9 @@
 <li><strong>Best Used For</strong>: Complex research projects, automated software engineering tasks, and large-scale data synthesis.</li>
 </ul>
 <hr>
-<h2>Part 2: Core Agentic Loops (Autonomous &amp; Iterative)</h2>
+<h2 id="part-2-core-agentic-loops-autonomous-iterative">Part 2: Core Agentic Loops (Autonomous &amp; Iterative)</h2>
 <p>When tasks are open-ended and the steps to achieve them cannot be predetermined, we transition to autonomous loops.</p>
-<h3>5. Evaluator-Optimizer</h3>
+<h3 id="5-evaluator-optimizer">5. Evaluator-Optimizer</h3>
 <p>An Evaluator-Optimizer loop consists of a Generator that creates a draft, and an Evaluator that grades the draft against quality criteria. If the draft fails, the evaluator provides a structured critique, and the loop repeats.</p>
 <div class="mermaid">graph TD
     Input[Goal] --&gt; Gen[Generator LLM]
@@ -214,7 +226,7 @@
 <li><strong>Best Used For</strong>: Code generation, rigorous copyediting, schema compliance checks, and translations where quality must be verified programmatically before delivery.</li>
 </ul>
 <hr>
-<h3>6. ReAct (Reason-Action-Observation)</h3>
+<h3 id="6-react-reason-action-observation">6. ReAct (Reason-Action-Observation)</h3>
 <p>The ReAct paradigm combines reasoning (thoughts) and acting (tool execution) in a single loop. The agent reasons about its current state, selects a tool, runs it, observes the result, and repeats until it decides the task is complete.</p>
 <div class="mermaid">graph TD
     Query[User Query] --&gt; State[Agent State Manager]
@@ -228,7 +240,7 @@
 <li><strong>Best Used For</strong>: Autonomous databases, filesystem managers, and systems that must interact with APIs dynamically to answer open-ended questions.</li>
 </ul>
 <hr>
-<h3>7. Multi-Agent Swarms &amp; Coordination</h3>
+<h3 id="7-multi-agent-swarms-coordination">7. Multi-Agent Swarms &amp; Coordination</h3>
 <p>For complex environments, multiple independent agents coordinate their work. Two primary architectures dominate:</p>
 <ol>
 <li><strong>Hierarchical Supervisors</strong>: A supervisor agent acts as a manager, coordinating specialized workers and routing messages.</li>
@@ -247,33 +259,33 @@
         D2 --&gt;|Referees Consensus| Ref[Referee LLM]
       end</div>
 <hr>
-<h2>Production Engineering for Agentic Systems</h2>
+<h2 id="production-engineering-for-agentic-systems">Production Engineering for Agentic Systems</h2>
 <p>Deploying these architectures requires robust infrastructure. Three components are essential:</p>
-<h3>1. Persistent Checkpointing</h3>
+<h3 id="1-persistent-checkpointing">1. Persistent Checkpointing</h3>
 <p>Agents are stateful. If a network call drops or a token limit is hit halfway through a 15-step agent graph, you cannot afford to restart the entire sequence.</p>
 <ul>
 <li><strong>Solution</strong>: Implement database-backed checkpointers (using PostgreSQL or Redis) that save the state dictionary at <em>every node transition</em>. This enables seamless task resumption and transaction rollbacks.</li>
 </ul>
-<h3>2. Human-in-the-Loop (HITL) Breakpoints</h3>
+<h3 id="2-human-in-the-loop-hitl-breakpoints">2. Human-in-the-Loop (HITL) Breakpoints</h3>
 <p>Never let an autonomous agent execute high-risk actions (like sending emails, executing database writes, or transferring money) without human validation.</p>
 <ul>
 <li><strong>Solution</strong>: Set up graph breakpoints. When a node performs a sensitive action, transition the state to <code>AWAITING_APPROVAL</code> and pause execution. Trigger a webhook to alert the administrator, and resume only when an approval payload is sent to the gateway.</li>
 </ul>
-<h3>3. Isolated Code Sandboxes</h3>
+<h3 id="3-isolated-code-sandboxes">3. Isolated Code Sandboxes</h3>
 <p>If you build code-generating agents (like an Autonomous Developer or DevOps Sentinel), they must execute code dynamically. Running these scripts directly on your host server exposes you to local resource exhaustion or security breaches.</p>
 <ul>
 <li><strong>Solution</strong>: Offload execution to sandboxed micro-containers (using tools like E2B Sandboxes or temporary Docker instances with tight memory and time limits).</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Navigating the evolving landscape of AI system design requires a clear understanding of architectural choices.</p>
 <ol>
 <li><strong>Prioritize Predictability with Workflows:</strong> For most enterprise tasks, structured workflows offer higher predictability, lower costs, and easier debugging, making them the default choice for well-defined problems.</li>
 <li><strong>Reserve Autonomy for Open-Ended Challenges:</strong> Autonomous agentic loops, while powerful for dynamic and open-ended tasks, should be carefully applied due to their higher complexity, cost, and potential for unpredictability.</li>
 <li><strong>Robust Production Engineering is Non-Negotiable:</strong> Deploying agentic systems successfully demands essential infrastructure like persistent checkpointing, human-in-the-loop breakpoints, and isolated code sandboxes to ensure reliability and security.</li>
 </ol>
-<h2><em>Takeaway: The future of enterprise AI lies in intelligently combining structured workflows with judiciously applied autonomous agents, backed by robust production practices.</em></h2>
-<h2>References &amp; Further Reading</h2>
+<h2 id="takeaway-the-future-of-enterprise-ai-lies-in-intelligently-combining-structured-workflows-with-judiciously-applied-autonomous-agents-backed-by-robust-production-practices"><em>Takeaway: The future of enterprise AI lies in intelligently combining structured workflows with judiciously applied autonomous agents, backed by robust production practices.</em></h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <p>For a deeper dive into agentic design patterns and research, check out the following resources:</p>
 <ul>
 <li><strong>Anthropic Research</strong>: <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank" rel="noopener">Building Effective Agents</a> — The definitive engineering guide on workflows and agent patterns.</li>
@@ -310,6 +322,20 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-spectrum-workflows-vs-agents" class="toc-link">The Spectrum: Workflows vs. Agents</a></li>
+              <li class="toc-item toc-h2"><a href="#part-1-core-workflows-predictable-structured" class="toc-link">Part 1: Core Workflows (Predictable &amp; Structured)</a></li>
+              <li class="toc-item toc-h2"><a href="#part-2-core-agentic-loops-autonomous-iterative" class="toc-link">Part 2: Core Agentic Loops (Autonomous &amp; Iterative)</a></li>
+              <li class="toc-item toc-h2"><a href="#production-engineering-for-agentic-systems" class="toc-link">Production Engineering for Agentic Systems</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#takeaway-the-future-of-enterprise-ai-lies-in-intelligently-combining-structured-workflows-with-judiciously-applied-autonomous-agents-backed-by-robust-production-practices" class="toc-link">*Takeaway: The future of enterprise AI lies in intelligently combining structured workflows with judiciously applied autonomous agents, backed by robust production practices.*</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

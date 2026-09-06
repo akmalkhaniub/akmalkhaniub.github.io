@@ -104,6 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#redis-fails-quietly-thats-the-danger">Redis Fails Quietly — That's the Danger</a></li>
+                <li><a href="#lesson-1-the-allkeys-lru-eviction-policy-eats-your-job-queue">Lesson 1: The allkeys-lru Eviction Policy Eats Your Job Queue</a></li>
+                <li><a href="#lesson-2-keys-and-smembers-block-everything">Lesson 2: KEYS * and SMEMBERS Block Everything</a></li>
+                <li><a href="#lesson-3-lua-scripts-are-not-atomic-in-cluster-mode">Lesson 3: Lua Scripts Are NOT Atomic in Cluster Mode</a></li>
+                <li><a href="#lesson-4-mget-mset-fail-across-cluster-slots">Lesson 4: MGET / MSET Fail Across Cluster Slots</a></li>
+                <li><a href="#lesson-5-no-persistence-total-data-loss-on-restart">Lesson 5: No Persistence = Total Data Loss on Restart</a></li>
+                <li><a href="#lesson-6-connection-pool-exhaustion-under-ai-workload-spikes">Lesson 6: Connection Pool Exhaustion Under AI Workload Spikes</a></li>
+                <li><a href="#lesson-7-keys-without-ttl-grow-your-memory-without-bound">Lesson 7: Keys Without TTL Grow Your Memory Without Bound</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +125,7 @@ Redis is the workhorse of AI infrastructure — caching LLM responses, managing 
 </div>
 </div>
 <hr>
-<h2>Redis Fails Quietly — That&#39;s the Danger</h2>
+<h2 id="redis-fails-quietly-thats-the-danger">Redis Fails Quietly — That&#39;s the Danger</h2>
 <p>Unlike Postgres, which throws errors and rolls back, Redis&#39;s failure modes are often silent:</p>
 <ul>
 <li><strong>Eviction deletes your BullMQ jobs</strong> — worker silently loses tasks with no exception</li>
@@ -142,7 +156,7 @@ flowchart TD
     style E6 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style E7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
 <hr>
-<h2>Lesson 1: The <code>allkeys-lru</code> Eviction Policy Eats Your Job Queue</h2>
+<h2 id="lesson-1-the-allkeys-lru-eviction-policy-eats-your-job-queue">Lesson 1: The <code>allkeys-lru</code> Eviction Policy Eats Your Job Queue</h2>
 <p><strong>Symptom</strong>: BullMQ jobs disappear without being processed. No worker errors. Workers show as active. Jobs simply never complete.</p>
 <p><strong>Root cause</strong>: By default, many managed Redis instances (AWS ElastiCache, Redis Cloud) configure <code>maxmemory-policy allkeys-lru</code>. Under memory pressure, Redis evicts <strong>any key</strong> using LRU — including your BullMQ job keys, agent session state, and rate limiter counters.</p>
 <pre><code class="language-bash"># Check current eviction policy
@@ -194,7 +208,7 @@ def audit_redis_config(client: redis.Redis) -&gt; dict:
 print(audit_redis_config(r))</code></pre>
 <p><strong>The rule</strong>: Use <code>volatile-lru</code> for any Redis instance storing both cache data (with TTL) and durable data (no TTL, like job queues). Reserve <code>allkeys-lru</code> only for pure cache deployments.</p>
 <hr>
-<h2>Lesson 2: <code>KEYS *</code> and <code>SMEMBERS</code> Block Everything</h2>
+<h2 id="lesson-2-keys-and-smembers-block-everything">Lesson 2: <code>KEYS *</code> and <code>SMEMBERS</code> Block Everything</h2>
 <p><strong>Symptom</strong>: Once per day, your entire application freezes for 3-10 seconds. Redis latency spikes to thousands of milliseconds. The timing correlates with a cron job or admin script.</p>
 <p><strong>Root cause</strong>: Redis is single-threaded. <code>KEYS *</code> on a keyspace with 1 million keys takes 500ms–2s — during which <strong>no other command can execute</strong>. Same for <code>SMEMBERS</code> on a very large set.</p>
 <pre><code class="language-python"># NEVER in production — blocks Redis for all clients during scan
@@ -231,7 +245,7 @@ async def scan_keys_async(client: aioredis.Redis, pattern: str):
     async for key in client.scan_iter(match=pattern, count=100):
         yield key</code></pre>
 <hr>
-<h2>Lesson 3: Lua Scripts Are NOT Atomic in Cluster Mode</h2>
+<h2 id="lesson-3-lua-scripts-are-not-atomic-in-cluster-mode">Lesson 3: Lua Scripts Are NOT Atomic in Cluster Mode</h2>
 <p><strong>Symptom</strong>: Rate limiter that works perfectly in single-instance Redis starts double-counting or skipping increments when deployed to Redis Cluster.</p>
 <p><strong>Root cause</strong>: Lua scripts ARE atomic in single-instance Redis. In <strong>Cluster mode</strong>, a Lua script that accesses keys in <strong>different hash slots</strong> (different cluster nodes) is NOT atomic — the script runs across multiple nodes sequentially, with no cross-node transaction guarantees.</p>
 <pre><code class="language-python"># This Lua rate-limiter works on single Redis but NOT in cluster mode
@@ -295,7 +309,7 @@ def check_rate_limit(
     )
     return bool(allowed)</code></pre>
 <hr>
-<h2>Lesson 4: MGET / MSET Fail Across Cluster Slots</h2>
+<h2 id="lesson-4-mget-mset-fail-across-cluster-slots">Lesson 4: MGET / MSET Fail Across Cluster Slots</h2>
 <p><strong>Symptom</strong>: <code>MGET user:1 user:2 user:3</code> raises <code>CROSSSLOT Keys in request don&#39;t hash to the same slot</code> in Redis Cluster.</p>
 <p><strong>Root cause</strong>: Multi-key commands (<code>MGET</code>, <code>MSET</code>, <code>DEL</code> with multiple keys) require all keys to reside on the same cluster node. Arbitrary keys hash to different slots.</p>
 <pre><code class="language-python"># Fails in cluster mode if keys hash to different slots
@@ -319,7 +333,7 @@ def get_user_fields(client: redis.Redis, user_id: str) -&gt; dict:
     values = client.mget(list(keys.values()))  # ← All same slot now
     return dict(zip(keys.keys(), values))</code></pre>
 <hr>
-<h2>Lesson 5: No Persistence = Total Data Loss on Restart</h2>
+<h2 id="lesson-5-no-persistence-total-data-loss-on-restart">Lesson 5: No Persistence = Total Data Loss on Restart</h2>
 <p><strong>Symptom</strong>: Redis server restarts (OOM kill, deployment, crash). All job queues, session state, and rate limit counters are gone. Your application starts in a completely blank state.</p>
 <p><strong>Root cause</strong>: Redis is an in-memory database. By default, <code>save &quot;&quot;</code> disables RDB persistence. <code>appendonly no</code> disables AOF. A restart means total data loss.</p>
 <pre><code class="language-bash"># redis.conf — production persistence settings
@@ -353,7 +367,7 @@ save 3600 1</code></pre>
         )
     }</code></pre>
 <hr>
-<h2>Lesson 6: Connection Pool Exhaustion Under AI Workload Spikes</h2>
+<h2 id="lesson-6-connection-pool-exhaustion-under-ai-workload-spikes">Lesson 6: Connection Pool Exhaustion Under AI Workload Spikes</h2>
 <p><strong>Symptom</strong>: Under load, Redis commands start timing out with <code>ConnectionError: max number of clients reached</code>. Latency spikes. Your AI agent queues stall.</p>
 <p><strong>Root cause</strong>: Each concurrent request that touches Redis needs a connection. LLM workloads are bursty — 10 simultaneous agent runs each making 20 Redis calls = 200 concurrent connections needed. Without pool tuning, the default pool size (10) is exhausted instantly.</p>
 <pre><code class="language-python"># Production Redis pool configuration
@@ -390,7 +404,7 @@ async def pool_health_check(client: aioredis.Redis) -&gt; dict:
         &quot;ping&quot;: await client.ping(),
     }</code></pre>
 <hr>
-<h2>Lesson 7: Keys Without TTL Grow Your Memory Without Bound</h2>
+<h2 id="lesson-7-keys-without-ttl-grow-your-memory-without-bound">Lesson 7: Keys Without TTL Grow Your Memory Without Bound</h2>
 <p><strong>Symptom</strong>: Redis memory usage grows 10MB per day. After 3 months, you hit the memory limit. Eviction starts. Job queues begin losing data.</p>
 <p><strong>Root cause</strong>: Every key stored without a TTL lives forever unless explicitly deleted. Session tokens, temporary computation results, and agent state keys accumulate silently.</p>
 <pre><code class="language-python">from datetime import timedelta
@@ -428,7 +442,7 @@ def find_immortal_keys(client: redis.Redis, pattern: str = &quot;*&quot;, sample
 immortal = find_immortal_keys(r, &quot;agent:*&quot;)
 print(f&quot;Found {len(immortal)} keys with no TTL — review for memory leaks&quot;)</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Redis is extraordinary when configured correctly and treacherous when not. The failures are subtle — no exceptions, no alerts, just gradually degrading reliability and eventually lost data or frozen queues.</p>
 <ul>
 <li><strong>Set <code>volatile-lru</code> eviction policy</strong> for any Redis instance that mixes cache data and persistent state. <code>allkeys-lru</code> will eventually evict your job queues under memory pressure.</li>
@@ -436,7 +450,7 @@ print(f&quot;Found {len(immortal)} keys with no TTL — review for memory leaks&
 <li><strong>Use hash tags <code>{...}</code> in Cluster mode</strong> whenever you need Lua script atomicity or multi-key operations. Without co-located keys, atomicity guarantees disappear silently.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>Redis Configuration Guide</strong>: <a href="https://redis.io/docs/management/config/" target="_blank" rel="noopener">redis.conf production best practices</a></li>
 <li><strong>Redis Cluster Specification</strong>: <a href="https://redis.io/docs/management/scaling/" target="_blank" rel="noopener">Hash slots and key distribution</a></li>
@@ -470,6 +484,22 @@ print(f&quot;Found {len(immortal)} keys with no TTL — review for memory leaks&
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#redis-fails-quietly-thats-the-danger" class="toc-link">Redis Fails Quietly — That's the Danger</a></li>
+              <li class="toc-item toc-h2"><a href="#lesson-1-the-allkeys-lru-eviction-policy-eats-your-job-queue" class="toc-link">Lesson 1: The allkeys-lru Eviction Policy Eats Your Job Queue</a></li>
+              <li class="toc-item toc-h2"><a href="#lesson-2-keys-and-smembers-block-everything" class="toc-link">Lesson 2: KEYS * and SMEMBERS Block Everything</a></li>
+              <li class="toc-item toc-h2"><a href="#lesson-3-lua-scripts-are-not-atomic-in-cluster-mode" class="toc-link">Lesson 3: Lua Scripts Are NOT Atomic in Cluster Mode</a></li>
+              <li class="toc-item toc-h2"><a href="#lesson-4-mget-mset-fail-across-cluster-slots" class="toc-link">Lesson 4: MGET / MSET Fail Across Cluster Slots</a></li>
+              <li class="toc-item toc-h2"><a href="#lesson-5-no-persistence-total-data-loss-on-restart" class="toc-link">Lesson 5: No Persistence = Total Data Loss on Restart</a></li>
+              <li class="toc-item toc-h2"><a href="#lesson-6-connection-pool-exhaustion-under-ai-workload-spikes" class="toc-link">Lesson 6: Connection Pool Exhaustion Under AI Workload Spikes</a></li>
+              <li class="toc-item toc-h2"><a href="#lesson-7-keys-without-ttl-grow-your-memory-without-bound" class="toc-link">Lesson 7: Keys Without TTL Grow Your Memory Without Bound</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

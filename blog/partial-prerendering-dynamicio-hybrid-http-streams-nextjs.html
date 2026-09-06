@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/partial-prerendering-dynamicio-hybrid-http-streams-nextjs.html">
   <meta property="og:title" content="Partial Prerendering &amp; dynamicIO: The Anatomy of a Hybrid HTTP Stream">
   <meta property="og:description" content="Delivering sub-20ms edge TTFB with dynamic streaming: build-time static resume tokens, dynamicIO micro-reads, single-connection multiplexing, and avoiding reverse-proxy buffering traps in Nginx and Cloudflare.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/partial-prerendering-dynamicio-hybrid-http-streams-nextjs.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-05">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Partial Prerendering &amp; dynamicIO: The Anatomy of a Hybrid HTTP Stream">
   <meta name="twitter:description" content="Delivering sub-20ms edge TTFB with dynamic streaming: build-time static resume tokens, dynamicIO micro-reads, single-connection multiplexing, and avoiding reverse-proxy buffering traps in Nginx and Cloudflare.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/partial-prerendering-dynamicio-hybrid-http-streams-nextjs.jpg">
 
   <script type="application/ld+json">
 {
@@ -92,7 +92,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Partial Prerendering &amp; dynamicIO: The Anatomy of a Hybrid HTTP Stream Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/partial-prerendering-dynamicio-hybrid-http-streams-nextjs.jpg" class="article-cover-img" alt="Partial Prerendering &amp; dynamicIO: The Anatomy of a Hybrid HTTP Stream Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Partial Prerendering &amp; dynamicIO: The Anatomy of a Hybrid HTTP Stream</h1>
             <div class="article-meta">
@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-why-this-feature-the-physics-of-time-to-first-byte-ttfb">1. Why This Feature? The Physics of Time to First Byte (TTFB)</a></li>
+                <li><a href="#2-under-the-hood-static-resume-tokens-and-dynamicio">2. Under the Hood: Static Resume Tokens and dynamicIO</a></li>
+                <li><a href="#3-the-reverse-proxy-hazard-why-nginx-and-cloudflare-break-ppr">3. The Reverse-Proxy Hazard: Why Nginx and Cloudflare Break PPR</a></li>
+                <li><a href="#4-cross-framework-comparison-ppr-vs-islands-vs-resumability">4. Cross-Framework Comparison: PPR vs Islands vs Resumability</a></li>
+                <li><a href="#5-architectural-summary">5. Architectural Summary</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <p>For two decades, the architecture of the web has been trapped in a binary compromise:</p>
 <p>You could choose <strong>Static Site Generation (SSG)</strong>: build your HTML files at compile time, deploy them to an edge Content Delivery Network (CDN), and deliver sub-50ms Time to First Byte (TTFB) anywhere on Earth. But the moment a user logs in, or an e-commerce page displays real-time inventory counts, the model fractures. You are forced to ship skeleton loaders, execute client-side waterfalls, and watch Cumulative Layout Shift (CLS) degrade user experience.</p>
 <p>Or you could choose <strong>Server-Side Rendering (SSR)</strong>: dynamically compute HTML on every inbound request with fresh database state. But now your TTFB is held hostage by your slowest database query. If a personalized recommendation engine takes 400 milliseconds to calculate, the user stares at a completely blank white screen for nearly half a second before receiving a single byte of HTML.</p>
@@ -131,8 +142,9 @@
   Origin--&gt;&gt;Edge: Stream Flight Chunks for dynamic holes
   Edge--&gt;&gt;Browser: Stream Chunks over same open HTTP connection
   Note over Browser: React Suspense resolves dynamic holes without layout shift!</div>
+<p><em>Figure 1: Timeline and network packet topology of a Partial Prerendered (PPR) HTTP stream. The static shell is flushed from edge storage in 15ms, while dynamic suspense holes resolve across the persistent connection. Source: Vercel Research <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup>.</em></p>
 <hr>
-<h2>1. Why This Feature? The Physics of Time to First Byte (TTFB)</h2>
+<h2 id="1-why-this-feature-the-physics-of-time-to-first-byte-ttfb">1. Why This Feature? The Physics of Time to First Byte (TTFB)</h2>
 <p>In web performance, TTFB is the critical gating factor for all downstream metrics. If the browser does not receive HTML bytes:</p>
 <ul>
 <li>It cannot discover <code>&lt;link rel=&quot;stylesheet&quot;&gt;</code> tags.</li>
@@ -141,7 +153,7 @@
 </ul>
 <p>Every 100 milliseconds of TTFB delay cascades into hundreds of milliseconds of First Contentful Paint (FCP) and Largest Contentful Paint (LCP) degradation.</p>
 <p>Traditional SSR forces the browser to wait for the entire page&#39;s data to resolve before sending the HTTP status code (<code>200 OK</code>) and initial <code>&lt;!DOCTYPE html&gt;</code>.</p>
-<h3>The Suspense Streaming Solution</h3>
+<h3 id="the-suspense-streaming-solution">The Suspense Streaming Solution</h3>
 <p>React 18 introduced streaming SSR via <code>&lt;Suspense&gt;</code>. The server could flush the <code>&lt;head&gt;</code> and initial markup, keeping the connection open via <code>Transfer-Encoding: chunked</code>. When slow queries completed, inline <code>&lt;script&gt;</code> tags swapped in the finished markup.</p>
 <p>However, streaming SSR still required an <strong>origin compute server to boot on every request</strong>. Even if 90% of the page was static markup, a cold-start serverless container still added 200–500ms of compute latency before flushing the first chunk.</p>
 <p>Partial Prerendering solves this by decoupling the <strong>initial flush</strong> from the <strong>origin compute</strong>:</p>
@@ -150,9 +162,9 @@
 <li>The dynamic holes are spawned as parallel serverless promises that stream directly into the already-open HTTP pipe.</li>
 </ul>
 <hr>
-<h2>2. Under the Hood: Static Resume Tokens and dynamicIO</h2>
+<h2 id="2-under-the-hood-static-resume-tokens-and-dynamicio">2. Under the Hood: Static Resume Tokens and dynamicIO</h2>
 <p>How does Next.js determine which parts of a component tree are static and which are dynamic without manual configuration?</p>
-<h3>The <code>dynamicIO</code> Compilation Pass</h3>
+<h3 id="the-dynamicio-compilation-pass">The <code>dynamicIO</code> Compilation Pass</h3>
 <p>In earlier versions, developers had to declare route configuration flags like <code>export const dynamic = &#39;force-dynamic&#39;</code> or configure <code>revalidate</code> timers.</p>
 <p>The <code>experimental.dynamicIO</code> compiler flag replaces manual configuration with <strong>micro-read AST instrumentation</strong>. During the build phase, the compiler inspects every component:</p>
 <ul>
@@ -178,7 +190,7 @@ export default function ProductPage({ params }: { params: Promise&lt;{ slug: str
     &lt;/div&gt;
   );
 }</code></pre>
-<h3>The Static Shell Output at Build Time:</h3>
+<h3 id="the-static-shell-output-at-build-time">The Static Shell Output at Build Time:</h3>
 <p>When Next.js compiles the page above with PPR enabled, it outputs an HTML document containing pre-rendered markup for <code>ProductHeader</code> and <code>PricingSkeleton</code>, followed by an embedded marker:</p>
 <pre><code class="language-html">&lt;div class=&quot;product-layout&quot;&gt;
   &lt;div class=&quot;header&quot;&gt;&lt;h1&gt;Mechanical Keyboard Pro&lt;/h1&gt;&lt;/div&gt;
@@ -199,7 +211,7 @@ export default function ProductPage({ params }: { params: Promise&lt;{ slug: str
   $RC(&quot;B:0&quot;, &quot;S:0&quot;); // React Client runtime swaps fallback with live DOM
 &lt;/script&gt;</code></pre>
 <hr>
-<h2>3. The Reverse-Proxy Hazard: Why Nginx and Cloudflare Break PPR</h2>
+<h2 id="3-the-reverse-proxy-hazard-why-nginx-and-cloudflare-break-ppr">3. The Reverse-Proxy Hazard: Why Nginx and Cloudflare Break PPR</h2>
 <p>While Partial Prerendering is mathematically brilliant, it introduces a severe operational pitfall when deploying outside of specialized edge infrastructure: <strong>Reverse-Proxy Response Buffering</strong>.</p>
 <p>In standard enterprise production architectures, traffic passes through reverse proxies:</p>
 <pre><code class="language-plaintext">User Browser ──► Cloudflare ──► AWS ALB / Nginx ──► Next.js Node Container</code></pre>
@@ -208,14 +220,14 @@ export default function ProductPage({ params }: { params: Promise&lt;{ slug: str
 <li>The proxy waits until it has received the entire upstream HTTP response (or a large buffer threshold like 64KB) before forwarding bytes to the client.</li>
 <li><strong>This completely destroys Partial Prerendering!</strong></li>
 </ul>
-<h3>The Catastrophic Result:</h3>
+<h3 id="the-catastrophic-result">The Catastrophic Result:</h3>
 <ol>
 <li>The Next.js server flushes the static shell (4KB) in 15 milliseconds.</li>
 <li>Nginx buffers the 4KB and does not send it to the user.</li>
 <li>Nginx waits 400 milliseconds for the dynamic hole to complete before releasing the connection.</li>
 <li>The user experiences zero benefits from PPR; they wait the full 400ms TTFB as if classic SSR were running!</li>
 </ol>
-<h3>The Systems Fix:</h3>
+<h3 id="the-systems-fix">The Systems Fix:</h3>
 <p>To make PPR stream through Nginx, you must explicitly disable proxy buffering on streaming endpoints:</p>
 <pre><code class="language-nginx"># nginx.conf: Enabling Zero-Delay Chunked Streaming
 location / {
@@ -234,7 +246,7 @@ location / {
 }</code></pre>
 <p>Furthermore, streaming endpoints must emit the <code>X-Accel-Buffering: no</code> header to instruct downstream CDNs not to buffer intermediate chunks.</p>
 <hr>
-<h2>4. Cross-Framework Comparison: PPR vs Islands vs Resumability</h2>
+<h2 id="4-cross-framework-comparison-ppr-vs-islands-vs-resumability">4. Cross-Framework Comparison: PPR vs Islands vs Resumability</h2>
 <table>
 <thead>
 <tr>
@@ -275,10 +287,21 @@ location / {
 </tr>
 </tbody></table>
 <hr>
-<h2>5. Architectural Summary</h2>
+<h2 id="5-architectural-summary">5. Architectural Summary</h2>
 <p>Partial Prerendering represents the logical culmination of twenty years of web delivery evolution.</p>
 <p>By dismantling the binary choice between static CDNs and dynamic servers, PPR delivers the holy grail: <strong>sub-20ms edge TTFB for personalized, real-time web applications</strong>.</p>
 <p>However, systems architects must remember that streaming is an end-to-end network contract. If your ingress controllers, load balancers, or CDN caching layers buffer chunks, your multi-threaded streaming architecture degrades into slow, expensive SSR.</p>
+<hr>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Core Team (2024)</strong>. <em>Partial Prerendering (PPR) Architecture RFC</em>. Next.js RFCs &amp; Architecture Notes. <a href="https://nextjs.org/docs/app/api-reference/next-config-js/partial-prerendering" target="_blank" rel="noopener">https://nextjs.org/docs/app/api-reference/next-config-js/partial-prerendering</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Belshe, M., Peon, R., &amp; Thomson, M. (2022)</strong>. <em>HTTP/2 Protocol and Multiplexed Streaming</em>. RFC 9113, Internet Engineering Task Force (IETF). <a href="https://datatracker.ietf.org/doc/html/rfc9113" target="_blank" rel="noopener">https://datatracker.ietf.org/doc/html/rfc9113</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Nginx Open Source (2023)</strong>. <em>Proxy Buffering and FastCGI Streaming Configuration</em>. Nginx Documentation. <a href="https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffering" target="_blank" rel="noopener">https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffering</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Astro Docs (2024)</strong>. <em>Server-Islands and Hybrid Edge Rendering</em>. Astro Architecture Docs. <a href="https://astro.build/blog/astro-server-islands/" target="_blank" rel="noopener">https://astro.build/blog/astro-server-islands/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Shopify Hydrogen Team (2024)</strong>. <em>Sub-request Streaming and Edge Workers</em>. Shopify Developer Platform. <a href="https://shopify.dev/docs/custom-storefronts/hydrogen" target="_blank" rel="noopener">https://shopify.dev/docs/custom-storefronts/hydrogen</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -306,6 +329,19 @@ location / {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-why-this-feature-the-physics-of-time-to-first-byte-ttfb" class="toc-link">1. Why This Feature? The Physics of Time to First Byte (TTFB)</a></li>
+              <li class="toc-item toc-h2"><a href="#2-under-the-hood-static-resume-tokens-and-dynamicio" class="toc-link">2. Under the Hood: Static Resume Tokens and dynamicIO</a></li>
+              <li class="toc-item toc-h2"><a href="#3-the-reverse-proxy-hazard-why-nginx-and-cloudflare-break-ppr" class="toc-link">3. The Reverse-Proxy Hazard: Why Nginx and Cloudflare Break PPR</a></li>
+              <li class="toc-item toc-h2"><a href="#4-cross-framework-comparison-ppr-vs-islands-vs-resumability" class="toc-link">4. Cross-Framework Comparison: PPR vs Islands vs Resumability</a></li>
+              <li class="toc-item toc-h2"><a href="#5-architectural-summary" class="toc-link">5. Architectural Summary</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,8 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-tiers-of-agent-memory">The Tiers of Agent Memory</a></li>
+                <li><a href="#memory-contamination-and-context-isolation">Memory Contamination and Context Isolation</a></li>
+                <li><a href="#memory-architecture-checklist">Memory Architecture Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> Designing robust memory architectures for multi-agent LLM systems.</li>
 <li><strong>Why it matters:</strong> Prevents context contamination, improves agent coordination, and enables production-grade applications.</li>
@@ -116,7 +126,7 @@
 <p>In multi-agent systems, this naive memory model fails. If 5 specialized agents are writing code, auditing databases, and running tests, compiling <em>every</em> step&#39;s trace into a single shared context window results in <strong>context contamination</strong>, prompt confusion, and bloated token costs.</p>
 <p>To build production-grade agentic applications, you must design a <strong>Multi-Tiered Memory Architecture</strong>.</p>
 <hr>
-<h2>The Tiers of Agent Memory</h2>
+<h2 id="the-tiers-of-agent-memory">The Tiers of Agent Memory</h2>
 <p>A reliable multi-agent system divides memory into three distinct tiers, separating short-term task states from long-term database memory:</p>
 <div class="mermaid">graph TD
     subgraph Context [1. Ephemeral Task State]
@@ -131,26 +141,26 @@
     
     Thread &lt;--&gt; SharedState
     SharedState &lt;--&gt; LongTerm</div>
-<h3>1. Ephemeral Task State (Local Context)</h3>
+<h3 id="1-ephemeral-task-state-local-context">1. Ephemeral Task State (Local Context)</h3>
 <ul>
 <li><strong>What it is</strong>: The immediate, message-by-message chat history inside an active agent node&#39;s context window.</li>
 <li><strong>Lifecycle</strong>: Cleared when the agent node completes its current subtask and returns its JSON output.</li>
 <li><strong>Scope</strong>: Private to that specific agent node (e.g., the researcher&#39;s local context is not seen by the code compiler).</li>
 </ul>
-<h3>2. Shared Session Database (Blackboard / Global State)</h3>
+<h3 id="2-shared-session-database-blackboard-global-state">2. Shared Session Database (Blackboard / Global State)</h3>
 <ul>
 <li><strong>What it is</strong>: A centralized database table (typically PostgreSQL JSONB or Redis) storing key variables, compiled drafts, and active plans for the entire user session.</li>
 <li><strong>Lifecycle</strong>: Persisted across the entire task execution lifecycle (enabling task resumption and audit logging).</li>
 <li><strong>Scope</strong>: Read and written by supervisors or specialized router nodes, which selectively dispatch segments of this state to worker nodes.</li>
 </ul>
-<h3>3. Semantic Memory (Long-Term Vector Context)</h3>
+<h3 id="3-semantic-memory-long-term-vector-context">3. Semantic Memory (Long-Term Vector Context)</h3>
 <ul>
 <li><strong>What it is</strong>: Vector embeddings of past user interactions, successful code outputs, and corporate knowledge bases.</li>
 <li><strong>Lifecycle</strong>: Permanent.</li>
 <li><strong>Scope</strong>: Queried via similarity search (e.g., using <code>pgvector</code>) to inject historical context (e.g., &quot;how this user preferred to format reports last month&quot;) into the active session.</li>
 </ul>
 <hr>
-<h2>Memory Contamination and Context Isolation</h2>
+<h2 id="memory-contamination-and-context-isolation">Memory Contamination and Context Isolation</h2>
 <p>The biggest issue in multi-agent memory is <strong>Memory Contamination</strong>. If Worker B receives the entire raw conversation between the User and Worker A, it will read past the relevant instruction, leading to attention dispersion.</p>
 <p>To prevent this, enforce <strong>Strict Context Isolation</strong>:</p>
 <ul>
@@ -158,14 +168,14 @@
 <li><strong>Read-Only Tools</strong>: Specialized retrieval agents should have read-only access to long-term memory vector databases to retrieve relevant context on-demand, rather than dumping the entire dataset into the prompt initially.</li>
 </ul>
 <hr>
-<h2>Memory Architecture Checklist</h2>
+<h2 id="memory-architecture-checklist">Memory Architecture Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Database-Backed Checkpointing</strong>: Use database checkpointers (e.g., LangGraph Postgres checkpointer) to persist session state at every node transition. This ensures your agents can resume execution seamlessly after a crash.</li>
 <li><input disabled="" type="checkbox"> <strong>Token Budget Filters</strong>: Implement prompt compressors or token filters to prune message histories inside worker nodes, keeping ephemeral contexts under 2,000 tokens.</li>
 <li><input disabled="" type="checkbox"> <strong>Audit Logging</strong>: Write every agent input, output, tool call, and cost trace to a permanent audit database (e.g., PostgreSQL) for compliance and regression analysis.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Building sophisticated multi-agent LLM applications demands a deliberate approach to memory management beyond simple linear context.</p>
 <ol>
 <li><strong>Multi-Tiered Memory Architecture:</strong> Implement a Multi-Tiered Memory Architecture, separating ephemeral task state, shared session data, and long-term semantic memory to optimize context relevance and reduce token costs.</li>
@@ -174,7 +184,7 @@
 </ol>
 <p><em>Takeaway: A well-designed memory architecture is fundamental for scalable, reliable, and performant multi-agent LLM applications.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Theory of Mind in MAS</strong>: <em>Evaluating Theory of Mind and Internal Beliefs in LLM-Based Multi-Agent Systems</em> (February 2026). Analyzes how structured belief-state tables and memory layers improve coordination accuracy. <a href="https://arxiv.org/abs/2602.09432" target="_blank" rel="noopener">arXiv:2602.09432</a> (Needs verification)</li>
 <li><strong>MemGPT Research</strong>: Packer et al., 2023. <em>MemGPT: Towards LLMs as Operating Systems</em>. Introduces OS-style virtual memory management for LLM context windows. <a href="https://arxiv.org/abs/2310.08560" target="_blank" rel="noopener">arXiv:2310.08560</a></li>
@@ -208,6 +218,18 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-tiers-of-agent-memory" class="toc-link">The Tiers of Agent Memory</a></li>
+              <li class="toc-item toc-h2"><a href="#memory-contamination-and-context-isolation" class="toc-link">Memory Contamination and Context Isolation</a></li>
+              <li class="toc-item toc-h2"><a href="#memory-architecture-checklist" class="toc-link">Memory Architecture Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

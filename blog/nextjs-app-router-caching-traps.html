@@ -104,6 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-four-caches-you-didnt-know-you-had">The Four Caches You Didn't Know You Had</a></li>
+                <li><a href="#trap-1-fetch-is-cached-forever-by-default">Trap 1: fetch() Is Cached Forever By Default</a></li>
+                <li><a href="#trap-2-export-const-dynamic-force-dynamic-vs-cache-no-store">Trap 2: export const dynamic = 'force-dynamic' vs cache: 'no-store'</a></li>
+                <li><a href="#trap-3-request-memoisation-deduplication-across-components">Trap 3: Request Memoisation Deduplication Across Components</a></li>
+                <li><a href="#trap-4-router-cache-serves-stale-pages-for-5-minutes">Trap 4: Router Cache Serves Stale Pages for 5 Minutes</a></li>
+                <li><a href="#trap-5-api-route-handlers-are-cached-too">Trap 5: API Route Handlers Are Cached Too</a></li>
+                <li><a href="#trap-6-revalidatetag-only-works-if-the-tag-was-set-on-the-fetch">Trap 6: revalidateTag Only Works If the Tag Was Set on the Fetch</a></li>
+                <li><a href="#the-cache-cheat-sheet">The Cache Cheat Sheet</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +125,7 @@ Next.js App Router introduced the most aggressive caching system in modern web d
 </div>
 </div>
 <hr>
-<h2>The Four Caches You Didn&#39;t Know You Had</h2>
+<h2 id="the-four-caches-you-didnt-know-you-had">The Four Caches You Didn&#39;t Know You Had</h2>
 <p>When you call <code>fetch()</code> in a Next.js App Router Server Component, your request passes through up to four cache layers before hitting your origin. Each layer has different scope, TTL, and invalidation rules:</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#7dd3fc', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart LR
@@ -150,7 +164,7 @@ flowchart LR
     style C3 fill:#0f172a,stroke:#10b981,stroke-width:2px
     style C4 fill:#0f172a,stroke:#f59e0b,stroke-width:2px</div>
 <hr>
-<h2>Trap 1: <code>fetch()</code> Is Cached Forever By Default</h2>
+<h2 id="trap-1-fetch-is-cached-forever-by-default">Trap 1: <code>fetch()</code> Is Cached Forever By Default</h2>
 <p><strong>Symptom</strong>: You update your database. You deploy. Users still see old data. <code>console.log</code> in the Server Component confirms new data exists — but the page renders old HTML.</p>
 <p><strong>Root cause</strong>: Next.js App Router <strong>caches all <code>fetch()</code> calls by default</strong> (<code>cache: &#39;force-cache&#39;</code>) — indefinitely, across deployments, until explicitly revalidated. This is the opposite of browser fetch behaviour.</p>
 <pre><code class="language-typescript">// ❌ This data is cached FOREVER — survives deployments
@@ -184,7 +198,7 @@ async function getProducts() {
 }</code></pre>
 <p><strong>The key mental model</strong>: In Next.js App Router, <code>fetch()</code> behaves like <code>fetch()</code> + <code>localStorage</code> — it caches on the server by default. You must <strong>opt out</strong> of caching, not opt in.</p>
 <hr>
-<h2>Trap 2: <code>export const dynamic = &#39;force-dynamic&#39;</code> vs <code>cache: &#39;no-store&#39;</code></h2>
+<h2 id="trap-2-export-const-dynamic-force-dynamic-vs-cache-no-store">Trap 2: <code>export const dynamic = &#39;force-dynamic&#39;</code> vs <code>cache: &#39;no-store&#39;</code></h2>
 <p><strong>Symptom</strong>: You add <code>cache: &#39;no-store&#39;</code> to your fetch but the page still serves stale HTML. Or you add <code>dynamic = &#39;force-dynamic&#39;</code> and your page is suddenly 10× slower.</p>
 <p><strong>Root cause</strong>: These two directives control <strong>different cache layers</strong>:</p>
 <pre><code class="language-typescript">// Controls the DATA CACHE (fetch() caching)
@@ -237,7 +251,7 @@ export const dynamic = 'force-dynamic';
 </tr>
 </tbody></table>
 <hr>
-<h2>Trap 3: Request Memoisation Deduplication Across Components</h2>
+<h2 id="trap-3-request-memoisation-deduplication-across-components">Trap 3: Request Memoisation Deduplication Across Components</h2>
 <p><strong>Symptom</strong>: You call the same API in three different Server Components that render on the same page. You expect three API calls. You see one in your server logs. Sometimes this is correct, sometimes it returns wrong data to the wrong component.</p>
 <p><strong>Root cause</strong>: Next.js <strong>automatically deduplicates identical <code>fetch()</code> calls</strong> within a single render cycle (Request Memoisation). This is good for performance but can bite you when:</p>
 <pre><code class="language-typescript">// These three components all fetch the same URL
@@ -270,7 +284,7 @@ async function LogVisit() {
   });
 }</code></pre>
 <hr>
-<h2>Trap 4: Router Cache Serves Stale Pages for 5 Minutes</h2>
+<h2 id="trap-4-router-cache-serves-stale-pages-for-5-minutes">Trap 4: Router Cache Serves Stale Pages for 5 Minutes</h2>
 <p><strong>Symptom</strong>: A user updates their profile. They navigate away and back. They see their old profile data. Hard refresh fixes it. Happens only in navigation — not on initial load.</p>
 <p><strong>Root cause</strong>: Next.js Router Cache stores pre-fetched page payloads <strong>client-side in the browser</strong>. Dynamic routes are cached for <strong>30 seconds</strong>, static routes for <strong>5 minutes</strong>. <code>router.refresh()</code> is required to invalidate it after a mutation.</p>
 <pre><code class="language-typescript">// app/profile/page.tsx — User sees stale data for up to 30s after mutation
@@ -308,7 +322,7 @@ function ProfileUpdateButton() {
   return &lt;button onClick={handleUpdate}&gt;Save Profile&lt;/button&gt;;
 }</code></pre>
 <hr>
-<h2>Trap 5: API Route Handlers Are Cached Too</h2>
+<h2 id="trap-5-api-route-handlers-are-cached-too">Trap 5: API Route Handlers Are Cached Too</h2>
 <p><strong>Symptom</strong>: Your <code>app/api/data/route.ts</code> GET handler returns the same response for days, even though the database has new data. You assumed API routes are always dynamic.</p>
 <p><strong>Root cause</strong>: <code>GET</code> Route Handlers are <strong>opted into Full Route Cache</strong> if they don&#39;t use any dynamic APIs (cookies, headers, searchParams). They behave like static pages.</p>
 <pre><code class="language-typescript">// ❌ This GET handler IS cached — responses are static
@@ -344,7 +358,7 @@ export async function GET() {
   });
 }</code></pre>
 <hr>
-<h2>Trap 6: <code>revalidateTag</code> Only Works If the Tag Was Set on the Fetch</h2>
+<h2 id="trap-6-revalidatetag-only-works-if-the-tag-was-set-on-the-fetch">Trap 6: <code>revalidateTag</code> Only Works If the Tag Was Set on the Fetch</h2>
 <p><strong>Symptom</strong>: You call <code>revalidateTag(&#39;products&#39;)</code> in a Server Action. Nothing changes. The page still serves cached data.</p>
 <p><strong>Root cause</strong>: <code>revalidateTag</code> only invalidates fetch requests that were <strong>tagged with that exact string</strong> at call time. If you forgot to set the tag on the fetch, the invalidation is a no-op.</p>
 <pre><code class="language-typescript">// ❌ No tag — revalidateTag('products') will NOT affect this
@@ -371,7 +385,7 @@ async function addProduct(data: ProductData) {
   revalidateTag('inventory');  // ← Also busts the second tag
 }</code></pre>
 <hr>
-<h2>The Cache Cheat Sheet</h2>
+<h2 id="the-cache-cheat-sheet">The Cache Cheat Sheet</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981'}}}%%
 mindmap
   root((Next.js Cache&lt;br/&gt;Cheat Sheet))
@@ -392,7 +406,7 @@ mindmap
       Add export const dynamic = force-dynamic
       Or use cookies or headers in the handler</div>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Next.js App Router caching is powerful when understood and dangerous when not. The core mental shift: <strong>everything is cached by default</strong> — you must explicitly opt out of caching for dynamic data, not opt in.</p>
 <ul>
 <li><strong>Learn the four cache layers by name</strong> — Request Memoisation, Data Cache, Full Route Cache, Router Cache. Each has different scope and invalidation mechanisms. Confusing them is the root cause of 90% of Next.js caching bugs.</li>
@@ -400,7 +414,7 @@ mindmap
 <li><strong>Always tag your fetches</strong> if you plan to invalidate them programmatically — <code>revalidateTag</code> is a no-op without the corresponding <code>next: { tags }</code> on the fetch.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>Next.js Caching Documentation</strong>: <a href="https://nextjs.org/docs/app/building-your-application/caching" target="_blank" rel="noopener">How Next.js caching works</a></li>
 <li><strong>Next.js Data Fetching Patterns</strong>: <a href="https://nextjs.org/docs/app/building-your-application/data-fetching/fetching-caching-and-revalidating" target="_blank" rel="noopener">Fetching, Caching, and Revalidating</a></li>
@@ -433,6 +447,22 @@ mindmap
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-four-caches-you-didnt-know-you-had" class="toc-link">The Four Caches You Didn't Know You Had</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-1-fetch-is-cached-forever-by-default" class="toc-link">Trap 1: fetch() Is Cached Forever By Default</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-2-export-const-dynamic-force-dynamic-vs-cache-no-store" class="toc-link">Trap 2: export const dynamic = 'force-dynamic' vs cache: 'no-store'</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-3-request-memoisation-deduplication-across-components" class="toc-link">Trap 3: Request Memoisation Deduplication Across Components</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-4-router-cache-serves-stale-pages-for-5-minutes" class="toc-link">Trap 4: Router Cache Serves Stale Pages for 5 Minutes</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-5-api-route-handlers-are-cached-too" class="toc-link">Trap 5: API Route Handlers Are Cached Too</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-6-revalidatetag-only-works-if-the-tag-was-set-on-the-fetch" class="toc-link">Trap 6: revalidateTag Only Works If the Tag Was Set on the Fetch</a></li>
+              <li class="toc-item toc-h2"><a href="#the-cache-cheat-sheet" class="toc-link">The Cache Cheat Sheet</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

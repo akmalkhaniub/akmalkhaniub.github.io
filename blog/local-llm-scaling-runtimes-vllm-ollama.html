@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-economics-of-high-volume-token-processing">The Economics of High-Volume Token Processing</a></li>
+                <li><a href="#hybrid-failover-gateway-architecture">Hybrid Failover Gateway Architecture</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#technical-implementation-failover-gateway-wrapper-in-python">Technical Implementation: Failover Gateway Wrapper in Python</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ While frontier API models (like Claude 3.5 Sonnet) are unmatched in reasoning, q
 </div>
 </div>
 <hr>
-<h2>The Economics of High-Volume Token Processing</h2>
+<h2 id="the-economics-of-high-volume-token-processing">The Economics of High-Volume Token Processing</h2>
 <p>When building interactive applications (like chat interfaces or secure code executors), we require the highest possible reasoning capabilities. For these tasks, querying a cloud API makes sense.</p>
 <p>However, for bulk offline data tasks:</p>
 <ol>
@@ -121,7 +131,7 @@ While frontier API models (like Claude 3.5 Sonnet) are unmatched in reasoning, q
 <p>At large scale, paying $$3.00$ to $$15.00$ per million tokens results in thousands of dollars in API bills. By contrast, open-source models (like LLaMA-3 or DeepSeek-V3) can be run locally on dedicated GPUs (like RTX 490s, A10s, or rented runtimes). </p>
 <p>To maximize system availability and cost-efficiency, you need a <strong>hybrid gateway</strong>: send high-priority user-facing tasks to cloud models, while routing batch background processes to a local inference cluster, with automatic failover gates in case of network outages or rate limits.</p>
 <hr>
-<h2>Hybrid Failover Gateway Architecture</h2>
+<h2 id="hybrid-failover-gateway-architecture">Hybrid Failover Gateway Architecture</h2>
 <p>A failover gateway routes inbound requests to cloud APIs based on priority, automatically failing over to a local vLLM or Ollama node if the API service throws rate-limit (<code>429</code>) or timeout exceptions.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 graph TD
@@ -145,13 +155,13 @@ graph TD
     style D fill:#111827,stroke:#0ea5e9,stroke-width:2px
     style E fill:#0ea5e9,stroke:#0f172a,stroke-width:2px,color:#0f172a
     style F fill:#10b981,stroke:#0f172a,stroke-width:2px</div>
-<h3>Local Runtimes Comparison</h3>
+<h3 id="local-runtimes-comparison">Local Runtimes Comparison</h3>
 <ul>
 <li><strong>vLLM</strong>: An enterprise-grade, high-throughput model server that implements <strong>PagedAttention</strong> (which manages KV-cache memory blocks dynamically to prevent GPU fragmentation). Ideal for concurrent multi-user serving and batch operations.</li>
 <li><strong>Ollama</strong>: A lightweight runtime built on <code>llama.cpp</code> that wraps model quantization and loading into simple CLI commands. Ideal for local development, local edge nodes, and single-worker processes.</li>
 </ul>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -173,7 +183,7 @@ graph TD
 </tr>
 </tbody></table>
 <hr>
-<h2>Technical Implementation: Failover Gateway Wrapper in Python</h2>
+<h2 id="technical-implementation-failover-gateway-wrapper-in-python">Technical Implementation: Failover Gateway Wrapper in Python</h2>
 <p>Below is a complete Python implementation using the standard <code>openai</code> library client. The wrapper class attempts to complete a task using a cloud API (e.g. GPT-4o-mini), intercepting connection and rate-limit errors to fall back to a local <strong>vLLM</strong> endpoint.</p>
 <pre><code class="language-python">import os
 import time
@@ -245,7 +255,7 @@ if __name__ == &quot;__main__&quot;:
     except Exception as err:
         print(f&quot;\n[-] Execution failed: {err}&quot;)</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Running local LLM runtimes changes the economics of agentic applications. By deploying vLLM or Ollama alongside your cloud connections, you ensure maximum uptime and zero variable costs for batch work.</p>
 <ul>
 <li><strong>Implement PagedAttention</strong>: Always deploy vLLM rather than raw python wrapper scripts for concurrent pipelines to prevent memory out-of-memory crashes.</li>
@@ -253,7 +263,7 @@ if __name__ == &quot;__main__&quot;:
 </ul>
 <p>To review the comparative parameter bounds of local small language models vs cloud-hosted platforms, check out our baseline guide: <a href="file:///G:/ReplitProjects/akmalkhaniub.github.io/blog/edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets</a>.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>vLLM Paper</strong>: <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em> (Kwon et al., Berkeley) — <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">arXiv:2309.06180</a></li>
 <li><strong>vLLM Project</strong>: <a href="https://github.com/vllm-project/vllm" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> High-throughput serving engine github repo</a></li>
@@ -286,6 +296,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-economics-of-high-volume-token-processing" class="toc-link">The Economics of High-Volume Token Processing</a></li>
+              <li class="toc-item toc-h2"><a href="#hybrid-failover-gateway-architecture" class="toc-link">Hybrid Failover Gateway Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#technical-implementation-failover-gateway-wrapper-in-python" class="toc-link">Technical Implementation: Failover Gateway Wrapper in Python</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

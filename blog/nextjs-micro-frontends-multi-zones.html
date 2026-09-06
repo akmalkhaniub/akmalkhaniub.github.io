@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-micro-frontend-problem-in-modern-ssr">The Micro Frontend Problem in Modern SSR</a></li>
+                <li><a href="#core-pillar-1-nextjs-multi-zones">Core Pillar 1: Next.js Multi-Zones</a></li>
+                <li><a href="#core-pillar-2-react-server-components-rsc-federation">Core Pillar 2: React Server Components (RSC) Federation</a></li>
+                <li><a href="#core-pillar-3-edge-middleware-routing">Core Pillar 3: Edge Middleware Routing</a></li>
+                <li><a href="#implementation-zone-config-edge-router">Implementation: Zone Config &amp; Edge Router</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +122,7 @@ Micro frontends have long promised isolated, independently deployable frontend a
 </div>
 </div>
 <hr>
-<h2>The Micro Frontend Problem in Modern SSR</h2>
+<h2 id="the-micro-frontend-problem-in-modern-ssr">The Micro Frontend Problem in Modern SSR</h2>
 <p>Standard micro frontend approaches (like Webpack Module Federation or Single-SPA) operate almost entirely in the browser. In server-side rendered (SSR) environments, this creates severe engineering challenges:</p>
 <ol>
 <li><strong>Hydration Mismatches</strong>: The server-rendered HTML must match the client-side JavaScript exactly. If a micro frontend dynamically injects a component on the client, React will throw a hydration mismatch error.</li>
@@ -131,22 +142,22 @@ flowchart TD
         Dashboard -. Asset Prefix .-&gt; S3
     end</div>
 <hr>
-<h2>Core Pillar 1: Next.js Multi-Zones</h2>
+<h2 id="core-pillar-1-nextjs-multi-zones">Core Pillar 1: Next.js Multi-Zones</h2>
 <p>Next.js&#39;s native way of split-routing micro frontends is called <strong>Multi-Zones</strong>. In a Multi-Zone architecture, you split your system into multiple independent Next.js applications, each running on separate ports or server instances. </p>
 <p>To the end user, these separate apps appear as a single, unified site because they share the same top-level domain.</p>
-<h3>Solving Chunk Clashes with <code>assetPrefix</code></h3>
+<h3 id="solving-chunk-clashes-with-assetprefix">Solving Chunk Clashes with <code>assetPrefix</code></h3>
 <p>To prevent static files (JS/CSS) from overwriting each other, each zone must be configured with a unique <code>assetPrefix</code>. This forces Next.js to request its assets from a dedicated path (e.g. <code>/_next/static/blog/...</code> instead of the root folder).</p>
 <hr>
-<h2>Core Pillar 2: React Server Components (RSC) Federation</h2>
+<h2 id="core-pillar-2-react-server-components-rsc-federation">Core Pillar 2: React Server Components (RSC) Federation</h2>
 <p>One of the greatest benefits of modern Next.js is React Server Components. With RSCs, we can render the micro frontend components entirely on the server and stream the lightweight virtual DOM payload down to the client.</p>
 <p>Instead of federating heavy JavaScript bundles that must be parsed and executed in the client&#39;s browser, you can query a federated sub-app over the network from your main app&#39;s server, receive the pre-rendered RSC payload, and inject it directly into the page stream. The client receives raw HTML without downloading the component&#39;s library dependencies.</p>
 <hr>
-<h2>Core Pillar 3: Edge Middleware Routing</h2>
+<h2 id="core-pillar-3-edge-middleware-routing">Core Pillar 3: Edge Middleware Routing</h2>
 <p>Rather than configuring heavy reverse proxies (like Nginx or Cloudflare Rules) which are slow to deploy and hard to maintain in code, you can use Next.js <strong>Middleware</strong> running at the Edge to handle path rewrites dynamically.</p>
 <hr>
-<h2>Implementation: Zone Config &amp; Edge Router</h2>
+<h2 id="implementation-zone-config-edge-router">Implementation: Zone Config &amp; Edge Router</h2>
 <p>Let&#39;s look at how to configure two independent Next.js zones: a main Landing App and a Blog App, using path rewrites and asset prefixes.</p>
-<h3>1. Next.js Config for the Blog Sub-App (<code>next.config.js</code> on Port 3001)</h3>
+<h3 id="1-nextjs-config-for-the-blog-sub-app-nextconfigjs-on-port-3001">1. Next.js Config for the Blog Sub-App (<code>next.config.js</code> on Port 3001)</h3>
 <p>Configure the sub-app to use a unique base path and asset prefix so its assets are kept isolated:</p>
 <pre><code class="language-javascript">// next.config.js (Blog Zone)
 const nextConfig = {
@@ -167,7 +178,7 @@ const nextConfig = {
 
 module.exports = nextConfig;</code></pre>
 <hr>
-<h3>2. Edge Routing Middleware (<code>middleware.ts</code> on the Landing App on Port 3000)</h3>
+<h3 id="2-edge-routing-middleware-middlewarets-on-the-landing-app-on-port-3000">2. Edge Routing Middleware (<code>middleware.ts</code> on the Landing App on Port 3000)</h3>
 <p>This middleware acts as the intelligent orchestration gateway. It runs at the Edge and rewrites request paths to the respective zone port based on the URL context:</p>
 <pre><code class="language-typescript">// middleware.ts (Main Landing App)
 import { NextResponse } from 'next/server';
@@ -216,7 +227,7 @@ export const config = {
   ],
 };</code></pre>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>Next.js transforms micro frontends from a client-side bundle nightmare into a fast, server-orchestrated pattern:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Always declare an <code>assetPrefix</code></strong>: Prevent client-side JS/CSS chunk collisions by separating static paths for each sub-app.</li>
@@ -251,6 +262,19 @@ export const config = {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-micro-frontend-problem-in-modern-ssr" class="toc-link">The Micro Frontend Problem in Modern SSR</a></li>
+              <li class="toc-item toc-h2"><a href="#core-pillar-1-nextjs-multi-zones" class="toc-link">Core Pillar 1: Next.js Multi-Zones</a></li>
+              <li class="toc-item toc-h2"><a href="#core-pillar-2-react-server-components-rsc-federation" class="toc-link">Core Pillar 2: React Server Components (RSC) Federation</a></li>
+              <li class="toc-item toc-h2"><a href="#core-pillar-3-edge-middleware-routing" class="toc-link">Core Pillar 3: Edge Middleware Routing</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-zone-config-edge-router" class="toc-link">Implementation: Zone Config &amp; Edge Router</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

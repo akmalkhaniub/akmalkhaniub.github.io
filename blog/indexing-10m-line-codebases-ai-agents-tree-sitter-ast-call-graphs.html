@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-why-naive-text-chunking-fails-on-source-code">1. Why Naive Text Chunking Fails on Source Code</a></li>
+                <li><a href="#2-layer-1-tree-sitter-ast-incremental-parsing">2. Layer 1: Tree-sitter AST Incremental Parsing</a></li>
+                <li><a href="#3-layer-2-3-symbol-graphs-call-hierarchies-scip-lsif">3. Layer 2 &amp; 3: Symbol Graphs &amp; Call Hierarchies (SCIP / LSIF)</a></li>
+                <li><a href="#4-dynamic-context-budget-assembly">4. Dynamic Context Budget Assembly</a></li>
+                <li><a href="#python-implementation-tree-sitter-style-ast-symbol-call-graph-indexer">Python Implementation: Tree-sitter-Style AST Symbol &amp; Call Graph Indexer</a></li>
+                <li><a href="#summary-text-chunking-vs-ast-code-intelligence">Summary: Text Chunking vs AST Code Intelligence</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>When software developers interact with modern AI coding assistants and agentic IDEs (<strong>Cursor</strong>, <strong>GitHub Copilot Workspace</strong>, <strong>Antigravity</strong>, <strong>Claude Engineer</strong>, <strong>Devin</strong>), the agent appears to possess instantaneous, omniscient understanding of massive enterprise monorepos.</p>
 <p>Behind the scenes, however, indexing an enterprise codebase containing <strong>10,000,000 lines of code across 25,000 source files ($400\text{ MB of raw text}$)</strong> presents an immense systems engineering challenge:</p>
 <ul>
@@ -129,16 +141,16 @@
     ContextAssembler --&gt; LLMCoder[LLM Coder Core]
   end</div>
 <hr>
-<h2>1. Why Naive Text Chunking Fails on Source Code</h2>
+<h2 id="1-why-naive-text-chunking-fails-on-source-code">1. Why Naive Text Chunking Fails on Source Code</h2>
 <p>Source code is fundamentally different from prose documents: <strong>code is a strongly-typed directed graph of symbols, imports, and execution paths</strong>.</p>
-<h3>The 3 Fatal Flaws of Naive Embedding Chunking:</h3>
+<h3 id="the-3-fatal-flaws-of-naive-embedding-chunking">The 3 Fatal Flaws of Naive Embedding Chunking:</h3>
 <ol>
 <li><strong>Broken Method Boundaries</strong>: An arbitrary 512-token chunk boundary splits a critical 40-line billing validation algorithm right in the middle of a loop.</li>
 <li><strong>Loss of Lexical Scope</strong>: A variable named <code>client</code> has 5,000 distinct meanings across 25,000 files. Without AST scope resolution, embedding search cannot distinguish between a Redis client, an OAuth HTTP client, and a frontend React state client.</li>
 <li><strong>Invisible Call Hierarchies</strong>: If function <code>handle_checkout()</code> calls <code>charge_card()</code>, which calls <code>stripe_api()</code>, vector similarity searching for <code>&quot;stripe error&quot;</code> retrieves <code>stripe_api()</code> but misses the caller <code>handle_checkout()</code> where the error handling logic must be added.</li>
 </ol>
 <hr>
-<h2>2. Layer 1: Tree-sitter AST Incremental Parsing</h2>
+<h2 id="2-layer-1-tree-sitter-ast-incremental-parsing">2. Layer 1: Tree-sitter AST Incremental Parsing</h2>
 <p>Modern AI IDEs use <strong>Tree-sitter</strong>: an ultrafast, incremental parser generator written in C that builds and updates concrete syntax trees in milliseconds as the user types.</p>
 <pre><code class="language-plaintext">&gt; **TREE-SITTER EXTRACTED SYMBOL METADATA**
 | Symbol Type | Extracted Fields                                                                    |
@@ -148,7 +160,7 @@
 </code></pre>
 <p>By parsing at the AST level, every chunk in the vector database corresponds to an <strong>atomic, self-contained semantic unit (a whole function, class, or interface)</strong> rather than an arbitrary slice of lines.</p>
 <hr>
-<h2>3. Layer 2 &amp; 3: Symbol Graphs &amp; Call Hierarchies (SCIP / LSIF)</h2>
+<h2 id="3-layer-2-3-symbol-graphs-call-hierarchies-scip-lsif">3. Layer 2 &amp; 3: Symbol Graphs &amp; Call Hierarchies (SCIP / LSIF)</h2>
 <p>To understand how code executes, the indexer constructs two directed graphs:</p>
 <div class="mermaid">graph LR
   subgraph Hierarchical Call Graph (Caller -&gt; Callee)
@@ -156,19 +168,19 @@
     B --&gt;|Calls| C[StripeClient.createPaymentIntent]
     B --&gt;|Reads| D[UserEntity.stripeCustomerId]
   end</div>
-<h3>1. SCIP (Source Code Intelligence Protocol)</h3>
+<h3 id="1-scip-source-code-intelligence-protocol">1. SCIP (Source Code Intelligence Protocol)</h3>
 <p>Maps every symbol occurrence to its <strong>canonical definition</strong>:</p>
 <ul>
 <li>When an agent inspects <code>user.get_tier()</code>, the SCIP graph instantly resolves the exact file and line number where <code>User.get_tier</code> is implemented in <code>models/user.py</code>.</li>
 </ul>
-<h3>2. Call Hierarchy Graphs</h3>
+<h3 id="2-call-hierarchy-graphs">2. Call Hierarchy Graphs</h3>
 <p>Allows the agent to traverse up and down the call stack:</p>
 <ul>
 <li><strong>Incoming Calls</strong>: <em>&quot;Who calls this function?&quot;</em></li>
 <li><strong>Outgoing Calls</strong>: <em>&quot;What downstream APIs does this function invoke?&quot;</em></li>
 </ul>
 <hr>
-<h2>4. Dynamic Context Budget Assembly</h2>
+<h2 id="4-dynamic-context-budget-assembly">4. Dynamic Context Budget Assembly</h2>
 <p>When an agent is prompted:</p>
 <blockquote>
 <p><em>&quot;Fix the 401 Unauthorized bug when refreshing expired JWT tokens.&quot;</em></p>
@@ -181,7 +193,7 @@
 </ol>
 <p>This keeps the prompt under <strong>2,500 tokens</strong>, achieving sub-second TTFT (Time-to-First-Token) and eliminating attention degradation.</p>
 <hr>
-<h2>Python Implementation: Tree-sitter-Style AST Symbol &amp; Call Graph Indexer</h2>
+<h2 id="python-implementation-tree-sitter-style-ast-symbol-call-graph-indexer">Python Implementation: Tree-sitter-Style AST Symbol &amp; Call Graph Indexer</h2>
 <p>Here is a Python implementation of an AST Codebase Indexer that parses code into atomic symbols, builds a directed call hierarchy, and dynamically packs compact agent context:</p>
 <pre><code class="language-python">import ast
 from collections import defaultdict
@@ -278,7 +290,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;=&quot; * 60)
     print(context)</code></pre>
 <hr>
-<h2>Summary: Text Chunking vs AST Code Intelligence</h2>
+<h2 id="summary-text-chunking-vs-ast-code-intelligence">Summary: Text Chunking vs AST Code Intelligence</h2>
 <table>
 <thead>
 <tr>
@@ -314,7 +326,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>High-precision AI code generation is a direct consequence of <strong>high-precision code indexing</strong>.</p>
 <p>By moving beyond flat text embeddings to <strong>Tree-sitter AST parsing</strong>, <strong>SCIP symbol resolution</strong>, and <strong>directed call hierarchy graphs</strong>, software engineering platforms enable AI agents to navigate and edit multi-million line codebases with surgical accuracy.</p>
 
@@ -344,6 +356,20 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-why-naive-text-chunking-fails-on-source-code" class="toc-link">1. Why Naive Text Chunking Fails on Source Code</a></li>
+              <li class="toc-item toc-h2"><a href="#2-layer-1-tree-sitter-ast-incremental-parsing" class="toc-link">2. Layer 1: Tree-sitter AST Incremental Parsing</a></li>
+              <li class="toc-item toc-h2"><a href="#3-layer-2-3-symbol-graphs-call-hierarchies-scip-lsif" class="toc-link">3. Layer 2 &amp; 3: Symbol Graphs &amp; Call Hierarchies (SCIP / LSIF)</a></li>
+              <li class="toc-item toc-h2"><a href="#4-dynamic-context-budget-assembly" class="toc-link">4. Dynamic Context Budget Assembly</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-tree-sitter-style-ast-symbol-call-graph-indexer" class="toc-link">Python Implementation: Tree-sitter-Style AST Symbol &amp; Call Graph Indexer</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-text-chunking-vs-ast-code-intelligence" class="toc-link">Summary: Text Chunking vs AST Code Intelligence</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

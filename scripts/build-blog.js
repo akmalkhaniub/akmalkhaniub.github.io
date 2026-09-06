@@ -35,8 +35,28 @@ const toISO = (dateStr) => {
   return Number.isNaN(d.getTime()) ? null : d.toISOString().split('T')[0];
 };
 
+const slugify = (text) =>
+  String(text)
+    .toLowerCase()
+    .replace(/<[^>]+>/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+
 // ---------- markdown renderer ----------
 const renderer = new marked.Renderer();
+let currentHeadings = [];
+
+renderer.heading = function (token) {
+  const depth = token.depth;
+  const rawText = token.text;
+  const id = slugify(rawText);
+  if (depth === 2) {
+    currentHeadings.push({ depth, text: rawText, id });
+  }
+  const content = this.parser ? this.parser.parseInline(token.tokens) : escapeHtml(rawText);
+  return `<h${depth} id="${id}">${content}</h${depth}>\n`;
+};
 
 renderer.code = function (token) {
   const codeText = typeof token === 'object' && token !== null ? (token.text ?? '') : String(token ?? '');
@@ -128,7 +148,7 @@ const ebookSidebarHtml = (activeSlug) =>
     .join('\n') +
   `\n          </div>`;
 
-function pageHtml(post, bodyHtml) {
+function pageHtml(post, bodyHtml, tocSidebarCard = '', mobileToc = '') {
   const url = `${SITE}/blog/${post.slug}.html`;
   const title = escapeHtml(post.title);
   const desc = escapeHtml(post.description);
@@ -247,7 +267,7 @@ ${jsonLd}
           </div>
 
           <div class="article-body">
-${bodyHtml}
+${mobileToc ? `${mobileToc}\n` : ''}${bodyHtml}
           </div>
 
           <div class="share-box">
@@ -274,7 +294,7 @@ ${bodyHtml}
       </div>
 
       <aside class="blog-sidebar">
-        <div class="sidebar-card">
+${tocSidebarCard ? `${tocSidebarCard}\n` : ''}        <div class="sidebar-card">
           <h4><i class="fa-solid ${sidebarIcon}"></i> ${sidebarTitle}</h4>
 ${sidebarContent}
         </div>
@@ -344,8 +364,63 @@ for (const post of posts) {
   cleanMd = cleanMd.replace(/^#\s+[^\n]+\n+/, '');
   // Strip leading cover image if present to avoid duplicate hero banners
   cleanMd = cleanMd.replace(/^!\[[^\]]*\]\([^)]+\)\n+/, '');
-  const bodyHtml = marked.parse(cleanMd);
-  writeFileSync(join(ROOT, 'blog', `${post.slug}.html`), pageHtml(post, bodyHtml));
+
+  currentHeadings = [];
+  let bodyHtml = marked.parse(cleanMd);
+
+  // 1. Transform scholarly citations like [1] or [1, 2] in text, masking code blocks first
+  const codeBlocks = [];
+  bodyHtml = bodyHtml.replace(/<pre[\s\S]*?<\/pre>|<code[\s\S]*?<\/code>/gi, (match) => {
+    const placeholder = `__CODE_TOKEN_${codeBlocks.length}__`;
+    codeBlocks.push(match);
+    return placeholder;
+  });
+
+  bodyHtml = bodyHtml.replace(/(?<![="'>])\[(\d+(?:\s*,\s*\d+)*)\](?!\()/g, (match, digits) => {
+    const refs = digits.split(',').map(s => s.trim());
+    const links = refs.map(r => `<a href="#ref-${r}" class="citation-link" data-ref="${r}" title="Reference [${r}]">[${r}]</a>`).join(' ');
+    return `<sup class="citation-ref">${links}</sup>`;
+  });
+
+  bodyHtml = bodyHtml.replace(/__CODE_TOKEN_(\d+)__/g, (match, idx) => {
+    return codeBlocks[Number(idx)];
+  });
+
+  // 2. Format references section if present
+  const refHeadingRegex = /<h2 id="references-further-reading"[^>]*>([\s\S]*?)<\/h2>\s*<ol>([\s\S]*?)<\/ol>/;
+  const refMatch = bodyHtml.match(refHeadingRegex);
+  if (refMatch) {
+    let index = 1;
+    const listItems = refMatch[2].replace(/<li>([\s\S]*?)<\/li>/g, (m, content) => {
+      const item = `<li id="ref-${index}" class="citation-item">${content} <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>`;
+      index++;
+      return item;
+    });
+    bodyHtml = bodyHtml.replace(refMatch[0], `<h2 id="references-further-reading">${refMatch[1]}</h2>\n<ol class="references-list">\n${listItems}\n</ol>`);
+  }
+
+  // 3. Build Table of Contents widgets
+  let tocSidebarCard = '';
+  let mobileToc = '';
+  if (currentHeadings.length >= 2) {
+    tocSidebarCard = `        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+${currentHeadings.map(h => `              <li class="toc-item toc-h${h.depth}"><a href="#${h.id}" class="toc-link">${escapeHtml(h.text.replace(/`([^`]+)`/g, '$1'))}</a></li>`).join('\n')}
+            </ul>
+          </nav>
+        </div>`;
+
+    mobileToc = `            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+${currentHeadings.map(h => `                <li><a href="#${h.id}">${escapeHtml(h.text.replace(/`([^`]+)`/g, '$1'))}</a></li>`).join('\n')}
+              </ul>
+            </details>`;
+  }
+
+  writeFileSync(join(ROOT, 'blog', `${post.slug}.html`), pageHtml(post, bodyHtml, tocSidebarCard, mobileToc));
   built++;
 }
 

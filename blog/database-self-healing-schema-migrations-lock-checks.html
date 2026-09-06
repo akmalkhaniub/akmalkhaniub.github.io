@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-migration-lock-trap">The Migration Lock Trap</a></li>
+                <li><a href="#1-safe-schema-migration-strategies">1. Safe Schema Migration Strategies</a></li>
+                <li><a href="#2-setting-up-ddl-analyzers">2. Setting up DDL Analyzers</a></li>
+                <li><a href="#code-demo-safe-migration-sql-analyzer">Code Demo: Safe Migration SQL Analyzer</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ In modern continuous delivery, application schemas evolve rapidly. When database
 </div>
 </div>
 <hr>
-<h2>The Migration Lock Trap</h2>
+<h2 id="the-migration-lock-trap">The Migration Lock Trap</h2>
 <p>A simple schema update can take down a high-write production system:</p>
 <ul>
 <li><strong>Table Locks (<code>AccessExclusiveLock</code>)</strong>: Adding a column or modifying a data type acquires an exclusive lock on the table. If a long-running read query is active, the migration waits behind it, and all subsequent read/write requests queue up, exhausting connection pools.</li>
@@ -130,7 +140,7 @@ flowchart TD
     Rewrite --&gt; Verify
     Verify --&gt;|Pass| Commit[Export Safe Migration Script]</div>
 <hr>
-<h2>1. Safe Schema Migration Strategies</h2>
+<h2 id="1-safe-schema-migration-strategies">1. Safe Schema Migration Strategies</h2>
 <p>To prevent migration outages, the agent rewriter enforces:</p>
 <ul>
 <li><strong>Add Column, Then Set Default</strong>: Instead of adding a column with a default value directly, add the column as nullable first, then add the default constraint, and backfill existing rows in batches.</li>
@@ -138,14 +148,14 @@ flowchart TD
 <li><strong>Short Lock Timeouts</strong>: Wrap DDL migrations in transactions with strict lock timeouts so that they abort immediately if blocked, rather than queuing traffic.</li>
 </ul>
 <hr>
-<h2>2. Setting up DDL Analyzers</h2>
+<h2 id="2-setting-up-ddl-analyzers">2. Setting up DDL Analyzers</h2>
 <p>The DDL analyzer scans statements for risk indicators:</p>
 <ol>
 <li><strong>Forbidden Operations</strong>: Rejecting direct data type conversions (e.g. <code>ALTER TABLE ALTER COLUMN TYPE</code>) on large tables.</li>
 <li><strong>Missing Timeouts</strong>: Confirming that all migration blocks set <code>lock_timeout</code> boundaries.</li>
 </ol>
 <hr>
-<h2>Code Demo: Safe Migration SQL Analyzer</h2>
+<h2 id="code-demo-safe-migration-sql-analyzer">Code Demo: Safe Migration SQL Analyzer</h2>
 <p>Below is a Python implementation of a migration lock-risk analyzer. It evaluates SQL statements, identifies blocking operations, recommends safe alternatives, and outputs migration scripts.</p>
 <pre><code class="language-python">from typing import Dict, Any, Tuple, List
 
@@ -210,7 +220,7 @@ if __name__ == &quot;__main__&quot;:
             print(f&quot; ❌ {issue}&quot;)
         print(f&quot;\n👉 Suggested Safe Rewrite:\n{rewrite.strip()}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Enforce Lock Timeouts</strong>: Always prepend <code>SET lock_timeout = &#39;2s&#39;</code> to all migration files to prevent blocking production database connection pools.</li>
 <li><strong>Audit Columns with Defaults</strong>: Never add columns with default constraints directly on active tables. Add the column as nullable first, then set the default.</li>
@@ -243,6 +253,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-migration-lock-trap" class="toc-link">The Migration Lock Trap</a></li>
+              <li class="toc-item toc-h2"><a href="#1-safe-schema-migration-strategies" class="toc-link">1. Safe Schema Migration Strategies</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-ddl-analyzers" class="toc-link">2. Setting up DDL Analyzers</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-safe-migration-sql-analyzer" class="toc-link">Code Demo: Safe Migration SQL Analyzer</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

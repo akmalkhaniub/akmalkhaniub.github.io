@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-cost-of-deep-thinking">The Cost of Deep Thinking</a></li>
+                <li><a href="#1-under-the-hood-kv-cache-compression-vs-token-dropping">1. Under the Hood: KV-Cache Compression vs. Token Dropping</a></li>
+                <li><a href="#2-setting-up-pruning-boundaries">2. Setting up Pruning Boundaries</a></li>
+                <li><a href="#code-demo-dynamic-thinking-token-pruner">Code Demo: Dynamic Thinking Token Pruner</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Reasoning models (like DeepSeek-R1, o1, or local Qwen-7B-Instruct) execute long 
 </div>
 </div>
 <hr>
-<h2>The Cost of Deep Thinking</h2>
+<h2 id="the-cost-of-deep-thinking">The Cost of Deep Thinking</h2>
 <p>Reasoning chains are highly effective for code generation:</p>
 <ol>
 <li><code>Generate draft implementation</code></li>
@@ -138,7 +148,7 @@ flowchart TD
     Refresh --&gt; Continue</div>
 <p>By dropping older reasoning loops, we keep the KV-cache bounded and prevent VRAM memory overflows.</p>
 <hr>
-<h2>1. Under the Hood: KV-Cache Compression vs. Token Dropping</h2>
+<h2 id="1-under-the-hood-kv-cache-compression-vs-token-dropping">1. Under the Hood: KV-Cache Compression vs. Token Dropping</h2>
 <p>Modern runtimes (like vLLM or llama.cpp) use hardware-level optimizations to squeeze KV-caches:</p>
 <ul>
 <li><strong>PagedAttention</strong>: Segmenting the KV-cache into virtual blocks to prevent VRAM fragmentation.</li>
@@ -146,7 +156,7 @@ flowchart TD
 <li><strong>Dynamic Token-Dropping</strong>: An application-level logic gate that scans token streams, isolates transient thinking blocks (e.g. <code>&lt;think&gt;...&lt;/think&gt;</code> tags), and prunes them from memory once the code output is verified, keeping only the final code and system prompts.</li>
 </ul>
 <hr>
-<h2>2. Setting up Pruning Boundaries</h2>
+<h2 id="2-setting-up-pruning-boundaries">2. Setting up Pruning Boundaries</h2>
 <p>To drop tokens safely, the budget manager must follow strict rules:</p>
 <ol>
 <li><strong>Never drop the System Prompt</strong>: Core instructions and schemas must remain warm in the cache.</li>
@@ -154,7 +164,7 @@ flowchart TD
 <li><strong>Only drop intermediate thinking blocks</strong>: Once a reflection loop finishes, its intermediate thinking tokens are evictable.</li>
 </ol>
 <hr>
-<h2>Code Demo: Dynamic Thinking Token Pruner</h2>
+<h2 id="code-demo-dynamic-thinking-token-pruner">Code Demo: Dynamic Thinking Token Pruner</h2>
 <p>Below is a Python implementation of a KV-cache token-dropping manager. It tracks token usage limits, parses thinking tags (<code>&lt;think&gt;...&lt;/think&gt;</code>), and evicts older reasoning blocks to keep memory utilization under budget constraints.</p>
 <pre><code class="language-python">import re
 from typing import List, Dict, Any
@@ -230,7 +240,7 @@ def validate_token(token):
         print(f&quot;\n[Turn #{idx}]&quot;)
         print(turn)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Implement Thinking Tags</strong>: Ensure local models write reasoning chains inside clear structural boundaries (e.g. <code>&lt;think&gt;...&lt;/think&gt;</code>) to facilitate easy extraction.</li>
 <li><strong>Verify Code Safety First</strong>: Never drop intermediate reasoning logs until the generated code compiles successfully. If compilation fails, the logs are required to debug issues.</li>
@@ -263,6 +273,18 @@ def validate_token(token):
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-cost-of-deep-thinking" class="toc-link">The Cost of Deep Thinking</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-kv-cache-compression-vs-token-dropping" class="toc-link">1. Under the Hood: KV-Cache Compression vs. Token Dropping</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-pruning-boundaries" class="toc-link">2. Setting up Pruning Boundaries</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-dynamic-thinking-token-pruner" class="toc-link">Code Demo: Dynamic Thinking Token Pruner</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

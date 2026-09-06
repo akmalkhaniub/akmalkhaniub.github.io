@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-partial-prerendering-ppr-request-lifecycle">The Partial Prerendering (PPR) Request Lifecycle</a></li>
+                <li><a href="#key-architectural-transformations-in-2026">Key Architectural Transformations in 2026</a></li>
+                <li><a href="#building-a-server-action-form-in-nextjs">Building a Server-Action Form in Next.js</a></li>
+                <li><a href="#implementation-guardrails">Implementation Guardrails</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article explores the consolidation of the full-stack JavaScript ecosystem in 2026, focusing on React 19 and Next.js 15 features like the React Compiler, Server Actions, Partial Prerendering (PPR), and the <code>after()</code> API.</li>
 <li><strong>Why it matters:</strong> Understanding these features allows engineers to build highly performant, secure, and unified web applications with sub-100ms initial load times and seamless state synchronization.</li>
@@ -116,7 +127,7 @@
 <p>With the stabilization of the <strong>React Compiler</strong>, <strong>React 19 Server Actions</strong>, and Next.js features like <strong>Partial Prerendering (PPR)</strong> and the <strong><code>after()</code> API</strong>, full-stack development is now cleaner, faster, and more unified.</p>
 <p>This article reviews these architectural features and details how to build a production-grade, form-handling component that leverages optimistic updates, server mutations, and post-response background execution.</p>
 <hr>
-<h2>The Partial Prerendering (PPR) Request Lifecycle</h2>
+<h2 id="the-partial-prerendering-ppr-request-lifecycle">The Partial Prerendering (PPR) Request Lifecycle</h2>
 <p>Traditional rendering models forced a binary choice: either build a page statically at build time (fast, but static) or render it dynamically on every request (slow, since the user waits for data fetching). </p>
 <p>Next.js resolves this with <strong>Partial Prerendering (PPR)</strong>. PPR streams a static HTML shell (containing page navigation, headers, and loading skeletons) immediately, while keeping dynamic zones open as active server-side streams that resolve and stream down as soon as their data resolves.</p>
 <div class="mermaid">sequenceDiagram
@@ -146,25 +157,25 @@
 <li><strong>Chunk Injection</strong>: As the server fetches complete datasets, it streams down the resolved HTML chunks, replacing the loading skeletons seamlessly.</li>
 </ol>
 <hr>
-<h2>Key Architectural Transformations in 2026</h2>
-<h3>1. The React Compiler: The End of <code>useMemo</code></h3>
+<h2 id="key-architectural-transformations-in-2026">Key Architectural Transformations in 2026</h2>
+<h3 id="1-the-react-compiler-the-end-of-usememo">1. The React Compiler: The End of <code>useMemo</code></h3>
 <p>Historically, developers spent hours debugging rendering cycles, wrapping functions in <code>useCallback</code> and objects in <code>useMemo</code> to prevent unnecessary re-renders. </p>
 <p>The <strong>React Compiler</strong> solves this at build time. It analyzes JavaScript semantics and dependency flows, automatically compiling memoization gates into the output bundle. The compiler guarantees optimal rendering paths, allowing developers to write standard JavaScript without manual render tuning.</p>
-<h3>2. Full-Stack Data Mutations: Server Actions</h3>
+<h3 id="2-full-stack-data-mutations-server-actions">2. Full-Stack Data Mutations: Server Actions</h3>
 <p>Server Actions standardize how client components submit data to server handlers. Instead of writing Express controllers, routing middleware, and client fetch requests, a Server Action lets you define an asynchronous server function that can be imported and executed directly from a client form event.</p>
 <p>React 19 couples Server Actions with dedicated hooks:</p>
 <ul>
 <li><code>useActionState</code>: Manages action states (returned payload, error structures, and pending loading states).</li>
 <li><code>useOptimistic</code>: Updates the client UI immediately with expected data while the server mutation resolves, keeping interfaces snappy.</li>
 </ul>
-<h3>3. Granular Caching: The <code>use cache</code> Directive</h3>
+<h3 id="3-granular-caching-the-use-cache-directive">3. Granular Caching: The <code>use cache</code> Directive</h3>
 <p>Instead of configuring complex global caching headers or fetch revalidation objects, Next.js introduces the <code>use cache</code> directive. This directive can be placed at the top of any asynchronous function or component, telling the bundler to cache the return payload at the edge, simplifying cache invalidation.</p>
-<h3>4. Post-Response Execution: The <code>after()</code> API</h3>
+<h3 id="4-post-response-execution-the-after-api">4. Post-Response Execution: The <code>after()</code> API</h3>
 <p>Many operations (like sending log metrics to databases, recording analytics, or triggering audit events) do not need to block the client&#39;s screen load. The <code>after()</code> API allows developers to schedule asynchronous tasks to execute <em>after</em> Next.js has finished writing the response body to the client.</p>
 <hr>
-<h2>Building a Server-Action Form in Next.js</h2>
+<h2 id="building-a-server-action-form-in-nextjs">Building a Server-Action Form in Next.js</h2>
 <p>Here is a full TSX component demonstrating these features. It mutates database values, manages state via <code>useActionState</code>, updates the client instantly using <code>useOptimistic</code>, and schedules a logging task using <code>after()</code>. This mimics form controls used in frontend dashboards like <a href="https://github.com/akmalkhaniub/portfolio-ai-rota-manager" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> portfolio-ai-rota-manager</a>.</p>
-<h3>1. Server Actions Controller (<code>actions.ts</code>)</h3>
+<h3 id="1-server-actions-controller-actionsts">1. Server Actions Controller (<code>actions.ts</code>)</h3>
 <pre><code class="language-typescript">&quot;use server&quot;;
 
 import { revalidatePath } from &quot;next/cache&quot;;
@@ -195,7 +206,7 @@ export async function createTask(prevState: TaskState, formData: FormData): Prom
   revalidatePath(&quot;/dashboard&quot;);
   return { success: true, message: &quot;Task created successfully!&quot; };
 }</code></pre>
-<h3>2. Client Task Component (<code>TaskForm.tsx</code>)</h3>
+<h3 id="2-client-task-component-taskformtsx">2. Client Task Component (<code>TaskForm.tsx</code>)</h3>
 <pre><code class="language-tsx">&quot;use client&quot;;
 
 import React, { useActionState, useOptimistic, useRef } from &quot;react&quot;;
@@ -277,14 +288,14 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
   );
 }</code></pre>
 <hr>
-<h2>Implementation Guardrails</h2>
+<h2 id="implementation-guardrails">Implementation Guardrails</h2>
 <ul>
 <li><strong>Server Action Security</strong>: Always sanitize input parameters within server action scopes. Attackers can execute actions directly, bypassing client forms.</li>
 <li><strong>Suspense Fallbacks</strong>: Always provide meaningful skeletons or placeholders for components bounded by Suspense to ensure Partial Prerendering renders an elegant static shell.</li>
 <li><strong>Error Boundaries</strong>: Wrap your React components in local Error Boundaries to capture and handle any streaming-chunk failures without crashing the entire page context.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>The consolidation of the full-stack JavaScript ecosystem in 2026 marks a paradigm shift in how we build and optimize web applications.</p>
 <ol>
 <li><strong>Unified Full-Stack Architecture:</strong> The integration of React 19 Server Actions and Next.js features eliminates the need for boilerplate API routing, bridging the gap between client and server seamlessly.</li>
@@ -293,7 +304,7 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
 </ol>
 <p><em>Takeaway:</em> Embracing these modern React and Next.js primitives allows engineering teams to deliver highly responsive, secure, and easily maintainable full-stack applications with minimal overhead.</p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>React 19 Actions</strong>: <a href="https://react.dev/blog/2024/04/25/react-19" target="_blank" rel="noopener">React Core Team Updates</a>. Specifications on action states, optimistic state hooks, and compile-time memoization.</li>
 <li><strong>Next.js 15 Features</strong>: <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">Next.js Documentation</a>. Specifications on Partial Prerendering, server actions, and post-response execution (<code>after()</code>).</li>
@@ -326,6 +337,19 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-partial-prerendering-ppr-request-lifecycle" class="toc-link">The Partial Prerendering (PPR) Request Lifecycle</a></li>
+              <li class="toc-item toc-h2"><a href="#key-architectural-transformations-in-2026" class="toc-link">Key Architectural Transformations in 2026</a></li>
+              <li class="toc-item toc-h2"><a href="#building-a-server-action-form-in-nextjs" class="toc-link">Building a Server-Action Form in Next.js</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-guardrails" class="toc-link">Implementation Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

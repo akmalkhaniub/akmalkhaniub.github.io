@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#lsm-tree-fast-read-acceleration-pipeline">LSM-Tree Fast Read Acceleration Pipeline</a></li>
+                <li><a href="#python-implementation-fast-lsm-point-lookup-engine">Python Implementation: Fast LSM Point Lookup Engine</a></li>
+                <li><a href="#read-acceleration-gotchas-best-practices">Read Acceleration Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>While Log-Structured Merge-Tree (LSM-Tree) storage engines (<strong>RocksDB</strong>, <strong>LevelDB</strong>) excel at high-throughput write workloads, point lookups (<code>GET key</code>) face an inherent structural challenge: <strong>Read Amplification</strong>.</p>
 <p>If a requested key is not present in the active in-memory MemTable, the database must search across multiple immutable Sorted String Table (SSTable) files on disk.</p>
 <p>Scanning every SSTable file on disk for a non-existent key results in devastating read latency spikes (issuing tens of disk I/O operations per query).</p>
 <p>To achieve sub-millisecond point lookup latencies, high-performance storage engines employ a <strong>3-Tier Read Acceleration Stack</strong>: <strong>In-Memory Bloom Filters</strong>, <strong>SSTable Index Blocks</strong>, and <strong>Block Caches</strong>.</p>
 <p>This article details Bloom Filter bit-array mathematics, binary search Index Blocks, and LRU Block Caching.</p>
 <hr>
-<h2>LSM-Tree Fast Read Acceleration Pipeline</h2>
+<h2 id="lsm-tree-fast-read-acceleration-pipeline">LSM-Tree Fast Read Acceleration Pipeline</h2>
 <p>How Bloom Filters, Index Blocks, and Block Caches intercept read queries before touching disk:</p>
 <div class="mermaid">graph TD
   ClientRead[Client Point Lookup GET 'user_101'] --&gt; MemTable{Present in MemTable?}
@@ -130,7 +139,7 @@
     IndexBlock --&gt;|Binary Search Offset| DataBlock[Seek Data Block on NVMe Disk: &lt; 100us]
     DataBlock --&gt; PopulateCache[Populate LRU Block Cache &amp; Return Value]
   end</div>
-<h3>Core Read Acceleration Mechanics</h3>
+<h3 id="core-read-acceleration-mechanics">Core Read Acceleration Mechanics</h3>
 <ol>
 <li><strong>Counting / Bit-Array Bloom Filters</strong>: A probabilistic data structure stored entirely in RAM alongside each SSTable file. A Bloom filter uses $k$ independent hash functions to set bits in an $m$-bit array:<ul>
 <li><strong>If Bloom Filter returns <code>False</code></strong>: The key is <strong>guaranteed NOT to exist</strong> in that SSTable. The storage engine skips reading that SSTable file completely (0 disk IOPS!).</li>
@@ -141,7 +150,7 @@
 <li><strong>Block Cache (LRU / Clock Cache)</strong>: Maintains recently accessed uncompressed $4\text{ KB}$ data blocks in RAM. If consecutive queries read keys within the same data block, the Block Cache hits, completely bypassing disk I/O.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Fast LSM Point Lookup Engine</h2>
+<h2 id="python-implementation-fast-lsm-point-lookup-engine">Python Implementation: Fast LSM Point Lookup Engine</h2>
 <p>Here is a production-grade Python implementation of an LSM Read Acceleration Pipeline featuring a Counting Bloom Filter, Index Block Binary Search, and LRU Block Cache:</p>
 <pre><code class="language-python">import mmh3
 from typing import List, Dict, Tuple, Optional
@@ -271,7 +280,7 @@ if __name__ == &quot;__main__&quot;:
     res3 = engine.point_lookup(&quot;date&quot;)
     print(f&quot;   • Result: {res3}&quot;)</code></pre>
 <hr>
-<h2>Read Acceleration Gotchas &amp; Best Practices</h2>
+<h2 id="read-acceleration-gotchas-best-practices">Read Acceleration Gotchas &amp; Best Practices</h2>
 <p>When tuning LSM read path performance:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -284,7 +293,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Storage engines deploying Bloom Filters, Index Blocks, and Block Caches (such as <strong>RocksDB</strong> and <strong>LevelDB</strong>) report:</p>
 <ul>
 <li><strong>Over 99% Reduction in Disk Reads for Negative Queries</strong>: Intercepting non-existent key lookups via Bloom filters saves millions of unnecessary disk IOPS daily.</li>
@@ -317,6 +326,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#lsm-tree-fast-read-acceleration-pipeline" class="toc-link">LSM-Tree Fast Read Acceleration Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-fast-lsm-point-lookup-engine" class="toc-link">Python Implementation: Fast LSM Point Lookup Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#read-acceleration-gotchas-best-practices" class="toc-link">Read Acceleration Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

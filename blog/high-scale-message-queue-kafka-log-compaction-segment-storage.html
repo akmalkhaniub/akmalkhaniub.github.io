@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#apache-kafka-log-segment-compaction-architecture">Apache Kafka Log Segment &amp; Compaction Architecture</a></li>
+                <li><a href="#python-implementation-kafka-segment-storage-log-compactor-engine">Python Implementation: Kafka Segment Storage &amp; Log Compactor Engine</a></li>
+                <li><a href="#kafka-storage-gotchas-best-practices">Kafka Storage Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-throughput event-driven architectures, modern data platforms process millions of real-time event streams per second (financial transactions, telemetry logs, user clickstreams).</p>
 <p>Traditional message brokers (such as RabbitMQ or ActiveMQ) operate as transient queues: as soon as a consumer acknowledges a message, the broker deletes it from memory. This prevents new microservices from replaying historical events or reconstructing state.</p>
 <p>To support high-throughput, persistent event streaming, LinkedIn created <strong>Apache Kafka</strong>.</p>
@@ -111,7 +120,7 @@
 <p>Instead of treating topics as ephemeral queues, Kafka stores events in immutable, disk-backed partition segments, utilizing <strong>Zero-Copy <code>sendfile()</code></strong> and <strong>Key-Based Log Compaction</strong>.</p>
 <p>This article details Kafka segment indexing, zero-copy network reads, and log compaction mechanics.</p>
 <hr>
-<h2>Apache Kafka Log Segment &amp; Compaction Architecture</h2>
+<h2 id="apache-kafka-log-segment-compaction-architecture">Apache Kafka Log Segment &amp; Compaction Architecture</h2>
 <p>How Kafka structures partition log segments and executes background key-based compaction:</p>
 <div class="mermaid">graph TD
   subgraph Kafka Partition Commit Log Directory on Disk
@@ -128,7 +137,7 @@
     Seg2 --&gt;|3. OS Page Cache| PageCache[Linux OS Kernel Page Cache]
     PageCache --&gt;|4. sendfile() DMA Transfer| Socket[NIC Network Socket -&gt; Consumer]
   end</div>
-<h3>Core Kafka Architecture Principles</h3>
+<h3 id="core-kafka-architecture-principles">Core Kafka Architecture Principles</h3>
 <ol>
 <li><strong>Append-Only Log Segments</strong>: A Kafka topic is divided into <strong>Partitions</strong>. Each partition is an append-only sequence of immutable records written sequentially to disk. Partitions are split into fixed-size <strong>Log Segments</strong> (e.g. $1\text{ GB}$ per segment file).</li>
 <li><strong>Sparse Memory Indexing</strong>: To locate a record by offset (e.g. Offset <code>1042</code>), Kafka maintains a <code>.index</code> file alongside each <code>.log</code> file. The index is <strong>sparse</strong>: it maps every $N$-th record offset to its exact byte position in the <code>.log</code> file. Searching an offset requires an $O(\log N)$ binary search in the index file followed by a short sequential scan on disk.</li>
@@ -136,7 +145,7 @@
 <li><strong>Key-Based Log Compaction</strong>: For changelog streams (e.g. user profile updates or database CDC events), storing old superseded records wastes storage space. <strong>Log Compaction</strong> is a background thread that scans immutable segments, keeping <em>only the most recent value</em> for each unique message key and deleting older tombstoned records.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Kafka Segment Storage &amp; Log Compactor Engine</h2>
+<h2 id="python-implementation-kafka-segment-storage-log-compactor-engine">Python Implementation: Kafka Segment Storage &amp; Log Compactor Engine</h2>
 <p>Here is a production-grade Python implementation of a Kafka Partition Segment Storage Engine with Sparse Indexing and Key-Based Log Compactor:</p>
 <pre><code class="language-python">import struct
 from typing import List, Dict, Tuple, Optional
@@ -247,7 +256,7 @@ if __name__ == &quot;__main__&quot;:
     for rec in compacted_segment.records:
         print(f&quot;   • Offset {rec.offset:02d} | Key: '{rec.key}' -&gt; Val: '{rec.value}' (Latest State Preserved)&quot;)</code></pre>
 <hr>
-<h2>Kafka Storage Gotchas &amp; Best Practices</h2>
+<h2 id="kafka-storage-gotchas-best-practices">Kafka Storage Gotchas &amp; Best Practices</h2>
 <p>When operating Kafka clusters at scale:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -260,7 +269,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Kafka distributed log architecture enables:</p>
 <ul>
 <li><strong>Multi-Gigabit Event Streaming</strong>: Zero-copy <code>sendfile()</code> network reads allow a single Kafka broker node to stream over $1\text{ GB/sec}$ of events.</li>
@@ -293,6 +302,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#apache-kafka-log-segment-compaction-architecture" class="toc-link">Apache Kafka Log Segment &amp; Compaction Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-kafka-segment-storage-log-compactor-engine" class="toc-link">Python Implementation: Kafka Segment Storage &amp; Log Compactor Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#kafka-storage-gotchas-best-practices" class="toc-link">Kafka Storage Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

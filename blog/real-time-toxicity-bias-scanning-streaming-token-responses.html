@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#streaming-guardrail-pipeline-architecture">Streaming Guardrail Pipeline Architecture</a></li>
+                <li><a href="#python-implementation-sliding-window-token-stream-guardrail">Python Implementation: Sliding-Window Token Stream Guardrail</a></li>
+                <li><a href="#guardrail-execution-gotchas-mitigation">Guardrail Execution Gotchas &amp; Mitigation</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When deploying user-facing LLM applications, safety guardrails are critical to prevent the model from generating toxic, biased, or restricted content. However, in streaming applications (like real-time chat widgets), waiting for the model to finish generating a complete 500-token paragraph before scanning for toxicity introduces unacceptable UI latency.</p>
 <p>To deliver a fast, safe user experience, we must execute <strong>Real-Time Toxicity &amp; Bias Scanning</strong> directly on the streaming token chunks.</p>
 <p>By running a sliding-window token buffer analyzed by a lightweight local classifier model (e.g., an optimized ONNX version of DeBERTa-v3), we can verify content safety with sub-10ms overhead and interrupt generation instantly if toxicity is detected.</p>
 <p>This article details how to construct a streaming guardrail scanner.</p>
 <hr>
-<h2>Streaming Guardrail Pipeline Architecture</h2>
+<h2 id="streaming-guardrail-pipeline-architecture">Streaming Guardrail Pipeline Architecture</h2>
 <p>The guardrail scanner buffers token streams, runs parallel classification, and controls client responses:</p>
 <div class="mermaid">graph TD
   A[LLM Inference Engine Stream] --&gt;|Yield Raw Token Chunks| B[Sliding-Window Token Buffer]
@@ -122,13 +131,13 @@
   D --&gt;|No| E[Transmit Tokens to Client Interface]
   D --&gt;|Yes| F[Trigger Connection Interrupt: Intercept &amp; Inject Fallback]
   F --&gt;|Disconnect| A</div>
-<h3>Challenges of Streaming Guardrails</h3>
+<h3 id="challenges-of-streaming-guardrails">Challenges of Streaming Guardrails</h3>
 <ul>
 <li><strong>Context Fragmentation</strong>: Scanning individual words (e.g. <code>is</code>, <code>bad</code>) yields zero signal. The scanner must buffer chunks into complete semantic phrases before running classification.</li>
 <li><strong>Overhead Latency</strong>: The classification step must execute in under 15ms. Running remote API-based classification defeats the purpose of streaming. We must utilize optimized local models running in-process.</li>
 </ul>
 <hr>
-<h2>Python Implementation: Sliding-Window Token Stream Guardrail</h2>
+<h2 id="python-implementation-sliding-window-token-stream-guardrail">Python Implementation: Sliding-Window Token Stream Guardrail</h2>
 <p>Here is a production-grade Python implementation of a sliding-window token stream guardrail scanner. It simulates a streaming LLM response, buffers tokens into overlapping word groups, evaluates them, and halts execution upon toxicity detection:</p>
 <pre><code class="language-python">import time
 from typing import Generator, List, Tuple, Optional
@@ -215,7 +224,7 @@ if __name__ == &quot;__main__&quot;:
         print(token, end=&quot;&quot;, flush=True)
     print(&quot;\n&quot;)</code></pre>
 <hr>
-<h2>Guardrail Execution Gotchas &amp; Mitigation</h2>
+<h2 id="guardrail-execution-gotchas-mitigation">Guardrail Execution Gotchas &amp; Mitigation</h2>
 <p>When building streaming classifiers:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -228,7 +237,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying real-time stream scanners report:</p>
 <ul>
 <li><strong>Zero Policy Violations</strong>: Outbound content breaches are intercepted and blocked before they reach user browsers.</li>
@@ -261,6 +270,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#streaming-guardrail-pipeline-architecture" class="toc-link">Streaming Guardrail Pipeline Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-sliding-window-token-stream-guardrail" class="toc-link">Python Implementation: Sliding-Window Token Stream Guardrail</a></li>
+              <li class="toc-item toc-h2"><a href="#guardrail-execution-gotchas-mitigation" class="toc-link">Guardrail Execution Gotchas &amp; Mitigation</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

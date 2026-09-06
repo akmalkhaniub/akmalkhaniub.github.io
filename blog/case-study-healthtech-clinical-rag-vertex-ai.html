@@ -104,16 +104,31 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-industry-and-problem">1. Industry and Problem</a></li>
+                <li><a href="#2-team-size-and-composition">2. Team Size and Composition</a></li>
+                <li><a href="#3-duration">3. Duration</a></li>
+                <li><a href="#4-architecture">4. Architecture</a></li>
+                <li><a href="#5-scale">5. Scale</a></li>
+                <li><a href="#6-your-personal-contribution">6. Your Personal Contribution</a></li>
+                <li><a href="#7-difficult-decision">7. Difficult Decision</a></li>
+                <li><a href="#8-incident-or-failure">8. Incident or Failure</a></li>
+                <li><a href="#9-measured-result">9. Measured Result</a></li>
+                <li><a href="#10-lesson-learned">10. Lesson Learned</a></li>
+              </ul>
+            </details>
 <p>Deploying artificial intelligence inside healthcare environments requires adhering to strict regulatory security, zero data leakage, and ultra-high retrieval precision. This case study documents how our team built and scaled a HIPAA-compliant clinical context and diagnostic RAG engine on Google Cloud Platform for over 120 hospital networks.</p>
 <hr>
-<h2>1. Industry and Problem</h2>
+<h2 id="1-industry-and-problem">1. Industry and Problem</h2>
 <ul>
 <li><strong>Industry</strong>: HealthTech / Clinical Decision Support Systems.</li>
 <li><strong>The Problem</strong>: Physicians and clinical researchers spent over <strong>3.5 hours per shift</strong> manually searching through unstructured Electronic Health Records (EHRs), pathology reports, and medical journal databases to synthesize patient histories and treatment plans.</li>
 <li><strong>Business &amp; Safety Impact</strong>: Information fragmentation led to delayed diagnosis decisions, physician burnout, and elevated risk of missed contraindication warnings in complex multi-condition cases.</li>
 </ul>
 <hr>
-<h2>2. Team Size and Composition</h2>
+<h2 id="2-team-size-and-composition">2. Team Size and Composition</h2>
 <p>We led a specialized HIPAA-certified engineering team of <strong>9 members</strong>:</p>
 <ul>
 <li><strong>1 Tech Lead / Systems Architect</strong> (Author - HIPAA Security Boundary &amp; RAG Pipeline Architecture)</li>
@@ -125,7 +140,7 @@
 <li><strong>1 Clinical Product QA</strong> (Medical Accuracy Benchmark Testing)</li>
 </ul>
 <hr>
-<h2>3. Duration</h2>
+<h2 id="3-duration">3. Duration</h2>
 <ul>
 <li><strong>Total Project Lifecycle</strong>: <strong>8 Months</strong> (from initial HIPAA security review to enterprise hospital deployment).<ul>
 <li><em>Months 1–2</em>: HIPAA security architecture, BAA execution, and FHIR data pipeline ingestion.</li>
@@ -136,7 +151,7 @@
 </li>
 </ul>
 <hr>
-<h2>4. Architecture</h2>
+<h2 id="4-architecture">4. Architecture</h2>
 <p>The platform architecture enforces strict HIPAA data perimeters around GCP data stores:</p>
 <div class="mermaid">graph TD
   A[Hospital EHR System / FHIR Stream] --&gt; B[GCP Cloud Healthcare API]
@@ -152,7 +167,7 @@
   
   H --&gt; I[Diagnostic Summary + Citation Verification]
   F --&gt; J[Cloud Audit Logs + Cloud KMS Audit Trail]</div>
-<h3>Tech Stack Breakdown</h3>
+<h3 id="tech-stack-breakdown">Tech Stack Breakdown</h3>
 <ul>
 <li><strong>Data Ingestion</strong>: GCP Cloud Healthcare API (FHIR R4) + Cloud Dataflow (De-identification &amp; PII Scrubbing).</li>
 <li><strong>Vector &amp; Relational Storage</strong>: AlloyDB AI (<code>pgvector</code> + Customer-Managed Encryption Keys CMEK).</li>
@@ -160,14 +175,14 @@
 <li><strong>Audit &amp; KMS</strong>: GCP Cloud KMS + Cloud Audit Logs with immutable log sink exports to BigQuery.</li>
 </ul>
 <hr>
-<h2>5. Scale</h2>
+<h2 id="5-scale">5. Scale</h2>
 <ul>
 <li><strong>Ingested Records</strong>: <strong>180 Million patient encounters &amp; clinical notes</strong>.</li>
 <li><strong>Vector Database Size</strong>: <strong>2.4 Terabytes</strong> of 768-dimensional clinical embeddings.</li>
 <li><strong>Concurrency &amp; Latency</strong>: <strong>12,000 active daily clinicians</strong>, with median context retrieval latency of <strong>&lt; 38 milliseconds</strong>.</li>
 </ul>
 <hr>
-<h2>6. Your Personal Contribution</h2>
+<h2 id="6-your-personal-contribution">6. Your Personal Contribution</h2>
 <p>As <strong>Tech Lead / Systems Architect</strong>, I personally authored:</p>
 <ol>
 <li><strong>Multi-Tenant RLS Security Protocol</strong>: Implemented PostgreSQL Row-Level Security (RLS) policies on AlloyDB AI to guarantee that patient data for Hospital Network A is cryptographically isolated from Hospital Network B.</li>
@@ -240,14 +255,14 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;🔒 [HIPAA Clinical Retriever] Initializing RLS Security Session...&quot;)
     # Simulated execution logic</code></pre>
 <hr>
-<h2>7. Difficult Decision</h2>
+<h2 id="7-difficult-decision">7. Difficult Decision</h2>
 <ul>
 <li><strong>The Decision</strong>: <strong>Building a Custom De-identification Pipeline vs. Relying Solely on Foundation Model Prompts</strong>.</li>
 <li><strong>The Trade-Off</strong>: Relying on Gemini prompts to strip PII in real-time would have saved 6 weeks of engineering effort. However, passing un-scrubbed PII to LLM context buffers posed severe HIPAA regulatory violation risks if a prompt injection occurred.</li>
 <li><strong>Rationale</strong>: We mandated a pre-ingestion Cloud Dataflow pipeline using Cloud DLP (Data Loss Prevention) to strip 18 categories of HIPAA PII <em>before</em> generating vector embeddings for AlloyDB.</li>
 </ul>
 <hr>
-<h2>8. Incident or Failure</h2>
+<h2 id="8-incident-or-failure">8. Incident or Failure</h2>
 <ul>
 <li><strong>The Incident (Month 6 - Hospital Pilot)</strong>: During a peak shift change at a major regional hospital, query latency spiked from 38ms to <strong>14,500ms (14.5 seconds)</strong>, causing the clinical portal to time out for 200+ doctors.</li>
 <li><strong>Root Cause Analysis</strong>: An automated batch indexing job on AlloyDB updated the <code>ScaNN</code> vector index while 200 concurrent queries were active. The index update locked table memory buffers, causing worker queries to drop into un-indexed flat vector scans.</li>
@@ -258,7 +273,7 @@ if __name__ == &quot;__main__&quot;:
 </li>
 </ul>
 <hr>
-<h2>9. Measured Result</h2>
+<h2 id="9-measured-result">9. Measured Result</h2>
 <p>Following full production deployment across 120 hospital networks:</p>
 <ul>
 <li><strong>62% Reduction in Physician Search Time</strong>: Reduced clinical review time from 3.5 hours to <strong>1.3 hours per shift</strong>, giving doctors more time with patients.</li>
@@ -266,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>99.4% Citation Attribution Accuracy</strong>: The automated verifier eliminated hallucinated medical references across over 1.2 million clinical queries.</li>
 </ul>
 <hr>
-<h2>10. Lesson Learned</h2>
+<h2 id="10-lesson-learned">10. Lesson Learned</h2>
 <blockquote>
 <p><strong>&quot;In healthcare AI, deterministic security gates must always wrap probabilistic models.&quot;</strong></p>
 <p>As Tech Lead, this project proved that LLMs should never be trusted as primary security boundaries. Placing deterministic PII scrubbing (Cloud DLP) and relational access controls (PostgreSQL RLS) <em>outside</em> the model guarantees compliance regardless of model behavior.</p>
@@ -298,6 +313,23 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-industry-and-problem" class="toc-link">1. Industry and Problem</a></li>
+              <li class="toc-item toc-h2"><a href="#2-team-size-and-composition" class="toc-link">2. Team Size and Composition</a></li>
+              <li class="toc-item toc-h2"><a href="#3-duration" class="toc-link">3. Duration</a></li>
+              <li class="toc-item toc-h2"><a href="#4-architecture" class="toc-link">4. Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#5-scale" class="toc-link">5. Scale</a></li>
+              <li class="toc-item toc-h2"><a href="#6-your-personal-contribution" class="toc-link">6. Your Personal Contribution</a></li>
+              <li class="toc-item toc-h2"><a href="#7-difficult-decision" class="toc-link">7. Difficult Decision</a></li>
+              <li class="toc-item toc-h2"><a href="#8-incident-or-failure" class="toc-link">8. Incident or Failure</a></li>
+              <li class="toc-item toc-h2"><a href="#9-measured-result" class="toc-link">9. Measured Result</a></li>
+              <li class="toc-item toc-h2"><a href="#10-lesson-learned" class="toc-link">10. Lesson Learned</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

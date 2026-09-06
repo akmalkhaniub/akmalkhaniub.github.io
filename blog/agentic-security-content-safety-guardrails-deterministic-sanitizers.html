@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#multi-layered-guardrail-architecture">Multi-Layered Guardrail Architecture</a></li>
+                <li><a href="#python-implementation-multi-layered-guardrail-engine">Python Implementation: Multi-Layered Guardrail Engine</a></li>
+                <li><a href="#important-guardrail-design-rules">Important Guardrail Design Rules</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In early AI applications, developers relied on system prompts (e.g. <em>&quot;You are a helpful assistant. Please do not output harmful instructions or SQL injection strings.&quot;</em>) to enforce safety. However, security research has conclusively proven that <strong>prompt-based safety rules can always be bypassed</strong> given sufficient adversarial creativity.</p>
 <p>To build production systems capable of handling enterprise traffic, engineering teams must wrap probabilistic foundation models inside <strong>Deterministic Guardrail Layers</strong>. </p>
 <p>Instead of trusting the model to follow safety instructions, deterministic guardrails intercept inputs <em>before</em> they reach the model and sanitize outputs <em>after</em> generation—enforcing strict AST parsing, Pydantic schema validation, and regex sanitization.</p>
 <p>This article details how to architect a multi-layered content safety and output sanitization engine for agentic workflows.</p>
 <hr>
-<h2>Multi-Layered Guardrail Architecture</h2>
+<h2 id="multi-layered-guardrail-architecture">Multi-Layered Guardrail Architecture</h2>
 <p>The security architecture enforces deterministic checks at both entry and exit points of model execution:</p>
 <div class="mermaid">graph TD
   A[Raw User / Environment Input] --&gt; B[Pre-Execution Guardrails Layer]
@@ -131,14 +140,14 @@
   
   J --&gt;|Passed All Guards| K[Safe Executable Tool Call / Output]
   J --&gt;|Validation Failure| L[Fallback to Safe Default &amp; Error Alert]</div>
-<h3>The Three Guardrail Layers</h3>
+<h3 id="the-three-guardrail-layers">The Three Guardrail Layers</h3>
 <ol>
 <li><strong>Pre-Execution Input Guardrails</strong>: Stripping Personally Identifiable Information (PII), masking secret tokens, and enforcing input token length limits to prevent denial-of-wallet (DoW) attacks.</li>
 <li><strong>Post-Execution Output Sanitizers</strong>: Running regex scanners and AST parsers against generated text to block dangerous shell commands (<code>rm -rf</code>, <code>curl | bash</code>) or SQL injection fragments before tool dispatch.</li>
 <li><strong>Deterministic Structural Schemas</strong>: Enforcing strict <code>Pydantic</code> or JSON Schema validation so that malformed model outputs are rejected before executing downstream system logic.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Multi-Layered Guardrail Engine</h2>
+<h2 id="python-implementation-multi-layered-guardrail-engine">Python Implementation: Multi-Layered Guardrail Engine</h2>
 <p>Here is a production Python implementation of a Deterministic Guardrail Engine that enforces input PII masking, AST command validation, and Pydantic output schema compliance:</p>
 <pre><code class="language-python">import re
 import json
@@ -239,7 +248,7 @@ if __name__ == &quot;__main__&quot;:
     except PermissionError as err:
         print(f&quot;Successfully Blocked Malicious Output: {err}&quot;)</code></pre>
 <hr>
-<h2>Important Guardrail Design Rules</h2>
+<h2 id="important-guardrail-design-rules">Important Guardrail Design Rules</h2>
 <p>When implementing content safety guardrails, adhere to these design principles:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -252,7 +261,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying Deterministic Guardrails report:</p>
 <ul>
 <li><strong>Zero Prohibited Command Executions</strong>: Native code regex filters prevent 100% of malicious shell and SQL injection attempts.</li>
@@ -285,6 +294,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#multi-layered-guardrail-architecture" class="toc-link">Multi-Layered Guardrail Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-multi-layered-guardrail-engine" class="toc-link">Python Implementation: Multi-Layered Guardrail Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#important-guardrail-design-rules" class="toc-link">Important Guardrail Design Rules</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-semantic-cache-context-optimization-lifecycle">The Semantic Cache &amp; Context Optimization Lifecycle</a></li>
+                <li><a href="#synthesis-whats-good-whats-not">Synthesis: What's Good &amp; What's Not</a></li>
+                <li><a href="#implementing-a-semantic-redis-cache-in-typescript">Implementing a Semantic Redis Cache in TypeScript</a></li>
+                <li><a href="#context-budget-optimization-checklist">Context Budget Optimization Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> An engineering guide on how to design and build an intelligent Model Context Protocol (MCP) gateway that tracks token usage, prunes redundant context, and implements a semantic vector cache in Redis to reduce inference costs and latency.</li>
 <li><strong>Why it matters:</strong> While modern LLM context windows span millions of tokens, submitting large codebase folders, logs, or databases on every single turn is highly inefficient, expensive, and slow. Token optimization and semantic caching are essential to making agentic applications production-viable.</li>
@@ -117,7 +128,7 @@
 <p>But execution security is only half the battle when building production-grade agents. The other critical challenge is <strong>resource management</strong>. If your agent queries an MCP resource containing a massive payroll database or codebase repository, sending those thousands of lines of code back and forth to the LLM on every agent cycle will quickly consume your token budget, hit API rate limits, and slow down user response times to a crawl.</p>
 <p>To build responsive, cost-effective agents, we need to optimize our context window using two powerful techniques: <strong>Semantic Prompt Caching</strong> to skip model calls for redundant queries, and <strong>Dynamic Context Pruning</strong> to keep our prompt payloads lean.</p>
 <hr>
-<h2>The Semantic Cache &amp; Context Optimization Lifecycle</h2>
+<h2 id="the-semantic-cache-context-optimization-lifecycle">The Semantic Cache &amp; Context Optimization Lifecycle</h2>
 <p>Below is the execution flow of an optimized MCP gateway that intercepts incoming prompt frames, computes semantic embeddings, runs similarity searches against a Redis cache, and dynamically prunes prompt components before executing LLM requests.</p>
 <div class="mermaid">graph TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
@@ -155,8 +166,8 @@
     
     style RedisVec fill:#f0fdf4,stroke:#22c55e,stroke-width:2px;</div>
 <hr>
-<h2>Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
-<h3>1. Semantic Prompt Caching</h3>
+<h2 id="synthesis-whats-good-whats-not">Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h3 id="1-semantic-prompt-caching">1. Semantic Prompt Caching</h3>
 <p>Instead of checking for exact string matches (which fails if a user changes a single character or punctuation mark), we generate vector embeddings of incoming prompts and search for highly similar vectors (using cosine similarity) in a vector database.</p>
 <ul>
 <li><strong>What&#39;s Good (The Pros)</strong>:<ul>
@@ -172,7 +183,7 @@
 </li>
 </ul>
 <hr>
-<h3>2. Context Pruning &amp; Dynamic Truncation</h3>
+<h3 id="2-context-pruning-dynamic-truncation">2. Context Pruning &amp; Dynamic Truncation</h3>
 <p>Analyzing the prompt payload size before dispatching it, and using summarization or token-importance ranking to remove irrelevant lines.</p>
 <ul>
 <li><strong>What&#39;s Good (The Pros)</strong>:<ul>
@@ -186,7 +197,7 @@
 </li>
 </ul>
 <hr>
-<h2>Implementing a Semantic Redis Cache in TypeScript</h2>
+<h2 id="implementing-a-semantic-redis-cache-in-typescript">Implementing a Semantic Redis Cache in TypeScript</h2>
 <p>Here is a TypeScript implementation of an MCP context gateway middleware that uses Redis Vector Search to cache and retrieve agent prompts based on cosine similarity. This design follows the modular data structures seen in the asynchronous calculations of <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</p>
 <pre><code class="language-typescript">// semantic_cache.ts
 import { Redis } from 'ioredis';
@@ -294,14 +305,14 @@ export class SemanticCacheManager {
   }
 }</code></pre>
 <hr>
-<h2>Context Budget Optimization Checklist</h2>
+<h2 id="context-budget-optimization-checklist">Context Budget Optimization Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Cache Invalidation on Write</strong>: Ensure your cache keys are linked to data version hashes. If a resource changes (e.g., code modifications or payroll runs), purge the corresponding cache entries.</li>
 <li><input disabled="" type="checkbox"> <strong>Local Embeddings for Speed</strong>: Consider running a lightweight local embeddings model (like <code>all-MiniLM-L6-v2</code>) in your gateway to eliminate the network latency of external embeddings APIs.</li>
 <li><input disabled="" type="checkbox"> <strong>Tiered Caching</strong>: Combine exact matching (fast MD5 string hashes in Redis, ~1ms) with semantic matching (vector search, ~50ms) to bypass embedding generation for identical queries.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Optimal context engineering ensures that agent systems scale sustainably:</p>
 <ol>
 <li><strong>Reduce Before Requesting:</strong> Do not treat the context window as a dumping ground. Always check token size constraints and summarize histories where possible.</li>
@@ -310,7 +321,7 @@ export class SemanticCacheManager {
 </ol>
 <p><em>Takeaway:</em> The fastest and cheapest LLM call is the one that you never have to make.</p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Redis Vector Library</strong>: Redis Developer Documentation. <em>Vector Similarity Search (VSS) with RediSearch</em>. <a href="https://redis.io/docs/latest/develop/interact/search-and-query/vector-search/" target="_blank" rel="noopener">Redis Vector Search</a>.</li>
 <li><strong>LLM Context Limits</strong>: Anthropic Research. <em>Designing Prompts for Large Context Windows</em>. <a href="https://www.anthropic.com/research" target="_blank" rel="noopener">Anthropic Blog</a>.</li>
@@ -343,6 +354,19 @@ export class SemanticCacheManager {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-semantic-cache-context-optimization-lifecycle" class="toc-link">The Semantic Cache &amp; Context Optimization Lifecycle</a></li>
+              <li class="toc-item toc-h2"><a href="#synthesis-whats-good-whats-not" class="toc-link">Synthesis: What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-a-semantic-redis-cache-in-typescript" class="toc-link">Implementing a Semantic Redis Cache in TypeScript</a></li>
+              <li class="toc-item toc-h2"><a href="#context-budget-optimization-checklist" class="toc-link">Context Budget Optimization Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

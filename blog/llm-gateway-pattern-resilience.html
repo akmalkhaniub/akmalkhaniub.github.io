@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#why-you-need-an-llm-gateway">Why You Need an LLM Gateway</a></li>
+                <li><a href="#core-pillars-of-the-gateway-pattern">Core Pillars of the Gateway Pattern</a></li>
+                <li><a href="#implementation-typescript-llm-gateway-router">Implementation: TypeScript LLM Gateway Router</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +120,7 @@ Embedding raw API calls to OpenAI, Anthropic, or DeepSeek directly into your pro
 </div>
 </div>
 <hr>
-<h2>Why You Need an LLM Gateway</h2>
+<h2 id="why-you-need-an-llm-gateway">Why You Need an LLM Gateway</h2>
 <p>As your AI application scales, calling APIs directly creates several systemic issues:</p>
 <ol>
 <li><strong>Model Outages and LATENCY spikes</strong>: Upstream APIs fail. If your application relies on a single provider, you suffer outages.</li>
@@ -131,16 +140,16 @@ flowchart TD
     Secondary -- Success --&gt; SaveCache
     Secondary -- Fail --&gt; Local[Local Fallback: vLLM]</div>
 <hr>
-<h2>Core Pillars of the Gateway Pattern</h2>
+<h2 id="core-pillars-of-the-gateway-pattern">Core Pillars of the Gateway Pattern</h2>
 <p>A production-grade LLM Gateway handles four essential operations:</p>
-<h3>1. Semantic Caching</h3>
+<h3 id="1-semantic-caching">1. Semantic Caching</h3>
 <p>Before routing to the upstream API, the gateway runs a vector search on a cache database (like Redis or Qdrant) to see if a semantically identical query has already been answered. If the cosine similarity matches above <code>0.96</code>, it returns the cached response in <code>&lt;10ms</code>, bypassing LLM generation completely.</p>
-<h3>2. Failover Orchestration</h3>
+<h3 id="2-failover-orchestration">2. Failover Orchestration</h3>
 <p>The gateway maintains a prioritised list of backup endpoints. If a request to OpenAI fails or times out (e.g. after 8 seconds), the router catches the exception, switches to Anthropic or a self-hosted vLLM engine, translates the payload schema, and completes the request seamlessly.</p>
-<h3>3. Circuit Breaking</h3>
+<h3 id="3-circuit-breaking">3. Circuit Breaking</h3>
 <p>If an upstream provider fails 5 times consecutively, the gateway trips the circuit breaker for that model. For the next 30 seconds, all requests bypass the failing model immediately, preventing request threads from stacking up and consuming connection pool sockets.</p>
 <hr>
-<h2>Implementation: TypeScript LLM Gateway Router</h2>
+<h2 id="implementation-typescript-llm-gateway-router">Implementation: TypeScript LLM Gateway Router</h2>
 <p>Here is a clean TypeScript implementation of an LLM Gateway router that orchestrates fallback routing across different providers, handles connection timeouts, and executes request retry logic.</p>
 <pre><code class="language-typescript">import axios from 'axios';
 
@@ -273,7 +282,7 @@ gateway.executeChat({ prompt: 'Write an optimized quicksort algorithm in Rust.' 
   .then(res =&gt; console.log('Response Success:', res))
   .catch(err =&gt; console.error('Response Failure:', err.message));</code></pre>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>To build resilient, scale-ready AI platform backends:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Decouple upstream APIs</strong>: Never let your product code communicate directly with provider APIs. Route everything through a gateway layer.</li>
@@ -308,6 +317,17 @@ gateway.executeChat({ prompt: 'Write an optimized quicksort algorithm in Rust.' 
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#why-you-need-an-llm-gateway" class="toc-link">Why You Need an LLM Gateway</a></li>
+              <li class="toc-item toc-h2"><a href="#core-pillars-of-the-gateway-pattern" class="toc-link">Core Pillars of the Gateway Pattern</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-typescript-llm-gateway-router" class="toc-link">Implementation: TypeScript LLM Gateway Router</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

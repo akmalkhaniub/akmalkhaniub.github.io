@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-in-kernel-verifier-mathematical-proof-of-safety">1. The In-Kernel Verifier: Mathematical Proof of Safety</a></li>
+                <li><a href="#2-xdp-express-data-path-10-million-packetssecond-at-nic-level">2. XDP (eXpress Data Path): 10 Million Packets/Second at NIC Level</a></li>
+                <li><a href="#3-bpf-maps-ring-buffers-zero-copy-kernel-user-ipc">3. BPF Maps &amp; Ring Buffers: Zero-Copy Kernel-User IPC</a></li>
+                <li><a href="#python-implementation-ebpf-verifier-xdp-packet-filter-simulator">Python Implementation: eBPF Verifier &amp; XDP Packet Filter Simulator</a></li>
+                <li><a href="#summary-lkm-vs-user-space-vs-ebpf">Summary: LKM vs User-Space vs eBPF</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>For three decades, extending the Linux operating system kernel required writing and compiling <strong>Loadable Kernel Modules (LKMs)</strong>.</p>
 <p>Writing kernel modules, however, is fraught with catastrophic risks:</p>
 <ul>
@@ -133,7 +144,7 @@
     RingBuffer --&gt; UserMetrics[User Space Metrics &amp; Tracing Dashboard]
   end</div>
 <hr>
-<h2>1. The In-Kernel Verifier: Mathematical Proof of Safety</h2>
+<h2 id="1-the-in-kernel-verifier-mathematical-proof-of-safety">1. The In-Kernel Verifier: Mathematical Proof of Safety</h2>
 <p>Unlike arbitrary kernel modules, the Linux kernel <strong>never runs unverified eBPF bytecode</strong>.</p>
 <p>Before an eBPF program is loaded, the <strong>In-Kernel Verifier</strong> performs rigorous Directed Acyclic Graph (DAG) state exploration:</p>
 <pre><code class="language-plaintext">&gt; **IN-KERNEL VERIFIER SAFETY CHECKS**
@@ -145,7 +156,7 @@
 </code></pre>
 <p>If the verifier detects even a single code branch that could dereference an unchecked memory pointer or loop infinitely, the <code>bpf()</code> syscall fails immediately with <code>EACCES</code> (Permission Denied).</p>
 <hr>
-<h2>2. XDP (eXpress Data Path): 10 Million Packets/Second at NIC Level</h2>
+<h2 id="2-xdp-express-data-path-10-million-packetssecond-at-nic-level">2. XDP (eXpress Data Path): 10 Million Packets/Second at NIC Level</h2>
 <p>In the traditional Linux networking stack, when a packet arrives at the Network Interface Card (NIC):</p>
 <ol>
 <li>The NIC triggers an interrupt.</li>
@@ -167,14 +178,14 @@
 | XDP_PASS       | Forwards packet up to standard Linux TCP/IP stack  | ~2,000,000 packets/sec      |
 </code></pre>
 <hr>
-<h2>3. BPF Maps &amp; Ring Buffers: Zero-Copy Kernel-User IPC</h2>
+<h2 id="3-bpf-maps-ring-buffers-zero-copy-kernel-user-ipc">3. BPF Maps &amp; Ring Buffers: Zero-Copy Kernel-User IPC</h2>
 <p>How does an eBPF program running inside the kernel communicate with a user-space monitoring daemon?</p>
 <ol>
 <li><strong>BPF Maps (Hash, Array, LRU)</strong>: Key-value storage structures allocated in kernel memory, accessible from both kernel eBPF programs (via helper functions) and user-space applications (via the <code>bpf()</code> syscall).</li>
 <li><strong>BPF Ring Buffer (<code>BPF_MAP_TYPE_RINGBUF</code>)</strong>: A lock-free, single-producer multi-consumer memory-mapped circular buffer that streams telemetry events to user space with sub-microsecond latency and zero memory allocations.</li>
 </ol>
 <hr>
-<h2>Python Implementation: eBPF Verifier &amp; XDP Packet Filter Simulator</h2>
+<h2 id="python-implementation-ebpf-verifier-xdp-packet-filter-simulator">Python Implementation: eBPF Verifier &amp; XDP Packet Filter Simulator</h2>
 <p>Here is a Python implementation simulating an eBPF In-Kernel Verifier and XDP packet filtering engine:</p>
 <pre><code class="language-python">import time
 from dataclasses import dataclass
@@ -264,7 +275,7 @@ if __name__ == &quot;__main__&quot;:
 
     xdp.process_packet_stream(traffic)</code></pre>
 <hr>
-<h2>Summary: LKM vs User-Space vs eBPF</h2>
+<h2 id="summary-lkm-vs-user-space-vs-ebpf">Summary: LKM vs User-Space vs eBPF</h2>
 <table>
 <thead>
 <tr>
@@ -306,7 +317,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>eBPF represents the greatest evolution in operating system architecture since the invention of virtual memory.</p>
 <p>By transforming the Linux kernel into a <strong>sandboxed, event-driven programmable platform</strong>, systems engineers achieve unprecedented observability, dynamic security monitoring, and wire-speed packet processing without touching a single line of kernel C code.</p>
 
@@ -336,6 +347,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-in-kernel-verifier-mathematical-proof-of-safety" class="toc-link">1. The In-Kernel Verifier: Mathematical Proof of Safety</a></li>
+              <li class="toc-item toc-h2"><a href="#2-xdp-express-data-path-10-million-packetssecond-at-nic-level" class="toc-link">2. XDP (eXpress Data Path): 10 Million Packets/Second at NIC Level</a></li>
+              <li class="toc-item toc-h2"><a href="#3-bpf-maps-ring-buffers-zero-copy-kernel-user-ipc" class="toc-link">3. BPF Maps &amp; Ring Buffers: Zero-Copy Kernel-User IPC</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-ebpf-verifier-xdp-packet-filter-simulator" class="toc-link">Python Implementation: eBPF Verifier &amp; XDP Packet Filter Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-lkm-vs-user-space-vs-ebpf" class="toc-link">Summary: LKM vs User-Space vs eBPF</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#quantization-strategy-decision-matrix">Quantization Strategy Decision Matrix</a></li>
+                <li><a href="#python-implementation-quantization-memory-throughput-calculator">Python Implementation: Quantization Memory &amp; Throughput Calculator</a></li>
+                <li><a href="#important-quantization-engineering-guardrails">Important Quantization Engineering Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When deploying self-hosted Small Language Models (SLMs) in production agentic platforms, the primary hardware limit is not compute speed—it is <strong>memory bandwidth</strong>. During LLM generation, loading multi-gigabyte weight matrices from VRAM to Tensor Cores on every token step creates a severe memory bandwidth bottleneck.</p>
 <p>Operating models at full 16-bit precision (FP16 or BF16) requires 2 bytes per parameter. A 7-billion parameter model requires ~14 GB of VRAM just to hold its weights, severely limiting batch size and context window depth on single GPU nodes.</p>
 <p>To unlock high-speed inference on accessible hardware, security and systems engineers utilize <strong>Quantization</strong>.</p>
 <p>Quantization compresses model weights from 16-bit floating point numbers into lower-bit representations (8-bit FP8, 4-bit AWQ, or GGUF k-quants). This article evaluates the technical trade-offs of modern quantization strategies.</p>
 <hr>
-<h2>Quantization Strategy Decision Matrix</h2>
+<h2 id="quantization-strategy-decision-matrix">Quantization Strategy Decision Matrix</h2>
 <p>Choosing the optimal quantization scheme depends on your deployment target and hardware architecture:</p>
 <div class="mermaid">graph TD
   A[Target Model &amp; Hardware Deployment] --&gt; B{Hardware Infrastructure?}
@@ -126,7 +135,7 @@
   C --&gt; F[2x Tensor Core Compute Speedup]
   D --&gt; G[75% VRAM Reduction with Minimal Perplexity Loss]
   E --&gt; H[Low Memory CPU/Metal Execution]</div>
-<h3>Technical Format Comparison</h3>
+<h3 id="technical-format-comparison">Technical Format Comparison</h3>
 <table>
 <thead>
 <tr>
@@ -172,7 +181,7 @@
 </tr>
 </tbody></table>
 <hr>
-<h2>Python Implementation: Quantization Memory &amp; Throughput Calculator</h2>
+<h2 id="python-implementation-quantization-memory-throughput-calculator">Python Implementation: Quantization Memory &amp; Throughput Calculator</h2>
 <p>Here is a production Python implementation of an engineering calculator that computes VRAM footprints, memory bandwidth requirements, and expected token generation limits across quantization formats:</p>
 <pre><code class="language-python">from typing import Dict, Any
 from pydantic import BaseModel
@@ -232,7 +241,7 @@ if __name__ == &quot;__main__&quot;:
         profile = evaluator.evaluate_format(name, bits, speedup)
         print(f&quot;🔹 [{profile.format_name}] Weights: {profile.weight_memory_gb} GB | KV VRAM: {profile.kv_cache_budget_gb} GB | Max Concurrency: {profile.max_concurrent_sequences_24gb_gpu} seqs | Speedup: {profile.expected_speedup_factor}x&quot;)</code></pre>
 <hr>
-<h2>Important Quantization Engineering Guardrails</h2>
+<h2 id="important-quantization-engineering-guardrails">Important Quantization Engineering Guardrails</h2>
 <p>When selecting quantization strategies for agent production workloads:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -245,7 +254,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying AWQ and FP8 quantization report:</p>
 <ul>
 <li><strong>75% Reduction in GPU Hardware Costs</strong>: Running 7B/14B parameter models on low-cost 24GB GPUs (RTX 4090 / L4) instead of expensive 80GB A100 nodes.</li>
@@ -278,6 +287,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#quantization-strategy-decision-matrix" class="toc-link">Quantization Strategy Decision Matrix</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-quantization-memory-throughput-calculator" class="toc-link">Python Implementation: Quantization Memory &amp; Throughput Calculator</a></li>
+              <li class="toc-item toc-h2"><a href="#important-quantization-engineering-guardrails" class="toc-link">Important Quantization Engineering Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-capturing-response-pending-state-useactionstate">1. Capturing Response &amp; Pending State: useActionState</a></li>
+                <li><a href="#2-decoupled-form-context-useformstatus">2. Decoupled Form Context: useFormStatus</a></li>
+                <li><a href="#3-programmatic-transitions-usetransition">3. Programmatic Transitions: useTransition</a></li>
+                <li><a href="#4-architectural-summary-which-hook-to-choose">4. Architectural Summary: Which Hook to Choose?</a></li>
+              </ul>
+            </details>
 <p>Managing form lifecycles in single-page applications has historically been a source of significant boilerplate. Developers had to maintain separate hooks for loading indicators, validation errors, and submission status. </p>
 <p>With <strong>React 19</strong> and <strong>Next.js 15/16</strong>, the library introduces a new set of hooks that align form transitions directly with asynchronous execution boundaries: <code>useActionState</code>, <code>useFormStatus</code>, and <code>useTransition</code>. </p>
 <p>In this chapter, we explore how to build modern, non-blocking interfaces using these native APIs.</p>
 <hr>
-<h2>1. Capturing Response &amp; Pending State: <code>useActionState</code></h2>
+<h2 id="1-capturing-response-pending-state-useactionstate">1. Capturing Response &amp; Pending State: <code>useActionState</code></h2>
 <p>In React 18, input validation errors and response payloads were managed using standard state variables. React 19 introduces <code>useActionState</code> (which succeeds the experimental <code>useFormState</code> hook) to consolidate response state and pending transitions into a unified hook.</p>
-<h3>The Hook Signature</h3>
+<h3 id="the-hook-signature">The Hook Signature</h3>
 <pre><code class="language-typescript">const [state, formAction, isPending] = useActionState(
   actionFn,
   initialState
@@ -121,7 +130,7 @@
 <li><strong><code>formAction</code>:</strong> The execution wrapper passed directly to the <code>&lt;form action={formAction}&gt;</code> property.</li>
 <li><strong><code>isPending</code>:</strong> A boolean indicator denoting whether the action is currently executing on the server.</li>
 </ul>
-<h3>Implementation Blueprint</h3>
+<h3 id="implementation-blueprint">Implementation Blueprint</h3>
 <p>Here is a login form implementation that validates inputs via Zod on the server and displays errors using <code>useActionState</code>:</p>
 <pre><code class="language-tsx">// app/login/page.tsx
 &quot;use client&quot;;
@@ -194,10 +203,10 @@ export async function loginAction(prevState: any, formData: FormData) {
   };
 }</code></pre>
 <hr>
-<h2>2. Decoupled Form Context: <code>useFormStatus</code></h2>
+<h2 id="2-decoupled-form-context-useformstatus">2. Decoupled Form Context: <code>useFormStatus</code></h2>
 <p>Often, the submit button is nested deep inside a form layout (such as within a Card header or a footer toolbar component). Passing loading states down through props introduces heavy boilerplate.</p>
 <p>React 19 resolves this with <code>useFormStatus</code>, which functions similarly to a context consumer, reading the status of the parent <code>&lt;form&gt;</code> container.</p>
-<h3>The Hook Signature</h3>
+<h3 id="the-hook-signature">The Hook Signature</h3>
 <pre><code class="language-typescript">const { pending, data, method, action } = useFormStatus();</code></pre>
 <ul>
 <li><strong><code>pending</code>:</strong> Boolean indicating if the parent form is executing.</li>
@@ -205,13 +214,13 @@ export async function loginAction(prevState: any, formData: FormData) {
 <li><strong><code>method</code>:</strong> The HTTP method (<code>GET</code> or <code>POST</code>).</li>
 <li><strong><code>action</code>:</strong> Reference to the action function executing.</li>
 </ul>
-<h3>Critical Rule</h3>
+<h3 id="critical-rule">Critical Rule</h3>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
   <div class="alert-content"><p><code>useFormStatus</code> <strong>only</strong> works when declared inside a component that is a child of the <code>&lt;form&gt;</code> element. Calling it in the same component that renders the <code>&lt;form&gt;</code> tag itself will return <code>pending: false</code> because it searches up the React DOM tree for a parent form.</p>
 </div>
 </div>
-<h3>Reusable Submit Button Example</h3>
+<h3 id="reusable-submit-button-example">Reusable Submit Button Example</h3>
 <pre><code class="language-tsx">// components/submit-button.tsx
 &quot;use client&quot;;
 
@@ -238,10 +247,10 @@ export function SubmitButton({ label }: { label: string }) {
   &lt;SubmitButton label=&quot;Create Account&quot; /&gt;
 &lt;/form&gt;</code></pre>
 <hr>
-<h2>3. Programmatic Transitions: <code>useTransition</code></h2>
+<h2 id="3-programmatic-transitions-usetransition">3. Programmatic Transitions: <code>useTransition</code></h2>
 <p>What if you are mutating server-side state but <strong>not</strong> using a <code>&lt;form&gt;</code> element? For example, when toggling a switch, clicking a bookmark button, or deleting an item from a list.</p>
 <p>In these cases, React 19 provides <code>useTransition</code> to wrap asynchronous state mutations, signaling to the rendering engine that the UI should remain responsive while the server processes the change.</p>
-<h3>Implementation Blueprint</h3>
+<h3 id="implementation-blueprint">Implementation Blueprint</h3>
 <pre><code class="language-tsx">// components/delete-item-button.tsx
 &quot;use client&quot;;
 
@@ -267,13 +276,13 @@ export function DeleteButton({ id }: { id: string }) {
     &lt;/button&gt;
   );
 }</code></pre>
-<h3>Why Use <code>useTransition</code>?</h3>
+<h3 id="why-use-usetransition">Why Use <code>useTransition</code>?</h3>
 <ul>
 <li><strong>Non-Blocking UI:</strong> While <code>deleteItemAction</code> is executing, the browser tab remains completely responsive. Other clicks or inputs are processed instantly.</li>
 <li><strong>Auto-Batching:</strong> React batches any state updates triggered during the transition, preventing janky render layouts.</li>
 </ul>
 <hr>
-<h2>4. Architectural Summary: Which Hook to Choose?</h2>
+<h2 id="4-architectural-summary-which-hook-to-choose">4. Architectural Summary: Which Hook to Choose?</h2>
 <table>
 <thead>
 <tr>
@@ -325,6 +334,17 @@ export function DeleteButton({ id }: { id: string }) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-capturing-response-pending-state-useactionstate" class="toc-link">1. Capturing Response &amp; Pending State: useActionState</a></li>
+              <li class="toc-item toc-h2"><a href="#2-decoupled-form-context-useformstatus" class="toc-link">2. Decoupled Form Context: useFormStatus</a></li>
+              <li class="toc-item toc-h2"><a href="#3-programmatic-transitions-usetransition" class="toc-link">3. Programmatic Transitions: useTransition</a></li>
+              <li class="toc-item toc-h2"><a href="#4-architectural-summary-which-hook-to-choose" class="toc-link">4. Architectural Summary: Which Hook to Choose?</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

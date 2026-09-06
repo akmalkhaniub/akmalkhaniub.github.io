@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-risk-of-agent-driven-sql-mutations">The Risk of Agent-Driven SQL Mutations</a></li>
+                <li><a href="#1-under-the-hood-statement-and-lock-timeouts">1. Under the Hood: Statement and Lock Timeouts</a></li>
+                <li><a href="#2-setting-up-connection-boundaries">2. Setting up Connection Boundaries</a></li>
+                <li><a href="#code-demo-resilient-database-connection-wrapper">Code Demo: Resilient Database Connection Wrapper</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Letting autonomous agents run raw SQL commands or execute database migrations cr
 </div>
 </div>
 <hr>
-<h2>The Risk of Agent-Driven SQL Mutations</h2>
+<h2 id="the-risk-of-agent-driven-sql-mutations">The Risk of Agent-Driven SQL Mutations</h2>
 <p>When an agent writes code or executes migrations:</p>
 <ul>
 <li><strong>The Infinite Scan Lock</strong>: A missing index query on a massive table locks database rows while scanning, blocking updates.</li>
@@ -132,21 +142,21 @@ flowchart TD
     Abort --&gt; Release[Release Table &amp; Row Locks]
     Release --&gt; Log[Log Trace to Audit Queue]</div>
 <hr>
-<h2>1. Under the Hood: Statement and Lock Timeouts</h2>
+<h2 id="1-under-the-hood-statement-and-lock-timeouts">1. Under the Hood: Statement and Lock Timeouts</h2>
 <p>To safeguard databases, we configure session variables:</p>
 <ul>
 <li><strong><code>statement_timeout</code></strong>: Restricts the maximum time a query can execute. If a query runs longer than the threshold, it is terminated.</li>
 <li><strong><code>lock_timeout</code></strong>: Limits the time a transaction will wait to acquire a table or row lock. This prevents queries from waiting behind long-running operations.</li>
 </ul>
 <hr>
-<h2>2. Setting up Connection Boundaries</h2>
+<h2 id="2-setting-up-connection-boundaries">2. Setting up Connection Boundaries</h2>
 <p>A robust database gateway pool enforces:</p>
 <ol>
 <li><strong>Low-Priority Privileges</strong>: Running agent queries using separate database users with restricted access, blocking structural updates.</li>
 <li><strong>Explicit Rollbacks</strong>: Ensuring any aborted transaction runs a full rollback command to clean up connection states.</li>
 </ol>
 <hr>
-<h2>Code Demo: Resilient Database Connection Wrapper</h2>
+<h2 id="code-demo-resilient-database-connection-wrapper">Code Demo: Resilient Database Connection Wrapper</h2>
 <p>Below is a Python implementation of a database connection wrapper. It intercepts query submissions, prepends safety timeouts, and executes rollbacks if limits are exceeded.</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, Tuple
@@ -201,7 +211,7 @@ if __name__ == &quot;__main__&quot;:
     )
     print(f&quot;Result: {msg}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Enforce Connection Timeouts</strong>: Set <code>statement_timeout</code> and <code>lock_timeout</code> limits on all database sessions accessed by agent workflows.</li>
 <li><strong>Isolate Privileges</strong>: Run agent transactions using dedicated database roles with read-only permissions on sensitive schemas.</li>
@@ -234,6 +244,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-risk-of-agent-driven-sql-mutations" class="toc-link">The Risk of Agent-Driven SQL Mutations</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-statement-and-lock-timeouts" class="toc-link">1. Under the Hood: Statement and Lock Timeouts</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-connection-boundaries" class="toc-link">2. Setting up Connection Boundaries</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-resilient-database-connection-wrapper" class="toc-link">Code Demo: Resilient Database Connection Wrapper</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

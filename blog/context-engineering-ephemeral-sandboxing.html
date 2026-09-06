@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-sandboxed-gating-lifecycle">The Sandboxed Gating Lifecycle</a></li>
+                <li><a href="#synthesis-whats-good-whats-not">Synthesis: What's Good &amp; What's Not</a></li>
+                <li><a href="#implementing-a-secure-sandboxing-tool-in-python">Implementing a Secure Sandboxing tool in Python</a></li>
+                <li><a href="#security-containment-checklist">Security Containment Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> An engineering guide on how to contain untrusted LLM-generated code execution inside ephemeral Docker sandboxes and dynamically filter model tools using FastAPI middleware.</li>
 <li><strong>Why it matters:</strong> Giving LLMs direct access to shell environments or database writes introduces severe prompt injection and privilege escalation risks. Securing AI agents requires strict virtualization and authorization boundaries.</li>
@@ -118,7 +129,7 @@
 <p>To protect host environments, we must implement <strong>advanced containment strategies</strong>: running all untrusted code executions inside transient, resource-constrained <strong>ephemeral sandboxes</strong>, and using <strong>dynamic tool masking</strong> to hide sensitive tools from the model based on the user&#39;s active session permissions.</p>
 <p>This article reviews these containment architectures, drawing from security patterns implemented in the secure document processor <a href="https://github.com/akmalkhaniub/healthcare-audit-vault" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> healthcare-audit-vault</a> and tool manager <a href="https://github.com/akmalkhaniub/ops-mcp-suite" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> ops-mcp-suite</a>.</p>
 <hr>
-<h2>The Sandboxed Gating Lifecycle</h2>
+<h2 id="the-sandboxed-gating-lifecycle">The Sandboxed Gating Lifecycle</h2>
 <p>To prevent prompt injection from reaching host resources, we establish a secure boundary where the agent gateway validates user authorization (JWT roles), filters tool availability, and executes commands inside a locked Docker sandbox.</p>
 <div class="mermaid">graph TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
@@ -150,8 +161,8 @@
     
     style ContainerSandbox fill:#fff5f5,stroke:#f87171,stroke-width:1px,stroke-dasharray: 5 5</div>
 <hr>
-<h2>Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
-<h3>1. Ephemeral Sandboxing (Docker Containment)</h3>
+<h2 id="synthesis-whats-good-whats-not">Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h3 id="1-ephemeral-sandboxing-docker-containment">1. Ephemeral Sandboxing (Docker Containment)</h3>
 <p>Isolating execution processes within short-lived, resource-constrained container layers.</p>
 <ul>
 <li><strong>What&#39;s Good (The Pros)</strong>:<ul>
@@ -166,7 +177,7 @@
 </li>
 </ul>
 <hr>
-<h3>2. Dynamic Tool Masking</h3>
+<h3 id="2-dynamic-tool-masking">2. Dynamic Tool Masking</h3>
 <p>Filtering the JSON-RPC tool schemas sent to the LLM during the initial system prompt based on user JWT roles.</p>
 <ul>
 <li><strong>What&#39;s Good (The Pros)</strong>:<ul>
@@ -180,7 +191,7 @@
 </li>
 </ul>
 <hr>
-<h2>Implementing a Secure Sandboxing tool in Python</h2>
+<h2 id="implementing-a-secure-sandboxing-tool-in-python">Implementing a Secure Sandboxing tool in Python</h2>
 <p>Here is a Python implementation of an MCP tool that executes arbitrary Python scripts safely inside a temporary, resource-bounded Docker sandbox. This code uses the official Docker SDK for Python, modeled on the file isolation mechanisms in <a href="https://github.com/akmalkhaniub/healthcare-audit-vault" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> healthcare-audit-vault</a>.</p>
 <pre><code class="language-python"># sandbox_tool.py
 from mcp.server.fastmcp import FastMCP
@@ -249,14 +260,14 @@ def execute_python_in_sandbox(script_content: str) -&gt; str:
         if os.path.exists(temp_path):
             os.remove(temp_path)</code></pre>
 <hr>
-<h2>Security Containment Checklist</h2>
+<h2 id="security-containment-checklist">Security Containment Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Network Isolation</strong>: Always set <code>network_disabled=True</code> on script execution containers to prevent dynamic scripts from querying internal VPC database nodes.</li>
 <li><input disabled="" type="checkbox"> <strong>Read-Only Volumes</strong>: Mount files inside containers as read-only (<code>mode=&quot;ro&quot;</code>) to prevent the LLM from corrupting original dataset records.</li>
 <li><input disabled="" type="checkbox"> <strong>Strict Memory Limits</strong>: Hard-limit memory settings (<code>mem_limit=&quot;128m&quot;</code>) to prevent memory-inflation prompt injections from exhausting host system RAM.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Secure Context Engineering mandates that we separate natural language planning from system execution:</p>
 <ol>
 <li><strong>Container Containment:</strong> Sanitization is never sufficient for code execution. Any dynamic code execution tool must run inside ephemeral, resource-constrained sandboxes.</li>
@@ -265,7 +276,7 @@ def execute_python_in_sandbox(script_content: str) -&gt; str:
 </ol>
 <p><em>Takeaway:</em> Do not teach your models how to obey security boundaries; engineer the system architecture so the model physically cannot cross them.</p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Docker Containment for Agents</strong>: Docker Security Guidelines. <em>Best Practices for Containerizing Sandbox Runtimes</em>. <a href="https://docs.docker.com/security/" target="_blank" rel="noopener">Docker Security</a>.</li>
 <li><strong>FastMCP Specification</strong>: Model Context Protocol. <em>Defining Schemas and Schematized Tools with FastMCP</em>. <a href="https://github.com/modelcontextprotocol" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> MCP Portal</a>.</li>
@@ -298,6 +309,19 @@ def execute_python_in_sandbox(script_content: str) -&gt; str:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-sandboxed-gating-lifecycle" class="toc-link">The Sandboxed Gating Lifecycle</a></li>
+              <li class="toc-item toc-h2"><a href="#synthesis-whats-good-whats-not" class="toc-link">Synthesis: What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-a-secure-sandboxing-tool-in-python" class="toc-link">Implementing a Secure Sandboxing tool in Python</a></li>
+              <li class="toc-item toc-h2"><a href="#security-containment-checklist" class="toc-link">Security Containment Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

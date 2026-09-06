@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#google-percolator-distributed-transaction-architecture">Google Percolator Distributed Transaction Architecture</a></li>
+                <li><a href="#python-implementation-google-percolator-transaction-engine">Python Implementation: Google Percolator Transaction Engine</a></li>
+                <li><a href="#percolator-2pc-gotchas-best-practices">Percolator &amp; 2PC Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When building sharded distributed databases (<strong>TiDB</strong>, <strong>CockroachDB</strong>, <strong>Google Spanner</strong>), executing single-shard operations using Raft is straightforward. However, modern applications require <strong>ACID transactions</strong> that span across multiple database shards (e.g. transferring money from Account A on Shard 1 to Account B on Shard 2).</p>
 <p>Executing cross-shard transactions introduces severe consistency risks: if Shard 1 commits while Shard 2 crashes, the system suffers data corruption and lost funds.</p>
 <p>Historically, systems used the <strong>Two-Phase Commit (2PC)</strong> protocol. However, traditional 2PC suffers from a fatal flaw: if the Central Coordinator node crashes during Phase 2, participant nodes remain <strong>blocked holding locks indefinitely</strong>.</p>
@@ -111,7 +120,7 @@
 <p>Percolator decentralizes 2PC by designating a single key&#39;s lock as the <strong>Primary Lock</strong>, enabling self-healing conflict resolution.</p>
 <p>This article details traditional 2PC and Google Percolator distributed transaction protocols.</p>
 <hr>
-<h2>Google Percolator Distributed Transaction Architecture</h2>
+<h2 id="google-percolator-distributed-transaction-architecture">Google Percolator Distributed Transaction Architecture</h2>
 <p>How Percolator uses a Timestamp Oracle (TSO) and Primary Lock pointers to execute non-blocking distributed transactions:</p>
 <div class="mermaid">graph TD
   Client[Transaction Client] --&gt;|1. Get Start Timestamp T_start=100| TSO[Timestamp Oracle TSO]
@@ -129,7 +138,7 @@
     
     Client --&gt;|6. Async Commit Secondary Key B| ShardB
   end</div>
-<h3>Core Percolator Transaction Mechanisms</h3>
+<h3 id="core-percolator-transaction-mechanisms">Core Percolator Transaction Mechanisms</h3>
 <ol>
 <li><strong>Timestamp Oracle (TSO)</strong>: A centralized, high-throughput service that dispenses strictly monotonically increasing timestamps ($T_{\text{start}}$, $T_{\text{commit}}$). Timestamps define Multi-Version Concurrency Control (MVCC) snapshot versions.</li>
 <li><strong>Percolator Column Structure</strong>: Every row stores three MVCC column families:<ul>
@@ -145,7 +154,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Google Percolator Transaction Engine</h2>
+<h2 id="python-implementation-google-percolator-transaction-engine">Python Implementation: Google Percolator Transaction Engine</h2>
 <p>Here is a production-grade Python simulation of the Google Percolator Distributed Transaction Protocol featuring $T_{\text{start}} / T_{\text{commit}}$ timestamps, primary lock pointers, and conflict resolution:</p>
 <pre><code class="language-python">from typing import Dict, Optional, Tuple, Any
 from pydantic import BaseModel
@@ -292,7 +301,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Account Alice: {db.read_snapshot('account_alice')}&quot;)
     print(f&quot;   • Account Bob:   {db.read_snapshot('account_bob')}&quot;)</code></pre>
 <hr>
-<h2>Percolator &amp; 2PC Gotchas &amp; Best Practices</h2>
+<h2 id="percolator-2pc-gotchas-best-practices">Percolator &amp; 2PC Gotchas &amp; Best Practices</h2>
 <p>When implementing distributed transactions:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -305,7 +314,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Distributed databases utilizing Percolator transactions (such as <strong>TiDB</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Zero Coordinator Lock Deadlocks</strong>: Eliminating traditional 2PC blocking bugs allows automatic self-healing crash recovery.</li>
@@ -338,6 +347,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#google-percolator-distributed-transaction-architecture" class="toc-link">Google Percolator Distributed Transaction Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-google-percolator-transaction-engine" class="toc-link">Python Implementation: Google Percolator Transaction Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#percolator-2pc-gotchas-best-practices" class="toc-link">Percolator &amp; 2PC Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#raft-state-machine-architecture">Raft State Machine Architecture</a></li>
+                <li><a href="#python-implementation-raft-agent-registry-node">Python Implementation: Raft Agent Registry Node</a></li>
+                <li><a href="#raft-implementation-gotchas-guardrails">Raft Implementation Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In autonomous multi-agent networks, individual agent workers must coordinate their available capabilities, active task assignments, and routing directories. If agent nodes maintain localized, un-synchronized state views, the swarm risks <strong>split-brain conditions</strong>, where two different agents assume control of the same resource or execute conflicting tasks.</p>
 <p>To achieve fault-tolerant consistency across a cluster of agent workers, systems engineering teams deploy <strong>Raft Consensus Engine</strong> nodes.</p>
 <p>Raft divides distributed consensus into three distinct sub-problems: <strong>Leader Election</strong>, <strong>Log Replication</strong>, and <strong>Safety Invariants</strong>. By replicating a shared command log across nodes, Raft guarantees that all healthy agent instances maintain an identical view of the global agent registry.</p>
 <p>This article details how to implement a Raft-backed decentralized agent registry.</p>
 <hr>
-<h2>Raft State Machine Architecture</h2>
+<h2 id="raft-state-machine-architecture">Raft State Machine Architecture</h2>
 <p>The lifecycle states and transition pathways of a Raft cluster node:</p>
 <div class="mermaid">graph TD
   A[Follower Node] --&gt;|Election Timeout Expires| B[Candidate Node]
@@ -124,14 +133,14 @@
     C --&gt;|Broadcast Heartbeats &amp; Log Entries| A
     A --&gt;|Acknowledge AppendEntries| C
   end</div>
-<h3>Raft Core Components</h3>
+<h3 id="raft-core-components">Raft Core Components</h3>
 <ol>
 <li><strong>Terms</strong>: Time is divided into arbitrary numbered terms ($1, 2, 3 \dots$). Each term begins with a Leader Election. If a split vote occurs, the term ends without a leader and a new term begins.</li>
 <li><strong>Leader Election</strong>: Follower nodes monitor incoming heartbeats from the Leader. If a follower receives no heartbeat before its randomized election timer expires ($150\text{ms} - 300\text{ms}$), it increments its term and transitions into a Candidate node, soliciting votes from peers.</li>
 <li><strong>Log Replication</strong>: Once elected, the Leader accepts registry state commands from clients, appends them to its local log, and broadcasts <code>AppendEntries</code> RPCs to followers. When a log entry is replicated on a majority of nodes, it is marked as <strong>Committed</strong>.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Raft Agent Registry Node</h2>
+<h2 id="python-implementation-raft-agent-registry-node">Python Implementation: Raft Agent Registry Node</h2>
 <p>Here is a production-grade Python simulation of a Raft Node for an agent registry. It demonstrates term-based leader election, voting rules, and log entry replication across a 3-node cluster:</p>
 <pre><code class="language-python">import time
 import random
@@ -245,7 +254,7 @@ if __name__ == &quot;__main__&quot;:
             cluster_nodes=nodes
         )</code></pre>
 <hr>
-<h2>Raft Implementation Gotchas &amp; Guardrails</h2>
+<h2 id="raft-implementation-gotchas-guardrails">Raft Implementation Gotchas &amp; Guardrails</h2>
 <p>When deploying Raft consensus in agent networks:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -258,7 +267,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams building Raft-backed agent clusters report:</p>
 <ul>
 <li><strong>Zero Split-Brain Outages</strong>: Strict quorum requirements prevent isolated network partitions from executing conflicting agent operations.</li>
@@ -291,6 +300,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#raft-state-machine-architecture" class="toc-link">Raft State Machine Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-raft-agent-registry-node" class="toc-link">Python Implementation: Raft Agent Registry Node</a></li>
+              <li class="toc-item toc-h2"><a href="#raft-implementation-gotchas-guardrails" class="toc-link">Raft Implementation Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

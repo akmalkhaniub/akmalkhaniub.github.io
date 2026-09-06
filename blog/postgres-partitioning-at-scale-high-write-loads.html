@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-scale-problem-why-indexes-suffer">The Scale Problem: Why Indexes Suffer</a></li>
+                <li><a href="#partitioning-strategies">Partitioning Strategies</a></li>
+                <li><a href="#configuring-declarative-partitioning-auto-maintenance">Configuring Declarative Partitioning &amp; Auto-Maintenance</a></li>
+                <li><a href="#query-analysis-verification-of-pruning">Query Analysis: Verification of Pruning</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ As relational database tables grow beyond 50 to 100 million rows, performance de
 </div>
 </div>
 <hr>
-<h2>The Scale Problem: Why Indexes Suffer</h2>
+<h2 id="the-scale-problem-why-indexes-suffer">The Scale Problem: Why Indexes Suffer</h2>
 <p>When a table is small, its indexes reside completely in RAM, allowing sub-millisecond lookup speeds. As the table scales, the index size grows. When it exceeds the database server’s memory capacity (<code>shared_buffers</code>), PostgreSQL has to swap index pages to and from disk. This results in severe latency spikes.</p>
 <p><strong>Table Partitioning</strong> solves this by splitting one large logical table into smaller physical tables (partitions). Each partition has its own isolated indexes. </p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -126,21 +136,21 @@ flowchart TD
     TargetPartition --&gt;|Scan small index in RAM| Output[Sub-millisecond Result]</div>
 <p>By configuring queries to filter on the partition key, the query planner executes <strong>Partition Pruning</strong>, completely bypassing irrelevant tables and indexing only the targeted slice of data.</p>
 <hr>
-<h2>Partitioning Strategies</h2>
-<h3>1. Range Partitioning</h3>
+<h2 id="partitioning-strategies">Partitioning Strategies</h2>
+<h3 id="1-range-partitioning">1. Range Partitioning</h3>
 <p>The table is partitioned into ranges defined by a key column (usually a timestamp or date).</p>
 <ul>
 <li><strong>Ideal for</strong>: Time-series data, audit trails, and logs.</li>
 <li><strong>Benefit</strong>: Older partitions can be easily detached, archived, or dropped in bulk (<code>DROP TABLE</code>) without triggering slow row-delete locks.</li>
 </ul>
-<h3>2. Hash Partitioning</h3>
+<h3 id="2-hash-partitioning">2. Hash Partitioning</h3>
 <p>The table is partitioned by specifying the modulus and remainder of a hash function applied to the partition key.</p>
 <ul>
 <li><strong>Ideal for</strong>: Evenly distributing writes across a set number of tables (e.g. user records partitioned by <code>user_id</code>).</li>
 <li><strong>Benefit</strong>: Prevents write-hotspots on single tables, distributing I/O loads.</li>
 </ul>
 <hr>
-<h2>Configuring Declarative Partitioning &amp; Auto-Maintenance</h2>
+<h2 id="configuring-declarative-partitioning-auto-maintenance">Configuring Declarative Partitioning &amp; Auto-Maintenance</h2>
 <p>Here is a complete SQL script implementing a range-partitioned <code>audit_logs</code> table. It includes a PL/pgSQL function to automatically pre-create the next month&#39;s partition.</p>
 <pre><code class="language-sql">-- 1. Create the parent table partitioned by RANGE
 CREATE TABLE audit_logs (
@@ -193,14 +203,14 @@ $$ LANGUAGE plpgsql;
 -- Execute the partition generator (usually scheduled via pg_cron monthly)
 SELECT create_next_month_partition();</code></pre>
 <hr>
-<h2>Query Analysis: Verification of Pruning</h2>
+<h2 id="query-analysis-verification-of-pruning">Query Analysis: Verification of Pruning</h2>
 <p>To verify that partition pruning is working, always run <code>EXPLAIN</code> on your queries:</p>
 <pre><code class="language-sql">EXPLAIN SELECT * FROM audit_logs 
 WHERE created_at &gt;= '2026-06-10 00:00:00' 
   AND created_at &lt; '2026-06-15 00:00:00';</code></pre>
 <p>The output should show a <code>Seq Scan</code> or <code>Index Scan</code> <strong>only</strong> on the child table <code>audit_logs_y2026m06</code>, confirming that Postgres has pruned all other partitions from the search path.</p>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>Scaling relational datasets requires structured partition management:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Include partition keys in constraints</strong>: Any primary or unique index on a partitioned table must include the partition key column.</li>
@@ -235,6 +245,18 @@ WHERE created_at &gt;= '2026-06-10 00:00:00'
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-scale-problem-why-indexes-suffer" class="toc-link">The Scale Problem: Why Indexes Suffer</a></li>
+              <li class="toc-item toc-h2"><a href="#partitioning-strategies" class="toc-link">Partitioning Strategies</a></li>
+              <li class="toc-item toc-h2"><a href="#configuring-declarative-partitioning-auto-maintenance" class="toc-link">Configuring Declarative Partitioning &amp; Auto-Maintenance</a></li>
+              <li class="toc-item toc-h2"><a href="#query-analysis-verification-of-pruning" class="toc-link">Query Analysis: Verification of Pruning</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

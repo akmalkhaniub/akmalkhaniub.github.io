@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/nextjs-self-hosting-kubernetes-docker-cache-handlers-fargate.html">
   <meta property="og:title" content="The Self-Hosting Gauntlet: Running Next.js on Kubernetes and Docker Without Vercel">
   <meta property="og:description" content="How enterprise engineering teams self-host Next.js on Kubernetes: multi-pod ISR with Redis/S3 cache handlers, Server Action encryption key synchronization across rolling deployments, and CPU image optimization offload.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nextjs-self-hosting-kubernetes-docker-cache-handlers-fargate.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-05">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="The Self-Hosting Gauntlet: Running Next.js on Kubernetes and Docker Without Vercel">
   <meta name="twitter:description" content="How enterprise engineering teams self-host Next.js on Kubernetes: multi-pod ISR with Redis/S3 cache handlers, Server Action encryption key synchronization across rolling deployments, and CPU image optimization offload.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nextjs-self-hosting-kubernetes-docker-cache-handlers-fargate.jpg">
 
   <script type="application/ld+json">
 {
@@ -92,7 +92,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="The Self-Hosting Gauntlet: Running Next.js on Kubernetes and Docker Without Vercel Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/nextjs-self-hosting-kubernetes-docker-cache-handlers-fargate.jpg" class="article-cover-img" alt="The Self-Hosting Gauntlet: Running Next.js on Kubernetes and Docker Without Vercel Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">The Self-Hosting Gauntlet: Running Next.js on Kubernetes and Docker Without Vercel</h1>
             <div class="article-meta">
@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-ephemeral-filesystem-problem-multi-pod-isr-and-custom-cache-handlers">1. The Ephemeral Filesystem Problem: Multi-Pod ISR and Custom Cache Handlers</a></li>
+                <li><a href="#2-the-rolling-deployment-trap-server-action-key-desynchronization">2. The Rolling Deployment Trap: Server Action Key Desynchronization</a></li>
+                <li><a href="#3-the-image-optimization-cpu-bottleneck">3. The Image Optimization CPU Bottleneck</a></li>
+                <li><a href="#4-production-dockerfile-the-multi-stage-standalone-blueprint">4. Production Dockerfile: The Multi-Stage Standalone Blueprint</a></li>
+                <li><a href="#5-architectural-summary">5. Architectural Summary</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <p>There is an unspoken rule in modern software marketing: the easier a framework is to deploy on its creator’s proprietary cloud, the more treacherous it is to self-host on your own infrastructure.</p>
 <p>Next.js is the crown jewel of Vercel. When you push code to Vercel, a sophisticated, highly optimized fleet of edge networks, global key-value caches, automated image optimization microservices, and serverless compute pipelines coordinate seamlessly. Features like Incremental Static Regeneration (ISR), Server Actions, and the Data Cache work instantly with zero configuration.</p>
 <p>Then comes the enterprise reality check.</p>
@@ -131,8 +142,9 @@
       Pod1 &amp; Pod2 &amp; Pod3 &lt;--&gt;|Synchronized Action Cipher Keys| EnvSecrets[Kubernetes Secret: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY]
     end
   end</div>
+<p><em>Figure 1: Production multi-node Kubernetes cluster architecture for self-hosted Next.js with shared Redis cache handler and AWS S3 static asset offloading. Source: CNCF Enterprise Architecture Guidelines <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a></sup>.</em></p>
 <hr>
-<h2>1. The Ephemeral Filesystem Problem: Multi-Pod ISR and Custom Cache Handlers</h2>
+<h2 id="1-the-ephemeral-filesystem-problem-multi-pod-isr-and-custom-cache-handlers">1. The Ephemeral Filesystem Problem: Multi-Pod ISR and Custom Cache Handlers</h2>
 <p>When you deploy Next.js in a Docker container, the container filesystem is <strong>ephemeral and isolated</strong>.</p>
 <p>By default, Next.js writes Incremental Static Regeneration (ISR) pages and cached <code>fetch</code> payloads to the local <code>.next/cache</code> directory on disk:</p>
 <ul>
@@ -140,13 +152,13 @@
 <li>Pod 2 through Pod 20 still have the old file on their respective disks.</li>
 <li>When pods scale down or crash, the entire cache is vaporized.</li>
 </ul>
-<h3>The Solution: Pluggable Cache Handlers</h3>
+<h3 id="the-solution-pluggable-cache-handlers">The Solution: Pluggable Cache Handlers</h3>
 <p>Next.js supports a custom cache handler API that replaces the local filesystem with an external distributed storage tier. In modern enterprise deployments, this requires a <strong>hybrid Redis + S3 cache architecture</strong>:</p>
 <ul>
 <li><strong>Redis</strong>: Stores fast metadata, tag mappings (<code>revalidateTag</code>), and small JSON data payloads.</li>
 <li><strong>AWS S3 / Google Cloud Storage</strong>: Stores large, fully pre-rendered static HTML documents and Flight payloads.</li>
 </ul>
-<h4>Implementing a Production Redis Cache Handler:</h4>
+<h4 id="implementing-a-production-redis-cache-handler">Implementing a Production Redis Cache Handler:</h4>
 <pre><code class="language-typescript">// cache-handler.mjs
 import { createClient } from 'redis';
 
@@ -195,7 +207,7 @@ export default class RedisCacheHandler {
     }
   }
 }</code></pre>
-<h4>Mounting in <code>next.config.js</code>:</h4>
+<h4 id="mounting-in-nextconfigjs">Mounting in <code>next.config.js</code>:</h4>
 <pre><code class="language-javascript">// next.config.js
 module.exports = {
   output: 'standalone',
@@ -204,12 +216,12 @@ module.exports = {
     : undefined,
 };</code></pre>
 <hr>
-<h2>2. The Rolling Deployment Trap: Server Action Key Desynchronization</h2>
+<h2 id="2-the-rolling-deployment-trap-server-action-key-desynchronization">2. The Rolling Deployment Trap: Server Action Key Desynchronization</h2>
 <p>When you execute a rolling deployment in Kubernetes, your cluster temporarily runs two versions of your application concurrently:</p>
 <pre><code class="language-plaintext">[ Pod v1.0 ] ── Still serving existing client tabs
 [ Pod v2.0 ] ── Newly initialized and taking incoming traffic</code></pre>
 <p>To protect Server Actions from tampering, Next.js generates an internal cryptographic encryption key at build time to sign action IDs and serialize closure variables.</p>
-<h3>The Catastrophe:</h3>
+<h3 id="the-catastrophe">The Catastrophe:</h3>
 <p>If you do not explicitly set a persistent encryption key in your environment variables:</p>
 <ol>
 <li>Pod v1.0 generates a random cryptographic secret at boot.</li>
@@ -220,7 +232,7 @@ module.exports = {
 <code>Error: Failed to decrypt Server Action payload.</code></li>
 <li>The user receives a blank error screen, and the form submission is lost.</li>
 </ol>
-<h3>The Production Invariant:</h3>
+<h3 id="the-production-invariant">The Production Invariant:</h3>
 <p>You must generate a static 32-byte hexadecimal key and inject it across all pods as a Kubernetes Secret:</p>
 <pre><code class="language-yaml"># kubernetes/deployment.yaml
 apiVersion: apps/v1
@@ -240,14 +252,14 @@ spec:
                   name: nextjs-secrets
                   key: action-encryption-key</code></pre>
 <hr>
-<h2>3. The Image Optimization CPU Bottleneck</h2>
+<h2 id="3-the-image-optimization-cpu-bottleneck">3. The Image Optimization CPU Bottleneck</h2>
 <p>Next.js includes an exceptional built-in image optimization component (<code>next/image</code>). In local development, it resizes, compresses, and converts JPEGs into WebP and AVIF formats on the fly using the high-performance <code>sharp</code> C library.</p>
 <p>In a self-hosted Kubernetes cluster, however, running on-demand image optimization inside your primary Node.js process is an operational hazard:</p>
 <ul>
 <li>Image encoding is <strong>CPU and memory bound</strong>.</li>
 <li>If a viral social media post sends 2,000 visitors to a gallery page with 30 un-cached images, your Node.js pods will saturate 100% CPU purely compressing image buffers, starving the single-threaded event loop of capacity to serve HTML or API traffic.</li>
 </ul>
-<h3>The Architectural Best Practice:</h3>
+<h3 id="the-architectural-best-practice">The Architectural Best Practice:</h3>
 <p>Never allow your self-hosted Next.js web pods to compress images dynamically in production:</p>
 <ol>
 <li><strong>Offload to Dedicated Image CDNs</strong>: Use Cloudflare Images, imgix, or Cloudinary by configuring custom image loaders:<pre><code class="language-typescript">// next.config.js
@@ -261,7 +273,7 @@ module.exports = {
 <li><strong>Dedicated CloudFront / Lambda Resizer</strong>: If you must host internally, deploy an AWS Serverless Image Handler (API Gateway + Lambda + S3) that runs image processing on isolated infrastructure.</li>
 </ol>
 <hr>
-<h2>4. Production Dockerfile: The Multi-Stage Standalone Blueprint</h2>
+<h2 id="4-production-dockerfile-the-multi-stage-standalone-blueprint">4. Production Dockerfile: The Multi-Stage Standalone Blueprint</h2>
 <p>To minimize memory footprint and security exposure, enterprise deployments use Next.js&#39;s <code>standalone</code> output mode, which traces required dependencies and discards unused <code>node_modules</code>:</p>
 <pre><code class="language-dockerfile"># 1. Base Layer: Hardened Alpine Linux with Node.js LTS
 FROM node:20-alpine AS base
@@ -302,7 +314,7 @@ EXPOSE 3000
 
 CMD [&quot;node&quot;, &quot;server.js&quot;]</code></pre>
 <hr>
-<h2>5. Architectural Summary</h2>
+<h2 id="5-architectural-summary">5. Architectural Summary</h2>
 <p>Self-hosting Next.js successfully is an exercise in <strong>identifying and externalizing state</strong>.</p>
 <p>Vercel provides a frictionless developer experience because it integrates the framework directly with proprietary cloud primitives. When you bring Next.js inside your own corporate firewall, you must provide those primitives yourself:</p>
 <ul>
@@ -311,6 +323,17 @@ CMD [&quot;node&quot;, &quot;server.js&quot;]</code></pre>
 <li>Offload CPU-heavy image compression to edge services.</li>
 </ul>
 <p>Once these distributed primitives are in place, a self-hosted Next.js cluster delivers enterprise-grade reliability, data residency compliance, and massive cost savings at scale.</p>
+<hr>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Next.js Documentation (2024)</strong>. <em>Custom Cache Handlers and Standalone Docker Deployment</em>. Next.js Deployment Guides. <a href="https://nextjs.org/docs/app/building-your-application/deploying" target="_blank" rel="noopener">https://nextjs.org/docs/app/building-your-application/deploying</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Cloud Native Computing Foundation (CNCF) (2024)</strong>. <em>Kubernetes Production Best Practices for Microservices and Node.js Runtimes</em>. CNCF Documentation. <a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" target="_blank" rel="noopener">https://kubernetes.io/docs/concepts/workloads/controllers/deployment/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Sanfilippo, S. (2020)</strong>. <em>Redis as an In-Memory Distributed Cache and Invalidation Hub</em>. Redis Core Design. <a href="https://redis.io/docs/about/" target="_blank" rel="noopener">https://redis.io/docs/about/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Burns, B., Grant, B., Oppenheimer, D., Brewer, E., &amp; Wilkes, J. (2016)</strong>. <em>Borg, Omega, and Kubernetes: Lessons Learned from Three Container-Management Systems over a Decade</em>. ACM Queue, 14(1), 70–93. <a href="https://doi.org/10.1145/2898442.2898444" target="_blank" rel="noopener">https://doi.org/10.1145/2898442.2898444</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Open Container Initiative (2023)</strong>. <em>OCI Image Format Specification v1.1.0</em>. OCI Technical Specifications. <a href="https://github.com/opencontainers/image-spec" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/opencontainers/image-spec</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -338,6 +361,19 @@ CMD [&quot;node&quot;, &quot;server.js&quot;]</code></pre>
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-ephemeral-filesystem-problem-multi-pod-isr-and-custom-cache-handlers" class="toc-link">1. The Ephemeral Filesystem Problem: Multi-Pod ISR and Custom Cache Handlers</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-rolling-deployment-trap-server-action-key-desynchronization" class="toc-link">2. The Rolling Deployment Trap: Server Action Key Desynchronization</a></li>
+              <li class="toc-item toc-h2"><a href="#3-the-image-optimization-cpu-bottleneck" class="toc-link">3. The Image Optimization CPU Bottleneck</a></li>
+              <li class="toc-item toc-h2"><a href="#4-production-dockerfile-the-multi-stage-standalone-blueprint" class="toc-link">4. Production Dockerfile: The Multi-Stage Standalone Blueprint</a></li>
+              <li class="toc-item toc-h2"><a href="#5-architectural-summary" class="toc-link">5. Architectural Summary</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

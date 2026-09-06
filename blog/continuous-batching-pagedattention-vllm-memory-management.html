@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#pagedattention-virtual-memory-continuous-batching-architecture">PagedAttention Virtual Memory &amp; Continuous Batching Architecture</a></li>
+                <li><a href="#python-implementation-pagedattention-block-manager-scheduler-engine">Python Implementation: PagedAttention Block Manager &amp; Scheduler Engine</a></li>
+                <li><a href="#llm-serving-engine-gotchas-best-practices">LLM Serving Engine Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Deploying Large Language Models (LLMs like Llama-3, Mistral, and Claude) in high-throughput production environments introduces a critical bottleneck: <strong>GPU Memory Allocation for the Key-Value (KV) Cache</strong>.</p>
 <p>During autoregressive generation, LLMs store previous token attention Key and Value vectors in GPU VRAM (the KV Cache) to avoid recomputing past tokens.</p>
 <p>In traditional serving frameworks (such as standard Hugging Face Transformers), allocating contiguous GPU VRAM for maximum output sequence lengths results in <strong>60% to 80% VRAM waste</strong> due to internal and external memory fragmentation.</p>
@@ -111,7 +120,7 @@
 <p>By adapting virtual memory paging principles from operating systems to GPU VRAM, PagedAttention eliminates memory fragmentation and increases serving throughput by up to $4\times$.</p>
 <p>This article details PagedAttention block tables and iteration-level continuous batching.</p>
 <hr>
-<h2>PagedAttention Virtual Memory &amp; Continuous Batching Architecture</h2>
+<h2 id="pagedattention-virtual-memory-continuous-batching-architecture">PagedAttention Virtual Memory &amp; Continuous Batching Architecture</h2>
 <p>How vLLM maps logical sequence tokens to non-contiguous physical GPU VRAM memory blocks:</p>
 <div class="mermaid">graph TD
   subgraph Client Requests &amp; Logical Token Streams
@@ -131,7 +140,7 @@
     BlockTable1_2 --&gt; PhysBlock2[Physical GPU Block #2 (16 Key/Value Vectors)]
     BlockTable2 --&gt; PhysBlock9[Physical GPU Block #9 (16 Key/Value Vectors)]
   end</div>
-<h3>Core PagedAttention Mechanics</h3>
+<h3 id="core-pagedattention-mechanics">Core PagedAttention Mechanics</h3>
 <ol>
 <li><strong>Virtual Memory Block Tables</strong>: PagedAttention divides the KV cache into fixed-capacity physical memory blocks (e.g. each block holds KV vectors for $16$ tokens). Physical blocks do not need to be contiguous in GPU VRAM. A <strong>Block Table</strong> maintains a mapping from logical sequence token positions to physical GPU block IDs.</li>
 <li><strong>Zero External Memory Fragmentation</strong>: Because physical memory is allocated on-demand in fixed 16-token page blocks, external memory fragmentation is reduced to zero, and internal fragmentation is limited to at most one page block per request.</li>
@@ -142,7 +151,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: PagedAttention Block Manager &amp; Scheduler Engine</h2>
+<h2 id="python-implementation-pagedattention-block-manager-scheduler-engine">Python Implementation: PagedAttention Block Manager &amp; Scheduler Engine</h2>
 <p>Here is a production-grade Python implementation of a PagedAttention Block Table Manager and Continuous Batching Scheduler Engine:</p>
 <pre><code class="language-python">import math
 from typing import List, Dict, Optional, Tuple
@@ -257,7 +266,7 @@ if __name__ == &quot;__main__&quot;:
         print(f&quot;\n--- Iteration Step #{step} ---&quot;)
         scheduler.schedule_iteration()</code></pre>
 <hr>
-<h2>LLM Serving Engine Gotchas &amp; Best Practices</h2>
+<h2 id="llm-serving-engine-gotchas-best-practices">LLM Serving Engine Gotchas &amp; Best Practices</h2>
 <p>When deploying high-throughput LLM inference infrastructure:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -270,7 +279,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Platforms adopting PagedAttention and continuous batching (such as <strong>vLLM</strong> and <strong>TGI</strong>) report:</p>
 <ul>
 <li><strong>$3.8\times$ Throughput Increase</strong>: Serving $4\times$ more user requests per GPU node compared to traditional static batching.</li>
@@ -303,6 +312,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#pagedattention-virtual-memory-continuous-batching-architecture" class="toc-link">PagedAttention Virtual Memory &amp; Continuous Batching Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-pagedattention-block-manager-scheduler-engine" class="toc-link">Python Implementation: PagedAttention Block Manager &amp; Scheduler Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#llm-serving-engine-gotchas-best-practices" class="toc-link">LLM Serving Engine Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

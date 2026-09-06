@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-physics-of-hardware-latency-cpu-caches">1. The Physics of Hardware Latency &amp; CPU Caches</a></li>
+                <li><a href="#2-limit-order-book-lob-architecture-price-time-priority-fifo">2. Limit Order Book (LOB) Architecture: Price-Time Priority (FIFO)</a></li>
+                <li><a href="#3-the-lock-free-single-producer-single-consumer-spsc-ring-buffer">3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer</a></li>
+                <li><a href="#python-c-architecture-simulation-zero-allocation-limit-order-book">Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book</a></li>
+                <li><a href="#summary-low-latency-optimization-techniques">Summary: Low-Latency Optimization Techniques</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>In modern electronic financial exchanges (<strong>Nasdaq</strong>, <strong>CME Group</strong>, <strong>Binance</strong>, <strong>Jane Street</strong>, <strong>Citadel Securities</strong>), the performance of a <strong>Limit Order Book (LOB)</strong> matching engine is measured not in milliseconds, but in <strong>sub-microsecond tick-to-trade cycles</strong>.</p>
 <p>At high-frequency trading (HFT) scale, standard software engineering conventions break down completely:</p>
 <ul>
@@ -127,7 +138,7 @@
     ExecutionRing --&gt; Gateway[&quot;Market Feed Gateway (Zero-Copy Multicast)&quot;]
   end</div>
 <hr>
-<h2>1. The Physics of Hardware Latency &amp; CPU Caches</h2>
+<h2 id="1-the-physics-of-hardware-latency-cpu-caches">1. The Physics of Hardware Latency &amp; CPU Caches</h2>
 <p>To optimize matching engines, engineers must design with <strong>Mechanical Sympathy</strong>—aligning software data access patterns with the physical microarchitecture of modern CPUs.</p>
 <pre><code class="language-plaintext">&gt; **CPU MEMORY HIERARCHY LATENCY**
 |  L1 Data Cache (32 KB per core)  : ~1.0 ns  (4-5 clock cycles)   &lt;-- Target for LOB!  |
@@ -136,7 +147,7 @@
 |  Main Memory (DDR5 RAM)          : ~65-80 ns (200-300 clock cycles)                   |
 |  OS Thread Context Switch        : ~1,500 - 3,000 ns (Catastrophic for HFT)          |
 </code></pre>
-<h3>The False Sharing Disaster</h3>
+<h3 id="the-false-sharing-disaster">The False Sharing Disaster</h3>
 <p>Modern CPUs load data into caches in <strong>64-byte chunks</strong> called <strong>Cache Lines</strong>.</p>
 <p>If a <code>Producer</code> thread writes to variable <code>head</code> and a <code>Consumer</code> thread reads variable <code>tail</code>, and both variables sit on the same $64\text{-byte}$ cache line:</p>
 <ul>
@@ -149,7 +160,7 @@
 Cache-Aligned Fix (64-byte Padding):
 [ head (8 bytes) | 56 bytes padding ] [ tail (8 bytes) | 56 bytes padding ]</code></pre>
 <hr>
-<h2>2. Limit Order Book (LOB) Architecture: Price-Time Priority (FIFO)</h2>
+<h2 id="2-limit-order-book-lob-architecture-price-time-priority-fifo">2. Limit Order Book (LOB) Architecture: Price-Time Priority (FIFO)</h2>
 <p>A Limit Order Book maintains two sorted ladders:</p>
 <ol>
 <li><strong>Bids (Buy Orders)</strong>: Sorted by <strong>Highest Price First</strong>.</li>
@@ -164,7 +175,7 @@ Cache-Aligned Fix (64-byte Padding):
   end
   
   Bids --- Spread --- Asks</div>
-<h3>Optimal Data Structure Selection:</h3>
+<h3 id="optimal-data-structure-selection">Optimal Data Structure Selection:</h3>
 <ul>
 <li><strong>Naive Approach (Red-Black Tree / <code>std::map</code>)</strong>: Pointer chasing causes continuous L1/L2 cache misses. Dynamic node allocations trigger memory fragmentation.</li>
 <li><strong>Production Approach</strong>:<ul>
@@ -174,21 +185,21 @@ Cache-Aligned Fix (64-byte Padding):
 </li>
 </ul>
 <hr>
-<h2>3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer</h2>
+<h2 id="3-the-lock-free-single-producer-single-consumer-spsc-ring-buffer">3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer</h2>
 <p>To pass market orders from the network thread to the matching core without thread locking, high-frequency systems implement the <strong>LMAX Disruptor circular ring buffer pattern</strong>:</p>
 <div class="mermaid">graph TD
   subgraph Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)
     Head[&quot;Producer Head Sequence (Padded 64B)&quot;] --&gt;|Writes Next Event| Slot[&quot;Slot [head &amp; (Size - 1)]&quot;]
     Slot --&gt; Tail[&quot;Consumer Tail Sequence (Padded 64B)&quot;]
   end</div>
-<h3>Key Invariants:</h3>
+<h3 id="key-invariants">Key Invariants:</h3>
 <ol>
 <li><strong>Power-of-Two Capacity</strong>: Using bitwise AND for modulo indexing (<code>index = sequence &amp; (BUFFER_SIZE - 1)</code>), avoiding the expensive CPU division instruction (<code>%</code>).</li>
 <li><strong>Sequential Memory Ordering</strong>: Producer uses <code>memory_order_release</code> when updating the sequence; consumer uses <code>memory_order_acquire</code>.</li>
 <li><strong>Core Pinning (<code>pthread_setaffinity_np</code>)</strong>: The matching engine thread is pinned to an isolated CPU core (<code>isolcpus</code>), preventing the OS scheduler from preempting execution.</li>
 </ol>
 <hr>
-<h2>Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book</h2>
+<h2 id="python-c-architecture-simulation-zero-allocation-limit-order-book">Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book</h2>
 <p>Here is a Python implementation simulating an ultra-low latency, zero-allocation Limit Order Book with cache-aligned structures and price-time priority matching:</p>
 <pre><code class="language-python">from collections import deque
 from typing import Dict, List, Optional, Tuple
@@ -326,7 +337,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(f&quot; Remaining Taker Rest Quantity on Bid Ladder @ $100.75: {lob.orders.get(105).quantity if 105 in lob.orders else 0}&quot;)</code></pre>
 <hr>
-<h2>Summary: Low-Latency Optimization Techniques</h2>
+<h2 id="summary-low-latency-optimization-techniques">Summary: Low-Latency Optimization Techniques</h2>
 <table>
 <thead>
 <tr>
@@ -368,7 +379,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>In high-frequency limit order books, <strong>software design is hardware design</strong>.</p>
 <p>By structuring data structures to fit entirely within L1/L2 caches, eliminating lock contention through power-of-two ring buffers, and enforcing zero runtime heap allocations, engineers achieve the sub-microsecond determinism required by global financial exchanges.</p>
 
@@ -398,6 +409,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-physics-of-hardware-latency-cpu-caches" class="toc-link">1. The Physics of Hardware Latency &amp; CPU Caches</a></li>
+              <li class="toc-item toc-h2"><a href="#2-limit-order-book-lob-architecture-price-time-priority-fifo" class="toc-link">2. Limit Order Book (LOB) Architecture: Price-Time Priority (FIFO)</a></li>
+              <li class="toc-item toc-h2"><a href="#3-the-lock-free-single-producer-single-consumer-spsc-ring-buffer" class="toc-link">3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer</a></li>
+              <li class="toc-item toc-h2"><a href="#python-c-architecture-simulation-zero-allocation-limit-order-book" class="toc-link">Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-low-latency-optimization-techniques" class="toc-link">Summary: Low-Latency Optimization Techniques</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

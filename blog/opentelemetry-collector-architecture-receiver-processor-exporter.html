@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#opentelemetry-collector-internal-pipeline-architecture">OpenTelemetry Collector Internal Pipeline Architecture</a></li>
+                <li><a href="#python-implementation-opentelemetry-collector-pipeline-engine">Python Implementation: OpenTelemetry Collector Pipeline Engine</a></li>
+                <li><a href="#otel-collector-gotchas-best-practices">OTel Collector Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In modern cloud-native systems, monitoring microservice platforms required deploying fragmented, proprietary agent daemons for each observability vendor (e.g. Datadog agent, New Relic agent, Jaeger collector). This created vendor lock-in, inflated CPU memory overhead, and forced complex application instrumentation changes.</p>
 <p>To establish a unified open standard, the Cloud Native Computing Foundation (CNCF) formed <strong>OpenTelemetry (OTel)</strong>.</p>
 <p>At the core of OpenTelemetry is the <strong>OTel Collector</strong>—a vendor-agnostic proxy daemon that receives, processes, and exports telemetry data (metrics, logs, and traces).</p>
 <p>The OTel Collector decouples application telemetry instrumentation from storage backends, allowing platform teams to route telemetry streams dynamically.</p>
 <p>This article details the internal Receiver, Processor, and Exporter pipeline architecture of the OpenTelemetry Collector.</p>
 <hr>
-<h2>OpenTelemetry Collector Internal Pipeline Architecture</h2>
+<h2 id="opentelemetry-collector-internal-pipeline-architecture">OpenTelemetry Collector Internal Pipeline Architecture</h2>
 <p>How the OTel Collector ingests, transforms, batches, and exports telemetry streams:</p>
 <div class="mermaid">graph TD
   subgraph Ingestion Layer: Receivers
@@ -132,7 +141,7 @@
     Proc3 --&gt; Exp2[Prometheus Exporter -&gt; Thanos / M3DB]
     Proc3 --&gt; Exp3[Kafka Exporter -&gt; Long-Term Archive]
   end</div>
-<h3>Core Collector Component Architecture</h3>
+<h3 id="core-collector-component-architecture">Core Collector Component Architecture</h3>
 <ol>
 <li><strong>Receivers</strong>: Ingestion endpoints configured to accept telemetry data in specific protocols (e.g., <code>otlp/grpc</code> on port <code>4317</code>, <code>otlp/http</code> on port <code>4318</code>, <code>prometheus</code>, <code>jaeger</code>). Receivers convert incoming raw protocol payloads into OpenTelemetry&#39;s internal <strong>OTLP Data Model</strong>.</li>
 <li><strong>Processors</strong>: Sequential data transformation pipelines that manipulate OTLP data in memory:<ul>
@@ -144,7 +153,7 @@
 <li><strong>Exporters</strong>: Egress components that translate internal OTLP objects into external storage backend formats (e.g. sending traces to Tempo via OTLP, metrics to Prometheus, or logs to Kafka). Multiple exporters can be chained to fan out a single telemetry stream to multiple backends simultaneously.</li>
 </ol>
 <hr>
-<h2>Python Implementation: OpenTelemetry Collector Pipeline Engine</h2>
+<h2 id="python-implementation-opentelemetry-collector-pipeline-engine">Python Implementation: OpenTelemetry Collector Pipeline Engine</h2>
 <p>Here is a production-grade Python simulation of an OpenTelemetry Collector Pipeline featuring Receivers, Attribute Scrubbing, Batching, and Fan-Out Exporters:</p>
 <pre><code class="language-python">import time
 from typing import List, Dict, Any, Tuple
@@ -242,7 +251,7 @@ if __name__ == &quot;__main__&quot;:
         print(f&quot;\n📥 Ingesting Telemetry Wire Data: '{wire_data['name']}'...&quot;)
         collector.ingest_telemetry(wire_data)</code></pre>
 <hr>
-<h2>OTel Collector Gotchas &amp; Best Practices</h2>
+<h2 id="otel-collector-gotchas-best-practices">OTel Collector Gotchas &amp; Best Practices</h2>
 <p>When deploying the OpenTelemetry Collector:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -255,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Organizations adopting the OpenTelemetry Collector report:</p>
 <ul>
 <li><strong>Zero Vendor Lock-In</strong>: Switching telemetry backends (e.g. from Datadog to Grafana Tempo) requires only updating collector exporter YAML configs without altering application code.</li>
@@ -288,6 +297,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#opentelemetry-collector-internal-pipeline-architecture" class="toc-link">OpenTelemetry Collector Internal Pipeline Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-opentelemetry-collector-pipeline-engine" class="toc-link">Python Implementation: OpenTelemetry Collector Pipeline Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#otel-collector-gotchas-best-practices" class="toc-link">OTel Collector Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

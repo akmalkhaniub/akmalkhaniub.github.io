@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#truetime-hybrid-logical-clock-architecture">TrueTime &amp; Hybrid Logical Clock Architecture</a></li>
+                <li><a href="#python-implementation-hybrid-logical-clock-hlc-engine">Python Implementation: Hybrid Logical Clock (HLC) Engine</a></li>
+                <li><a href="#truetime-hlc-gotchas-best-practices">TrueTime &amp; HLC Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In globally distributed database systems (<strong>Google Spanner</strong>, <strong>CockroachDB</strong>, <strong>YugabyteDB</strong>), executing read-only transactions across worldwide datacenters requires ordering events chronologically across the globe.</p>
 <p>In standard Linux operating systems, physical system clocks synchronized via Network Time Protocol (NTP) experience <strong>Clock Drift</strong>. Due to network jitter and crystal oscillator variations, NTP clocks on two servers in the same rack can drift apart by $10\text{ms}$ to $100\text{ms}$.</p>
 <p>If Server A commits Transaction $T_1$ at physical time 10:00:00.050, and Server B commits Transaction $T_2$ at physical time 10:00:00.010 due to clock drift, the database cannot determine which transaction occurred first!</p>
 <p>To achieve <strong>External Consistency (Strict Serializability)</strong>—where transaction commit order strictly matches real-world wall-clock time globally—distributed databases utilize <strong>Google Spanner&#39;s TrueTime API</strong> or <strong>Hybrid Logical Clocks (HLC)</strong>.</p>
 <p>This article details TrueTime atomic clock uncertainty bounds ($\epsilon$), Commit Wait protocols, and Hybrid Logical Clock mechanics.</p>
 <hr>
-<h2>TrueTime &amp; Hybrid Logical Clock Architecture</h2>
+<h2 id="truetime-hybrid-logical-clock-architecture">TrueTime &amp; Hybrid Logical Clock Architecture</h2>
 <p>How TrueTime Commit Wait ($2\epsilon$) and Hybrid Logical Clocks (HLC) guarantee global transaction ordering:</p>
 <div class="mermaid">graph TD
   subgraph Google Spanner TrueTime (Hardware Atomic Clocks)
@@ -124,7 +133,7 @@
     HLC --&gt;|Causal Event Message: msg_physical, msg_logical| UpdateHLC[Update HLC: Max physical, msg_physical, pt]
     UpdateHLC --&gt; CausalOrdering[Causal Consistency Preserved without Atomic Clocks!]
   end</div>
-<h3>Core Global Time Synchronization Protocols</h3>
+<h3 id="core-global-time-synchronization-protocols">Core Global Time Synchronization Protocols</h3>
 <ol>
 <li><strong>Google Spanner TrueTime API</strong>:<ul>
 <li><em>Hardware Architecture</em>: Deploys dual independent time sources in every Google datacenter: GPS antenna receivers and Rubidium atomic clocks.</li>
@@ -147,7 +156,7 @@ $$l_{\text{new}} = \max(l_{\text{current}}, l_m, pt_{\text{local}})$$</li>
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Hybrid Logical Clock (HLC) Engine</h2>
+<h2 id="python-implementation-hybrid-logical-clock-hlc-engine">Python Implementation: Hybrid Logical Clock (HLC) Engine</h2>
 <p>Here is a production-grade Python implementation of a Hybrid Logical Clock (HLC) Engine featuring Causality Tracking and Physical Clock Skew Enforcement:</p>
 <pre><code class="language-python">import time
 from typing import Tuple, Dict, Any
@@ -239,7 +248,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Is Event A1 &lt; Event B1? {ts_A1 &lt; ts_B1} (True)&quot;)
     print(f&quot;   • Is Event B1 &lt; Event B2? {ts_B1 &lt; ts_B2} (True)&quot;)</code></pre>
 <hr>
-<h2>TrueTime &amp; HLC Gotchas &amp; Best Practices</h2>
+<h2 id="truetime-hlc-gotchas-best-practices">TrueTime &amp; HLC Gotchas &amp; Best Practices</h2>
 <p>When engineering time synchronization in distributed databases:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -252,7 +261,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Global distributed databases utilizing TrueTime and HLC (such as <strong>Google Spanner</strong>, <strong>CockroachDB</strong>, and <strong>YugabyteDB</strong>) report:</p>
 <ul>
 <li><strong>Global External Consistency (Strict Serializability)</strong>: Executing multi-region transactions across US, Europe, and Asia with 100% real-world timestamp ordering.</li>
@@ -285,6 +294,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#truetime-hybrid-logical-clock-architecture" class="toc-link">TrueTime &amp; Hybrid Logical Clock Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-hybrid-logical-clock-hlc-engine" class="toc-link">Python Implementation: Hybrid Logical Clock (HLC) Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#truetime-hlc-gotchas-best-practices" class="toc-link">TrueTime &amp; HLC Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

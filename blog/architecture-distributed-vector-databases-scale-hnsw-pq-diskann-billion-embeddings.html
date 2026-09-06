@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-product-quantization-pq-asymmetric-distance-math">1. Product Quantization (PQ) &amp; Asymmetric Distance Math</a></li>
+                <li><a href="#2-diskann-the-vamana-graph-protocol">2. DiskANN &amp; The Vamana Graph Protocol</a></li>
+                <li><a href="#3-distributed-cluster-topology-milvus-qdrant-at-scale">3. Distributed Cluster Topology: Milvus &amp; Qdrant at Scale</a></li>
+                <li><a href="#python-implementation-product-quantization-pq-adc-search-engine">Python Implementation: Product Quantization (PQ) &amp; ADC Search Engine</a></li>
+                <li><a href="#summary-vector-indexing-trade-offs">Summary: Vector Indexing Trade-Offs</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>In the modern AI infrastructure stack (<strong>Milvus</strong>, <strong>Qdrant</strong>, <strong>Pinecone</strong>, <strong>pgvector</strong>, <strong>Weaviate</strong>), vector similarity search has transformed from an experimental research tool into the foundational layer powering Retrieval-Augmented Generation (RAG), multimodal search, and recommendation engines.</p>
 <p>However, scaling vector search from $100,000$ embeddings to <strong>1 Billion high-dimensional vectors</strong> introduces a massive infrastructure bottleneck.</p>
 <p>One billion 1536-dimensional <code>float32</code> embeddings (the standard OpenAI embedding dimensionality) require:</p>
@@ -124,7 +135,7 @@
     Rerank --&gt; Reduce[K-Way Merge &amp; Top-K Results]
   end</div>
 <hr>
-<h2>1. Product Quantization (PQ) &amp; Asymmetric Distance Math</h2>
+<h2 id="1-product-quantization-pq-asymmetric-distance-math">1. Product Quantization (PQ) &amp; Asymmetric Distance Math</h2>
 <p><strong>Product Quantization (PQ)</strong> (Jégou et al.) is the algorithmic cornerstone of vector compression, reducing RAM footprints by up to <strong>$95%$</strong> with minimal loss in search recall.</p>
 <pre><code class="language-plaintext">Original Vector (1536-dim float32 = 6,144 bytes):
 [ -0.042, 0.183, ... | 0.921, -0.401, ... | ... | 0.005, 0.771, ... ]
@@ -137,7 +148,7 @@
      (1 byte)             (1 byte)                   (1 byte)
      
 Compressed Vector Code = [ 42, 189, ..., 12 ]  ---&gt; Total: 96 bytes (64x Compression!)</code></pre>
-<h3>The PQ Algorithm:</h3>
+<h3 id="the-pq-algorithm">The PQ Algorithm:</h3>
 <ol>
 <li><strong>Space Decomposition</strong>: Divide the $D$-dimensional vector space ($D = 1536$) into $M$ orthogonal sub-vectors of dimension $d = D/M$ (e.g., $M = 96 ⟹ d = 16$).</li>
 <li><strong>K-Means Clustering</strong>: Run K-Means independently on each sub-space to identify $K = 256$ centroids ($2^8 = 8\text{ bits} = 1\text{ byte}$ per sub-vector).</li>
@@ -145,7 +156,7 @@ Compressed Vector Code = [ 42, 189, ..., 12 ]  ---&gt; Total: 96 bytes (64x Comp
 <li><strong>Compression Ratio</strong>:
 $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \text{PQ Size} = 96 \text{ bytes} \quad (\mathbf{64\times \text{ Compression}})$$</li>
 </ol>
-<h3>Asymmetric Distance Computation (ADC)</h3>
+<h3 id="asymmetric-distance-computation-adc">Asymmetric Distance Computation (ADC)</h3>
 <p>When a user submits an uncompressed query vector $\vec{q}$:</p>
 <ol>
 <li>The database computes the exact Euclidean distance from $\vec{q}$&#39;s sub-vectors to all $256$ centroids in each of the $M$ sub-spaces, storing them in an $M \times 256$ <strong>Distance Lookup Table</strong>.</li>
@@ -153,7 +164,7 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 </ol>
 <p>$$\text{Dist}(\vec{q}, \vec{x}<em>{\text{compressed}}) \approx \sum</em>{m=1}^M \text{LookupTable}[m][\vec{x}_{\text{compressed}}[m]]$$</p>
 <hr>
-<h2>2. DiskANN &amp; The Vamana Graph Protocol</h2>
+<h2 id="2-diskann-the-vamana-graph-protocol">2. DiskANN &amp; The Vamana Graph Protocol</h2>
 <p>To completely overcome the RAM ceiling, <strong>DiskANN</strong> (Microsoft Research, Subramanya et al.) stores the graph structure and compressed vectors on fast <strong>NVMe SSDs</strong> rather than in RAM.</p>
 <div class="mermaid">graph LR
   subgraph In-Memory Cache (~10% RAM)
@@ -167,7 +178,7 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
   Query[Query Vector] --&gt; Mem
   Mem --&gt;|Greedy Beam Search Routing| SSD
   SSD --&gt;|Zero-Copy io_uring Asynchronous Sector Reads| TopK[Top-K Nearest Neighbors]</div>
-<h3>The Vamana Graph Advantage over HNSW:</h3>
+<h3 id="the-vamana-graph-advantage-over-hnsw">The Vamana Graph Advantage over HNSW:</h3>
 <ul>
 <li><strong>HNSW Limitation</strong>: HNSW maintains multiple hierarchical layers (Layer 0, Layer 1, Layer 2), requiring random memory pointer dereferences that cause catastrophic disk thrashing if stored on SSDs.</li>
 <li><strong>Vamana Solution</strong>: DiskANN uses a single-layer flat graph called <strong>Vamana</strong> with an <strong>$\alpha$-pruned edge selection heuristic</strong>:<ul>
@@ -177,7 +188,7 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 </li>
 </ul>
 <hr>
-<h2>3. Distributed Cluster Topology: Milvus &amp; Qdrant at Scale</h2>
+<h2 id="3-distributed-cluster-topology-milvus-qdrant-at-scale">3. Distributed Cluster Topology: Milvus &amp; Qdrant at Scale</h2>
 <p>At enterprise scale, vector databases decouple stateful storage from stateless compute nodes:</p>
 <div class="mermaid">graph TD
   subgraph Client Ingestion &amp; Query Layer
@@ -197,14 +208,14 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
     IndexNode --&gt; S3
     S3 -.-&gt;|Mmap / Cache Segments| QueryNode1 &amp; QueryNode2
   end</div>
-<h3>Architectural Responsibilities:</h3>
+<h3 id="architectural-responsibilities">Architectural Responsibilities:</h3>
 <ol>
 <li><strong>Stateless Query Nodes</strong>: Hold cached DiskANN/PQ segments in local NVMe storage and execute ADC beam searches in parallel across assigned shards.</li>
 <li><strong>Log Broker (Kafka / Pulsar)</strong>: Serves as the distributed Write-Ahead Log, guaranteeing $100%$ durability for incoming vectors before they are indexed.</li>
 <li><strong>Indexer Nodes</strong>: Asynchronously pull raw vector segments from S3, compute K-Means PQ centroids, construct Vamana graph files, and upload immutable indexed segments back to S3.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Product Quantization (PQ) &amp; ADC Search Engine</h2>
+<h2 id="python-implementation-product-quantization-pq-adc-search-engine">Python Implementation: Product Quantization (PQ) &amp; ADC Search Engine</h2>
 <p>Here is a complete Python implementation demonstrating a Product Quantization (PQ) encoder and Asymmetric Distance Computation (ADC) search engine:</p>
 <pre><code class="language-python">import numpy as np
 from typing import List, Tuple
@@ -320,7 +331,7 @@ if __name__ == &quot;__main__&quot;:
     for rank, (idx, dist) in enumerate(results, 1):
         print(f&quot;   Rank {rank}: Vector ID #{idx:&lt;5} | Approx L2 Sq Distance: {dist:.4f}&quot;)</code></pre>
 <hr>
-<h2>Summary: Vector Indexing Trade-Offs</h2>
+<h2 id="summary-vector-indexing-trade-offs">Summary: Vector Indexing Trade-Offs</h2>
 <table>
 <thead>
 <tr>
@@ -361,7 +372,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>Scaling vector databases to 1 billion embeddings is fundamentally a problem of <strong>memory economics and I/O layout</strong>.</p>
 <p>By combining <strong>Product Quantization</strong> to reduce vector dimensionality in memory with <strong>DiskANN Vamana graphs</strong> on high-throughput NVMe SSDs, modern AI engineering platforms achieve sub-10ms similarity search at a fraction of traditional cloud infrastructure costs.</p>
 
@@ -391,6 +402,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-product-quantization-pq-asymmetric-distance-math" class="toc-link">1. Product Quantization (PQ) &amp; Asymmetric Distance Math</a></li>
+              <li class="toc-item toc-h2"><a href="#2-diskann-the-vamana-graph-protocol" class="toc-link">2. DiskANN &amp; The Vamana Graph Protocol</a></li>
+              <li class="toc-item toc-h2"><a href="#3-distributed-cluster-topology-milvus-qdrant-at-scale" class="toc-link">3. Distributed Cluster Topology: Milvus &amp; Qdrant at Scale</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-product-quantization-pq-adc-search-engine" class="toc-link">Python Implementation: Product Quantization (PQ) &amp; ADC Search Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-vector-indexing-trade-offs" class="toc-link">Summary: Vector Indexing Trade-Offs</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,11 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-blackboard-handoff-architecture">The Blackboard &amp; Handoff Architecture</a></li>
+                <li><a href="#python-implementation-handoff-schema-blackboard-lock-synchronizer">Python Implementation: Handoff Schema &amp; Blackboard Lock Synchronizer</a></li>
+                <li><a href="#important-architectural-guardrails">Important Architectural Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When building multi-agent systems, transferring execution control from an Orchestrator agent to a specialized Worker agent is a critical boundary transition. </p>
 <p>In naive agent implementations, this handoff is executed using unstructured natural language strings (e.g. <em>&quot;Worker 2, please take this code and refactor it&quot;</em>). Unstructured handoffs frequently result in <strong>state corruption</strong>: the worker misinterprets target arguments, mutates the wrong data models, or fails to return expected output fields to the orchestrator.</p>
 <p>To build production-grade agentic platforms, engineering teams enforce <strong>Structured Handoff Schemas</strong> and centralized <strong>State Synchronization Patterns</strong>. This article details how to standardize machine-readable contracts using Pydantic schemas and manage shared state using the <strong>Blackboard Pattern</strong> with distributed lock arbitration.</p>
 <hr>
-<h2>The Blackboard &amp; Handoff Architecture</h2>
+<h2 id="the-blackboard-handoff-architecture">The Blackboard &amp; Handoff Architecture</h2>
 <p>Instead of passing massive state payloads back and forth between agents, multi-agent swarms store execution artifacts in a central <strong>Blackboard Store</strong>. The Orchestrator passes lightweight, typed <strong>Handoff Tokens</strong>:</p>
 <div class="mermaid">graph TD
   subgraph Orchestrator Agent
@@ -123,14 +132,14 @@
     D --&gt;|Write Output Artifact &amp; Release Lock| C
     D --&gt;|Return Handoff Status Token| A
   end</div>
-<h3>The Three State Synchronization Rules</h3>
+<h3 id="the-three-state-synchronization-rules">The Three State Synchronization Rules</h3>
 <ol>
 <li><strong>Strict Handoff Contracts</strong>: Every handoff from the Orchestrator to a worker must be validated against a Pydantic/JSON schema defining exact input parameters and expected output return schemas.</li>
 <li><strong>The Blackboard Pattern</strong>: All intermediate execution artifacts (AST outputs, test logs, code diffs) are stored in a centralized, versioned state store using immutable key hashes (<code>state_key:v1</code>).</li>
 <li><strong>Lock Arbitration</strong>: Parallel worker agents must acquire distributed locks before mutating shared Blackboard state keys to prevent race conditions.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Handoff Schema &amp; Blackboard Lock Synchronizer</h2>
+<h2 id="python-implementation-handoff-schema-blackboard-lock-synchronizer">Python Implementation: Handoff Schema &amp; Blackboard Lock Synchronizer</h2>
 <p>Here is a production Python implementation of a Pydantic-validated Handoff Protocol with a Blackboard State Store and simulated lock arbitration:</p>
 <pre><code class="language-python">import json
 import uuid
@@ -240,7 +249,7 @@ if __name__ == &quot;__main__&quot;:
         )
         print(f&quot;\n✅ [Worker Result] Returned result token to Orchestrator:\n{result_token.model_dump_json(indent=2)}&quot;)</code></pre>
 <hr>
-<h2>Important Architectural Guardrails</h2>
+<h2 id="important-architectural-guardrails">Important Architectural Guardrails</h2>
 <p>When implementing state synchronization and handoff contracts, observe these guardrails:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -253,7 +262,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Organizations enforcing Structured Handoff Contracts and Blackboard Stores report:</p>
 <ul>
 <li><strong>Zero Handoff State Corruption</strong>: Typed Pydantic contracts eliminate 100% of missing argument errors between agent layers.</li>
@@ -286,6 +295,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-blackboard-handoff-architecture" class="toc-link">The Blackboard &amp; Handoff Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-handoff-schema-blackboard-lock-synchronizer" class="toc-link">Python Implementation: Handoff Schema &amp; Blackboard Lock Synchronizer</a></li>
+              <li class="toc-item toc-h2"><a href="#important-architectural-guardrails" class="toc-link">Important Architectural Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

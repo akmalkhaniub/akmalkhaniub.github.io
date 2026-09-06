@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#multi-region-active-active-routing-topology">Multi-Region Active-Active Routing Topology</a></li>
+                <li><a href="#python-implementation-multi-region-traffic-router-failover-engine">Python Implementation: Multi-Region Traffic Router &amp; Failover Engine</a></li>
+                <li><a href="#multi-region-gotchas-best-practices">Multi-Region Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Deploying a web application within a single cloud region (such as <code>us-east-1</code>) leaves systems vulnerable to cloud provider outages and imposes high round-trip network latencies ($150\text{ms}$ to $300\text{ms}$) for international users across Asia or Europe.</p>
 <p>To achieve 99.999% availability and single-digit millisecond latency worldwide, enterprise architectures migrate to <strong>Multi-Region Active-Active Deployments</strong>.</p>
 <p>In an Active-Active deployment, fully operational application and database instances run simultaneously across multiple geographic regions (<strong>US-East</strong>, <strong>EU-Central</strong>, <strong>AP-East</strong>). Global traffic routers steer client requests to the closest healthy region using <strong>Anycast BGP</strong> or <strong>Geo-DNS</strong>.</p>
 <p>This article details how to design multi-region active-active architectures and automated failovers.</p>
 <hr>
-<h2>Multi-Region Active-Active Routing Topology</h2>
+<h2 id="multi-region-active-active-routing-topology">Multi-Region Active-Active Routing Topology</h2>
 <p>Global Anycast DNS routing and cross-region asynchronous database replication:</p>
 <div class="mermaid">graph TD
   Client1[User in Tokyo] --&gt;|1. DNS Lookup / Anycast BGP| Router[Global Traffic Router / Edge CDN]
@@ -135,14 +144,14 @@
   end
   
   RegionAP -.-&gt;|5. Health Check Fails: Automated Failover| RegionEU</div>
-<h3>Core Multi-Region Principles</h3>
+<h3 id="core-multi-region-principles">Core Multi-Region Principles</h3>
 <ol>
 <li><strong>Anycast BGP vs Geo-DNS Routing</strong>: Anycast advertises identical IP addresses from multiple geographic Points of Presence (PoPs), routing client TCP packets to the nearest border router automatically via BGP. Geo-DNS resolves domain queries to the IP address of the data center closest to the client&#39;s DNS resolver.</li>
 <li><strong>Cell-Based Architecture</strong>: Microservice instances are partitioned into autonomous &quot;Cells&quot; within each region. Each cell operates independently with its own compute and database resources, preventing an outage in one cell from cascading to others.</li>
 <li><strong>Conflict Resolution in Multi-Master Databases</strong>: When writes occur concurrently in both US and EU regions, multi-master databases use <strong>Last-Write-Wins (LWW)</strong> vector timestamps or <strong>CRDTs (Conflict-free Replicated Data Types)</strong> to resolve write conflicts deterministically.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Multi-Region Traffic Router &amp; Failover Engine</h2>
+<h2 id="python-implementation-multi-region-traffic-router-failover-engine">Python Implementation: Multi-Region Traffic Router &amp; Failover Engine</h2>
 <p>Here is a production-grade Python simulation of a Multi-Region Global Traffic Router featuring latency-based routing, health probing, and automated region failover:</p>
 <pre><code class="language-python">import time
 import random
@@ -229,7 +238,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n2. Routing Asian Client Request During 'ap-northeast-1' Outage...&quot;)
     router.route_request(client_location=&quot;ASIA&quot;, client_ip=&quot;203.0.113.99&quot;)</code></pre>
 <hr>
-<h2>Multi-Region Gotchas &amp; Best Practices</h2>
+<h2 id="multi-region-gotchas-best-practices">Multi-Region Gotchas &amp; Best Practices</h2>
 <p>When building active-active multi-region systems:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -242,7 +251,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying multi-region active-active architectures report:</p>
 <ul>
 <li><strong>99.999% High Availability</strong>: Automated regional failover ensures seamless operation even during catastrophic cloud datacenter outages.</li>
@@ -275,6 +284,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#multi-region-active-active-routing-topology" class="toc-link">Multi-Region Active-Active Routing Topology</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-multi-region-traffic-router-failover-engine" class="toc-link">Python Implementation: Multi-Region Traffic Router &amp; Failover Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#multi-region-gotchas-best-practices" class="toc-link">Multi-Region Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

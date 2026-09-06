@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#quantization-mechanics-sq-vs-pq">Quantization Mechanics: SQ vs. PQ</a></li>
+                <li><a href="#configuring-quantization-in-qdrant-collections">Configuring Quantization in Qdrant Collections</a></li>
+                <li><a href="#memory-and-latency-footprints">Memory and Latency Footprints</a></li>
+                <li><a href="#important-pitfalls-in-quantization">Important Pitfalls in Quantization</a></li>
+              </ul>
+            </details>
 <p>When managing vector databases, <strong>VRAM and RAM memory footprints</strong> are the primary cost bottlenecks. Storing one million 1536-dimensional vectors using standard 32-bit floating-point numbers (<code>float32</code>) requires:</p>
 <p>$$\text{Memory} = 1,000,000 \times 1536 \times 4 \text{ bytes} \approx 6.14 \text{ GB}$$</p>
 <p>Once you build an HNSW index, this memory usage doubles to over <strong>12 GB</strong>. Storing hundreds of millions of vectors in production requires hundreds of gigabytes of expensive memory, making raw vector storage economically unsustainable.</p>
 <p>To solve this, modern vector engines utilize <strong>Vector Quantization</strong> to compress floating-point values into compact byte representations. This article covers the mechanics of <strong>Scalar Quantization (SQ)</strong> and <strong>Product Quantization (PQ)</strong> and how to implement them in production.</p>
 <hr>
-<h2>Quantization Mechanics: SQ vs. PQ</h2>
+<h2 id="quantization-mechanics-sq-vs-pq">Quantization Mechanics: SQ vs. PQ</h2>
 <div class="mermaid">graph TD
   subgraph Raw Vector: 1536 floats 6144 bytes
     Raw[1.42, -0.84, ..., 0.12]
@@ -124,13 +133,13 @@
   end
   Raw --&gt;|Linear scaling| SQ
   Raw --&gt;|Subspace split &amp; clustering| PQ</div>
-<h3>1. Scalar Quantization (SQ)</h3>
+<h3 id="1-scalar-quantization-sq">1. Scalar Quantization (SQ)</h3>
 <p>Scalar Quantization compresses each dimension of a vector independently by mapping floating-point values from a continuous range (e.g., $[-1.0, 1.0]$) to a discrete set of integers (typically 8-bit integers, $int8$, representing $[-128, 127]$).</p>
 <ul>
 <li><strong>Compression Ratio</strong>: Exact <strong>4x reduction</strong> (from 4 bytes to 1 byte per dimension).</li>
 <li><strong>Accuracy Loss</strong>: Minimal. High-quality SQ implementations (like SQ8) retain <strong>&gt;98% of search recall accuracy</strong> compared to raw float searches.</li>
 </ul>
-<h3>2. Product Quantization (PQ)</h3>
+<h3 id="2-product-quantization-pq">2. Product Quantization (PQ)</h3>
 <p>Product Quantization is a lossy compression technique that clusters multidimensional vector spaces:</p>
 <ol>
 <li><strong>Subspace Division</strong>: A high-dimensional vector (e.g., $D=1024$) is split into $m$ smaller sub-vectors (e.g., $m=128$ sub-vectors of dimension $d=8$).</li>
@@ -142,9 +151,9 @@
 <li><strong>Accuracy Loss</strong>: Moderate. PQ can cause recall drops of 5–15%, making it ideal for coarse-grained routing before running exact re-ranking.</li>
 </ul>
 <hr>
-<h2>Configuring Quantization in Qdrant Collections</h2>
+<h2 id="configuring-quantization-in-qdrant-collections">Configuring Quantization in Qdrant Collections</h2>
 <p>Qdrant supports native Scalar and Product Quantization configurations on collection startup.</p>
-<h3>1. Configuring Scalar Quantization (SQ)</h3>
+<h3 id="1-configuring-scalar-quantization-sq">1. Configuring Scalar Quantization (SQ)</h3>
 <p>Here is a collection configuration optimized for 4x compression using 8-bit Scalar Quantization, enabling fast HNSW graph traversal:</p>
 <pre><code class="language-json">{
   &quot;name&quot;: &quot;sq_collection&quot;,
@@ -160,7 +169,7 @@
     }
   }
 }</code></pre>
-<h3>2. Configuring Product Quantization (PQ)</h3>
+<h3 id="2-configuring-product-quantization-pq">2. Configuring Product Quantization (PQ)</h3>
 <p>Here is a configuration for high-ratio Product Quantization, dividing 1536 dimensions into 96 sub-vectors (compression ratio of 16x):</p>
 <pre><code class="language-json">{
   &quot;name&quot;: &quot;pq_collection&quot;,
@@ -176,7 +185,7 @@
   }
 }</code></pre>
 <hr>
-<h2>Memory and Latency Footprints</h2>
+<h2 id="memory-and-latency-footprints">Memory and Latency Footprints</h2>
 <table>
 <thead>
 <tr>
@@ -206,7 +215,7 @@
 </tr>
 </tbody></table>
 <hr>
-<h2>Important Pitfalls in Quantization</h2>
+<h2 id="important-pitfalls-in-quantization">Important Pitfalls in Quantization</h2>
 <p>Ensure your configuration balances compression and precision:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -245,6 +254,17 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#quantization-mechanics-sq-vs-pq" class="toc-link">Quantization Mechanics: SQ vs. PQ</a></li>
+              <li class="toc-item toc-h2"><a href="#configuring-quantization-in-qdrant-collections" class="toc-link">Configuring Quantization in Qdrant Collections</a></li>
+              <li class="toc-item toc-h2"><a href="#memory-and-latency-footprints" class="toc-link">Memory and Latency Footprints</a></li>
+              <li class="toc-item toc-h2"><a href="#important-pitfalls-in-quantization" class="toc-link">Important Pitfalls in Quantization</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

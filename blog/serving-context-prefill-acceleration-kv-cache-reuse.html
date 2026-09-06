@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-prefill-phase-latency-bottleneck">The Prefill Phase Latency Bottleneck</a></li>
+                <li><a href="#1-prefill-optimization-topologies">1. Prefill Optimization Topologies</a></li>
+                <li><a href="#2-setting-up-prefix-caching-gates">2. Setting up Prefix Caching Gates</a></li>
+                <li><a href="#code-demo-kv-cache-reuse-latency-simulator">Code Demo: KV Cache Reuse Latency Simulator</a></li>
+                <li><a href="#serving-optimization-takeaways">Serving Optimization Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ When users interact with real-time agent web applications, the most critical lat
 </div>
 </div>
 <hr>
-<h2>The Prefill Phase Latency Bottleneck</h2>
+<h2 id="the-prefill-phase-latency-bottleneck">The Prefill Phase Latency Bottleneck</h2>
 <p>LLM generation happens in two distinct phases:</p>
 <ul>
 <li><strong>The Prefill Phase</strong>: The model processes the entire input prompt in a single parallel operation to compute attention matrices. This is highly parallel but computationally expensive, scaling quadratically with prompt length.</li>
@@ -130,21 +140,21 @@ flowchart TD
     
     Suffix --&gt; Decode[Generate First Token: Fast TTFT]</div>
 <hr>
-<h2>1. Prefill Optimization Topologies</h2>
+<h2 id="1-prefill-optimization-topologies">1. Prefill Optimization Topologies</h2>
 <p>Accelerate your model serving runtimes:</p>
 <ul>
 <li><strong>Prefix Caching</strong>: Cache the KV cache states of static system prompts or database schemas. Subsequent requests with matching prefixes skip the prefill phase for the cached tokens.</li>
 <li><strong>Chunked Prefill</strong>: Split long input prompts into smaller chunks (e.g., 512 tokens) and process them incrementally to prevent VRAM allocation spikes and lower latency.</li>
 </ul>
 <hr>
-<h2>2. Setting up Prefix Caching Gates</h2>
+<h2 id="2-setting-up-prefix-caching-gates">2. Setting up Prefix Caching Gates</h2>
 <p>Configure your serving runtimes (like vLLM) with:</p>
 <ol>
 <li><strong>Enable Prefix Caching</strong>: Set the <code>--enable-prefix-caching</code> flag when launching the vLLM server.</li>
 <li><strong>Standardize Prompts</strong>: Ensure static instructions (e.g., system rules) are positioned at the beginning of the prompt to maximize prefix cache hits.</li>
 </ol>
 <hr>
-<h2>Code Demo: KV Cache Reuse Latency Simulator</h2>
+<h2 id="code-demo-kv-cache-reuse-latency-simulator">Code Demo: KV Cache Reuse Latency Simulator</h2>
 <p>Below is a Python implementation of a serving coordinator. It simulates prefix cache matching, compares prefill execution latencies, and calculates TTFT reductions.</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, Tuple
@@ -201,7 +211,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;✅ [Cache Hit]  TTFT: {hit_metrics['ttft_sec']:.3f} seconds (Tokens prefilled: {hit_metrics['tokens_prefilled']})&quot;)
     print(f&quot;👉 Latency Reduction: {hit_metrics['latency_reduction_percent']:.1f}%&quot;)</code></pre>
 <hr>
-<h2>Serving Optimization Takeaways</h2>
+<h2 id="serving-optimization-takeaways">Serving Optimization Takeaways</h2>
 <ul>
 <li><strong>Cache Static Prefixes</strong>: Position static instructions at the beginning of the prompt to maximize prefix cache hits and lower TTFT.</li>
 <li><strong>Enable Prefix Caching</strong>: Configure your serving runtimes (e.g. vLLM) with <code>--enable-prefix-caching</code> to reuse KV cache pages.</li>
@@ -234,6 +244,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-prefill-phase-latency-bottleneck" class="toc-link">The Prefill Phase Latency Bottleneck</a></li>
+              <li class="toc-item toc-h2"><a href="#1-prefill-optimization-topologies" class="toc-link">1. Prefill Optimization Topologies</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-prefix-caching-gates" class="toc-link">2. Setting up Prefix Caching Gates</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-kv-cache-reuse-latency-simulator" class="toc-link">Code Demo: KV Cache Reuse Latency Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#serving-optimization-takeaways" class="toc-link">Serving Optimization Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

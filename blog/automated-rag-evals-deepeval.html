@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-silent-regression-problem-in-generative-ai">The Silent Regression Problem in Generative AI</a></li>
+                <li><a href="#the-rag-evaluation-lifecycle">The RAG Evaluation Lifecycle</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#technical-implementation-rag-testing-with-pytest-deepeval">Technical Implementation: RAG Testing with Pytest &amp; DeepEval</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,12 +121,12 @@ Prompt adjustments, database modifications, or embedding model switches can sile
 </div>
 </div>
 <hr>
-<h2>The Silent Regression Problem in Generative AI</h2>
+<h2 id="the-silent-regression-problem-in-generative-ai">The Silent Regression Problem in Generative AI</h2>
 <p>In traditional software engineering, we write unit tests with deterministic assertions: if input is $X$, verify output is $Y$. In RAG (Retrieval-Augmented Generation) applications, however, outputs are probabilistic. </p>
 <p>If you modify a system prompt template to improve formatting, you might silently trigger a regression: the model may start hallucinating facts, ignore the retrieved context, or fail to address the user&#39;s core question. Because these failures don&#39;t throw server errors, they often go unnoticed until users encounter them in production.</p>
 <p>To solve this, we must build an <strong>automated evaluation loop</strong> inside our CI/CD pipelines. This loop runs our pipeline against a dataset of queries and validates the output using a programmatic test runner.</p>
 <hr>
-<h2>The RAG Evaluation Lifecycle</h2>
+<h2 id="the-rag-evaluation-lifecycle">The RAG Evaluation Lifecycle</h2>
 <p>A production-grade evaluation loop executes RAG queries, captures the inputs, retrieved context, and generated answers, and passes them to an LLM-as-a-judge model to compute score metrics.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 graph TD
@@ -147,7 +157,7 @@ graph TD
     style J fill:#1e293b,stroke:#a855f7,stroke-width:2px
     style K fill:#ef4444,stroke:#0f172a,stroke-width:2px
     style L fill:#10b981,stroke:#0f172a,stroke-width:2px</div>
-<h3>Core Metrics to Measure</h3>
+<h3 id="core-metrics-to-measure">Core Metrics to Measure</h3>
 <p>To isolate failure modes, we must score three distinct vectors (popularized by the RAG Triad):</p>
 <ol>
 <li><strong>Faithfulness (Groundedness)</strong>: Checks if the generated answer is derived <em>strictly</em> from the retrieved context without hallucinating external data. (Score = $\frac{\text{Supported Claims}}{\text{Total Claims}}$).</li>
@@ -155,7 +165,7 @@ graph TD
 <li><strong>Context Recall (Retrieval Alignment)</strong>: Measures whether the retriever successfully fetched all the necessary information required to answer the query, compared against a reference ground truth.</li>
 </ol>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -177,7 +187,7 @@ graph TD
 </tr>
 </tbody></table>
 <hr>
-<h2>Technical Implementation: RAG Testing with Pytest &amp; DeepEval</h2>
+<h2 id="technical-implementation-rag-testing-with-pytest-deepeval">Technical Implementation: RAG Testing with Pytest &amp; DeepEval</h2>
 <p>Below is a complete, runnable test script (<code>test_rag_pipeline.py</code>) using <strong>DeepEval</strong> and <strong>Pytest</strong>. It simulates a RAG query run and evaluates it against our three core metrics, enforcing a strict passing threshold of $0.70$.</p>
 <pre><code class="language-python">import pytest
 from deepeval import assert_test
@@ -236,7 +246,7 @@ def test_rag_accuracy():
 # 1. Ensure keys are set: export OPENAI_API_KEY=&quot;your-key&quot;
 # 2. Run command: deepeval test run test_rag_pipeline.py</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Running evaluations is what separates toy AI projects from robust enterprise platforms. By writing automated test suites, you ensure your pipeline&#39;s search quality remains consistent as you scale.</p>
 <ul>
 <li><strong>Establish Baseline Thresholds</strong>: Start with a threshold of $0.70$ for Faithfulness and Relevance, and gradually raise it to $0.85$ as you tune your prompts and data chunks.</li>
@@ -244,7 +254,7 @@ def test_rag_accuracy():
 </ul>
 <p>For a broader discussion on monitoring and benchmarking multi-agent architectures at scale, check out our baseline guide: <a href="file:///G:/ReplitProjects/akmalkhaniub.github.io/blog/multi-agent-evals-at-scale.html">Evals at Scale: How to Benchmark and Stress-Test Multi-Agent Systems</a>.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>RAG Triad Framework</strong>: TruLens evaluation methodologies — <a href="https://www.trulens.org/" target="_blank" rel="noopener">TruLens Portal</a></li>
 <li><strong>DeepEval Framework</strong>: Programmatic unit testing docs — <a href="https://www.confident-ai.com/" target="_blank" rel="noopener">Confident AI Portal</a></li>
@@ -277,6 +287,18 @@ def test_rag_accuracy():
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-silent-regression-problem-in-generative-ai" class="toc-link">The Silent Regression Problem in Generative AI</a></li>
+              <li class="toc-item toc-h2"><a href="#the-rag-evaluation-lifecycle" class="toc-link">The RAG Evaluation Lifecycle</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#technical-implementation-rag-testing-with-pytest-deepeval" class="toc-link">Technical Implementation: RAG Testing with Pytest &amp; DeepEval</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

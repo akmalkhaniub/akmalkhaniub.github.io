@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-architecture-unified-tool-gates">The Architecture: Unified Tool Gates</a></li>
+                <li><a href="#1-defining-tools-in-python-with-fastmcp">1. Defining Tools in Python with FastMCP</a></li>
+                <li><a href="#2-preventing-prompt-injection-strict-input-gating">2. Preventing Prompt Injection: Strict Input Gating</a></li>
+                <li><a href="#3-cryptographic-keyrings-protecting-llm-context">3. Cryptographic Keyrings: Protecting LLM Context</a></li>
+                <li><a href="#key-takeaways-for-context-engineers">Key Takeaways for Context Engineers</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article introduces Context Engineering and the Model Context Protocol (MCP) as a method to provide LLMs with precise, secure, and structured access to real-time data and tools.</li>
 <li><strong>Why it matters:</strong> It directly addresses the &quot;Lost in the Middle&quot; phenomenon, improving LLM accuracy, reducing latency, and cutting API costs, while significantly enhancing the security of AI applications.</li>
@@ -118,7 +129,7 @@
 <p><strong>Context Engineering</strong> is the discipline of building secure, structured, and dynamic gates that feed LLMs exactly what they need—and nothing more—at the precise moment they need it.</p>
 <p>This article explores how to implement Context Engineering using the <strong>Model Context Protocol (MCP)</strong>, drawing architectural patterns from <a href="https://github.com/akmalkhaniub/ops-mcp-suite" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> ops-mcp-suite</a>—a collection of 6 production-grade MCP servers served via a unified FastAPI gateway.</p>
 <hr>
-<h2>The Architecture: Unified Tool Gates</h2>
+<h2 id="the-architecture-unified-tool-gates">The Architecture: Unified Tool Gates</h2>
 <p>Instead of hardcoding APIs for your AI agents, the Model Context Protocol standardizes client-server communication. A client (such as Claude Desktop or a custom LangGraph agent) queries an MCP server to discover what resources and tools are available, executing them via a structured JSON-RPC schema.</p>
 <p>In the <code>ops-mcp-suite</code> architecture, a unified <strong>FastAPI Gateway</strong> acts as a secure proxy, routing tool calls from agent networks to specialized local and remote MCP microservices.</p>
 <div class="mermaid">graph TD
@@ -131,7 +142,7 @@
     D --&gt;|SQL Alchemy| G[(PostgreSQL / MySQL)]
     E --&gt;|Fernet Cryptography| H[(Secure Environment Keyring)]</div>
 <hr>
-<h2>1. Defining Tools in Python with FastMCP</h2>
+<h2 id="1-defining-tools-in-python-with-fastmcp">1. Defining Tools in Python with FastMCP</h2>
 <p>Building an MCP server is straightforward using modern Python toolkits like <code>FastMCP</code>. FastMCP uses Python type hints and docstrings to automatically generate the tool schemas that are sent to the LLM. The LLM reads the docstring to understand <em>when</em> and <em>how</em> to invoke the tool.</p>
 <p>Here is an example showing how <code>devops_mcp.py</code> exposes Docker container log inspection to an LLM:</p>
 <pre><code class="language-python"># devops_mcp.py
@@ -158,7 +169,7 @@ def get_container_logs(container_name: str, limit: int = 50) -&gt; str:
         return f&quot;Failed to fetch logs: {str(exc)}&quot;</code></pre>
 <p>When the LLM receives this tool schema, it sees <code>get_container_logs</code> as a function with parameters <code>container_name</code> (string) and <code>limit</code> (integer). If the user asks <em>&quot;Why is the auth service crashing?&quot;</em>, the LLM automatically invokes this tool with <code>container_name=&quot;auth-service-1&quot;</code>.</p>
 <hr>
-<h2>2. Preventing Prompt Injection: Strict Input Gating</h2>
+<h2 id="2-preventing-prompt-injection-strict-input-gating">2. Preventing Prompt Injection: Strict Input Gating</h2>
 <p>In Context Engineering, security is just as important as data delivery. If you give an LLM a tool that runs shell commands (e.g., <code>subprocess.run(command)</code>), you open your system to <strong>Prompt Injection Attacks</strong>. An adversarial prompt could instruct the model to run <code>rm -rf /</code> or leak environment files.</p>
 <p>To prevent this, we construct <strong>Strict Input Gates</strong>. We never expose open text fields for execution. Instead, we enforce strict type checking, use enums for valid actions, and sanitize inputs before they hit the filesystem or shell.</p>
 <p>Here is an example of secure query gating from <code>dbops_mcp.py</code>:</p>
@@ -195,7 +206,7 @@ def inspect_database_schema(db_name: str, table_name: str) -&gt; str:
     except Exception as exc:
         return f&quot;Database error: {str(exc)}&quot;</code></pre>
 <hr>
-<h2>3. Cryptographic Keyrings: Protecting LLM Context</h2>
+<h2 id="3-cryptographic-keyrings-protecting-llm-context">3. Cryptographic Keyrings: Protecting LLM Context</h2>
 <p>When tool calls require API keys or administrative access, storing them in plain text inside the agent&#39;s memory is a massive vulnerability.</p>
 <p>In <code>secrets_mcp.py</code>, we implement a context keyring using <strong>Fernet symmetric encryption</strong> (<code>cryptography</code> library). The LLM can request credentials by providing a secure key name. The MCP server decrypts the credential in-memory, signs the request, and performs the API call without ever exposing the raw secret key to the LLM&#39;s chat history.</p>
 <pre><code class="language-python"># secrets_mcp.py
@@ -220,7 +231,7 @@ def decrypt_service_key(encrypted_token: str) -&gt; str:
     except Exception:
         return &quot;Decryption failed. Invalid credential signature.&quot;</code></pre>
 <hr>
-<h2>Key Takeaways for Context Engineers</h2>
+<h2 id="key-takeaways-for-context-engineers">Key Takeaways for Context Engineers</h2>
 <ol>
 <li><strong>Keep it Small</strong>: Do not dump raw datasets into prompts. Write specialized tools that let the LLM request summaries, tails, or specific rows.</li>
 <li><strong>Lock it Down</strong>: Enforce strict parameters, parameter enums, and parameter schemas. Treat every LLM-generated argument as untrusted user input.</li>
@@ -229,7 +240,7 @@ def decrypt_service_key(encrypted_token: str) -&gt; str:
 <p>By designing strict, secure, and minimal context interfaces with the Model Context Protocol, we build AI applications that are safer, faster, and significantly cheaper to run.</p>
 <p><em>The full source code of the gateway and servers is available in the public <a href="https://github.com/akmalkhaniub/ops-mcp-suite" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> ops-mcp-suite</a> repository.</em></p>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Context Engineering, powered by the Model Context Protocol, offers a robust framework for building intelligent and secure AI applications.</p>
 <ol>
 <li><strong>Precision Context Delivery:</strong> Instead of overwhelming LLMs with raw data, MCP advocates for specialized tools that deliver only the necessary, summarized, or specific information, optimizing retrieval and reducing costs.</li>
@@ -264,6 +275,19 @@ def decrypt_service_key(encrypted_token: str) -&gt; str:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-architecture-unified-tool-gates" class="toc-link">The Architecture: Unified Tool Gates</a></li>
+              <li class="toc-item toc-h2"><a href="#1-defining-tools-in-python-with-fastmcp" class="toc-link">1. Defining Tools in Python with FastMCP</a></li>
+              <li class="toc-item toc-h2"><a href="#2-preventing-prompt-injection-strict-input-gating" class="toc-link">2. Preventing Prompt Injection: Strict Input Gating</a></li>
+              <li class="toc-item toc-h2"><a href="#3-cryptographic-keyrings-protecting-llm-context" class="toc-link">3. Cryptographic Keyrings: Protecting LLM Context</a></li>
+              <li class="toc-item toc-h2"><a href="#key-takeaways-for-context-engineers" class="toc-link">Key Takeaways for Context Engineers</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

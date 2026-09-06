@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#tri-color-marking-write-barrier-architecture">Tri-Color Marking &amp; Write Barrier Architecture</a></li>
+                <li><a href="#python-implementation-tri-color-gc-engine-with-write-barrier">Python Implementation: Tri-Color GC Engine with Write Barrier</a></li>
+                <li><a href="#garbage-collection-gotchas-best-practices">Garbage Collection Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In managed programming runtimes (such as Java JVM, Go, V8 JavaScript, and PyPy), automatic memory reclamation via <strong>Garbage Collection (GC)</strong> is essential for developer productivity and memory safety.</p>
 <p>However, early garbage collector designs relied on <strong>Stop-The-World (STW)</strong> pauses. During STW phases, the runtime freezes all user application threads (&quot;mutators&quot;) while scanning the heap. On large heaps ($64\text{ GB}$ to $512\text{ GB}$), STW pauses can last <strong>500ms to 5,000ms</strong>, destroying p99 SLA guarantees in high-frequency trading and real-time microservices.</p>
 <p>To achieve sub-millisecond GC pauses ($\le 1\text{ms}$) on multi-terabyte heaps, modern runtimes (<strong>Go GC</strong>, <strong>Java ZGC</strong>, <strong>Shenandoah GC</strong>) utilize <strong>Concurrent Tri-Color Marking</strong>, <strong>Write Barriers</strong>, and <strong>Colored Pointers</strong>.</p>
 <p>This article details the Tri-Color Abstraction, Write Barriers, and Generational GC compaction algorithms.</p>
 <hr>
-<h2>Tri-Color Marking &amp; Write Barrier Architecture</h2>
+<h2 id="tri-color-marking-write-barrier-architecture">Tri-Color Marking &amp; Write Barrier Architecture</h2>
 <p>How concurrent garbage collectors track live objects while mutator threads mutate heap references:</p>
 <div class="mermaid">graph TD
   subgraph Tri-Color GC Graph Marking States
@@ -124,7 +133,7 @@
     Mutator[Mutator Thread: Mutates Reference] --&gt;|4. Writes Black -&gt; White Pointer| WriteBarrier[Write Barrier: Catch Mutation]
     WriteBarrier --&gt;|5. Shade White Object Grey| GreySet
   end</div>
-<h3>Core Garbage Collection Principles</h3>
+<h3 id="core-garbage-collection-principles">Core Garbage Collection Principles</h3>
 <ol>
 <li><strong>Tri-Color Marking Abstraction</strong>: Objects in the heap are assigned one of three color states during GC marking:<ul>
 <li><strong>White</strong>: Unvisited objects. At the start of GC, all objects are White. At the end of marking, remaining White objects are unreachable <strong>Garbage</strong> and are swept.</li>
@@ -142,7 +151,7 @@ To prevent this, runtimes use <strong>Write Barriers</strong> (e.g. Dijkstra or 
 <li><strong>Colored Pointers &amp; Load Barriers (Java ZGC)</strong>: ZGC embeds 4 GC metadata bits directly into the unused upper bits of 64-bit virtual memory pointers (<code>Marked0</code>, <code>Marked1</code>, <code>Remapped</code>). When mutator threads dereference a pointer, a CPU <strong>Load Barrier</strong> checks these bits, allowing ZGC to compact memory concurrently with zero STW pauses!</li>
 </ol>
 <hr>
-<h2>Python Implementation: Tri-Color GC Engine with Write Barrier</h2>
+<h2 id="python-implementation-tri-color-gc-engine-with-write-barrier">Python Implementation: Tri-Color GC Engine with Write Barrier</h2>
 <p>Here is a production-grade Python implementation of a Concurrent Tri-Color Mark-and-Sweep Garbage Collector with Write Barrier interception:</p>
 <pre><code class="language-python">from typing import Dict, List, Set, Optional
 from pydantic import BaseModel
@@ -259,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
     reclaimed_objs = gc.sweep_garbage()
     print(f&quot; ✅ Remaining Live Objects in Heap: {list(gc.heap.keys())}&quot;)</code></pre>
 <hr>
-<h2>Garbage Collection Gotchas &amp; Best Practices</h2>
+<h2 id="garbage-collection-gotchas-best-practices">Garbage Collection Gotchas &amp; Best Practices</h2>
 <p>When tuning garbage collected runtimes:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -272,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Runtimes adopting Concurrent Tri-Color GC and Load Barriers (such as <strong>Java ZGC</strong> and <strong>Go GC</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Tail Pauses</strong>: Reducing maximum GC STW pauses from $2,500\text{ms}$ down to <strong>under $1\text{ms}$</strong> across $1\text{ TB}$ heaps.</li>
@@ -305,6 +314,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#tri-color-marking-write-barrier-architecture" class="toc-link">Tri-Color Marking &amp; Write Barrier Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-tri-color-gc-engine-with-write-barrier" class="toc-link">Python Implementation: Tri-Color GC Engine with Write Barrier</a></li>
+              <li class="toc-item toc-h2"><a href="#garbage-collection-gotchas-best-practices" class="toc-link">Garbage Collection Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

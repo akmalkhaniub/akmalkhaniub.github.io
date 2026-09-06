@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#percolator-primary-lock-distributed-transaction-architecture">Percolator Primary-Lock Distributed Transaction Architecture</a></li>
+                <li><a href="#python-implementation-distributed-percolator-transaction-engine">Python Implementation: Distributed Percolator Transaction Engine</a></li>
+                <li><a href="#distributed-transaction-gotchas-best-practices">Distributed Transaction Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In modern distributed SQL databases (<strong>CockroachDB</strong>, <strong>TiDB</strong>, <strong>YugabyteDB</strong>, <strong>Google Spanner</strong>), relational data is partitioned (sharded) across hundreds of independent storage nodes.</p>
 <p>Executing a single cross-shard SQL transaction (such as transferring money from Account A on Shard 1 to Account B on Shard 2) requires guaranteeing <strong>ACID Atomicity</strong>: either both shard modifications commit successfully, or both rollback completely.</p>
 <p>Traditional distributed systems rely on the <strong>Two-Phase Commit (2PC)</strong> protocol.</p>
@@ -111,7 +120,7 @@
 <p>To overcome 2PC blocking bottlenecks, modern distributed databases utilize <strong>Google Percolator&#39;s Primary-Lock Protocol</strong>.</p>
 <p>This article details classic 2PC state machines, Percolator Primary/Secondary lock delegation, and asynchronous lock resolution algorithms.</p>
 <hr>
-<h2>Percolator Primary-Lock Distributed Transaction Architecture</h2>
+<h2 id="percolator-primary-lock-distributed-transaction-architecture">Percolator Primary-Lock Distributed Transaction Architecture</h2>
 <p>How Percolator designates a Primary Lock to achieve non-blocking atomic commits across distributed shards:</p>
 <div class="mermaid">graph TD
   Client[Transaction Client] --&gt;|1. Prewrite Phase: Write Data + Secondary Locks| Shard2[Shard 2: Key 'account_B']
@@ -131,7 +140,7 @@
     TxSuccess --&gt;|4. Async Background Rollout| Shard2
     Shard2 --&gt;|5. Convert Secondary Lock to Value| Complete[Complete Transaction on Shard 2]
   end</div>
-<h3>Core Distributed Transaction Protocols</h3>
+<h3 id="core-distributed-transaction-protocols">Core Distributed Transaction Protocols</h3>
 <ol>
 <li><strong>Classic Two-Phase Commit (2PC)</strong>:<ul>
 <li><strong>Phase 1 (Prepare Phase)</strong>: The Transaction Coordinator sends a <code>PREPARE</code> message to all participant shards. Each participant writes mutations to its local Write-Ahead Log (WAL), acquires local locks, and responds <code>VOTE_COMMIT</code> or <code>VOTE_ABORT</code>.</li>
@@ -152,7 +161,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Distributed Percolator Transaction Engine</h2>
+<h2 id="python-implementation-distributed-percolator-transaction-engine">Python Implementation: Distributed Percolator Transaction Engine</h2>
 <p>Here is a production-grade Python implementation of a Distributed Percolator Primary-Lock Transaction Engine featuring Prewrite, Primary Lock Commit, and Lock Resolution:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional
 from pydantic import BaseModel
@@ -271,7 +280,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Shard 1 Data: {shard1.data_store}&quot;)
     print(f&quot;   • Shard 2 Data: {shard2.data_store}&quot;)</code></pre>
 <hr>
-<h2>Distributed Transaction Gotchas &amp; Best Practices</h2>
+<h2 id="distributed-transaction-gotchas-best-practices">Distributed Transaction Gotchas &amp; Best Practices</h2>
 <p>When operating distributed transaction engines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -284,7 +293,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Distributed SQL engines utilizing Percolator and Raft (such as <strong>TiDB</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Zero 2PC Blocking Deadlocks</strong>: Primary Lock delegation allows concurrent readers to resolve orphan locks asynchronously without waiting for coordinator heartbeats.</li>
@@ -317,6 +326,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#percolator-primary-lock-distributed-transaction-architecture" class="toc-link">Percolator Primary-Lock Distributed Transaction Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-distributed-percolator-transaction-engine" class="toc-link">Python Implementation: Distributed Percolator Transaction Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#distributed-transaction-gotchas-best-practices" class="toc-link">Distributed Transaction Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

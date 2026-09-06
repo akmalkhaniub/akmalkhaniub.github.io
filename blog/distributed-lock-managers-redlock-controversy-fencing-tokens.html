@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-why-distributed-locking-is-fundamentally-difficult">1. Why Distributed Locking Is Fundamentally Difficult</a></li>
+                <li><a href="#2-the-two-purposes-of-distributed-locks-efficiency-vs-correctness">2. The Two Purposes of Distributed Locks: Efficiency vs Correctness</a></li>
+                <li><a href="#3-the-fencing-token-invariant-kleppmanns-solution">3. The Fencing Token Invariant: Kleppmann's Solution</a></li>
+                <li><a href="#4-the-practical-alternative-postgresql-advisory-locks">4. The Practical Alternative: PostgreSQL Advisory Locks</a></li>
+                <li><a href="#python-implementation-fencing-token-storage-engine">Python Implementation: Fencing Token Storage Engine</a></li>
+                <li><a href="#architectural-comparison-matrix">Architectural Comparison Matrix</a></li>
+                <li><a href="#the-distributed-systems-truth">The Distributed Systems Truth</a></li>
+              </ul>
+            </details>
 <p>In February 2016, a debate broke out in the distributed systems community that should be required reading for every software engineer who has ever written code touching a shared database.</p>
 <p>On one side was Salvatore Sanfilippo, known to the world as <strong>Antirez</strong>, the brilliant Italian creator of Redis. On the other was <strong>Martin Kleppmann</strong>, a distributed systems researcher at the University of Cambridge and author of <em>Designing Data-Intensive Applications</em>.</p>
 <p>At issue was <strong>Redlock</strong>: an algorithm proposed by Antirez to provide fault-tolerant distributed locking across multiple Redis instances without requiring consensus protocols like Paxos or Raft.</p>
@@ -122,19 +134,19 @@
     Wakeup --&gt; Overwrite[&quot;Client 1 Overwrites Storage (💥 DATA CORRUPTION)&quot;]
   end</div>
 <hr>
-<h2>1. Why Distributed Locking Is Fundamentally Difficult</h2>
+<h2 id="1-why-distributed-locking-is-fundamentally-difficult">1. Why Distributed Locking Is Fundamentally Difficult</h2>
 <p>Why can a distributed lock not be implemented simply by setting a key in Redis with a TTL (<code>SET resource_id client_uuid NX PX 10000</code>)?</p>
 <p>In a single operating system process, locks rely on shared physical hardware: atomic compare-and-swap (<code>CAS</code>) instructions, memory bus arbitration, and kernel thread schedulers. If a thread holds a mutex, the CPU hardware guarantees that no other thread can execute that critical section.</p>
 <p>In a distributed network, there is no shared memory, no shared bus, and no shared clock. The physical universe introduces three unavoidable realities:</p>
-<h3>1. Unbounded Process Pauses</h3>
+<h3 id="1-unbounded-process-pauses">1. Unbounded Process Pauses</h3>
 <p>A client running on Java, Node.js, Python, or Go can pause execution at any line of code without warning. A Stop-the-World garbage collection cycle, an OS page-table fault, or virtualization hypervisor CPU-throttling can suspend a thread for twenty seconds.</p>
-<h3>2. Unbounded Network Delays</h3>
+<h3 id="2-unbounded-network-delays">2. Unbounded Network Delays</h3>
 <p>A TCP packet traversing switches, routers, and firewalls can be delayed for arbitrary durations. A client may believe its network request was dropped, while the packet is simply waiting in a congested top-of-rack buffer.</p>
-<h3>3. Physical Clock Drift and NTP Jumps</h3>
+<h3 id="3-physical-clock-drift-and-ntp-jumps">3. Physical Clock Drift and NTP Jumps</h3>
 <p>Physical quartz clocks on modern motherboards drift due to heat and manufacturing variances. Network Time Protocol (NTP) daemons synchronize clocks by stepping or slewing time. A lock server&#39;s clock may jump forward by two seconds, expiring a lease while the client’s local clock still shows three seconds of valid time.</p>
 <p>When Client 1 pauses past its lease expiration, the lock server assumes it died and grants the lock to Client 2. When Client 1 wakes up, <strong>two independent nodes believe they hold exclusive ownership simultaneously</strong>.</p>
 <hr>
-<h2>2. The Two Purposes of Distributed Locks: Efficiency vs Correctness</h2>
+<h2 id="2-the-two-purposes-of-distributed-locks-efficiency-vs-correctness">2. The Two Purposes of Distributed Locks: Efficiency vs Correctness</h2>
 <p>Kleppmann began his analysis by drawing an essential distinction that architects routinely conflate:</p>
 <table>
 <thead>
@@ -160,7 +172,7 @@
 </tbody></table>
 <p>If you are locking for efficiency, simple Redis keys are fine. If you are locking for correctness, simple leases are a ticking time bomb.</p>
 <hr>
-<h2>3. The Fencing Token Invariant: Kleppmann&#39;s Solution</h2>
+<h2 id="3-the-fencing-token-invariant-kleppmanns-solution">3. The Fencing Token Invariant: Kleppmann&#39;s Solution</h2>
 <p>To make distributed locking provably safe in the presence of process pauses, the storage layer must participate in mutual exclusion using <strong>Monotonically Increasing Fencing Tokens</strong>:</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -183,12 +195,12 @@
   C1-&gt;&gt;DB: Write Data (Token = 33)
   Note over DB: Check: 33 &lt; 34 -&gt; REJECT STALE WRITE!
   DB--&gt;&gt;C1: Error: Fencing Token Outdated (Write Aborted)</div>
-<h3>The Invariant</h3>
+<h3 id="the-invariant">The Invariant</h3>
 <p>Every time the lock service grants a lock, it returns a monotonically increasing integer sequence number ($T = 1, 2, 3, \dots$).</p>
 <p>When a client mutates the underlying storage system, it attaches its fencing token to the write payload. The storage system enforces an invariant: <strong>reject any write with a token less than or equal to the highest token it has already processed</strong>.</p>
 <p>Even if Client 1 pauses for ten minutes, wakes up, and sends its write, the database rejects the payload because it has already accepted Token 34. Correctness is maintained at the data layer, where it belongs.</p>
 <hr>
-<h2>4. The Practical Alternative: PostgreSQL Advisory Locks</h2>
+<h2 id="4-the-practical-alternative-postgresql-advisory-locks">4. The Practical Alternative: PostgreSQL Advisory Locks</h2>
 <p>For teams that already run a relational database (PostgreSQL) and do not wish to maintain a separate ZooKeeper or etcd cluster, <strong>Postgres Advisory Locks</strong> provide an elegant, ACID-backed alternative:</p>
 <pre><code class="language-sql">-- Transaction-scoped exclusive advisory lock
 BEGIN;
@@ -201,13 +213,13 @@ BEGIN;
 
 -- Lock is automatically and atomically released when transaction commits or rolls back
 COMMIT;</code></pre>
-<h3>Why Postgres Advisory Locks Guarantee Safety:</h3>
+<h3 id="why-postgres-advisory-locks-guarantee-safety">Why Postgres Advisory Locks Guarantee Safety:</h3>
 <ol>
 <li><strong>Tied to Database Connection</strong>: If the application worker crashes or enters an infinite GC pause, the PostgreSQL backend detects the broken TCP socket via keepalives and automatically aborts the transaction, releasing the lock.</li>
 <li><strong>Atomic Serialization</strong>: Lock acquisition and data updates execute within the same database engine, eliminating distributed two-phase commit overhead.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Fencing Token Storage Engine</h2>
+<h2 id="python-implementation-fencing-token-storage-engine">Python Implementation: Fencing Token Storage Engine</h2>
 <p>The following Python script simulates a distributed locking engine that enforces monotonic fencing token validation to block stale, paused workers from corrupting storage:</p>
 <pre><code class="language-python">from dataclasses import dataclass
 from typing import Optional, Tuple
@@ -277,7 +289,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(f&quot;\nFinal Verified Storage State: '{storage.committed_data}'&quot;)</code></pre>
 <hr>
-<h2>Architectural Comparison Matrix</h2>
+<h2 id="architectural-comparison-matrix">Architectural Comparison Matrix</h2>
 <table>
 <thead>
 <tr>
@@ -318,7 +330,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>The Distributed Systems Truth</h2>
+<h2 id="the-distributed-systems-truth">The Distributed Systems Truth</h2>
 <p>A distributed lock cannot guarantee correctness in isolation. </p>
 <p>True safety in distributed architectures is an <strong>end-to-end contract between the lock coordinator and the storage layer</strong>. If your storage layer blindly accepts writes without validating version counters or fencing tokens, a single pause in a garbage collection thread will eventually corrupt your data.</p>
 
@@ -348,6 +360,20 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-why-distributed-locking-is-fundamentally-difficult" class="toc-link">1. Why Distributed Locking Is Fundamentally Difficult</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-two-purposes-of-distributed-locks-efficiency-vs-correctness" class="toc-link">2. The Two Purposes of Distributed Locks: Efficiency vs Correctness</a></li>
+              <li class="toc-item toc-h2"><a href="#3-the-fencing-token-invariant-kleppmanns-solution" class="toc-link">3. The Fencing Token Invariant: Kleppmann's Solution</a></li>
+              <li class="toc-item toc-h2"><a href="#4-the-practical-alternative-postgresql-advisory-locks" class="toc-link">4. The Practical Alternative: PostgreSQL Advisory Locks</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-fencing-token-storage-engine" class="toc-link">Python Implementation: Fencing Token Storage Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-comparison-matrix" class="toc-link">Architectural Comparison Matrix</a></li>
+              <li class="toc-item toc-h2"><a href="#the-distributed-systems-truth" class="toc-link">The Distributed Systems Truth</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

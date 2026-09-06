@@ -104,8 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-three-tiers-of-ai-systems">The Three Tiers of AI Systems</a></li>
+                <li><a href="#the-decision-matrix-when-to-keep-it-simple">The Decision Matrix: When to Keep It Simple</a></li>
+                <li><a href="#the-architecture-guardrails-checklist">The Architecture Guardrails Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article clarifies the distinctions between LLM workflows, single-agent loops, and multi-agent systems to establish a clear spectrum of autonomy.</li>
 <li><strong>Why it matters:</strong> Failing to choose the correct architecture leads to over-engineered, slow, expensive, and difficult-to-verify AI systems.</li>
@@ -116,7 +126,7 @@
 <p>This lack of terminological precision isn&#39;t just a semantic issue; it is a design hazard. When developers fail to distinguish between workflows, agents, and multi-agent systems, they build architectures that are over-engineered, slow, expensive, and difficult to verify.</p>
 <p>To design production-grade systems, we must map our tasks against a clear <strong>Spectrum of Autonomy</strong>.</p>
 <hr>
-<h2>The Three Tiers of AI Systems</h2>
+<h2 id="the-three-tiers-of-ai-systems">The Three Tiers of AI Systems</h2>
 <p>To build reliable systems, we must choose the right architectural pattern based on the complexity and predictability of the target workflow.</p>
 <div class="mermaid">graph TD
     subgraph Workflow [1. Deterministic / LLM Workflow]
@@ -146,27 +156,27 @@
     style Workflow fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px
     style Agent fill:#f0f9ff,stroke:#0ea5e9,stroke-width:2px
     style MAS fill:#f0fdf4,stroke:#22c55e,stroke-width:2px</div>
-<h3>1. LLM Workflows (Structured Pipelines)</h3>
+<h3 id="1-llm-workflows-structured-pipelines">1. LLM Workflows (Structured Pipelines)</h3>
 <p>Workflows are systems where the execution sequence is defined entirely by application code. The LLM is used as a processor at specific nodes (e.g., summarizing text or extracting variables), but it has no control over the execution graph.</p>
 <ul>
 <li><strong>Prompt Chaining</strong>: Serial execution where Step A generates data for Step B.</li>
 <li><strong>Deterministic Routing</strong>: A classifier LLM determines which route to take, but the downstream paths themselves are hard-coded.</li>
 <li><strong>Why they succeed</strong>: Highly predictable, fast, easy to test, and cheap to run.</li>
 </ul>
-<h3>2. Single Agents (Autonomous Tool Loops)</h3>
+<h3 id="2-single-agents-autonomous-tool-loops">2. Single Agents (Autonomous Tool Loops)</h3>
 <p>An agent is an LLM running within a loop where the model decides its own execution path. The model is given a goal, a set of tools (functions), and a loop wrapper (such as the ReAct framework).</p>
 <ul>
 <li><strong>Mechanism</strong>: The model output is parsed to identify a tool name and tool arguments. The application executes the tool, returns the result as an &quot;observation&quot; to the LLM&#39;s context, and the model determines the next move.</li>
 <li><strong>Why they fail</strong>: The loop is non-deterministic. If a tool returns unexpected output, the model can enter an infinite loop, hallucinate parameters, or drift from the original user goal.</li>
 </ul>
-<h3>3. Multi-Agent Systems (Decoupled Collaborations)</h3>
+<h3 id="3-multi-agent-systems-decoupled-collaborations">3. Multi-Agent Systems (Decoupled Collaborations)</h3>
 <p>A multi-agent system divides a complex problem space into separate agent nodes, each running specialized loops. Instead of sharing a single context window, these agents maintain private state files and communicate through structured handoff contracts.</p>
 <ul>
 <li><strong>Mechanism</strong>: A supervisor or orchestrator decomposes the user query, assigns sub-tasks to worker agents, and collects their outputs. A separate validator agent evaluates the final state before termination.</li>
 <li><strong>Why they are necessary</strong>: When a task is too complex for a single context window, dividing labor prevents cognitive overload and tool list dilution.</li>
 </ul>
 <hr>
-<h2>The Decision Matrix: When to Keep It Simple</h2>
+<h2 id="the-decision-matrix-when-to-keep-it-simple">The Decision Matrix: When to Keep It Simple</h2>
 <p>Before building a multi-agent system, walk through this decision path to avoid over-engineering:</p>
 <pre><code class="language-plaintext">                  Is the execution path predictable?
                              /          \
@@ -177,32 +187,32 @@
                                           YES            NO
                                           /               \
                             [Use Multi-Agent System]   [Use Single Agent]</code></pre>
-<h3>Build a Workflow If:</h3>
+<h3 id="build-a-workflow-if">Build a Workflow If:</h3>
 <ol>
 <li>The inputs and outputs of each step have a known schema.</li>
 <li>A human operator can write a step-by-step checklist of how to perform the task.</li>
 <li>The task must comply with strict legal, regulatory, or business protocols (e.g., invoicing, medical intakes).</li>
 </ol>
-<h3>Build a Single Agent If:</h3>
+<h3 id="build-a-single-agent-if">Build a Single Agent If:</h3>
 <ol>
 <li>The sequence of steps is highly variable, but the interaction is conversational (e.g., a support agent finding customer details by calling search APIs).</li>
 <li>The model needs to run a trial-and-error execution loop (e.g., executing read-only database queries to locate a record).</li>
 </ol>
-<h3>Build a Multi-Agent System If:</h3>
+<h3 id="build-a-multi-agent-system-if">Build a Multi-Agent System If:</h3>
 <ol>
 <li>The task requires distinct personas that would conflict in a single prompt (e.g., a creative writer agent and a critique/security agent).</li>
 <li>The number of tool schemas required exceeds the context attention span of a single model (typically &gt;4 tools).</li>
 <li>You need parallel execution of complex tasks (e.g., compiling code modules concurrently).</li>
 </ol>
 <hr>
-<h2>The Architecture Guardrails Checklist</h2>
+<h2 id="the-architecture-guardrails-checklist">The Architecture Guardrails Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Autonomy Audit</strong>: Do you have a programmatic escape hatch to break infinite agent loops after a set number of iterations (e.g., max 5 turns)?</li>
 <li><input disabled="" type="checkbox"> <strong>Routing Review</strong>: Can your router LLM be replaced by a regex, string match, or semantic vector distance check to save tokens and latency?</li>
 <li><input disabled="" type="checkbox"> <strong>State Sanity Check</strong>: Are you persisting agent state at every step using database-backed checkpointers (e.g., Postgres JSONB)?</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Navigating the spectrum of AI autonomy requires balancing flexibility with predictability to build production-grade systems.</p>
 <ol>
 <li><strong>Match Complexity to Architecture:</strong> Do not default to complex multi-agent systems when a deterministic LLM workflow or a single-agent loop can achieve the same result faster and cheaper.</li>
@@ -211,7 +221,7 @@
 </ol>
 <p><em>Takeaway:</em> Build the simplest system possible that reliably solves the problem, reserving high autonomy only for tasks that truly demand it.</p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>LangGraph Conceptual Docs</strong>: <em>Workflows vs. Agents</em>. Discusses the precise boundaries between application control and model control. <a href="https://langchain-ai.github.io/langgraph/concepts/agentic_concepts/" target="_blank" rel="noopener">Link</a></li>
 <li><strong>Microsoft AutoGen Framework</strong>: <em>Introduction to Multi-Agent Conversation</em>. Explains the foundations of actor-based messaging structures. <a href="https://microsoft.github.io/autogen/docs/Use-Cases/agent_chat/" target="_blank" rel="noopener">Link</a></li>
@@ -245,6 +255,18 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-three-tiers-of-ai-systems" class="toc-link">The Three Tiers of AI Systems</a></li>
+              <li class="toc-item toc-h2"><a href="#the-decision-matrix-when-to-keep-it-simple" class="toc-link">The Decision Matrix: When to Keep It Simple</a></li>
+              <li class="toc-item toc-h2"><a href="#the-architecture-guardrails-checklist" class="toc-link">The Architecture Guardrails Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

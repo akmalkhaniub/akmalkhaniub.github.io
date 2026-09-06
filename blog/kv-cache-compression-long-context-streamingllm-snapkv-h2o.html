@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-long-context-vram-memory-wall">1. The Long-Context VRAM Memory Wall</a></li>
+                <li><a href="#2-the-attention-sink-phenomenon-streamingllm">2. The Attention Sink Phenomenon &amp; StreamingLLM</a></li>
+                <li><a href="#3-h2o-heavy-hitter-oracle-snapkv">3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</a></li>
+                <li><a href="#python-implementation-streamingllm-h2o-kv-cache-simulator">Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</a></li>
+                <li><a href="#summary-kv-cache-compression-matrix">Summary: KV-Cache Compression Matrix</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>With the emergence of ultra-long context language models (<strong>Gemini 1.5 Pro</strong>, <strong>Claude 3.5 Sonnet</strong>, <strong>Llama 3.1 405B</strong>), autonomous AI agents can ingest entire codebases, legal repositories, and multi-hour audio streams into a single prompt.</p>
 <p>In production inference infrastructure, however, long-context serving hits a catastrophic physical barrier: <strong>the KV-Cache VRAM Memory Wall</strong>.</p>
 <p>During autoregressive generation, the Key-Value (KV) cache stores past token key and value tensors in GPU High Bandwidth Memory (HBM) to avoid recomputing self-attention:</p>
@@ -128,9 +139,9 @@
     end
   end</div>
 <hr>
-<h2>1. The Long-Context VRAM Memory Wall</h2>
+<h2 id="1-the-long-context-vram-memory-wall">1. The Long-Context VRAM Memory Wall</h2>
 <p>Why does KV-cache memory scale so aggressively compared to model weights?</p>
-<h3>Key-Value Cache Scaling Math:</h3>
+<h3 id="key-value-cache-scaling-math">Key-Value Cache Scaling Math:</h3>
 <p>Model weights remain <strong>static</strong> regardless of sequence length. The KV-cache, however, grows <strong>linearly ($O(N)$) with every single token generated</strong>.</p>
 <pre><code class="language-plaintext">&gt; **KV-CACHE VRAM FOOTPRINT AT SCALE (Llama-3-70B, FP16)**
 | Context Length | KV-Cache Size (Single Request) | GPU Hardware Required                           |
@@ -140,10 +151,10 @@
 | 1,000,000 tokens| 163.84 GB                     | 🚨 Requires 4x H100 (80GB) just for ONE USER!   |
 </code></pre>
 <hr>
-<h2>2. The Attention Sink Phenomenon &amp; StreamingLLM</h2>
+<h2 id="2-the-attention-sink-phenomenon-streamingllm">2. The Attention Sink Phenomenon &amp; StreamingLLM</h2>
 <p>In early attempts to bound KV-cache size, engineers implemented <strong>Naive Sliding Window Attention</strong> (keeping only the most recent 4,000 tokens and dropping older ones).</p>
 <p>Naive sliding window suffered from a catastrophic failure: <strong>after token 4,001, the model’s perplexity spiked to infinity, outputting complete gibberish</strong>.</p>
-<h3>Why did sliding window fail? The Discovery of Attention Sinks</h3>
+<h3 id="why-did-sliding-window-fail-the-discovery-of-attention-sinks">Why did sliding window fail? The Discovery of Attention Sinks</h3>
 <p>In 2023, researchers at MIT and Meta (Xiao et al.) discovered the <strong>Attention Sink Phenomenon</strong>:</p>
 <ul>
 <li>In Softmax self-attention ($\text{Softmax}(QK^T / \sqrt{d})$), the exponential sum across all keys must equal $1.0$.</li>
@@ -165,19 +176,19 @@
   end</div>
 <p><strong>The StreamingLLM Invariant</strong>: By permanently pinning the <strong>first 4 Attention Sink Tokens</strong> in GPU memory and pairing them with a <strong>rolling local window</strong>, an LLM can generate text infinitely over millions of tokens with a bounded $O(1)$ VRAM memory footprint!</p>
 <hr>
-<h2>3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</h2>
+<h2 id="3-h2o-heavy-hitter-oracle-snapkv">3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</h2>
 <p>While StreamingLLM maintains fluency for streaming dialogue, agents performing code analysis require retaining critical entities and function definitions located midway through a $500\text{k-token}$ prompt.</p>
-<h3>1. H2O (Heavy Hitter Oracle)</h3>
+<h3 id="1-h2o-heavy-hitter-oracle">1. H2O (Heavy Hitter Oracle)</h3>
 <ul>
 <li>Tracks the cumulative attention scores assigned to each token over time.</li>
 <li>Retains the <strong>Top 10% Heavy-Hitter (H2) Tokens</strong> (e.g. database schemas, class definitions, specific instructions) while evicting the bottom $90%$ low-attention filler tokens.</li>
 </ul>
-<h3>2. SnapKV (Positional Clustering)</h3>
+<h3 id="2-snapkv-positional-clustering">2. SnapKV (Positional Clustering)</h3>
 <ul>
 <li>Observes the attention patterns during prompt processing and selects key semantic clusters per attention head, compressing the prompt KV-cache by <strong>$85%$</strong> in a single pass before autoregressive decoding begins.</li>
 </ul>
 <hr>
-<h2>Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</h2>
+<h2 id="python-implementation-streamingllm-h2o-kv-cache-simulator">Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</h2>
 <p>Here is a Python implementation simulating an attention sink retention and H2O Heavy-Hitter dynamic KV-cache eviction engine:</p>
 <pre><code class="language-python">import numpy as np
 from dataclasses import dataclass
@@ -259,7 +270,7 @@ if __name__ == &quot;__main__&quot;:
         cache.append_token(tid, tstr, att)
         cache.print_cache_state()</code></pre>
 <hr>
-<h2>Summary: KV-Cache Compression Matrix</h2>
+<h2 id="summary-kv-cache-compression-matrix">Summary: KV-Cache Compression Matrix</h2>
 <table>
 <thead>
 <tr>
@@ -307,7 +318,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>Serving 1M+ token context windows is not a hardware brute-force challenge—<strong>it is an attention geometry optimization problem</strong>.</p>
 <p>By locking in <strong>Attention Sinks (StreamingLLM)</strong> and dynamically pruning low-salience tokens with <strong>H2O Heavy-Hitter and SnapKV algorithms</strong>, AI systems engineers unlock multi-million token agent capabilities with an <strong>$80%\text{ to }90%$ reduction in GPU VRAM costs</strong>.</p>
 
@@ -337,6 +348,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-long-context-vram-memory-wall" class="toc-link">1. The Long-Context VRAM Memory Wall</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-attention-sink-phenomenon-streamingllm" class="toc-link">2. The Attention Sink Phenomenon &amp; StreamingLLM</a></li>
+              <li class="toc-item toc-h2"><a href="#3-h2o-heavy-hitter-oracle-snapkv" class="toc-link">3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-streamingllm-h2o-kv-cache-simulator" class="toc-link">Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-kv-cache-compression-matrix" class="toc-link">Summary: KV-Cache Compression Matrix</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

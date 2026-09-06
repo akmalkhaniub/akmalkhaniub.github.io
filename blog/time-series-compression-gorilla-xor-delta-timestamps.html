@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#gorilla-time-series-compression-architecture">Gorilla Time-Series Compression Architecture</a></li>
+                <li><a href="#python-implementation-gorilla-time-series-compressor-decompressor-engine">Python Implementation: Gorilla Time-Series Compressor &amp; Decompressor Engine</a></li>
+                <li><a href="#time-series-compression-gotchas-best-practices">Time-Series Compression Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In cloud telemetry platforms (<strong>Prometheus</strong>, <strong>VictoriaMetrics</strong>, <strong>InfluxDB</strong>, <strong>Datadog</strong>), systems ingest billions of time-series metric data points every minute.</p>
 <p>Each data point consists of a 64-bit Unix timestamp ($8\text{ Bytes}$) and a 64-bit IEEE 754 floating-point value ($8\text{ Bytes}$).</p>
 <p>Storing raw uncompressed data requires $16\text{ Bytes}$ per sample. At an ingestion rate of 10 million metrics per second, raw storage demands over $160\text{ MB/sec}$ of write bandwidth ($13.8\text{ TB}$ per day!).</p>
@@ -111,7 +120,7 @@
 <p>Gorilla achieves an astounding <strong>$12\times$ compression ratio</strong>, shrinking average storage size from $16\text{ Bytes}$ to <strong>$1.37\text{ Bytes}$ per data point</strong>.</p>
 <p>This article details Gorilla <strong>Delta-of-Delta Timestamp Encoding</strong>, <strong>IEEE 754 Floating-Point XOR Compression</strong>, leading/trailing zero bit packing, and streaming decompression.</p>
 <hr>
-<h2>Gorilla Time-Series Compression Architecture</h2>
+<h2 id="gorilla-time-series-compression-architecture">Gorilla Time-Series Compression Architecture</h2>
 <p>How Gorilla combines Delta-of-Delta Timestamp Encoding and Floating-Point XOR Bit-Packing to achieve $12\times$ compression:</p>
 <div class="mermaid">graph TD
   subgraph Raw Metric Ingestion Stream
@@ -130,7 +139,7 @@
     XORVal --&gt;|XOR = 0| ValueZero[&quot;Emit '0' Bit (Identical Value!)&quot;]
     XORVal --&gt;|XOR != 0| BitXOR[&quot;Emit '1' + Leading/Trailing Zero Bit Payload&quot;]
   end</div>
-<h3>Core Time-Series Compression Mechanics</h3>
+<h3 id="core-time-series-compression-mechanics">Core Time-Series Compression Mechanics</h3>
 <ol>
 <li><strong>Delta-of-Delta Timestamp Encoding</strong>:<ul>
 <li>Telemetry metrics are usually scraped at fixed time intervals (e.g. every 10 seconds).</li>
@@ -166,7 +175,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Gorilla Time-Series Compressor &amp; Decompressor Engine</h2>
+<h2 id="python-implementation-gorilla-time-series-compressor-decompressor-engine">Python Implementation: Gorilla Time-Series Compressor &amp; Decompressor Engine</h2>
 <p>Here is a production-grade Python implementation of a Gorilla Time-Series Compressor and Bit-Stream Decompressor Simulator:</p>
 <pre><code class="language-python">import struct
 from typing import List, Tuple
@@ -269,7 +278,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Gorilla Compressed Size: {comp_bytes} Bytes ({bytes_per_point:.2f} B/point)&quot;)
     print(f&quot;   • Compression Factor: {16.0 / bytes_per_point:.2f}x Reduction!&quot;)</code></pre>
 <hr>
-<h2>Time-Series Compression Gotchas &amp; Best Practices</h2>
+<h2 id="time-series-compression-gotchas-best-practices">Time-Series Compression Gotchas &amp; Best Practices</h2>
 <p>When configuring time-series telemetry storage:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -282,7 +291,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Time-series compression algorithms (such as <strong>Gorilla</strong>, powering <strong>Prometheus</strong>, <strong>VictoriaMetrics</strong>, and <strong>InfluxDB</strong>) report:</p>
 <ul>
 <li><strong>Over $12\times$ Reduction in Memory &amp; Disk Footprint</strong>: Shrinks raw metric data points from $16\text{ Bytes}$ down to an average of $1.37\text{ Bytes}$.</li>
@@ -315,6 +324,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#gorilla-time-series-compression-architecture" class="toc-link">Gorilla Time-Series Compression Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-gorilla-time-series-compressor-decompressor-engine" class="toc-link">Python Implementation: Gorilla Time-Series Compressor &amp; Decompressor Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#time-series-compression-gotchas-best-practices" class="toc-link">Time-Series Compression Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

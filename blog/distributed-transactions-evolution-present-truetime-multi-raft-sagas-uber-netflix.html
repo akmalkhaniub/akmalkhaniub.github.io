@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-google-spanner-truetime-external-consistency">1. Google Spanner: TrueTime &amp; External Consistency</a></li>
+                <li><a href="#2-cockroachdb-yugabytedb-hybrid-logical-clocks-hlc-multi-raft">2. CockroachDB &amp; YugabyteDB: Hybrid Logical Clocks (HLC) &amp; Multi-Raft</a></li>
+                <li><a href="#3-uber-engineering-trip-lifecycle-sagas-with-cadence-temporal">3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal</a></li>
+                <li><a href="#4-netflix-engineering-conductor-transactional-outbox-with-debezium">4. Netflix Engineering: Conductor &amp; Transactional Outbox with Debezium</a></li>
+                <li><a href="#typescript-implementation-orchestrated-trip-saga-with-state-compensations-idempotency">TypeScript Implementation: Orchestrated Trip Saga with State Compensations &amp; Idempotency</a></li>
+                <li><a href="#modern-architecture-gotchas-best-practices">Modern Architecture Gotchas &amp; Best Practices</a></li>
+                <li><a href="#next-in-the-series">Next in the Series</a></li>
+              </ul>
+            </details>
 <p>Following the collapse of monolithic synchronous Two-Phase Commit (2PC) at internet scale, the distributed systems industry bifurcated into two dominant modern paradigms:</p>
 <ol>
 <li><strong>Global NewSQL Distributed Databases (Google Spanner, CockroachDB, YugabyteDB)</strong>: Re-architecting distributed ACID transactions using <strong>atomic clocks (TrueTime)</strong>, <strong>Hybrid Logical Clocks (HLC)</strong>, and <strong>Multi-Raft consensus</strong>.</li>
@@ -123,7 +135,7 @@
     MicroSagas --&gt; Shopify[&quot;Shopify / DoorDash: Idempotency Keys &amp; Capture&quot;]
   end</div>
 <hr>
-<h2>1. Google Spanner: TrueTime &amp; External Consistency</h2>
+<h2 id="1-google-spanner-truetime-external-consistency">1. Google Spanner: TrueTime &amp; External Consistency</h2>
 <p>In 2012, Google published <em>Spanner: Google’s Globally-Distributed Database</em> (Corbett et al.), followed by <em>Spanner: Becoming a SQL System</em> (2017).</p>
 <p>Spanner was the first system to achieve <strong>External Consistency (Strict Serializability / Linearizability)</strong> globally while supporting distributed multi-shard transactions.</p>
 <div class="mermaid">sequenceDiagram
@@ -139,11 +151,11 @@
   Note over PaxosLeader: Commit Wait Rule: Sleep until TT.now().earliest &gt; s
   PaxosLeader-&gt;&gt;Client: Tx1 Committed at timestamp s
   Note over Client: Any future Tx2 is guaranteed timestamp s2 &gt; s</div>
-<h3>The TrueTime API &amp; Bounded Clock Uncertainty</h3>
+<h3 id="the-truetime-api-bounded-clock-uncertainty">The TrueTime API &amp; Bounded Clock Uncertainty</h3>
 <p>Standard server clocks drift unpredictably ($100\text{--}500\text{ ms}$). Spanner solved this by installing dedicated GPS receivers and atomic rubidium clocks in every Google datacenter:</p>
 <p>$$\text{TrueTime API: } \text{TT.now}() → [t_{\text{earliest}}, t_{\text{latest}}] \quad \text{where } \epsilon = \frac{t_{\text{latest}} - t_{\text{earliest}}}{2}$$</p>
 <p>The uncertainty parameter $\epsilon$ is bounded between <strong>$1\text{ ms}$ and $7\text{ ms}$</strong>.</p>
-<h3>The Commit Wait Rule</h3>
+<h3 id="the-commit-wait-rule">The Commit Wait Rule</h3>
 <p>To guarantee that if transaction $T_2$ begins after transaction $T_1$ commits ($T_1 &lt; T_2$), then $T_1$&#39;s timestamp $s_1 &lt; s_2$:</p>
 <ol>
 <li>The transaction leader assigns a commit timestamp $s = \text{TT.now}().\text{latest}$.</li>
@@ -153,7 +165,7 @@
 <p>This $2\epsilon$ pause guarantees that the commit timestamp $s$ has definitely passed in absolute real-world physical time everywhere on Earth before any subsequent transaction can start.</p>
 <p>Google uses Spanner to power <strong>Google Play Billing</strong>, <strong>Google Ads</strong>, and <strong>Google Cloud Spanner</strong>, serving millions of ACID writes per second without distributed deadlocks.</p>
 <hr>
-<h2>2. CockroachDB &amp; YugabyteDB: Hybrid Logical Clocks (HLC) &amp; Multi-Raft</h2>
+<h2 id="2-cockroachdb-yugabytedb-hybrid-logical-clocks-hlc-multi-raft">2. CockroachDB &amp; YugabyteDB: Hybrid Logical Clocks (HLC) &amp; Multi-Raft</h2>
 <p>Because commodity cloud environments (AWS, GCP VMs, Azure) lack physical GPS atomic clocks, open-source NewSQL databases (<strong>CockroachDB</strong>, <strong>YugabyteDB</strong>) utilize <strong>Hybrid Logical Clocks (HLC)</strong> (Kulkarni et al., 2014) combined with <strong>Multi-Raft</strong>.</p>
 <pre><code class="language-plaintext">
 |                    Hybrid Logical Clock (HLC) Tuple                   |
@@ -162,7 +174,7 @@
 |  l.physical : Highest physical wall-clock timestamp observed so far.  |
 |  c.logical  : Logical sequence counter incremented on causal events. |
 </code></pre>
-<h3>Multi-Raft Range Splits &amp; Distributed MVCC Write Intents</h3>
+<h3 id="multi-raft-range-splits-distributed-mvcc-write-intents">Multi-Raft Range Splits &amp; Distributed MVCC Write Intents</h3>
 <p>In CockroachDB and YugabyteDB:</p>
 <ol>
 <li>The global keyspace is partitioned into small contiguous <strong>$64\text{ MB}$ ranges</strong>.</li>
@@ -171,7 +183,7 @@
 <li>As soon as the Transaction Record status is committed via Raft quorum, the transaction is atomically committed; subsequent readers convert intents to permanent MVCC values asynchronously.</li>
 </ol>
 <hr>
-<h2>3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal</h2>
+<h2 id="3-uber-engineering-trip-lifecycle-sagas-with-cadence-temporal">3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal</h2>
 <p>At <strong>Uber</strong>, a single trip lifecycle spans multiple distributed microservices: Rider Fare Quoting, Driver Matching, Trip In-Progress Tracking, Fraud Check, Rider Payment Capture, and Driver Payout.</p>
 <p>Uber cannot use a single monolithic database lock for a 30-minute ride. Instead, Uber created <strong>Cadence</strong> (which evolved into <strong>Temporal</strong>) to orchestrate <strong>Distributed Sagas</strong>.</p>
 <div class="mermaid">stateDiagram-v2
@@ -191,7 +203,7 @@
   PayoutDriver --&gt; [*] : Success
   ReleaseRiderHold --&gt; [*] : Compensated
   TriggerCollectionRetry --&gt; [*] : Grace Period &amp; Recovery</div>
-<h3>Uber&#39;s Orchestrated Saga Principles:</h3>
+<h3 id="ubers-orchestrated-saga-principles">Uber&#39;s Orchestrated Saga Principles:</h3>
 <ol>
 <li><strong>Forward Actions &amp; Compensating Actions</strong>: Every forward step has an explicit undo action:<ul>
 <li><em>Forward</em>: <code>AuthorizeHold($35.00)</code> $\longleftrightarrow$ <em>Compensate</em>: <code>VoidAuthorization($35.00)</code></li>
@@ -201,7 +213,7 @@
 <li><strong>State Machine Persistence</strong>: Temporal logs every event to a durable event history table in Docstore/Cassandra. If the worker machine crashes, a new worker rehydrates the exact state and resumes execution without re-executing completed financial steps.</li>
 </ol>
 <hr>
-<h2>4. Netflix Engineering: Conductor &amp; Transactional Outbox with Debezium</h2>
+<h2 id="4-netflix-engineering-conductor-transactional-outbox-with-debezium">4. Netflix Engineering: Conductor &amp; Transactional Outbox with Debezium</h2>
 <p>At <strong>Netflix</strong>, subscription renewals, video transcoding pipelines, and digital rights management (DRM) licensing are orchestrated by <strong>Netflix Conductor</strong>.</p>
 <p>To eliminate the dual-write bug (writing to a database and publishing to Apache Kafka without 2PC), Netflix and large e-commerce platforms employ the <strong>Transactional Outbox Pattern</strong>:</p>
 <div class="mermaid">graph LR
@@ -219,14 +231,14 @@
     Kafka --&gt;|4. Consume Event| BillingWorker[Billing Worker]
     BillingWorker --&gt;|5. Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
   end</div>
-<h3>Key Guarantees:</h3>
+<h3 id="key-guarantees">Key Guarantees:</h3>
 <ul>
 <li><strong>Zero Dual-Write Inconsistencies</strong>: The application only writes to its local database.</li>
 <li><strong>At-Least-Once Event Delivery</strong>: Debezium streams WAL mutations directly into Kafka topics.</li>
 <li><strong>Idempotent Consumers</strong>: Downstream consumers check unique <code>idempotency_key</code> hashes before processing payments, discarding duplicates caused by network retries.</li>
 </ul>
 <hr>
-<h2>TypeScript Implementation: Orchestrated Trip Saga with State Compensations &amp; Idempotency</h2>
+<h2 id="typescript-implementation-orchestrated-trip-saga-with-state-compensations-idempotency">TypeScript Implementation: Orchestrated Trip Saga with State Compensations &amp; Idempotency</h2>
 <p>Here is a production-grade TypeScript implementation of an Orchestrated Trip Lifecycle &amp; Payment Saga with automated backward compensation:</p>
 <pre><code class="language-typescript">import { randomUUID } from 'crypto';
 
@@ -367,7 +379,7 @@ if (require.main === module) {
   })();
 }</code></pre>
 <hr>
-<h2>Modern Architecture Gotchas &amp; Best Practices</h2>
+<h2 id="modern-architecture-gotchas-best-practices">Modern Architecture Gotchas &amp; Best Practices</h2>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
   <div class="alert-content"><p><strong>Compensations Must Be Idempotent and Commutative</strong>: In asynchronous saga failures, compensating actions can be executed multiple times due to retry storms. Ensure every compensating endpoint handles duplicate invocations safely.</p>
@@ -379,7 +391,7 @@ if (require.main === module) {
 </div>
 </div>
 <hr>
-<h2>Next in the Series</h2>
+<h2 id="next-in-the-series">Next in the Series</h2>
 <p>In <strong>Part 3</strong>, we will explore <strong>The Future (2026 &amp; Beyond)</strong>: How <strong>Deterministic Scheduling (Calvin &amp; FaunaDB)</strong> eliminates 2PC and lock aborts entirely, how hardware-accelerated <strong>RDMA &amp; CXL Pooled Memory</strong> enable sub-microsecond atomic commits, and how <strong>Autonomous AI Agent Swarms</strong> execute self-healing multi-step transactional compensations.</p>
 
           </div>
@@ -408,6 +420,20 @@ if (require.main === module) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-google-spanner-truetime-external-consistency" class="toc-link">1. Google Spanner: TrueTime &amp; External Consistency</a></li>
+              <li class="toc-item toc-h2"><a href="#2-cockroachdb-yugabytedb-hybrid-logical-clocks-hlc-multi-raft" class="toc-link">2. CockroachDB &amp; YugabyteDB: Hybrid Logical Clocks (HLC) &amp; Multi-Raft</a></li>
+              <li class="toc-item toc-h2"><a href="#3-uber-engineering-trip-lifecycle-sagas-with-cadence-temporal" class="toc-link">3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal</a></li>
+              <li class="toc-item toc-h2"><a href="#4-netflix-engineering-conductor-transactional-outbox-with-debezium" class="toc-link">4. Netflix Engineering: Conductor &amp; Transactional Outbox with Debezium</a></li>
+              <li class="toc-item toc-h2"><a href="#typescript-implementation-orchestrated-trip-saga-with-state-compensations-idempotency" class="toc-link">TypeScript Implementation: Orchestrated Trip Saga with State Compensations &amp; Idempotency</a></li>
+              <li class="toc-item toc-h2"><a href="#modern-architecture-gotchas-best-practices" class="toc-link">Modern Architecture Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#next-in-the-series" class="toc-link">Next in the Series</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,8 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#caching-behavior-shift-nextjs-14-vs-nextjs-15">Caching Behavior Shift: Next.js 14 vs. Next.js 15</a></li>
+                <li><a href="#the-top-5-gotchas-and-how-to-fix-them">The Top 5 Gotchas and How to Fix Them</a></li>
+                <li><a href="#migration-steps-checklist">Migration Steps Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article provides a comprehensive migration guide detailing the critical breaking changes when upgrading from Next.js 14 to Next.js 15.</li>
 <li><strong>Why it matters:</strong> Understanding these architectural shifts prevents production-breaking compilation errors, broken component references, and unexpected database load spikes caused by new caching defaults.</li>
@@ -118,7 +128,7 @@
 <p>If you attempt to upgrade a Next.js 14 application without modifying your components, you will immediately encounter compilation errors, broken ref bindings, and—worst of all—sudden server load spikes due to altered caching models.</p>
 <p>This article reviews the <strong>Top 5 gotchas</strong> when migrating from Next.js 14 to 15, providing direct code comparisons and execution path diagrams to help you upgrade without bringing down your production environment.</p>
 <hr>
-<h2>Caching Behavior Shift: Next.js 14 vs. Next.js 15</h2>
+<h2 id="caching-behavior-shift-nextjs-14-vs-nextjs-15">Caching Behavior Shift: Next.js 14 vs. Next.js 15</h2>
 <p>The most dangerous gotcha in Next.js 15 is the silent flip in default caching behaviors. In Next.js 14, standard <code>fetch</code> queries, GET Route Handlers, and Client-Side Page cache paths were <strong>cached by default</strong>. In Next.js 15, they are <strong>uncached by default</strong>.</p>
 <p>The diagram below maps the decision paths and visualizes how this swap impacts your database traffic:</p>
 <div class="mermaid">graph TD
@@ -147,8 +157,8 @@
     class Miss,QueryDB,Return2 db;
     class Start,Choice route;</div>
 <hr>
-<h2>The Top 5 Gotchas and How to Fix Them</h2>
-<h3>Gotcha 1: Uncached Fetch by Default</h3>
+<h2 id="the-top-5-gotchas-and-how-to-fix-them">The Top 5 Gotchas and How to Fix Them</h2>
+<h3 id="gotcha-1-uncached-fetch-by-default">Gotcha 1: Uncached Fetch by Default</h3>
 <ul>
 <li><strong>The Problem</strong>: Next.js 14 cached API requests globally. Upgrading to Next.js 15 immediately disables this. Every user visit will query your database directly, causing high server costs and slow loading times.</li>
 <li><strong>The Fix</strong>: You must explicitly opt back in to caching where appropriate.</li>
@@ -163,12 +173,12 @@
 + }); 
 + // (Explicitly opted-in to caching)</code></pre>
 <hr>
-<h3>Gotcha 2: Asynchronous Dynamic APIs</h3>
+<h3 id="gotcha-2-asynchronous-dynamic-apis">Gotcha 2: Asynchronous Dynamic APIs</h3>
 <ul>
 <li><strong>The Problem</strong>: In Next.js 14, request parameters (<code>params</code>, <code>searchParams</code>), <code>cookies()</code>, and <code>headers()</code> were synchronous. In Next.js 15, they are asynchronous.</li>
 <li><strong>The Fix</strong>: You must await these functions before reading their properties, otherwise Next.js will throw build errors.</li>
 </ul>
-<h4>Component Layout Migration:</h4>
+<h4 id="component-layout-migration">Component Layout Migration:</h4>
 <pre><code class="language-diff">// --- NEXT.JS 14 (Old) ---
 - interface PageProps {
 -   params: { slug: string };
@@ -187,7 +197,7 @@
 +   return &lt;div&gt;Item ID: {slug}&lt;/div&gt;;
 + }</code></pre>
 <hr>
-<h3>Gotcha 3: React 19 Ref Passing</h3>
+<h3 id="gotcha-3-react-19-ref-passing">Gotcha 3: React 19 Ref Passing</h3>
 <ul>
 <li><strong>The Problem</strong>: Next.js 15 requires React 19. React 19 deprecates <code>forwardRef</code> in favor of passing references as standard props.</li>
 <li><strong>The Fix</strong>: Remove the <code>forwardRef</code> wrapper from your custom input, form, or button components.</li>
@@ -204,12 +214,12 @@
 +   return &lt;input {...props} ref={ref} /&gt;;
 + };</code></pre>
 <hr>
-<h3>Gotcha 4: ESLint 9 Flat Configuration</h3>
+<h3 id="gotcha-4-eslint-9-flat-configuration">Gotcha 4: ESLint 9 Flat Configuration</h3>
 <ul>
 <li><strong>The Problem</strong>: Next.js 15 upgrades to ESLint 9, which switches from the old <code>.eslintrc.json</code> config format to the flat <code>eslint.config.js</code> format.</li>
 <li><strong>The Fix</strong>: Migrate your rules manually or use the migration CLI tool.</li>
 </ul>
-<h4>Target File: <code>eslint.config.js</code></h4>
+<h4 id="target-file-eslintconfigjs">Target File: <code>eslint.config.js</code></h4>
 <pre><code class="language-javascript">import { FlatCompat } from &quot;@eslint/eslintrc&quot;;
 import js from &quot;@eslint/js&quot;;
 
@@ -228,7 +238,7 @@ export default [
   },
 ];</code></pre>
 <hr>
-<h3>Gotcha 5: Server Actions Parameter Security</h3>
+<h3 id="gotcha-5-server-actions-parameter-security">Gotcha 5: Server Actions Parameter Security</h3>
 <ul>
 <li><strong>The Problem</strong>: Next.js 15 introduces strict validation checks to prevent parameter poisoning. Closures inside Server Actions are locked down.</li>
 <li><strong>The Fix</strong>: Never pass dynamic, non-validated parameters directly to action parameters. Always parse inputs using validation schemas (like Zod).</li>
@@ -252,7 +262,7 @@ export async function updateTaskStatus(rawInput: unknown) {
   await db.updateTask(validated.data.id, validated.data.status);
 }</code></pre>
 <hr>
-<h2>Migration Steps Checklist</h2>
+<h2 id="migration-steps-checklist">Migration Steps Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Run Next Codemods</strong>: Use <code>npx @next/codemod@latest next-async-request-api</code> to automatically convert synchronous dynamic API parameters to async awaits.</li>
 <li><input disabled="" type="checkbox"> <strong>Audit Fetch Headers</strong>: Audit every standard <code>fetch()</code> call across your layout tree. Explicitly declare <code>cache: &#39;force-cache&#39;</code> or <code>next: { revalidate: X }</code> where data is static.</li>
@@ -260,7 +270,7 @@ export async function updateTaskStatus(rawInput: unknown) {
 <li><input disabled="" type="checkbox"> <strong>Upgrade ESLint Rules</strong>: Convert old <code>.eslintrc.json</code> configurations to <code>eslint.config.js</code> before executing build runs in your CI/CD pipeline.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Upgrading to Next.js 15 unlocks powerful features like Turbopack and the React Compiler, but it requires a careful, deliberate migration strategy to avoid production issues.</p>
 <ol>
 <li><strong>Explicit Caching is Essential:</strong> Because Next.js 15 defaults to uncached operations, you must manually audit and opt back into caching to protect your database from sudden traffic spikes.</li>
@@ -269,7 +279,7 @@ export async function updateTaskStatus(rawInput: unknown) {
 </ol>
 <p><em>Takeaway: A successful migration to Next.js 15 relies on proactive code audits, automated codemods, and explicit caching declarations to ensure a seamless, high-performance transition.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Next.js 15 Upgrade Guide</strong>: <a href="https://nextjs.org/docs/app/building-your-application/upgrading/version-15" target="_blank" rel="noopener">Next.js Migration Documentation</a>. Detailed, API-by-API specifications for Next.js 15 transitions.</li>
 <li><strong>React 19 Breaking Updates</strong>: <a href="https://react.dev/blog/2024/12/05/react-19" target="_blank" rel="noopener">React 19 Release Notes</a>. Details on <code>ref</code> prop bindings and <code>forwardRef</code> deprecation timelines.</li>
@@ -302,6 +312,18 @@ export async function updateTaskStatus(rawInput: unknown) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#caching-behavior-shift-nextjs-14-vs-nextjs-15" class="toc-link">Caching Behavior Shift: Next.js 14 vs. Next.js 15</a></li>
+              <li class="toc-item toc-h2"><a href="#the-top-5-gotchas-and-how-to-fix-them" class="toc-link">The Top 5 Gotchas and How to Fix Them</a></li>
+              <li class="toc-item toc-h2"><a href="#migration-steps-checklist" class="toc-link">Migration Steps Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

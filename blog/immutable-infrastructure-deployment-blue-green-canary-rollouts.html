@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#canary-traffic-shifting-automated-rollback-architecture">Canary Traffic Shifting &amp; Automated Rollback Architecture</a></li>
+                <li><a href="#python-implementation-canary-rollout-automated-rollback-controller">Python Implementation: Canary Rollout &amp; Automated Rollback Controller</a></li>
+                <li><a href="#deployment-gotchas-best-practices">Deployment Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In legacy IT operations, deploying application updates involved SSHing into live servers and applying patches in-place (<strong>Mutable Infrastructure</strong>). Over time, small differences between servers created severe configuration drift, making deployments unpredictable and prone to extended downtime.</p>
 <p>Modern DevOps and SRE teams adhere to the <strong>Immutable Infrastructure</strong> paradigm.</p>
 <p>Under Immutable Infrastructure, running container instances or VMs are never modified in-place. When code changes, new pre-tested container images are deployed alongside existing instances, and production traffic is safely transitioned using zero-downtime deployment patterns: <strong>Blue-Green</strong> and <strong>Canary Rollouts</strong>.</p>
 <p>This article details how to design automated Canary deployments with real-time error rate monitoring and automated rollback triggers.</p>
 <hr>
-<h2>Canary Traffic Shifting &amp; Automated Rollback Architecture</h2>
+<h2 id="canary-traffic-shifting-automated-rollback-architecture">Canary Traffic Shifting &amp; Automated Rollback Architecture</h2>
 <p>Progressive traffic shifting and automated rollback monitoring across application versions:</p>
 <div class="mermaid">graph TD
   User[Client Production Traffic] --&gt; Router[Ingress Load Balancer / Router]
@@ -129,14 +138,14 @@
   
   StepUp --&gt; Router
   Rollback --&gt; Router</div>
-<h3>Core Deployment Strategies</h3>
+<h3 id="core-deployment-strategies">Core Deployment Strategies</h3>
 <ol>
 <li><strong>Immutable Infrastructure</strong>: Once an artifact (Docker container image or AMI) is built and signed, it is immutable. Configuration values are injected via environment variables at startup, guaranteeing identical behavior across Development, Staging, and Production.</li>
 <li><strong>Blue-Green Deployments</strong>: Provisions a separate, idle environment (<strong>Green</strong>) running the new release alongside the active environment (<strong>Blue</strong>). Once smoke tests pass, the load balancer flips 100% of user traffic from Blue to Green instantly. If an issue is discovered post-switch, flipping back to Blue takes seconds.</li>
 <li><strong>Canary Progressive Rollouts</strong>: Shifts traffic incrementally ($1% → 5% → 25% → 100%$) over a defined evaluation window. Real-time metric analyzers continuously compare canary error rates and p99 latencies against baseline stable instances. If metrics degrade beyond predefined thresholds, the controller triggers an automated instant rollback.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Canary Rollout &amp; Automated Rollback Controller</h2>
+<h2 id="python-implementation-canary-rollout-automated-rollback-controller">Python Implementation: Canary Rollout &amp; Automated Rollback Controller</h2>
 <p>Here is a production-grade Python simulation of a Canary Deployment Controller featuring progressive traffic weight adjustments and automated error-threshold rollbacks:</p>
 <pre><code class="language-python">import time
 import random
@@ -235,7 +244,7 @@ if __name__ == &quot;__main__&quot;:
     metrics_step3_bad = EnvironmentMetrics(total_requests=3000, error_count=360)  # 12.0% Error Rate (CRITICAL!)
     controller.evaluate_step_metrics(metrics_step3_bad)</code></pre>
 <hr>
-<h2>Deployment Gotchas &amp; Best Practices</h2>
+<h2 id="deployment-gotchas-best-practices">Deployment Gotchas &amp; Best Practices</h2>
 <p>When engineering immutable canary deployment pipelines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -248,7 +257,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams adopting immutable deployments and automated canary rollbacks report:</p>
 <ul>
 <li><strong>Zero System Outages from Bad Code Deploys</strong>: Automated metric analyzers catch bugs during 5% canary shifts and roll back within seconds before most users notice.</li>
@@ -281,6 +290,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#canary-traffic-shifting-automated-rollback-architecture" class="toc-link">Canary Traffic Shifting &amp; Automated Rollback Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-canary-rollout-automated-rollback-controller" class="toc-link">Python Implementation: Canary Rollout &amp; Automated Rollback Controller</a></li>
+              <li class="toc-item toc-h2"><a href="#deployment-gotchas-best-practices" class="toc-link">Deployment Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

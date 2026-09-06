@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#backpressure-flow-control-architecture">Backpressure Flow Control Architecture</a></li>
+                <li><a href="#python-implementation-backpressure-throttler-connection-pool-manager">Python Implementation: Backpressure Throttler &amp; Connection Pool Manager</a></li>
+                <li><a href="#important-flow-control-guardrails">Important Flow Control Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When building high-concurrency multi-agent software platforms, system stability depends on managing <strong>flow control</strong> across system boundaries. In a multi-agent swarm, different components operate at vastly different speeds: an orchestrator might generate hundreds of subtask nodes per second, while a database logging agent or web UI client can only consume a fraction of that event volume.</p>
 <p>Without flow control, this speed mismatch causes <strong>fast producers to overwhelm slow consumers</strong>. Unbuffered queues inflate, RAM usage spikes out of control, and persistent WebSockets or HTTP/2 connection pools suffer catastrophic dropouts.</p>
 <p>To maintain system stability under heavy load, engineering teams implement <strong>Backpressure Control</strong> and <strong>Connection Pool Management</strong>.</p>
 <p>This article details how to design backpressure throttling engines and manage connection pools in agent swarms.</p>
 <hr>
-<h2>Backpressure Flow Control Architecture</h2>
+<h2 id="backpressure-flow-control-architecture">Backpressure Flow Control Architecture</h2>
 <p>Backpressure acts as a reactive brake pedal, slowing down upstream event producers when downstream consumer queues reach capacity:</p>
 <div class="mermaid">graph TD
   A[Fast Producer: Agent Orchestration Engine] --&gt; B[Task Event Dispatch Queue]
@@ -125,14 +134,14 @@
     B --&gt;|Flow-Controlled Emission| F[Connection Pool: WebSockets / gRPC]
     F --&gt;|Bounded Worker Channels| G[Slow Consumer: UI / DB Logger]
   end</div>
-<h3>Core Flow Control Mechanisms</h3>
+<h3 id="core-flow-control-mechanisms">Core Flow Control Mechanisms</h3>
 <ol>
 <li><strong>High/Low Watermark Boundaries</strong>: Setting explicit queue capacity thresholds (<code>watermark_high = 80%</code>, <code>watermark_low = 20%</code>). When a consumer queue hits the high watermark, the orchestrator pauses task emission. When the queue drains below the low watermark, task emission resumes automatically.</li>
 <li><strong>Token Bucket Rate Throttling</strong>: Applying token bucket algorithms to cap maximum outbound WebSocket/SSE messages per second, protecting low-bandwidth browser clients from UI rendering lockup.</li>
 <li><strong>Connection Pool Bounds</strong>: Managing active WebSocket sessions and database connection pools (<code>max_connections</code>, <code>idle_timeout_sec</code>). Stale or dropped worker sockets are closed and recycled immediately to prevent socket leak exhaustion.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Backpressure Throttler &amp; Connection Pool Manager</h2>
+<h2 id="python-implementation-backpressure-throttler-connection-pool-manager">Python Implementation: Backpressure Throttler &amp; Connection Pool Manager</h2>
 <p>Here is a production Python implementation of an Agent Swarm Flow Controller that enforces high/low watermark backpressure and manages active connection pools:</p>
 <pre><code class="language-python">import asyncio
 import time
@@ -224,7 +233,7 @@ async def main():
 if __name__ == &quot;__main__&quot;:
     asyncio.run(main())</code></pre>
 <hr>
-<h2>Important Flow Control Guardrails</h2>
+<h2 id="important-flow-control-guardrails">Important Flow Control Guardrails</h2>
 <p>When configuring backpressure and connection pools for agent swarms:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -237,7 +246,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams implementing Backpressure Control &amp; Connection Pooling report:</p>
 <ul>
 <li><strong>100% Elimination of Out-Of-Memory (OOM) Crashes</strong>: Flow control prevents upstream orchestrators from flooding worker queues.</li>
@@ -270,6 +279,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#backpressure-flow-control-architecture" class="toc-link">Backpressure Flow Control Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-backpressure-throttler-connection-pool-manager" class="toc-link">Python Implementation: Backpressure Throttler &amp; Connection Pool Manager</a></li>
+              <li class="toc-item toc-h2"><a href="#important-flow-control-guardrails" class="toc-link">Important Flow Control Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

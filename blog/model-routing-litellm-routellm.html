@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-model-selection-problem-at-scale">The Model Selection Problem at Scale</a></li>
+                <li><a href="#the-routing-architecture">The Routing Architecture</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#implementation-part-1-litellm-unified-proxy">Implementation Part 1: LiteLLM Unified Proxy</a></li>
+                <li><a href="#implementation-part-2-routellm-complexity-based-auto-routing">Implementation Part 2: RouteLLM Complexity-Based Auto-Routing</a></li>
+                <li><a href="#monthly-cost-impact-routing-vs-no-routing">Monthly Cost Impact: Routing vs No Routing</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +123,7 @@ Not every LLM request deserves a GPT-4o or Claude 3.5 Sonnet. Routing simple cla
 </div>
 </div>
 <hr>
-<h2>The Model Selection Problem at Scale</h2>
+<h2 id="the-model-selection-problem-at-scale">The Model Selection Problem at Scale</h2>
 <p>Every LLM request has a <em>complexity profile</em>. Some are trivial, some are moderate, some are genuinely hard:</p>
 <table>
 <thead>
@@ -149,7 +161,7 @@ Not every LLM request deserves a GPT-4o or Claude 3.5 Sonnet. Routing simple cla
 </tbody></table>
 <p>In most production systems, <strong>100% of requests are routed to the same frontier model</strong> regardless of complexity. This is expensive and unnecessary. A routing layer that correctly classifies request complexity and dispatches accordingly is one of the highest-ROI infrastructure changes an AI team can make.</p>
 <hr>
-<h2>The Routing Architecture</h2>
+<h2 id="the-routing-architecture">The Routing Architecture</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     U[Incoming Request] --&gt; C{Complexity Classifier}
@@ -171,7 +183,7 @@ flowchart TD
     style T3 fill:#3b0764,stroke:#a855f7,stroke-width:2px
     style QC fill:#1e293b,stroke:#f59e0b,stroke-width:2px</div>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -193,7 +205,7 @@ flowchart TD
 </tr>
 </tbody></table>
 <hr>
-<h2>Implementation Part 1: LiteLLM Unified Proxy</h2>
+<h2 id="implementation-part-1-litellm-unified-proxy">Implementation Part 1: LiteLLM Unified Proxy</h2>
 <p>LiteLLM provides a single, OpenAI-compatible interface over 100+ LLM providers. Switching between Claude, GPT-4o, and Gemini requires only changing a model string — not rewriting your API integration.</p>
 <pre><code class="language-python">import os
 import litellm
@@ -319,7 +331,7 @@ async def load_balanced_call(alias: str, messages: list[dict]) -&gt; str:
     )
     return response.choices[0].message.content</code></pre>
 <hr>
-<h2>Implementation Part 2: RouteLLM Complexity-Based Auto-Routing</h2>
+<h2 id="implementation-part-2-routellm-complexity-based-auto-routing">Implementation Part 2: RouteLLM Complexity-Based Auto-Routing</h2>
 <p>RouteLLM uses a trained classifier (or embedding similarity) to score request complexity and automatically select the appropriate model tier.</p>
 <pre><code class="language-python">import numpy as np
 from openai import OpenAI
@@ -473,17 +485,17 @@ if __name__ == &quot;__main__&quot;:
         result = router_instance.route_and_execute(prompt)
         print(f&quot;RESPONSE PREVIEW: {result['response'][:150]}...&quot;)</code></pre>
 <hr>
-<h2>Monthly Cost Impact: Routing vs No Routing</h2>
+<h2 id="monthly-cost-impact-routing-vs-no-routing">Monthly Cost Impact: Routing vs No Routing</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#6b7280'}}}%%
 xychart-beta
     title &quot;Monthly Cost Comparison: Routed vs Always-Frontier (100K req/month)&quot;
     x-axis [&quot;Week 1&quot;, &quot;Week 2&quot;, &quot;Week 3&quot;, &quot;Week 4&quot;]
     y-axis &quot;Cost (USD)&quot; 0 --&gt; 3000
-    bar [2700, 2700, 2700, 2700]
-    line [820, 820, 820, 820]</div>
+    bar <sup class="citation-ref"><a href="#ref-2700" class="citation-link" data-ref="2700" title="Reference [2700]">[2700]</a> <a href="#ref-2700" class="citation-link" data-ref="2700" title="Reference [2700]">[2700]</a> <a href="#ref-2700" class="citation-link" data-ref="2700" title="Reference [2700]">[2700]</a> <a href="#ref-2700" class="citation-link" data-ref="2700" title="Reference [2700]">[2700]</a></sup>
+    line <sup class="citation-ref"><a href="#ref-820" class="citation-link" data-ref="820" title="Reference [820]">[820]</a> <a href="#ref-820" class="citation-link" data-ref="820" title="Reference [820]">[820]</a> <a href="#ref-820" class="citation-link" data-ref="820" title="Reference [820]">[820]</a> <a href="#ref-820" class="citation-link" data-ref="820" title="Reference [820]">[820]</a></sup></div>
 <p><em>Routing 70% simple + 20% mid + 10% frontier = <strong>~$820/month</strong> vs <strong>~$2,700/month</strong> routing everything to Claude 3.5 Sonnet — a <strong>70% cost reduction</strong>.</em></p>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Model routing is one of the most impactful and underutilised techniques in production AI engineering. A well-calibrated routing layer keeps your AI platform economically sustainable as request volume scales.</p>
 <ul>
 <li><strong>Start with heuristics, not ML</strong>: Token count, keyword signals, and multi-step indicators catch 80% of routing decisions without any classifier overhead.</li>
@@ -492,7 +504,7 @@ xychart-beta
 </ul>
 <p>In our next article, we cover <strong>Batch Processing APIs &amp; Async Inference Queues</strong> — how to use OpenAI&#39;s Batch API and Anthropic&#39;s Message Batches to process tens of thousands of documents overnight at 50% cost savings.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>LiteLLM Documentation</strong>: <a href="https://docs.litellm.ai/" target="_blank" rel="noopener">100+ LLM Provider Unified Interface</a></li>
 <li><strong>RouteLLM Research Paper</strong>: <a href="https://arxiv.org/abs/2406.18665" target="_blank" rel="noopener">Learning to Route in Similarity Estimation for Efficient LLM Usage</a></li>
@@ -525,6 +537,20 @@ xychart-beta
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-model-selection-problem-at-scale" class="toc-link">The Model Selection Problem at Scale</a></li>
+              <li class="toc-item toc-h2"><a href="#the-routing-architecture" class="toc-link">The Routing Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-part-1-litellm-unified-proxy" class="toc-link">Implementation Part 1: LiteLLM Unified Proxy</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-part-2-routellm-complexity-based-auto-routing" class="toc-link">Implementation Part 2: RouteLLM Complexity-Based Auto-Routing</a></li>
+              <li class="toc-item toc-h2"><a href="#monthly-cost-impact-routing-vs-no-routing" class="toc-link">Monthly Cost Impact: Routing vs No Routing</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

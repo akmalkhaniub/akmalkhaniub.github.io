@@ -104,10 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#case-study-overview-the-10-part-framework">Case Study Overview: The 10-Part Framework</a></li>
+                <li><a href="#search-recommendation-engine-flow">Search &amp; Recommendation Engine Flow</a></li>
+                <li><a href="#python-implementation-secured-query-builder-reranker">Python Implementation: Secured Query Builder &amp; Reranker</a></li>
+                <li><a href="#the-incident-the-scraper-wildcard-lockup">The Incident: The Scraper Wildcard Lockup</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In massive retail platforms, search utility determines product discoverability. When a catalog grows beyond 10 million SKUs, traditional relational databases fail to support full-text search, filtering, and real-time personalized recommendations. If search queries degrade to seconds or return irrelevant products, user abandonment rates soar.</p>
 <p>This case study details the architecture, optimization strategies, and gotchas of a <strong>Real-Time Search &amp; Recommendation Swarm</strong> capable of serving millions of queries per day with sub-10ms response times.</p>
 <hr>
-<h2>Case Study Overview: The 10-Part Framework</h2>
+<h2 id="case-study-overview-the-10-part-framework">Case Study Overview: The 10-Part Framework</h2>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>1. Industry</strong>: E-Commerce &amp; Retail</p>
@@ -123,7 +133,7 @@
 </div>
 </div>
 <hr>
-<h2>Search &amp; Recommendation Engine Flow</h2>
+<h2 id="search-recommendation-engine-flow">Search &amp; Recommendation Engine Flow</h2>
 <p>The system coordinates standard lexical search queries and real-time recommendation routing:</p>
 <div class="mermaid">graph TD
   A[User Search Query] --&gt; B[Search Coordinator Gateway]
@@ -142,13 +152,13 @@
   end
   
   G --&gt; H[Final Ranked Product Recommendation List]</div>
-<h3>High-Performance Search Tactics</h3>
+<h3 id="high-performance-search-tactics">High-Performance Search Tactics</h3>
 <ol>
 <li><strong>Hybrid Retrieval</strong>: Combining traditional TF-IDF lexical matches with dense vector embedding similarity search ensures the search engine captures both exact product names and semantic intent.</li>
 <li><strong>Dynamic Query Constraints</strong>: Disabling expensive leading wildcards at the query parser layer protects search shards from high CPU usage during scraper floods.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Secured Query Builder &amp; Reranker</h2>
+<h2 id="python-implementation-secured-query-builder-reranker">Python Implementation: Secured Query Builder &amp; Reranker</h2>
 <p>Here is a production-grade Python implementation of a secure Elasticsearch Query DSL builder that enforces query validation gates (blocking leading wildcards) and applies basic semantic vector reranking:</p>
 <pre><code class="language-python">import numpy as np
 from typing import List, Dict, Any, Optional
@@ -240,20 +250,20 @@ if __name__ == &quot;__main__&quot;:
     for prod, score in ranked:
         print(f&quot; SKU: {prod.sku_id} | Title: {prod.title} | Hybrid Score: {score:.4f}&quot;)</code></pre>
 <hr>
-<h2>The Incident: The Scraper Wildcard Lockup</h2>
+<h2 id="the-incident-the-scraper-wildcard-lockup">The Incident: The Scraper Wildcard Lockup</h2>
 <p>During a markdown clearance event, a competitor&#39;s pricing scraper script flooded our search gateways:</p>
 <div class="alert alert-warning">
   <div class="alert-title"><i class="fa-solid fa-triangle-exclamation"></i> Warning</div>
   <div class="alert-content"><p><strong>The Gotcha</strong>: The scraper executed queries containing <code>*</code> wildcards on high-cardinality fields. Because our query parser allowed unchecked leading wildcards, Elasticsearch had to perform linear keyword scans across all segment files in memory. Within minutes, CPU utilization on our master and data nodes reached 100%, causing queries to fail with Gateway Timeouts (<code>HTTP 504</code>).</p>
 </div>
 </div>
-<h3>The Remediation</h3>
+<h3 id="the-remediation">The Remediation</h3>
 <ol>
 <li><strong>Disabled Leading Wildcards</strong>: Configured the query parser to reject queries starting with <code>*</code> or <code>?</code> at the API gateway layer as demonstrated above.</li>
 <li><strong>Configured Elasticsearch Circuit Breakers</strong>: Enabled query execution limits (<code>indices.breaker.request.limit</code>) to automatically abort search queries taking longer than 150ms, protecting node memory from exhaustion.</li>
 </ol>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>By securing query patterns and implementing hybrid semantic reranking:</p>
 <ul>
 <li><strong>100% Zero-Lock Uptime</strong>: Restricting leading wildcards completely eliminated CPU locks during scraper surges.</li>
@@ -286,6 +296,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#case-study-overview-the-10-part-framework" class="toc-link">Case Study Overview: The 10-Part Framework</a></li>
+              <li class="toc-item toc-h2"><a href="#search-recommendation-engine-flow" class="toc-link">Search &amp; Recommendation Engine Flow</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-secured-query-builder-reranker" class="toc-link">Python Implementation: Secured Query Builder &amp; Reranker</a></li>
+              <li class="toc-item toc-h2"><a href="#the-incident-the-scraper-wildcard-lockup" class="toc-link">The Incident: The Scraper Wildcard Lockup</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#event-time-watermark-architecture">Event Time &amp; Watermark Architecture</a></li>
+                <li><a href="#python-implementation-event-time-watermark-session-window-engine">Python Implementation: Event Time Watermark &amp; Session Window Engine</a></li>
+                <li><a href="#windowing-watermark-gotchas-best-practices">Windowing &amp; Watermark Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In distributed systems, physical network latency, mobile offline mode, and IoT device reconnections cause event streams to arrive <strong>out-of-order</strong>.</p>
 <p>For example, a mobile gaming app registers a user purchase at $12:00:00$ PM (Event Time). Due to cellular disconnectivity in a tunnel, the event is uploaded to the cloud server at $12:05:00$ PM (Processing Time).</p>
 <p>If a real-time stream engine aggregates data based on server wall-clock time (<strong>Processing Time</strong>), financial metrics and analytics reports become completely inaccurate.</p>
 <p>To compute deterministic results despite network delays, modern stream engines (<strong>Apache Flink</strong>, <strong>Apache Beam</strong>, <strong>Google Cloud Dataflow</strong>) process data strictly in <strong>Event Time</strong> using <strong>Watermarks</strong>, <strong>Windowing</strong>, and <strong>Allowed Lateness</strong>.</p>
 <p>This article details Event Time notions, Bounded-Out-Of-Orderness Watermarks, Tumbling/Sliding/Session window evaluation, and late-data side-outputs.</p>
 <hr>
-<h2>Event Time &amp; Watermark Architecture</h2>
+<h2 id="event-time-watermark-architecture">Event Time &amp; Watermark Architecture</h2>
 <p>How Watermarks track Event Time progress and trigger window computations despite out-of-order arrivals:</p>
 <div class="mermaid">graph TD
   subgraph Real-World Out-of-Order Event Arrival (Event Time)
@@ -131,7 +140,7 @@
     LateCheck --&gt;|No: On-Time| NormalEval[Process in Window State]
     LateCheck --&gt;|Yes: LATE DATA!| SideOutput[🚨 Emit to Allowed Lateness Side-Output Stream]
   end</div>
-<h3>Core Time &amp; Windowing Concepts</h3>
+<h3 id="core-time-windowing-concepts">Core Time &amp; Windowing Concepts</h3>
 <ol>
 <li><strong>The Three Notions of Time</strong>:<ul>
 <li><strong>Event Time</strong>: The timestamp embedded inside the record when the event originally occurred at the source device (e.g. mobile sensor). <em>Guarantees deterministic, reproducible results during backfills!</em></li>
@@ -159,7 +168,7 @@ If the maximum expected network delay is $10\text{ seconds}$, a watermark lags b
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Event Time Watermark &amp; Session Window Engine</h2>
+<h2 id="python-implementation-event-time-watermark-session-window-engine">Python Implementation: Event Time Watermark &amp; Session Window Engine</h2>
 <p>Here is a production-grade Python implementation of an Event Time Watermark Generator and Session Windowing Engine featuring Late Data Side-Outputs:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional
 from pydantic import BaseModel
@@ -258,7 +267,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(f&quot;\n📊 Side-Output Stream (Late Records Captured): {len(engine.side_output_late_events)} events&quot;)</code></pre>
 <hr>
-<h2>Windowing &amp; Watermark Gotchas &amp; Best Practices</h2>
+<h2 id="windowing-watermark-gotchas-best-practices">Windowing &amp; Watermark Gotchas &amp; Best Practices</h2>
 <p>When configuring Event Time processing:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -271,7 +280,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Event Time streaming architectures (such as <strong>Apache Flink</strong>, <strong>Google Cloud Dataflow</strong>, and <strong>Apache Beam</strong>) report:</p>
 <ul>
 <li><strong>100% Deterministic Financial Analytics</strong>: Achieving identical aggregation results during historical data replaying and real-time streaming despite network delays.</li>
@@ -304,6 +313,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#event-time-watermark-architecture" class="toc-link">Event Time &amp; Watermark Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-event-time-watermark-session-window-engine" class="toc-link">Python Implementation: Event Time Watermark &amp; Session Window Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#windowing-watermark-gotchas-best-practices" class="toc-link">Windowing &amp; Watermark Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

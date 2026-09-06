@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#llm-as-a-judge-calibration-architecture">LLM-as-a-Judge Calibration Architecture</a></li>
+                <li><a href="#python-implementation-judge-calibration-engine">Python Implementation: Judge Calibration Engine</a></li>
+                <li><a href="#common-evaluation-gotchas-guardrails">Common Evaluation Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Evaluating free-form LLM outputs (like multi-turn chats, agent plans, or complex summaries) using traditional n-gram matching metrics like BLEU or ROUGE is highly unreliable. BLEU and ROUGE evaluate exact string matches, which penalize perfectly correct semantic paraphrasing.</p>
 <p>To run automated evaluations at scale, modern platforms deploy <strong>LLM-as-a-Judge</strong> frameworks, using frontier LLMs to evaluate candidate models based on structured grading rubrics.</p>
 <p>However, LLM judges introduce their own biases: <strong>position bias</strong> (preferring the first candidate), <strong>verbosity bias</strong> (preferring longer responses), and <strong>self-bias</strong> (preferring outputs from their own model family). </p>
 <p>To deploy LLM judges safely, we must measure judge alignment and calibrate scores using statistical agreement metrics like <strong>Cohen&#39;s Kappa</strong>.</p>
 <p>This article details how to implement an LLM-as-a-Judge calibration pipeline.</p>
 <hr>
-<h2>LLM-as-a-Judge Calibration Architecture</h2>
+<h2 id="llm-as-a-judge-calibration-architecture">LLM-as-a-Judge Calibration Architecture</h2>
 <p>The calibration pipeline uses human-annotated golden test suites to audit, evaluate, and tune LLM judge prompts:</p>
 <div class="mermaid">graph TD
   A[Golden Test Dataset] --&gt; B[Candidate Models Inference]
@@ -126,7 +135,7 @@
   G --&gt;|Yes| H[Deploy LLM Judge to CI/CD Production]
   G --&gt;|No| I[Optimize Judge Prompt Rubrics &amp; Few-Shots]
   I --&gt; E</div>
-<h3>Critical Judge Agreement Metrics</h3>
+<h3 id="critical-judge-agreement-metrics">Critical Judge Agreement Metrics</h3>
 <ol>
 <li><strong>Percent Agreement</strong>: Simple ratio of matched scores. This is highly misleading because it does not account for agreements occurring purely by chance.</li>
 <li><strong>Cohen&#39;s Kappa ($\kappa$)</strong>: Measures pairwise agreement between two raters (e.g., Human vs. LLM Judge) while correcting for the probability of random chance agreement:
@@ -135,7 +144,7 @@ where $p_o$ is the observed agreement and $p_e$ is the expected chance agreement
 <li><strong>Krippendorff&#39;s Alpha ($\alpha$)</strong>: A generalized agreement metric capable of handling multiple judges, missing scores, and various data scales (nominal, ordinal, interval).</li>
 </ol>
 <hr>
-<h2>Python Implementation: Judge Calibration Engine</h2>
+<h2 id="python-implementation-judge-calibration-engine">Python Implementation: Judge Calibration Engine</h2>
 <p>Here is a production-grade Python implementation of an evaluation calibration engine that computes Cohen&#39;s Kappa agreement and performs bootstrap sampling to calculate 95% confidence intervals:</p>
 <pre><code class="language-python">import numpy as np
 from typing import List, Dict, Any, Tuple
@@ -228,7 +237,7 @@ if __name__ == &quot;__main__&quot;:
     else:
         print(&quot; Status: ❌ WEAK AGREEMENT (Do not deploy. Revise grading prompt rubrics.)&quot;)</code></pre>
 <hr>
-<h2>Common Evaluation Gotchas &amp; Guardrails</h2>
+<h2 id="common-evaluation-gotchas-guardrails">Common Evaluation Gotchas &amp; Guardrails</h2>
 <p>When configuring automated LLM judges:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -241,7 +250,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying calibrated LLM-as-a-Judge systems report:</p>
 <ul>
 <li><strong>Automated CI/CD Gates</strong>: Engineering teams run regression tests on thousands of agent traces in minutes instead of paying for slow human reviews.</li>
@@ -274,6 +283,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#llm-as-a-judge-calibration-architecture" class="toc-link">LLM-as-a-Judge Calibration Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-judge-calibration-engine" class="toc-link">Python Implementation: Judge Calibration Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#common-evaluation-gotchas-guardrails" class="toc-link">Common Evaluation Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

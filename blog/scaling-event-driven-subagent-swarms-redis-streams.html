@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#redis-streams-swarm-architecture">Redis Streams Swarm Architecture</a></li>
+                <li><a href="#python-implementation-redis-streams-agent-swarm-engine">Python Implementation: Redis Streams Agent Swarm Engine</a></li>
+                <li><a href="#important-redis-streams-architecture-guardrails">Important Redis Streams Architecture Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When scaling multi-agent applications from single-process scripts to distributed cloud clusters, orchestrating task events across containerized worker nodes becomes a core infrastructure challenge.</p>
 <p>In-memory task queues (such as Python&#39;s <code>asyncio.Queue</code>) cannot cross container boundaries. If an agent worker container crashes mid-task, in-flight execution events are lost forever. Traditional heavyweight message brokers (such as RabbitMQ or Kafka) add significant operational complexity and lack lightweight pub/sub stream semantics needed for real-time trajectory fan-out.</p>
 <p>To build scalable, fault-tolerant agent swarms, engineering teams utilize <strong>Redis Streams</strong>. Redis Streams combines append-only log durability, distributed <strong>Consumer Groups</strong> (<code>XREADGROUP</code>), explicit message acknowledgments (<code>XACK</code>), and automatic orphan recovery (<code>XCLAIM</code>).</p>
 <p>This article details how to architect and scale an event-driven subagent swarm using Redis Streams.</p>
 <hr>
-<h2>Redis Streams Swarm Architecture</h2>
+<h2 id="redis-streams-swarm-architecture">Redis Streams Swarm Architecture</h2>
 <p>The architecture decouples task dispatchers, subagent worker pools, and result aggregators using Redis Streams Consumer Groups:</p>
 <div class="mermaid">graph TD
   A[Orchestrator Task Dispatcher] --&gt;|XADD agent:tasks:stream| B[(Redis Stream: agent:tasks:stream)]
@@ -130,7 +139,7 @@
   
   C --&gt;|XADD agent:results:stream| G[(Redis Stream: agent:results:stream)]
   G --&gt; H[Orchestrator Result Aggregator]</div>
-<h3>Core Redis Streams Operations for Agent Swarms</h3>
+<h3 id="core-redis-streams-operations-for-agent-swarms">Core Redis Streams Operations for Agent Swarms</h3>
 <ol>
 <li><strong><code>XADD</code> (Task Event Publishing)</strong>: Dispatches a new task payload onto the stream with an auto-generated millisecond ID (<code>1722567000000-0</code>).</li>
 <li><strong><code>XREADGROUP</code> (Distributed Worker Consumption)</strong>: Distributes stream tasks across multiple worker containers inside a shared Consumer Group (<code>swarm_workers</code>). Each task is delivered to exactly one worker node.</li>
@@ -138,7 +147,7 @@
 <li><strong><code>XCLAIM</code> (Orphaned Task Recovery)</strong>: An automated supervisor periodically checks the PEL for unacknowledged tasks older than a timeout threshold (e.g. 60 seconds) and reassigns (<code>XCLAIM</code>) the orphaned task to a healthy worker.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Redis Streams Agent Swarm Engine</h2>
+<h2 id="python-implementation-redis-streams-agent-swarm-engine">Python Implementation: Redis Streams Agent Swarm Engine</h2>
 <p>Here is a production Python implementation using <code>redis-py</code> demonstrating an event-driven agent worker consumer group with automatic task claiming (<code>XCLAIM</code>) for crashed workers:</p>
 <pre><code class="language-python">import os
 import time
@@ -273,7 +282,7 @@ if __name__ == &quot;__main__&quot;:
     worker = RedisStreamsSwarmWorker(r_client)
     # worker.start_worker_loop()</code></pre>
 <hr>
-<h2>Important Redis Streams Architecture Guardrails</h2>
+<h2 id="important-redis-streams-architecture-guardrails">Important Redis Streams Architecture Guardrails</h2>
 <p>When scaling agentic swarms with Redis Streams:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -286,7 +295,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying Redis Streams for subagent orchestration report:</p>
 <ul>
 <li><strong>100% Zero-Loss Fault Tolerance</strong>: Pending Entries List (PEL) and <code>XCLAIM</code> automatically recover 100% of tasks from crashed worker containers.</li>
@@ -319,6 +328,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#redis-streams-swarm-architecture" class="toc-link">Redis Streams Swarm Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-redis-streams-agent-swarm-engine" class="toc-link">Python Implementation: Redis Streams Agent Swarm Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#important-redis-streams-architecture-guardrails" class="toc-link">Important Redis Streams Architecture Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

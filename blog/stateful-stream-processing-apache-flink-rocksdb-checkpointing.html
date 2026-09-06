@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#asynchronous-barrier-snapshot-abs-architecture">Asynchronous Barrier Snapshot (ABS) Architecture</a></li>
+                <li><a href="#python-implementation-pyflink-sliding-window-aggregator">Python Implementation: PyFlink Sliding Window Aggregator</a></li>
+                <li><a href="#flink-rocksdb-production-gotchas">Flink &amp; RocksDB Production Gotchas</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Real-time streaming applications frequently require maintaining state across millions of continuous event streams. Whether computing sliding window aggregations over user activity logs, tracking session counts, or executing stream-stream joins, applications cannot rely solely on stateless message transformations.</p>
 <p><strong>Apache Flink</strong> is the industry standard for high-throughput, low-latency stateful stream processing.</p>
 <p>To manage terabytes of state without exhausting JVM heap memory or triggering long Garbage Collection (GC) pauses, Flink leverages the <strong>Embedded RocksDB State Backend</strong>. Combined with <strong>Asynchronous Barrier Snapshots (ABS)</strong> based on the Chandy-Lamport algorithm, Flink achieves fault-tolerant, incremental state recovery with zero processing downtime.</p>
 <p>This article details how to architect stateful stream processors using Flink and RocksDB.</p>
 <hr>
-<h2>Asynchronous Barrier Snapshot (ABS) Architecture</h2>
+<h2 id="asynchronous-barrier-snapshot-abs-architecture">Asynchronous Barrier Snapshot (ABS) Architecture</h2>
 <p>How Flink streams inject checkpoint barriers to capture consistent distributed state:</p>
 <div class="mermaid">graph LR
   subgraph Event Stream Input
@@ -127,14 +136,14 @@
   end
   
   B1 --&gt;|Forward Barrier downstream| OUT[Downstream Operators]</div>
-<h3>Core Stateful Processing Innovations</h3>
+<h3 id="core-stateful-processing-innovations">Core Stateful Processing Innovations</h3>
 <ol>
 <li><strong>Out-of-Core RocksDB State</strong>: State entries (<code>ValueState</code>, <code>MapState</code>) are stored in an embedded RocksDB instance running on local NVMe SSDs. RocksDB uses an LSM-tree (Log-Structured Merge-tree) memory buffer (MemTable) flushed to disk SSTables, supporting state sizes far exceeding available RAM.</li>
 <li><strong>Chandy-Lamport Barrier Alignment</strong>: Checkpoint barriers flow alongside regular data records through input channels. When an operator receives barrier $n$ from all input channels, it freezes its local state view, triggers an asynchronous snapshot, and immediately forwards the barrier downstream without pausing event processing.</li>
 <li><strong>Incremental Checkpoints</strong>: Instead of uploading full multi-gigabyte state snapshots during every checkpoint interval, Flink uploads only newly generated or compacted RocksDB SSTable files to durable remote storage (S3 or HDFS).</li>
 </ol>
 <hr>
-<h2>Python Implementation: PyFlink Sliding Window Aggregator</h2>
+<h2 id="python-implementation-pyflink-sliding-window-aggregator">Python Implementation: PyFlink Sliding Window Aggregator</h2>
 <p>Here is a production-grade Python simulation of a PyFlink stateful stream processing operator with RocksDB state management and incremental checkpointing:</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, List
@@ -225,7 +234,7 @@ if __name__ == &quot;__main__&quot;:
     # Process Follow-up Event
     operator.process_event(StreamEvent(user_id=&quot;usr-101&quot;, action=&quot;click&quot;, value=5.00))</code></pre>
 <hr>
-<h2>Flink &amp; RocksDB Production Gotchas</h2>
+<h2 id="flink-rocksdb-production-gotchas">Flink &amp; RocksDB Production Gotchas</h2>
 <p>When managing stateful streams with Flink and RocksDB:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -238,7 +247,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying Flink with RocksDB state backends report:</p>
 <ul>
 <li><strong>Terabyte-Scale Stream Processing</strong>: Offloading state to NVMe SSDs enables processing multi-terabyte state streams without JVM Garbage Collection stalls.</li>
@@ -271,6 +280,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#asynchronous-barrier-snapshot-abs-architecture" class="toc-link">Asynchronous Barrier Snapshot (ABS) Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-pyflink-sliding-window-aggregator" class="toc-link">Python Implementation: PyFlink Sliding Window Aggregator</a></li>
+              <li class="toc-item toc-h2"><a href="#flink-rocksdb-production-gotchas" class="toc-link">Flink &amp; RocksDB Production Gotchas</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

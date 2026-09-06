@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-vram-wall-of-edge-ai">The VRAM Wall of Edge AI</a></li>
+                <li><a href="#1-swapping-model-weights-efficiently">1. Swapping Model Weights Efficiently</a></li>
+                <li><a href="#2-setting-up-concurrency-budgets">2. Setting up Concurrency Budgets</a></li>
+                <li><a href="#code-demo-vram-aware-model-router-manager">Code Demo: VRAM-Aware Model Router Manager</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Running cooperative multi-agent networks in the cloud is easy because you can sp
 </div>
 </div>
 <hr>
-<h2>The VRAM Wall of Edge AI</h2>
+<h2 id="the-vram-wall-of-edge-ai">The VRAM Wall of Edge AI</h2>
 <p>In a typical multi-agent swarm, you have specialized agents:</p>
 <ol>
 <li><code>Qwen-Coder-7B</code> for code generation.</li>
@@ -136,7 +146,7 @@ flowchart TD
     CheckQueue --&gt;|Yes| Router
     CheckQueue --&gt;|No| Idle([Sleep &amp; Keep Last Model Loaded])</div>
 <hr>
-<h2>1. Swapping Model Weights Efficiently</h2>
+<h2 id="1-swapping-model-weights-efficiently">1. Swapping Model Weights Efficiently</h2>
 <p>Swapping models from system RAM (or disk) to GPU VRAM takes time. To optimize this swapping latency:</p>
 <ul>
 <li><strong>Model Quantization</strong>: Using 4-bit quantizations (AWQ or EXL2) reduces the model&#39;s disk footprint and loading overhead, speeding up weight transfers.</li>
@@ -144,7 +154,7 @@ flowchart TD
 <li><strong>Sequential Chunking</strong>: Designing agent pipelines to execute all coding tasks in one batch, then all documentation tasks in the next, avoiding frequent loading transitions.</li>
 </ul>
 <hr>
-<h2>2. Setting up Concurrency Budgets</h2>
+<h2 id="2-setting-up-concurrency-budgets">2. Setting up Concurrency Budgets</h2>
 <p>When designing edge orchestration layers, the router must:</p>
 <ol>
 <li><strong>Track GPU VRAM</strong>: Retrieve active memory metrics using NVIDIA System Management Interface (NVML/nvidia-smi).</li>
@@ -152,7 +162,7 @@ flowchart TD
 <li><strong>Queue Requests</strong>: Run scheduling algorithms to queue execution requests, running them sequentially when memory becomes available.</li>
 </ol>
 <hr>
-<h2>Code Demo: VRAM-Aware Model Router Manager</h2>
+<h2 id="code-demo-vram-aware-model-router-manager">Code Demo: VRAM-Aware Model Router Manager</h2>
 <p>Below is a Python implementation of an edge model swapper. It simulates a single-GPU workstation with 16 GB of VRAM, manages model states, loads/unloads models to prevent memory crashes, and routes agent tasks sequentially.</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, List
@@ -240,7 +250,7 @@ if __name__ == &quot;__main__&quot;:
     # Verify that the final memory allocations are stable
     print(f&quot;\n🏁 Simulation Complete. Loaded models: {list(gpu_manager.loaded_models.keys())}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Quantize Models</strong>: Always use AWQ, EXL2, or GGUF quantization formats on edge nodes to fit multiple models into memory constraints.</li>
 <li><strong>Batch Similar Tasks</strong>: Structure agent execution flows to perform all coding tasks sequentially, reducing the need to swap model weights back and forth.</li>
@@ -273,6 +283,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-vram-wall-of-edge-ai" class="toc-link">The VRAM Wall of Edge AI</a></li>
+              <li class="toc-item toc-h2"><a href="#1-swapping-model-weights-efficiently" class="toc-link">1. Swapping Model Weights Efficiently</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-concurrency-budgets" class="toc-link">2. Setting up Concurrency Budgets</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-vram-aware-model-router-manager" class="toc-link">Code Demo: VRAM-Aware Model Router Manager</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

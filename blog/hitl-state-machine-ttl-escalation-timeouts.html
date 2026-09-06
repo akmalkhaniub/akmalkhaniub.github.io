@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-operational-risk-of-suspended-state-locks">The Operational Risk of Suspended State Locks</a></li>
+                <li><a href="#1-designing-escalation-topologies">1. Designing Escalation Topologies</a></li>
+                <li><a href="#2-setting-up-reliable-daemon-schedulers">2. Setting up Reliable Daemon Schedulers</a></li>
+                <li><a href="#code-demo-automated-timeout-monitor-and-rollback-manager">Code Demo: Automated Timeout Monitor and Rollback Manager</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Designing human-in-the-loop (HITL) gates inside agent workflows introduces opera
 </div>
 </div>
 <hr>
-<h2>The Operational Risk of Suspended State Locks</h2>
+<h2 id="the-operational-risk-of-suspended-state-locks">The Operational Risk of Suspended State Locks</h2>
 <p>When an agent halts mid-transaction to await validation:</p>
 <ul>
 <li><strong>Active Resource Locking</strong>: The agent might hold open database connections, pessimistic row locks, or staged branch files.</li>
@@ -129,7 +139,7 @@ flowchart TD
     Rollback --&gt; Release[Release DB &amp; Git Row Locks]
     Release --&gt; Notify[Escalate to Secondary Slack / Email Alert]</div>
 <hr>
-<h2>1. Designing Escalation Topologies</h2>
+<h2 id="1-designing-escalation-topologies">1. Designing Escalation Topologies</h2>
 <p>When a TTL expires, we choose between two main fallback topologies:</p>
 <ul>
 <li><strong>Passive Rollback</strong>: Reverting all staged changes and moving the ticket back to the <code>Todo</code> queue.</li>
@@ -137,14 +147,14 @@ flowchart TD
 <li><strong>Compensating Transactions</strong>: Running inverse API operations to clean up any temporary files or sandbox allocations created during Phase 1.</li>
 </ul>
 <hr>
-<h2>2. Setting up Reliable Daemon Schedulers</h2>
+<h2 id="2-setting-up-reliable-daemon-schedulers">2. Setting up Reliable Daemon Schedulers</h2>
 <p>In production systems:</p>
 <ol>
 <li><strong>Cron Daemons</strong>: Running background monitors (using Redis keys with TTL expiries, or Celery beat schedules) to check for expired session states.</li>
 <li><strong>Idempotence</strong>: Ensuring that rollback triggers can be safely executed multiple times without side effects if network errors cause duplicate trigger firings.</li>
 </ol>
 <hr>
-<h2>Code Demo: Automated Timeout Monitor and Rollback Manager</h2>
+<h2 id="code-demo-automated-timeout-monitor-and-rollback-manager">Code Demo: Automated Timeout Monitor and Rollback Manager</h2>
 <p>Below is a Python implementation of a TTL task monitor. It tracks pending approvals, simulates clock progression, and triggers rollback hooks when a task exceeds its allotted window.</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, List
@@ -212,7 +222,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;🏁 Scan Complete.&quot;)
     print(f&quot;👉 Escalated Task IDs: {escalations}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Set Strict TTL Limits</strong>: Never allow agent processes to pause indefinitely. Always attach a Time-To-Live expiration limit to every human review request.</li>
 <li><strong>Design Compensating Actions</strong>: For every state modification executed in Phase 1, define a reverse compensating action to clean up changes upon timeout.</li>
@@ -245,6 +255,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-operational-risk-of-suspended-state-locks" class="toc-link">The Operational Risk of Suspended State Locks</a></li>
+              <li class="toc-item toc-h2"><a href="#1-designing-escalation-topologies" class="toc-link">1. Designing Escalation Topologies</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-reliable-daemon-schedulers" class="toc-link">2. Setting up Reliable Daemon Schedulers</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-automated-timeout-monitor-and-rollback-manager" class="toc-link">Code Demo: Automated Timeout Monitor and Rollback Manager</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

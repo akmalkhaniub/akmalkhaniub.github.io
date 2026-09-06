@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-danger-of-context-inflation">The Danger of Context Inflation</a></li>
+                <li><a href="#1-stripping-tool-output-verbosity">1. Stripping Tool Output Verbosity</a></li>
+                <li><a href="#2-sliding-windows-and-recursive-compression">2. Sliding Windows and Recursive Compression</a></li>
+                <li><a href="#code-demo-building-a-token-budget-manager">Code Demo: Building a Token Budget Manager</a></li>
+                <li><a href="#architectural-best-practices">Architectural Best Practices</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ While modern LLMs support vast context windows (exceeding 1 million tokens), uti
 </div>
 </div>
 <hr>
-<h2>The Danger of Context Inflation</h2>
+<h2 id="the-danger-of-context-inflation">The Danger of Context Inflation</h2>
 <p>As an autonomous agent executes a multi-step workflow, its conversation log inflates rapidly. Every tool invocation, traceback error dump, and intermediate reasoning thought adds to the context window:</p>
 <ol>
 <li><strong>Latency Scaling</strong>: Attention calculations scale quadratically (O(N^2)) or linear-biases in newer architectures. In practice, feeding 100,000 tokens increases latency and slows down agentic response loops.</li>
@@ -127,13 +137,13 @@ flowchart TD
     Summarize --&gt; Slide[Slide Message Window]
     Slide --&gt; Prompt</div>
 <hr>
-<h2>1. Stripping Tool Output Verbosity</h2>
+<h2 id="1-stripping-tool-output-verbosity">1. Stripping Tool Output Verbosity</h2>
 <p>Tool execution logs are the primary driver of context bloat. An agent might query a database and receive a 10MB raw JSON dump containing 5,000 rows, of which it only needs two values.</p>
 <ul>
 <li><strong>Semantic Summarization</strong>: Tool gateways must intercept raw payloads, compile a high-level summary (e.g. <em>&quot;SQL Query returned 500 rows. Keys of interest: id, email. Sample row: ...&quot;</em>), and inject only the summary into the agent’s message history.</li>
 </ul>
 <hr>
-<h2>2. Sliding Windows and Recursive Compression</h2>
+<h2 id="2-sliding-windows-and-recursive-compression">2. Sliding Windows and Recursive Compression</h2>
 <p>To maintain long-running conversations without hitting limits:</p>
 <ul>
 <li><strong>The System Anchor</strong>: The system prompt (instructions, tools) must remain locked and never pruned.</li>
@@ -141,7 +151,7 @@ flowchart TD
 <li><strong>Recursive Summarization</strong>: Take messages older than the sliding window, feed them to a background summarizer model, and save the resulting summary in a single rolling history block (the &quot;Memory State&quot;).</li>
 </ul>
 <hr>
-<h2>Code Demo: Building a Token Budget Manager</h2>
+<h2 id="code-demo-building-a-token-budget-manager">Code Demo: Building a Token Budget Manager</h2>
 <p>Below is a Python implementation of a context optimizer that manages a token budget, compresses historical chat segments, and filters verbose payloads.</p>
 <pre><code class="language-python">from typing import List, Dict, Any
 
@@ -224,7 +234,7 @@ if __name__ == &quot;__main__&quot;:
     for msg in compiled_messages:
         print(f&quot;[{msg['role'].upper()}]: {msg['content'][:100]}...&quot;)</code></pre>
 <hr>
-<h2>Architectural Best Practices</h2>
+<h2 id="architectural-best-practices">Architectural Best Practices</h2>
 <ul>
 <li><strong>Always Compress Recursively</strong>: Never delete historical user interactions completely. Instead, use small, fast SLMs (like Llama 3.2 3B or Gemini Flash) to generate paragraph summaries of expired blocks.</li>
 <li><strong>Filter Before Ingestion</strong>: Build format-aware parsers at the tool gateway. If a tool outputs raw HTML or CSV, extract the critical keys first and discard the wrapper syntax.</li>
@@ -257,6 +267,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-danger-of-context-inflation" class="toc-link">The Danger of Context Inflation</a></li>
+              <li class="toc-item toc-h2"><a href="#1-stripping-tool-output-verbosity" class="toc-link">1. Stripping Tool Output Verbosity</a></li>
+              <li class="toc-item toc-h2"><a href="#2-sliding-windows-and-recursive-compression" class="toc-link">2. Sliding Windows and Recursive Compression</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-building-a-token-budget-manager" class="toc-link">Code Demo: Building a Token Budget Manager</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-best-practices" class="toc-link">Architectural Best Practices</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

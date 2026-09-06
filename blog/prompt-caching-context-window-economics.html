@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-hidden-cost-of-long-context-ai-systems">The Hidden Cost of Long-Context AI Systems</a></li>
+                <li><a href="#context-window-cost-topology">Context Window Cost Topology</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#anthropic-cache-control-complete-implementation">Anthropic Cache Control: Complete Implementation</a></li>
+                <li><a href="#monthly-cost-projection-cached-vs-uncached">Monthly Cost Projection: Cached vs Uncached</a></li>
+                <li><a href="#openai-prompt-caching-automatic-zero-configuration">OpenAI Prompt Caching: Automatic &amp; Zero Configuration</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +123,7 @@ As AI systems scale from prototype to production, LLM API costs grow non-linearl
 </div>
 </div>
 <hr>
-<h2>The Hidden Cost of Long-Context AI Systems</h2>
+<h2 id="the-hidden-cost-of-long-context-ai-systems">The Hidden Cost of Long-Context AI Systems</h2>
 <p>Every LLM API invocation is billed on token counts — both input and output. For a standard chatbot this is manageable. For enterprise AI platforms, costs scale dramatically due to:</p>
 <ol>
 <li><strong>System Prompt Repetition</strong>: A 4,000-token system prompt is resent on every single API call. Across 10,000 daily requests, that&#39;s 40 million redundant input tokens billed at full price.</li>
@@ -120,7 +132,7 @@ As AI systems scale from prototype to production, LLM API costs grow non-linearl
 </ol>
 <p><strong>Prompt Caching</strong> solves this at the infrastructure level by allowing the LLM provider to cache the KV (Key-Value) attention states of repeated prompt prefixes, billing cached tokens at a fraction of the cost of fresh tokens.</p>
 <hr>
-<h2>Context Window Cost Topology</h2>
+<h2 id="context-window-cost-topology">Context Window Cost Topology</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 graph LR
     subgraph Per Request Token Breakdown
@@ -142,7 +154,7 @@ graph LR
     style F fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style G fill:#052e16,stroke:#10b981,stroke-width:2px</div>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -164,7 +176,7 @@ graph LR
 </tr>
 </tbody></table>
 <hr>
-<h2>Anthropic Cache Control: Complete Implementation</h2>
+<h2 id="anthropic-cache-control-complete-implementation">Anthropic Cache Control: Complete Implementation</h2>
 <p>Anthropic&#39;s API uses a <code>cache_control</code> flag on individual message blocks. Blocks marked with <code>{&quot;type&quot;: &quot;ephemeral&quot;}</code> are cached server-side for 5 minutes. Only the <strong>prefix</strong> of the prompt can be cached — variable user content must appear after all cached blocks.</p>
 <pre><code class="language-python">import anthropic
 import json
@@ -337,17 +349,17 @@ if __name__ == &quot;__main__&quot;:
     avg_savings = round(sum([result1[&quot;savings_pct&quot;], result2[&quot;savings_pct&quot;], result3[&quot;savings_pct&quot;]]) / 3, 1)
     print(f&quot;\n📊 Average Cost Savings Across Session: {avg_savings}%&quot;)</code></pre>
 <hr>
-<h2>Monthly Cost Projection: Cached vs Uncached</h2>
+<h2 id="monthly-cost-projection-cached-vs-uncached">Monthly Cost Projection: Cached vs Uncached</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#6b7280'}}}%%
 xychart-beta
     title &quot;Monthly API Cost: Cached vs. Uncached (Claude 3.5 Sonnet)&quot;
     x-axis [&quot;1K req/day&quot;, &quot;5K req/day&quot;, &quot;10K req/day&quot;, &quot;50K req/day&quot;, &quot;100K req/day&quot;]
     y-axis &quot;Monthly Cost (USD)&quot; 0 --&gt; 5000
-    bar [165, 825, 1650, 4125, 5000]
-    line [20, 99, 198, 990, 1980]</div>
+    bar <sup class="citation-ref"><a href="#ref-165" class="citation-link" data-ref="165" title="Reference [165]">[165]</a> <a href="#ref-825" class="citation-link" data-ref="825" title="Reference [825]">[825]</a> <a href="#ref-1650" class="citation-link" data-ref="1650" title="Reference [1650]">[1650]</a> <a href="#ref-4125" class="citation-link" data-ref="4125" title="Reference [4125]">[4125]</a> <a href="#ref-5000" class="citation-link" data-ref="5000" title="Reference [5000]">[5000]</a></sup>
+    line <sup class="citation-ref"><a href="#ref-20" class="citation-link" data-ref="20" title="Reference [20]">[20]</a> <a href="#ref-99" class="citation-link" data-ref="99" title="Reference [99]">[99]</a> <a href="#ref-198" class="citation-link" data-ref="198" title="Reference [198]">[198]</a> <a href="#ref-990" class="citation-link" data-ref="990" title="Reference [990]">[990]</a> <a href="#ref-1980" class="citation-link" data-ref="1980" title="Reference [1980]">[1980]</a></sup></div>
 <p><em>At 10,000 requests/day, uncached cost is ~$1,650/month vs. ~$198/month with caching — a <strong>$1,452 monthly saving</strong> with a single API flag change.</em></p>
 <hr>
-<h2>OpenAI Prompt Caching: Automatic &amp; Zero Configuration</h2>
+<h2 id="openai-prompt-caching-automatic-zero-configuration">OpenAI Prompt Caching: Automatic &amp; Zero Configuration</h2>
 <p>OpenAI&#39;s implementation is even simpler — <strong>caching is automatic</strong>. Any prompt prefix exceeding 1,024 tokens that is repeated within a session is automatically cached. No API flag changes required.</p>
 <pre><code class="language-python">from openai import OpenAI
 
@@ -377,7 +389,7 @@ def query_openai_cached(system_prompt: str, static_context: str, user_query: str
 <p><strong>Key Difference</strong>: OpenAI caches at <strong>50% discount</strong> (vs Anthropic&#39;s 90% discount), but requires no configuration. Anthropic&#39;s cache is more powerful but demands explicit prefix design.</p>
 </blockquote>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Prompt Caching is the single highest-ROI optimisation available to teams running LLM applications at scale. By redesigning your prompts to front-load static content (system prompts, RAG context, tool definitions), you can cut input token costs by 80-90% with minimal engineering effort.</p>
 <ul>
 <li><strong>Design for prefix stability</strong>: Any content that changes per-request must go at the end. Reorganise your message construction pipeline accordingly.</li>
@@ -386,7 +398,7 @@ def query_openai_cached(system_prompt: str, static_context: str, user_query: str
 </ul>
 <p>In our next article, we explore <strong>Model Routing</strong> — the strategy of dynamically selecting GPT-4o, Claude 3.5 Sonnet, or a local Ollama model based on task complexity, cost budget, and latency constraints.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>Anthropic Prompt Caching Guide</strong>: <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching" target="_blank" rel="noopener">Cache Control API Reference</a></li>
 <li><strong>OpenAI Prompt Caching</strong>: <a href="https://platform.openai.com/docs/guides/prompt-caching" target="_blank" rel="noopener">Automatic Caching in the Chat Completions API</a></li>
@@ -419,6 +431,20 @@ def query_openai_cached(system_prompt: str, static_context: str, user_query: str
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-hidden-cost-of-long-context-ai-systems" class="toc-link">The Hidden Cost of Long-Context AI Systems</a></li>
+              <li class="toc-item toc-h2"><a href="#context-window-cost-topology" class="toc-link">Context Window Cost Topology</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#anthropic-cache-control-complete-implementation" class="toc-link">Anthropic Cache Control: Complete Implementation</a></li>
+              <li class="toc-item toc-h2"><a href="#monthly-cost-projection-cached-vs-uncached" class="toc-link">Monthly Cost Projection: Cached vs Uncached</a></li>
+              <li class="toc-item toc-h2"><a href="#openai-prompt-caching-automatic-zero-configuration" class="toc-link">OpenAI Prompt Caching: Automatic &amp; Zero Configuration</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

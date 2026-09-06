@@ -104,6 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#why-embedding-bugs-are-the-hardest-to-find">Why Embedding Bugs Are the Hardest to Find</a></li>
+                <li><a href="#the-embedding-production-failure-map">The Embedding Production Failure Map</a></li>
+                <li><a href="#trap-1-silent-truncation-at-512-tokens">Trap 1: Silent Truncation at 512 Tokens</a></li>
+                <li><a href="#trap-2-stale-index-after-model-upgrade">Trap 2: Stale Index After Model Upgrade</a></li>
+                <li><a href="#trap-3-cosine-vs-dot-product-silent-wrong-results">Trap 3: Cosine vs Dot Product — Silent Wrong Results</a></li>
+                <li><a href="#trap-4-dimension-mismatch-corrupts-silently-in-some-stores">Trap 4: Dimension Mismatch Corrupts Silently in Some Stores</a></li>
+                <li><a href="#trap-5-multilingual-queries-on-monolingual-models">Trap 5: Multilingual Queries on Monolingual Models</a></li>
+                <li><a href="#trap-6-documents-updated-but-embeddings-not-refreshed">Trap 6: Documents Updated But Embeddings Not Refreshed</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,11 +125,11 @@ Vector embeddings are the foundation of every RAG system, semantic search engine
 </div>
 </div>
 <hr>
-<h2>Why Embedding Bugs Are the Hardest to Find</h2>
+<h2 id="why-embedding-bugs-are-the-hardest-to-find">Why Embedding Bugs Are the Hardest to Find</h2>
 <p>A broken SQL query throws an exception. A broken embedding pipeline returns results — just wrong ones. Cosine similarity between a garbage vector and a real one is still a number. Your API returns 200 OK. Your users get irrelevant answers. Your eval metrics don&#39;t catch it because the eval dataset was embedded with the same broken model.</p>
 <p>This is the danger zone: <strong>silent correctness failures</strong> with no stack traces.</p>
 <hr>
-<h2>The Embedding Production Failure Map</h2>
+<h2 id="the-embedding-production-failure-map">The Embedding Production Failure Map</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     D[Document] --&gt; T[Tokeniser]
@@ -145,7 +159,7 @@ flowchart TD
     style F7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style F8 fill:#78350f,stroke:#f59e0b,stroke-width:2px</div>
 <hr>
-<h2>Trap 1: Silent Truncation at 512 Tokens</h2>
+<h2 id="trap-1-silent-truncation-at-512-tokens">Trap 1: Silent Truncation at 512 Tokens</h2>
 <p><strong>Symptom</strong>: Long documents return poor search results despite being highly relevant. No errors thrown.</p>
 <p><strong>Root cause</strong>: Most embedding models (BERT-based, <code>text-embedding-ada-002</code>, <code>all-MiniLM</code>) have a <strong>hard 512-token limit</strong>. Anything beyond that is silently dropped. A 2,000-word policy document gets embedded using only the first ~375 words. The rest — often where the critical detail lives — is invisible to search.</p>
 <pre><code class="language-python">from sentence_transformers import SentenceTransformer
@@ -213,7 +227,7 @@ def check_truncation_risk(texts: list[str], model_name: str, threshold: float = 
             })
     return risks</code></pre>
 <hr>
-<h2>Trap 2: Stale Index After Model Upgrade</h2>
+<h2 id="trap-2-stale-index-after-model-upgrade">Trap 2: Stale Index After Model Upgrade</h2>
 <p><strong>Symptom</strong>: You upgrade from <code>text-embedding-ada-002</code> to <code>text-embedding-3-large</code>. Existing documents in your index were embedded with the old model. Queries use the new model. Search quality collapses — you&#39;re comparing apples to oranges in high-dimensional space.</p>
 <p><strong>Root cause</strong>: Different embedding models produce vectors in <strong>completely different semantic spaces</strong>. You cannot mix vectors from different models in the same index.</p>
 <pre><code class="language-python">import hashlib
@@ -294,7 +308,7 @@ def audit_index_for_stale_embeddings(
         &quot;recommendation&quot;: f&quot;Re-embed {len(stale)} documents with current model before enabling search.&quot;
     }</code></pre>
 <hr>
-<h2>Trap 3: Cosine vs Dot Product — Silent Wrong Results</h2>
+<h2 id="trap-3-cosine-vs-dot-product-silent-wrong-results">Trap 3: Cosine vs Dot Product — Silent Wrong Results</h2>
 <p><strong>Symptom</strong>: Semantically identical sentences score poorly. Unrelated sentences score high. No errors, no warnings.</p>
 <p><strong>Root cause</strong>: OpenAI <code>text-embedding-3-*</code> models return <strong>normalised vectors</strong> — for these, cosine similarity and dot product are equivalent. But <code>text-embedding-ada-002</code> and many HuggingFace models return <strong>unnormalised vectors</strong> — using dot product on these gives entirely wrong rankings based on vector magnitude, not semantic similarity.</p>
 <pre><code class="language-python">import numpy as np
@@ -352,7 +366,7 @@ CREATE INDEX ON documents USING hnsw (embedding vector_cosine_ops);
 -- Or normalise on insert:
 UPDATE documents SET embedding = embedding / |embedding|;  -- normalise existing vectors</code></pre>
 <hr>
-<h2>Trap 4: Dimension Mismatch Corrupts Silently in Some Stores</h2>
+<h2 id="trap-4-dimension-mismatch-corrupts-silently-in-some-stores">Trap 4: Dimension Mismatch Corrupts Silently in Some Stores</h2>
 <p><strong>Symptom</strong>: You switch embedding models (e.g., 1536-dim ada-002 to 3072-dim te3-large). Some vector databases silently truncate or pad vectors to match the index dimension. Others throw cryptic internal errors. Your data is corrupt.</p>
 <pre><code class="language-python">from dataclasses import dataclass
 
@@ -383,7 +397,7 @@ def safe_upsert(doc_id: str, text: str, client, pg_conn):
         (doc_id, vector)
     )</code></pre>
 <hr>
-<h2>Trap 5: Multilingual Queries on Monolingual Models</h2>
+<h2 id="trap-5-multilingual-queries-on-monolingual-models">Trap 5: Multilingual Queries on Monolingual Models</h2>
 <p><strong>Symptom</strong>: Your English-trained RAG system is deployed to users in Pakistan, Germany, and Japan. Non-English queries return near-random results.</p>
 <p><strong>Root cause</strong>: English-only embedding models (many MiniLM variants) project non-English text into a meaningless region of the embedding space. The cosine similarities are numerically valid but semantically meaningless.</p>
 <pre><code class="language-python"># Use multilingual models for international deployments
@@ -405,7 +419,7 @@ def detect_language_and_route(text: str) -&gt; str:
     except Exception:
         return &quot;text-embedding-3-large&quot;       # Safe default on detection failure</code></pre>
 <hr>
-<h2>Trap 6: Documents Updated But Embeddings Not Refreshed</h2>
+<h2 id="trap-6-documents-updated-but-embeddings-not-refreshed">Trap 6: Documents Updated But Embeddings Not Refreshed</h2>
 <p><strong>Symptom</strong>: A user edits a document. The document text in your database is updated. But the embedding in your vector store still reflects the old content. Search returns the old version&#39;s content.</p>
 <pre><code class="language-python">import hashlib
 
@@ -430,7 +444,7 @@ class EmbeddingFreshnessChecker:
             return True
         return False  # No update needed</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Vector embeddings are deceptively fragile at the boundaries — tokenisation limits, model versioning, distance metric mismatches, and content staleness all fail silently, making them uniquely difficult to debug in production.</p>
 <ul>
 <li><strong>Always store a model fingerprint alongside every vector</strong> — it&#39;s the only way to detect index staleness after a model upgrade.</li>
@@ -438,7 +452,7 @@ class EmbeddingFreshnessChecker:
 <li><strong>Audit token counts before embedding</strong>, not after — truncation at 512 tokens discards data with no exception raised.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>OpenAI Embeddings Guide</strong>: <a href="https://platform.openai.com/docs/guides/embeddings" target="_blank" rel="noopener">Best practices for using embeddings</a></li>
 <li><strong>Sentence Transformers</strong>: <a href="https://www.sbert.net/docs/pretrained_models.html" target="_blank" rel="noopener">Pretrained Models Reference</a></li>
@@ -471,6 +485,22 @@ class EmbeddingFreshnessChecker:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#why-embedding-bugs-are-the-hardest-to-find" class="toc-link">Why Embedding Bugs Are the Hardest to Find</a></li>
+              <li class="toc-item toc-h2"><a href="#the-embedding-production-failure-map" class="toc-link">The Embedding Production Failure Map</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-1-silent-truncation-at-512-tokens" class="toc-link">Trap 1: Silent Truncation at 512 Tokens</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-2-stale-index-after-model-upgrade" class="toc-link">Trap 2: Stale Index After Model Upgrade</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-3-cosine-vs-dot-product-silent-wrong-results" class="toc-link">Trap 3: Cosine vs Dot Product — Silent Wrong Results</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-4-dimension-mismatch-corrupts-silently-in-some-stores" class="toc-link">Trap 4: Dimension Mismatch Corrupts Silently in Some Stores</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-5-multilingual-queries-on-monolingual-models" class="toc-link">Trap 5: Multilingual Queries on Monolingual Models</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-6-documents-updated-but-embeddings-not-refreshed" class="toc-link">Trap 6: Documents Updated But Embeddings Not Refreshed</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

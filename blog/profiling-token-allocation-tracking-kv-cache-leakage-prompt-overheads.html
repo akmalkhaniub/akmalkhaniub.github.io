@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#memory-vs-token-allocation-lifecycle">Memory vs. Token Allocation Lifecycle</a></li>
+                <li><a href="#python-implementation-token-allocation-profiler">Python Implementation: Token Allocation Profiler</a></li>
+                <li><a href="#optimization-guardrails-mitigation">Optimization Guardrails &amp; Mitigation</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-throughput LLM applications, token counts determine both financial cost and latency profiles. Most developers monitor basic metric stats like total input and output tokens. However, this high-level logging misses critical inefficiencies such as <strong>prompt bloat</strong> (redundant instructions in multi-turn chats) and <strong>KV-Cache leakage</strong> (memory locked up by stale agent histories).</p>
 <p>To run cost-efficient inference engines, teams must profile token allocations at a granular level, measuring prompt caching efficiency and estimating KV-cache utilization.</p>
 <p>By implementing custom token profilers, developers can track the <strong>Prompt Cache Efficiency Ratio (PCER)</strong> and detect context leakage before it drives up infrastructure bills.</p>
 <p>This article details how to build a token profiling and auditing engine.</p>
 <hr>
-<h2>Memory vs. Token Allocation Lifecycle</h2>
+<h2 id="memory-vs-token-allocation-lifecycle">Memory vs. Token Allocation Lifecycle</h2>
 <p>Managing active context requires balancing model memory footprint against prompt reuse:</p>
 <div class="mermaid">graph TD
   A[Incoming Chat Request] --&gt; B[Token Profiler Ingestion]
@@ -127,7 +136,7 @@
     F --&gt; G[Measure Active Session Memory]
     G --&gt;|Detect Stale Idle Sessions| H[Purge Expired KV-Cache Leaks]
   end</div>
-<h3>Key Token Allocation Profiling Metrics</h3>
+<h3 id="key-token-allocation-profiling-metrics">Key Token Allocation Profiling Metrics</h3>
 <ol>
 <li><strong>Prompt Cache Efficiency Ratio (PCER)</strong>: The percentage of input tokens read directly from the hosting engine&#39;s pre-computed cache rather than evaluated from scratch:
 $$PCER = \frac{\text{Cached Input Tokens}}{\text{Total Input Tokens}}$$</li>
@@ -136,7 +145,7 @@ $$SPOR = \frac{\text{System Prompt Tokens}}{\text{Total Input Tokens}}$$</li>
 <li><strong>KV-Cache Leakage Index</strong>: Measures memory leakage caused by keeping long chat sessions in memory after users have disconnected.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Token Allocation Profiler</h2>
+<h2 id="python-implementation-token-allocation-profiler">Python Implementation: Token Allocation Profiler</h2>
 <p>Here is a production-grade Python implementation of a Token Allocation Profiler. It simulates multi-turn chat interactions, tracks prompt caching efficiency, and audits memory overheads:</p>
 <pre><code class="language-python">from typing import List, Dict, Tuple
 from pydantic import BaseModel
@@ -236,7 +245,7 @@ if __name__ == &quot;__main__&quot;:
             print(&quot;  🚨 [Memory Warning] Large KV-Cache footprint! Schedule active cache eviction.&quot;)
         print(&quot;-&quot; * 75)</code></pre>
 <hr>
-<h2>Optimization Guardrails &amp; Mitigation</h2>
+<h2 id="optimization-guardrails-mitigation">Optimization Guardrails &amp; Mitigation</h2>
 <p>When managing token memory:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -249,7 +258,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams profiling token allocations report:</p>
 <ul>
 <li><strong>55% Reduction in API Bills</strong>: Normalizing prompt layouts to maximize prefix caching cuts input token computation costs.</li>
@@ -282,6 +291,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#memory-vs-token-allocation-lifecycle" class="toc-link">Memory vs. Token Allocation Lifecycle</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-token-allocation-profiler" class="toc-link">Python Implementation: Token Allocation Profiler</a></li>
+              <li class="toc-item toc-h2"><a href="#optimization-guardrails-mitigation" class="toc-link">Optimization Guardrails &amp; Mitigation</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

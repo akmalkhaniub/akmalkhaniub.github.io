@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#register-allocation-live-range-interference-architecture">Register Allocation &amp; Live Range Interference Architecture</a></li>
+                <li><a href="#python-implementation-linear-scan-register-allocator-engine">Python Implementation: Linear Scan Register Allocator Engine</a></li>
+                <li><a href="#register-allocation-gotchas-best-practices">Register Allocation Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In the final stages of a compiler backend (such as <strong>LLVM CodeGen</strong>, <strong>GCC</strong>, or <strong>Cranelift</strong>), the compiler must translate Intermediate Representation (IR) instructions into native CPU assembly.</p>
 <p>Compiler IR operates on an <strong>unlimited abstraction of virtual registers</strong> (<code>v0, v1, v2, ... v999</code>).</p>
 <p>However, physical CPU hardware possesses a small, fixed number of physical registers—for example, x86_64 provides only <strong>16 general-purpose registers</strong> (<code>RAX</code>, <code>RBX</code>, <code>RCX</code>, <code>RDX</code>, <code>RSI</code>, <code>RDI</code>, <code>R8</code>–<code>R15</code>).</p>
@@ -111,7 +120,7 @@
 <p>If physical registers are exhausted, the compiler must <strong>Spill</strong> values to slow RAM stack frames (<code>MOV [RBP-8], RAX</code>).</p>
 <p>This article details Liveness Analysis, Chaitin-Briggs Graph Coloring, and Linear Scan Register Allocation.</p>
 <hr>
-<h2>Register Allocation &amp; Live Range Interference Architecture</h2>
+<h2 id="register-allocation-live-range-interference-architecture">Register Allocation &amp; Live Range Interference Architecture</h2>
 <p>How compiler backends compute variable liveness intervals and allocate physical CPU registers:</p>
 <div class="mermaid">graph TD
   subgraph Compiler IR &amp; Liveness Analysis
@@ -129,7 +138,7 @@
   subgraph Final Target Machine Code
     RegAssign &amp; Spill --&gt; Assembly[Native Assembly Code: MOV RAX, 10; MOV [RBP-8], RBX]
   end</div>
-<h3>Core Register Allocation Principles</h3>
+<h3 id="core-register-allocation-principles">Core Register Allocation Principles</h3>
 <ol>
 <li><strong>Liveness Analysis</strong>: Computes the exact instruction range <code>[start, end]</code> where each virtual register is &quot;live&quot; (from its first definition statement until its final usage statement).</li>
 <li><strong>Interference Graphs &amp; Chaitin-Briggs Graph Coloring</strong>:<ul>
@@ -142,7 +151,7 @@
 <li><strong>Register Spilling</strong>: When $K$ physical registers are occupied and a new overlapping interval arrives, the allocator must <strong>spill</strong> one variable to the CPU stack frame. Cost heuristics select the variable with the lowest dynamic execution weight (e.g. spilling variables outside loop bodies rather than inside tight loops).</li>
 </ol>
 <hr>
-<h2>Python Implementation: Linear Scan Register Allocator Engine</h2>
+<h2 id="python-implementation-linear-scan-register-allocator-engine">Python Implementation: Linear Scan Register Allocator Engine</h2>
 <p>Here is a production-grade Python implementation of a Linear Scan Register Allocator featuring Liveness Analysis and Register Spilling:</p>
 <pre><code class="language-python">from typing import List, Dict, Tuple, Optional
 from pydantic import BaseModel
@@ -245,7 +254,7 @@ if __name__ == &quot;__main__&quot;:
         loc = f&quot;Register [{i.assigned_reg}]&quot; if i.assigned_reg else &quot;RAM Stack [RBP - 8]&quot;
         print(f&quot;   • {i.var_name:8s} (Live: [{i.start_inst:02d}..{i.end_inst:02d}]) -&gt; Location: {loc}&quot;)</code></pre>
 <hr>
-<h2>Register Allocation Gotchas &amp; Best Practices</h2>
+<h2 id="register-allocation-gotchas-best-practices">Register Allocation Gotchas &amp; Best Practices</h2>
 <p>When engineering compiler backends:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -258,7 +267,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Compiler backends using Linear Scan and Graph Coloring (such as <strong>LLVM</strong> and <strong>V8 TurboFan</strong>) report:</p>
 <ul>
 <li><strong>Over 25% CPU Execution Speedup</strong>: Keeping high-frequency loop variables inside physical CPU registers avoids slow RAM stack memory reads (<code>MOV EAX, [RBP-8]</code>).</li>
@@ -291,6 +300,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#register-allocation-live-range-interference-architecture" class="toc-link">Register Allocation &amp; Live Range Interference Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-linear-scan-register-allocator-engine" class="toc-link">Python Implementation: Linear Scan Register Allocator Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#register-allocation-gotchas-best-practices" class="toc-link">Register Allocation Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

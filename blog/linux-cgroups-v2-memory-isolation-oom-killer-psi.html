@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#cgroups-v2-unified-memory-architecture-oom-mechanics">Cgroups v2 Unified Memory Architecture &amp; OOM Mechanics</a></li>
+                <li><a href="#python-implementation-linux-cgroups-v2-oom-killer-simulator">Python Implementation: Linux Cgroups v2 &amp; OOM Killer Simulator</a></li>
+                <li><a href="#cgroups-v2-gotchas-best-practices">Cgroups v2 Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In cloud-native infrastructure (<strong>Kubernetes</strong>, <strong>Docker</strong>, <strong>containerd</strong>, <strong>AWS Fargate</strong>), container multitenancy depends entirely on Linux Kernel <strong>Control Groups (cgroups)</strong>.</p>
 <p>Without strict memory resource isolation, a single misbehaving application container could consume all host RAM, triggering system-wide degradation for adjacent workloads.</p>
 <p>While <strong>Cgroups v1</strong> pioneered container isolation, its fragmented controller hierarchies created memory accounting discrepancies and writeback deadlocks.</p>
 <p>With <strong>Linux Cgroups v2 (Unified Hierarchy)</strong>, the Linux kernel completely redesigned memory control semantics, introducing granular throttling thresholds (<code>memory.high</code>), hard caps (<code>memory.max</code>), group-level Out-Of-Memory (OOM) killing, and <strong>Pressure Stall Information (PSI)</strong> metrics.</p>
 <p>This article details the Cgroups v2 unified tree hierarchy, memory boundary controls, kernel page reclaim algorithms, <code>oom_score</code> heuristics, and PSI stall detection.</p>
 <hr>
-<h2>Cgroups v2 Unified Memory Architecture &amp; OOM Mechanics</h2>
+<h2 id="cgroups-v2-unified-memory-architecture-oom-mechanics">Cgroups v2 Unified Memory Architecture &amp; OOM Mechanics</h2>
 <p>How Linux Cgroups v2 enforces multi-tiered memory boundaries and triggers group-level OOM eviction:</p>
 <div class="mermaid">graph TD
   subgraph Linux Cgroups v2 Memory Boundary Controls
@@ -128,7 +137,7 @@
     OOM --&gt; Badness[Compute oom_score = RAM% + oom_score_adj]
     Badness --&gt; KillTree[&quot;🗡️ Atomic Eviction: Terminate Entire Container Cgroup Process Tree!&quot;]
   end</div>
-<h3>Core Linux Memory Isolation Concepts</h3>
+<h3 id="core-linux-memory-isolation-concepts">Core Linux Memory Isolation Concepts</h3>
 <ol>
 <li><strong>Cgroups v1 vs v2 Unified Hierarchy</strong>:<ul>
 <li><em>Cgroups v1</em>: Managed memory, CPU, and block I/O under separate filesystem trees (<code>/sys/fs/cgroup/memory</code>, <code>/sys/fs/cgroup/blkio</code>). Page cache writeback dirty pages could not be attributed back to the originating memory container.</li>
@@ -154,7 +163,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Linux Cgroups v2 &amp; OOM Killer Simulator</h2>
+<h2 id="python-implementation-linux-cgroups-v2-oom-killer-simulator">Python Implementation: Linux Cgroups v2 &amp; OOM Killer Simulator</h2>
 <p>Here is a production-grade Python implementation of a Linux Cgroups v2 Memory Controller and OOM Killer Badness Score Calculator:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional
@@ -265,7 +274,7 @@ if __name__ == &quot;__main__&quot;:
     p3 = ProcessControlBlock(pid=103, name=&quot;memory_leak_script&quot;, rss_memory_mb=500.0, page_cache_mb=50.0, oom_score_adj=500)
     cgroup_engine.allocate_memory(&quot;/sys/fs/cgroup/kubepods/pod_app1&quot;, p3)</code></pre>
 <hr>
-<h2>Cgroups v2 Gotchas &amp; Best Practices</h2>
+<h2 id="cgroups-v2-gotchas-best-practices">Cgroups v2 Gotchas &amp; Best Practices</h2>
 <p>When configuring Linux container memory limits:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -278,7 +287,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Linux Cgroups v2 memory isolation (powering <strong>Kubernetes 1.25+</strong>, <strong>Docker Systemd Drivers</strong>, and <strong>Flatpak</strong>) reports:</p>
 <ul>
 <li><strong>Zero Host Node OOM Collapses</strong>: Multi-tiered <code>memory.high</code> throttling and <code>memory.max</code> hard caps protect host Linux kernel stability.</li>
@@ -311,6 +320,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#cgroups-v2-unified-memory-architecture-oom-mechanics" class="toc-link">Cgroups v2 Unified Memory Architecture &amp; OOM Mechanics</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-linux-cgroups-v2-oom-killer-simulator" class="toc-link">Python Implementation: Linux Cgroups v2 &amp; OOM Killer Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#cgroups-v2-gotchas-best-practices" class="toc-link">Cgroups v2 Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

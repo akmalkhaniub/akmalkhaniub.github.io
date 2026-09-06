@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#raft-node-state-transitions-log-replication-architecture">Raft Node State Transitions &amp; Log Replication Architecture</a></li>
+                <li><a href="#python-implementation-raft-node-state-machine-log-engine">Python Implementation: Raft Node State Machine &amp; Log Engine</a></li>
+                <li><a href="#raft-implementation-gotchas-best-practices">Raft Implementation Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In fault-tolerant distributed systems, multiple independent nodes must agree on a single sequence of state transitions despite network partitions, packet loss, and node crashes. This challenge is known as <strong>Distributed Consensus</strong>.</p>
 <p>While <strong>Paxos</strong> was historically the standard consensus algorithm, its complex dual-phase mechanisms made it notoriously difficult to implement correctly in production.</p>
 <p>In 2014, Diego Ongaro and John Ousterhout introduced <strong>Raft</strong>—a consensus algorithm explicitly designed for understandability, decomposed into three distinct sub-problems: <strong>Leader Election</strong>, <strong>Log Replication</strong>, and <strong>Safety</strong>.</p>
 <p>Today, Raft powers core infrastructure databases including <strong>etcd</strong> (Kubernetes state store), <strong>HashiCorp Consul</strong>, <strong>CockroachDB</strong>, and <strong>TiKV</strong>.</p>
 <p>This article explores the internal state machines, RPC mechanics, and safety invariants of the Raft Consensus Protocol.</p>
 <hr>
-<h2>Raft Node State Transitions &amp; Log Replication Architecture</h2>
+<h2 id="raft-node-state-transitions-log-replication-architecture">Raft Node State Transitions &amp; Log Replication Architecture</h2>
 <p>How Raft nodes transition between Follower, Candidate, and Leader roles while replicating log entries:</p>
 <div class="mermaid">graph TD
   subgraph Raft Node State Machine
@@ -129,7 +138,7 @@
     
     Leader --&gt;|7. Majority Acknowledged -&gt; Advance commitIndex| StateMachine[State Machine Execution]
   end</div>
-<h3>Core Raft Protocol Mechanics</h3>
+<h3 id="core-raft-protocol-mechanics">Core Raft Protocol Mechanics</h3>
 <ol>
 <li><strong>Monotonically Increasing Terms</strong>: Time is divided into arbitrary terms identified by sequential integers (<code>Term 1</code>, <code>Term 2</code>). Terms act as a logical clock, allowing nodes to detect stale leaders or outdated candidates.</li>
 <li><strong>Leader Election &amp; Quorum</strong>: Nodes begin as Followers. If a Follower receives no heartbeats before its randomized election timer ($150\text{ms} - 300\text{ms}$) expires, it increments its term, transitions to Candidate, and broadcasts <code>RequestVote</code> RPCs. A Candidate becomes Leader upon receiving votes from a majority of nodes ($\lfloor N/2 \rfloor + 1$).</li>
@@ -142,7 +151,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Raft Node State Machine &amp; Log Engine</h2>
+<h2 id="python-implementation-raft-node-state-machine-log-engine">Python Implementation: Raft Node State Machine &amp; Log Engine</h2>
 <p>Here is a production-grade Python simulation of a Raft Consensus Node featuring term management, leader election voting, and log matching checks:</p>
 <pre><code class="language-python">import time
 import random
@@ -271,7 +280,7 @@ if __name__ == &quot;__main__&quot;:
     replicate_reply = follower.handle_append_entries(replicate_args)
     print(f&quot; Log Replication Reply: Success={replicate_reply.success} | Follower Log Len: {len(follower.log)}&quot;)</code></pre>
 <hr>
-<h2>Raft Implementation Gotchas &amp; Best Practices</h2>
+<h2 id="raft-implementation-gotchas-best-practices">Raft Implementation Gotchas &amp; Best Practices</h2>
 <p>When building Raft-based consensus clusters:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -284,7 +293,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Distributed key-value engines powered by Raft (such as <strong>etcd</strong>) report:</p>
 <ul>
 <li><strong>Zero Data Loss under Node Failures</strong>: Surviving node crashes automatically without losing committed state transitions.</li>
@@ -317,6 +326,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#raft-node-state-transitions-log-replication-architecture" class="toc-link">Raft Node State Transitions &amp; Log Replication Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-raft-node-state-machine-log-engine" class="toc-link">Python Implementation: Raft Node State Machine &amp; Log Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#raft-implementation-gotchas-best-practices" class="toc-link">Raft Implementation Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

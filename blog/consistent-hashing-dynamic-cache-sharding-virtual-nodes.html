@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#consistent-hashing-ring-virtual-node-architecture">Consistent Hashing Ring &amp; Virtual Node Architecture</a></li>
+                <li><a href="#python-implementation-consistent-hashing-ring-with-vnodes">Python Implementation: Consistent Hashing Ring with VNodes</a></li>
+                <li><a href="#consistent-hashing-gotchas-best-practices">Consistent Hashing Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When scaling distributed cache clusters across multiple server nodes, data must be partitioned (sharded) so that read and write requests reach the correct cache node.</p>
 <p>A naive sharding approach uses simple modulo hashing:
 $$\text{node_index} = \text{hash}(\text{key}) \pmod N$$</p>
@@ -112,7 +121,7 @@ $$\text{node_index} = \text{hash}(\text{key}) \pmod N$$</p>
 <p>Consistent Hashing guarantees that when a node is added or removed, only $1/N$ of keys are re-mapped on average.</p>
 <p>This article details the math and implementation of Consistent Hashing hash rings with Virtual Nodes.</p>
 <hr>
-<h2>Consistent Hashing Ring &amp; Virtual Node Architecture</h2>
+<h2 id="consistent-hashing-ring-virtual-node-architecture">Consistent Hashing Ring &amp; Virtual Node Architecture</h2>
 <p>How keys map to physical cache nodes along a continuous $2^{32}-1$ hash space ring:</p>
 <div class="mermaid">graph TD
   subgraph Continuous Hash Ring Space (0 to 2^32 - 1)
@@ -129,14 +138,14 @@ $$\text{node_index} = \text{hash}(\text{key}) \pmod N$$</p>
     R3 -.-&gt; ServerB[Physical Server B]
     R5 -.-&gt; ServerC[Physical Server C]
   end</div>
-<h3>Core Consistent Hashing Principles</h3>
+<h3 id="core-consistent-hashing-principles">Core Consistent Hashing Principles</h3>
 <ol>
 <li><strong>Hash Ring Topology</strong>: The hash space (such as 32-bit MD5 or MurmurHash3 output ranging from $0$ to $2^{32}-1$) is wrapped into a circular ring where the largest hash value wraps around to 0.</li>
 <li><strong>Clockwise Key Routing</strong>: Both cache nodes and data keys are hashed onto the ring. To locate the cache server for a key, the algorithm traverses clockwise from the key&#39;s hash position until it encounters the first node hash point.</li>
 <li><strong>Virtual Nodes (VNodes)</strong>: If physical nodes are directly assigned single positions on the ring, non-uniform hash distributions create &quot;hotspot&quot; partitions where one server receives double the traffic of others. Virtual Nodes map each physical server to $V$ distinct points (e.g. $V = 150 - 250$) across the ring, ensuring uniform traffic distribution and proportional load capacity.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Consistent Hashing Ring with VNodes</h2>
+<h2 id="python-implementation-consistent-hashing-ring-with-vnodes">Python Implementation: Consistent Hashing Ring with VNodes</h2>
 <p>Here is a production-grade Python implementation of a Consistent Hashing Ring with Virtual Nodes and load distribution auditing:</p>
 <pre><code class="language-python">import hashlib
 import bisect
@@ -250,7 +259,7 @@ if __name__ == &quot;__main__&quot;:
     
     print(&quot;\n✨ Consistent Hashing localized key movement to newly added node without invalidating full cluster!&quot;)</code></pre>
 <hr>
-<h2>Consistent Hashing Gotchas &amp; Best Practices</h2>
+<h2 id="consistent-hashing-gotchas-best-practices">Consistent Hashing Gotchas &amp; Best Practices</h2>
 <p>When deploying consistent hashing rings:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -263,7 +272,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying Consistent Hashing with Virtual Nodes report:</p>
 <ul>
 <li><strong>Minimal Cache Invalidation During Cluster Resizing</strong>: Adding or removing server nodes re-maps only $1/N$ of keys, preventing global cache misses.</li>
@@ -296,6 +305,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#consistent-hashing-ring-virtual-node-architecture" class="toc-link">Consistent Hashing Ring &amp; Virtual Node Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-consistent-hashing-ring-with-vnodes" class="toc-link">Python Implementation: Consistent Hashing Ring with VNodes</a></li>
+              <li class="toc-item toc-h2"><a href="#consistent-hashing-gotchas-best-practices" class="toc-link">Consistent Hashing Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

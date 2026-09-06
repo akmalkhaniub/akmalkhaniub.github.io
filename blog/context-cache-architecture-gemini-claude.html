@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-economics-of-prompt-caching">The Economics of Prompt Caching</a></li>
+                <li><a href="#1-under-the-hood-cache-invalidation-boundaries">1. Under the Hood: Cache Invalidation Boundaries</a></li>
+                <li><a href="#2-designing-the-optimal-prompt-pipeline">2. Designing the Optimal Prompt Pipeline</a></li>
+                <li><a href="#code-demo-cache-aware-prompt-assembly">Code Demo: Cache-Aware Prompt Assembly</a></li>
+                <li><a href="#architectural-checklist">Architectural Checklist</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Prompt Caching has emerged as one of the most significant cost and latency optim
 </div>
 </div>
 <hr>
-<h2>The Economics of Prompt Caching</h2>
+<h2 id="the-economics-of-prompt-caching">The Economics of Prompt Caching</h2>
 <p>In complex agentic systems, prompts are often extremely large. System prompts containing codebases, API specifications, and extensive reasoning instructions can easily reach 50,000 to 100,000 tokens. </p>
 <p>Reading this context on every single turn of a multi-turn conversation is both slow and expensive. Prompt caching addresses this by caching the processed token state of the prompt prefix.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -131,7 +141,7 @@ flowchart TD
         note2[Result: 95% of prompt is read from cache]
     end</div>
 <hr>
-<h2>1. Under the Hood: Cache Invalidation Boundaries</h2>
+<h2 id="1-under-the-hood-cache-invalidation-boundaries">1. Under the Hood: Cache Invalidation Boundaries</h2>
 <p>Prompt caching operates on a <strong>strict prefix-matching</strong> mechanism. The model provider hashes the prompt tokens from left to right. </p>
 <ul>
 <li><strong>The Left-to-Right Constraint</strong>: If even a single character changes at token position <code>N</code>, the entire cache from position <code>N</code> to the end of the prompt is invalidated.</li>
@@ -140,7 +150,7 @@ flowchart TD
 </ul>
 <p>To prevent cache invalidation, prompts must be organized in order of <strong>increasing volatility</strong> (most static elements on the far left, most dynamic elements on the far right).</p>
 <hr>
-<h2>2. Designing the Optimal Prompt Pipeline</h2>
+<h2 id="2-designing-the-optimal-prompt-pipeline">2. Designing the Optimal Prompt Pipeline</h2>
 <p>An optimal agent prompt layout must follow this exact order:</p>
 <ol>
 <li><strong>System Instructions</strong> (100% static across all users).</li>
@@ -150,7 +160,7 @@ flowchart TD
 <li><strong>New User Query &amp; Temporary Tool Logs</strong> (Highly dynamic - invalidates on every turn).</li>
 </ol>
 <hr>
-<h2>Code Demo: Cache-Aware Prompt Assembly</h2>
+<h2 id="code-demo-cache-aware-prompt-assembly">Code Demo: Cache-Aware Prompt Assembly</h2>
 <p>Below is a Python implementation of a prompt assembler that groups prompts into distinct cache blocks, validates token requirements, and structures payloads to maximize prefix match hits.</p>
 <pre><code class="language-python">import json
 from typing import List, Dict, Any, Tuple
@@ -231,7 +241,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;Active Cache Blocks: {meta['cache_blocks_active']}&quot;)
     print(f&quot;Cache Coverage Ratio: {meta['cached_tokens'] / meta['total_tokens']:.2%}&quot;)</code></pre>
 <hr>
-<h2>Architectural Checklist</h2>
+<h2 id="architectural-checklist">Architectural Checklist</h2>
 <ul>
 <li><strong>Order of Volatility</strong>: Verify your prompt templates assemble blocks from most static (System instructions) to most dynamic (User input). Never place variable items at the top of the prompt.</li>
 <li><strong>Keep Cache Limits in Mind</strong>: Do not apply cache tags to small prompts. Standardize caching for payloads exceeding 1,024 tokens.</li>
@@ -264,6 +274,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-economics-of-prompt-caching" class="toc-link">The Economics of Prompt Caching</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-cache-invalidation-boundaries" class="toc-link">1. Under the Hood: Cache Invalidation Boundaries</a></li>
+              <li class="toc-item toc-h2"><a href="#2-designing-the-optimal-prompt-pipeline" class="toc-link">2. Designing the Optimal Prompt Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-cache-aware-prompt-assembly" class="toc-link">Code Demo: Cache-Aware Prompt Assembly</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-checklist" class="toc-link">Architectural Checklist</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

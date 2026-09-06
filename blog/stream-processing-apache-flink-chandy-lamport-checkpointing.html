@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#stateful-stream-processing-chandy-lamport-snapshot-architecture">Stateful Stream Processing &amp; Chandy-Lamport Snapshot Architecture</a></li>
+                <li><a href="#python-implementation-stateful-stream-operator-chandy-lamport-engine">Python Implementation: Stateful Stream Operator &amp; Chandy-Lamport Engine</a></li>
+                <li><a href="#stream-processing-gotchas-best-practices">Stream Processing Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In real-time data engineering (financial fraud detection, ad-tech clickstream analytics, IoT telemetry), processing unbounded data streams requires continuous sub-second latency.</p>
 <p>Early stream processing engines relied on <strong>Micro-Batching</strong> (such as Apache Spark Streaming), which grouped events into small discrete time intervals.</p>
 <p>While micro-batching simplifies fault tolerance, it inherently introduces artificial latency ($100\text{ms}$ to $1\text{s}$) because events must wait for batch collection.</p>
@@ -111,7 +120,7 @@
 <p>By integrating embedded local state backends (<strong>RocksDB</strong>) with <strong>Asynchronous Barrier Snapshotting (ABS)</strong> derived from the classic <strong>Chandy-Lamport algorithm</strong>, Apache Flink delivers true continuous streaming with strict <strong>Exactly-Once Guarantees</strong>.</p>
 <p>This article details Flink&#39;s DAG execution engine, embedded state backends, Chandy-Lamport stream barriers, and two-phase commit sinks.</p>
 <hr>
-<h2>Stateful Stream Processing &amp; Chandy-Lamport Snapshot Architecture</h2>
+<h2 id="stateful-stream-processing-chandy-lamport-snapshot-architecture">Stateful Stream Processing &amp; Chandy-Lamport Snapshot Architecture</h2>
 <p>How Flink injects Stream Barriers into continuous data streams to capture consistent global snapshots:</p>
 <div class="mermaid">graph TD
   subgraph Unbounded Data Stream Ingestion
@@ -133,7 +142,7 @@
     Snapshot1 &amp; Snapshot2 --&gt; JobManager[Flink JobManager: Checkpoint Metadata Store]
     JobManager --&gt;|2. All Operators Ack B1| ConsistentState[🎉 CONSISTENT GLOBAL STATE SNAPSHOT COMPLETED!]
   end</div>
-<h3>Core Stream Processing Mechanics</h3>
+<h3 id="core-stream-processing-mechanics">Core Stream Processing Mechanics</h3>
 <ol>
 <li><strong>Pipelined Continuous Execution DAG</strong>: Unlike batch processors that materialize intermediate results to disk between stages, Flink operators (Source, FlatMap, KeyBy, Window, Sink) run continuously in parallel task slots, passing records directly across network sockets via netty ring buffers.</li>
 <li><strong>Embedded Local State (RocksDB Backend)</strong>:<ul>
@@ -151,7 +160,7 @@
 <li><strong>Exactly-Once Processing (EOS)</strong>: Combines ABS state checkpointing with <strong>Two-Phase Commit Sinks</strong> (e.g., <code>TwoPhaseCommitSinkFunction</code> for Kafka). On failure, Flink rolls back state to the last successful checkpoint $B_n$ and re-populates Kafka offsets, guaranteeing zero data loss and zero duplicates.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Stateful Stream Operator &amp; Chandy-Lamport Engine</h2>
+<h2 id="python-implementation-stateful-stream-operator-chandy-lamport-engine">Python Implementation: Stateful Stream Operator &amp; Chandy-Lamport Engine</h2>
 <p>Here is a production-grade Python implementation of a Stateful Stream Operator featuring RocksDB-style local state management and Chandy-Lamport Stream Barrier Snapshotting:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Union, Optional
@@ -245,7 +254,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Task 1 Checkpoint #{chkp_1} Snapshot: {op1.completed_checkpoints[chkp_1]}&quot;)
     print(f&quot;   • Task 1 Current Live State (Post-Checkpoint): {op1.local_rocksdb_state}&quot;)</code></pre>
 <hr>
-<h2>Stream Processing Gotchas &amp; Best Practices</h2>
+<h2 id="stream-processing-gotchas-best-practices">Stream Processing Gotchas &amp; Best Practices</h2>
 <p>When operating stateful stream processing clusters:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -258,7 +267,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Streaming platforms utilizing Flink and Chandy-Lamport ABS (such as <strong>Uber</strong>, <strong>Netflix</strong>, <strong>Alibaba</strong>, and <strong>Stripe</strong>) report:</p>
 <ul>
 <li><strong>Sub-10ms Processing Latency</strong>: Continuous pipelined operators process millions of events per second with instant state updates.</li>
@@ -291,6 +300,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#stateful-stream-processing-chandy-lamport-snapshot-architecture" class="toc-link">Stateful Stream Processing &amp; Chandy-Lamport Snapshot Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-stateful-stream-operator-chandy-lamport-engine" class="toc-link">Python Implementation: Stateful Stream Operator &amp; Chandy-Lamport Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#stream-processing-gotchas-best-practices" class="toc-link">Stream Processing Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

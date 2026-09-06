@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#multi-raft-architecture-key-range-routing-topology">Multi-Raft Architecture &amp; Key-Range Routing Topology</a></li>
+                <li><a href="#python-implementation-multi-raft-router-range-split-engine">Python Implementation: Multi-Raft Router &amp; Range Split Engine</a></li>
+                <li><a href="#multi-raft-gotchas-best-practices">Multi-Raft Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>A single Raft consensus group consists of $N$ nodes maintaining a single replicated log driven by a single Raft Leader.</p>
 <p>While a single Raft group guarantees strong consistency, it creates a fundamental scalability bottleneck: <strong>all write operations must pass through the single Raft Leader</strong>. A single Raft leader cannot scale past the I/O and network bandwidth capacity of a single physical server (typically bottlenecked at $\approx 50,000$ transactions per second).</p>
 <p>To scale distributed storage engines to petabytes of data and millions of transactions per second, modern distributed databases (<strong>CockroachDB</strong>, <strong>TiKV</strong>, <strong>YugabyteDB</strong>) utilize <strong>Multi-Raft Architecture</strong>.</p>
 <p>Multi-Raft partitions the entire dataset into contiguous key ranges (called <strong>Ranges</strong> or <strong>Shards</strong>) and assigns each range to its own independent Raft consensus group.</p>
 <p>This article details Multi-Raft architecture, range splitting, and dynamic replica rebalancing.</p>
 <hr>
-<h2>Multi-Raft Architecture &amp; Key-Range Routing Topology</h2>
+<h2 id="multi-raft-architecture-key-range-routing-topology">Multi-Raft Architecture &amp; Key-Range Routing Topology</h2>
 <p>How physical database nodes host hundreds of independent Raft consensus groups:</p>
 <div class="mermaid">graph TD
   Client[Client SQL / KV Request] --&gt;|1. Route Key 'user_88'| Router[Multi-Raft Range Router]
@@ -138,7 +147,7 @@
   end
   
   R2_Leader --&gt;|3. AppendEntries to Raft Group 2| R2_Follower2 &amp; R2_Follower3</div>
-<h3>Core Multi-Raft Principles</h3>
+<h3 id="core-multi-raft-principles">Core Multi-Raft Principles</h3>
 <ol>
 <li><strong>Contiguous Key-Range Partitioning</strong>: Data is partitioned into ordered key ranges (e.g. Range 1: <code>[&quot;a&quot;, &quot;f&quot;)</code>, Range 2: <code>[&quot;f&quot;, &quot;m&quot;)</code>, Range 3: <code>[&quot;m&quot;, &quot;z&quot;)</code>).</li>
 <li><strong>Co-located Independent Raft Groups</strong>: A single physical database server hosts multiple lightweight Raft state machine workers. Node 1 can act as the <strong>Raft Leader</strong> for Range 1 while simultaneously serving as a <strong>Raft Follower</strong> for Range 2 and Range 3.</li>
@@ -146,7 +155,7 @@
 <li><strong>Dynamic Leader &amp; Replica Rebalancing</strong>: Background cluster orchestrators monitor CPU, memory, and disk usage across physical nodes. If Node 1 becomes a hotspot, the coordinator commands Range Leaders on Node 1 to execute <strong>Leader Transfers</strong> to under-utilized nodes in the cluster.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Multi-Raft Router &amp; Range Split Engine</h2>
+<h2 id="python-implementation-multi-raft-router-range-split-engine">Python Implementation: Multi-Raft Router &amp; Range Split Engine</h2>
 <p>Here is a production-grade Python simulation of a Multi-Raft Range Router with automated Range Splitting and Leader Transfer balancing:</p>
 <pre><code class="language-python">import bisect
 from typing import List, Dict, Optional, Tuple
@@ -262,7 +271,7 @@ if __name__ == &quot;__main__&quot;:
         r = cluster_router.route_key(k)
         print(f&quot;   • Key '{k}' -&gt; {r.range_id} (Leader: {r.raft_leader})&quot;)</code></pre>
 <hr>
-<h2>Multi-Raft Gotchas &amp; Best Practices</h2>
+<h2 id="multi-raft-gotchas-best-practices">Multi-Raft Gotchas &amp; Best Practices</h2>
 <p>When architecting Multi-Raft storage engines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -275,7 +284,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Distributed databases utilizing Multi-Raft architecture (such as <strong>TiKV</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Linear Horizontal Scalability</strong>: Scaling write throughput linearly by adding physical server nodes, expanding beyond $1,000,000$ transactions per second.</li>
@@ -308,6 +317,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#multi-raft-architecture-key-range-routing-topology" class="toc-link">Multi-Raft Architecture &amp; Key-Range Routing Topology</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-multi-raft-router-range-split-engine" class="toc-link">Python Implementation: Multi-Raft Router &amp; Range Split Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#multi-raft-gotchas-best-practices" class="toc-link">Multi-Raft Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

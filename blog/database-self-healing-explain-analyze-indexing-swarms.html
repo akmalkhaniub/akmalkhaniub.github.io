@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-core-bottleneck-query-performance-decay">The Core Bottleneck: Query Performance Decay</a></li>
+                <li><a href="#1-under-the-hood-parsing-the-ast-of-sql-statements">1. Under the Hood: Parsing the AST of SQL Statements</a></li>
+                <li><a href="#2-setting-up-non-blocking-index-creations">2. Setting up Non-Blocking Index Creations</a></li>
+                <li><a href="#code-demo-autonomous-query-optimizer">Code Demo: Autonomous Query Optimizer</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ As application codebases scale, query execution times drift due to changing data
 </div>
 </div>
 <hr>
-<h2>The Core Bottleneck: Query Performance Decay</h2>
+<h2 id="the-core-bottleneck-query-performance-decay">The Core Bottleneck: Query Performance Decay</h2>
 <p>In typical database architectures, slow queries occur due to:</p>
 <ul>
 <li><strong>Missing Index Coordinates</strong>: The database execution planner is forced to run sequential scans (Seq Scan) across millions of table rows.</li>
@@ -130,7 +140,7 @@ flowchart TD
     WriteDDL --&gt; Stage[Verify Index Cost Reduction on Staging DB]
     Stage --&gt; Commit[Export Migration File]</div>
 <hr>
-<h2>1. Under the Hood: Parsing the AST of SQL Statements</h2>
+<h2 id="1-under-the-hood-parsing-the-ast-of-sql-statements">1. Under the Hood: Parsing the AST of SQL Statements</h2>
 <p>To recommend an index, the agent needs to analyze the statement structure:</p>
 <ul>
 <li><strong>Filter Conditions (<code>WHERE</code> / <code>JOIN</code> keys)</strong>: Isolating columns that act as filter gates.</li>
@@ -138,14 +148,14 @@ flowchart TD
 <li><strong>Topological Index Selection</strong>: Synthesizing compound indices (e.g. <code>(user_id, created_at)</code>) to optimize multi-key lookups.</li>
 </ul>
 <hr>
-<h2>2. Setting up Non-Blocking Index Creations</h2>
+<h2 id="2-setting-up-non-blocking-index-creations">2. Setting up Non-Blocking Index Creations</h2>
 <p>Writing database indexes on live production systems is high-risk:</p>
 <ol>
 <li><strong>Never Lock Writes</strong>: Always append <code>CONCURRENTLY</code> to your <code>CREATE INDEX</code> queries. Creating an index without this keyword blocks write queries on target tables.</li>
 <li><strong>Execute Staging Validations</strong>: Run DDL statements inside staging environments first to confirm that the index decreases execution plans and does not cause syntax exceptions.</li>
 </ol>
 <hr>
-<h2>Code Demo: Autonomous Query Optimizer</h2>
+<h2 id="code-demo-autonomous-query-optimizer">Code Demo: Autonomous Query Optimizer</h2>
 <p>Below is a Python implementation of an autonomous index planner. It parses a simulated slow query structure, evaluates explain-plan execution costs, recommends index configurations, and compiles DDL index statements.</p>
 <pre><code class="language-python">import re
 from typing import Dict, Any, Tuple, List
@@ -225,7 +235,7 @@ if __name__ == &quot;__main__&quot;:
         else:
             print(f&quot;👉 Result: {result}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Run CONCURRENTLY</strong>: Always configure your indexing swarms to write DDL migrations using <code>CREATE INDEX CONCURRENTLY</code> to avoid write lock bottlenecks.</li>
 <li><strong>Isolate on Staging</strong>: Enforce staging validations to confirm that index updates actually reduce SQL execution costs before applying migrations.</li>
@@ -258,6 +268,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-core-bottleneck-query-performance-decay" class="toc-link">The Core Bottleneck: Query Performance Decay</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-parsing-the-ast-of-sql-statements" class="toc-link">1. Under the Hood: Parsing the AST of SQL Statements</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-non-blocking-index-creations" class="toc-link">2. Setting up Non-Blocking Index Creations</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-autonomous-query-optimizer" class="toc-link">Code Demo: Autonomous Query Optimizer</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

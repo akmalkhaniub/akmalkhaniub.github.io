@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#zgc-low-latency-architecture-colored-pointers">ZGC Low-Latency Architecture &amp; Colored Pointers</a></li>
+                <li><a href="#python-implementation-zgc-colored-pointer-load-barrier-engine">Python Implementation: ZGC Colored Pointer &amp; Load Barrier Engine</a></li>
+                <li><a href="#low-latency-gc-gotchas-best-practices">Low-Latency GC Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-scale enterprise applications (<strong>Fintech Trading Engines</strong>, <strong>Real-Time Data Streaming</strong>, <strong>Multi-Terabyte In-Memory Caches</strong>), application response time SLAs require sub-millisecond latencies.</p>
 <p>For decades, traditional Java Garbage Collectors (<strong>Parallel GC</strong>, <strong>CMS</strong>, <strong>G1 GC</strong>) suffered from a fatal flaw: <strong>Stop-The-World (STW) Pauses</strong>.</p>
 <p>During memory compaction, traditional collectors freeze all application worker threads while moving live objects across heap pages. On terabyte-sized heaps, STW pauses take seconds or even minutes, triggering downstream timeout outages.</p>
@@ -111,7 +120,7 @@
 <p>By utilizing <strong>64-bit Colored Pointers</strong> and JIT-compiled <strong>Load Barriers</strong>, ZGC guarantees max STW pause times of under <strong>$1\text{ millisecond}$</strong>, regardless of whether the heap size is $16\text{ GB}$ or $16\text{ Terabytes}$.</p>
 <p>This article details ZGC colored pointers, region relocation tables, and Load Barrier self-healing pointer mechanics.</p>
 <hr>
-<h2>ZGC Low-Latency Architecture &amp; Colored Pointers</h2>
+<h2 id="zgc-low-latency-architecture-colored-pointers">ZGC Low-Latency Architecture &amp; Colored Pointers</h2>
 <p>How ZGC uses 64-bit Colored Pointers and JIT Load Barriers to achieve concurrent, self-healing memory compaction:</p>
 <div class="mermaid">graph TD
   subgraph ZGC 64-bit Colored Pointer Memory Layout
@@ -131,7 +140,7 @@
     LookupTable --&gt;|Update Reference In-Place| SelfHeal[✨ Self-Healing Pointer Updated: Remapped = 1]
     SelfHeal --&gt; ReturnObj
   end</div>
-<h3>Core ZGC &amp; Shenandoah Concepts</h3>
+<h3 id="core-zgc-shenandoah-concepts">Core ZGC &amp; Shenandoah Concepts</h3>
 <ol>
 <li><strong>The Concurrent Compaction Challenge</strong>:<ul>
 <li>If GC compaction moves an object from Old Address $A$ to New Address $B$ while an application thread is actively reading it, the thread will access stale data or crash.</li>
@@ -163,7 +172,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: ZGC Colored Pointer &amp; Load Barrier Engine</h2>
+<h2 id="python-implementation-zgc-colored-pointer-load-barrier-engine">Python Implementation: ZGC Colored Pointer &amp; Load Barrier Engine</h2>
 <p>Here is a production-grade Python implementation of a 64-bit Colored Pointer ZGC Memory Allocator and Self-Healing Load Barrier Engine:</p>
 <pre><code class="language-python">from typing import Dict, Optional
 from pydantic import BaseModel
@@ -267,7 +276,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n🔍 Second Load Attempt (Post Self-Healing):&quot;)
     zgc.load_barrier(healed_ptr)</code></pre>
 <hr>
-<h2>Low-Latency GC Gotchas &amp; Best Practices</h2>
+<h2 id="low-latency-gc-gotchas-best-practices">Low-Latency GC Gotchas &amp; Best Practices</h2>
 <p>When tuning low-latency garbage collectors:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -280,7 +289,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Low-latency concurrent garbage collectors (such as <strong>Java ZGC</strong>, <strong>Shenandoah</strong>, and <strong>Azul C4</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Max Pause Times ($&lt; 1\text{ms}$)</strong>: On terabyte heaps, STW pauses drop from multi-second disruptions to sub-millisecond blips.</li>
@@ -313,6 +322,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#zgc-low-latency-architecture-colored-pointers" class="toc-link">ZGC Low-Latency Architecture &amp; Colored Pointers</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-zgc-colored-pointer-load-barrier-engine" class="toc-link">Python Implementation: ZGC Colored Pointer &amp; Load Barrier Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#low-latency-gc-gotchas-best-practices" class="toc-link">Low-Latency GC Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

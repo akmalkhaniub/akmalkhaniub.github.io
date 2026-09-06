@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#aries-3-phase-crash-recovery-pipeline">ARIES 3-Phase Crash Recovery Pipeline</a></li>
+                <li><a href="#python-implementation-aries-crash-recovery-engine">Python Implementation: ARIES Crash Recovery Engine</a></li>
+                <li><a href="#aries-recovery-gotchas-principles">ARIES Recovery Gotchas &amp; Principles</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When a database node crashes unexpectedly due to power failure or hardware fault, dirty in-memory database pages that were never flushed to disk are lost, while uncommitted transaction modifications may remain partially written to disk.</p>
 <p>To provide strict <strong>ACID Durability</strong> and atomicity across system crashes, relational and document database engines rely on <strong>Write-Ahead Logging (WAL)</strong> governed by the <strong>ARIES (Algorithms for Recovery and Isolation Exploiting Semantics)</strong> protocol.</p>
 <p>ARIES guarantees that regardless of when or how many times a system crashes during recovery, the database state will recover cleanly to a consistent state.</p>
 <p>This article details the three phases of the ARIES crash recovery algorithm and how to implement a recovery manager.</p>
 <hr>
-<h2>ARIES 3-Phase Crash Recovery Pipeline</h2>
+<h2 id="aries-3-phase-crash-recovery-pipeline">ARIES 3-Phase Crash Recovery Pipeline</h2>
 <p>The execution flow during database reboot after an unexpected crash:</p>
 <div class="mermaid">graph TD
   A[Database Crash Event / System Reboot] --&gt; B[Phase 1: Analysis Phase]
@@ -123,14 +132,14 @@
   end
   
   D1 --&gt; E[Database Fully Restored &amp; Ready for Client Connections]</div>
-<h3>Core ARIES Invariants</h3>
+<h3 id="core-aries-invariants">Core ARIES Invariants</h3>
 <ol>
 <li><strong>Write-Ahead Logging (WAL) Rule</strong>: A dirty page modification cannot be written to disk until the corresponding log record with Log Sequence Number (LSN) has been flushed to non-volatile disk storage ($PageLSN \le FlushedLSN$).</li>
 <li><strong>Repeating History during Redo</strong>: During the Redo phase, ARIES replays <em>all</em> logged actions—including modifications made by transactions that eventually aborted. This restores the database to the exact state it was in at the instant of the crash.</li>
 <li><strong>Compensation Log Records (CLRs)</strong>: When rolling back an uncommitted transaction during the Undo phase, every undo operation writes a CLR record to the log. If the system crashes again <em>during</em> recovery, CLRs ensure that previously undone actions are never undone a second time.</li>
 </ol>
 <hr>
-<h2>Python Implementation: ARIES Crash Recovery Engine</h2>
+<h2 id="python-implementation-aries-crash-recovery-engine">Python Implementation: ARIES Crash Recovery Engine</h2>
 <p>Here is a production-grade Python simulation of an ARIES Recovery Manager featuring Analysis, Redo, and Undo phase processing with Compensation Log Record (CLR) tracking:</p>
 <pre><code class="language-python">from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
@@ -236,7 +245,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(&quot;\n✨ Database successfully restored to consistent state!&quot;)</code></pre>
 <hr>
-<h2>ARIES Recovery Gotchas &amp; Principles</h2>
+<h2 id="aries-recovery-gotchas-principles">ARIES Recovery Gotchas &amp; Principles</h2>
 <p>When designing transaction recovery engines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -249,7 +258,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams utilizing ARIES recovery engines report:</p>
 <ul>
 <li><strong>100% ACID Durability</strong>: Committed transactions survive power outages and kernel panics without data corruption.</li>
@@ -282,6 +291,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#aries-3-phase-crash-recovery-pipeline" class="toc-link">ARIES 3-Phase Crash Recovery Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-aries-crash-recovery-engine" class="toc-link">Python Implementation: ARIES Crash Recovery Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#aries-recovery-gotchas-principles" class="toc-link">ARIES Recovery Gotchas &amp; Principles</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

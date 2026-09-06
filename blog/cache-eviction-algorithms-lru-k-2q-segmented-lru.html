@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#cache-eviction-scan-resistance-architecture">Cache Eviction &amp; Scan Resistance Architecture</a></li>
+                <li><a href="#python-implementation-segmented-lru-slru-eviction-engine">Python Implementation: Segmented LRU (SLRU) Eviction Engine</a></li>
+                <li><a href="#eviction-algorithm-gotchas-best-practices">Eviction Algorithm Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When an in-memory cache reaches its maximum memory allocation, it must decide which key to <strong>evict</strong> to make room for newly requested data.</p>
 <p>For decades, systems relied on <strong>Classic LRU (Least Recently Used)</strong>.</p>
 <p>However, classic LRU suffers from a critical vulnerability known as <strong>Scan Pollution</strong>.</p>
@@ -111,7 +120,7 @@
 <p>To achieve <strong>Scan Resistance</strong> and optimize cache hit ratios under real-world workloads, modern storage engines (<strong>PostgreSQL</strong>, <strong>SQLite</strong>, <strong>Memcached</strong>, <strong>Caffeine</strong>) utilize advanced eviction algorithms: <strong>LRU-K</strong>, <strong>2Q (Two-Queue)</strong>, and <strong>Segmented LRU (SLRU)</strong>.</p>
 <p>This article details LRU-K $K$-th backward reference math, 2Q FIFO/LRU separation, and Segmented LRU probationary state transitions.</p>
 <hr>
-<h2>Cache Eviction &amp; Scan Resistance Architecture</h2>
+<h2 id="cache-eviction-scan-resistance-architecture">Cache Eviction &amp; Scan Resistance Architecture</h2>
 <p>How Segmented LRU (SLRU) isolates cold single-access scan items from hot protected items:</p>
 <div class="mermaid">graph TD
   subgraph Client Read Request
@@ -129,7 +138,7 @@
     
     Prob --&gt;|Evicted from Probationary| Evict[🗑️ PERMANENTLY EVICTED FROM CACHE]
   end</div>
-<h3>Core Advanced Eviction Algorithms</h3>
+<h3 id="core-advanced-eviction-algorithms">Core Advanced Eviction Algorithms</h3>
 <ol>
 <li><strong>Classic LRU Weakness (Scan Pollution)</strong>: Classic LRU maintains a single doubly-linked list. Every read moves the requested key to the MRU (Most Recently Used) head. A single batch query reading $N$ un-cached items pushes all $N$ items to the head, evicting frequently accessed hot items to the tail.</li>
 <li><strong>LRU-K (O&#39;Neil et al.)</strong>:<ul>
@@ -158,7 +167,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Segmented LRU (SLRU) Eviction Engine</h2>
+<h2 id="python-implementation-segmented-lru-slru-eviction-engine">Python Implementation: Segmented LRU (SLRU) Eviction Engine</h2>
 <p>Here is a production-grade Python implementation of a Segmented LRU (SLRU) Cache Engine featuring Probationary vs Protected segment state transitions:</p>
 <pre><code class="language-python">from typing import Dict, Optional, Any
 from pydantic import BaseModel
@@ -289,7 +298,7 @@ if __name__ == &quot;__main__&quot;:
     val_A = slru.get(&quot;key_A&quot;)
     print(f&quot;   • Hot Key A Status: {'SURVIVED SCAN!' if val_A else 'EVICTED'}&quot;)</code></pre>
 <hr>
-<h2>Eviction Algorithm Gotchas &amp; Best Practices</h2>
+<h2 id="eviction-algorithm-gotchas-best-practices">Eviction Algorithm Gotchas &amp; Best Practices</h2>
 <p>When tuning cache eviction policies:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -302,7 +311,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Databases and caching frameworks deploying SLRU / 2Q (such as <strong>PostgreSQL Buffer Pool</strong>, <strong>SQLite Page Cache</strong>, and <strong>Caffeine Cache</strong>) report:</p>
 <ul>
 <li><strong>Over $30%$ Increase in Cache Hit Ratios</strong>: Preventing scan pollution keeps hot frequency data pinned in RAM during heavy background batch runs.</li>
@@ -335,6 +344,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#cache-eviction-scan-resistance-architecture" class="toc-link">Cache Eviction &amp; Scan Resistance Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-segmented-lru-slru-eviction-engine" class="toc-link">Python Implementation: Segmented LRU (SLRU) Eviction Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#eviction-algorithm-gotchas-best-practices" class="toc-link">Eviction Algorithm Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

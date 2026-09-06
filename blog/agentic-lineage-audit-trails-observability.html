@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-auditing-challenge-in-ai-swarms">The Auditing Challenge in AI Swarms</a></li>
+                <li><a href="#the-anatomy-of-an-agentic-trace">The Anatomy of an Agentic Trace</a></li>
+                <li><a href="#implementing-an-audit-logger-in-python">Implementing an Audit Logger in Python</a></li>
+                <li><a href="#database-design-storing-and-querying-lineage">Database Design: Storing and Querying Lineage</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Single-prompt LLM calls are simple to trace. However, when an agentic swarm star
 </div>
 </div>
 <hr>
-<h2>The Auditing Challenge in AI Swarms</h2>
+<h2 id="the-auditing-challenge-in-ai-swarms">The Auditing Challenge in AI Swarms</h2>
 <p>Unlike standard software systems with deterministic code paths, AI swarms navigate complex, dynamic decision trees. During a single user request, an agent might:</p>
 <ol>
 <li>Parse the prompt and split it into three sub-tasks.</li>
@@ -139,7 +149,7 @@ flowchart TD
     Merge --&gt; FinalOutput[Final Answer Output]</div>
 <p>To reconstruct this path, we must store logs as a <strong>Tree of Node Executions</strong>, rather than flat, sequential logs.</p>
 <hr>
-<h2>The Anatomy of an Agentic Trace</h2>
+<h2 id="the-anatomy-of-an-agentic-trace">The Anatomy of an Agentic Trace</h2>
 <p>Each execution node in our lineage tree represents a distinct atomic action. The JSON structure for a node must capture:</p>
 <ul>
 <li><code>node_id</code>: Unique identifier (UUID).</li>
@@ -151,7 +161,7 @@ flowchart TD
 <li><code>metadata</code>: Timestamp, model version, execution latency, and token cost.</li>
 </ul>
 <hr>
-<h2>Implementing an Audit Logger in Python</h2>
+<h2 id="implementing-an-audit-logger-in-python">Implementing an Audit Logger in Python</h2>
 <p>Below is a complete Python implementation of an agent lineage logger using a context manager pattern. It dynamically captures agent actions, compiles them into a structured parent-child JSON tree, and outputs it ready for database storage.</p>
 <pre><code class="language-python">import uuid
 import json
@@ -277,7 +287,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n--- Compiled Audit Lineage JSON ---&quot;)
     print(tracker.compile_tree())</code></pre>
 <hr>
-<h2>Database Design: Storing and Querying Lineage</h2>
+<h2 id="database-design-storing-and-querying-lineage">Database Design: Storing and Querying Lineage</h2>
 <p>For auditing, we store these compiled JSON logs inside a PostgreSQL table using a <code>JSONB</code> column:</p>
 <pre><code class="language-sql">CREATE TABLE agent_audit_trails (
     id SERIAL PRIMARY KEY,
@@ -293,7 +303,7 @@ jsonb_to_recordset(trace_data-&gt;'trace_tree') as x(node_type text, outputs jso
 WHERE x.node_type = 'TOOL_CALL' 
   AND x.outputs-&gt;&gt;'status' = 'failed';</code></pre>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>To satisfy audit requirements in enterprise agent networks:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Enforce parent-child keys</strong>: Ensure every action node captures a <code>parent_id</code> reference to preserve the non-linear execution path.</li>
@@ -328,6 +338,18 @@ WHERE x.node_type = 'TOOL_CALL'
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-auditing-challenge-in-ai-swarms" class="toc-link">The Auditing Challenge in AI Swarms</a></li>
+              <li class="toc-item toc-h2"><a href="#the-anatomy-of-an-agentic-trace" class="toc-link">The Anatomy of an Agentic Trace</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-an-audit-logger-in-python" class="toc-link">Implementing an Audit Logger in Python</a></li>
+              <li class="toc-item toc-h2"><a href="#database-design-storing-and-querying-lineage" class="toc-link">Database Design: Storing and Querying Lineage</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

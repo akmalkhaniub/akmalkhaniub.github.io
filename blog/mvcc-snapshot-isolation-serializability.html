@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#mvcc-tuple-versioning-read-snapshot-architecture">MVCC Tuple Versioning &amp; Read Snapshot Architecture</a></li>
+                <li><a href="#python-implementation-mvcc-storage-engine-with-read-snapshots">Python Implementation: MVCC Storage Engine with Read Snapshots</a></li>
+                <li><a href="#mvcc-gotchas-best-practices">MVCC Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-concurrency database engines (<strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, <strong>CockroachDB</strong>, <strong>TiKV</strong>), supporting thousands of simultaneous read and write transactions is a core requirement.</p>
 <p>If a database uses traditional <strong>Two-Phase Locking (2PL)</strong> with exclusive read/write locks, read operations block write operations and write operations block read operations. Under heavy traffic, transaction queues stall, causing severe lock contention and connection timeouts.</p>
 <p>To eliminate read/write lock contention, modern relational and distributed storage engines implement <strong>Multi-Version Concurrency Control (MVCC)</strong>.</p>
@@ -111,7 +120,7 @@
 <p>Instead of overwriting rows in-place, MVCC maintains multiple immutable versions of each data tuple tagged with transaction commit timestamps.</p>
 <p>This article details tuple versioning (<code>xmin</code>/<code>xmax</code>), Read Snapshots, Snapshot Isolation (SI), and Write Skew anomalies.</p>
 <hr>
-<h2>MVCC Tuple Versioning &amp; Read Snapshot Architecture</h2>
+<h2 id="mvcc-tuple-versioning-read-snapshot-architecture">MVCC Tuple Versioning &amp; Read Snapshot Architecture</h2>
 <p>How MVCC maintains tuple version chains to provide consistent Read Snapshots without locking:</p>
 <div class="mermaid">graph TD
   subgraph Tuple Version Chain in Storage (Row: 'account_101')
@@ -127,7 +136,7 @@
     TxA -.-&gt;|Reads Immutable Historical Snapshot| ReadA[Balance = $100 (Zero Locking!)]
     TxB -.-&gt;|Reads Latest Committed Snapshot| ReadB[Balance = $150]
   end</div>
-<h3>Core MVCC Concepts</h3>
+<h3 id="core-mvcc-concepts">Core MVCC Concepts</h3>
 <ol>
 <li><strong>Tuple Versioning (<code>xmin</code> / <code>xmax</code>)</strong>: Every row modification (<code>UPDATE</code> or <code>DELETE</code>) creates a new tuple version rather than mutating existing disk bytes. Each tuple header stores metadata fields:<ul>
 <li><code>xmin</code>: The Transaction ID (TxID) that created/inserted this tuple version.</li>
@@ -143,7 +152,7 @@
 <li><strong>Write Skew Anomalies &amp; SSI</strong>: Snapshot Isolation prevents Dirty Reads, Non-Repeatable Reads, and Phantom Reads. However, it allows <strong>Write Skew</strong>: two transactions read overlapping data sets, make decisions based on those reads, and update disjoint data sets—violating global invariants. <strong>Serializable Snapshot Isolation (SSI)</strong> tracks <code>SIREAD</code> lock graphs to detect dependency cycles and abort conflicting transactions.</li>
 </ol>
 <hr>
-<h2>Python Implementation: MVCC Storage Engine with Read Snapshots</h2>
+<h2 id="python-implementation-mvcc-storage-engine-with-read-snapshots">Python Implementation: MVCC Storage Engine with Read Snapshots</h2>
 <p>Here is a production-grade Python implementation of an MVCC Storage Engine featuring Tuple Versioning, Read Snapshots, and Write-Write Conflict Detection:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional
 from pydantic import BaseModel
@@ -251,7 +260,7 @@ if __name__ == &quot;__main__&quot;:
     engine.commit_transaction(txA)
     engine.commit_transaction(txC)</code></pre>
 <hr>
-<h2>MVCC Gotchas &amp; Best Practices</h2>
+<h2 id="mvcc-gotchas-best-practices">MVCC Gotchas &amp; Best Practices</h2>
 <p>When operating MVCC databases:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -264,7 +273,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Databases utilizing MVCC (such as <strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Over $10\times$ Higher Read Throughput</strong>: Readers executing long analytical queries never block short concurrent write transactions.</li>
@@ -297,6 +306,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#mvcc-tuple-versioning-read-snapshot-architecture" class="toc-link">MVCC Tuple Versioning &amp; Read Snapshot Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-mvcc-storage-engine-with-read-snapshots" class="toc-link">Python Implementation: MVCC Storage Engine with Read Snapshots</a></li>
+              <li class="toc-item toc-h2"><a href="#mvcc-gotchas-best-practices" class="toc-link">MVCC Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

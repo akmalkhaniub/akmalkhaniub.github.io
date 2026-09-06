@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#what-is-optimistic-ui">What is Optimistic UI?</a></li>
+                <li><a href="#the-useoptimistic-hook-mechanics">The useOptimistic Hook Mechanics</a></li>
+                <li><a href="#implementation-low-latency-bookmark-component">Implementation: Low-Latency Bookmark Component</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +120,7 @@ User experience is heavily defined by perceived latency. If a user clicks a &quo
 </div>
 </div>
 <hr>
-<h2>What is Optimistic UI?</h2>
+<h2 id="what-is-optimistic-ui">What is Optimistic UI?</h2>
 <p>Optimistic UI is a design pattern where the client interface behaves as if a server operation was successful before it actually completes. </p>
 <p>In standard architectures, updating state requires a round-trip:</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -134,7 +143,7 @@ sequenceDiagram
     Server--&gt;&gt;State: Success / Confirm State</div>
 <p>If the server returns an error, the client UI rolls back the state changes immediately, prompting the user with an error notification.</p>
 <hr>
-<h2>The <code>useOptimistic</code> Hook Mechanics</h2>
+<h2 id="the-useoptimistic-hook-mechanics">The <code>useOptimistic</code> Hook Mechanics</h2>
 <p>React 19&#39;s <code>useOptimistic</code> takes a base state and a reducer function, returning the current state (which may be optimistic) and a function to trigger the optimistic update:</p>
 <pre><code class="language-typescript">const [optimisticState, addOptimisticState] = useOptimistic(
   baseState,
@@ -145,9 +154,9 @@ sequenceDiagram
 );</code></pre>
 <p>When an async Server Action starts, you call <code>addOptimisticState</code>. This applies the update instantly. Once the Server Action&#39;s promise resolves, React discards the optimistic state and reverts to the actual server-confirmed state.</p>
 <hr>
-<h2>Implementation: Low-Latency Bookmark Component</h2>
+<h2 id="implementation-low-latency-bookmark-component">Implementation: Low-Latency Bookmark Component</h2>
 <p>Here is a complete, production-ready React 19 component that implements an optimistic bookmark toggle with a Next.js Server Action.</p>
-<h3>1. The Server Action (<code>actions.ts</code>)</h3>
+<h3 id="1-the-server-action-actionsts">1. The Server Action (<code>actions.ts</code>)</h3>
 <p>This server-side function simulates database latency and randomly fails to demonstrate error recovery:</p>
 <pre><code class="language-typescript">// app/actions.ts
 'use server';
@@ -166,7 +175,7 @@ export async function toggleBookmarkAction(id: string, currentState: boolean): P
   return { success: true, newState: !currentState };
 }</code></pre>
 <hr>
-<h3>2. The Client Component (<code>BookmarkButton.tsx</code>)</h3>
+<h3 id="2-the-client-component-bookmarkbuttontsx">2. The Client Component (<code>BookmarkButton.tsx</code>)</h3>
 <p>The React component that uses <code>useOptimistic</code> to execute the state changes instantly:</p>
 <pre><code class="language-typescript">// app/BookmarkButton.tsx
 'use client';
@@ -228,7 +237,7 @@ export default function BookmarkButton({ id, isBookmarkedInitial }: BookmarkProp
   );
 }</code></pre>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>The combination of Server Actions and <code>useOptimistic</code> provides desktop-like speeds in modern web interfaces:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Enforce <code>startTransition</code></strong>: Remember that <code>useOptimistic</code> triggers <em>must</em> be wrapped inside a React transition scope to run correctly.</li>
@@ -263,6 +272,17 @@ export default function BookmarkButton({ id, isBookmarkedInitial }: BookmarkProp
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#what-is-optimistic-ui" class="toc-link">What is Optimistic UI?</a></li>
+              <li class="toc-item toc-h2"><a href="#the-useoptimistic-hook-mechanics" class="toc-link">The useOptimistic Hook Mechanics</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-low-latency-bookmark-component" class="toc-link">Implementation: Low-Latency Bookmark Component</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

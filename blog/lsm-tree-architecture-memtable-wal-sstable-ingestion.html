@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#lsm-tree-write-path-storage-architecture">LSM-Tree Write Path &amp; Storage Architecture</a></li>
+                <li><a href="#python-implementation-lsm-tree-storage-engine-with-wal-flush">Python Implementation: LSM-Tree Storage Engine with WAL &amp; Flush</a></li>
+                <li><a href="#lsm-tree-storage-gotchas-best-practices">LSM-Tree Storage Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-throughput write-heavy storage platforms (such as <strong>RocksDB</strong>, <strong>LevelDB</strong>, <strong>Apache Cassandra</strong>, and <strong>Google Bigtable</strong>), traditional B-Tree index storage engines encounter severe performance bottlenecks.</p>
 <p>B-Trees perform <strong>random in-place updates</strong> to fixed-size $4\text{ KB}$ or $16\text{ KB}$ page files on disk. On modern Solid State Drives (SSDs) and NVMe storage, random writes trigger excessive NAND block erasing and write amplification, limiting write throughput to a fraction of hardware capabilities.</p>
 <p>To transform expensive random writes into lightning-fast <strong>sequential disk appends</strong>, modern database engines adopt the <strong>Log-Structured Merge-Tree (LSM-Tree)</strong> architecture.</p>
 <p>By combining an in-memory <strong>MemTable</strong> (SkipList), a sequential <strong>Write-Ahead Log (WAL)</strong>, and immutable <strong>Sorted String Tables (SSTables)</strong> on disk, LSM-Trees achieve sub-millisecond write latencies.</p>
 <p>This article details Write-Ahead Log persistence, MemTable SkipList indexing, and SSTable flush mechanics.</p>
 <hr>
-<h2>LSM-Tree Write Path &amp; Storage Architecture</h2>
+<h2 id="lsm-tree-write-path-storage-architecture">LSM-Tree Write Path &amp; Storage Architecture</h2>
 <p>How LSM-Tree storage engines handle writes, maintain ACID durability, and flush SSTables to disk:</p>
 <div class="mermaid">graph TD
   WriteReq[Client Put / Delete Request] --&gt; Engine{LSM Storage Engine}
@@ -127,7 +136,7 @@
     MemTable --&gt;|3. MemTable Full &gt;= 64MB| ImmutableMem[Frozen Immutable MemTable]
     ImmutableMem --&gt;|4. Sequential Flush to Disk| Level0SST[Level 0 SSTable .sst File on Disk]
   end</div>
-<h3>Core LSM-Tree Components</h3>
+<h3 id="core-lsm-tree-components">Core LSM-Tree Components</h3>
 <ol>
 <li><strong>Write-Ahead Log (WAL)</strong>: Before modifying any in-memory data structures, every write operation (<code>PUT</code>, <code>DELETE</code>) is appended sequentially to an on-disk <code>.wal</code> file. If the node loses power or crashes unexpectedly, the engine replays the WAL upon reboot to fully restore lost in-memory state.</li>
 <li><strong>In-Memory MemTable</strong>: An active, in-memory concurrent data structure (typically a <strong>SkipList</strong> or <strong>Red-Black Tree</strong>) that maintains key-value pairs sorted in lexicographical order. Because all writes land in RAM, write latencies are measured in nanoseconds.</li>
@@ -136,7 +145,7 @@
 <li><strong>Tombstones for Deletions</strong>: Deleting a key in an LSM-Tree does not modify disk files. Instead, the engine writes a special marker called a <strong>Tombstone</strong> (<code>val = DELETED</code>). During subsequent reads or compaction runs, encountering a tombstone signals that the key has been removed.</li>
 </ol>
 <hr>
-<h2>Python Implementation: LSM-Tree Storage Engine with WAL &amp; Flush</h2>
+<h2 id="python-implementation-lsm-tree-storage-engine-with-wal-flush">Python Implementation: LSM-Tree Storage Engine with WAL &amp; Flush</h2>
 <p>Here is a production-grade Python implementation of an LSM-Tree Storage Engine featuring a Write-Ahead Log, SkipList-style MemTable, and SSTable Flush Engine:</p>
 <pre><code class="language-python">import os
 import json
@@ -258,7 +267,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Read 'user_102' (Deleted): {lsm.get('user_102')}&quot;)
     print(f&quot;   • Read 'user_105': {lsm.get('user_105')}&quot;)</code></pre>
 <hr>
-<h2>LSM-Tree Storage Gotchas &amp; Best Practices</h2>
+<h2 id="lsm-tree-storage-gotchas-best-practices">LSM-Tree Storage Gotchas &amp; Best Practices</h2>
 <p>When operating LSM-Tree databases:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -271,7 +280,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Storage engines using LSM-Tree architecture (such as <strong>RocksDB</strong> at Meta and <strong>Cassandra</strong> at Netflix) report:</p>
 <ul>
 <li><strong>Over $10\times$ Higher Write Throughput</strong>: Turning random disk updates into sequential writes allows nodes to ingest over $500,000$ writes/sec per SSD.</li>
@@ -304,6 +313,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#lsm-tree-write-path-storage-architecture" class="toc-link">LSM-Tree Write Path &amp; Storage Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-lsm-tree-storage-engine-with-wal-flush" class="toc-link">Python Implementation: LSM-Tree Storage Engine with WAL &amp; Flush</a></li>
+              <li class="toc-item toc-h2"><a href="#lsm-tree-storage-gotchas-best-practices" class="toc-link">LSM-Tree Storage Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

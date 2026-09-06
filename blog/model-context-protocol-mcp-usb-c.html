@@ -104,10 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-model-context-protocol-architecture">The Model Context Protocol Architecture</a></li>
+                <li><a href="#building-a-postgresql-mcp-server-in-typescript">Building a PostgreSQL MCP Server in TypeScript</a></li>
+                <li><a href="#security-hardening-your-tool-gates">Security: Hardening your Tool Gates</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <hr>
-<h1>The Model Context Protocol: Building a Secure Database Runner Server</h1>
+<h1 id="the-model-context-protocol-building-a-secure-database-runner-server">The Model Context Protocol: Building a Secure Database Runner Server</h1>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article introduces the Model Context Protocol (MCP) as a solution for standardized AI tool integration and demonstrates building a secure PostgreSQL database runner server using its TypeScript SDK.</li>
 <li><strong>Why it matters:</strong> MCP eliminates the need for custom API wrappers and model-specific tool definitions, significantly streamlining AI application development, improving modularity, and enhancing security for tool execution.</li>
@@ -120,7 +130,7 @@
 <p>This modularity challenge is now solved by the <strong>Model Context Protocol (MCP)</strong>. Released by Anthropic in late 2024, MCP acts as the <strong>USB-C standard for AI tooling</strong>. It standardizes how client hosts (like Cursor, Claude Desktop, or custom developer portals) connect to servers that expose data resources and executable tools.</p>
 <p>This article reviews the MCP architecture and walks through building a secure, custom database runner server using the <strong>official TypeScript SDK</strong>, as modeled in my repository <a href="https://github.com/akmalkhaniub/ops-mcp-suite" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> ops-mcp-suite</a>.</p>
 <hr>
-<h2>The Model Context Protocol Architecture</h2>
+<h2 id="the-model-context-protocol-architecture">The Model Context Protocol Architecture</h2>
 <p>MCP operates on a clean <strong>Client-Server model</strong> over standardized communication channels (Standard Input/Output or Server-Sent Events). The LLM engine is decoupled from tool execution, meaning the model never runs raw system commands directly; instead, it issues structured JSON-RPC requests to the local MCP server.</p>
 <div class="mermaid">graph LR
     subgraph ClientHost [MCP Client: Cursor / Claude Desktop / Custom App]
@@ -147,9 +157,9 @@
 <li><strong>Execution &amp; Return</strong>: The local MCP server runs the query securely, serializes the rows, and sends a text payload back. The Client feeds this text context into the LLM context window to generate the final response.</li>
 </ol>
 <hr>
-<h2>Building a PostgreSQL MCP Server in TypeScript</h2>
+<h2 id="building-a-postgresql-mcp-server-in-typescript">Building a PostgreSQL MCP Server in TypeScript</h2>
 <p>Here is a complete, executable MCP server designed to expose a secure SQL query tool. This server connects to PostgreSQL, parses tool calls, and returns query results in the standardized JSON format expected by MCP clients.</p>
-<h3>1. Project Dependencies Configuration</h3>
+<h3 id="1-project-dependencies-configuration">1. Project Dependencies Configuration</h3>
 <pre><code class="language-json">{
   &quot;name&quot;: &quot;db-mcp-server&quot;,
   &quot;version&quot;: &quot;1.0.0&quot;,
@@ -158,7 +168,7 @@
     &quot;pg&quot;: &quot;^8.11.3&quot;
   }
 }</code></pre>
-<h3>2. Main Server Code</h3>
+<h3 id="2-main-server-code">2. Main Server Code</h3>
 <pre><code class="language-typescript">import { Server } from &quot;@modelcontextprotocol/sdk/server/index.js&quot;;
 import { StdioServerTransport } from &quot;@modelcontextprotocol/sdk/server/stdio.js&quot;;
 import { CallToolRequestSchema, ListToolsRequestSchema } from &quot;@modelcontextprotocol/sdk/types.js&quot;;
@@ -235,7 +245,7 @@ async function start() {
 
 start().catch(console.error);</code></pre>
 <hr>
-<h2>Security: Hardening your Tool Gates</h2>
+<h2 id="security-hardening-your-tool-gates">Security: Hardening your Tool Gates</h2>
 <p>Exposing tools to an LLM introduces prompt injection vectors. An attacker can write queries designed to extract secrets or alter schemas. Follow these security rules:</p>
 <ul>
 <li><strong>Least Privilege Database Credentials</strong>: Always connect the MCP server using a read-only database user account. Restrict write/update permissions to block data mutation.</li>
@@ -243,7 +253,7 @@ start().catch(console.error);</code></pre>
 <li><strong>Network Isolation</strong>: Run MCP servers in sandboxed container environments (like Docker) with minimal internet access to prevent outbound command-and-control requests if a model is compromised.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>The Model Context Protocol (MCP) marks a significant advancement in AI application development by standardizing how large language models interact with external tools and data.</p>
 <ol>
 <li><strong>Standardized Tooling for AI:</strong> MCP acts as a universal interface, akin to USB-C, for AI models to securely access and execute external tools and resources, eliminating the previous need for custom, model-specific API wrappers and parsing logic. This standardization greatly simplifies the integration of diverse tools like databases, file systems, and external APIs into AI applications, making them more modular and interoperable across different LLM engines.</li>
@@ -252,7 +262,7 @@ start().catch(console.error);</code></pre>
 </ol>
 <p><em>Takeaway: MCP empowers developers to build more secure, modular, and interoperable AI applications by providing a standardized protocol for tool interaction.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Model Context Protocol Specification</strong>: <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">Anthropic Model Context Protocol Documentation</a>. Protocol specifications, SDK repositories, and quickstart guides.</li>
 <li><strong>Prompt Injection Risks in Tool Callers</strong>: <em>Not What You Expected: Prompt Injections on LLM APIs and Tool Environments</em>. Analyzes vulnerabilities in automated tool execution.</li>
@@ -285,6 +295,18 @@ start().catch(console.error);</code></pre>
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-model-context-protocol-architecture" class="toc-link">The Model Context Protocol Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#building-a-postgresql-mcp-server-in-typescript" class="toc-link">Building a PostgreSQL MCP Server in TypeScript</a></li>
+              <li class="toc-item toc-h2"><a href="#security-hardening-your-tool-gates" class="toc-link">Security: Hardening your Tool Gates</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

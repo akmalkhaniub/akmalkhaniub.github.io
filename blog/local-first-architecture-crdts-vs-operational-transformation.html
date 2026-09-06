@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-7-local-first-software-principles-kleppmann-et-al">1. The 7 Local-First Software Principles (Kleppmann et al.)</a></li>
+                <li><a href="#2-operational-transformation-ot-vs-crdts">2. Operational Transformation (OT) vs CRDTs</a></li>
+                <li><a href="#3-state-based-cvrdt-vs-operation-based-cmrdt">3. State-Based (CvRDT) vs Operation-Based (CmRDT)</a></li>
+                <li><a href="#4-the-tombstone-problem-compact-run-length-encoding">4. The Tombstone Problem &amp; Compact Run-Length Encoding</a></li>
+                <li><a href="#python-implementation-state-based-lww-element-set-crdt-engine">Python Implementation: State-Based LWW-Element-Set CRDT Engine</a></li>
+                <li><a href="#summary-cloud-monolith-vs-local-first-crdts">Summary: Cloud Monolith vs Local-First CRDTs</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>For two decades, modern web applications were architected around a single, centralized dogma: <strong>the cloud server is the single source of truth</strong>.</p>
 <p>In traditional cloud apps (early Google Docs, Jira, Salesforce):</p>
 <ul>
@@ -129,7 +141,7 @@
     end
   end</div>
 <hr>
-<h2>1. The 7 Local-First Software Principles (Kleppmann et al.)</h2>
+<h2 id="1-the-7-local-first-software-principles-kleppmann-et-al">1. The 7 Local-First Software Principles (Kleppmann et al.)</h2>
 <p>Coined in 2019 by Martin Kleppmann, Adam Wiggins, Peter van Hardenberg, and Mark McGranaghan, the Local-First Manifesto defines the standard for modern reactive applications:</p>
 <pre><code class="language-plaintext">&gt; **THE 7 LOCAL-FIRST CORE PRINCIPLES**
 | 1. No Waiting (0ms Local I/O) : All reads and writes hit local memory/disk instantly.              |
@@ -141,7 +153,7 @@
 | 7. Ultimate User Control      : Clear migration, backup, and local file access.                    |
 </code></pre>
 <hr>
-<h2>2. Operational Transformation (OT) vs CRDTs</h2>
+<h2 id="2-operational-transformation-ot-vs-crdts">2. Operational Transformation (OT) vs CRDTs</h2>
 <p>To support real-time collaborative text editing, computer scientists invented two competing paradigms:</p>
 <pre><code class="language-plaintext">&gt; **OT vs CRDT COMPARISON MATRIX**
 | Dimension            | Operational Transformation (OT) | Conflict-Free Replicated Data Types (CRDT)|
@@ -152,7 +164,7 @@
 | Leading Engines      | Google Docs, Etherpad           | Yjs, Automerge, Loro, Figma, Linear       |
 </code></pre>
 <hr>
-<h3>The Mathematical Magic of CRDTs: The Join-Semilattice</h3>
+<h3 id="the-mathematical-magic-of-crdts-the-join-semilattice">The Mathematical Magic of CRDTs: The Join-Semilattice</h3>
 <p>A data structure is a valid State-Based CRDT (CvRDT) if its merge operator ($\sqcup$) forms a <strong>bounded join-semilattice</strong>, satisfying three algebraic laws:</p>
 <ol>
 <li><strong>Commutativity ($A \sqcup B = B \sqcup A$)</strong>: The order in which peer updates arrive does not matter.</li>
@@ -172,20 +184,20 @@
     MergeOp --&gt; StateFinal[&quot;Converged State: {v1, v2, v3} (Equal on ALL Devices)&quot;]
   end</div>
 <hr>
-<h2>3. State-Based (CvRDT) vs Operation-Based (CmRDT)</h2>
-<h3>1. State-Based CRDTs (CvRDT)</h3>
+<h2 id="3-state-based-cvrdt-vs-operation-based-cmrdt">3. State-Based (CvRDT) vs Operation-Based (CmRDT)</h2>
+<h3 id="1-state-based-crdts-cvrdt">1. State-Based CRDTs (CvRDT)</h3>
 <ul>
 <li>Replicas synchronize by transmitting their <strong>entire local state</strong> (or state delta) to peers.</li>
 <li>The receiver executes <code>local_state = local_state.merge(remote_state)</code>.</li>
 <li>Highly resilient to packet drops and out-of-order networks.</li>
 </ul>
-<h3>2. Operation-Based CRDTs (CmRDT)</h3>
+<h3 id="2-operation-based-crdts-cmrdt">2. Operation-Based CRDTs (CmRDT)</h3>
 <ul>
 <li>Replicas synchronize by broadcasting <strong>discrete immutable operations</strong> (e.g. <code>Insert(id: 42, char: &#39;a&#39;, after: 41)</code>).</li>
 <li>Requires causal exactly-once delivery guarantees (often backed by vector clocks).</li>
 </ul>
 <hr>
-<h2>4. The Tombstone Problem &amp; Compact Run-Length Encoding</h2>
+<h2 id="4-the-tombstone-problem-compact-run-length-encoding">4. The Tombstone Problem &amp; Compact Run-Length Encoding</h2>
 <p>When a user deletes a character in a sequence CRDT, the system cannot simply erase the memory address—because a concurrent peer might insert a character relative to that deleted item.</p>
 <p>The system marks the character as a <strong>Tombstone</strong> (<code>visible = false</code>).</p>
 <ul>
@@ -193,7 +205,7 @@
 <li><strong>The Modern Solution (Yjs &amp; Automerge)</strong>: Modern engines use <strong>Run-Length Encoding (RLE)</strong> and block-based linked lists, compressing adjacent operations into single contiguous memory structs, reducing RAM overhead to <strong>$&lt; 2\text{ MB}$</strong>.</li>
 </ul>
 <hr>
-<h2>Python Implementation: State-Based LWW-Element-Set CRDT Engine</h2>
+<h2 id="python-implementation-state-based-lww-element-set-crdt-engine">Python Implementation: State-Based LWW-Element-Set CRDT Engine</h2>
 <p>Here is a Python implementation of a <strong>Last-Write-Wins Element-Set (LWW-Element-Set) CRDT</strong> demonstrating concurrent offline mutations, network partition healing, and mathematical convergence:</p>
 <pre><code class="language-python">import time
 from dataclasses import dataclass, field
@@ -290,7 +302,7 @@ if __name__ == &quot;__main__&quot;:
     assert laptop.read_all_elements() == phone.read_all_elements(), &quot;CRDTs must mathematically converge!&quot;
     print(&quot; ✅ Mathematical Convergence Verified: States are 100% Identical!&quot;)</code></pre>
 <hr>
-<h2>Summary: Cloud Monolith vs Local-First CRDTs</h2>
+<h2 id="summary-cloud-monolith-vs-local-first-crdts">Summary: Cloud Monolith vs Local-First CRDTs</h2>
 <table>
 <thead>
 <tr>
@@ -326,7 +338,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>Local-First is not merely an optimization—<strong>it is the future of collaborative software engineering</strong>.</p>
 <p>By replacing fragile client-server request/response loops with <strong>Conflict-Free Replicated Data Types</strong>, developers deliver consumer software that feels instantaneous, operates reliably anywhere on Earth, and guarantees flawless mathematical data convergence.</p>
 
@@ -356,6 +368,20 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-7-local-first-software-principles-kleppmann-et-al" class="toc-link">1. The 7 Local-First Software Principles (Kleppmann et al.)</a></li>
+              <li class="toc-item toc-h2"><a href="#2-operational-transformation-ot-vs-crdts" class="toc-link">2. Operational Transformation (OT) vs CRDTs</a></li>
+              <li class="toc-item toc-h2"><a href="#3-state-based-cvrdt-vs-operation-based-cmrdt" class="toc-link">3. State-Based (CvRDT) vs Operation-Based (CmRDT)</a></li>
+              <li class="toc-item toc-h2"><a href="#4-the-tombstone-problem-compact-run-length-encoding" class="toc-link">4. The Tombstone Problem &amp; Compact Run-Length Encoding</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-state-based-lww-element-set-crdt-engine" class="toc-link">Python Implementation: State-Based LWW-Element-Set CRDT Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-cloud-monolith-vs-local-first-crdts" class="toc-link">Summary: Cloud Monolith vs Local-First CRDTs</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

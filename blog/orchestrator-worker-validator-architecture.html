@@ -104,8 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-three-tier-architecture-loop">The Three-Tier Architecture Loop</a></li>
+                <li><a href="#architectural-rules-for-production-builders">Architectural Rules for Production Builders</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article analyzes the failure modes of single-LLM self-review loops and details the 3-tier Orchestrator-Worker-Validator architecture designed to solve them.</li>
 <li><strong>Why it matters:</strong> Separating agentic labor prevents cognitive bias in LLMs, reduces token costs, secures systems against prompt injection, and guarantees reliable code execution in production.</li>
@@ -122,7 +131,7 @@
 <p>To build reliable systems, we must separate the labor. We do this by implementing a 3-tier architecture: <strong>Orchestrator, Worker, and Validator</strong>.</p>
 <p>This pattern, popularized by enterprise AI engineering teams like Factory, structures agentic execution as a strict software pipeline.</p>
 <hr>
-<h2>The Three-Tier Architecture Loop</h2>
+<h2 id="the-three-tier-architecture-loop">The Three-Tier Architecture Loop</h2>
 <div class="mermaid">graph TD
     UserReq[User Goal / Issue] --&gt;|1. Request| Orch[Orchestrator Agent]
     Orch --&gt;|2. Create Plan &amp; Verification Contract| Worker[Worker Agent]
@@ -137,7 +146,7 @@
 
     style ValidationGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
     style Finish fill:#f0fdf4,stroke:#16a34a,stroke-width:2px</div>
-<h3>1. The Orchestrator (The Planner)</h3>
+<h3 id="1-the-orchestrator-the-planner">1. The Orchestrator (The Planner)</h3>
 <p>The user request enters the Orchestrator. The Orchestrator&#39;s role is strictly cognitive planning, not code execution. It:</p>
 <ul>
 <li>Analyzes the goal.</li>
@@ -145,13 +154,13 @@
 <li>Generates a discrete, step-by-step execution plan.</li>
 <li><strong>Drafts the Verification Contract</strong>: The contract outlines the expected variables, required imports, validation scripts, or schema checks that the final output must satisfy.</li>
 </ul>
-<h3>2. The Worker (The Executer)</h3>
+<h3 id="2-the-worker-the-executer">2. The Worker (The Executer)</h3>
 <p>The Worker receives a task card from the Orchestrator. </p>
 <ul>
 <li><strong>Context Isolation</strong>: The Worker does <em>not</em> see the global plan, other worker logs, or system instructions. It is given a narrow context window, a clean list of 1–2 tools (e.g., read/write file), and the task contract.</li>
 <li><strong>Why this matters</strong>: Context isolation prevents prompt injection attacks (where external data compromises the agent) and minimizes token costs. It also ensures the model has high focus on the exact code task at hand.</li>
 </ul>
-<h3>3. The Validator (The Inspector)</h3>
+<h3 id="3-the-validator-the-inspector">3. The Validator (The Inspector)</h3>
 <p>The Validator takes the Worker&#39;s output and matches it against the Verification Contract.</p>
 <ul>
 <li><strong>Independent Context</strong>: The Validator has no visibility into the worker&#39;s execution path or thought log. It only evaluates the final artifact.</li>
@@ -163,14 +172,14 @@
 <li><strong>Feedback loop</strong>: If the validation fails, the Validator compiles a list of specific errors (e.g., &quot;Line 43 failed compilation with SyntaxError&quot;) and redirects the card back to the Worker. The Worker runs again with the critique as additional input.</li>
 </ul>
 <hr>
-<h2>Architectural Rules for Production Builders</h2>
+<h2 id="architectural-rules-for-production-builders">Architectural Rules for Production Builders</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Strict Context Partitioning</strong>: Ensure your Worker and Validator prompts do <em>not</em> share system instructions, variable memory, or history files.</li>
 <li><input disabled="" type="checkbox"> <strong>Rule-Based Precedence</strong>: Always execute programmatic validation (tests, compilers, regex schema checks) <em>before</em> invoking LLM-as-judge validators. Save tokens and ensure 100% accuracy on structural checks.</li>
 <li><input disabled="" type="checkbox"> <strong>Termination Escape Valve</strong>: Set a strict threshold on the Worker-Validator critique loop (e.g., if a worker fails validation 3 times, pause execution and alert a human supervisor).</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Adopting a structured multi-agent architecture is the key to overcoming the inherent cognitive biases of single-LLM systems.</p>
 <ol>
 <li><strong>Deconstruct the Self-Review Loop:</strong> LLMs cannot reliably grade their own work due to confirmation bias, making a separate Validator agent essential for objective quality control.</li>
@@ -179,7 +188,7 @@
 </ol>
 <p><em>Takeaway:</em> <em>To build production-grade AI agents, replace single-model self-correction with a strict, multi-agent pipeline of isolated planners, executors, and validators.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Factory.ai Architecture Blog</strong>: <em>The Multi-Agent Architecture That Ships</em>. Luke Alvoeiro details the separation of planning, execution, and validation in automated software development squads. <em>(Technical Case Study)</em></li>
 <li><strong>Reflexion Paper</strong>: Shinn et al., 2023. <em>Reflexion: Language Agents with Active Generative Feedback</em>. Explains the mathematical and systemic benefit of separate critic models in agentic loops. <a href="https://arxiv.org/abs/2303.11366" target="_blank" rel="noopener">Link</a></li>
@@ -213,6 +222,17 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-three-tier-architecture-loop" class="toc-link">The Three-Tier Architecture Loop</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-rules-for-production-builders" class="toc-link">Architectural Rules for Production Builders</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

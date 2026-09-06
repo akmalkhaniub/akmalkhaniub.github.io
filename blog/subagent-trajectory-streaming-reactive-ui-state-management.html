@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#reactive-trajectory-stream-architecture">Reactive Trajectory Stream Architecture</a></li>
+                <li><a href="#typescript-react-implementation-useagenttrajectorystream-hook">TypeScript / React Implementation: useAgentTrajectoryStream Hook</a></li>
+                <li><a href="#important-frontend-performance-guardrails">Important Frontend Performance Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When building modern web dashboards for multi-agent systems, rendering real-time execution trajectories presents a unique frontend engineering challenge. </p>
 <p>A multi-agent swarm executing complex tasks emits a continuous stream of events: raw LLM token deltas, tool invocation payloads, AST code diffs, and DAG node status updates. If a web application attempts to trigger a React component re-render on every incoming network chunk (e.g. at 60 tokens per second), the browser main thread quickly locks up, leading to <strong>UI lag</strong>, <strong>dropped frames</strong>, and <strong>memory leaks</strong>.</p>
 <p>To build fluid, responsive frontend interfaces for agentic platforms, engineering teams implement <strong>Reactive Trajectory State Stores</strong> with render batching and <strong>Sequence-Based Stream Resumption</strong>.</p>
 <p>This article details how to manage frontend state for streaming subagent swarms.</p>
 <hr>
-<h2>Reactive Trajectory Stream Architecture</h2>
+<h2 id="reactive-trajectory-stream-architecture">Reactive Trajectory Stream Architecture</h2>
 <p>The frontend architecture decouples high-frequency WebSocket/SSE events from React render cycles using a buffered state store:</p>
 <div class="mermaid">graph TD
   A[Agent Server SSE / WS Stream] --&gt;|High-Frequency Events| B[Event Sequence Buffer &amp; Deduplicator]
@@ -123,14 +132,14 @@
   
   F --&gt;|Batched UI Update: 60 FPS| G[React DAG Graph Component]
   F --&gt;|Batched UI Update| H[Live Code Diff &amp; Token Stream View]</div>
-<h3>Key Frontend Architecture Principles</h3>
+<h3 id="key-frontend-architecture-principles">Key Frontend Architecture Principles</h3>
 <ol>
 <li><strong>RequestAnimationFrame (RAF) Render Batching</strong>: Instead of calling <code>setEvents(prev =&gt; [...prev, newEvent])</code> on every SSE message, incoming events accumulate in a mutable ring buffer. The UI drains and flushes the buffer to state once per animation frame (every 16ms), locking renders to a smooth 60 FPS.</li>
 <li><strong>Sequence Numbers (<code>Last-Event-ID</code>)</strong>: Every trajectory event carries an incremental integer ID (<code>seq_101</code>, <code>seq_102</code>). If the WebSocket or SSE connection drops, the client automatically passes the highest received sequence ID upon reconnecting, allowing the server to replay missed events cleanly.</li>
 <li><strong>Immutable DAG State Slice</strong>: Maintaining subagent task nodes in a normalized hash map (<code>nodesById</code>) ensures $O(1)$ lookups and targeted component re-renders when a specific worker changes state from <code>RUNNING</code> to <code>COMPLETED</code>.</li>
 </ol>
 <hr>
-<h2>TypeScript / React Implementation: <code>useAgentTrajectoryStream</code> Hook</h2>
+<h2 id="typescript-react-implementation-useagenttrajectorystream-hook">TypeScript / React Implementation: <code>useAgentTrajectoryStream</code> Hook</h2>
 <p>Here is a production TypeScript/React implementation of a custom hook that manages SSE trajectory streaming with sequence-based reconnection and render batching:</p>
 <pre><code class="language-typescript">import { useState, useEffect, useRef } from 'react';
 
@@ -252,7 +261,7 @@ export function useAgentTrajectoryStream(taskId: string, streamUrl: string) {
   return { nodes, isConnected };
 }</code></pre>
 <hr>
-<h2>Important Frontend Performance Guardrails</h2>
+<h2 id="important-frontend-performance-guardrails">Important Frontend Performance Guardrails</h2>
 <p>When rendering real-time subagent streams in web applications:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -265,7 +274,7 @@ export function useAgentTrajectoryStream(taskId: string, streamUrl: string) {
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams adopting Reactive Trajectory State Management report:</p>
 <ul>
 <li><strong>60 FPS Smooth UI Rendering</strong>: RAF batching eliminates main-thread lag during high-frequency token streams.</li>
@@ -298,6 +307,17 @@ export function useAgentTrajectoryStream(taskId: string, streamUrl: string) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#reactive-trajectory-stream-architecture" class="toc-link">Reactive Trajectory Stream Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#typescript-react-implementation-useagenttrajectorystream-hook" class="toc-link">TypeScript / React Implementation: useAgentTrajectoryStream Hook</a></li>
+              <li class="toc-item toc-h2"><a href="#important-frontend-performance-guardrails" class="toc-link">Important Frontend Performance Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

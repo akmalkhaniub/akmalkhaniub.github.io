@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-network-loopback-penalty">The Network Loopback Penalty</a></li>
+                <li><a href="#1-under-the-hood-memory-mapping-with-python-mmap">1. Under the Hood: Memory Mapping with Python mmap</a></li>
+                <li><a href="#2-memory-formats-protocol-buffers-vs-raw-json">2. Memory Formats: Protocol Buffers vs. Raw JSON</a></li>
+                <li><a href="#code-demo-inter-process-shared-memory-coordinator">Code Demo: Inter-Process Shared Memory Coordinator</a></li>
+                <li><a href="#mentorship-and-deployment-guidelines">Mentorship and Deployment Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ In cloud-native systems, micro-agents communicate over HTTP REST endpoints, gRPC
 </div>
 </div>
 <hr>
-<h2>The Network Loopback Penalty</h2>
+<h2 id="the-network-loopback-penalty">The Network Loopback Penalty</h2>
 <p>When calling a tool locally, serialization and network round-trips add overhead:</p>
 <ul>
 <li><strong>HTTP Latency</strong>: A local REST call takes 3 to 10 milliseconds of socket overhead, data serialization (JSON translation), and parsing.</li>
@@ -130,7 +140,7 @@ flowchart TD
     style SharedBlock fill:#111827,stroke:#0db49b,stroke-width:2px</div>
 <p>By reading directly from memory, Agent B receives the context block with zero TCP socket overhead.</p>
 <hr>
-<h2>1. Under the Hood: Memory Mapping with Python <code>mmap</code></h2>
+<h2 id="1-under-the-hood-memory-mapping-with-python-mmap">1. Under the Hood: Memory Mapping with Python <code>mmap</code></h2>
 <p>Memory mapping maps a file descriptor directly into a process&#39;s virtual memory address space:</p>
 <ul>
 <li><strong>Zero-Copy Performance</strong>: Once mapped, reading and writing to the memory segment does not invoke expensive system read/write system calls.</li>
@@ -138,14 +148,14 @@ flowchart TD
 <li><strong>Concurrency Gates</strong>: We use file-level locking mechanisms to prevent processes from writing to the memory block simultaneously, avoiding memory corruption.</li>
 </ul>
 <hr>
-<h2>2. Memory Formats: Protocol Buffers vs. Raw JSON</h2>
+<h2 id="2-memory-formats-protocol-buffers-vs-raw-json">2. Memory Formats: Protocol Buffers vs. Raw JSON</h2>
 <p>To maximize IPC speed:</p>
 <ol>
 <li><strong>JSON Strings (Simple)</strong>: Writing string-encoded JSON payloads to the memory block is easy but requires CPU cycles for string encoding/decoding.</li>
 <li><strong>Protocol Buffers (Fast)</strong>: Using binary serialization (like Protobuf or FlatBuffers) reduces payload size and parsing latency, keeping memory bus traffic low.</li>
 </ol>
 <hr>
-<h2>Code Demo: Inter-Process Shared Memory Coordinator</h2>
+<h2 id="code-demo-inter-process-shared-memory-coordinator">Code Demo: Inter-Process Shared Memory Coordinator</h2>
 <p>Below is a Python implementation of a shared-memory coordinator. It writes structured JSON context states into a memory-mapped file, allowing independent processes to retrieve data with minimal latency.</p>
 <pre><code class="language-python">import os
 import mmap
@@ -232,7 +242,7 @@ if __name__ == &quot;__main__&quot;:
     if os.path.exists(ipc_file):
         os.remove(ipc_file)</code></pre>
 <hr>
-<h2>Mentorship and Deployment Guidelines</h2>
+<h2 id="mentorship-and-deployment-guidelines">Mentorship and Deployment Guidelines</h2>
 <ul>
 <li><strong>Leverage WAL Mode</strong>: If shared memory complexity grows, replace custom <code>mmap</code> files with a local SQLite database configured in Write-Ahead Logging (WAL) mode for concurrency-safe local state storage.</li>
 <li><strong>Isolate IPC Paths</strong>: Restrict shared memory files to temporary mount directories (like <code>/dev/shm</code> on Linux) to run memory operations entirely in RAM, avoiding physical disk writes.</li>
@@ -265,6 +275,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-network-loopback-penalty" class="toc-link">The Network Loopback Penalty</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-memory-mapping-with-python-mmap" class="toc-link">1. Under the Hood: Memory Mapping with Python mmap</a></li>
+              <li class="toc-item toc-h2"><a href="#2-memory-formats-protocol-buffers-vs-raw-json" class="toc-link">2. Memory Formats: Protocol Buffers vs. Raw JSON</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-inter-process-shared-memory-coordinator" class="toc-link">Code Demo: Inter-Process Shared Memory Coordinator</a></li>
+              <li class="toc-item toc-h2"><a href="#mentorship-and-deployment-guidelines" class="toc-link">Mentorship and Deployment Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

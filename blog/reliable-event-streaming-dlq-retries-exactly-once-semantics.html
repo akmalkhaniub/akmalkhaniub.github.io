@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#exactly-once-semantics-eos-dlq-retry-architecture">Exactly-Once Semantics (EOS) &amp; DLQ Retry Architecture</a></li>
+                <li><a href="#python-implementation-idempotent-producer-dlq-retry-engine">Python Implementation: Idempotent Producer &amp; DLQ Retry Engine</a></li>
+                <li><a href="#reliable-streaming-gotchas-best-practices">Reliable Streaming Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In mission-critical financial software (<strong>Payment Gateways</strong>, <strong>Order Fulfillment Systems</strong>, <strong>Ledger Synchronization</strong>), missing or duplicating an event can cause severe data corruption and monetary losses.</p>
 <p>Standard messaging architectures offer <strong>At-Least-Once Delivery Guarantees</strong>, which ensure messages are never lost but frequently result in duplicate executions when network retries occur.</p>
 <p>To guarantee zero message loss and zero duplicates, modern event-driven architectures implement <strong>Exactly-Once Semantics (EOS)</strong>.</p>
 <p>By combining <strong>Idempotent Producers (<code>PID</code> + sequence tracking)</strong>, <strong>Two-Phase Commit (2PC) Transactions</strong>, and <strong>Dead Letter Queue (DLQ) Retry Topologies</strong>, platforms process events with $100%$ transactional integrity.</p>
 <p>This article details Idempotent Producer sequence deduplication, 2PC Transaction Coordinators, <code>read_committed</code> consumer isolation, exponential backoff retries, and DLQ poison pill handling.</p>
 <hr>
-<h2>Exactly-Once Semantics (EOS) &amp; DLQ Retry Architecture</h2>
+<h2 id="exactly-once-semantics-eos-dlq-retry-architecture">Exactly-Once Semantics (EOS) &amp; DLQ Retry Architecture</h2>
 <p>How 2PC Transactions guarantee Exactly-Once processing while DLQ topics safely handle poison pill messages:</p>
 <div class="mermaid">graph TD
   subgraph Exactly-Once Transactional Pipeline (2PC Commit)
@@ -126,7 +135,7 @@
     Retry1 --&gt;|Failed Max Attempts| DLQ[&quot;☠️ Dead Letter Queue (DLQ) Topic&quot;]
     DLQ --&gt; AdminAlert[&quot;🚨 Operator Alert &amp; Manual Inspection Dashboard&quot;]
   end</div>
-<h3>Core Reliable Streaming Mechanics</h3>
+<h3 id="core-reliable-streaming-mechanics">Core Reliable Streaming Mechanics</h3>
 <ol>
 <li><strong>The Delivery Guarantee Spectrum</strong>:<ul>
 <li><strong>At-Most-Once</strong>: Messages may be lost, but are never re-delivered (acks=0).</li>
@@ -155,7 +164,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Idempotent Producer &amp; DLQ Retry Engine</h2>
+<h2 id="python-implementation-idempotent-producer-dlq-retry-engine">Python Implementation: Idempotent Producer &amp; DLQ Retry Engine</h2>
 <p>Here is a production-grade Python implementation of an Idempotent Transactional Producer and DLQ Retry Engine Simulator:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional
@@ -251,7 +260,7 @@ if __name__ == &quot;__main__&quot;:
     dlq_engine.process_event(e2) # Fails -&gt; Retry 2
     dlq_engine.process_event(e2) # Fails -&gt; Evicted to DLQ!</code></pre>
 <hr>
-<h2>Reliable Streaming Gotchas &amp; Best Practices</h2>
+<h2 id="reliable-streaming-gotchas-best-practices">Reliable Streaming Gotchas &amp; Best Practices</h2>
 <p>When engineering fault-tolerant streaming pipelines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -264,7 +273,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Reliable event streaming architectures (in <strong>Financial Systems</strong>, <strong>E-Commerce Order Processing</strong>, and <strong>Telemetry Ingestion</strong>) report:</p>
 <ul>
 <li><strong>Zero Duplicate Payment Side-Effects</strong>: Idempotent producer deduplication (<code>PID</code> + sequence numbers) guarantees transactional integrity.</li>
@@ -297,6 +306,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#exactly-once-semantics-eos-dlq-retry-architecture" class="toc-link">Exactly-Once Semantics (EOS) &amp; DLQ Retry Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-idempotent-producer-dlq-retry-engine" class="toc-link">Python Implementation: Idempotent Producer &amp; DLQ Retry Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#reliable-streaming-gotchas-best-practices" class="toc-link">Reliable Streaming Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-three-structural-blindspots-of-vector-chunking">1. The Three Structural Blindspots of Vector Chunking</a></li>
+                <li><a href="#2-the-graph-rag-indexing-pipeline">2. The Graph-RAG Indexing Pipeline</a></li>
+                <li><a href="#3-query-paradigms-local-search-vs-global-search">3. Query Paradigms: Local Search vs Global Search</a></li>
+                <li><a href="#python-implementation-in-memory-multi-hop-graph-rag-engine">Python Implementation: In-Memory Multi-Hop Graph-RAG Engine</a></li>
+                <li><a href="#architectural-comparison-flat-vector-rag-vs-graph-rag">Architectural Comparison: Flat Vector RAG vs Graph-RAG</a></li>
+                <li><a href="#the-architectural-horizon">The Architectural Horizon</a></li>
+              </ul>
+            </details>
 <p>If you ask a standard enterprise Retrieval-Augmented Generation (RAG) system a localized question—<em>&quot;What is the severance multiplier in Section 4.2 of the employee handbook?&quot;</em>—it succeeds with surgical precision. It calculates cosine similarities between your query and thousands of 512-token chunks, extracts the top three snippets, and summarizes them cleanly.</p>
 <p>Now ask that same system a question that actually matters to executive leadership:</p>
 <blockquote>
@@ -132,16 +143,16 @@
     end
   end</div>
 <hr>
-<h2>1. The Three Structural Blindspots of Vector Chunking</h2>
+<h2 id="1-the-three-structural-blindspots-of-vector-chunking">1. The Three Structural Blindspots of Vector Chunking</h2>
 <p>Splitting documents into fixed-width sliding windows of 512 tokens was an expedient hack from the early days of semantic search. In enterprise corpora, this strategy produces three fatal failure modes:</p>
-<h3>1. Context Fragmentation</h3>
+<h3 id="1-context-fragmentation">1. Context Fragmentation</h3>
 <p>When an entity is introduced in an architectural design doc on page 3, and its production failure modes are analyzed on page 94, sliding window chunkers sever the connection. The embedding for the page 94 chunk contains the symptom, but lacks the identity of the root cause.</p>
-<h3>2. The Global Haystack Blindspot</h3>
+<h3 id="2-the-global-haystack-blindspot">2. The Global Haystack Blindspot</h3>
 <p>Vector search answers questions of <em>identity</em> (<em>&quot;Find chunks resembling this phrasing&quot;</em>), but cannot answer questions of <em>aggregation</em> (<em>&quot;What are the recurring themes across these 10,000 documents?&quot;</em>). Because cosine similarity scores individual chunks independently, it cannot summarize systemic patterns distributed evenly across an entire corpus.</p>
-<h3>3. Transitive Multi-Hop Disconnection</h3>
+<h3 id="3-transitive-multi-hop-disconnection">3. Transitive Multi-Hop Disconnection</h3>
 <p>If entity $A$ connects to entity $B$ (<em>&quot;Service A writes to Cache B&quot;</em>), and entity $B$ connects to entity $C$ (<em>&quot;Cache B shares credentials with Database C&quot;</em>), an agent asked about the security relationship between $A$ and $C$ receives zero vector hits. $A$ and $C$ never co-occur in the same chunk. Flat vector embeddings are topologically blind.</p>
 <hr>
-<h2>2. The Graph-RAG Indexing Pipeline</h2>
+<h2 id="2-the-graph-rag-indexing-pipeline">2. The Graph-RAG Indexing Pipeline</h2>
 <p>Pioneered by researchers seeking to synthesize meaning across vast, unstructured corpora, Graph-RAG replaces flat vector storage with an interconnected entity-relationship graph.</p>
 <pre><code class="language-plaintext">Raw Documents (Markdown / Architecture Specs / Incident Logs)
                          │
@@ -160,7 +171,7 @@
                          ▼
         [ Map-Reduce Community Summarization ]
   Pre-synthesizes high-level executive summaries for each community</code></pre>
-<h3>The Five Operational Stages:</h3>
+<h3 id="the-five-operational-stages">The Five Operational Stages:</h3>
 <ol>
 <li><strong>Entity and Relationship Extraction</strong>: A specialized LLM pass reads raw text chunks and emits structured subject-predicate-object triples: <code>(OrderService)-[CALLS]-&gt;(PaymentGateway)</code>.</li>
 <li><strong>Entity Disambiguation and Deduplication</strong>: Identifies synonym collision. Variations like &quot;PostgreSQL&quot;, &quot;Postgres&quot;, and &quot;primary-db&quot; are merged into a canonical node with unified edge degree.</li>
@@ -169,7 +180,7 @@
 <li><strong>Global Search Synthesis (Reduce)</strong>: When answering macro questions, the query engine evaluates the pre-computed community summaries in parallel, performing a map-reduce aggregation that bypasses individual text chunks entirely.</li>
 </ol>
 <hr>
-<h2>3. Query Paradigms: Local Search vs Global Search</h2>
+<h2 id="3-query-paradigms-local-search-vs-global-search">3. Query Paradigms: Local Search vs Global Search</h2>
 <p>Graph-RAG engines operate in two distinct retrieval modalities depending on query intent:</p>
 <table>
 <thead>
@@ -196,7 +207,7 @@
 </tr>
 </tbody></table>
 <hr>
-<h2>Python Implementation: In-Memory Multi-Hop Graph-RAG Engine</h2>
+<h2 id="python-implementation-in-memory-multi-hop-graph-rag-engine">Python Implementation: In-Memory Multi-Hop Graph-RAG Engine</h2>
 <p>The following implementation demonstrates how to build an in-memory knowledge graph engine supporting entity extraction, directed edge traversal, multi-hop path discovery, and community aggregation:</p>
 <pre><code class="language-python">from collections import defaultdict, deque
 from dataclasses import dataclass
@@ -290,7 +301,7 @@ if __name__ == &quot;__main__&quot;:
         for e in entities:
             print(f&quot;    - {e}&quot;)</code></pre>
 <hr>
-<h2>Architectural Comparison: Flat Vector RAG vs Graph-RAG</h2>
+<h2 id="architectural-comparison-flat-vector-rag-vs-graph-rag">Architectural Comparison: Flat Vector RAG vs Graph-RAG</h2>
 <table>
 <thead>
 <tr>
@@ -331,7 +342,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>The Architectural Horizon</h2>
+<h2 id="the-architectural-horizon">The Architectural Horizon</h2>
 <p>Vector embeddings treat human knowledge as a bag of coordinates in high-dimensional space. But human knowledge is not a cloud of points; it is a web of relationships, hierarchies, and causal laws.</p>
 <p>For production AI agents tasked with navigating enterprise architectures, codebases, or legal contracts, <strong>connectivity is intelligence</strong>. By anchoring agent memory in structured knowledge graphs, engineers replace stochastic guessing with deterministic, traversable truth.</p>
 
@@ -361,6 +372,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-three-structural-blindspots-of-vector-chunking" class="toc-link">1. The Three Structural Blindspots of Vector Chunking</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-graph-rag-indexing-pipeline" class="toc-link">2. The Graph-RAG Indexing Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#3-query-paradigms-local-search-vs-global-search" class="toc-link">3. Query Paradigms: Local Search vs Global Search</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-in-memory-multi-hop-graph-rag-engine" class="toc-link">Python Implementation: In-Memory Multi-Hop Graph-RAG Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-comparison-flat-vector-rag-vs-graph-rag" class="toc-link">Architectural Comparison: Flat Vector RAG vs Graph-RAG</a></li>
+              <li class="toc-item toc-h2"><a href="#the-architectural-horizon" class="toc-link">The Architectural Horizon</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

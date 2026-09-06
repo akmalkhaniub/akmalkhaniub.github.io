@@ -104,9 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-hidden-costs-of-autonomy">The Hidden Costs of Autonomy</a></li>
+                <li><a href="#the-decision-tree-workflow-vs-agent-vs-code">The Decision Tree: Workflow vs. Agent vs. Code</a></li>
+                <li><a href="#the-complexity-reduction-checklist">The Complexity Reduction Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <p>We are currently in the peak of the agentic AI hype cycle. Startups and enterprise engineering teams are rushing to replace linear, deterministic code with networks of autonomous agents. </p>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article evaluates the true costs and engineering trade-offs of multi-agent AI systems compared to simpler code or single-agent solutions.</li>
 <li><strong>Why it matters:</strong> Unnecessary agentic complexity leads to compounding latency, increased token costs, and non-deterministic state, impacting performance and maintainability.</li>
@@ -116,16 +126,16 @@
 <p>However, in software engineering, autonomy is not free. Adding agents to a system increases token costs, compounds latency, and introduces complex state tracking. Before refactoring your stack, you must ask: <strong>Do you actually need a multi-agent system?</strong></p>
 <p>This article acts as a counter-hype evaluation to help you calculate the true cost of agentic complexity.</p>
 <hr>
-<h2>The Hidden Costs of Autonomy</h2>
+<h2 id="the-hidden-costs-of-autonomy">The Hidden Costs of Autonomy</h2>
 <p>To understand why multi-agent architectures fail in many standard business scenarios, we must review the three primary engineering trade-offs:</p>
-<h3>1. Compounding Latency</h3>
+<h3 id="1-compounding-latency">1. Compounding Latency</h3>
 <p>Unlike classic API gateways that return responses in milliseconds, LLM token generation is slow. If a single agent call takes 2 seconds, a multi-agent loop with 5 agent steps will take <strong>10 seconds</strong>. For user-facing interfaces, this latency is often unacceptable.</p>
-<h3>2. The Token Tax</h3>
+<h3 id="2-the-token-tax">2. The Token Tax</h3>
 <p>In a multi-agent loop, intermediate outputs must be passed back and forth. If you have an orchestrator, two workers, and a validator, the shared state context accumulates. You end up paying for duplicate system instructions and tool schemas on every turn of the loop, resulting in a <strong>30% to 50% increase in API costs</strong> compared to single-prompt pipelines.</p>
-<h3>3. Non-Deterministic State Space</h3>
+<h3 id="3-non-deterministic-state-space">3. Non-Deterministic State Space</h3>
 <p>The more autonomous choices your agents make, the larger the state space. Testing every possible path becomes impossible. If Agent A makes a slight deviation, Agent B reacts unpredictably, leading to cascading errors that are difficult to replicate in testing.</p>
 <hr>
-<h2>The Decision Tree: Workflow vs. Agent vs. Code</h2>
+<h2 id="the-decision-tree-workflow-vs-agent-vs-code">The Decision Tree: Workflow vs. Agent vs. Code</h2>
 <p>To determine the simplest architecture capable of solving your task, walk through this decision tree:</p>
 <pre><code class="language-plaintext">                          Is the workflow predictable?
                                    /          \
@@ -136,20 +146,20 @@
                                                   YES             NO
                                                   /                \
                                     [Multi-Agent System]     [Single Agent]</code></pre>
-<h3>When to Avoid Agents (Use standard code or simple workflows):</h3>
+<h3 id="when-to-avoid-agents-use-standard-code-or-simple-workflows">When to Avoid Agents (Use standard code or simple workflows):</h3>
 <ul>
 <li><strong>Structured Data Extraction</strong>: If you need to extract fields from invoices or resumes, use a single LLM call with structured output (JSON Schema / Pydantic). Writing an agent to &quot;verify&quot; the fields is an expensive anti-pattern.</li>
 <li><strong>Predictable Workflows</strong>: If the sequence of steps is always the same (e.g., fetch database → format email → send notification), write standard code. Do not use an LLM router to decide what to do next.</li>
 <li><strong>High-Volume, Low-Margin Apps</strong>: If your business model relies on low-cost executions, agentic loops will quickly eat your margins.</li>
 </ul>
-<h3>When to Use Multi-Agent Systems:</h3>
+<h3 id="when-to-use-multi-agent-systems">When to Use Multi-Agent Systems:</h3>
 <ul>
 <li><strong>The task has high domain variance</strong>: The steps are entirely dynamic, and you need specialized prompts (e.g., an autonomous developer that has to write code, test it, and fix bugs based on compiler errors).</li>
 <li><strong>Tool list dilution</strong>: You have 15 different tools, and a single model cannot pay attention to all of them without hallucinating. Split them into 3 specialized agents.</li>
 <li><strong>Decoupled Verification</strong>: You need to separate the generation of an output from its evaluation to eliminate LLM self-evaluation bias.</li>
 </ul>
 <hr>
-<h2>The Complexity Reduction Checklist</h2>
+<h2 id="the-complexity-reduction-checklist">The Complexity Reduction Checklist</h2>
 <p>Before deploying an agentic squad, verify that you have implemented these latency and cost-saving measures:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Static Routing</strong>: Can you replace an LLM router with simple code (e.g., vector similarity search or keyword matches) to decide which prompt to load?</li>
@@ -157,7 +167,7 @@
 <li><input disabled="" type="checkbox"> <strong>Worker Tool Limits</strong>: Restrict each worker to a maximum of 2 tools. If an agent needs more tools, it is a candidate to be split into two separate specialists.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Navigating the current agentic AI hype requires a critical eye towards architectural choices and their real-world implications.</p>
 <ol>
 <li><strong>Understand the Hidden Costs:</strong> Multi-agent systems introduce significant trade-offs, including compounding latency, a substantial &quot;token tax&quot; due to shared context, and a non-deterministic state space that complicates testing and debugging.</li>
@@ -166,7 +176,7 @@
 </ol>
 <p><em>Takeaway:</em> Always challenge the assumption that more autonomy is better; often, simpler, more deterministic architectures deliver superior performance and cost efficiency.</p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Autonomy vs Prompting</strong>: <em>Evaluating External Orchestration vs. In-Context Prompting in Agentic Design</em> (2025/2026 research). Analyzes how simpler prompting techniques often outperform multi-agent setups on low-to-medium complexity tasks. (Needs verification)</li>
 <li><strong>Benchmarking MAS in Finance</strong>: <em>Benchmarking Multi-Agent LLM Architectures for Financial Document Processing</em> (March 2026). Explains the cost-accuracy tradeoffs of agentic systems. <a href="https://arxiv.org/abs/2603.09452" target="_blank" rel="noopener">arXiv:2603.09452</a> (Needs verification)</li>
@@ -199,6 +209,18 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-hidden-costs-of-autonomy" class="toc-link">The Hidden Costs of Autonomy</a></li>
+              <li class="toc-item toc-h2"><a href="#the-decision-tree-workflow-vs-agent-vs-code" class="toc-link">The Decision Tree: Workflow vs. Agent vs. Code</a></li>
+              <li class="toc-item toc-h2"><a href="#the-complexity-reduction-checklist" class="toc-link">The Complexity Reduction Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

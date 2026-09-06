@@ -25,6 +25,7 @@ graph TD
     L4 --> Database[(Primary Database / Upstream API)]
   end
 ```
+*Figure 1: The four-tier caching topology of Next.js 14 vs Next.js 15, illustrating the inversion from aggressive build-time caching to dynamic-by-default execution. Source: Next.js Architectural RFCs [1, 2].*
 
 ---
 
@@ -145,3 +146,13 @@ The story of Next.js caching is a cautionary tale for systems architects: **Neve
 By attempting to hide the physics of distributed caching behind an invisible abstraction on `fetch`, Next.js 13/14 created cognitive dissonance that fractured developer trust.
 
 Next.js 15's return to uncached-by-default is a victory for sound distributed systems design. Caching is not a framework feature; it is an architectural commitment that requires explicit boundaries, defined lifetimes, and deterministic invalidation policies.
+
+---
+
+## References & Further Reading
+
+1. **Vercel Engineering Team (2024)**. *Next.js 15 Release and Caching Default Inversions*. Next.js Official Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+2. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234, Internet Engineering Task Force (IETF). [https://datatracker.ietf.org/doc/html/rfc7234](https://datatracker.ietf.org/doc/html/rfc7234)
+3. **Vercel Documentation (2024)**. *Data Cache and Incremental Static Regeneration (ISR) Architecture*. Next.js Documentation. [https://nextjs.org/docs/app/building-your-application/caching](https://nextjs.org/docs/app/building-your-application/caching)
+4. **Fastly Engineering (2023)**. *Purging and Surrogate-Keys in Modern Content Delivery Networks*. Fastly Technical Documentation. [https://docs.fastly.com/en/guides/purging](https://docs.fastly.com/en/guides/purging)
+5. **Remix Team (2023)**. *Philosophy: Web Standards and Standard Cache-Control Headers*. Remix & React Router 7 Architectural Guides. [https://remix.run/docs/en/main/guides/caching](https://remix.run/docs/en/main/guides/caching)

@@ -104,31 +104,40 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#causal-time-vector-clock-architecture">Causal Time &amp; Vector Clock Architecture</a></li>
+                <li><a href="#python-implementation-multi-agent-vector-clock-engine">Python Implementation: Multi-Agent Vector Clock Engine</a></li>
+                <li><a href="#vector-clock-gotchas-mitigation">Vector Clock Gotchas &amp; Mitigation</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In distributed multi-agent systems, agents operate across different physical servers, message brokers, and execution environments. Relying on physical wall-clock timestamps (like system clock time) to order event trajectories is dangerous due to <strong>clock skew</strong> and network latency jitter. Two messages sent sequentially may arrive at a central server with inverted physical timestamps.</p>
 <p>To establish true <strong>causal order</strong> without relying on synchronized physical clocks, systems engineers deploy <strong>Logical Time</strong> mechanisms—specifically <strong>Vector Clocks</strong>.</p>
 <p>Vector clocks track the exact causal relationship between events: determining whether Event $A$ happened before Event $B$ ($A → B$), or whether Event $A$ and Event $B$ occurred concurrently ($A \parallel B$).</p>
 <p>This article details how to construct a Vector Clock tracking engine for asynchronous multi-agent execution trajectories.</p>
 <hr>
-<h2>Causal Time &amp; Vector Clock Architecture</h2>
+<h2 id="causal-time-vector-clock-architecture">Causal Time &amp; Vector Clock Architecture</h2>
 <p>Vector timestamp progression and concurrency detection across three agent nodes:</p>
 <div class="mermaid">graph TD
   subgraph Agent A Pipeline
-    A1[&quot;Event A1: [1, 0, 0]&quot;] --&gt;|Send Msg m1| A2[&quot;Event A2: [2, 0, 0]&quot;]
+    A1[&quot;Event A1: <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>&quot;] --&gt;|Send Msg m1| A2[&quot;Event A2: <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>&quot;]
   end
   
   subgraph Agent B Pipeline
-    B1[&quot;Event B1: [0, 1, 0]&quot;] --&gt;|Recv Msg m1| B2[&quot;Event B2: [2, 2, 0]&quot;]
-    B2 --&gt;|Send Msg m2| B3[&quot;Event B3: [2, 3, 0]&quot;]
+    B1[&quot;Event B1: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>&quot;] --&gt;|Recv Msg m1| B2[&quot;Event B2: <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>&quot;]
+    B2 --&gt;|Send Msg m2| B3[&quot;Event B3: <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>&quot;]
   end
   
   subgraph Agent C Pipeline
-    C1[&quot;Event C1: [0, 0, 1]&quot;]
-    C1 --&gt;|Recv Msg m2| C2[&quot;Event C2: [2, 3, 2]&quot;]
+    C1[&quot;Event C1: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>&quot;]
+    C1 --&gt;|Recv Msg m2| C2[&quot;Event C2: <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup>&quot;]
   end
   
   A1 -.-&gt;|Causal Message m1| B2
   B3 -.-&gt;|Causal Message m2| C2</div>
-<h3>Vector Clock Updating Rules</h3>
+<h3 id="vector-clock-updating-rules">Vector Clock Updating Rules</h3>
 <p>For a cluster of $N$ agent processes, each agent $i$ maintains a clock vector $V_i$ of size $N$, initialized to all zeros:</p>
 <ol>
 <li><strong>Local Event Rule</strong>: Before agent $i$ executes a local operation or sends a message, it increments its own logical index:
@@ -139,7 +148,7 @@ $$V_j[k] = \max(V_j[k], V_{\text{msg}}[k]) \quad \forall k \in [1, N]$$
 $$V_j[j] = V_j[j] + 1$$</li>
 </ol>
 <hr>
-<h2>Python Implementation: Multi-Agent Vector Clock Engine</h2>
+<h2 id="python-implementation-multi-agent-vector-clock-engine">Python Implementation: Multi-Agent Vector Clock Engine</h2>
 <p>Here is a production-grade Python implementation of a Vector Clock engine tracking causal dependencies and detecting concurrent execution conflicts between 3 asynchronous agent workers:</p>
 <pre><code class="language-python">from typing import List, Dict, Tuple, Optional
 from pydantic import BaseModel, Field
@@ -243,7 +252,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot; Agent C Clock: {clock_c_clean.clock}&quot;)
     print(f&quot; Result      : Causal Relationship is {relationship}&quot;)</code></pre>
 <hr>
-<h2>Vector Clock Gotchas &amp; Mitigation</h2>
+<h2 id="vector-clock-gotchas-mitigation">Vector Clock Gotchas &amp; Mitigation</h2>
 <p>When implementing vector clocks in large swarms:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -256,7 +265,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams building vector clock tracking report:</p>
 <ul>
 <li><strong>Zero Out-of-Order Execution Bugs</strong>: Trajectories are strictly ordered according to true causality, regardless of physical network delay.</li>
@@ -289,6 +298,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#causal-time-vector-clock-architecture" class="toc-link">Causal Time &amp; Vector Clock Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-multi-agent-vector-clock-engine" class="toc-link">Python Implementation: Multi-Agent Vector Clock Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#vector-clock-gotchas-mitigation" class="toc-link">Vector Clock Gotchas &amp; Mitigation</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

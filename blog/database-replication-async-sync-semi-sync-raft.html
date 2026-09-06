@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#database-replication-modes-raft-consensus-architecture">Database Replication Modes &amp; Raft Consensus Architecture</a></li>
+                <li><a href="#python-implementation-multi-mode-replication-engine">Python Implementation: Multi-Mode Replication Engine</a></li>
+                <li><a href="#database-replication-gotchas-best-practices">Database Replication Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-availability data infrastructure, running a single primary database node introduces a <strong>Single Point of Failure (SPOF)</strong>. If the primary database hardware fails, all application writes stall, and un-replicated data is lost.</p>
 <p>To achieve fault tolerance and scale read throughput, databases replicate mutations across multiple replica nodes (<strong>PostgreSQL</strong>, <strong>MySQL</strong>, <strong>CockroachDB</strong>, <strong>YugabyteDB</strong>).</p>
 <p>However, database replication introduces a fundamental trade-off between <strong>Write Latency</strong>, <strong>Data Loss ($RPO$)</strong>, and <strong>Availability</strong>.</p>
 <p>From legacy <strong>Asynchronous</strong> and <strong>Synchronous</strong> primary-replica setups to modern <strong>Semi-Synchronous</strong> and <strong>Raft Majority Quorum</strong> consensus groups, choosing the right replication model dictates database resilience.</p>
 <p>This article details Asynchronous replication lag, Synchronous latency penalties, Semi-Synchronous relay logs, and Raft consensus log replication.</p>
 <hr>
-<h2>Database Replication Modes &amp; Raft Consensus Architecture</h2>
+<h2 id="database-replication-modes-raft-consensus-architecture">Database Replication Modes &amp; Raft Consensus Architecture</h2>
 <p>How Asynchronous, Semi-Synchronous, and Raft Majority Quorum replication models process client write requests:</p>
 <div class="mermaid">graph TD
   subgraph Client Write Request
@@ -133,7 +142,7 @@
     NodeB --&gt;|2. Majority Ack (2 of 3 Nodes)| Primary
     Primary --&gt;|3. Commit Majority Entry!| Client
   end</div>
-<h3>Core Replication Modes &amp; Mechanics</h3>
+<h3 id="core-replication-modes-mechanics">Core Replication Modes &amp; Mechanics</h3>
 <ol>
 <li><strong>Asynchronous Replication</strong>:<ul>
 <li><em>Mechanism</em>: The primary writes and commits the transaction to its local WAL disk, returning success to the client immediately. Background threads stream WAL bytes to replica nodes asynchronously.</li>
@@ -160,7 +169,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Multi-Mode Replication Engine</h2>
+<h2 id="python-implementation-multi-mode-replication-engine">Python Implementation: Multi-Mode Replication Engine</h2>
 <p>Here is a production-grade Python implementation of a Distributed Database Replication Engine supporting Async, Semi-Sync, and Raft Majority Quorum Commit Modes:</p>
 <pre><code class="language-python">import time
 from typing import List, Dict, Tuple
@@ -263,7 +272,7 @@ if __name__ == &quot;__main__&quot;:
     lat_raft = primary.execute_transaction(103, &quot;Account_C=$500&quot;, mode=&quot;RAFT_QUORUM&quot;)
     print(f&quot; 📊 Raft Quorum Mode Client Latency: {lat_raft:.2f} ms (Bypassed Slow Replica-2!)&quot;)</code></pre>
 <hr>
-<h2>Database Replication Gotchas &amp; Best Practices</h2>
+<h2 id="database-replication-gotchas-best-practices">Database Replication Gotchas &amp; Best Practices</h2>
 <p>When configuring database replication:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -276,7 +285,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Replication engine deployments (such as <strong>CockroachDB</strong>, <strong>TiKV</strong>, and <strong>MySQL InnoDB Cluster</strong>) report:</p>
 <ul>
 <li><strong>Zero Data Loss ($RPO = 0$)</strong>: Raft majority quorum replication guarantees that committed transactions survive the crash of any single server node.</li>
@@ -309,6 +318,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#database-replication-modes-raft-consensus-architecture" class="toc-link">Database Replication Modes &amp; Raft Consensus Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-multi-mode-replication-engine" class="toc-link">Python Implementation: Multi-Mode Replication Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#database-replication-gotchas-best-practices" class="toc-link">Database Replication Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

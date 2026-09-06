@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#why-tool-calls-break-in-production">Why Tool Calls Break in Production</a></li>
+                <li><a href="#tool-contract-architecture">Tool Contract Architecture</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#implementation-typed-tool-registry-with-pydantic-v2">Implementation: Typed Tool Registry with Pydantic v2</a></li>
+                <li><a href="#error-recovery-sequence-llm-self-correction-loop">Error Recovery Sequence: LLM Self-Correction Loop</a></li>
+                <li><a href="#generating-tool-schemas-directly-from-pydantic-models">Generating Tool Schemas Directly from Pydantic Models</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +123,7 @@ Tool calls are the primary interface between LLM reasoning and the real world. W
 </div>
 </div>
 <hr>
-<h2>Why Tool Calls Break in Production</h2>
+<h2 id="why-tool-calls-break-in-production">Why Tool Calls Break in Production</h2>
 <p>Tool calling is conceptually simple: the LLM decides to call a function, the runtime executes it, and the result is fed back. In practice, production failures cluster around three anti-patterns:</p>
 <ol>
 <li><strong>Hallucinated Parameters</strong>: The model confidently passes an argument that doesn&#39;t exist in the schema — e.g., <code>{&quot;user_id&quot;: &quot;abc123&quot;, &quot;sort_by&quot;: &quot;relevance&quot;}</code> when <code>sort_by</code> is not a defined field. Without validation, this propagates silently.</li>
@@ -120,7 +132,7 @@ Tool calls are the primary interface between LLM reasoning and the real world. W
 </ol>
 <p>The solution is a three-layer defense: <strong>Schema Contracts → Runtime Validation → Structured Recovery</strong>.</p>
 <hr>
-<h2>Tool Contract Architecture</h2>
+<h2 id="tool-contract-architecture">Tool Contract Architecture</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     A[🧠 LLM Reasoning Layer] --&gt;|Generates tool call JSON| B{Schema Validator&lt;br/&gt;Pydantic v2}
@@ -146,7 +158,7 @@ flowchart TD
     style G fill:#1e293b,stroke:#f59e0b,stroke-width:2px
     style H fill:#4c1d95,stroke:#a855f7,stroke-width:2px</div>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -168,7 +180,7 @@ flowchart TD
 </tr>
 </tbody></table>
 <hr>
-<h2>Implementation: Typed Tool Registry with Pydantic v2</h2>
+<h2 id="implementation-typed-tool-registry-with-pydantic-v2">Implementation: Typed Tool Registry with Pydantic v2</h2>
 <pre><code class="language-python">import json
 import time
 import functools
@@ -456,7 +468,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n===== FINAL RESULT =====&quot;)
     print(result)</code></pre>
 <hr>
-<h2>Error Recovery Sequence: LLM Self-Correction Loop</h2>
+<h2 id="error-recovery-sequence-llm-self-correction-loop">Error Recovery Sequence: LLM Self-Correction Loop</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b'}}}%%
 sequenceDiagram
     participant LLM as LLM Agent
@@ -478,7 +490,7 @@ sequenceDiagram
     T--&gt;&gt;LLM: stdout: &quot;fallback logic&quot;, exit_code: 0
     LLM--&gt;&gt;LLM: Synthesise answer from available results</div>
 <hr>
-<h2>Generating Tool Schemas Directly from Pydantic Models</h2>
+<h2 id="generating-tool-schemas-directly-from-pydantic-models">Generating Tool Schemas Directly from Pydantic Models</h2>
 <p>Instead of hand-crafting JSON schemas, derive them automatically from your Pydantic models — guaranteeing schema and validation stay in sync:</p>
 <pre><code class="language-python">def pydantic_to_anthropic_tool(
     name: str,
@@ -517,7 +529,7 @@ print(json.dumps(search_tool_def, indent=2))
 #   }
 # }</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Robust tool-calling is the difference between a demo agent and a production agent. By encoding contracts in Pydantic models, validating at runtime, and returning structured error feedback, you give the LLM everything it needs to self-correct without human intervention.</p>
 <ul>
 <li><strong>Always return structured errors to the LLM</strong> — not raw exceptions. The model cannot learn from a Python traceback, but it can correct itself from a field-level validation message.</li>
@@ -526,7 +538,7 @@ print(json.dumps(search_tool_def, indent=2))
 </ul>
 <p>In our next article, we explore <strong>Agent Memory: Short-Term, Episodic &amp; Semantic</strong> — how to persist agent state across sessions using Mem0, Redis, and pgvector so agents accumulate knowledge and context over time.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>Anthropic Tool Use Guide</strong>: <a href="https://docs.anthropic.com/en/docs/build-with-claude/tool-use" target="_blank" rel="noopener">Function Calling with Claude</a></li>
 <li><strong>OpenAI Function Calling</strong>: <a href="https://platform.openai.com/docs/guides/function-calling" target="_blank" rel="noopener">Structured Tool Calling Reference</a></li>
@@ -559,6 +571,20 @@ print(json.dumps(search_tool_def, indent=2))
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#why-tool-calls-break-in-production" class="toc-link">Why Tool Calls Break in Production</a></li>
+              <li class="toc-item toc-h2"><a href="#tool-contract-architecture" class="toc-link">Tool Contract Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-typed-tool-registry-with-pydantic-v2" class="toc-link">Implementation: Typed Tool Registry with Pydantic v2</a></li>
+              <li class="toc-item toc-h2"><a href="#error-recovery-sequence-llm-self-correction-loop" class="toc-link">Error Recovery Sequence: LLM Self-Correction Loop</a></li>
+              <li class="toc-item toc-h2"><a href="#generating-tool-schemas-directly-from-pydantic-models" class="toc-link">Generating Tool Schemas Directly from Pydantic Models</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

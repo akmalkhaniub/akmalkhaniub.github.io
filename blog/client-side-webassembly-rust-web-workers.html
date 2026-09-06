@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-threading-bottleneck-why-the-ui-freezes">The Threading Bottleneck: Why the UI Freezes</a></li>
+                <li><a href="#1-writing-the-heavy-compute-module-in-rust">1. Writing the Heavy Compute Module in Rust</a></li>
+                <li><a href="#2-running-wasm-inside-the-web-worker">2. Running Wasm inside the Web Worker</a></li>
+                <li><a href="#3-main-thread-orchestration-zero-copy-transfer">3. Main Thread Orchestration: Zero-Copy Transfer</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Single-threaded JavaScript is excellent for building dynamic UIs, but it fails w
 </div>
 </div>
 <hr>
-<h2>The Threading Bottleneck: Why the UI Freezes</h2>
+<h2 id="the-threading-bottleneck-why-the-ui-freezes">The Threading Bottleneck: Why the UI Freezes</h2>
 <p>The browser&#39;s main thread handles JavaScript execution, HTML parsing, CSS style calculation, and page layout updates. If a script executes for more than 50 milliseconds (a &quot;Long Task&quot;), the browser delays rendering, causing noticeable lag.</p>
 <p>To solve this, we offload intensive work using a two-pronged solution:</p>
 <ol>
@@ -135,7 +145,7 @@ flowchart LR
     UI --&gt;|postMessage Transferable| Listen
     Return --&gt;|Zero-Copy Transfer| Paint</div>
 <hr>
-<h2>1. Writing the Heavy Compute Module in Rust</h2>
+<h2 id="1-writing-the-heavy-compute-module-in-rust">1. Writing the Heavy Compute Module in Rust</h2>
 <p>First, we write a high-performance Rust library. In this example, we build a pixel-inversion filter (greyscale/invert) for raw image buffer manipulation using the <code>wasm-bindgen</code> crate.</p>
 <pre><code class="language-rust">// src/lib.rs
 use wasm_bindgen::prelude::*;
@@ -159,7 +169,7 @@ pub fn invert_image_colors(mut pixels: Vec&lt;u8&gt;) -&gt; Vec&lt;u8&gt; {
 <p>We compile this module to WebAssembly using <code>wasm-pack</code>:</p>
 <pre><code class="language-bash">wasm-pack build --target no-modules</code></pre>
 <hr>
-<h2>2. Running Wasm inside the Web Worker</h2>
+<h2 id="2-running-wasm-inside-the-web-worker">2. Running Wasm inside the Web Worker</h2>
 <p>Next, we write the Web Worker script (<code>image.worker.js</code>). By instantiating our Wasm module in a background worker, the main thread remains free to handle clicks, animations, and renders.</p>
 <pre><code class="language-javascript">// image.worker.js
 importScripts('./pkg/rust_wasm_processor.js');
@@ -186,7 +196,7 @@ wasm_bindgen('./pkg/rust_wasm_processor_bg.wasm').then(() =&gt; {
   };
 });</code></pre>
 <hr>
-<h2>3. Main Thread Orchestration: Zero-Copy Transfer</h2>
+<h2 id="3-main-thread-orchestration-zero-copy-transfer">3. Main Thread Orchestration: Zero-Copy Transfer</h2>
 <p>When sending large datasets (like a 4K image buffer or millions of numeric records) to a Web Worker, standard serialization clones the data. This cloning blocks the main thread.</p>
 <p>We solve this using <strong>Transferable Objects</strong> (like <code>ArrayBuffer</code>). Transferring data passes the memory reference, instantly making it unavailable on the sender&#39;s thread.</p>
 <pre><code class="language-javascript">// main.js
@@ -216,7 +226,7 @@ function processLargeImage(rawImageBuffer) {
   // It has been cleanly moved to the Worker's memory space.
 }</code></pre>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>To build high-performance client-side web platforms:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Never run computations on the main thread</strong>: If it takes more than 16ms (1 frame at 60Hz) or 50ms (long task threshold), run it in a Web Worker.</li>
@@ -251,6 +261,18 @@ function processLargeImage(rawImageBuffer) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-threading-bottleneck-why-the-ui-freezes" class="toc-link">The Threading Bottleneck: Why the UI Freezes</a></li>
+              <li class="toc-item toc-h2"><a href="#1-writing-the-heavy-compute-module-in-rust" class="toc-link">1. Writing the Heavy Compute Module in Rust</a></li>
+              <li class="toc-item toc-h2"><a href="#2-running-wasm-inside-the-web-worker" class="toc-link">2. Running Wasm inside the Web Worker</a></li>
+              <li class="toc-item toc-h2"><a href="#3-main-thread-orchestration-zero-copy-transfer" class="toc-link">3. Main Thread Orchestration: Zero-Copy Transfer</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

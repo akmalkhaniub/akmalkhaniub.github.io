@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-callback-spoofing-threat">The Callback Spoofing Threat</a></li>
+                <li><a href="#1-structuring-the-jwt-approval-token">1. Structuring the JWT Approval Token</a></li>
+                <li><a href="#2-setting-up-public-key-signature-verification">2. Setting up Public-Key Signature Verification</a></li>
+                <li><a href="#code-demo-secure-jwt-callback-validator">Code Demo: Secure JWT Callback Validator</a></li>
+                <li><a href="#security-takeaways-for-technical-leads">Security Takeaways for Technical Leads</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Resuming a suspended agent process via Webhooks introduces significant security 
 </div>
 </div>
 <hr>
-<h2>The Callback Spoofing Threat</h2>
+<h2 id="the-callback-spoofing-threat">The Callback Spoofing Threat</h2>
 <p>When an agent pauses to await approval, it exposes a callback URL (e.g. <code>POST /api/v1/sessions/{id}/resume</code>).</p>
 <p>If this endpoint is unsecured:</p>
 <ul>
@@ -133,7 +143,7 @@ flowchart TD
     Match --&gt;|No| Reject
     Match --&gt;|Yes| Resume([Resume Agent Execution])</div>
 <hr>
-<h2>1. Structuring the JWT Approval Token</h2>
+<h2 id="1-structuring-the-jwt-approval-token">1. Structuring the JWT Approval Token</h2>
 <p>The token claims must specify the exact execution constraints:</p>
 <ul>
 <li><strong>Issuer (<code>iss</code>)</strong>: Verifying that the callback originated from the authorized approval app (e.g., Slack Integration).</li>
@@ -141,7 +151,7 @@ flowchart TD
 <li><strong>Task Hash (<code>hash</code>)</strong>: A cryptographic hash of the approved code change. If the code changes between the time the agent pauses and the admin approves, the hash fails, preventing outdated deployments.</li>
 </ul>
 <hr>
-<h2>2. Setting up Public-Key Signature Verification</h2>
+<h2 id="2-setting-up-public-key-signature-verification">2. Setting up Public-Key Signature Verification</h2>
 <p>Using asymmetric cryptography (RS256) is recommended:</p>
 <ol>
 <li>The approval client signs the token using its <strong>private key</strong>.</li>
@@ -149,7 +159,7 @@ flowchart TD
 <li>This ensures that even if the network channel is compromised, the signature cannot be forged.</li>
 </ol>
 <hr>
-<h2>Code Demo: Secure JWT Callback Validator</h2>
+<h2 id="code-demo-secure-jwt-callback-validator">Code Demo: Secure JWT Callback Validator</h2>
 <p>Below is a Python implementation of a secure callback gate. It verifies JWT signatures, extracts claims, and asserts that the task parameters match transaction schemas before resuming the agent.</p>
 <pre><code class="language-python">import time
 import hmac
@@ -250,7 +260,7 @@ if __name__ == &quot;__main__&quot;:
     success, msg = gateway.verify_and_resume(tampered_token, session_id, code_hash)
     print(f&quot;Result: **{success}** | Message: {msg}&quot;)</code></pre>
 <hr>
-<h2>Security Takeaways for Technical Leads</h2>
+<h2 id="security-takeaways-for-technical-leads">Security Takeaways for Technical Leads</h2>
 <ul>
 <li><strong>Reject Raw Webhooks</strong>: Never expose unauthenticated callback endpoints to resume agent pipelines. Enforce JWT signature verification.</li>
 <li><strong>Pin Task Hashes</strong>: Include cryptographic hashes of the agent&#39;s work payloads inside the JWT claims to block modification between pause and resume states.</li>
@@ -283,6 +293,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-callback-spoofing-threat" class="toc-link">The Callback Spoofing Threat</a></li>
+              <li class="toc-item toc-h2"><a href="#1-structuring-the-jwt-approval-token" class="toc-link">1. Structuring the JWT Approval Token</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-public-key-signature-verification" class="toc-link">2. Setting up Public-Key Signature Verification</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-secure-jwt-callback-validator" class="toc-link">Code Demo: Secure JWT Callback Validator</a></li>
+              <li class="toc-item toc-h2"><a href="#security-takeaways-for-technical-leads" class="toc-link">Security Takeaways for Technical Leads</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

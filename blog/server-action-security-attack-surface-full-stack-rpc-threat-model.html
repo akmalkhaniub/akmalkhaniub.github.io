@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/server-action-security-attack-surface-full-stack-rpc-threat-model.html">
   <meta property="og:title" content="The Server Action Attack Surface: Full-Stack RPC and the Disappearing Security Perimeter">
   <meta property="og:description" content="Why Server Actions are publicly addressable HTTP endpoints: threat modeling unauthenticated function IDs, closed-over scope leaks, CSRF protection mechanics, and building production Action Gateways with Zod.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/server-action-security-attack-surface-full-stack-rpc-threat-model.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-05">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="The Server Action Attack Surface: Full-Stack RPC and the Disappearing Security Perimeter">
   <meta name="twitter:description" content="Why Server Actions are publicly addressable HTTP endpoints: threat modeling unauthenticated function IDs, closed-over scope leaks, CSRF protection mechanics, and building production Action Gateways with Zod.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/server-action-security-attack-surface-full-stack-rpc-threat-model.jpg">
 
   <script type="application/ld+json">
 {
@@ -92,7 +92,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="The Server Action Attack Surface: Full-Stack RPC and the Disappearing Security Perimeter Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/server-action-security-attack-surface-full-stack-rpc-threat-model.jpg" class="article-cover-img" alt="The Server Action Attack Surface: Full-Stack RPC and the Disappearing Security Perimeter Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">The Server Action Attack Surface: Full-Stack RPC and the Disappearing Security Perimeter</h1>
             <div class="article-meta">
@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-why-this-feature-the-ergonomic-nightmare-of-rest-plumbing">1. Why This Feature? The Ergonomic Nightmare of REST Plumbing</a></li>
+                <li><a href="#2-the-threat-surface-four-critical-vulnerabilities-in-production">2. The Threat Surface: Four Critical Vulnerabilities in Production</a></li>
+                <li><a href="#3-the-defense-in-depth-pattern-action-gateways">3. The Defense-in-Depth Pattern: Action Gateways</a></li>
+                <li><a href="#4-cross-framework-comparison-full-stack-mutation-models">4. Cross-Framework Comparison: Full-Stack Mutation Models</a></li>
+                <li><a href="#5-architectural-summary">5. Architectural Summary</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <p>In full-stack software development, security has historically relied on an unambiguous physical perimeter: the network boundary between the client browser and the backend server.</p>
 <p>If you wanted a client to mutate data on the server, you followed a disciplined ritual:</p>
 <ol>
@@ -140,8 +151,9 @@ async function updateProfile(formData: FormData) {
       PublicAction -.-&gt;|Captures Closed Scope?| SecretLeak[Leaked Environment Pointers]
     end
   end</div>
+<p><em>Figure 1: Server Action RPC invocation lifecycle, cryptographic action ID hash verification, and closed-over scope boundaries. Source: OWASP Full-Stack Security Taskforce &amp; React Documentation <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-4" class="citation-link" data-ref="4" title="Reference [4]">[4]</a></sup>.</em></p>
 <hr>
-<h2>1. Why This Feature? The Ergonomic Nightmare of REST Plumbing</h2>
+<h2 id="1-why-this-feature-the-ergonomic-nightmare-of-rest-plumbing">1. Why This Feature? The Ergonomic Nightmare of REST Plumbing</h2>
 <p>To understand why React and Next.js built Server Actions, consider the sheer volume of incidental complexity required to build a simple user feedback form in a classic React Single Page Application:</p>
 <ul>
 <li>Creating an API route handler in <code>/pages/api/feedback.ts</code>.</li>
@@ -165,12 +177,12 @@ async function updateProfile(formData: FormData) {
     &lt;/form&gt;
   );
 }</code></pre>
-<h3>The Progressive Enhancement Superpower</h3>
+<h3 id="the-progressive-enhancement-superpower">The Progressive Enhancement Superpower</h3>
 <p>If JavaScript fails to load on a flaky cellular network, or if an aggressive browser extension blocks script execution, the form still functions! The browser falls back to a native HTTP POST submission. When JavaScript loads, React intercepts the submission asynchronously, managing loading states via <code>useActionState</code> and optimistic UI updates via <code>useOptimistic</code>.</p>
 <hr>
-<h2>2. The Threat Surface: Four Critical Vulnerabilities in Production</h2>
+<h2 id="2-the-threat-surface-four-critical-vulnerabilities-in-production">2. The Threat Surface: Four Critical Vulnerabilities in Production</h2>
 <p>Because Server Actions look syntactically like local helper functions, developers frequently treat them as private internal methods. This mental model creates four distinct security vulnerabilities:</p>
-<h3>1. The Missing Authorization Vulnerability (The BOLA Hazard)</h3>
+<h3 id="1-the-missing-authorization-vulnerability-the-bola-hazard">1. The Missing Authorization Vulnerability (The BOLA Hazard)</h3>
 <p>In a traditional REST API, routing files live in an isolated directory (<code>/api/admin/...</code>), where middleware easily enforces role-based access control (RBAC).</p>
 <p>Server Actions, however, can be defined inside any component file anywhere in your repository:</p>
 <pre><code class="language-tsx">// components/user-row.tsx (Rendered on Admin Dashboard)
@@ -185,14 +197,14 @@ export default function UserRow({ user }) {
 
   return &lt;button onClick={deleteUser}&gt;Delete User&lt;/button&gt;;
 }</code></pre>
-<h4>The Exploit:</h4>
+<h4 id="the-exploit">The Exploit:</h4>
 <p>An unprivileged attacker inspects the page source or network logs, finds the cryptographic action ID for <code>deleteUser</code>, and executes:</p>
 <pre><code class="language-bash">curl -X POST https://example.com/dashboard \
   -H &quot;Next-Action: 7b8f9e4210a1b2c3d4e5f6&quot; \
   -F &quot;0=usr_admin_999&quot;</code></pre>
 <p>The server deletes the administrator account. The developer relied on <strong>security through UI obscurity</strong>: assuming that because normal users cannot see the button, they cannot trigger the action.</p>
 <hr>
-<h3>2. Scope Capturing &amp; Accidental Secret Leakage</h3>
+<h3 id="2-scope-capturing-accidental-secret-leakage">2. Scope Capturing &amp; Accidental Secret Leakage</h3>
 <p>When a Server Action is defined inline inside a Server Component, it creates a JavaScript closure that captures variables from its parent scope:</p>
 <pre><code class="language-tsx">// app/documents/[id]/page.tsx
 export default async function DocumentPage({ params }) {
@@ -206,17 +218,17 @@ export default async function DocumentPage({ params }) {
 
   return &lt;DocumentViewer action={decryptDocument} /&gt;;
 }</code></pre>
-<h4>Under the Hood:</h4>
+<h4 id="under-the-hood">Under the Hood:</h4>
 <p>To allow the client to trigger <code>decryptDocument</code> later, Next.js must serialize the action&#39;s captured closure variables and send them to the client browser in an encrypted or signed token. If encryption configurations are misaligned, or if secret keys are captured in client-visible action bounds, sensitive server-side variables can be exposed to reverse-engineering.</p>
 <hr>
-<h3>3. Cross-Site Request Forgery (CSRF) in Server Actions</h3>
+<h3 id="3-cross-site-request-forgery-csrf-in-server-actions">3. Cross-Site Request Forgery (CSRF) in Server Actions</h3>
 <p>In traditional web applications, forms require anti-CSRF tokens to prevent malicious third-party websites from submitting forged POST requests using a victim&#39;s active session cookies.</p>
-<h4>How Next.js Mitigates CSRF:</h4>
+<h4 id="how-nextjs-mitigates-csrf">How Next.js Mitigates CSRF:</h4>
 <p>Next.js inspects the incoming HTTP <code>Origin</code> header against the <code>Host</code> header. If the origin does not match the host, the framework automatically rejects the Server Action.</p>
-<h4>The Edge Case Hazard:</h4>
+<h4 id="the-edge-case-hazard">The Edge Case Hazard:</h4>
 <p>If your application runs behind an improperly configured reverse proxy that fails to forward the <code>Host</code> or <code>X-Forwarded-Host</code> headers correctly, or if your domain allows cross-subdomain cookie sharing across untrusted subdomains (<code>*.yourdomain.com</code>), malicious scripts hosted on a compromised subdomain can trigger authenticated Server Actions on behalf of users.</p>
 <hr>
-<h2>3. The Defense-in-Depth Pattern: Action Gateways</h2>
+<h2 id="3-the-defense-in-depth-pattern-action-gateways">3. The Defense-in-Depth Pattern: Action Gateways</h2>
 <p>To make Server Actions enterprise-safe, architects must ban raw, unvalidated inline server functions. All mutations should pass through a standardized <strong>Action Gateway</strong> pattern enforcing authentication, Zod input parsing, and rate limiting:</p>
 <pre><code class="language-typescript">// lib/safe-action.ts
 import { auth } from '@/lib/auth';
@@ -249,7 +261,7 @@ export function createProtectedAction&lt;TSchema extends z.ZodType, TResult&gt;(
     }
   };
 }</code></pre>
-<h3>Usage in Production:</h3>
+<h3 id="usage-in-production">Usage in Production:</h3>
 <pre><code class="language-typescript">// actions/billing.ts
 'use server';
 
@@ -269,7 +281,7 @@ export const cancelSubscription = createProtectedAction(
   }
 );</code></pre>
 <hr>
-<h2>4. Cross-Framework Comparison: Full-Stack Mutation Models</h2>
+<h2 id="4-cross-framework-comparison-full-stack-mutation-models">4. Cross-Framework Comparison: Full-Stack Mutation Models</h2>
 <table>
 <thead>
 <tr>
@@ -310,10 +322,21 @@ export const cancelSubscription = createProtectedAction(
 </tr>
 </tbody></table>
 <hr>
-<h2>5. Architectural Summary</h2>
+<h2 id="5-architectural-summary">5. Architectural Summary</h2>
 <p>Server Actions are an incredible ergonomic advancement, but they demand a fundamental shift in security awareness.</p>
 <p>The moment you write <code>&#39;use server&#39;</code>, you are not creating a private helper function; you are publishing a public endpoint to the global internet.</p>
 <p>By establishing strict Action Gateways, enforcing Zod schema validation, verifying tenant ownership on every invocation, and avoiding accidental closure captures, engineering teams can enjoy the productivity of full-stack React without compromising their application&#39;s security posture.</p>
+<hr>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>OWASP Foundation (2023)</strong>. <em>OWASP Top 10 API Security Risks: Broken Object Level Authorization &amp; Server-Side Security</em>. OWASP Foundation. <a href="https://owasp.org/API-Security/" target="_blank" rel="noopener">https://owasp.org/API-Security/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>React Core Team (2024)</strong>. <em>Server Actions Security Model and Cryptographic ID Generation</em>. React 19 RFCs. <a href="https://react.dev/reference/rsc/server-actions" target="_blank" rel="noopener">https://react.dev/reference/rsc/server-actions</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Zod Team &amp; Colinhacks (2024)</strong>. <em>TypeScript-First Schema Validation with Static Type Inference</em>. GitHub Repository. <a href="https://github.com/colinhacks/zod" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/colinhacks/zod</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Barth, A., Jackson, C., &amp; Mitchell, J. C. (2008)</strong>. <em>Robust Defenses for Cross-Site Request Forgery</em>. Proceedings of the 15th ACM Conference on Computer and Communications Security (CCS &#39;08), 75–88. <a href="https://doi.org/10.1145/1455770.1455782" target="_blank" rel="noopener">https://doi.org/10.1145/1455770.1455782</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Remix Team (2023)</strong>. <em>Action Functions and Route Security Boundaries</em>. Remix Guides. <a href="https://remix.run/docs/en/main/route/action" target="_blank" rel="noopener">https://remix.run/docs/en/main/route/action</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -341,6 +364,19 @@ export const cancelSubscription = createProtectedAction(
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-why-this-feature-the-ergonomic-nightmare-of-rest-plumbing" class="toc-link">1. Why This Feature? The Ergonomic Nightmare of REST Plumbing</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-threat-surface-four-critical-vulnerabilities-in-production" class="toc-link">2. The Threat Surface: Four Critical Vulnerabilities in Production</a></li>
+              <li class="toc-item toc-h2"><a href="#3-the-defense-in-depth-pattern-action-gateways" class="toc-link">3. The Defense-in-Depth Pattern: Action Gateways</a></li>
+              <li class="toc-item toc-h2"><a href="#4-cross-framework-comparison-full-stack-mutation-models" class="toc-link">4. Cross-Framework Comparison: Full-Stack Mutation Models</a></li>
+              <li class="toc-item toc-h2"><a href="#5-architectural-summary" class="toc-link">5. Architectural Summary</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

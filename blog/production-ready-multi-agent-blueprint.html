@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-swarm-architecture">The Swarm Architecture</a></li>
+                <li><a href="#step-by-step-blueprint-walkthrough">Step-by-Step Blueprint Walkthrough</a></li>
+                <li><a href="#implementation-rules-for-production">Implementation Rules for Production</a></li>
+                <li><a href="#summary-of-the-series">Summary of the Series</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article presents a production-ready blueprint for a &quot;Research-to-Report&quot; multi-agent architecture that coordinates specialized agents through a shared database and human-in-the-loop gates.</li>
 <li><strong>Why it matters:</strong> Building multi-agent systems requires rigorous systems engineering to prevent infinite loops, control API token costs, and ensure deterministic quality in production environments.</li>
@@ -115,7 +126,7 @@
 <p>In this final post of the series, we bring together all the architectural concepts—from state checkpointing to validator gates—to design a complete, production-ready <strong>&quot;Research-to-Report&quot; Multi-Agent Application</strong>.</p>
 <p>This blueprint represents a robust, scale-tested architecture that can parse documents, search the web, draft reports, verify facts, and integrate human approval gates without running into infinite loops or &quot;agent soup&quot; drift.</p>
 <hr>
-<h2>The Swarm Architecture</h2>
+<h2 id="the-swarm-architecture">The Swarm Architecture</h2>
 <p>The system mimics a professional digital newsroom, dividing labor among specialized agents coordinating via a shared database:</p>
 <div class="mermaid">graph TD
     UserReq[User Query / Topic] --&gt; Supervisor[1. Supervisor Agent]
@@ -147,35 +158,35 @@
     style ReviewGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
     style Commit fill:#f0fdf4,stroke:#16a34a,stroke-width:2px</div>
 <hr>
-<h2>Step-by-Step Blueprint Walkthrough</h2>
-<h3>1. The Supervisor (The Expeditor)</h3>
+<h2 id="step-by-step-blueprint-walkthrough">Step-by-Step Blueprint Walkthrough</h2>
+<h3 id="1-the-supervisor-the-expeditor">1. The Supervisor (The Expeditor)</h3>
 <ul>
 <li><strong>Role</strong>: Coordinates task cards, checks off milestone completions, and writes logs to a central database table (e.g., PostgreSQL JSONB).</li>
 <li><strong>State</strong>: Holds the global plan and session metadata. It does <em>not</em> read raw worker outputs directly to save context window tokens; it only reads worker JSON status receipts.</li>
 </ul>
-<h3>2. The Researcher &amp; Fact Verifier</h3>
+<h3 id="2-the-researcher-fact-verifier">2. The Researcher &amp; Fact Verifier</h3>
 <ul>
 <li><strong>Researcher</strong>: Equipped with a search tool. It crawls the web, aggregates sources, normalizes HTML text, and filters out noise.</li>
 <li><strong>Fact Verifier</strong>: Compares the researcher’s findings with your internal knowledge base (using hybrid semantic search via <code>pgvector</code> and BM25 index). It marks claims as &quot;Verified,&quot; &quot;Unverified,&quot; or &quot;Contradictory.&quot;</li>
 </ul>
-<h3>3. The Outline &amp; Writer Agents</h3>
+<h3 id="3-the-outline-writer-agents">3. The Outline &amp; Writer Agents</h3>
 <ul>
 <li><strong>Outliner</strong>: Takes verified facts and builds a structured markdown index.</li>
 <li><strong>Writer</strong>: Takes the outline and the fact sheets to draft individual sections in parallel.</li>
 </ul>
-<h3>4. The Critic &amp; Validator (Quality Assurance)</h3>
+<h3 id="4-the-critic-validator-quality-assurance">4. The Critic &amp; Validator (Quality Assurance)</h3>
 <ul>
 <li><strong>Critic</strong>: A model-based evaluator with a strict grading rubric checking style, formatting, and completeness. If a section is weak, it returns a critique to the writer.</li>
 <li><strong>Validator</strong>: Runs programmatic compile and validation tests. For example, it checks that all cited links are live, markdown formatting is correct, and no PII exists.</li>
 </ul>
-<h3>5. Human-in-the-Loop (HITL) Approval Gate</h3>
+<h3 id="5-human-in-the-loop-hitl-approval-gate">5. Human-in-the-Loop (HITL) Approval Gate</h3>
 <ul>
 <li>Once validation passes, the system issues a webhook payload containing the draft to your administrative interface and pauses the execution graph.</li>
 <li>A coordinator reviews the document, adds comments or signs off.</li>
 <li>Upon approval, the system resumes and publishes the report to your distribution channels.</li>
 </ul>
 <hr>
-<h2>Implementation Rules for Production</h2>
+<h2 id="implementation-rules-for-production">Implementation Rules for Production</h2>
 <p>To build this architecture on your local workspace (e.g., using FastAPI and LangGraph):</p>
 <ol>
 <li><strong>State Checkpoints</strong>: Set up PostgreSQL checkpointers. If a step fails due to API timeouts, the graph resumes from the last completed node without re-executing previous steps.</li>
@@ -183,10 +194,10 @@
 <li><strong>Docker Sandbox</strong>: Run all document parsing (mammoth, pdfplumber) inside isolated Docker containers to protect your host system from prompt injection or malicious files.</li>
 </ol>
 <hr>
-<h2>Summary of the Series</h2>
+<h2 id="summary-of-the-series">Summary of the Series</h2>
 <p>Multi-agent AI is not about prompt engineering. It is about applying <strong>systems engineering</strong> and <strong>software design principles</strong> to probabilistic nodes. By separating concerns, defining strict input/output contracts, and placing independent validation gates, you can build autonomous systems that scale predictably and securely in production.</p>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Transitioning from experimental agent prompts to a production-grade multi-agent system requires shifting from prompt engineering to robust software architecture.</p>
 <ol>
 <li><strong>Decoupled Orchestration:</strong> Utilizing a centralized supervisor agent that tracks state via lightweight JSON status receipts prevents context window bloat and keeps agent interactions predictable.</li>
@@ -195,7 +206,7 @@
 </ol>
 <p><em>Takeaway:</em> <em>Successful multi-agent deployment is a systems engineering challenge where deterministic guardrails govern probabilistic models.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>VMAO Framework</strong>: <em>Verified Multi-Agent Orchestration: A Plan-Execute-Verify-Replan Framework</em> (March 2026). Explains the detailed mathematical orchestration of verification loops. <a href="https://arxiv.org/abs/2603.10952" target="_blank" rel="noopener">arXiv:2603.10952</a> (Needs verification)</li>
 <li><strong>LangGraph Multi-Agent Architecture</strong>: <a href="https://langchain-ai.github.io/langgraph/concepts/multi_agent/" target="_blank" rel="noopener">LangGraph Multi-Agent Systems</a> (2024). Developer blueprints for stateful graphs.</li>
@@ -229,6 +240,19 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-swarm-architecture" class="toc-link">The Swarm Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#step-by-step-blueprint-walkthrough" class="toc-link">Step-by-Step Blueprint Walkthrough</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-rules-for-production" class="toc-link">Implementation Rules for Production</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-of-the-series" class="toc-link">Summary of the Series</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

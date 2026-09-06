@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-stochastic-debugging-crisis">1. The Stochastic Debugging Crisis</a></li>
+                <li><a href="#2-distributed-tracing-for-agent-swarms-with-opentelemetry">2. Distributed Tracing for Agent Swarms with OpenTelemetry</a></li>
+                <li><a href="#3-time-travel-trajectory-replay-zero-cost-deterministic-debugging">3. Time-Travel Trajectory Replay: Zero-Cost Deterministic Debugging</a></li>
+                <li><a href="#4-context-window-flame-graphs-profiling-token-bloat">4. Context Window Flame Graphs: Profiling Token Bloat</a></li>
+                <li><a href="#python-implementation-time-travel-agent-replay-engine-with-otel-spans">Python Implementation: Time-Travel Agent Replay Engine with OTel Spans</a></li>
+                <li><a href="#summary-traditional-debugging-vs-agent-time-travel-debugging">Summary: Traditional Debugging vs Agent Time-Travel Debugging</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>In traditional software engineering, debugging a crash is straightforward: you reproduce the issue with deterministic inputs, set a breakpoint in your IDE, inspect the stack frame, and step through the code line by line.</p>
 <p>In autonomous multi-agent engineering (<strong>Agent Fleet Orchestrator</strong>, <strong>LangGraph</strong>, <strong>Devin</strong>, <strong>Claude Engineer</strong>), traditional debugging breaks down completely:</p>
 <ul>
@@ -127,16 +139,16 @@
     ReplayBuffer --&gt; OfflineDebugger[Zero-Cost IDE Breakpoint &amp; Prompt Testing]
   end</div>
 <hr>
-<h2>1. The Stochastic Debugging Crisis</h2>
+<h2 id="1-the-stochastic-debugging-crisis">1. The Stochastic Debugging Crisis</h2>
 <p>Why is debugging an autonomous agent fundamentally harder than debugging traditional distributed microservices?</p>
-<h3>The 3 Core Failure Modes of Agent Debugging:</h3>
+<h3 id="the-3-core-failure-modes-of-agent-debugging">The 3 Core Failure Modes of Agent Debugging:</h3>
 <ol>
 <li><strong>The Quantum Observer Dilemma (Non-Reproducibility)</strong>: Re-running a failed agent prompt with temperature $&gt; 0$ generates a different branching tree. You cannot reliably reproduce a stochastic hallucination on demand.</li>
 <li><strong>Context Bloat &amp; Token Amnesia</strong>: A tool output on Step 4 (e.g. dumping a $10,000\text{-line}$ database JSON dump) silently crowds out the original system prompt instructions by Step 12, causing attention collapse.</li>
 <li><strong>Async Span Breakage</strong>: In multi-agent swarms, when a Supervisor dispatches asynchronous tasks to Coder and QA worker threads, distributed trace context (<code>traceparent</code>) is frequently dropped, severing parent-child causality graphs.</li>
 </ol>
 <hr>
-<h2>2. Distributed Tracing for Agent Swarms with OpenTelemetry</h2>
+<h2 id="2-distributed-tracing-for-agent-swarms-with-opentelemetry">2. Distributed Tracing for Agent Swarms with OpenTelemetry</h2>
 <p>To gain end-to-end visibility, every agent decision, tool execution, and memory retrieval must be instrumented as an <strong>OpenTelemetry (OTel) Span</strong>:</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -152,7 +164,7 @@
   Coder-&gt;&gt;MCP: Call Tool: replace_file_content (Span: &quot;mcp_tool_exec&quot;)
   MCP--&gt;&gt;Coder: File updated cleanly (45ms)
   Coder--&gt;&gt;Sup: Task Completed (Total Span Duration: 1.2s, Tokens: 3,450)</div>
-<h3>Standardized OpenTelemetry Span Attributes for AI Agents:</h3>
+<h3 id="standardized-opentelemetry-span-attributes-for-ai-agents">Standardized OpenTelemetry Span Attributes for AI Agents:</h3>
 <ul>
 <li><code>gen_ai.system</code>: e.g. <code>anthropic</code>, <code>openai</code>, <code>gemini</code></li>
 <li><code>gen_ai.request.model</code>: e.g. <code>claude-3-5-sonnet-20241022</code></li>
@@ -162,9 +174,9 @@
 <li><code>agent.tool.name</code> &amp; <code>agent.tool.arguments</code>: Exact tool payload</li>
 </ul>
 <hr>
-<h2>3. Time-Travel Trajectory Replay: Zero-Cost Deterministic Debugging</h2>
+<h2 id="3-time-travel-trajectory-replay-zero-cost-deterministic-debugging">3. Time-Travel Trajectory Replay: Zero-Cost Deterministic Debugging</h2>
 <p>The most powerful technique for taming agent failures is <strong>Event-Sourced Time-Travel Replay</strong>.</p>
-<h3>How Time-Travel Debugging Works:</h3>
+<h3 id="how-time-travel-debugging-works">How Time-Travel Debugging Works:</h3>
 <ol>
 <li><strong>Record Phase</strong>: During live execution, the agent engine serializes every turn into an immutable JSON Lines (<code>.jsonl</code>) trajectory file:<ul>
 <li>The exact system prompt and assembled context.</li>
@@ -186,7 +198,7 @@
                                                                  v
 [ Step 15 Offline Sandbox: Tweak prompt -&gt; Re-run single step for $0.001! ]</code></pre>
 <hr>
-<h2>4. Context Window Flame Graphs: Profiling Token Bloat</h2>
+<h2 id="4-context-window-flame-graphs-profiling-token-bloat">4. Context Window Flame Graphs: Profiling Token Bloat</h2>
 <p>Just as CPU flame graphs identify functions consuming excessive processor cycles, <strong>Context Flame Graphs</strong> visualize which execution turns are consuming the context window:</p>
 <pre><code class="language-plaintext">&gt; **CONTEXT WINDOW FLAME GRAPH (32k Tokens Max)**
 | [System Persona: 1.5k tokens (5%)]                                                                |
@@ -196,7 +208,7 @@
 </code></pre>
 <p>By profiling the flame graph, developers immediately spot that Step 4’s raw database dump consumed $71%$ of the context, allowing them to introduce an automated summarization filter before Step 5.</p>
 <hr>
-<h2>Python Implementation: Time-Travel Agent Replay Engine with OTel Spans</h2>
+<h2 id="python-implementation-time-travel-agent-replay-engine-with-otel-spans">Python Implementation: Time-Travel Agent Replay Engine with OTel Spans</h2>
 <p>Here is a Python implementation of an agent execution recorder and deterministic time-travel replay engine:</p>
 <pre><code class="language-python">import json
 import time
@@ -291,7 +303,7 @@ if __name__ == &quot;__main__&quot;:
     # 2. Time-Travel Replay to Step 2 to inspect pre-failure state
     debugger.replay_to_step(target_step_index=2)</code></pre>
 <hr>
-<h2>Summary: Traditional Debugging vs Agent Time-Travel Debugging</h2>
+<h2 id="summary-traditional-debugging-vs-agent-time-travel-debugging">Summary: Traditional Debugging vs Agent Time-Travel Debugging</h2>
 <table>
 <thead>
 <tr>
@@ -327,7 +339,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>You cannot optimize or debug what you cannot observe.</p>
 <p>By instrumenting agent swarms with <strong>OpenTelemetry spans</strong>, <strong>Context Flame Graphs</strong>, and <strong>Event-Sourced Time-Travel Replay</strong>, engineering teams illuminate the AI black box—turning chaotic, unpredictable agent runs into transparent, reproducible, and verifiable distributed systems.</p>
 
@@ -357,6 +369,20 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-stochastic-debugging-crisis" class="toc-link">1. The Stochastic Debugging Crisis</a></li>
+              <li class="toc-item toc-h2"><a href="#2-distributed-tracing-for-agent-swarms-with-opentelemetry" class="toc-link">2. Distributed Tracing for Agent Swarms with OpenTelemetry</a></li>
+              <li class="toc-item toc-h2"><a href="#3-time-travel-trajectory-replay-zero-cost-deterministic-debugging" class="toc-link">3. Time-Travel Trajectory Replay: Zero-Cost Deterministic Debugging</a></li>
+              <li class="toc-item toc-h2"><a href="#4-context-window-flame-graphs-profiling-token-bloat" class="toc-link">4. Context Window Flame Graphs: Profiling Token Bloat</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-time-travel-agent-replay-engine-with-otel-spans" class="toc-link">Python Implementation: Time-Travel Agent Replay Engine with OTel Spans</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-traditional-debugging-vs-agent-time-travel-debugging" class="toc-link">Summary: Traditional Debugging vs Agent Time-Travel Debugging</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

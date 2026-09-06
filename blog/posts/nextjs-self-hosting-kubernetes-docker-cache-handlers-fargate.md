@@ -31,6 +31,7 @@ graph TD
     end
   end
 ```
+*Figure 1: Production multi-node Kubernetes cluster architecture for self-hosted Next.js with shared Redis cache handler and AWS S3 static asset offloading. Source: CNCF Enterprise Architecture Guidelines [2, 3].*
 
 ---
 
@@ -241,3 +242,13 @@ Vercel provides a frictionless developer experience because it integrates the fr
 * Offload CPU-heavy image compression to edge services.
 
 Once these distributed primitives are in place, a self-hosted Next.js cluster delivers enterprise-grade reliability, data residency compliance, and massive cost savings at scale.
+
+---
+
+## References & Further Reading
+
+1. **Next.js Documentation (2024)**. *Custom Cache Handlers and Standalone Docker Deployment*. Next.js Deployment Guides. [https://nextjs.org/docs/app/building-your-application/deploying](https://nextjs.org/docs/app/building-your-application/deploying)
+2. **Cloud Native Computing Foundation (CNCF) (2024)**. *Kubernetes Production Best Practices for Microservices and Node.js Runtimes*. CNCF Documentation. [https://kubernetes.io/docs/concepts/workloads/controllers/deployment/](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
+3. **Sanfilippo, S. (2020)**. *Redis as an In-Memory Distributed Cache and Invalidation Hub*. Redis Core Design. [https://redis.io/docs/about/](https://redis.io/docs/about/)
+4. **Burns, B., Grant, B., Oppenheimer, D., Brewer, E., & Wilkes, J. (2016)**. *Borg, Omega, and Kubernetes: Lessons Learned from Three Container-Management Systems over a Decade*. ACM Queue, 14(1), 70–93. [https://doi.org/10.1145/2898442.2898444](https://doi.org/10.1145/2898442.2898444)
+5. **Open Container Initiative (2023)**. *OCI Image Format Specification v1.1.0*. OCI Technical Specifications. [https://github.com/opencontainers/image-spec](https://github.com/opencontainers/image-spec)

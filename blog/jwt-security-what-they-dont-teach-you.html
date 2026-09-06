@@ -104,6 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#why-jwts-are-deceptively-dangerous">Why JWTs Are Deceptively Dangerous</a></li>
+                <li><a href="#flaw-1-the-alg-none-attack-trusting-the-tokens-own-algorithm">Flaw 1: The alg: none Attack — Trusting the Token's Own Algorithm</a></li>
+                <li><a href="#flaw-2-algorithm-confusion-rs256-public-key-used-as-hs256-secret">Flaw 2: Algorithm Confusion — RS256 Public Key Used as HS256 Secret</a></li>
+                <li><a href="#flaw-3-missing-or-unchecked-expiry">Flaw 3: Missing or Unchecked Expiry</a></li>
+                <li><a href="#flaw-4-refresh-token-rotation-race-condition">Flaw 4: Refresh Token Rotation Race Condition</a></li>
+                <li><a href="#flaw-5-storing-jwts-in-localstorage-xss-full-auth-bypass">Flaw 5: Storing JWTs in localStorage — XSS = Full Auth Bypass</a></li>
+                <li><a href="#flaw-6-missing-aud-claim-allows-cross-service-token-replay">Flaw 6: Missing aud Claim Allows Cross-Service Token Replay</a></li>
+                <li><a href="#flaw-7-weak-hs256-secrets-are-brute-forceable-offline">Flaw 7: Weak HS256 Secrets Are Brute-Forceable Offline</a></li>
+                <li><a href="#flaw-8-no-token-revocation-for-sensitive-operations">Flaw 8: No Token Revocation for Sensitive Operations</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +126,7 @@ JSON Web Tokens are the dominant authentication mechanism in modern AI APIs, age
 </div>
 </div>
 <hr>
-<h2>Why JWTs Are Deceptively Dangerous</h2>
+<h2 id="why-jwts-are-deceptively-dangerous">Why JWTs Are Deceptively Dangerous</h2>
 <p>A JWT looks trustworthy. It&#39;s base64-encoded, has a signature, and is issued by your auth server. But JWTs are only as secure as their implementation — and the JWT specification is famously permissive, allowing configurations that are outright broken.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart LR
@@ -131,7 +146,7 @@ flowchart LR
     style A4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style A5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px</div>
 <hr>
-<h2>Flaw 1: The <code>alg: none</code> Attack — Trusting the Token&#39;s Own Algorithm</h2>
+<h2 id="flaw-1-the-alg-none-attack-trusting-the-tokens-own-algorithm">Flaw 1: The <code>alg: none</code> Attack — Trusting the Token&#39;s Own Algorithm</h2>
 <p><strong>Severity</strong>: Critical. Allows complete auth bypass.</p>
 <p>The JWT spec allows an <code>alg</code> field of <code>&quot;none&quot;</code> — meaning no signature is required. An attacker can:</p>
 <ol>
@@ -178,7 +193,7 @@ async function verifyToken(token: string, secret: Uint8Array): Promise&lt;{sub: 
   return { sub: payload.sub as string };
 }</code></pre>
 <hr>
-<h2>Flaw 2: Algorithm Confusion — RS256 Public Key Used as HS256 Secret</h2>
+<h2 id="flaw-2-algorithm-confusion-rs256-public-key-used-as-hs256-secret">Flaw 2: Algorithm Confusion — RS256 Public Key Used as HS256 Secret</h2>
 <p><strong>Severity</strong>: Critical. Another full auth bypass.</p>
 <p>If your server signs tokens with RS256 (asymmetric — private key signs, public key verifies) and an attacker knows your public key (often published at <code>/.well-known/jwks.json</code>), they can:</p>
 <ol>
@@ -198,7 +213,7 @@ def decode_rsa_only(token: str, public_key: str) -&gt; dict:
         algorithms=[&quot;RS256&quot;],  # ← Only RS256. Never mix asymmetric + symmetric.
     )</code></pre>
 <hr>
-<h2>Flaw 3: Missing or Unchecked Expiry</h2>
+<h2 id="flaw-3-missing-or-unchecked-expiry">Flaw 3: Missing or Unchecked Expiry</h2>
 <p><strong>Symptom</strong>: Stolen tokens work indefinitely. User logout doesn&#39;t revoke access. Compromised API keys remain valid forever.</p>
 <pre><code class="language-python">from datetime import datetime, timezone, timedelta
 
@@ -227,7 +242,7 @@ def decode_with_expiry_check(token: str, secret: str) -&gt; dict:
     
     return payload</code></pre>
 <hr>
-<h2>Flaw 4: Refresh Token Rotation Race Condition</h2>
+<h2 id="flaw-4-refresh-token-rotation-race-condition">Flaw 4: Refresh Token Rotation Race Condition</h2>
 <p><strong>Symptom</strong>: Users get logged out randomly. Auth logs show &quot;token already used&quot; errors. Happens more on mobile under poor network conditions.</p>
 <p><strong>Root cause</strong>: Refresh token rotation (invalidate old token, issue new one) has a race condition: if the network request carrying the new token is lost, the client retries with the old (now invalid) token and gets locked out.</p>
 <pre><code class="language-python">import redis
@@ -291,7 +306,7 @@ def _create_access_token(user_id: str) -&gt; str:
         &quot;jti&quot;: sec.token_hex(16),
     }, &quot;your-secret&quot;, algorithm=&quot;HS256&quot;)</code></pre>
 <hr>
-<h2>Flaw 5: Storing JWTs in localStorage — XSS = Full Auth Bypass</h2>
+<h2 id="flaw-5-storing-jwts-in-localstorage-xss-full-auth-bypass">Flaw 5: Storing JWTs in localStorage — XSS = Full Auth Bypass</h2>
 <p><strong>Symptom</strong>: XSS vulnerability anywhere in your app gives attackers all user tokens.</p>
 <pre><code class="language-typescript">// ❌ localStorage is accessible by any JavaScript on your domain
 localStorage.setItem('token', jwt);  // XSS → stolen token → full account takeover
@@ -317,7 +332,7 @@ export const TokenStore = {
 };
 // Token is gone on page refresh — intentional for security-sensitive apps</code></pre>
 <hr>
-<h2>Flaw 6: Missing <code>aud</code> Claim Allows Cross-Service Token Replay</h2>
+<h2 id="flaw-6-missing-aud-claim-allows-cross-service-token-replay">Flaw 6: Missing <code>aud</code> Claim Allows Cross-Service Token Replay</h2>
 <p><strong>Symptom</strong>: A JWT issued for your <code>api.yourdomain.com</code> service is accepted by your <code>admin.yourdomain.com</code> service. An attacker who compromises a low-privilege service can replay its tokens against high-privilege services.</p>
 <pre><code class="language-python"># No audience check — any service accepts any token
 payload = jwt.decode(token, secret, algorithms=[&quot;HS256&quot;])
@@ -348,7 +363,7 @@ def create_api_token(user_id: str, secret: str) -&gt; str:
         &quot;exp&quot;: datetime.now(timezone.utc) + timedelta(minutes=15),
     }, secret, algorithm=&quot;HS256&quot;)</code></pre>
 <hr>
-<h2>Flaw 7: Weak HS256 Secrets Are Brute-Forceable Offline</h2>
+<h2 id="flaw-7-weak-hs256-secrets-are-brute-forceable-offline">Flaw 7: Weak HS256 Secrets Are Brute-Forceable Offline</h2>
 <p><strong>Symptom</strong>: Attacker captures a JWT from an API response. They can brute-force the HS256 secret offline using tools like <code>hashcat</code> — no server interaction required.</p>
 <pre><code class="language-python">import secrets
 import os
@@ -376,7 +391,7 @@ private_key = rsa.generate_private_key(
     backend=default_backend()
 )</code></pre>
 <hr>
-<h2>Flaw 8: No Token Revocation for Sensitive Operations</h2>
+<h2 id="flaw-8-no-token-revocation-for-sensitive-operations">Flaw 8: No Token Revocation for Sensitive Operations</h2>
 <p><strong>Symptom</strong>: User changes their password. Their old tokens (still valid for 15 minutes) continue to work. Attacker who had the old token retains access.</p>
 <pre><code class="language-python"># Token revocation via Redis blocklist (fast O(1) lookup)
 import redis
@@ -405,7 +420,7 @@ def on_password_change(user_id: str, current_token_jti: str, current_token_exp: 
         if blocklist.get(key) == user_id:
             blocklist.delete(key)</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>JWT security is not about the library you choose — it&#39;s about whether you understand the attack surface well enough to configure it correctly. Most JWT vulnerabilities are implementation errors, not library bugs.</p>
 <ul>
 <li><strong>Pin your algorithm explicitly</strong> — never accept the algorithm from the token&#39;s own header. Whitelist exactly one algorithm per token type.</li>
@@ -413,7 +428,7 @@ def on_password_change(user_id: str, current_token_jti: str, current_token_exp: 
 <li><strong>Always check <code>aud</code>, <code>iss</code>, <code>exp</code>, and <code>jti</code></strong> — these four claims together prevent replay attacks, cross-service abuse, and token reuse after revocation.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>OWASP JWT Security Cheatsheet</strong>: <a href="https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html" target="_blank" rel="noopener">JWT Security Considerations</a></li>
 <li><strong>jwt.io Debugger</strong>: <a href="https://jwt.io/" target="_blank" rel="noopener">Inspect and decode JWTs</a></li>
@@ -447,6 +462,23 @@ def on_password_change(user_id: str, current_token_jti: str, current_token_exp: 
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#why-jwts-are-deceptively-dangerous" class="toc-link">Why JWTs Are Deceptively Dangerous</a></li>
+              <li class="toc-item toc-h2"><a href="#flaw-1-the-alg-none-attack-trusting-the-tokens-own-algorithm" class="toc-link">Flaw 1: The alg: none Attack — Trusting the Token's Own Algorithm</a></li>
+              <li class="toc-item toc-h2"><a href="#flaw-2-algorithm-confusion-rs256-public-key-used-as-hs256-secret" class="toc-link">Flaw 2: Algorithm Confusion — RS256 Public Key Used as HS256 Secret</a></li>
+              <li class="toc-item toc-h2"><a href="#flaw-3-missing-or-unchecked-expiry" class="toc-link">Flaw 3: Missing or Unchecked Expiry</a></li>
+              <li class="toc-item toc-h2"><a href="#flaw-4-refresh-token-rotation-race-condition" class="toc-link">Flaw 4: Refresh Token Rotation Race Condition</a></li>
+              <li class="toc-item toc-h2"><a href="#flaw-5-storing-jwts-in-localstorage-xss-full-auth-bypass" class="toc-link">Flaw 5: Storing JWTs in localStorage — XSS = Full Auth Bypass</a></li>
+              <li class="toc-item toc-h2"><a href="#flaw-6-missing-aud-claim-allows-cross-service-token-replay" class="toc-link">Flaw 6: Missing aud Claim Allows Cross-Service Token Replay</a></li>
+              <li class="toc-item toc-h2"><a href="#flaw-7-weak-hs256-secrets-are-brute-forceable-offline" class="toc-link">Flaw 7: Weak HS256 Secrets Are Brute-Forceable Offline</a></li>
+              <li class="toc-item toc-h2"><a href="#flaw-8-no-token-revocation-for-sensitive-operations" class="toc-link">Flaw 8: No Token Revocation for Sensitive Operations</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#system-1-vs-system-2-execution-paths">System 1 vs. System 2 Execution Paths</a></li>
+                <li><a href="#synthesis-whats-good-whats-not">Synthesis: What's Good &amp; What's Not</a></li>
+                <li><a href="#auditing-thinking-tokens-in-nodejs">Auditing Thinking Tokens in Node.js</a></li>
+                <li><a href="#system-2-implementation-checklist">System 2 Implementation Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> An analysis of the transition from pre-training scaling laws (dense scaling during training) to inference-time scaling (System 2 reasoning loops like OpenAI o1 or DeepSeek R1).</li>
 <li><strong>Why it matters:</strong> System 2 models scale reasoning capability dynamically at runtime, changing how we budget for latency and compute costs in real-world applications.</li>
@@ -118,7 +129,7 @@
 <p>Popularized by reasoning models like OpenAI&#39;s o1 and DeepSeek&#39;s R1, System 2 scaling shifts the compute budget from training to inference. Instead of generating an answer instantly (System 1), the model runs reinforcement learning loops at runtime to plan, search, backtrack, and self-correct before outputting the final answer.</p>
 <p>This article synthesizes the trade-offs of inference-time scaling, analyzing <strong>what is good (pros)</strong>, <strong>what is not (cons)</strong>, and how to audit &quot;thinking token&quot; economics, as modeled in my exam generator project, <a href="https://github.com/akmalkhaniub/QuestionPaperAI" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> QuestionPaperAI</a>.</p>
 <hr>
-<h2>System 1 vs. System 2 Execution Paths</h2>
+<h2 id="system-1-vs-system-2-execution-paths">System 1 vs. System 2 Execution Paths</h2>
 <p>Unlike standard token generation, System 2 reasoning models execute a multi-turn, hidden computation loop before delivering the first user-facing token.</p>
 <div class="mermaid">graph TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
@@ -152,21 +163,21 @@
     class InitPlan,RunStep,FormatOut,Return2 system2;
     class Backtrack error;</div>
 <hr>
-<h2>Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
-<h3>What&#39;s Good (The Pros)</h3>
+<h2 id="synthesis-whats-good-whats-not">Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h3 id="whats-good-the-pros">What&#39;s Good (The Pros)</h3>
 <ul>
 <li><strong>Logical Precision</strong>: System 2 scaling solves multi-step reasoning puzzles (complex math proofs, competitive coding, scientific calculations) with unprecedented accuracy.</li>
 <li><strong>Parameter Efficiency</strong>: Instead of training a 1-trillion parameter dense model, we achieve equivalent reasoning accuracy using a 70B parameter model by scaling inference compute.</li>
 <li><strong>Sample Efficiency</strong>: The model learns to critique its own thoughts via reinforcement learning (RL) rather than relying exclusively on massive human-curated datasets.</li>
 </ul>
-<h3>What&#39;s Not (The Cons)</h3>
+<h3 id="whats-not-the-cons">What&#39;s Not (The Cons)</h3>
 <ul>
 <li><strong>Inference Latency Spikes</strong>: Responses no longer appear instantly. User queries can block for 15 to 90 seconds while the model iterates through its hidden reasoning loop, breaking real-time UI expectations.</li>
 <li><strong>Thinking Token Inflation</strong>: The model might generate 2,000 hidden &quot;thinking tokens&quot; just to output a 100-word answer. This token inflation compounds API billing costs exponentially.</li>
 <li><strong>Simple Query Overkill</strong>: Running a System 2 loop for a basic query (e.g. <em>&quot;What is the capital of France?&quot;</em>) is highly inefficient, wasting CPU cycles and money.</li>
 </ul>
 <hr>
-<h2>Auditing Thinking Tokens in Node.js</h2>
+<h2 id="auditing-thinking-tokens-in-nodejs">Auditing Thinking Tokens in Node.js</h2>
 <p>Because reasoning models bill for both hidden thinking tokens and user-facing output tokens, your API tracking layer must separate these metrics to calculate costs accurately. </p>
 <p>Here is a Node.js middleware wrapper that queries the reasoning engine, isolates the thinking token metadata, and logs cost metrics, modeled on the test-generation pipelines in <a href="https://github.com/akmalkhaniub/QuestionPaperAI" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> QuestionPaperAI</a>.</p>
 <pre><code class="language-javascript">// billingMiddleware.js
@@ -203,14 +214,14 @@ async function logReasoningUsage(userId, query, responsePayload) {
   console.log(`[Billing Log]: Cost for User ${userId}: $${cost.toFixed(6)} (${thinkingTokens} thinking tokens used).`);
 }</code></pre>
 <hr>
-<h2>System 2 Implementation Checklist</h2>
+<h2 id="system-2-implementation-checklist">System 2 Implementation Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Separate Thinking Token Budgets</strong>: Always set a <code>max_completion_tokens</code> limit on reasoning calls to prevent the model from entering long, expensive self-critique loops.</li>
 <li><input disabled="" type="checkbox"> <strong>Implement Client-Side Loading UI</strong>: Replace standard typing indicators with a thinking log or progress bar showing the user that the model is actively reasoning in the background.</li>
 <li><input disabled="" type="checkbox"> <strong>Cache Routing</strong>: Route simple factual queries to System 1 models (like Claude Haiku or GPT-4o-mini) to save cost and latency.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>The shift from training-time scaling to inference-time scaling marks a major milestone in AI architecture:</p>
 <ol>
 <li><strong>Reasoning on Demand:</strong> System 2 models allow us to trade runtime compute (latency and cost) for task accuracy. Complex math and competitive programming no longer require giant pre-trained weights.</li>
@@ -219,7 +230,7 @@ async function logReasoningUsage(userId, query, responsePayload) {
 </ol>
 <p><em>Takeaway:</em> Scalable AI development is transitioning from prompt hacks to token economics auditing.</p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Scaling Laws</strong>: Kaplan et al., 2020. <em>Scaling Laws for Neural Language Models</em>. <a href="https://arxiv.org/abs/2001.08361" target="_blank" rel="noopener">arXiv:2001.08361</a>.</li>
 <li><strong>DeepSeek R1 &amp; GRPO</strong>: Xiong et al., 2025. <em>DeepSeek: Paradigm Shifts and Technical Evolution in Large AI Models</em>. Outlines Group Relative Policy Optimization (GRPO) for reasoning. <a href="https://arxiv.org/abs/2507.09955" target="_blank" rel="noopener">arXiv:2507.09955</a>.</li>
@@ -253,6 +264,19 @@ async function logReasoningUsage(userId, query, responsePayload) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#system-1-vs-system-2-execution-paths" class="toc-link">System 1 vs. System 2 Execution Paths</a></li>
+              <li class="toc-item toc-h2"><a href="#synthesis-whats-good-whats-not" class="toc-link">Synthesis: What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#auditing-thinking-tokens-in-nodejs" class="toc-link">Auditing Thinking Tokens in Node.js</a></li>
+              <li class="toc-item toc-h2"><a href="#system-2-implementation-checklist" class="toc-link">System 2 Implementation Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

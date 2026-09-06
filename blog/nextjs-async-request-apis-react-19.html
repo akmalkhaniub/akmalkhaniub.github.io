@@ -104,10 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-architectural-catalyst-concurrent-rendering">The Architectural Catalyst: Concurrent Rendering</a></li>
+                <li><a href="#implementing-asynchronous-parameters-in-production">Implementing Asynchronous Parameters in Production</a></li>
+                <li><a href="#transitioning-production-repositories-safely">Transitioning Production Repositories Safely</a></li>
+                <li><a href="#production-adoption-case-studies">Production Adoption Case Studies</a></li>
+              </ul>
+            </details>
 <p>In Next.js 15 and 16, a major breaking change required developers to refactor how they access request-specific properties on the server: properties like dynamic routing parameters (<code>params</code>), query parameters (<code>searchParams</code>), cookies (<code>cookies()</code>), and headers (<code>headers()</code>) transitioned into <strong>asynchronous</strong> calls.</p>
 <p>This article details the architectural reasons behind this change, why it is critical for React 19&#39;s concurrent rendering capabilities, and how to safely implement these changes in your production codebase.</p>
 <hr>
-<h2>The Architectural Catalyst: Concurrent Rendering</h2>
+<h2 id="the-architectural-catalyst-concurrent-rendering">The Architectural Catalyst: Concurrent Rendering</h2>
 <p>In earlier versions of Next.js, parameters and headers were synchronous:</p>
 <pre><code class="language-typescript">// Legacy Next.js 14 code
 export default function Page({ params }: { params: { id: string } }) {
@@ -132,8 +141,8 @@ export default function Page({ params }: { params: { id: string } }) {
   Engine--&gt;&gt;React: Resolve Promise
   React-&gt;&gt;Client: Send fully hydrated page tree</div>
 <hr>
-<h2>Implementing Asynchronous Parameters in Production</h2>
-<h3>1. Migrating Dynamic Route Layouts</h3>
+<h2 id="implementing-asynchronous-parameters-in-production">Implementing Asynchronous Parameters in Production</h2>
+<h3 id="1-migrating-dynamic-route-layouts">1. Migrating Dynamic Route Layouts</h3>
 <p>In your dynamic page components, <code>params</code> and <code>searchParams</code> must be declared as Promises and awaited:</p>
 <pre><code class="language-typescript">interface PageProps {
   params: Promise&lt;{ categoryId: string }&gt;;
@@ -159,7 +168,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     &lt;/main&gt;
   );
 }</code></pre>
-<h3>2. Accessing Request Headers and Cookies Asynchronously</h3>
+<h3 id="2-accessing-request-headers-and-cookies-asynchronously">2. Accessing Request Headers and Cookies Asynchronously</h3>
 <p>In Next.js 15/16, calling <code>cookies()</code> or <code>headers()</code> returns a Promise. Awaiting them explicitly is required:</p>
 <pre><code class="language-typescript">import { cookies, headers } from 'next/headers';
 
@@ -186,7 +195,7 @@ export async function DashboardWidget() {
   );
 }</code></pre>
 <hr>
-<h2>Transitioning Production Repositories Safely</h2>
+<h2 id="transitioning-production-repositories-safely">Transitioning Production Repositories Safely</h2>
 <p>To migrate large codebases with hundreds of routes to the new async paradigms, production teams rely on codemods to automate the update cycle.</p>
 <div class="alert alert-tip">
   <div class="alert-title"><i class="fa-solid fa-lightbulb"></i> Tip</div>
@@ -200,7 +209,7 @@ export async function DashboardWidget() {
 </div>
 </div>
 <hr>
-<h2>Production Adoption Case Studies</h2>
+<h2 id="production-adoption-case-studies">Production Adoption Case Studies</h2>
 <p>High-traffic applications have adopted the async request APIs to maximize server efficiency:</p>
 <ol>
 <li><strong>Parallel Layout Streaming</strong>: Sub-sections of dashboards (sidebar, top bar, user status) fetch headers and cookies in parallel, avoiding waterfall rendering bottlenecks.</li>
@@ -233,6 +242,17 @@ export async function DashboardWidget() {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-architectural-catalyst-concurrent-rendering" class="toc-link">The Architectural Catalyst: Concurrent Rendering</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-asynchronous-parameters-in-production" class="toc-link">Implementing Asynchronous Parameters in Production</a></li>
+              <li class="toc-item toc-h2"><a href="#transitioning-production-repositories-safely" class="toc-link">Transitioning Production Repositories Safely</a></li>
+              <li class="toc-item toc-h2"><a href="#production-adoption-case-studies" class="toc-link">Production Adoption Case Studies</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

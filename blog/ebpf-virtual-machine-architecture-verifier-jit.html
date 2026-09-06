@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#ebpf-verification-jit-execution-architecture">eBPF Verification &amp; JIT Execution Architecture</a></li>
+                <li><a href="#python-implementation-ebpf-bytecode-emulator-static-verifier">Python Implementation: eBPF Bytecode Emulator &amp; Static Verifier</a></li>
+                <li><a href="#ebpf-development-gotchas-best-practices">eBPF Development Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>For decades, extending or customizing Linux kernel behavior required writing custom C Kernel Modules (<code>.ko</code>).</p>
 <p>However, out-of-tree kernel modules are inherently dangerous: a single null-pointer dereference or infinite loop inside kernel space triggers a catastrophic <strong>Kernel Panic</strong> system crash, taking down the entire physical host machine.</p>
 <p>To grant developers the ability to execute custom logic inside the Linux kernel safely without modifying kernel source code or loading risk-laden kernel modules, Linux introduced <strong>Extended Berkeley Packet Filter (eBPF)</strong>.</p>
@@ -111,7 +120,7 @@
 <p>By executing sandboxed bytecode checked by a rigorous <strong>Static Verifier</strong> and compiled via a <strong>Kernel JIT Compiler</strong>, eBPF powers modern observability (<strong>bpftrace</strong>), networking (<strong>Cilium</strong>), and security (<strong>Falco</strong>).</p>
 <p>This article details the 64-bit eBPF virtual machine, static verifier safety checks, and JIT machine code compilation.</p>
 <hr>
-<h2>eBPF Verification &amp; JIT Execution Architecture</h2>
+<h2 id="ebpf-verification-jit-execution-architecture">eBPF Verification &amp; JIT Execution Architecture</h2>
 <p>How eBPF programs pass static kernel verification before JIT compilation into native assembly:</p>
 <div class="mermaid">graph TD
   Source[eBPF C Source Code: bpf_program.c] --&gt;|1. Compile via Clang/LLVM| Bytecode[eBPF Bytecode File: .o]
@@ -127,7 +136,7 @@
     JIT --&gt;|4. Emit Native Machine Code| Assembly[Native x86_64 / ARM64 Assembly]
     Assembly --&gt;|5. Hook Attach: Kprobes / Tracepoints / XDP| KernelExec[Direct Execution in Kernel Context]
   end</div>
-<h3>Core eBPF Virtual Machine Architecture</h3>
+<h3 id="core-ebpf-virtual-machine-architecture">Core eBPF Virtual Machine Architecture</h3>
 <ol>
 <li><strong>64-Bit Register Architecture</strong>: The eBPF virtual machine contains <strong>11 64-bit registers</strong> (<code>R0</code> through <code>R10</code>):<ul>
 <li><code>R0</code>: Holds function return values and BPF helper return status.</li>
@@ -147,7 +156,7 @@ $$\text{Instruction} = [\text{8-bit opcode} \mid \text{4-bit dst_reg} \mid \text
 <li><strong>Kernel JIT Compilation</strong>: Once verified, the in-kernel <strong>JIT (Just-In-Time) Compiler</strong> translates eBPF bytecode instructions directly into target host CPU assembly (x86_64 or ARM64), eliminating interpreter overhead and matching compiled kernel code speed.</li>
 </ol>
 <hr>
-<h2>Python Implementation: eBPF Bytecode Emulator &amp; Static Verifier</h2>
+<h2 id="python-implementation-ebpf-bytecode-emulator-static-verifier">Python Implementation: eBPF Bytecode Emulator &amp; Static Verifier</h2>
 <p>Here is a production-grade Python implementation of an eBPF Bytecode Emulator and Static Safety Verifier Engine:</p>
 <pre><code class="language-python">from typing import List, Dict, Tuple, Optional
 from pydantic import BaseModel
@@ -260,7 +269,7 @@ if __name__ == &quot;__main__&quot;:
     except Exception as e:
         print(f&quot; 🚨 [Caught Security Violation] {e}&quot;)</code></pre>
 <hr>
-<h2>eBPF Development Gotchas &amp; Best Practices</h2>
+<h2 id="ebpf-development-gotchas-best-practices">eBPF Development Gotchas &amp; Best Practices</h2>
 <p>When writing eBPF kernel programs:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -273,7 +282,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>eBPF technology (powering <strong>Cilium</strong>, <strong>Falco</strong>, and <strong>Pixie</strong>) reports:</p>
 <ul>
 <li><strong>Over 80% Reduction in Network CPU Overhead</strong>: Bypassing traditional Linux network stack processing via eBPF XDP programs dramatically reduces CPU usage.</li>
@@ -306,6 +315,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#ebpf-verification-jit-execution-architecture" class="toc-link">eBPF Verification &amp; JIT Execution Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-ebpf-bytecode-emulator-static-verifier" class="toc-link">Python Implementation: eBPF Bytecode Emulator &amp; Static Verifier</a></li>
+              <li class="toc-item toc-h2"><a href="#ebpf-development-gotchas-best-practices" class="toc-link">eBPF Development Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

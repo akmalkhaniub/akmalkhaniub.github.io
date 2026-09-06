@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#storage-architecture-comparison-kafka-vs-apache-pulsar">Storage Architecture Comparison: Kafka vs Apache Pulsar</a></li>
+                <li><a href="#python-implementation-kafka-zero-copy-vs-pulsar-bookkeeper-engine">Python Implementation: Kafka Zero-Copy vs Pulsar BookKeeper Engine</a></li>
+                <li><a href="#messaging-storage-gotchas-best-practices">Messaging Storage Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-throughput event streaming infrastructure (<strong>Uber</strong>, <strong>LinkedIn</strong>, <strong>Netflix</strong>, <strong>DoorDash</strong>), message brokers process millions of events per second while ensuring high availability and zero data loss.</p>
 <p>To handle massive write workloads, real-time message engines utilize two radically different architectural paradigms: <strong>Monolithic Coupled Storage</strong> (<strong>Apache Kafka</strong>) and <strong>Disaggregated Cloud-Native Storage</strong> (<strong>Apache Pulsar</strong>).</p>
 <p>Apache Kafka achieves exceptional single-broker network throughput by leveraging the <strong>Linux OS PageCache</strong> and kernel <strong><code>sendfile()</code> Zero-Copy I/O</strong>.</p>
 <p>Conversely, Apache Pulsar decouples stateless message brokers from persistent storage nodes using <strong>Apache BookKeeper</strong>, delivering instant cluster scaling and zero-copy partition rebalancing.</p>
 <p>This article details Kafka sequential disk log segments, OS PageCache mechanics, Linux <code>sendfile()</code> zero-copy transfers, Apache Pulsar disaggregated architecture, and BookKeeper quorum ledger writes.</p>
 <hr>
-<h2>Storage Architecture Comparison: Kafka vs Apache Pulsar</h2>
+<h2 id="storage-architecture-comparison-kafka-vs-apache-pulsar">Storage Architecture Comparison: Kafka vs Apache Pulsar</h2>
 <p>How Kafka&#39;s coupled PageCache Zero-Copy model compares to Apache Pulsar&#39;s disaggregated BookKeeper ledger architecture:</p>
 <div class="mermaid">graph TD
   subgraph Apache Kafka (Coupled Monolithic Storage &amp; Zero-Copy)
@@ -126,7 +135,7 @@
     StatelessBroker --&gt;|Quorum Ledger Write| Bookie2[Apache BookKeeper Node 2]
     StatelessBroker --&gt;|Quorum Ledger Write| Bookie3[Apache BookKeeper Node 3]
   end</div>
-<h3>Core Streaming Storage Mechanics</h3>
+<h3 id="core-streaming-storage-mechanics">Core Streaming Storage Mechanics</h3>
 <ol>
 <li><strong>Apache Kafka Storage Engine Architecture</strong>:<ul>
 <li><strong>Coupled Compute + Storage</strong>: Kafka broker nodes handle both client TCP connections and physical disk log partition storage (<code>/var/lib/kafka/data/topic-0/0000.log</code>).</li>
@@ -158,7 +167,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Kafka Zero-Copy vs Pulsar BookKeeper Engine</h2>
+<h2 id="python-implementation-kafka-zero-copy-vs-pulsar-bookkeeper-engine">Python Implementation: Kafka Zero-Copy vs Pulsar BookKeeper Engine</h2>
 <p>Here is a production-grade Python implementation of a Kafka Zero-Copy PageCache Replicator and a Pulsar BookKeeper Ledger Quorum Engine Simulator:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Tuple
@@ -243,7 +252,7 @@ if __name__ == &quot;__main__&quot;:
     pulsar = PulsarBookKeeperEngine(write_quorum=3, ack_quorum=2)
     pulsar.write_ledger_entry_quorum(ledger_id=5001, entry_data=&quot;order_fulfilled_event_99&quot;)</code></pre>
 <hr>
-<h2>Messaging Storage Gotchas &amp; Best Practices</h2>
+<h2 id="messaging-storage-gotchas-best-practices">Messaging Storage Gotchas &amp; Best Practices</h2>
 <p>When choosing a streaming storage architecture:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -256,7 +265,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Streaming storage architectures (such as <strong>Kafka PageCache Zero-Copy</strong> and <strong>Pulsar BookKeeper</strong>) report:</p>
 <ul>
 <li><strong>Over $4\times$ Higher Network Transfer Rates via Zero-Copy</strong>: Eliminating CPU user-space copying loops with Linux <code>sendfile()</code> allows Kafka brokers to saturate 100Gbps network interfaces.</li>
@@ -289,6 +298,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#storage-architecture-comparison-kafka-vs-apache-pulsar" class="toc-link">Storage Architecture Comparison: Kafka vs Apache Pulsar</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-kafka-zero-copy-vs-pulsar-bookkeeper-engine" class="toc-link">Python Implementation: Kafka Zero-Copy vs Pulsar BookKeeper Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#messaging-storage-gotchas-best-practices" class="toc-link">Messaging Storage Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

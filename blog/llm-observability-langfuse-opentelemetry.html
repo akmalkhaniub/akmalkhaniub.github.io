@@ -104,6 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#why-standard-apm-tools-fall-short-for-ai-systems">Why Standard APM Tools Fall Short for AI Systems</a></li>
+                <li><a href="#the-three-layers-of-llm-observability">The Three Layers of LLM Observability</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#implementation-langfuse-tracing-for-a-python-agent">Implementation: Langfuse Tracing for a Python Agent</a></li>
+                <li><a href="#opentelemetry-integration-forwarding-traces-to-your-apm">OpenTelemetry Integration: Forwarding Traces to Your APM</a></li>
+                <li><a href="#typescript-sdk-tracing-in-nextjs-hono-apis">TypeScript SDK: Tracing in Next.js / Hono APIs</a></li>
+                <li><a href="#key-metrics-dashboard-what-to-monitor">Key Metrics Dashboard: What to Monitor</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +124,7 @@ Deploying an LLM application without observability is like operating a productio
 </div>
 </div>
 <hr>
-<h2>Why Standard APM Tools Fall Short for AI Systems</h2>
+<h2 id="why-standard-apm-tools-fall-short-for-ai-systems">Why Standard APM Tools Fall Short for AI Systems</h2>
 <p>Classic Application Performance Monitoring (APM) tools like Datadog, New Relic, or AWS CloudWatch capture request latency, error rates, and CPU utilisation. These metrics are necessary but fundamentally insufficient for AI applications. The failure modes in LLM systems are semantic, not structural:</p>
 <ul>
 <li><strong>A 200 OK response</strong> can contain a hallucinated fact, a wrong code block, or a harmful output.</li>
@@ -120,7 +133,7 @@ Deploying an LLM application without observability is like operating a productio
 </ul>
 <p>LLM Observability adds a <strong>semantic layer</strong> on top of infrastructure metrics: traces that capture the full prompt, the complete reasoning chain, tool invocations with inputs/outputs, and evaluation scores — all linked to a unique <code>trace_id</code> for cross-system debugging.</p>
 <hr>
-<h2>The Three Layers of LLM Observability</h2>
+<h2 id="the-three-layers-of-llm-observability">The Three Layers of LLM Observability</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 graph TB
     subgraph Layer 3 — Evaluation
@@ -160,7 +173,7 @@ graph TB
     style P2 fill:#0f172a,stroke:#06b6d4,stroke-width:2px
     style P3 fill:#0f172a,stroke:#f59e0b,stroke-width:2px</div>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -186,7 +199,7 @@ graph TB
 </tr>
 </tbody></table>
 <hr>
-<h2>Implementation: Langfuse Tracing for a Python Agent</h2>
+<h2 id="implementation-langfuse-tracing-for-a-python-agent">Implementation: Langfuse Tracing for a Python Agent</h2>
 <p>Langfuse provides an SDK that wraps LLM API calls, automatically capturing prompts, completions, token usage, and latency into a structured trace hierarchy.</p>
 <pre><code class="language-python">import os
 import time
@@ -327,7 +340,7 @@ if __name__ == &quot;__main__&quot;:
     langfuse.flush()
     print(&quot;\n✅ Traces exported to Langfuse dashboard.&quot;)</code></pre>
 <hr>
-<h2>OpenTelemetry Integration: Forwarding Traces to Your APM</h2>
+<h2 id="opentelemetry-integration-forwarding-traces-to-your-apm">OpenTelemetry Integration: Forwarding Traces to Your APM</h2>
 <p>Langfuse supports OTEL export, enabling you to forward all LLM traces into your existing Datadog, Grafana Tempo, or Jaeger setup for unified infrastructure + AI observability.</p>
 <pre><code class="language-python">from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -385,7 +398,7 @@ def run_traced_request(user_id: str, query: str):
             span.record_exception(e)
             raise</code></pre>
 <hr>
-<h2>TypeScript SDK: Tracing in Next.js / Hono APIs</h2>
+<h2 id="typescript-sdk-tracing-in-nextjs-hono-apis">TypeScript SDK: Tracing in Next.js / Hono APIs</h2>
 <pre><code class="language-typescript">import Langfuse from 'langfuse';
 
 const langfuse = new Langfuse({
@@ -467,7 +480,7 @@ export async function tracedRagRequest(
   }
 }</code></pre>
 <hr>
-<h2>Key Metrics Dashboard: What to Monitor</h2>
+<h2 id="key-metrics-dashboard-what-to-monitor">Key Metrics Dashboard: What to Monitor</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7'}}}%%
 mindmap
   root((LLM Observability&lt;br/&gt;Dashboard))
@@ -492,7 +505,7 @@ mindmap
       Active sessions
       Retry and error rates</div>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>LLM Observability is not optional in production AI systems — it is the foundation of continuous improvement. Without traces, you are debugging by intuition. With Langfuse + OpenTelemetry, every reasoning step, every dollar spent, and every quality regression becomes a queryable, alertable data point.</p>
 <ul>
 <li><strong>Instrument first, optimise second</strong>: Before tuning prompts or switching models, establish your baseline metrics. You cannot improve what you haven&#39;t measured.</li>
@@ -501,7 +514,7 @@ mindmap
 </ul>
 <p>In our next article, we tackle <strong>Guardrails &amp; Input/Output Validation</strong> — using Guardrails AI and NVIDIA NeMo to build structured safety layers that intercept harmful inputs and enforce schema-compliant agent outputs before they reach your users.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>Langfuse Documentation</strong>: <a href="https://langfuse.com/docs" target="_blank" rel="noopener">Open-Source LLM Engineering Platform</a></li>
 <li><strong>OpenTelemetry for AI</strong>: <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener">Semantic Conventions for LLM Spans</a></li>
@@ -534,6 +547,21 @@ mindmap
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#why-standard-apm-tools-fall-short-for-ai-systems" class="toc-link">Why Standard APM Tools Fall Short for AI Systems</a></li>
+              <li class="toc-item toc-h2"><a href="#the-three-layers-of-llm-observability" class="toc-link">The Three Layers of LLM Observability</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-langfuse-tracing-for-a-python-agent" class="toc-link">Implementation: Langfuse Tracing for a Python Agent</a></li>
+              <li class="toc-item toc-h2"><a href="#opentelemetry-integration-forwarding-traces-to-your-apm" class="toc-link">OpenTelemetry Integration: Forwarding Traces to Your APM</a></li>
+              <li class="toc-item toc-h2"><a href="#typescript-sdk-tracing-in-nextjs-hono-apis" class="toc-link">TypeScript SDK: Tracing in Next.js / Hono APIs</a></li>
+              <li class="toc-item toc-h2"><a href="#key-metrics-dashboard-what-to-monitor" class="toc-link">Key Metrics Dashboard: What to Monitor</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

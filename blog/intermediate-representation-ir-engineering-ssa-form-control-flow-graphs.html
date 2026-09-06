@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#compiler-middle-end-ssa-control-flow-graph-architecture">Compiler Middle-End &amp; SSA Control Flow Graph Architecture</a></li>
+                <li><a href="#python-implementation-ssa-form-cfg-builder-optimization-engine">Python Implementation: SSA Form CFG Builder &amp; Optimization Engine</a></li>
+                <li><a href="#compiler-ir-gotchas-best-practices">Compiler IR Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In modern compiler infrastructure (such as <strong>LLVM</strong>, <strong>GCC</strong>, and <strong>Rustc</strong>), transforming high-level source code (C++, Rust, Swift, Python) into native target machine code (x86_64, ARM64, RISC-V) is decoupled into three distinct stages: <strong>Frontend</strong>, <strong>Middle-End</strong>, and <strong>Backend</strong>.</p>
 <p>Without a shared <strong>Intermediate Representation (IR)</strong>, supporting $M$ programming languages on $N$ CPU hardware targets requires writing $M \times N$ distinct compiler pipelines.</p>
 <p>By introducing a universal Intermediate Representation, compilers achieve an $M + N$ architecture: Frontends lower source code into IR, Middle-Ends apply machine-independent optimizations on IR, and Backends compile IR to target assembly.</p>
 <p>At the core of modern compiler middle-ends is <strong>Static Single Assignment (SSA) Form</strong> and <strong>Control Flow Graphs (CFGs)</strong>.</p>
 <p>This article details SSA form, $\Phi$ (Phi) nodes, Control Flow Graphs, and middle-end optimization passes.</p>
 <hr>
-<h2>Compiler Middle-End &amp; SSA Control Flow Graph Architecture</h2>
+<h2 id="compiler-middle-end-ssa-control-flow-graph-architecture">Compiler Middle-End &amp; SSA Control Flow Graph Architecture</h2>
 <p>How compilers construct Control Flow Graphs and optimize SSA Intermediate Representation:</p>
 <div class="mermaid">graph TD
   Source[Source Code: C++ / Rust] --&gt; Frontend[Compiler Frontend: AST Parser]
@@ -129,7 +138,7 @@
   end
   
   Pass2 --&gt; Backend[Compiler Backend: Native Machine Code Generation]</div>
-<h3>Core Compiler Middle-End Principles</h3>
+<h3 id="core-compiler-middle-end-principles">Core Compiler Middle-End Principles</h3>
 <ol>
 <li><strong>Static Single Assignment (SSA) Form</strong>: An IR property where <strong>every variable is assigned exactly once</strong>, and every variable use is defined by a single assignment statement. Variable mutations in original source code are transformed into distinct versioned SSA registers ($x_1, x_2, x_3$).</li>
 <li><strong>$\Phi$ (Phi) Nodes / Functions</strong>: When control flow paths merge (e.g. at the join point after an <code>if-else</code> statement), a variable might hold a value originating from either the <code>then</code> branch ($a_1$) or the <code>else</code> branch ($a_2$). SSA form introduces a <strong>$\Phi$ node</strong> at the start of the join block:
@@ -144,7 +153,7 @@ The $\Phi$ node dynamically selects $a_1$ or $a_2$ depending on which control fl
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: SSA Form CFG Builder &amp; Optimization Engine</h2>
+<h2 id="python-implementation-ssa-form-cfg-builder-optimization-engine">Python Implementation: SSA Form CFG Builder &amp; Optimization Engine</h2>
 <p>Here is a production-grade Python implementation of an SSA Form Control Flow Graph Builder featuring Constant Folding and Dead Code Elimination Passes:</p>
 <pre><code class="language-python">from typing import List, Dict, Tuple, Optional
 from pydantic import BaseModel
@@ -252,7 +261,7 @@ if __name__ == &quot;__main__&quot;:
     for i in bb_entry.instructions:
         print(f&quot;   • {i.dest_var} = {i.op} {i.arg1} {i.arg2 if i.arg2 else ''}&quot;)</code></pre>
 <hr>
-<h2>Compiler IR Gotchas &amp; Best Practices</h2>
+<h2 id="compiler-ir-gotchas-best-practices">Compiler IR Gotchas &amp; Best Practices</h2>
 <p>When designing compiler intermediate representations:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -265,7 +274,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Compiler middle-ends utilizing SSA form and CFG optimization passes (such as <strong>LLVM <code>opt</code></strong>) report:</p>
 <ul>
 <li><strong>Over 40% Reduction in Generated Binary Size</strong>: Eliminating dead code, unrolling constant expressions, and merging redundant loops.</li>
@@ -298,6 +307,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#compiler-middle-end-ssa-control-flow-graph-architecture" class="toc-link">Compiler Middle-End &amp; SSA Control Flow Graph Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-ssa-form-cfg-builder-optimization-engine" class="toc-link">Python Implementation: SSA Form CFG Builder &amp; Optimization Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#compiler-ir-gotchas-best-practices" class="toc-link">Compiler IR Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

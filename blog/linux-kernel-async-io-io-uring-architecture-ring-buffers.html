@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#iouring-shared-ring-buffer-architecture">io_uring Shared Ring Buffer Architecture</a></li>
+                <li><a href="#python-implementation-iouring-lockless-ring-buffer-engine">Python Implementation: io_uring Lockless Ring Buffer Engine</a></li>
+                <li><a href="#iouring-implementation-gotchas">io_uring Implementation Gotchas</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>For decades, Linux high-performance networking relied on event loop mechanisms like <code>epoll</code> paired with non-blocking sockets. While <code>epoll</code> allows an application to monitor thousands of file descriptors, executing an actual read or write operation (<code>read()</code>, <code>write()</code>, <code>send()</code>, <code>recv()</code>) still requires making a <strong>system call (syscall)</strong>.</p>
 <p>At millions of requests per second, CPU overhead is dominated by user-space to kernel-space context switches and Meltdown/Spectre page-table isolation (KPTI) mitigation overhead.</p>
 <p>In Linux 5.1, kernel developer Jens Axboe introduced <strong><code>io_uring</code></strong>—a fundamental redesign of Linux asynchronous I/O.</p>
 <p><code>io_uring</code> eliminates system call overhead by creating two lockless circular <strong>ring buffers</strong> shared directly between user memory and kernel memory: the <strong>Submission Queue (SQ)</strong> and the <strong>Completion Queue (CQ)</strong>.</p>
 <p>This article details the architecture, memory model, and performance mechanics of <code>io_uring</code>.</p>
 <hr>
-<h2><code>io_uring</code> Shared Ring Buffer Architecture</h2>
+<h2 id="iouring-shared-ring-buffer-architecture"><code>io_uring</code> Shared Ring Buffer Architecture</h2>
 <p>How user space and kernel space communicate asynchronously via shared memory ring buffers without syscalls:</p>
 <div class="mermaid">graph TD
   subgraph User Space Memory
@@ -129,14 +138,14 @@
     NVMe --&gt;|Completion Event| KernelThread
     KernelThread --&gt;|Write CQE Entry| CQ_K
   end</div>
-<h3>Core <code>io_uring</code> Mechanics</h3>
+<h3 id="core-iouring-mechanics">Core <code>io_uring</code> Mechanics</h3>
 <ol>
 <li><strong>Submission Queue Entry (SQE)</strong>: A 64-byte descriptor submitted by user space containing the I/O opcode (<code>IORING_OP_READV</code>, <code>IORING_OP_ACCEPT</code>), file descriptor, memory buffer address, and user metadata tag.</li>
 <li><strong>Completion Queue Entry (CQE)</strong>: A 16-byte descriptor written by the kernel containing the result (bytes read/written or negative error code) and the matching <code>user_data</code> tag.</li>
 <li><strong>SQPOLL (Submission Queue Polling) Mode</strong>: In SQPOLL mode, a dedicated kernel thread continuously polls the Submission Queue ring. User space appends SQEs to the ring in memory without invoking a single <code>sys_enter</code> syscall, enabling <strong>Zero-Syscall I/O</strong>.</li>
 </ol>
 <hr>
-<h2>Python Implementation: <code>io_uring</code> Lockless Ring Buffer Engine</h2>
+<h2 id="python-implementation-iouring-lockless-ring-buffer-engine">Python Implementation: <code>io_uring</code> Lockless Ring Buffer Engine</h2>
 <p>Here is a production-grade Python simulation of the <code>io_uring</code> Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffer architecture:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional, Any
@@ -259,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
             break
         print(f&quot; ✅ [User Space] Harvested CQE Tag #{cqe.user_data} -&gt; Transferred {cqe.res} bytes&quot;)</code></pre>
 <hr>
-<h2><code>io_uring</code> Implementation Gotchas</h2>
+<h2 id="iouring-implementation-gotchas"><code>io_uring</code> Implementation Gotchas</h2>
 <p>When designing storage and networking systems around <code>io_uring</code>:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -272,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Databases and web servers adopting <code>io_uring</code> (such as <strong>RocksDB</strong>, <strong>Netty</strong>, and <strong>ScyllaDB</strong>) report:</p>
 <ul>
 <li><strong>Over 2,000,000 IOPS per CPU Core</strong>: Achieving more than double the IOPS of traditional <code>epoll</code> or <code>libaio</code> drivers.</li>
@@ -305,6 +314,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#iouring-shared-ring-buffer-architecture" class="toc-link">io_uring Shared Ring Buffer Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-iouring-lockless-ring-buffer-engine" class="toc-link">Python Implementation: io_uring Lockless Ring Buffer Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#iouring-implementation-gotchas" class="toc-link">io_uring Implementation Gotchas</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

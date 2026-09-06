@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-chaos-of-async-event-arrival">The Chaos of Async Event Arrival</a></li>
+                <li><a href="#1-defining-logical-vector-timestamps">1. Defining Logical Vector Timestamps</a></li>
+                <li><a href="#2-setting-up-the-reconciliation-queue">2. Setting up the Reconciliation Queue</a></li>
+                <li><a href="#code-demo-vector-clock-reconciliation-queue">Code Demo: Vector Clock Reconciliation Queue</a></li>
+                <li><a href="#message-reconciliation-takeaways">Message Reconciliation Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ While asynchronous event streams allow multi-agent swarms to execute tasks concu
 </div>
 </div>
 <hr>
-<h2>The Chaos of Async Event Arrival</h2>
+<h2 id="the-chaos-of-async-event-arrival">The Chaos of Async Event Arrival</h2>
 <p>In concurrent event networks:</p>
 <ul>
 <li><strong>The Chronological Scramble</strong>: Distributed worker nodes send telemetry logs asynchronously. Physical clock drift prevents depending solely on server timestamps.</li>
@@ -132,21 +142,21 @@ flowchart TD
     Buffer --&gt;|Step 2 arrives| Flush
     Flush --&gt; UI([Compile Sequential Trace Map])</div>
 <hr>
-<h2>1. Defining Logical Vector Timestamps</h2>
+<h2 id="1-defining-logical-vector-timestamps">1. Defining Logical Vector Timestamps</h2>
 <p>To track causality:</p>
 <ul>
 <li><strong>Maintain Logical Sequences</strong>: Tag each agent-emitted log payload with a sequence integer (e.g. <code>sequence_id = 2</code>).</li>
 <li><strong>Identify Missing Nodes</strong>: If the incoming message&#39;s <code>sequence_id</code> does not match the active target pointer (e.g., received <code>3</code> but target is <code>2</code>), hold the payload.</li>
 </ul>
 <hr>
-<h2>2. Setting up the Reconciliation Queue</h2>
+<h2 id="2-setting-up-the-reconciliation-queue">2. Setting up the Reconciliation Queue</h2>
 <p>The reconciliation manager coordinates message ordering:</p>
 <ol>
 <li><strong>Queue out-of-order items</strong>: Store out-of-sequence logs in a temporary memory dictionary.</li>
 <li><strong>Flush continuous segments</strong>: As soon as the missing sequence number arrives, flush it and all subsequent consecutive stored messages in a batch.</li>
 </ol>
 <hr>
-<h2>Code Demo: Vector Clock Reconciliation Queue</h2>
+<h2 id="code-demo-vector-clock-reconciliation-queue">Code Demo: Vector Clock Reconciliation Queue</h2>
 <p>Below is a Python implementation of an event-reordering reconciliation queue. It buffers out-of-order events, sorts logical sequences, and flushes sequential timelines.</p>
 <pre><code class="language-python">import json
 from typing import List, Dict, Any
@@ -199,7 +209,7 @@ if __name__ == &quot;__main__&quot;:
     for log in reconciler.committed_logs:
         print(f&quot;    Seq {log['sequence_id']}: {log['step']} | Payload: {log['payload']}&quot;)</code></pre>
 <hr>
-<h2>Message Reconciliation Takeaways</h2>
+<h2 id="message-reconciliation-takeaways">Message Reconciliation Takeaways</h2>
 <ul>
 <li><strong>Implement Logical Sequence Keys</strong>: Always include sequential sequence integers in agent event headers.</li>
 <li><strong>Buffer Gaps in Memory</strong>: Hold higher-sequence items in a temporary buffer when a gap is identified in incoming data.</li>
@@ -232,6 +242,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-chaos-of-async-event-arrival" class="toc-link">The Chaos of Async Event Arrival</a></li>
+              <li class="toc-item toc-h2"><a href="#1-defining-logical-vector-timestamps" class="toc-link">1. Defining Logical Vector Timestamps</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-the-reconciliation-queue" class="toc-link">2. Setting up the Reconciliation Queue</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-vector-clock-reconciliation-queue" class="toc-link">Code Demo: Vector Clock Reconciliation Queue</a></li>
+              <li class="toc-item toc-h2"><a href="#message-reconciliation-takeaways" class="toc-link">Message Reconciliation Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

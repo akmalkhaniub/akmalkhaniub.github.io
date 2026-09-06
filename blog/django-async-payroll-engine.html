@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-architecture-dynamic-parallel-fan-out">The Architecture: Dynamic Parallel Fan-Out</a></li>
+                <li><a href="#1-mathematical-accuracy-enforcing-currency-precision">1. Mathematical Accuracy: Enforcing Currency Precision</a></li>
+                <li><a href="#2-preventing-double-payouts-acid-pessimistic-locking">2. Preventing Double-Payouts: ACID &amp; Pessimistic Locking</a></li>
+                <li><a href="#3-high-throughput-scaling-parallel-pdf-compiles-via-celery">3. High-Throughput Scaling: Parallel PDF Compiles via Celery</a></li>
+                <li><a href="#key-performance-metrics">Key Performance Metrics</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article details the engineering challenges and solutions for building a high-throughput asynchronous payroll engine.</li>
 <li><strong>Why it matters:</strong> Computational accuracy, transactional integrity, and system scalability are paramount in financial technology to prevent errors, ensure reliability, and handle growing loads.</li>
@@ -122,7 +133,7 @@
 </ol>
 <p>This article details how I engineered the <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a> to solve these problems using <strong>Python&#39;s Decimal library</strong>, <strong>ACID transactions with pessimistic locking</strong>, and <strong>asynchronous worker queues via Celery and Redis</strong>.</p>
 <hr>
-<h2>The Architecture: Dynamic Parallel Fan-Out</h2>
+<h2 id="the-architecture-dynamic-parallel-fan-out">The Architecture: Dynamic Parallel Fan-Out</h2>
 <p>The engine is split into a <strong>synchronous state coordinator</strong> (Django) and a <strong>scalable asynchronous computation grid</strong> (Celery &amp; Redis).</p>
 <p>When an administrator triggers a new monthly payroll run:</p>
 <ol>
@@ -144,7 +155,7 @@
     F --&gt;|7. Upload Pay Statement| H
     G --&gt;|7. Upload Pay Statement| H</div>
 <hr>
-<h2>1. Mathematical Accuracy: Enforcing Currency Precision</h2>
+<h2 id="1-mathematical-accuracy-enforcing-currency-precision">1. Mathematical Accuracy: Enforcing Currency Precision</h2>
 <p>Computers represent floats in binary (base 2), which makes it impossible to store numbers like <code>0.1</code> exactly. This results in precision anomalies (e.g., <code>0.1 + 0.2</code> returning <code>0.30000000000000004</code> instead of exactly <code>0.3</code>). </p>
 <p>In payroll calculation, these errors add up fast. To enforce absolute accuracy, the engine uses Python&#39;s <code>Decimal</code> type, quantizing every calculation to exactly two decimal places (pence/cents) using <code>ROUND_HALF_UP</code> rounding.</p>
 <p>Here is the helper logic used inside <code>services.py</code>:</p>
@@ -163,7 +174,7 @@ overtime_pay = (overtime_hours * hourly_rate * OVERTIME_MULTIPLIER).quantize(
     PENCE_QUANTIZER, rounding=ROUND_HALF_UP
 )</code></pre>
 <hr>
-<h2>2. Preventing Double-Payouts: ACID &amp; Pessimistic Locking</h2>
+<h2 id="2-preventing-double-payouts-acid-pessimistic-locking">2. Preventing Double-Payouts: ACID &amp; Pessimistic Locking</h2>
 <p>If two administrators accidentally trigger payroll runs at the same time, or if a celery task retries a transient network failure, we risk running calculations twice.</p>
 <p>To prevent race conditions, we wrap the calculation in Django&#39;s <code>@transaction.atomic</code> block and lock the target <code>PayrollRun</code> row using <strong>pessimistic locking</strong> (<code>select_for_update()</code>). This blocks other database processes from modifying the state until our current transaction commits or rolls back.</p>
 <pre><code class="language-python">from django.db import transaction
@@ -213,7 +224,7 @@ def process_payroll_run(payroll_run_id: int) -&gt; None:
         raise</code></pre>
 <p>By querying the database with <code>.select_related(&#39;agency&#39;)</code>, we fetch related records in a single join query instead of making separate database roundtrips for each worker, solving the dreaded <strong>N+1 query problem</strong>.</p>
 <hr>
-<h2>3. High-Throughput Scaling: Parallel PDF Compiles via Celery</h2>
+<h2 id="3-high-throughput-scaling-parallel-pdf-compiles-via-celery">3. High-Throughput Scaling: Parallel PDF Compiles via Celery</h2>
 <p>Creating PDF payslips requires layout calculations, page drawing, and font loading. This is extremely CPU-heavy. If we compiled a PDF report for 500 employees sequentially inside Django, it would take several minutes, during which the server would be unresponsive.</p>
 <p>To scale the engine, we split payroll calculation from PDF compiling. Once the database records are successfully committed, we dispatch a <strong>fan-out</strong> signal that triggers separate, parallel Celery tasks for each employee invoice.</p>
 <pre><code class="language-python">@shared_task
@@ -256,7 +267,7 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
         # Automatically retry the job on transient network errors
         raise self.retry(exc=exc)</code></pre>
 <hr>
-<h2>Key Performance Metrics</h2>
+<h2 id="key-performance-metrics">Key Performance Metrics</h2>
 <p>During local stress testing, the architecture demonstrated significant performance efficiency:</p>
 <ul>
 <li><strong>Database IO</strong>: Reduced SQL queries from <strong>O(N)</strong> (where N is the number of employees) to <strong>O(1)</strong> using pre-fetching and <code>bulk_create</code>.</li>
@@ -264,7 +275,7 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
 <li><strong>PDF Compilation Speed</strong>: By distributing jobs across 4 background Celery processes, compiling 10,000 invoices dropped from <strong>12 minutes</strong> to <strong>under 50 seconds</strong> total execution time.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Building robust financial software demands meticulous attention to accuracy, concurrency, and scalability.</p>
 <ol>
 <li><strong>Mathematical Precision:</strong> The <code>Decimal</code> library ensures absolute financial accuracy by preventing floating-point errors, crucial for maintaining ledger integrity in payroll calculations.</li>
@@ -300,6 +311,19 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-architecture-dynamic-parallel-fan-out" class="toc-link">The Architecture: Dynamic Parallel Fan-Out</a></li>
+              <li class="toc-item toc-h2"><a href="#1-mathematical-accuracy-enforcing-currency-precision" class="toc-link">1. Mathematical Accuracy: Enforcing Currency Precision</a></li>
+              <li class="toc-item toc-h2"><a href="#2-preventing-double-payouts-acid-pessimistic-locking" class="toc-link">2. Preventing Double-Payouts: ACID &amp; Pessimistic Locking</a></li>
+              <li class="toc-item toc-h2"><a href="#3-high-throughput-scaling-parallel-pdf-compiles-via-celery" class="toc-link">3. High-Throughput Scaling: Parallel PDF Compiles via Celery</a></li>
+              <li class="toc-item toc-h2"><a href="#key-performance-metrics" class="toc-link">Key Performance Metrics</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

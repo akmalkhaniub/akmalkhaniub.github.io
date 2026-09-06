@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#w3c-trace-context-propagation-architecture">W3C Trace Context Propagation Architecture</a></li>
+                <li><a href="#python-implementation-w3c-context-propagator-tail-sampler-engine">Python Implementation: W3C Context Propagator &amp; Tail Sampler Engine</a></li>
+                <li><a href="#distributed-tracing-gotchas-best-practices">Distributed Tracing Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In microservice architectures, a single end-user interaction (such as clicking &quot;Checkout&quot;) triggers a cascading sequence of internal API calls across dozens of autonomous microservices, databases, and message queues.</p>
 <p>When a request fails or experiences latency spikes, debugging without end-to-end visibility is nearly impossible. Log files across 50 microservices contain millions of entries, but lack a common correlation identifier linking the execution path together.</p>
 <p>To reconstruct the complete lifecycle of a request, modern observability engines (<strong>Grafana Tempo</strong>, <strong>Jaeger</strong>, <strong>AWS X-Ray</strong>) utilize <strong>Distributed Tracing</strong>.</p>
 <p>Distributed tracing relies on <strong>W3C Trace Context Propagation</strong> to inject and extract standardized correlation headers across network boundaries.</p>
 <p>This article details the W3C <code>traceparent</code> specification, span DAG reconstruction, and tail-based sampling algorithms.</p>
 <hr>
-<h2>W3C Trace Context Propagation Architecture</h2>
+<h2 id="w3c-trace-context-propagation-architecture">W3C Trace Context Propagation Architecture</h2>
 <p>How W3C <code>traceparent</code> headers propagate context across microservice RPC boundaries:</p>
 <div class="mermaid">graph TD
   Client[Client Browser / Mobile App] --&gt;|1. HTTP Request| Gateway[API Gateway Service]
@@ -125,7 +134,7 @@
     Gateway &amp; AuthSvc &amp; PaymentSvc --&gt;|5. Push Spans to Collector| OTelCollector[OTel Collector Buffer]
     OTelCollector --&gt;|6. Inspect Full Trace DAG: Error Detected!| TraceStorage[(Distributed Tracing Engine: Tempo / Jaeger)]
   end</div>
-<h3>Core W3C Trace Context Specification</h3>
+<h3 id="core-w3c-trace-context-specification">Core W3C Trace Context Specification</h3>
 <ol>
 <li><strong><code>traceparent</code> Header Standard</strong>: A 4-field hyphen-delimited ASCII string:
 $$\texttt{version - trace_id - parent_id - trace_flags}$$<ul>
@@ -139,7 +148,7 @@ $$\texttt{version - trace_id - parent_id - trace_flags}$$<ul>
 <li><strong>Tail-Based Sampling</strong>: In traditional <strong>Head-Based Sampling</strong>, the decision to record a trace is made at the root API gateway before knowing if the request will succeed or fail. In <strong>Tail-Based Sampling</strong>, the OTel Collector buffers all spans belonging to a <code>trace_id</code> in memory for 10 seconds until the entire trace completes. If any span in the DAG contains an HTTP <code>5xx</code> error or latency $&gt;2,000\text{ms}$, the collector retains $100%$ of the trace DAG while dropping routine $200\text{ OK}$ traces.</li>
 </ol>
 <hr>
-<h2>Python Implementation: W3C Context Propagator &amp; Tail Sampler Engine</h2>
+<h2 id="python-implementation-w3c-context-propagator-tail-sampler-engine">Python Implementation: W3C Context Propagator &amp; Tail Sampler Engine</h2>
 <p>Here is a production-grade Python implementation of W3C <code>traceparent</code> header injection/extraction and a Tail-Based Sampling Engine:</p>
 <pre><code class="language-python">import uuid
 import time
@@ -238,7 +247,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n3. Evaluating Tail-Based Sampling Rule for Trace:&quot;)
     collector.evaluate_and_flush_trace(root_trace_id)</code></pre>
 <hr>
-<h2>Distributed Tracing Gotchas &amp; Best Practices</h2>
+<h2 id="distributed-tracing-gotchas-best-practices">Distributed Tracing Gotchas &amp; Best Practices</h2>
 <p>When implementing distributed tracing:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -251,7 +260,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Platforms adopting W3C Trace Context and Tail-Based Sampling report:</p>
 <ul>
 <li><strong>$10\times$ Faster Mean Time to Resolution (MTTR)</strong>: Instantly pinpointing the exact microservice and database query responsible for cascaded $5\text{xx}$ errors.</li>
@@ -284,6 +293,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#w3c-trace-context-propagation-architecture" class="toc-link">W3C Trace Context Propagation Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-w3c-context-propagator-tail-sampler-engine" class="toc-link">Python Implementation: W3C Context Propagator &amp; Tail Sampler Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#distributed-tracing-gotchas-best-practices" class="toc-link">Distributed Tracing Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

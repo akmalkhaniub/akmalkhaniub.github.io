@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#gcp-enterprise-agent-topology">GCP Enterprise Agent Topology</a></li>
+                <li><a href="#python-implementation-eventarc-triggered-gcp-agent-worker">Python Implementation: Eventarc-Triggered GCP Agent Worker</a></li>
+                <li><a href="#important-gcp-architectural-guardrails">Important GCP Architectural Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When transitioning agentic software engineering workflows from experimental local prototypes into enterprise-grade SaaS production, engineering leaders face a distinct infrastructure challenge. </p>
 <p>Local python scripts running agent loops inside monoliths cannot scale to handle hundreds of concurrent user requests. They lack automated secret management, asynchronous task decoupling, enterprise access controls, and zero-trust security boundaries.</p>
 <p>To build resilient agentic platforms, Team Leads leverage <strong>Google Cloud Platform (GCP)</strong>. By combining <strong>Cloud Run</strong> serverless worker containers, <strong>Eventarc</strong> event routing, <strong>Cloud Pub/Sub</strong> message queues, and <strong>Vertex AI Agent Builder</strong>, engineering teams can deploy auto-scaling, secure agent swarms.</p>
 <p>This article details the architecture and implementation of an enterprise-grade agent orchestration framework on GCP.</p>
 <hr>
-<h2>GCP Enterprise Agent Topology</h2>
+<h2 id="gcp-enterprise-agent-topology">GCP Enterprise Agent Topology</h2>
 <p>The architecture decouples task dispatching, context lookup, model invocation, and state updates using GCP serverless primitives:</p>
 <div class="mermaid">graph TD
   A[API Gateway / Client Request] --&gt; B[Cloud Pub/Sub: Agent Task Topic]
@@ -125,14 +134,14 @@
   F --&gt; H[Task Completion Artifacts]
   H --&gt; I[Cloud Pub/Sub: Agent Result Topic]
   I --&gt; J[Central Audit &amp; State Storage]</div>
-<h3>Key Infrastructure Components</h3>
+<h3 id="key-infrastructure-components">Key Infrastructure Components</h3>
 <ol>
 <li><strong>Cloud Run Serverless Containers</strong>: Packaging specialized worker agents into OCI containers. Cloud Run scales worker instances from zero to hundreds based on Pub/Sub queue depth, eliminating idle compute costs.</li>
 <li><strong>Eventarc &amp; Cloud Pub/Sub</strong>: Providing asynchronous event-driven transport. Tasks are pushed as JSON payloads onto Pub/Sub topics, allowing Eventarc to trigger Cloud Run workers without synchronous HTTP connection blocking.</li>
 <li><strong>Vertex AI &amp; Workload Identity</strong>: Eliminating hardcoded API keys. Cloud Run containers authenticate to Vertex AI foundation models using GCP IAM Service Accounts (<code>roles/aiplatform.user</code>) via Workload Identity.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Eventarc-Triggered GCP Agent Worker</h2>
+<h2 id="python-implementation-eventarc-triggered-gcp-agent-worker">Python Implementation: Eventarc-Triggered GCP Agent Worker</h2>
 <p>Here is a production Python worker implementation that runs inside a Cloud Run container, consumes event-driven task payloads from Pub/Sub, invokes Gemini via Vertex AI SDK, and publishes execution results back to a Pub/Sub topic:</p>
 <pre><code class="language-python">import os
 import json
@@ -220,7 +229,7 @@ if __name__ == &quot;__main__&quot;:
     port = int(os.getenv(&quot;PORT&quot;, 8080))
     app.run(host=&quot;0.0.0.0&quot;, port=port)</code></pre>
 <hr>
-<h2>Important GCP Architectural Guardrails</h2>
+<h2 id="important-gcp-architectural-guardrails">Important GCP Architectural Guardrails</h2>
 <p>When building agentic platforms on GCP, enforce these infrastructure boundaries:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -233,7 +242,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams migrating agent workflows to GCP report:</p>
 <ul>
 <li><strong>99.99% Operational Availability</strong>: Serverless Cloud Run containers handle burst traffic seamlessly without manual server provisioning.</li>
@@ -266,6 +275,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#gcp-enterprise-agent-topology" class="toc-link">GCP Enterprise Agent Topology</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-eventarc-triggered-gcp-agent-worker" class="toc-link">Python Implementation: Eventarc-Triggered GCP Agent Worker</a></li>
+              <li class="toc-item toc-h2"><a href="#important-gcp-architectural-guardrails" class="toc-link">Important GCP Architectural Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

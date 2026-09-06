@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#cqrs-event-sourcing-pipeline-architecture">CQRS &amp; Event Sourcing Pipeline Architecture</a></li>
+                <li><a href="#python-implementation-cqrs-event-sourcing-engine">Python Implementation: CQRS &amp; Event Sourcing Engine</a></li>
+                <li><a href="#cqrs-event-sourcing-gotchas">CQRS &amp; Event Sourcing Gotchas</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In traditional CRUD database architectures, a single relational table serves both write operations and query reads. As application traffic scales to hundreds of thousands of operations per second, this unified model creates severe database lock contention. Complex analytical queries slow down concurrent write transactions, while normalized database schemas force heavy SQL JOIN operations during read requests.</p>
 <p>To decouple high-volume write workloads from complex query patterns, software architects combine <strong>Command Query Responsibility Segregation (CQRS)</strong> with <strong>Event Sourcing</strong> over <strong>Apache Kafka</strong>.</p>
 <p>Instead of overwriting current state in-place, Event Sourcing stores every state change as an immutable, append-only domain event. Kafka streams these events to distributed projection consumers that maintain specialized, fast read models.</p>
 <p>This article details how to architect a CQRS and Event Sourcing system with Kafka.</p>
 <hr>
-<h2>CQRS &amp; Event Sourcing Pipeline Architecture</h2>
+<h2 id="cqrs-event-sourcing-pipeline-architecture">CQRS &amp; Event Sourcing Pipeline Architecture</h2>
 <p>The flow of write commands, immutable event streams, and projected read models:</p>
 <div class="mermaid">graph TD
   A[Client Write Request / Command] --&gt; B[Command Service]
@@ -126,14 +135,14 @@
   
   G[Client Query Request] --&gt; H[Query Service]
   H --&gt;|Fast Single-Key Lookup| F</div>
-<h3>Core Architectural Principles</h3>
+<h3 id="core-architectural-principles">Core Architectural Principles</h3>
 <ol>
 <li><strong>Command Side (Write)</strong>: Accepts user intentions (e.g. <code>CreateOrderCommand</code>), validates business rules, and emits immutable domain events (e.g. <code>OrderCreatedEvent</code>). The command side never queries read database tables.</li>
 <li><strong>Event Store (Kafka)</strong>: Acts as the single source of truth. Events are appended sequentially into partitioned Kafka topics, preserving total ordering per partition key (such as <code>order_id</code>).</li>
 <li><strong>Query Side (Read)</strong>: Asynchronous consumer services consume the Kafka event stream and build optimized read views (such as denormalized JSON documents in Elasticsearch or key-value caches in Redis).</li>
 </ol>
 <hr>
-<h2>Python Implementation: CQRS &amp; Event Sourcing Engine</h2>
+<h2 id="python-implementation-cqrs-event-sourcing-engine">Python Implementation: CQRS &amp; Event Sourcing Engine</h2>
 <p>Here is a production-grade Python simulation of a CQRS and Event Sourcing engine. It handles command processing, appends immutable events to an event store, and projects optimized read models:</p>
 <pre><code class="language-python">import time
 from typing import List, Dict, Any, Optional
@@ -231,7 +240,7 @@ if __name__ == &quot;__main__&quot;:
     read_view = projection_engine.query_order(&quot;ord-9901&quot;)
     print(f&quot; Result: {read_view}&quot;)</code></pre>
 <hr>
-<h2>CQRS &amp; Event Sourcing Gotchas</h2>
+<h2 id="cqrs-event-sourcing-gotchas">CQRS &amp; Event Sourcing Gotchas</h2>
 <p>When deploying CQRS and Event Sourcing with Kafka:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -244,7 +253,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying CQRS and Event Sourcing with Kafka report:</p>
 <ul>
 <li><strong>10x Write Throughput</strong>: Appending events to partitioned Kafka logs eliminates relational database row locks.</li>
@@ -277,6 +286,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#cqrs-event-sourcing-pipeline-architecture" class="toc-link">CQRS &amp; Event Sourcing Pipeline Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-cqrs-event-sourcing-engine" class="toc-link">Python Implementation: CQRS &amp; Event Sourcing Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#cqrs-event-sourcing-gotchas" class="toc-link">CQRS &amp; Event Sourcing Gotchas</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

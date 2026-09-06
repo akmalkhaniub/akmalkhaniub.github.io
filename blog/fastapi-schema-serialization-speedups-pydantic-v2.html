@@ -104,11 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#pydantic-v1-vs-pydantic-v2-architecture">Pydantic v1 vs. Pydantic v2 Architecture</a></li>
+                <li><a href="#python-implementation-pydantic-v2-high-throughput-serialization">Python Implementation: Pydantic v2 High-Throughput Serialization</a></li>
+                <li><a href="#migration-gotchas-pydantic-v1-v2">Migration Gotchas: Pydantic v1 ➔ v2</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>FastAPI relies on <strong>Pydantic</strong> for input validation, query string parsing, and response serialization. In earlier versions of FastAPI (using Pydantic v1), validating large nested JSON payloads or serializing thousands of database records into response models incurred significant CPU overhead. Pydantic v1 executed validation via pure Python loops, making data parsing the single largest bottleneck in high-throughput APIs.</p>
 <p>The release of <strong>Pydantic v2</strong> fundamentally transformed FastAPI&#39;s throughput characteristics. By rewriting the validation and serialization engine in <strong>Rust</strong> (<code>pydantic-core</code>), Pydantic v2 achieved a <strong>5x to 15x performance increase</strong>.</p>
 <p>This article explores the internal Rust-backed architecture of Pydantic v2, key syntax migration patterns, and performance optimization techniques for FastAPI.</p>
 <hr>
-<h2>Pydantic v1 vs. Pydantic v2 Architecture</h2>
+<h2 id="pydantic-v1-vs-pydantic-v2-architecture">Pydantic v1 vs. Pydantic v2 Architecture</h2>
 <p>The architectural evolution from pure Python loops to Rust-compiled validation graphs:</p>
 <div class="mermaid">graph TD
   subgraph Legacy Pydantic v1 (Pure Python)
@@ -123,14 +132,14 @@
     G --&gt;|Direct C-API Memory Allocation| H[Compiled Schema Validation Graph]
     H --&gt; I[Validated FastAPI Model Instance: 10x Speedup]
   end</div>
-<h3>Key Performance Innovations in Pydantic v2</h3>
+<h3 id="key-performance-innovations-in-pydantic-v2">Key Performance Innovations in Pydantic v2</h3>
 <ol>
 <li><strong>Rust <code>pydantic-core</code> Engine</strong>: Validation graphs are pre-compiled into C-compatible binary data structures when the model class is defined. During HTTP requests, incoming JSON bytes are parsed and validated directly in Rust, bypassing CPython interpreter overhead.</li>
 <li><strong>Direct CPython Memory Allocation</strong>: Model instantiation avoids creating intermediate Python dictionary representations, writing fields directly into Python object memory slots.</li>
 <li><strong>Zero-Copy Serialization</strong>: High-speed JSON serialization (<code>model.model_dump_json()</code>) serializes Pydantic objects straight to JSON strings in Rust, eliminating the need to construct intermediary Python dictionaries first.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Pydantic v2 High-Throughput Serialization</h2>
+<h2 id="python-implementation-pydantic-v2-high-throughput-serialization">Python Implementation: Pydantic v2 High-Throughput Serialization</h2>
 <p>Here is a production-grade Python script demonstrating Pydantic v2 validation patterns, custom field validators, and JSON dump benchmarks:</p>
 <pre><code class="language-python">import time
 from typing import List, Optional
@@ -195,7 +204,7 @@ def benchmark_pydantic_v2_throughput(num_records: int = 20_000):
 if __name__ == &quot;__main__&quot;:
     benchmark_pydantic_v2_throughput(num_records=25_000)</code></pre>
 <hr>
-<h2>Migration Gotchas: Pydantic v1 ➔ v2</h2>
+<h2 id="migration-gotchas-pydantic-v1-v2">Migration Gotchas: Pydantic v1 ➔ v2</h2>
 <p>When upgrading legacy FastAPI projects to Pydantic v2:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -208,7 +217,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams migrating FastAPI services to Pydantic v2 report:</p>
 <ul>
 <li><strong>80% Lower Serialization Latency</strong>: High-volume JSON APIs experience dramatic latency drops when returning large array responses.</li>
@@ -241,6 +250,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#pydantic-v1-vs-pydantic-v2-architecture" class="toc-link">Pydantic v1 vs. Pydantic v2 Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-pydantic-v2-high-throughput-serialization" class="toc-link">Python Implementation: Pydantic v2 High-Throughput Serialization</a></li>
+              <li class="toc-item toc-h2"><a href="#migration-gotchas-pydantic-v1-v2" class="toc-link">Migration Gotchas: Pydantic v1 ➔ v2</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

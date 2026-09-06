@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#real-time-websocketsse-gateway-architecture">Real-Time WebSocket/SSE Gateway Architecture</a></li>
+                <li><a href="#python-implementation-real-time-gateway-pubsub-engine">Python Implementation: Real-Time Gateway &amp; Pub/Sub Engine</a></li>
+                <li><a href="#real-time-gateway-gotchas-best-practices">Real-Time Gateway Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Modern web applications—such as collaborative document editors, live financial trading dashboards, multiplayer games, and notification feeds—demand instant, sub-millisecond data updates. Traditional HTTP polling (<code>setInterval</code> polling every 2 seconds) wastes vast amounts of bandwidth and creates heavy CPU load on backend servers.</p>
 <p>To support instant push updates to millions of concurrent users, backend engineers build <strong>Real-Time Communication Engines</strong>.</p>
 <p>These engines maintain long-lived TCP socket connections using <strong>WebSockets</strong> or <strong>Server-Sent Events (SSE)</strong>.</p>
 <p>Because a single backend server can only hold a finite number of TCP sockets open simultaneously, scalable architectures deploy stateless <strong>Connection Gateways</strong> backed by a high-throughput <strong>Pub/Sub Message Bus (Redis / NATS)</strong> to fan out events across distributed gateway clusters.</p>
 <p>This article details how to design and build scalable real-time communication gateways.</p>
 <hr>
-<h2>Real-Time WebSocket/SSE Gateway Architecture</h2>
+<h2 id="real-time-websocketsse-gateway-architecture">Real-Time WebSocket/SSE Gateway Architecture</h2>
 <p>How a Pub/Sub message bus fans out real-time events across stateless connection gateway pods:</p>
 <div class="mermaid">graph TD
   Client1[Web Client A: Connected to Pod 1] --&gt;|1. HTTP Upgrade 101| Gateway1[WebSocket Gateway Pod 1]
@@ -128,7 +137,7 @@
   end
   
   Gateway1 --&gt;|5. Match Local Connection &amp; Push| Client1</div>
-<h3>Real-Time Protocol Protocols &amp; Architecture</h3>
+<h3 id="real-time-protocol-protocols-architecture">Real-Time Protocol Protocols &amp; Architecture</h3>
 <ol>
 <li><strong>WebSockets vs Server-Sent Events (SSE)</strong>:<ul>
 <li><strong>WebSockets</strong>: Full-duplex bidirectional communication over a single TCP connection. Ideal for interactive applications requiring client-to-server and server-to-client messaging (e.g. live chat, gaming).</li>
@@ -138,7 +147,7 @@
 <li><strong>Stateless Gateway Fanout Pattern</strong>: Clients establish long-lived TCP connections with any available Gateway Pod behind a load balancer. When a backend microservice emits an event for a user (<code>user_101</code>), it publishes the message to a central Pub/Sub topic (<code>events:user_101</code>). All Gateway Pods receive the message, but only the specific Pod holding <code>user_101</code>&#39;s active socket delivers the message down the wire.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Real-Time Gateway &amp; Pub/Sub Engine</h2>
+<h2 id="python-implementation-real-time-gateway-pubsub-engine">Python Implementation: Real-Time Gateway &amp; Pub/Sub Engine</h2>
 <p>Here is a production-grade Python simulation of a Real-Time Connection Gateway with local socket registration and Pub/Sub fanout broadcasting:</p>
 <pre><code class="language-python">import time
 import queue
@@ -233,7 +242,7 @@ if __name__ == &quot;__main__&quot;:
         event_data={&quot;message&quot;: &quot;Order #8801 has shipped!&quot;, &quot;timestamp&quot;: time.time()}
     )</code></pre>
 <hr>
-<h2>Real-Time Gateway Gotchas &amp; Best Practices</h2>
+<h2 id="real-time-gateway-gotchas-best-practices">Real-Time Gateway Gotchas &amp; Best Practices</h2>
 <p>When engineering real-time WebSocket and SSE gateways:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -246,7 +255,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying real-time Pub/Sub communication gateways report:</p>
 <ul>
 <li><strong>Sub-50ms Real-Time Push Latency</strong>: Eliminating HTTP polling delivers instant updates to end users while reducing network bandwidth by up to 80%.</li>
@@ -279,6 +288,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#real-time-websocketsse-gateway-architecture" class="toc-link">Real-Time WebSocket/SSE Gateway Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-real-time-gateway-pubsub-engine" class="toc-link">Python Implementation: Real-Time Gateway &amp; Pub/Sub Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#real-time-gateway-gotchas-best-practices" class="toc-link">Real-Time Gateway Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

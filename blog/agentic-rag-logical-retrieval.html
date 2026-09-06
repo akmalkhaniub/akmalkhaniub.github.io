@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-agentic-rag-loop">The Agentic RAG Loop</a></li>
+                <li><a href="#breaking-research-hierarchical-interfaces-logical-retrieval">Breaking Research: Hierarchical Interfaces &amp; Logical Retrieval</a></li>
+                <li><a href="#coding-an-agentic-rag-router-in-typescript">Coding an Agentic RAG Router in TypeScript</a></li>
+                <li><a href="#implementation-checklist-for-agentic-rag">Implementation Checklist for Agentic RAG</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article introduces Agentic RAG as an advanced architecture that transforms LLMs from passive context recipients into active coordinators of the retrieval process.</li>
 <li><strong>Why it matters:</strong> Agentic RAG addresses critical limitations of standard RAG, such as semantic bottlenecks and hallucination propagation, enabling more robust and scalable AI systems for complex enterprise data.</li>
@@ -121,7 +132,7 @@
 <p>To scale AI systems that handle complex enterprise data, we must shift to <strong>Agentic RAG</strong>. Under this architecture, the language model is no longer a passive recipient of context—it is an active coordinator that steers the retrieval process, builds logical query expressions, evaluates document relevance, and self-corrects search terms dynamically.</p>
 <p>This article reviews the core patterns of Agentic RAG, examines how to structure hierarchical retrieval interfaces, and showcases how to design a routing agent in TypeScript, drawing from integrations inside my projects <a href="https://github.com/akmalkhaniub/healthcare-audit-vault" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> healthcare-audit-vault</a> and <a href="https://github.com/akmalkhaniub/enterprise-procurement-agent" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> enterprise-procurement-agent</a>.</p>
 <hr>
-<h2>The Agentic RAG Loop</h2>
+<h2 id="the-agentic-rag-loop">The Agentic RAG Loop</h2>
 <p>Unlike linear RAG pipelines, an Agentic RAG architecture functions as a state machine where the model executes tools iteratively, grades search results, and rewrites queries when data is insufficient.</p>
 <div class="mermaid">stateDiagram-v2
     [*] --&gt; QueryAnalysis : User Query Input
@@ -166,16 +177,16 @@
 <li><strong>Hallucination Verification</strong>: The final output is checked against the raw retrieved chunks to guarantee that every claim is grounded in the source text.</li>
 </ol>
 <hr>
-<h2>Breaking Research: Hierarchical Interfaces &amp; Logical Retrieval</h2>
+<h2 id="breaking-research-hierarchical-interfaces-logical-retrieval">Breaking Research: Hierarchical Interfaces &amp; Logical Retrieval</h2>
 <p>Two recent 2026 arXiv papers outline the theoretical and practical frameworks for scaling Agentic RAG:</p>
-<h3>1. Adaptive Granularity via Hierarchical Interfaces</h3>
+<h3 id="1-adaptive-granularity-via-hierarchical-interfaces">1. Adaptive Granularity via Hierarchical Interfaces</h3>
 <p>In <strong>&quot;A-RAG: Scaling Agentic Retrieval-Augmented Generation via Hierarchical Retrieval Interfaces&quot;</strong> (Du et al., Feb 2026), the authors argue that static RAG pipelines fail because they do not let the model choose the granularity of its search. </p>
 <p>A-RAG solves this by exposing three hierarchical tools directly to the model: <strong>keyword search</strong>, <strong>semantic search</strong>, and <strong>chunk read</strong>. By allowing the model to adaptively query at different granularities across multiple turns, A-RAG consistently outperforms single-shot retrievers while reducing retrieved token counts by up to <strong>30%</strong>.</p>
-<h3>2. Logical Query Formulation Over Raw Vectors</h3>
+<h3 id="2-logical-query-formulation-over-raw-vectors">2. Logical Query Formulation Over Raw Vectors</h3>
 <p>In <strong>&quot;Rethinking Agentic RAG: Toward LLM-Driven Logical Retrieval Beyond Embeddings&quot;</strong> (Zeng et al., May 2026), the researchers challenge the reliance on complex, vector-only backends. They demonstrate that LLMs are highly proficient at constructing structured logical expressions (e.g., <code>WHERE liability_cap &gt; 50000 AND status = &#39;active&#39;</code>). </p>
 <p>By allowing the agent to formulate logical intents directly and executing them over a lightweight inverted-index database, their framework matches the accuracy of dense hybrid architectures while significantly lowering execution costs and reducing model hallucinations.</p>
 <hr>
-<h2>Coding an Agentic RAG Router in TypeScript</h2>
+<h2 id="coding-an-agentic-rag-router-in-typescript">Coding an Agentic RAG Router in TypeScript</h2>
 <p>Here is a TypeScript routing controller showing how an agent evaluates a user query, constructs logical database filters, and grades the relevance of retrieved chunks before constructing the prompt. This pattern is modeled on retrieval strategies in <a href="https://github.com/akmalkhaniub/enterprise-procurement-agent" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> enterprise-procurement-agent</a>.</p>
 <pre><code class="language-typescript">import { ChatAnthropic } from &quot;@langchain/anthropic&quot;;
 import { executeVectorSearch, executeLogicalSQL } from &quot;./searchTools&quot;;
@@ -237,14 +248,14 @@ export async function agenticRetrieveAndAnswer(userQuery: string): Promise&lt;st
   return finalAnswer.content.toString();
 }</code></pre>
 <hr>
-<h2>Implementation Checklist for Agentic RAG</h2>
+<h2 id="implementation-checklist-for-agentic-rag">Implementation Checklist for Agentic RAG</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Define Hierarchical Tools</strong>: Ensure your agent has access to low-level text search (keyword matching), high-level semantics (vector similarity), and specific document section reading (chunk read).</li>
 <li><input disabled="" type="checkbox"> <strong>Implement Loop Escape Gates</strong>: Always cap agentic retrieval loops (max 3-5 iterations) to prevent infinite token-consuming lookup cycles if query data simply does not exist.</li>
 <li><input disabled="" type="checkbox"> <strong>Enforce Read-Only Database Credentials</strong>: When allowing agents to generate logical queries (SQL/NoSQL) directly, run them against read-only replicas to avoid prompt injection data deletion.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Agentic RAG represents a significant evolution in how LLMs interact with data, moving beyond passive retrieval to active, intelligent coordination.</p>
 <ol>
 <li><strong>Active Coordination &amp; Tool Use</strong>: Agentic RAG empowers LLMs to actively steer retrieval, utilizing diverse tools (semantic, logical, keyword) and dynamically refining queries based on relevance feedback. This contrasts sharply with the single-shot, passive nature of traditional RAG.</li>
@@ -253,7 +264,7 @@ export async function agenticRetrieveAndAnswer(userQuery: string): Promise&lt;st
 </ol>
 <p><em>Takeaway: Embracing agentic patterns is crucial for building scalable, reliable, and intelligent AI systems capable of navigating complex enterprise data landscapes.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>A-RAG Framework</strong>: Du et al., 2026. <em>A-RAG: Scaling Agentic Retrieval-Augmented Generation via Hierarchical Retrieval Interfaces</em>. Exposes adaptive, multi-granularity retrieval interfaces directly to LLMs. <a href="https://arxiv.org/abs/2602.03442" target="_blank" rel="noopener">arXiv:2602.03442</a></li>
 <li><strong>Logical Retrieval</strong>: Zeng et al., 2026. <em>Rethinking Agentic RAG: Toward LLM-Driven Logical Retrieval Beyond Embeddings</em>. Explores replacing complex dense vector layers with logical query synthesis. <a href="https://arxiv.org/abs/2605.27123" target="_blank" rel="noopener">arXiv:2605.27123</a></li>
@@ -286,6 +297,19 @@ export async function agenticRetrieveAndAnswer(userQuery: string): Promise&lt;st
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-agentic-rag-loop" class="toc-link">The Agentic RAG Loop</a></li>
+              <li class="toc-item toc-h2"><a href="#breaking-research-hierarchical-interfaces-logical-retrieval" class="toc-link">Breaking Research: Hierarchical Interfaces &amp; Logical Retrieval</a></li>
+              <li class="toc-item toc-h2"><a href="#coding-an-agentic-rag-router-in-typescript" class="toc-link">Coding an Agentic RAG Router in TypeScript</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-checklist-for-agentic-rag" class="toc-link">Implementation Checklist for Agentic RAG</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

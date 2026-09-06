@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-danger-of-shared-kernels">The Danger of Shared Kernels</a></li>
+                <li><a href="#1-choosing-the-sandbox-runtime-gvisor-vs-firecracker">1. Choosing the Sandbox Runtime: gVisor vs. Firecracker</a></li>
+                <li><a href="#2-decoupling-tool-logic-with-grpc">2. Decoupling Tool Logic with gRPC</a></li>
+                <li><a href="#code-demo-grpc-sandboxed-execution-simulator">Code Demo: gRPC Sandboxed Execution Simulator</a></li>
+                <li><a href="#infrastructure-guidelines">Infrastructure Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Letting autonomous agents run generated code or execute shell scripts directly o
 </div>
 </div>
 <hr>
-<h2>The Danger of Shared Kernels</h2>
+<h2 id="the-danger-of-shared-kernels">The Danger of Shared Kernels</h2>
 <p>In basic setups, developers execute code tools directly inside standard Docker containers:</p>
 <ul>
 <li><strong>Kernel Escape Vectors</strong>: Standard containers share the host OS kernel. A kernel exploit (e.g. privilege escalation) allows an agent-generated script to break out of the container boundary.</li>
@@ -129,21 +139,21 @@ flowchart TD
     Result --&gt; gRPC_Response[Serialize Output: gRPC Response]
     gRPC_Response --&gt; Host</div>
 <hr>
-<h2>1. Choosing the Sandbox Runtime: gVisor vs. Firecracker</h2>
+<h2 id="1-choosing-the-sandbox-runtime-gvisor-vs-firecracker">1. Choosing the Sandbox Runtime: gVisor vs. Firecracker</h2>
 <p>When setting up zero-trust tool execution, choose the right runtime:</p>
 <ul>
 <li><strong>gVisor (Google)</strong>: Intercepts and filters syscalls inside user space before they reach the host kernel. Ideal for running general Python execution scripts.</li>
 <li><strong>Firecracker (AWS)</strong>: Launches minimal microVMs in milliseconds. Ideal for running untrusted shell scripts and binaries in completely separate kernels.</li>
 </ul>
 <hr>
-<h2>2. Decoupling Tool Logic with gRPC</h2>
+<h2 id="2-decoupling-tool-logic-with-grpc">2. Decoupling Tool Logic with gRPC</h2>
 <p>Using gRPC sockets ensures that the host runner never executes commands locally.</p>
 <ol>
 <li>The host system acts as a <strong>gRPC Client</strong>, sending payloads (e.g. <code>RunCodeRequest</code>) to the sandbox.</li>
 <li>The sandbox acts as a <strong>gRPC Server</strong>, running the code in isolation and returning output logs.</li>
 </ol>
 <hr>
-<h2>Code Demo: gRPC Sandboxed Execution Simulator</h2>
+<h2 id="code-demo-grpc-sandboxed-execution-simulator">Code Demo: gRPC Sandboxed Execution Simulator</h2>
 <p>Below is a Python script modeling a secure tool executor. It serializes code payloads, sends them to a mock sandboxed runtime, intercepts syscalls, and returns execution stdout logs safely.</p>
 <pre><code class="language-python">import json
 from typing import Dict, Any, Tuple
@@ -212,7 +222,7 @@ os.system(&quot;rm -rf /&quot;)
         else:
             print(f&quot;   Stdout: {res['stdout']}&quot;)</code></pre>
 <hr>
-<h2>Infrastructure Guidelines</h2>
+<h2 id="infrastructure-guidelines">Infrastructure Guidelines</h2>
 <ul>
 <li><strong>Deploy MicroVMs</strong>: Run agent tools inside gVisor or Firecracker environments to block host kernel escapes.</li>
 <li><strong>Isolate Networking</strong>: Block external network sockets inside tool runners unless explicitly whitelisted via proxy routing gateways.</li>
@@ -245,6 +255,18 @@ os.system(&quot;rm -rf /&quot;)
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-danger-of-shared-kernels" class="toc-link">The Danger of Shared Kernels</a></li>
+              <li class="toc-item toc-h2"><a href="#1-choosing-the-sandbox-runtime-gvisor-vs-firecracker" class="toc-link">1. Choosing the Sandbox Runtime: gVisor vs. Firecracker</a></li>
+              <li class="toc-item toc-h2"><a href="#2-decoupling-tool-logic-with-grpc" class="toc-link">2. Decoupling Tool Logic with gRPC</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-grpc-sandboxed-execution-simulator" class="toc-link">Code Demo: gRPC Sandboxed Execution Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#infrastructure-guidelines" class="toc-link">Infrastructure Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

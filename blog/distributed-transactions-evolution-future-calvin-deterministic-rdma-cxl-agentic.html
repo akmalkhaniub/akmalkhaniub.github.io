@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-deterministic-transaction-scheduling-the-calvin-protocol">1. Deterministic Transaction Scheduling: The Calvin Protocol</a></li>
+                <li><a href="#2-hardware-accelerated-transactions-rdma-cxl-30-pooled-memory">2. Hardware-Accelerated Transactions: RDMA &amp; CXL 3.0 Pooled Memory</a></li>
+                <li><a href="#3-autonomous-ai-agent-sagas-dynamic-semantic-compensation">3. Autonomous AI Agent Sagas: Dynamic Semantic Compensation</a></li>
+                <li><a href="#python-implementation-calvin-style-deterministic-sequencer-agentic-compensation-graph">Python Implementation: Calvin-Style Deterministic Sequencer &amp; Agentic Compensation Graph</a></li>
+                <li><a href="#comparative-summary-the-50-year-evolution">Comparative Summary: The 50-Year Evolution</a></li>
+                <li><a href="#conclusion">Conclusion</a></li>
+              </ul>
+            </details>
 <p>As distributed systems cross into the mid-2020s and beyond, the boundaries of transactional throughput and complexity are being redefined by three major technological shifts:</p>
 <ol>
 <li><strong>Deterministic Transaction Scheduling (The Calvin Protocol &amp; FaunaDB)</strong>: Eliminating distributed Two-Phase Commit (2PC) and lock aborts by pre-ordering transactions in a Paxos consensus log <em>before</em> execution.</li>
@@ -118,9 +129,9 @@
     F3[3. Autonomous Agentic Sagas] --&gt; Agents[&quot;Multi-Agent Swarm DAGs: Dynamic Semantic Compensation&quot;]
   end</div>
 <hr>
-<h2>1. Deterministic Transaction Scheduling: The Calvin Protocol</h2>
+<h2 id="1-deterministic-transaction-scheduling-the-calvin-protocol">1. Deterministic Transaction Scheduling: The Calvin Protocol</h2>
 <p>In 2012, researchers at Yale (Alexander Thomson, Daniel J. Abadi, et al.) published <em>Calvin: Fast Distributed Transactions for Partitioned Database Systems</em>, providing the architectural foundation for modern deterministic engines like <strong>FaunaDB</strong>.</p>
-<h3>The Calvin Core Principle</h3>
+<h3 id="the-calvin-core-principle">The Calvin Core Principle</h3>
 <p>In traditional NewSQL (Spanner, CockroachDB), nodes acquire distributed locks dynamically as transactions run, leading to lock contention, wait-for-graph deadlocks, and high abort rates under peak write spikes.</p>
 <p>Calvin inverts this paradigm: <strong>Transactions are globally ordered in an active Paxos replication log BEFORE any locks are acquired or code is executed.</strong></p>
 <div class="mermaid">sequenceDiagram
@@ -141,29 +152,29 @@
   Sched1-&gt;&gt;Sched1: Execute logic deterministically (No 2PC needed!)
   Sched2-&gt;&gt;Sched2: Execute logic deterministically (No 2PC needed!)
   Sched1--&gt;&gt;Client: Tx Committed (Zero distributed lock aborts)</div>
-<h3>Why Determinism Eliminates 2PC</h3>
+<h3 id="why-determinism-eliminates-2pc">Why Determinism Eliminates 2PC</h3>
 <p>Because every replica node receives the exact same sequenced transaction stream and executes the state transitions strictly in order:</p>
 <ul>
 <li><strong>No Distributed 2PC Coordinator</strong>: Replicas reach the identical state deterministically without exchanging prepare/commit roundtrips.</li>
 <li><strong>Zero Distributed Deadlocks</strong>: Locks are requested in strict global sequence order ($Tx_1 &lt; Tx_2 &lt; Tx_3$), making circular wait graphs mathematically impossible.</li>
 <li><strong>Zero Contention Aborts</strong>: A transaction never aborts due to lock conflict.</li>
 </ul>
-<h3>Handling Dynamic Transactions (OLLP)</h3>
+<h3 id="handling-dynamic-transactions-ollp">Handling Dynamic Transactions (OLLP)</h3>
 <p>For transactions where read values determine future write keys (e.g. <code>SELECT balance FROM accounts WHERE id = 1</code> → <code>UPDATE tier SET ...</code>), Calvin uses <strong>Optimistic Lock Location Prediction (OLLP)</strong>: an initial low-cost read phase guesses the Read/Write sets. If predictions match, it executes deterministically; if state changed, it re-sequences.</p>
 <hr>
-<h2>2. Hardware-Accelerated Transactions: RDMA &amp; CXL 3.0 Pooled Memory</h2>
+<h2 id="2-hardware-accelerated-transactions-rdma-cxl-30-pooled-memory">2. Hardware-Accelerated Transactions: RDMA &amp; CXL 3.0 Pooled Memory</h2>
 <p>For decades, distributed transaction latency was constrained by the TCP/IP kernel networking stack ($100\mu\text{s}\text{--}5\text{ms}$). Today, modern datacenter hardware architectures bypass the operating system entirely.</p>
 <pre><code class="language-plaintext">&gt; **TCP/IP vs RDMA Network Latency**
 |  Standard TCP/IP Stack : [App] -&gt; [OS Kernel] -&gt; [NIC Driver] -&gt; Wire (~100-500µs) |
 |  One-Sided RDMA / RoCE : [App] --------------------------------&gt; Wire (~1-2µs)   |
 </code></pre>
-<h3>Remote Direct Memory Access (RDMA &amp; RoCE v2)</h3>
+<h3 id="remote-direct-memory-access-rdma-roce-v2">Remote Direct Memory Access (RDMA &amp; RoCE v2)</h3>
 <p>Systems like <strong>Microsoft FaRM (Fast Remote Memory)</strong> and <strong>Stanford DrTM (Distributed Real-time Transaction Manager)</strong> utilize one-sided RDMA operations:</p>
 <ul>
 <li>A compute node executes atomic <code>RDMA_READ</code> and <code>RDMA_CAS</code> (Compare-And-Swap) directly into the physical RAM of a remote server across InfiniBand/RoCE without interrupting the remote CPU.</li>
 <li>Transactions commit across shards in <strong>$&lt; 2\text{ microseconds}$</strong>, achieving tens of millions of distributed ACID transactions per second per rack.</li>
 </ul>
-<h3>Compute Express Link (CXL 3.0 / 3.1) Disaggregated Memory</h3>
+<h3 id="compute-express-link-cxl-30-31-disaggregated-memory">Compute Express Link (CXL 3.0 / 3.1) Disaggregated Memory</h3>
 <p>CXL allows hundreds of server blades in a datacenter rack to share a multi-terabyte <strong>disaggregated pooled memory pool</strong> with hardware cache coherency.</p>
 <p>In a CXL-backed database architecture:</p>
 <ul>
@@ -171,7 +182,7 @@
 <li>The boundary between &quot;local database RAM&quot; and &quot;distributed network storage&quot; vanishes.</li>
 </ul>
 <hr>
-<h2>3. Autonomous AI Agent Sagas: Dynamic Semantic Compensation</h2>
+<h2 id="3-autonomous-ai-agent-sagas-dynamic-semantic-compensation">3. Autonomous AI Agent Sagas: Dynamic Semantic Compensation</h2>
 <p>With the rise of autonomous AI agent networks in 2026 (<strong>Agent Fleet Orchestrator</strong>, <strong>Enterprise Workflow Swarms</strong>), agents execute complex multi-step workflows across dozens of external APIs (Stripe, Twilio, Salesforce, AWS, Snowflake, Physical Robotics).</p>
 <p>Unlike database rows that can simply be rolled back with <code>pg_wal</code>, real-world agent actions involve <strong>non-reversible side effects</strong>:</p>
 <ul>
@@ -194,14 +205,14 @@
     SemanticPlanner --&gt; CompB[↩️ Issue Stripe Partial Refund]
     SemanticPlanner --&gt; CompC[↩️ Send Apology &amp; Status Email]
   end</div>
-<h3>The Autonomous Dynamic Compensation Pattern</h3>
+<h3 id="the-autonomous-dynamic-compensation-pattern">The Autonomous Dynamic Compensation Pattern</h3>
 <p>Modern agentic architectures address this via <strong>Dynamic Semantic Compensation Graphs</strong>:</p>
 <ol>
 <li><strong>Escrow / Reservation Holds</strong>: Before executing irreversible side effects, agents place reversible pre-authorization holds (e.g. AWS resource reservations, Stripe authorization holds).</li>
 <li><strong>Dynamic Semantic Rollback DAGs</strong>: If step $k$ fails in a non-deterministic environment, an autonomous LLM Supervisor synthesizes an exact compensating execution plan tailored to which side effects actually occurred.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Calvin-Style Deterministic Sequencer &amp; Agentic Compensation Graph</h2>
+<h2 id="python-implementation-calvin-style-deterministic-sequencer-agentic-compensation-graph">Python Implementation: Calvin-Style Deterministic Sequencer &amp; Agentic Compensation Graph</h2>
 <p>Here is a Python implementation demonstrating a <strong>Calvin-Style Deterministic Sequencer</strong> with pre-ordered lock allocation and an <strong>Agentic Semantic Compensation Graph</strong>:</p>
 <pre><code class="language-python">import time
 from typing import Callable, Dict, List, Set
@@ -309,7 +320,7 @@ if __name__ == &quot;__main__&quot;:
 
     supervisor.execute_mission(mission_plan)</code></pre>
 <hr>
-<h2>Comparative Summary: The 50-Year Evolution</h2>
+<h2 id="comparative-summary-the-50-year-evolution">Comparative Summary: The 50-Year Evolution</h2>
 <table>
 <thead>
 <tr>
@@ -343,7 +354,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Conclusion</h2>
+<h2 id="conclusion">Conclusion</h2>
 <p>Distributed transactions have evolved from monolithic synchronous lock managers to planetary NewSQL consensus, and now toward <strong>hardware-accelerated, deterministic, and self-healing agentic workflows</strong>.</p>
 <p>By understanding the historical failure modes of 2PC and the modern principles of deterministic sequencing, engineers can design distributed architectures that are fast, resilient, and mathematically sound.</p>
 
@@ -373,6 +384,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-deterministic-transaction-scheduling-the-calvin-protocol" class="toc-link">1. Deterministic Transaction Scheduling: The Calvin Protocol</a></li>
+              <li class="toc-item toc-h2"><a href="#2-hardware-accelerated-transactions-rdma-cxl-30-pooled-memory" class="toc-link">2. Hardware-Accelerated Transactions: RDMA &amp; CXL 3.0 Pooled Memory</a></li>
+              <li class="toc-item toc-h2"><a href="#3-autonomous-ai-agent-sagas-dynamic-semantic-compensation" class="toc-link">3. Autonomous AI Agent Sagas: Dynamic Semantic Compensation</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-calvin-style-deterministic-sequencer-agentic-compensation-graph" class="toc-link">Python Implementation: Calvin-Style Deterministic Sequencer &amp; Agentic Compensation Graph</a></li>
+              <li class="toc-item toc-h2"><a href="#comparative-summary-the-50-year-evolution" class="toc-link">Comparative Summary: The 50-Year Evolution</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion" class="toc-link">Conclusion</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#v8-generational-architecture-cheneys-scavenger">V8 Generational Architecture &amp; Cheney's Scavenger</a></li>
+                <li><a href="#python-implementation-v8-generational-heap-cheneys-scavenger-engine">Python Implementation: V8 Generational Heap &amp; Cheney's Scavenger Engine</a></li>
+                <li><a href="#v8-memory-gotchas-best-practices">V8 Memory Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In web browsers and server-side runtimes (<strong>Google Chrome</strong>, <strong>Node.js</strong>, <strong>Deno</strong>, <strong>Electron</strong>), the <strong>V8 JavaScript Engine</strong> executes billions of JavaScript functions per second.</p>
 <p>JavaScript developers never manually call <code>malloc()</code> or <code>free()</code>. Memory allocation and deallocation are handled automatically by V8&#39;s memory management subsystem.</p>
 <p>To maintain 60 FPS smooth web animations and handle high-concurrency Node.js API streams without jank, V8 utilizes a <strong>Generational Garbage Collector</strong> project named <strong>Orinoco</strong>.</p>
 <p>By leveraging the <strong>Weak Generational Hypothesis</strong>, <strong>Cheney&#39;s Copying Scavenger</strong>, <strong>Concurrent Mark-Sweep-Compact</strong>, and <strong>V8 Pointer Compression</strong>, Orinoco reclaims short-lived objects in milliseconds.</p>
 <p>This article details V8 heap spaces, Cheney&#39;s Scavenger algorithm, From-Space/To-Space semi-space flips, Orinoco parallel worker threads, and 32-bit Pointer Compression.</p>
 <hr>
-<h2>V8 Generational Architecture &amp; Cheney&#39;s Scavenger</h2>
+<h2 id="v8-generational-architecture-cheneys-scavenger">V8 Generational Architecture &amp; Cheney&#39;s Scavenger</h2>
 <p>How V8 organizes New Space semi-spaces and executes Cheney&#39;s Copying Scavenger to promote surviving objects to Old Space:</p>
 <div class="mermaid">graph TD
   subgraph V8 Heap Generation Layout
@@ -128,7 +137,7 @@
     Copy --&gt;|2. Object Survived 2 Scavenge Cycles?| Promote[Promote Object to Old Space]
     Copy --&gt;|3. Swap Roles| Flip[&quot;🔄 Flip Semi-Spaces: To-Space becomes NEW From-Space!&quot;]
   end</div>
-<h3>Core V8 Memory Management Mechanics</h3>
+<h3 id="core-v8-memory-management-mechanics">Core V8 Memory Management Mechanics</h3>
 <ol>
 <li><strong>The Weak Generational Hypothesis</strong>:<ul>
 <li><em>Observation</em>: The vast majority of objects allocated in software die very quickly (e.g., temporary variables inside a <code>map()</code> callback).</li>
@@ -163,7 +172,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: V8 Generational Heap &amp; Cheney&#39;s Scavenger Engine</h2>
+<h2 id="python-implementation-v8-generational-heap-cheneys-scavenger-engine">Python Implementation: V8 Generational Heap &amp; Cheney&#39;s Scavenger Engine</h2>
 <p>Here is a production-grade Python implementation of a V8 Generational Heap featuring Cheney&#39;s Copying Scavenger and Old Space Promotion:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional
 from pydantic import BaseModel
@@ -259,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
     v8.allocate(&quot;temp_var_5&quot;, &quot;callback_data_5&quot;)
     v8.allocate(&quot;temp_var_6&quot;, &quot;callback_data_6&quot;)</code></pre>
 <hr>
-<h2>V8 Memory Gotchas &amp; Best Practices</h2>
+<h2 id="v8-memory-gotchas-best-practices">V8 Memory Gotchas &amp; Best Practices</h2>
 <p>When optimizing Node.js and V8 application memory:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -272,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>V8&#39;s Orinoco generational garbage collector (powering <strong>Google Chrome</strong>, <strong>Node.js</strong>, and <strong>Electron</strong>) reports:</p>
 <ul>
 <li><strong>Over $90%$ Faster Minor GC Times</strong>: Cheney&#39;s Copying Scavenger reclaims short-lived nursery objects in under $1\text{ millisecond}$.</li>
@@ -305,6 +314,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#v8-generational-architecture-cheneys-scavenger" class="toc-link">V8 Generational Architecture &amp; Cheney's Scavenger</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-v8-generational-heap-cheneys-scavenger-engine" class="toc-link">Python Implementation: V8 Generational Heap &amp; Cheney's Scavenger Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#v8-memory-gotchas-best-practices" class="toc-link">V8 Memory Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

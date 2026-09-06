@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-btree-storage-engine-architecture-the-in-place-page-model">1. B+Tree Storage Engine Architecture: The In-Place Page Model</a></li>
+                <li><a href="#2-lsm-tree-storage-engine-architecture-the-append-only-model">2. LSM-Tree Storage Engine Architecture: The Append-Only Model</a></li>
+                <li><a href="#3-compaction-algorithms-leveled-vs-size-tiered">3. Compaction Algorithms: Leveled vs Size-Tiered</a></li>
+                <li><a href="#4-mitigating-read-amplification-bloom-filters-block-caches">4. Mitigating Read Amplification: Bloom Filters &amp; Block Caches</a></li>
+                <li><a href="#python-implementation-complete-lsm-tree-storage-engine-simulator">Python Implementation: Complete LSM-Tree Storage Engine Simulator</a></li>
+                <li><a href="#summary-btree-vs-lsm-tree-decision-matrix">Summary: B+Tree vs LSM-Tree Decision Matrix</a></li>
+                <li><a href="#architectural-conclusion">Architectural Conclusion</a></li>
+              </ul>
+            </details>
 <p>At the heart of every modern database (<strong>PostgreSQL</strong>, <strong>MySQL/InnoDB</strong>, <strong>MongoDB/WiredTiger</strong>, <strong>RocksDB</strong>, <strong>Apache Cassandra</strong>, <strong>CockroachDB</strong>) lies an embedded storage engine responsible for translating abstract relational or key-value queries into physical byte layouts on NVMe SSDs.</p>
 <p>For decades, database architectures have been defined by a fundamental structural divide:</p>
 <ol>
@@ -121,7 +133,7 @@
     LSM --&gt;|Cons| CompactionOverhead[&quot;Compaction I/O &amp; Background Read Amplification&quot;]
   end</div>
 <hr>
-<h2>1. B+Tree Storage Engine Architecture: The In-Place Page Model</h2>
+<h2 id="1-btree-storage-engine-architecture-the-in-place-page-model">1. B+Tree Storage Engine Architecture: The In-Place Page Model</h2>
 <p>B+Trees (used in <strong>MySQL InnoDB</strong> and <strong>MongoDB WiredTiger</strong>) structure data into fixed-size disk blocks called <strong>Pages</strong> (typically $4\text{ KB}$ or $16\text{ KB}$).</p>
 <pre><code class="language-plaintext">B+Tree Structure (16 KB Pages):
                [ Root Node: Key 100 | Key 200 ]
@@ -129,18 +141,18 @@
        [ Branch: 50 | 75 ]     [ Branch: 150 | 175 ]
            /        \              /          \
      [Leaf: 1-49] [Leaf: 50-74] [Leaf: 100-149] [Leaf: 150-174] &lt;---&gt; Linked List</code></pre>
-<h3>Key Invariants:</h3>
+<h3 id="key-invariants">Key Invariants:</h3>
 <ul>
 <li><strong>Interior Nodes</strong>: Store routing keys and child page pointers.</li>
 <li><strong>Leaf Nodes</strong>: Store contiguous sorted key-value payloads and maintain doubly-linked list pointers to adjacent leaves for efficient range scans ($O(\log_B N)$).</li>
 <li><strong>In-Place Updates</strong>: Modifying a single $32\text{-byte}$ record requires locating its containing $16\text{ KB}$ page in the in-memory <strong>Buffer Pool</strong>, modifying it in memory (creating a &quot;dirty page&quot;), and eventually flushing the entire $16\text{ KB}$ page back to disk.</li>
 </ul>
-<h3>The B+Tree Write Amplification Penalty ($WAF$)</h3>
+<h3 id="the-btree-write-amplification-penalty-waf">The B+Tree Write Amplification Penalty ($WAF$)</h3>
 <p>When a single $64\text{-byte}$ row is updated on an in-place $16\text{ KB}$ page:</p>
 <p>$$WAF = \frac{\text{Bytes Written to Storage}}{\text{Bytes of User Write}} = \frac{16,384 \text{ bytes (Data Page)} + 16,384 \text{ bytes (Doublewrite Buffer)} + \text{WAL}}{64 \text{ bytes}} \approx \mathbf{300\times \text{ to } 500\times}$$</p>
 <p>Under random-write workloads, B+Trees quickly saturate NVMe write bandwidth and cause flash memory endurance degradation.</p>
 <hr>
-<h2>2. LSM-Tree Storage Engine Architecture: The Append-Only Model</h2>
+<h2 id="2-lsm-tree-storage-engine-architecture-the-append-only-model">2. LSM-Tree Storage Engine Architecture: The Append-Only Model</h2>
 <p>Log-Structured Merge-Trees (invented by Patrick O’Neil in 1996 and popularized by Google Bigtable, LevelDB, and Meta&#39;s <strong>RocksDB</strong>) convert all random writes into sequential disk operations.</p>
 <div class="mermaid">graph TD
   subgraph LSM-Tree Write Path (RocksDB)
@@ -153,14 +165,14 @@
     L1 --&gt;|Leveled Compaction 10x| L2[&quot;Level 2 (Sorted Disjoint SSTables: 100MB)&quot;]
     L2 --&gt;|Leveled Compaction 10x| L3[&quot;Level 3 (Sorted Disjoint SSTables: 1GB)&quot;]
   end</div>
-<h3>The LSM Write Flow:</h3>
+<h3 id="the-lsm-write-flow">The LSM Write Flow:</h3>
 <ol>
 <li><strong>WAL Append</strong>: Write operation is appended to an on-disk Write-Ahead Log for crash recovery.</li>
 <li><strong>MemTable Insertion</strong>: Record is inserted into an in-memory sorted data structure (typically a lock-free <strong>Concurrent SkipList</strong>).</li>
 <li><strong>SSTable Flush</strong>: Once the MemTable reaches capacity (e.g. $64\text{ MB}$), it is frozen into an immutable MemTable and flushed sequentially to disk as a <strong>Sorted String Table (SSTable)</strong> in Level 0 ($L_0$).</li>
 </ol>
 <hr>
-<h2>3. Compaction Algorithms: Leveled vs Size-Tiered</h2>
+<h2 id="3-compaction-algorithms-leveled-vs-size-tiered">3. Compaction Algorithms: Leveled vs Size-Tiered</h2>
 <p>Because SSTables are immutable, updates and deletes (<code>tombstones</code>) accumulate across levels. <strong>Compaction</strong> is the background engine that merges overlapping SSTables, purges dead records, and re-sorts data.</p>
 <pre><code class="language-plaintext">&gt; **COMPACTION STRATEGY COMPARISON**
 | Feature                     | Leveled Compaction (LCS)         | Size-Tiered Compaction (STCS)   |
@@ -170,7 +182,7 @@
 | Write Amplification (WAF)   | Higher (~10x to 30x)             | Lower (~5x to 10x)              |
 | Best Workload               | Read-Heavy / Mixed OLTP          | Write-Heavy Logging / Ingestion |
 </code></pre>
-<h3>Leveled Compaction (LCS) Mechanics:</h3>
+<h3 id="leveled-compaction-lcs-mechanics">Leveled Compaction (LCS) Mechanics:</h3>
 <ul>
 <li>Each level $L_i$ has a strict capacity limit growing by a factor of 10:
 $$L_1 = 10\text{ MB}, \quad L_2 = 100\text{ MB}, \quad L_3 = 1\text{ GB}, \quad L_4 = 10\text{ GB}$$</li>
@@ -178,15 +190,15 @@ $$L_1 = 10\text{ MB}, \quad L_2 = 100\text{ MB}, \quad L_3 = 1\text{ GB}, \quad 
 <li>A point lookup needs to search at most <strong>one SSTable per level</strong>, drastically reducing read amplification.</li>
 </ul>
 <hr>
-<h2>4. Mitigating Read Amplification: Bloom Filters &amp; Block Caches</h2>
+<h2 id="4-mitigating-read-amplification-bloom-filters-block-caches">4. Mitigating Read Amplification: Bloom Filters &amp; Block Caches</h2>
 <p>If a key does not exist in the database, a naive LSM-Tree would search the MemTable and every SSTable across all levels (Read Amplification $RAF = \text{number of SSTables}$).</p>
-<h3>The Mathematical Bloom Filter Defense:</h3>
+<h3 id="the-mathematical-bloom-filter-defense">The Mathematical Bloom Filter Defense:</h3>
 <p>RocksDB embeds a <strong>Bloom Filter</strong> in every SSTable header.</p>
 <p>To achieve a false positive probability $p = 1%$ ($0.01$):
 $$\text{Optimal Bits Per Key } m/n = -\frac{\ln p}{(\ln 2)^2} = -\frac{\ln(0.01)}{(0.6931)^2} \approx \mathbf{9.6 \text{ bits/key (10 bits/key)}}$$</p>
 <p>With 10 bits per key, $99%$ of non-existent key lookups terminate in memory without issuing a single NVMe disk I/O.</p>
 <hr>
-<h2>Python Implementation: Complete LSM-Tree Storage Engine Simulator</h2>
+<h2 id="python-implementation-complete-lsm-tree-storage-engine-simulator">Python Implementation: Complete LSM-Tree Storage Engine Simulator</h2>
 <p>Here is a Python implementation of a functional LSM-Tree storage engine featuring a MemTable, on-disk SSTable mock flushing, Bloom filter probes, and Level 0 → Level 1 merge compaction:</p>
 <pre><code class="language-python">import hashlib
 import os
@@ -337,7 +349,7 @@ if __name__ == &quot;__main__&quot;:
     engine.get(&quot;user_104&quot;)
     engine.get(&quot;user_999&quot;) # Non-existent key (filtered by Bloom filter)</code></pre>
 <hr>
-<h2>Summary: B+Tree vs LSM-Tree Decision Matrix</h2>
+<h2 id="summary-btree-vs-lsm-tree-decision-matrix">Summary: B+Tree vs LSM-Tree Decision Matrix</h2>
 <table>
 <thead>
 <tr>
@@ -378,7 +390,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Conclusion</h2>
+<h2 id="architectural-conclusion">Architectural Conclusion</h2>
 <p>Choosing between an LSM-Tree and a B+Tree is a deliberate trade-off between <strong>write throughput and read predictability</strong>.</p>
 <p>If your application demands high-volume event ingestion, audit logs, or vector embeddings where disk write bandwidth is the bottleneck, <strong>LSM-Trees (RocksDB)</strong> deliver unmatched performance.</p>
 <p>If your application requires deterministic sub-millisecond point reads and deep concurrent transactions across multi-column secondary indexes, <strong>B+Trees (InnoDB / WiredTiger)</strong> remain the gold standard.</p>
@@ -409,6 +421,20 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-btree-storage-engine-architecture-the-in-place-page-model" class="toc-link">1. B+Tree Storage Engine Architecture: The In-Place Page Model</a></li>
+              <li class="toc-item toc-h2"><a href="#2-lsm-tree-storage-engine-architecture-the-append-only-model" class="toc-link">2. LSM-Tree Storage Engine Architecture: The Append-Only Model</a></li>
+              <li class="toc-item toc-h2"><a href="#3-compaction-algorithms-leveled-vs-size-tiered" class="toc-link">3. Compaction Algorithms: Leveled vs Size-Tiered</a></li>
+              <li class="toc-item toc-h2"><a href="#4-mitigating-read-amplification-bloom-filters-block-caches" class="toc-link">4. Mitigating Read Amplification: Bloom Filters &amp; Block Caches</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-complete-lsm-tree-storage-engine-simulator" class="toc-link">Python Implementation: Complete LSM-Tree Storage Engine Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-btree-vs-lsm-tree-decision-matrix" class="toc-link">Summary: B+Tree vs LSM-Tree Decision Matrix</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-conclusion" class="toc-link">Architectural Conclusion</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

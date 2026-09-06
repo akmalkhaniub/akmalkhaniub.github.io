@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-semantic-similarity-blind-spot">The Semantic Similarity Blind Spot</a></li>
+                <li><a href="#the-hybrid-retrieval-pipeline">The Hybrid Retrieval Pipeline</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#technical-implementation-hybrid-pgvector-tsvector-search">Technical Implementation: Hybrid pgvector &amp; tsvector Search</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,13 +121,13 @@ Semantic vector embeddings are powerful for conceptual matching, but they strugg
 </div>
 </div>
 <hr>
-<h2>The Semantic Similarity Blind Spot</h2>
+<h2 id="the-semantic-similarity-blind-spot">The Semantic Similarity Blind Spot</h2>
 <p>A common pitfall when building RAG systems is relying exclusively on dense vector search. Vector models (like OpenAI&#39;s <code>text-embedding-3</code> or Cohere&#39;s <code>embed-english-v3.0</code>) compress sentences into high-dimensional numerical spaces to capture semantic concepts. </p>
 <p>While this is excellent for matching <em>&quot;How do I fix database deadlock errors?&quot;</em> with a paragraph discussing database lock contentions, it fails on exact keyword matches. </p>
 <p>For instance, consider a user query searching for a specific class or serial number: <em>&quot;Show logs containing JVM-20499&quot;</em> or <em>&quot;How to configure the <code>pg_advisory_xact_lock</code> function?&quot;</em>. Because the vector model evaluates the conceptual similarity of the string, it may prioritize general database locking tutorials, washing out the exact, critical SKU code or function signature.</p>
 <p>To prevent this information loss, we must run <strong>Hybrid Search</strong>: executing a parallel keyword lookup alongside the vector lookup and merging their results.</p>
 <hr>
-<h2>The Hybrid Retrieval Pipeline</h2>
+<h2 id="the-hybrid-retrieval-pipeline">The Hybrid Retrieval Pipeline</h2>
 <p>A production-grade hybrid retrieval pipeline executes parallel search queries, merges the results using an algebraic score-normalization algorithm, and filters the final list through a neural reranker.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 graph TD
@@ -140,16 +150,16 @@ graph TD
     style F fill:#0ea5e9,stroke:#0f172a,stroke-width:2px,color:#0f172a
     style G fill:#111827,stroke:#10b981,stroke-width:2px
     style I fill:#1e293b,stroke:#0ea5e9,stroke-width:2px</div>
-<h3>The RRF (Reciprocal Rank Fusion) Merger</h3>
+<h3 id="the-rrf-reciprocal-rank-fusion-merger">The RRF (Reciprocal Rank Fusion) Merger</h3>
 <p>Vector search and keyword search return scores in entirely different ranges: cosine similarity returns values between $-1.0$ and $1.0$, while BM25 returns unbounded floating-point scores ($0$ to $\infty$). </p>
 <p>We cannot directly add or multiply these scores. Instead, we use <strong>Reciprocal Rank Fusion (RRF)</strong>, which evaluates only the <em>rank</em> (position) of a document in each list. The RRF score for a document $d$ is:</p>
 <p>$$RRF_Score(d \in D) = \sum_{m \in M} \frac{1}{k + r_m(d)}$$</p>
 <p>Where $M$ is the set of retrieval models (dense and sparse), $r_m(d)$ is the rank of document $d$ in model $m$, and $k$ is a smoothing constant (typically set to $60$). RRF is parameter-free, highly robust, and consistently outperforms individual retrievers.</p>
-<h3>The Neural Reranker (Cross-Encoder)</h3>
+<h3 id="the-neural-reranker-cross-encoder">The Neural Reranker (Cross-Encoder)</h3>
 <p>After merging the results via RRF, we have a pool of candidates (e.g., 20 documents). To maximize context relevance, we feed these candidates into a <strong>Cross-Encoder</strong> reranker (e.g., <code>BAAI/bge-reranker-large</code>). </p>
 <p>Unlike Bi-Encoders (which embed questions and documents separately), a Cross-Encoder processes the query and document <em>together</em> through self-attention layers, calculating a direct, pairwise relevance score. This is far more accurate but too computationally heavy to run on the entire database, which is why it is used strictly as a secondary filtering step.</p>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -171,7 +181,7 @@ graph TD
 </tr>
 </tbody></table>
 <hr>
-<h2>Technical Implementation: Hybrid pgvector &amp; tsvector Search</h2>
+<h2 id="technical-implementation-hybrid-pgvector-tsvector-search">Technical Implementation: Hybrid pgvector &amp; tsvector Search</h2>
 <p>The script below demonstrates a complete, hybrid query engine using PostgreSQL (<strong>pgvector</strong> for dense search, and <strong>tsvector</strong> for sparse text search) and the <code>SentenceTransformer</code> Cross-Encoder model to rerank candidates.</p>
 <pre><code class="language-python">import psycopg2
 from sentence_transformers import CrossEncoder
@@ -253,7 +263,7 @@ if __name__ == &quot;__main__&quot;:
     #     print(f&quot;[{idx+1}] Score: {doc['relevance_score']:.4f} | Content: {doc['content'][:80]}...&quot;)
     print(&quot;[+] Model loaded successfully. Configure database schemas to run live retrieval queries.&quot;)</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Naive retrieval is a major bottleneck in enterprise RAG pipelines. By deploying hybrid search, we combine the strengths of both semantic and keyword indices, ensuring SKU numbers, precise function names, and structural terms are never missed.</p>
 <ul>
 <li><strong>RRF is a must</strong>: Do not attempt to add vector distance values to BM25 scores directly. Use Reciprocal Rank Fusion to normalize scores cleanly based on rank.</li>
@@ -261,7 +271,7 @@ if __name__ == &quot;__main__&quot;:
 </ul>
 <p>In our next article, <a href="file:///G:/ReplitProjects/akmalkhaniub.github.io/blog/automated-rag-evals-deepeval.html">Automated RAG Evals: Stress-Testing Pipelines with DeepEval and Synthetic Ground Truths</a>, we will discuss how to implement programmatic unit tests to prove your hybrid indices remain stable under prompt modifications.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>RRF Paper</strong>: <em>Reciprocal Rank Fusion Outperforms Single Retrieval Models</em> (Cormack et al., Waterloo) — <a href="https://www.researchgate.net/" target="_blank" rel="noopener">ResearchGate Link</a></li>
 <li><strong>pgvector Documentation</strong>: <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> PostgreSQL extension for vector similarity search</a></li>
@@ -294,6 +304,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-semantic-similarity-blind-spot" class="toc-link">The Semantic Similarity Blind Spot</a></li>
+              <li class="toc-item toc-h2"><a href="#the-hybrid-retrieval-pipeline" class="toc-link">The Hybrid Retrieval Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#technical-implementation-hybrid-pgvector-tsvector-search" class="toc-link">Technical Implementation: Hybrid pgvector &amp; tsvector Search</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

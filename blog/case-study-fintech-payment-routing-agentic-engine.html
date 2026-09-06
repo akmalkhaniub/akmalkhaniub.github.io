@@ -104,16 +104,31 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-industry-and-problem">1. Industry and Problem</a></li>
+                <li><a href="#2-team-size-and-composition">2. Team Size and Composition</a></li>
+                <li><a href="#3-duration">3. Duration</a></li>
+                <li><a href="#4-architecture">4. Architecture</a></li>
+                <li><a href="#5-scale">5. Scale</a></li>
+                <li><a href="#6-your-personal-contribution">6. Your Personal Contribution</a></li>
+                <li><a href="#7-difficult-decision">7. Difficult Decision</a></li>
+                <li><a href="#8-incident-or-failure">8. Incident or Failure</a></li>
+                <li><a href="#9-measured-result">9. Measured Result</a></li>
+                <li><a href="#10-lesson-learned">10. Lesson Learned</a></li>
+              </ul>
+            </details>
 <p>Modernizing high-volume financial infrastructure while processing millions of live transactions per day is one of the most high-stakes challenges an engineering lead can face. This case study documents how our team refactored a brittle, monolithic payment core into an intelligent, event-driven payment routing engine on Google Cloud Platform.</p>
 <hr>
-<h2>1. Industry and Problem</h2>
+<h2 id="1-industry-and-problem">1. Industry and Problem</h2>
 <ul>
 <li><strong>Industry</strong>: Financial Technology (Fintech) &amp; Payment Gateway Infrastructure.</li>
 <li><strong>The Problem</strong>: Our enterprise payment gateway processed cross-border card transactions for over 4,000 international merchants. The legacy core relied on a 7-year-old monolithic Java application that routed transactions using static, hardcoded rules. </li>
 <li><strong>Business Impact</strong>: When primary payment processors (e.g. Stripe, Adyen, Chase) experienced regional outages or latency spikes, static rules failed to re-route transactions. This resulted in a <strong>$4.2M monthly revenue loss</strong> due to false transaction declines and high interchange fee penalties.</li>
 </ul>
 <hr>
-<h2>2. Team Size and Composition</h2>
+<h2 id="2-team-size-and-composition">2. Team Size and Composition</h2>
 <p>We assembled a cross-functional engineering taskforce of <strong>8 engineers</strong>:</p>
 <ul>
 <li><strong>1 Tech Lead / Staff Architect</strong> (Author - Overall System Architecture &amp; Spec Engineering)</li>
@@ -124,7 +139,7 @@
 <li><strong>1 QA Automation Specialist</strong> (Chaos Testing &amp; Load Generators)</li>
 </ul>
 <hr>
-<h2>3. Duration</h2>
+<h2 id="3-duration">3. Duration</h2>
 <ul>
 <li><strong>Total Project Lifecycle</strong>: <strong>7 Months</strong> (from initial spec engineering to 100% production traffic cutover).<ul>
 <li><em>Months 1–2</em>: Spec engineering, shadow traffic pipeline, and GCP event architecture setup.</li>
@@ -135,7 +150,7 @@
 </li>
 </ul>
 <hr>
-<h2>4. Architecture</h2>
+<h2 id="4-architecture">4. Architecture</h2>
 <p>The architecture replaced static Java routing logic with an event-driven Cloud Run worker swarm on GCP:</p>
 <div class="mermaid">graph TD
   A[Merchant API Transaction Request] --&gt; B[GCP Cloud Pub/Sub: Payment Event Topic]
@@ -155,7 +170,7 @@
   H --&gt; J
   I --&gt; J
   J --&gt; K[Cloud Spanner: Immutable Ledger &amp; BigQuery Telemetry]</div>
-<h3>Tech Stack Breakdown</h3>
+<h3 id="tech-stack-breakdown">Tech Stack Breakdown</h3>
 <ul>
 <li><strong>Compute &amp; Routing</strong>: GCP Cloud Run (Python / Go containers) triggered via Eventarc and Cloud Pub/Sub queues.</li>
 <li><strong>Storage &amp; Ledger</strong>: Google Cloud Spanner (Global ACID transactional ledger) + AlloyDB AI (Real-time merchant context &amp; pgvector).</li>
@@ -163,14 +178,14 @@
 <li><strong>Security</strong>: GCP Secret Manager &amp; VPC Service Controls.</li>
 </ul>
 <hr>
-<h2>5. Scale</h2>
+<h2 id="5-scale">5. Scale</h2>
 <ul>
 <li><strong>Daily Transaction Volume</strong>: <strong>45 Million API calls / day</strong> (~520 transactions per second peak).</li>
 <li><strong>Global Footprint</strong>: Processed transactions across 3 GCP regions (<code>us-central1</code>, <code>europe-west1</code>, <code>asia-east1</code>).</li>
 <li><strong>Latency SLA</strong>: <strong>&lt; 50 milliseconds P99 total execution time</strong> for complete payment routing decisions.</li>
 </ul>
 <hr>
-<h2>6. Your Personal Contribution</h2>
+<h2 id="6-your-personal-contribution">6. Your Personal Contribution</h2>
 <p>As <strong>Tech Lead / Staff Architect</strong>, I personally owned:</p>
 <ol>
 <li><strong>Spec Engineering &amp; Task Matrix</strong>: Formulated the machine-readable AST context interfaces and task breakdown matrices, ensuring zero context leakage across worker teams.</li>
@@ -245,14 +260,14 @@ if __name__ == &quot;__main__&quot;:
     )
     selected = router.select_optimal_processor(sample_tx)</code></pre>
 <hr>
-<h2>7. Difficult Decision</h2>
+<h2 id="7-difficult-decision">7. Difficult Decision</h2>
 <ul>
 <li><strong>The Decision</strong>: <strong>Choosing Cloud Spanner over a Sharded PostgreSQL Cluster</strong>.</li>
 <li><strong>The Trade-Off</strong>: Sharded PostgreSQL would have been 35% cheaper in baseline cloud instance costs and familiar to our DBA team. However, managing manual shard rebalancing across 3 continents during Black Friday surges posed severe operational risk.</li>
 <li><strong>Rationale</strong>: We chose Cloud Spanner despite higher base costs because its external consistency, zero-downtime schema migrations, and automatic global multi-region replication eliminated database maintenance overhead.</li>
 </ul>
 <hr>
-<h2>8. Incident or Failure</h2>
+<h2 id="8-incident-or-failure">8. Incident or Failure</h2>
 <ul>
 <li><strong>The Incident (Month 5 - Canary Rollout)</strong>: During a 10% canary deployment, an unexpected spike in processor API timeouts caused Cloud Run instances to block on synchronous HTTP calls. This caused worker connection pool exhaustion, leading to a 3-minute queue buildup and <strong>1,400 dropped payment requests</strong>.</li>
 <li><strong>Root Cause Analysis</strong>: The Cloud Run containers lacked HTTP connection timeout caps and were attempting synchronous HTTP calls inside Eventarc handlers without Cloud Tasks rate buffering.</li>
@@ -264,7 +279,7 @@ if __name__ == &quot;__main__&quot;:
 </li>
 </ul>
 <hr>
-<h2>9. Measured Result</h2>
+<h2 id="9-measured-result">9. Measured Result</h2>
 <p>After 100% production cutover, the business and technical metrics surpassed targets:</p>
 <ul>
 <li><strong>+4.8% Increase in Overall Transaction Approvals</strong>: Rescuing <strong>~$3.8M in monthly revenue</strong> previously lost to false declines.</li>
@@ -273,7 +288,7 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>Zero Outage Downtime During Peak Sales</strong>: Processed Cyber Monday traffic spikes without a single manual infrastructure intervention.</li>
 </ul>
 <hr>
-<h2>10. Lesson Learned</h2>
+<h2 id="10-lesson-learned">10. Lesson Learned</h2>
 <blockquote>
 <p><strong>&quot;Never couple real-time payment routing logic to synchronous HTTP dependencies.&quot;</strong></p>
 <p>As a Tech Lead, the biggest lesson from this migration was that intelligent agentic decisions must always operate behind asynchronous event buffers (Pub/Sub + Cloud Tasks). Relying on synchronous HTTP chains inside microservices turns transient third-party latency into catastrophic platform-wide outages. Decoupling routing evaluation from payment execution saved our platform.</p>
@@ -305,6 +320,23 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-industry-and-problem" class="toc-link">1. Industry and Problem</a></li>
+              <li class="toc-item toc-h2"><a href="#2-team-size-and-composition" class="toc-link">2. Team Size and Composition</a></li>
+              <li class="toc-item toc-h2"><a href="#3-duration" class="toc-link">3. Duration</a></li>
+              <li class="toc-item toc-h2"><a href="#4-architecture" class="toc-link">4. Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#5-scale" class="toc-link">5. Scale</a></li>
+              <li class="toc-item toc-h2"><a href="#6-your-personal-contribution" class="toc-link">6. Your Personal Contribution</a></li>
+              <li class="toc-item toc-h2"><a href="#7-difficult-decision" class="toc-link">7. Difficult Decision</a></li>
+              <li class="toc-item toc-h2"><a href="#8-incident-or-failure" class="toc-link">8. Incident or Failure</a></li>
+              <li class="toc-item toc-h2"><a href="#9-measured-result" class="toc-link">9. Measured Result</a></li>
+              <li class="toc-item toc-h2"><a href="#10-lesson-learned" class="toc-link">10. Lesson Learned</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

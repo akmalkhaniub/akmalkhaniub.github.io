@@ -104,6 +104,14 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-kafka-swarm-coordination-model">The Kafka Swarm Coordination Model</a></li>
+                <li><a href="#implementing-a-resilient-kafka-agent-consumer">Implementing a Resilient Kafka Agent Consumer</a></li>
+                <li><a href="#important-pitfalls-in-kafka-swarm-coordination">Important Pitfalls in Kafka Swarm Coordination</a></li>
+              </ul>
+            </details>
 <p>In basic multi-agent systems, agents communicate using direct, synchronous HTTP calls or simple in-memory queues (like Python&#39;s <code>asyncio.Queue</code>). While this works for simple workflows, it creates critical bottlenecks in enterprise architectures:</p>
 <ol>
 <li><strong>Coupling</strong>: If the &quot;Validator Agent&quot; goes offline, the upstream &quot;Writer Agent&quot; blocks and fails immediately.</li>
@@ -112,7 +120,7 @@
 </ol>
 <p>To build resilient, highly scalable agent swarms, production systems use <strong>Apache Kafka</strong> as an event-driven telemetry and routing broker. This article details designing partitioned event topologies, propagating tracing context across asynchronous boundaries, and implementing replay security to manage duplicate messages.</p>
 <hr>
-<h2>The Kafka Swarm Coordination Model</h2>
+<h2 id="the-kafka-swarm-coordination-model">The Kafka Swarm Coordination Model</h2>
 <p>Rather than invoking downstream services directly, agents write status and command events to Kafka topics. Downstream workers subscribe to these topics and process events asynchronously:</p>
 <div class="mermaid">graph LR
   subgraph Producer Agent
@@ -126,15 +134,15 @@
     P1 --&gt; W1[Worker Container 1]
     P2 --&gt; W2[Worker Container 2]
   end</div>
-<h3>1. Partitioned Topics for In-Order Execution</h3>
+<h3 id="1-partitioned-topics-for-in-order-execution">1. Partitioned Topics for In-Order Execution</h3>
 <p>Kafka topics are divided into physical <strong>partitions</strong>. Messages inside a single partition are guaranteed to be read in the exact order they were written. </p>
 <ul>
 <li><strong>The Pattern</strong>: By using the <code>trajectory_id</code> as the Kafka message partition key, we guarantee that all execution steps for a specific task route to the exact same partition. Multiple workers can process different trajectories concurrently, but a single trajectory&#39;s events are processed sequentially by a single worker, preventing out-of-order execution bugs.</li>
 </ul>
-<h3>2. Context Propagation &amp; Distributed Tracing</h3>
+<h3 id="2-context-propagation-distributed-tracing">2. Context Propagation &amp; Distributed Tracing</h3>
 <p>Because events cross thread and network boundaries, we must propagate tracing contexts (W3C traceparent headers) inside Kafka message metadata headers. This allows platforms (like OpenTelemetry or Langfuse) to reconstruct the full multi-agent execution path.</p>
 <hr>
-<h2>Implementing a Resilient Kafka Agent Consumer</h2>
+<h2 id="implementing-a-resilient-kafka-agent-consumer">Implementing a Resilient Kafka Agent Consumer</h2>
 <p>Here is a Python implementation of an event-driven Kafka consumer for agent swarms. It demonstrates context propagation and uses Redis-based idempotency checks to prevent duplicate execution (replay security).</p>
 <pre><code class="language-python">import json
 import time
@@ -217,7 +225,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;Submitting replay of the same event...&quot;)
     consumer.consume_event(msg2)</code></pre>
 <hr>
-<h2>Important Pitfalls in Kafka Swarm Coordination</h2>
+<h2 id="important-pitfalls-in-kafka-swarm-coordination">Important Pitfalls in Kafka Swarm Coordination</h2>
 <p>Ensure your event-driven routing avoids these production issues:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -256,6 +264,16 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-kafka-swarm-coordination-model" class="toc-link">The Kafka Swarm Coordination Model</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-a-resilient-kafka-agent-consumer" class="toc-link">Implementing a Resilient Kafka Agent Consumer</a></li>
+              <li class="toc-item toc-h2"><a href="#important-pitfalls-in-kafka-swarm-coordination" class="toc-link">Important Pitfalls in Kafka Swarm Coordination</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

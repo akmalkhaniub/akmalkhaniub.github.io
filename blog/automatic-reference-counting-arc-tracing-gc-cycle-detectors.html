@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#arc-architecture-reference-cycle-detection">ARC Architecture &amp; Reference Cycle Detection</a></li>
+                <li><a href="#python-implementation-arc-engine-cycle-collector">Python Implementation: ARC Engine &amp; Cycle Collector</a></li>
+                <li><a href="#arc-gotchas-best-practices">ARC Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In software engineering, languages manage dynamic heap memory via two competing paradigms: <strong>Tracing Garbage Collection</strong> (Java, Go, V8) and <strong>Automatic Reference Counting (ARC)</strong> (Swift, Objective-C, C++ <code>std::shared_ptr</code>, Rust <code>Rc</code>/<code>Arc</code>).</p>
 <p>Tracing GCs offer convenience by automatically reclaiming cyclic graphs, but require extra peak memory ($2\times$ heap headroom) and periodically trigger Stop-The-World (STW) or concurrent marking CPU spikes.</p>
 <p>In contrast, <strong>ARC delivers deterministic, immediate memory deallocation</strong>: the instant the final reference to an object drops to zero, its destructor executes and memory is freed back to the system.</p>
@@ -111,7 +120,7 @@
 <p>To solve circular memory leaks without sacrificing latency, systems utilize <strong><code>weak</code> and <code>unowned</code> Pointers</strong> alongside <strong>Backup Cycle Collectors</strong>.</p>
 <p>This article details ARC retain/release operations, strong reference cycles, Swift side-tables for <code>weak</code> zeroing, <code>unowned</code> safety semantics, and Bacon-Rajan cycle collection.</p>
 <hr>
-<h2>ARC Architecture &amp; Reference Cycle Detection</h2>
+<h2 id="arc-architecture-reference-cycle-detection">ARC Architecture &amp; Reference Cycle Detection</h2>
 <p>How Automatic Reference Counting operates, how strong reference cycles leak memory, and how Swift weak side-tables prevent use-after-free crashes:</p>
 <div class="mermaid">graph TD
   subgraph Automatic Reference Counting (Deterministic Deallocation)
@@ -131,7 +140,7 @@
     NodeB -.-&gt;|weak Pointer| SideTable[Swift HeapObject Side-Table Entry]
     SideTable --&gt;|Zeroes Pointer to nil on Deallocation| SafeWeak[&quot;✨ Safe Nil Zeroing! No Memory Leak!&quot;]
   end</div>
-<h3>Core ARC &amp; Tracing GC Mechanics</h3>
+<h3 id="core-arc-tracing-gc-mechanics">Core ARC &amp; Tracing GC Mechanics</h3>
 <ol>
 <li><strong>ARC vs Tracing GC Comparison</strong>:<ul>
 <li><em>Tracing GC (Java / Go)</em>: Periodically scans the object graph from root references. Handles circular graphs automatically, but causes unpredictable CPU spikes and requires large memory headroom.</li>
@@ -164,7 +173,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: ARC Engine &amp; Cycle Collector</h2>
+<h2 id="python-implementation-arc-engine-cycle-collector">Python Implementation: ARC Engine &amp; Cycle Collector</h2>
 <p>Here is a production-grade Python implementation of an Automatic Reference Counting (ARC) Engine featuring Strong/Weak References and a Bacon-Rajan Cycle Collector:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional, Set
 from pydantic import BaseModel
@@ -293,7 +302,7 @@ if __name__ == &quot;__main__&quot;:
 
     arc.release(p2) # Reclaims p2 &amp; c2 instantly without cycle collector!</code></pre>
 <hr>
-<h2>ARC Gotchas &amp; Best Practices</h2>
+<h2 id="arc-gotchas-best-practices">ARC Gotchas &amp; Best Practices</h2>
 <p>When developing in ARC environments (Swift / Objective-C / Rust):</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -306,7 +315,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Automatic Reference Counting and Swift side-table architectures (powering <strong>iOS Apps</strong>, <strong>macOS Kernel</strong>, and <strong>Rust <code>Arc</code> / C++ <code>std::shared_ptr</code></strong>) report:</p>
 <ul>
 <li><strong>0ms Predictable Deallocation Latency</strong>: Memory is freed instantaneously the moment references drop to zero, eliminating Stop-The-World GC stutter in mobile games and audio processing.</li>
@@ -339,6 +348,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#arc-architecture-reference-cycle-detection" class="toc-link">ARC Architecture &amp; Reference Cycle Detection</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-arc-engine-cycle-collector" class="toc-link">Python Implementation: ARC Engine &amp; Cycle Collector</a></li>
+              <li class="toc-item toc-h2"><a href="#arc-gotchas-best-practices" class="toc-link">ARC Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

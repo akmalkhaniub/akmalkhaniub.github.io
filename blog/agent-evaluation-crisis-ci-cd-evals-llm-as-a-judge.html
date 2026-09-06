@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-why-traditional-unit-tests-fail-on-ai-agents">1. Why Traditional Unit Tests Fail on AI Agents</a></li>
+                <li><a href="#2-the-3-tier-agent-evaluation-framework">2. The 3-Tier Agent Evaluation Framework</a></li>
+                <li><a href="#python-implementation-complete-cicd-agent-evaluation-harness">Python Implementation: Complete CI/CD Agent Evaluation Harness</a></li>
+                <li><a href="#summary-traditional-cicd-vs-agent-cicd-evals">Summary: Traditional CI/CD vs Agent CI/CD Evals</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>In modern continuous integration and delivery (CI/CD) pipelines, automated unit and integration tests are the ultimate safety net.</p>
 <p>You write deterministic assertions (<code>assert response.status_code == 200</code>), run <code>pytest</code> or <code>jest</code>, and if all tests pass, the pull request merges safely to <code>main</code>.</p>
 <p>When engineering autonomous AI agent systems (<strong>Agent Fleet Orchestrator</strong>, <strong>SpecForge</strong>, <strong>LangGraph</strong>, <strong>Devin</strong>), traditional testing fails completely:</p>
@@ -128,23 +138,23 @@
   ScoreGate --&gt;|Yes| Merge[✅ Merge to Main]
   ScoreGate --&gt;|No| Block[❌ Block Build: Prompt Regression]</div>
 <hr>
-<h2>1. Why Traditional Unit Tests Fail on AI Agents</h2>
+<h2 id="1-why-traditional-unit-tests-fail-on-ai-agents">1. Why Traditional Unit Tests Fail on AI Agents</h2>
 <p>Traditional software testing relies on an invariant assumption: <strong>deterministic inputs yield deterministic outputs ($f(x) = y$)</strong>.</p>
-<h3>The 3 Core Breakdown Modes of LLM Testing:</h3>
+<h3 id="the-3-core-breakdown-modes-of-llm-testing">The 3 Core Breakdown Modes of LLM Testing:</h3>
 <ol>
 <li><strong>The Semantic Paraphrasing Dilemma</strong>: An agent tasked with writing a helper function might name it <code>calculate_tax</code> on Run 1 and <code>compute_tax_amount</code> on Run 2. Both are functionally correct, but an exact string match assertion fails.</li>
 <li><strong>The &quot;Silent Regression&quot; Trap</strong>: LLMs operate on a high-dimensional probability manifold. Improving performance on Task $A$ frequently degrades performance on Task $B$ (e.g. adding instructions to be &quot;concise&quot; causes the agent to stop generating unit tests).</li>
 <li><strong>Flaky Test Fatigue</strong>: When tests fail non-deterministically due to minor temperature variance, engineers learn to ignore CI/CD test failures, defeating the entire purpose of automated testing.</li>
 </ol>
 <hr>
-<h2>2. The 3-Tier Agent Evaluation Framework</h2>
+<h2 id="2-the-3-tier-agent-evaluation-framework">2. The 3-Tier Agent Evaluation Framework</h2>
 <pre><code class="language-plaintext">&gt; **THE 3-TIER EVALUATION PYRAMID**
 | Tier 1: Deterministic Symbolic Invariants : AST parse validity, 0 linter errors, exit code 0      |
 | Tier 2: Trajectory Graph Assertions       : Did the agent call tools in the correct logical DAG?  |
 | Tier 3: Calibrated LLM-as-a-Judge Rubrics : Semantic goal completion, code readability, safety   |
 </code></pre>
 <hr>
-<h3>Tier 1: Deterministic Symbolic Invariants (Fast &amp; Objective)</h3>
+<h3 id="tier-1-deterministic-symbolic-invariants-fast-objective">Tier 1: Deterministic Symbolic Invariants (Fast &amp; Objective)</h3>
 <p>Before evaluating natural language quality, verify hard mathematical invariants in compiled code:</p>
 <ul>
 <li><strong>AST Parse Success</strong>: Does the generated code parse into a valid Abstract Syntax Tree (<code>ast.parse()</code> / <code>tsc --noEmit</code>)?</li>
@@ -152,7 +162,7 @@
 <li><strong>Deterministic Test Execution</strong>: Do the containerized unit tests pass with exit code <code>0</code>?</li>
 </ul>
 <hr>
-<h3>Tier 2: Trajectory Assertion Graphs (Evaluating the Path Taken)</h3>
+<h3 id="tier-2-trajectory-assertion-graphs-evaluating-the-path-taken">Tier 2: Trajectory Assertion Graphs (Evaluating the Path Taken)</h3>
 <p>In autonomous agent swarms, <strong>how the agent solved the problem</strong> is just as important as the final answer.</p>
 <p>A <strong>Trajectory Assertion Graph</strong> validates that the agent invoked tools in a logical, secure sequence:</p>
 <div class="mermaid">graph LR
@@ -164,14 +174,14 @@
   subgraph Invalid Anti-Pattern (Flagged by Eval)
     A1[1. replace_file_content: Blindly Guess] --&gt; A2[2. git_commit: Commit without Testing!]
   end</div>
-<h3>Trajectory Assertion Examples:</h3>
+<h3 id="trajectory-assertion-examples">Trajectory Assertion Examples:</h3>
 <ul>
 <li><code>assert &quot;view_file&quot; in trajectory.tool_names</code> (Agent inspected context before acting).</li>
 <li><code>assert trajectory.index_of(&quot;replace_file_content&quot;) &lt; trajectory.index_of(&quot;run_test&quot;)</code> (Agent tested after editing).</li>
 <li><code>assert trajectory.tool_count &lt;= 6</code> (Agent did not enter an infinite exploratory loop).</li>
 </ul>
 <hr>
-<h3>Tier 3: Calibrated LLM-as-a-Judge with Multi-Point Rubrics</h3>
+<h3 id="tier-3-calibrated-llm-as-a-judge-with-multi-point-rubrics">Tier 3: Calibrated LLM-as-a-Judge with Multi-Point Rubrics</h3>
 <p>For subjective criteria (code readability, adherence to design patterns, explanation clarity), modern CI/CD pipelines use an independent <strong>Judge Model (e.g. Claude 3.5 Sonnet / GPT-4o)</strong> with a <strong>Calibrated G-Eval Rubric</strong>:</p>
 <pre><code class="language-yaml">Evaluation Rubric: Code Refactoring Quality
 Score 5: Flawless refactor, exact type annotations, zero redundant code, preserves existing API.
@@ -180,7 +190,7 @@ Score 3: Working refactor but introduces breaking changes to existing method sig
 Score 2: Non-compiling code or missing imports.
 Score 1: Hallucinated dependencies or completely unrelated modifications.</code></pre>
 <hr>
-<h2>Python Implementation: Complete CI/CD Agent Evaluation Harness</h2>
+<h2 id="python-implementation-complete-cicd-agent-evaluation-harness">Python Implementation: Complete CI/CD Agent Evaluation Harness</h2>
 <p>Here is a Python implementation of an automated Agent Evaluation Harness combining AST symbolic checks, trajectory DAG assertions, and calibrated LLM Judge scoring:</p>
 <pre><code class="language-python">import ast
 from dataclasses import dataclass
@@ -293,7 +303,7 @@ if __name__ == &quot;__main__&quot;:
     )
     eval_runner.run_eval_suite(&quot;Create typed add_user endpoint&quot;, flawed_run)</code></pre>
 <hr>
-<h2>Summary: Traditional CI/CD vs Agent CI/CD Evals</h2>
+<h2 id="summary-traditional-cicd-vs-agent-cicd-evals">Summary: Traditional CI/CD vs Agent CI/CD Evals</h2>
 <table>
 <thead>
 <tr>
@@ -329,7 +339,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>You cannot build reliable autonomous agent systems without <strong>rigorous, multi-tier evaluation infrastructure</strong>.</p>
 <p>By anchoring agent evaluation to <strong>deterministic AST invariants</strong>, <strong>trajectory state graphs</strong>, and <strong>calibrated LLM rubrics</strong>, engineering organizations create robust CI/CD safety nets that catch prompt regressions before they ever reach production.</p>
 
@@ -359,6 +369,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-why-traditional-unit-tests-fail-on-ai-agents" class="toc-link">1. Why Traditional Unit Tests Fail on AI Agents</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-3-tier-agent-evaluation-framework" class="toc-link">2. The 3-Tier Agent Evaluation Framework</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-complete-cicd-agent-evaluation-harness" class="toc-link">Python Implementation: Complete CI/CD Agent Evaluation Harness</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-traditional-cicd-vs-agent-cicd-evals" class="toc-link">Summary: Traditional CI/CD vs Agent CI/CD Evals</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

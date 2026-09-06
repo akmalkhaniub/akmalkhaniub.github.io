@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-beginner-layer-repository-structure-routing-layouts">1. The Beginner Layer: Repository Structure &amp; Routing Layouts</a></li>
+                <li><a href="#2-the-intermediate-layer-data-access-orms-api-boundaries">2. The Intermediate Layer: Data Access, ORMs, &amp; API Boundaries</a></li>
+                <li><a href="#3-the-advanced-layer-edge-runtimes-topologies">3. The Advanced Layer: Edge Runtimes &amp; Topologies</a></li>
+                <li><a href="#4-key-architectural-takeaways">4. Key Architectural Takeaways</a></li>
+              </ul>
+            </details>
 <p>How do elite teams build, scale, and secure Next.js applications in production? Rather than looking at toy examples or boilerplate templates, we can learn the most by auditing the codebases of leading open-source companies. </p>
 <p>In this architectural deep dive, we compare 5 top open-source Next.js projects on GitHub:</p>
 <ol>
@@ -115,7 +124,7 @@
 </ol>
 <p>We will break down their patterns across three progressive levels: <strong>Beginner (Structure &amp; Routing)</strong>, <strong>Intermediate (Data Access &amp; API Layers)</strong>, and <strong>Advanced (Edge Runtimes &amp; Topologies)</strong>.</p>
 <hr>
-<h2>1. The Beginner Layer: Repository Structure &amp; Routing Layouts</h2>
+<h2 id="1-the-beginner-layer-repository-structure-routing-layouts">1. The Beginner Layer: Repository Structure &amp; Routing Layouts</h2>
 <p>The first decision when starting a production Next.js system is project topology: <em>To monorepo or not?</em> And how do we organize routing layers when scale increases?</p>
 <pre><code class="language-plaintext">┌────────────────────────────────────────────────────────────────────────┐
 │                      WORKSPACE TOPOLOGY COMPARISON                     │
@@ -133,12 +142,12 @@
  ├── app/             (All routes: landing, dashboard, redirectors)
  ├── components/      (UI elements)
  └── lib/             (Database &amp; Helpers)</code></pre>
-<h3>Monorepo vs. Single Repository</h3>
+<h3 id="monorepo-vs-single-repository">Monorepo vs. Single Repository</h3>
 <ul>
 <li><strong>Midday, Cal.com, Unkey (Monorepos):</strong> They use <strong>Turborepo</strong> to structure their codebases. In these projects, the database schema/client (<code>@repo/db</code> or <code>packages/prisma</code>), the UI component library (<code>@repo/ui</code>), and common configurations are isolated into distinct, local npm packages. This is crucial for Cal.com (which needs to share types between web embeds, scheduling pages, and mobile wrappers) and Unkey (which separates the Next.js admin dashboard from the Hono-based API engine).</li>
 <li><strong>Dub.co, Morphic (Single Repo):</strong> They keep all code within a single, highly-focused Next.js application directory. This minimizes compilation complexity and streamlines deployment pipelines, allowing fast product iteration.</li>
 </ul>
-<h3>Advanced Layout Patterns: Parallel &amp; Intercepting Routes</h3>
+<h3 id="advanced-layout-patterns-parallel-intercepting-routes">Advanced Layout Patterns: Parallel &amp; Intercepting Routes</h3>
 <p>When creating dashboard dialogs, traditional applications rely on client-side state hooks (<code>isModalOpen</code>). In contrast, <strong>Midday</strong> models modals as first-class routing paths using Next.js <strong>Parallel Routes</strong> (<code>@modal</code>) and <strong>Intercepting Routes</strong> (<code>(.)modal</code>):</p>
 <pre><code class="language-text">midday/apps/dashboard/app/(dashboard)/
 ├── @modal/
@@ -150,15 +159,15 @@
 <ul>
 <li><strong>Why this?</strong> It allows users to share a direct URL to a transaction details modal. If refreshed, Next.js performs a full page render of the transaction details; if navigated from the dashboard list, it intercepts the route to display it smoothly in a sliding modal dialog overlay without losing the background scroll position.</li>
 </ul>
-<h3>Hybrid Router Coexistence</h3>
+<h3 id="hybrid-router-coexistence">Hybrid Router Coexistence</h3>
 <p><strong>Cal.com</strong> represents an important real-world migration blueprint. Having started in the Pages Router era, migrating to the App Router all at once was impossible. They operate a <strong>hybrid routing model</strong> where <code>/pages</code> and <code>/app</code> coexist:</p>
 <ul>
 <li><strong>The Solution:</strong> Shared workspace packages (<code>@calcom/trpc</code> and database layers) allow pages under <code>/pages</code> and routes under <code>/app</code> to run side-by-side during incremental migration, sharing session state and UI design systems.</li>
 </ul>
 <hr>
-<h2>2. The Intermediate Layer: Data Access, ORMs, &amp; API Boundaries</h2>
+<h2 id="2-the-intermediate-layer-data-access-orms-api-boundaries">2. The Intermediate Layer: Data Access, ORMs, &amp; API Boundaries</h2>
 <p>Data fetching and mutation choices directly dictate server-side latency, cold start times, and overall code maintainability.</p>
-<h3>Database Layer: Drizzle vs. Prisma</h3>
+<h3 id="database-layer-drizzle-vs-prisma">Database Layer: Drizzle vs. Prisma</h3>
 <p>How do these applications query databases, and what are the trade-offs?</p>
 <table>
 <thead>
@@ -198,7 +207,7 @@
 <li><strong>Why Drizzle (Unkey, Midday)?</strong> Drizzle generates queries as direct JavaScript templates without loading a separate Rust/C++ query compiler binary. This results in minimal memory footprints, making it perfect for serverless cold-starts and <strong>Edge Runtime</strong> environments.</li>
 <li><strong>Why Prisma (Cal.com, Dub.co)?</strong> Prisma provides a highly readable schema syntax, auto-generated migrations, and robust type generation. For complex enterprise databases with deep relationships (like scheduling parameters in Cal.com), the productivity gains of Prisma outweigh the serverless cold-start trade-off.</li>
 </ul>
-<h3>API Boundaries: Server Actions vs. tRPC</h3>
+<h3 id="api-boundaries-server-actions-vs-trpc">API Boundaries: Server Actions vs. tRPC</h3>
 <p>How do frontends communicate mutations to the database?</p>
 <ul>
 <li><p><strong>Next.js Server Actions (Midday, Dub.co, Morphic):</strong>
@@ -228,7 +237,7 @@ Rather than calling functions directly from components, <strong>Cal.com</strong>
 </li>
 </ul>
 <hr>
-<h2>3. The Advanced Layer: Edge Runtimes &amp; Topologies</h2>
+<h2 id="3-the-advanced-layer-edge-runtimes-topologies">3. The Advanced Layer: Edge Runtimes &amp; Topologies</h2>
 <p>At scale, Next.js moves beyond a standard web server and operates as part of a distributed system.</p>
 <pre><code class="language-plaintext">┌────────────────────────────────────────────────────────────────────────┐
 │                        COMPUTE RUNTIME STRATEGY                       │
@@ -243,20 +252,20 @@ Rather than calling functions directly from components, <strong>Cal.com</strong>
   • Runs on standard virtual machines / containers (AWS, GCP, Vercel Serverless)
   • Full Node.js API support (net, fs, child_process)
   • Persistent TCP database connections</code></pre>
-<h3>Edge Middleware Custom Domain Rewrites (Dub.co)</h3>
+<h3 id="edge-middleware-custom-domain-rewrites-dubco">Edge Middleware Custom Domain Rewrites (Dub.co)</h3>
 <p><strong>Dub.co</strong> leverages Next.js <code>middleware.ts</code> running on the <strong>Edge Runtime</strong> to handle branded short links. Every request to a custom domain (e.g. <code>yourbrand.co/xyz</code>) is routed through a single middleware file:</p>
 <ol>
 <li>Middleware reads the request headers to extract the host (<code>yourbrand.co</code>).</li>
 <li>It queries <strong>Upstash Redis</strong> (via REST api) to resolve the custom domain configuration and target URL.</li>
 <li>It performs a lightweight URL rewrite or redirect, sending back a 307 response in under 20ms without invoking heavy serverless containers.</li>
 </ol>
-<h3>Control Plane vs. Data Plane Split (Unkey)</h3>
+<h3 id="control-plane-vs-data-plane-split-unkey">Control Plane vs. Data Plane Split (Unkey)</h3>
 <p><strong>Unkey</strong> implements a classic systems pattern: separating administrative management from execution pathways:</p>
 <ul>
 <li><strong>The Control Plane (Next.js App Router):</strong> Manages user logins, org creations, key creation wizards, and Stripe billing. Built with standard Server Components and serverless execution.</li>
 <li><strong>The Data Plane (Cloudflare Workers + Hono):</strong> Validates API keys at a massive scale. It is a separate, lightweight microservice running globally on Cloudflare Edge, utilizing Redis replication for instant key checks.</li>
 </ul>
-<h3>Generative UI (Morphic)</h3>
+<h3 id="generative-ui-morphic">Generative UI (Morphic)</h3>
 <p>Traditional AI chatbots stream text markdown which must be parsed on the client. <strong>Morphic</strong> changes this by streaming <strong>interactive React components</strong> directly from the server using Vercel&#39;s AI SDK:</p>
 <pre><code class="language-typescript">// Morphic Generative UI Flow
 const result = await streamUI({
@@ -278,7 +287,7 @@ const result = await streamUI({
 <li><strong>Why this?</strong> The server controls the user interface generation. The client simply renders the streamed Node elements, keeping complex charting, computation, and third-party data fetching libraries completely off the client-side JavaScript bundle.</li>
 </ul>
 <hr>
-<h2>4. Key Architectural Takeaways</h2>
+<h2 id="4-key-architectural-takeaways">4. Key Architectural Takeaways</h2>
 <p>When designing your own Next.js systems, let these open-source leaders guide your choices:</p>
 <ol>
 <li><strong>For high-volume edge operations:</strong> Decouple performance-critical routes to Edge Runtime, Hono, or Cloudflare Workers, keeping Next.js App Router for complex dashboard portals (Unkey, Dub.co).</li>
@@ -312,6 +321,17 @@ const result = await streamUI({
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-beginner-layer-repository-structure-routing-layouts" class="toc-link">1. The Beginner Layer: Repository Structure &amp; Routing Layouts</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-intermediate-layer-data-access-orms-api-boundaries" class="toc-link">2. The Intermediate Layer: Data Access, ORMs, &amp; API Boundaries</a></li>
+              <li class="toc-item toc-h2"><a href="#3-the-advanced-layer-edge-runtimes-topologies" class="toc-link">3. The Advanced Layer: Edge Runtimes &amp; Topologies</a></li>
+              <li class="toc-item toc-h2"><a href="#4-key-architectural-takeaways" class="toc-link">4. Key Architectural Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

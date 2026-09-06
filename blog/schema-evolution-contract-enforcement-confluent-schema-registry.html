@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#binary-wire-format-compatibility-architecture">Binary Wire Format &amp; Compatibility Architecture</a></li>
+                <li><a href="#python-implementation-schema-registry-serializer-validator">Python Implementation: Schema Registry Serializer &amp; Validator</a></li>
+                <li><a href="#schema-evolution-gotchas-guardrails">Schema Evolution Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In distributed event-driven systems, microservices communicate by publishing and consuming messages across shared topics. When event payloads are transmitted as un-typed JSON strings without strict contract enforcement, a producer updating a payload schema (such as renaming or dropping a field) can silently crash dozens of downstream consumer microservices.</p>
 <p>To guarantee zero-downtime payload evolution, software engineering teams deploy <strong>Confluent Schema Registry</strong> alongside <strong>Apache Avro</strong> or <strong>Protocol Buffers (Protobuf)</strong>.</p>
 <p>Schema Registry acts as a central governance authority that enforces strict schema compatibility rules before messages are written to Kafka topics. By serializing events into compact binary formats prefixed with a 4-byte Schema ID, applications achieve up to <strong>80% payload size reduction</strong> compared to raw JSON.</p>
 <p>This article details how to manage schema evolution and contract enforcement in Kafka pipelines.</p>
 <hr>
-<h2>Binary Wire Format &amp; Compatibility Architecture</h2>
+<h2 id="binary-wire-format-compatibility-architecture">Binary Wire Format &amp; Compatibility Architecture</h2>
 <p>The binary framing layout and schema validation workflow:</p>
 <div class="mermaid">graph TD
   A[Producer Microservice] --&gt;|1. Register / Lookup Schema| B[Confluent Schema Registry]
@@ -125,7 +134,7 @@
   F --&gt;|5. Read Wire Bytes| G[Consumer Microservice]
   G --&gt;|6. Fetch Schema ID 402| B
   G --&gt;|7. Deserialize Payload| H[Validated Application Object]</div>
-<h3>Schema Compatibility Modes</h3>
+<h3 id="schema-compatibility-modes">Schema Compatibility Modes</h3>
 <p>Confluent Schema Registry enforces four primary compatibility rules when producers register a new schema version ($V_2$ over $V_1$):</p>
 <ol>
 <li><strong>BACKWARD Compatibility (Default)</strong>: Consumers running $V_2$ can parse messages written by producers using $V_1$. <em>Rule</em>: Delete fields or add optional fields with default values. (Deploy consumers first).</li>
@@ -134,7 +143,7 @@
 <li><strong>NONE</strong>: Disables compatibility checks (Dangerous in production).</li>
 </ol>
 <hr>
-<h2>Python Implementation: Schema Registry Serializer &amp; Validator</h2>
+<h2 id="python-implementation-schema-registry-serializer-validator">Python Implementation: Schema Registry Serializer &amp; Validator</h2>
 <p>Here is a production-grade Python simulation of a Confluent Schema Registry client, Avro wire format encoder, and compatibility checker:</p>
 <pre><code class="language-python">import struct
 import json
@@ -246,7 +255,7 @@ if __name__ == &quot;__main__&quot;:
     except ValueError as e:
         print(f&quot; ❌ Schema Registry Rejected Registration: {e}&quot;)</code></pre>
 <hr>
-<h2>Schema Evolution Gotchas &amp; Guardrails</h2>
+<h2 id="schema-evolution-gotchas-guardrails">Schema Evolution Gotchas &amp; Guardrails</h2>
 <p>When enforcing contracts with Schema Registry:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -259,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams using Confluent Schema Registry report:</p>
 <ul>
 <li><strong>80% Payload Compression</strong>: Replacing verbose JSON headers with 5-byte Confluent wire framing reduces network bandwidth costs dramatically across high-throughput Kafka clusters.</li>
@@ -292,6 +301,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#binary-wire-format-compatibility-architecture" class="toc-link">Binary Wire Format &amp; Compatibility Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-schema-registry-serializer-validator" class="toc-link">Python Implementation: Schema Registry Serializer &amp; Validator</a></li>
+              <li class="toc-item toc-h2"><a href="#schema-evolution-gotchas-guardrails" class="toc-link">Schema Evolution Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

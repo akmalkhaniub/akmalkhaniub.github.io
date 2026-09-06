@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#tsdb-architecture-block-compaction-pipeline">TSDB Architecture &amp; Block Compaction Pipeline</a></li>
+                <li><a href="#python-implementation-tsdb-head-block-compaction-engine">Python Implementation: TSDB Head Block &amp; Compaction Engine</a></li>
+                <li><a href="#tsdb-storage-engine-gotchas-best-practices">TSDB Storage Engine Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In cloud-native observability systems (<strong>Prometheus</strong>, <strong>VictoriaMetrics</strong>, <strong>Thanos</strong>, <strong>Cortex</strong>), time-series storage engines must sustain relentless ingestion workloads while serving instant range queries over months of historical telemetry.</p>
 <p>A major engineering challenge in time-series database (TSDB) design is balancing <strong>Low-Latency Write Ingestion</strong> (append-only streaming) with <strong>High-Performance Query Execution</strong> (columnar block scans).</p>
 <p>To optimize memory usage and query throughput, modern engines split metric storage into two distinct tiers: an <strong>In-Memory Head Block</strong> (for real-time ingestion) and <strong>Compacted Block Segments</strong> (for historical disk storage).</p>
 <p>Pioneered by <strong>Prometheus TSDB</strong> and optimized by <strong>VictoriaMetrics</strong>, this architecture uses 2-hour memory chunk freezing and multi-stage background compaction.</p>
 <p>This article details the Prometheus 2-hour Head Block layout, Write-Ahead Log (WAL) crash recovery, inverted postings symbol indices, block compaction merging algorithms, and VictoriaMetrics LSM-part storage.</p>
 <hr>
-<h2>TSDB Architecture &amp; Block Compaction Pipeline</h2>
+<h2 id="tsdb-architecture-block-compaction-pipeline">TSDB Architecture &amp; Block Compaction Pipeline</h2>
 <p>How time-series databases handle real-time RAM ingestion, 2-hour block cutting, and multi-tier background compaction:</p>
 <div class="mermaid">graph TD
   subgraph In-Memory Real-Time Tier (0 - 2 Hours)
@@ -129,7 +138,7 @@
     Compactor --&gt; Block6h[&quot;Compacted 6-Hour Block Segment&quot;]
     Block6h --&gt; Block24h[&quot;Compacted 24-Hour Block Segment&quot;]
   end</div>
-<h3>Core TSDB Storage Engine Mechanics</h3>
+<h3 id="core-tsdb-storage-engine-mechanics">Core TSDB Storage Engine Mechanics</h3>
 <ol>
 <li><strong>The Prometheus 2-Hour Head Block</strong>:<ul>
 <li>All incoming metric data points are initially appended to the active <strong>Head Block</strong> held in memory.</li>
@@ -160,7 +169,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: TSDB Head Block &amp; Compaction Engine</h2>
+<h2 id="python-implementation-tsdb-head-block-compaction-engine">Python Implementation: TSDB Head Block &amp; Compaction Engine</h2>
 <p>Here is a production-grade Python implementation of a Time-Series Database Head Block and Multi-Block Compactor Simulator:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Set, Tuple
@@ -284,7 +293,7 @@ if __name__ == &quot;__main__&quot;:
     # 5. Perform Background Multi-Block Compaction
     tsdb.compact_blocks()</code></pre>
 <hr>
-<h2>TSDB Storage Engine Gotchas &amp; Best Practices</h2>
+<h2 id="tsdb-storage-engine-gotchas-best-practices">TSDB Storage Engine Gotchas &amp; Best Practices</h2>
 <p>When designing time-series storage infrastructure:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -297,7 +306,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Time-series storage engines (such as <strong>Prometheus TSDB</strong> and <strong>VictoriaMetrics</strong>) report:</p>
 <ul>
 <li><strong>Sub-Second Range Query Speeds</strong>: Compacted 24-hour block layouts and inverted postings indices allow Prometheus to scan millions of time series per second.</li>
@@ -330,6 +339,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#tsdb-architecture-block-compaction-pipeline" class="toc-link">TSDB Architecture &amp; Block Compaction Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-tsdb-head-block-compaction-engine" class="toc-link">Python Implementation: TSDB Head Block &amp; Compaction Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#tsdb-storage-engine-gotchas-best-practices" class="toc-link">TSDB Storage Engine Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

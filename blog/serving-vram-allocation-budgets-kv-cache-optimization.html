@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#calculating-vram-allocation-budgets">Calculating VRAM Allocation Budgets</a></li>
+                <li><a href="#1-under-the-hood-the-kv-cache-formula">1. Under the Hood: The KV Cache Formula</a></li>
+                <li><a href="#2-optimizing-layer-offloading">2. Optimizing Layer Offloading</a></li>
+                <li><a href="#code-demo-vram-memory-budget-calculator">Code Demo: VRAM Memory Budget Calculator</a></li>
+                <li><a href="#vram-optimization-takeaways">VRAM Optimization Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Running local models in production requires strict hardware resource budgeting. 
 </div>
 </div>
 <hr>
-<h2>Calculating VRAM Allocation Budgets</h2>
+<h2 id="calculating-vram-allocation-budgets">Calculating VRAM Allocation Budgets</h2>
 <p>To run local models without OOM crashes, we budget VRAM allocation across three distinct segments:</p>
 <ul>
 <li><strong>Model Weights</strong>: The static memory required to load the quantized model weights into VRAM. For a 7B parameter model at 4-bit precision, this is approximately 5.5 GB.</li>
@@ -131,7 +141,7 @@ flowchart TD
     Run --&gt;|Yes| OK[Stable Model Serving Execution]
     Run --&gt;|No| OOM([Out of Memory Crash])</div>
 <hr>
-<h2>1. Under the Hood: The KV Cache Formula</h2>
+<h2 id="1-under-the-hood-the-kv-cache-formula">1. Under the Hood: The KV Cache Formula</h2>
 <p>The VRAM size of the KV cache is calculated as follows:</p>
 <p>$$\text{KV Cache Size (Bytes)} = 2 \times (\text{layers}) \times (\text{attention_heads}) \times (\text{head_dimension}) \times (\text{precision_bytes}) \times (\text{context_length}) \times (\text{batch_size})$$</p>
 <p>Where:</p>
@@ -144,14 +154,14 @@ flowchart TD
 <li><strong>Batch Size</strong>: The number of concurrent requests.</li>
 </ul>
 <hr>
-<h2>2. Optimizing Layer Offloading</h2>
+<h2 id="2-optimizing-layer-offloading">2. Optimizing Layer Offloading</h2>
 <p>When serving models on hardware with limited VRAM:</p>
 <ol>
 <li><strong>Calculate KV cache limits</strong>: Restrict the dynamic KV cache allocation page sizes to fit within available VRAM.</li>
 <li><strong>Configure Layer Offloading</strong>: Offload only the static model weights that fit in VRAM, allowing the CPU to handle the remaining layers.</li>
 </ol>
 <hr>
-<h2>Code Demo: VRAM Memory Budget Calculator</h2>
+<h2 id="code-demo-vram-memory-budget-calculator">Code Demo: VRAM Memory Budget Calculator</h2>
 <p>Below is a Python script that calculates VRAM usage metrics based on model parameters, context window targets, and batch counts.</p>
 <pre><code class="language-python">from typing import Dict, Any
 
@@ -217,7 +227,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;Allocation Status:     {'✅ Stably Fits' if metrics['fits_in_vram'] else '❌ OOM Danger!'}&quot;)
     print(f&quot;Headroom Remaining:    {metrics['vram_headroom_gb']:.2f} GB&quot;)</code></pre>
 <hr>
-<h2>VRAM Optimization Takeaways</h2>
+<h2 id="vram-optimization-takeaways">VRAM Optimization Takeaways</h2>
 <ul>
 <li><strong>Budget the KV Cache</strong>: Dynamic KV cache memory usage grows linearly with context lengths and concurrent request counts.</li>
 <li><strong>Leverage Grouped-Query Attention (GQA)</strong>: Deploy models using GQA (e.g. Mistral-7B) to reduce KV cache size and memory footprints.</li>
@@ -250,6 +260,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#calculating-vram-allocation-budgets" class="toc-link">Calculating VRAM Allocation Budgets</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-the-kv-cache-formula" class="toc-link">1. Under the Hood: The KV Cache Formula</a></li>
+              <li class="toc-item toc-h2"><a href="#2-optimizing-layer-offloading" class="toc-link">2. Optimizing Layer Offloading</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-vram-memory-budget-calculator" class="toc-link">Code Demo: VRAM Memory Budget Calculator</a></li>
+              <li class="toc-item toc-h2"><a href="#vram-optimization-takeaways" class="toc-link">VRAM Optimization Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

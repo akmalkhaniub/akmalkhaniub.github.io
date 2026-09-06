@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-what-is-dynamicio">1. What is dynamicIO?</a></li>
+                <li><a href="#2-the-asynchronous-shift-in-server-components">2. The Asynchronous Shift in Server Components</a></li>
+                <li><a href="#3-resolving-dynamic-data-with-the-use-hook">3. Resolving Dynamic Data with the use() Hook</a></li>
+                <li><a href="#4-how-dynamicio-optimizes-partial-prerendering-ppr">4. How dynamicIO Optimizes Partial Prerendering (PPR)</a></li>
+              </ul>
+            </details>
 <p>In standard Next.js compilation, the framework evaluates whether a route is static (pre-rendered at build time) or dynamic (rendered on demand per request) based on heuristics. If you call functions like <code>cookies()</code>, <code>headers()</code>, or read <code>searchParams</code> directly inside a component, the compiler flags the entire page as dynamic.</p>
 <p>In <strong>Next.js 15/16</strong>, Vercel introduces the experimental <strong><code>dynamicIO</code></strong> compiler configuration. It changes the paradigm from <em>implicit heuristics</em> to <em>explicit async boundaries</em>, enforcing strict compile-time checks to prevent unexpected database hits or layout shifts.</p>
 <hr>
-<h2>1. What is <code>dynamicIO</code>?</h2>
+<h2 id="1-what-is-dynamicio">1. What is <code>dynamicIO</code>?</h2>
 <p>When <code>dynamicIO</code> is enabled, the Next.js compiler enforces a strict rule: <strong>any data fetching or dynamic property lookup must be wrapped inside an explicit asynchronous boundary.</strong></p>
 <p>If you attempt to read cookies, headers, or query parameters synchronously during a static build phase, the compiler will throw an error rather than silently degrading the page to dynamic rendering.</p>
-<h3>Enforcing the Flag</h3>
+<h3 id="enforcing-the-flag">Enforcing the Flag</h3>
 <p>To enable this feature, configure it in your <code>next.config.js</code>:</p>
 <pre><code class="language-javascript">// next.config.js
 const nextConfig = {
@@ -121,9 +130,9 @@ const nextConfig = {
 
 module.exports = nextConfig;</code></pre>
 <hr>
-<h2>2. The Asynchronous Shift in Server Components</h2>
+<h2 id="2-the-asynchronous-shift-in-server-components">2. The Asynchronous Shift in Server Components</h2>
 <p>To accommodate <code>dynamicIO</code>, APIs that used to be synchronous are now asynchronous, returning promises that must be resolved.</p>
-<h3>A. Dynamic Parameters (<code>params</code> &amp; <code>searchParams</code>)</h3>
+<h3 id="a-dynamic-parameters-params-searchparams">A. Dynamic Parameters (<code>params</code> &amp; <code>searchParams</code>)</h3>
 <p>In Next.js 15/16, the parameters passed to layouts and pages are promises.</p>
 <pre><code class="language-tsx">// ❌ WRONG (fails with dynamicIO enabled):
 export default function Page({ params }: { params: { id: string } }) {
@@ -138,7 +147,7 @@ export default async function Page({
   const resolvedParams = await params;
   return &lt;div&gt;Item: {resolvedParams.id}&lt;/div&gt;;
 }</code></pre>
-<h3>B. Headers and Cookies</h3>
+<h3 id="b-headers-and-cookies">B. Headers and Cookies</h3>
 <p>Reading headers or cookies inside a server component must be executed asynchronously.</p>
 <pre><code class="language-typescript">//  CORRECT: Asynchronous cookies parsing
 import { cookies } from &quot;next/headers&quot;;
@@ -150,7 +159,7 @@ export default async function SettingsCard() {
   return &lt;div class={`settings-box ${theme}`}&gt;Active Theme: {theme}&lt;/div&gt;;
 }</code></pre>
 <hr>
-<h2>3. Resolving Dynamic Data with the <code>use()</code> Hook</h2>
+<h2 id="3-resolving-dynamic-data-with-the-use-hook">3. Resolving Dynamic Data with the <code>use()</code> Hook</h2>
 <p>What if you need to fetch data inside a component that isn&#39;t asynchronous? React 19 introduces the <strong><code>use()</code></strong> hook, which allows you to read the value of a promise directly inside synchronous rendering paths (including client components).</p>
 <pre><code class="language-tsx">// components/user-profile-card.tsx
 &quot;use client&quot;;
@@ -174,7 +183,7 @@ export function UserProfileCard({ userPromise }: UserProfileProps) {
   );
 }</code></pre>
 <hr>
-<h2>4. How <code>dynamicIO</code> Optimizes Partial Prerendering (PPR)</h2>
+<h2 id="4-how-dynamicio-optimizes-partial-prerendering-ppr">4. How <code>dynamicIO</code> Optimizes Partial Prerendering (PPR)</h2>
 <p>The ultimate goal of <code>dynamicIO</code> is to make <strong>Partial Prerendering (PPR)</strong> predictable. </p>
 <p>With PPR, Next.js compiles a static HTML page shell (including headers, navigation bars, and layout skeletons) during build time. The dynamic parts (like user profiles or carts) are marked using React <code>Suspense</code> and streamed as HTML chunks as soon as the server resolves them.</p>
 <pre><code class="language-plaintext">┌────────────────────────────────────────────────────────┐
@@ -215,6 +224,17 @@ export function UserProfileCard({ userPromise }: UserProfileProps) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-what-is-dynamicio" class="toc-link">1. What is dynamicIO?</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-asynchronous-shift-in-server-components" class="toc-link">2. The Asynchronous Shift in Server Components</a></li>
+              <li class="toc-item toc-h2"><a href="#3-resolving-dynamic-data-with-the-use-hook" class="toc-link">3. Resolving Dynamic Data with the use() Hook</a></li>
+              <li class="toc-item toc-h2"><a href="#4-how-dynamicio-optimizes-partial-prerendering-ppr" class="toc-link">4. How dynamicIO Optimizes Partial Prerendering (PPR)</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

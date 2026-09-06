@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#airflow-architecture-dynamic-task-mapping">Airflow Architecture &amp; Dynamic Task Mapping</a></li>
+                <li><a href="#python-implementation-airflow-dag-scheduler-dynamic-task-mapper-engine">Python Implementation: Airflow DAG Scheduler &amp; Dynamic Task Mapper Engine</a></li>
+                <li><a href="#workflow-orchestration-gotchas-best-practices">Workflow Orchestration Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In enterprise data platform engineering (<strong>Airbnb</strong>, <strong>Uber</strong>, <strong>Netflix</strong>, <strong>Slack</strong>), production data pipelines coordinate thousands of interdependent tasks across heterogeneous systems—such as triggering <strong>Apache Spark</strong> jobs, executing <strong>dbt</strong> transformations, and querying <strong>Snowflake</strong> or <strong>BigQuery</strong>.</p>
 <p>To ensure data reliability, workflow orchestrators must guarantee <strong>Idempotency</strong>, <strong>Fault-Tolerant Retries</strong>, <strong>Strict Dependency Ordering</strong>, and <strong>Historical Backfilling</strong>.</p>
 <p>As the industry-standard workflow orchestrator, <strong>Apache Airflow</strong> manages complex ETL dataflows through Python-defined <strong>Directed Acyclic Graphs (DAGs)</strong>.</p>
 <p>Powered by the high-throughput <strong>Airflow Scheduler</strong>, <strong>Celery/KubernetesExecutors</strong>, and <strong>Dynamic Task Mapping (<code>expand()</code>)</strong>, Airflow schedules millions of task instances per day while supporting automated backfills.</p>
 <p>This article details the Airflow Scheduler loop, task state transitions, Celery/Kubernetes executor queues, Dynamic Task Mapping, and backfilling mechanics.</p>
 <hr>
-<h2>Airflow Architecture &amp; Dynamic Task Mapping</h2>
+<h2 id="airflow-architecture-dynamic-task-mapping">Airflow Architecture &amp; Dynamic Task Mapping</h2>
 <p>How the Airflow Scheduler parses DAG files, dispatches tasks to distributed worker queues, and dynamically expands parallel task instances:</p>
 <div class="mermaid">graph TD
   subgraph Airflow Control Plane Architecture
@@ -129,7 +138,7 @@
   subgraph Dynamic Task Mapping (expand())
     UpstreamTask[Upstream Task: Return ['file_1.parquet', 'file_2.parquet']] --&gt;|Runtime Expansion| ExpandedTask1[Mapped Task 1: Process file_1] &amp; ExpandedTask2[Mapped Task 2: Process file_2]
   end</div>
-<h3>Core Airflow Orchestration Principles</h3>
+<h3 id="core-airflow-orchestration-principles">Core Airflow Orchestration Principles</h3>
 <ol>
 <li><strong>The Airflow Scheduler Loop</strong>:<ul>
 <li>The Scheduler daemon runs a continuous heartbeat loop:<ol>
@@ -157,7 +166,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Airflow DAG Scheduler &amp; Dynamic Task Mapper Engine</h2>
+<h2 id="python-implementation-airflow-dag-scheduler-dynamic-task-mapper-engine">Python Implementation: Airflow DAG Scheduler &amp; Dynamic Task Mapper Engine</h2>
 <p>Here is a production-grade Python implementation of an Airflow DAG Scheduling Engine featuring Dynamic Task Mapping (<code>expand()</code>) and Historical Backfills:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Set, Optional, Callable
@@ -258,7 +267,7 @@ if __name__ == &quot;__main__&quot;:
     # 4. Trigger Backfill for Past Dates
     airflow.trigger_backfill(&quot;etl_sales_pipeline&quot;, &quot;2026-08-01&quot;, &quot;2026-08-02&quot;, [&quot;2026-08-01&quot;, &quot;2026-08-02&quot;])</code></pre>
 <hr>
-<h2>Workflow Orchestration Gotchas &amp; Best Practices</h2>
+<h2 id="workflow-orchestration-gotchas-best-practices">Workflow Orchestration Gotchas &amp; Best Practices</h2>
 <p>When building enterprise Airflow data pipelines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -271,7 +280,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Distributed workflow orchestration architectures (such as <strong>Apache Airflow</strong>, <strong>Dagster</strong>, and <strong>Prefect</strong>) report:</p>
 <ul>
 <li><strong>Over $99.99%$ Data Pipeline Reliability</strong>: Automated retries, idempotency, and backfills ensure zero data loss during cloud infrastructure outages.</li>
@@ -304,6 +313,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#airflow-architecture-dynamic-task-mapping" class="toc-link">Airflow Architecture &amp; Dynamic Task Mapping</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-airflow-dag-scheduler-dynamic-task-mapper-engine" class="toc-link">Python Implementation: Airflow DAG Scheduler &amp; Dynamic Task Mapper Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#workflow-orchestration-gotchas-best-practices" class="toc-link">Workflow Orchestration Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

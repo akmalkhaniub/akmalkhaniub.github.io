@@ -104,16 +104,31 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-industry-and-problem">1. Industry and Problem</a></li>
+                <li><a href="#2-team-size-and-composition">2. Team Size and Composition</a></li>
+                <li><a href="#3-duration">3. Duration</a></li>
+                <li><a href="#4-architecture">4. Architecture</a></li>
+                <li><a href="#5-scale">5. Scale</a></li>
+                <li><a href="#6-your-personal-contribution">6. Your Personal Contribution</a></li>
+                <li><a href="#7-difficult-decision">7. Difficult Decision</a></li>
+                <li><a href="#8-incident-or-failure">8. Incident or Failure</a></li>
+                <li><a href="#9-measured-result">9. Measured Result</a></li>
+                <li><a href="#10-lesson-learned">10. Lesson Learned</a></li>
+              </ul>
+            </details>
 <p>High-concurrency global e-commerce platforms operate in a relentless environment where millisecond delays during peak shopping events equate to lost sales. This case study documents how our engineering team designed, built, and scaled an autonomous multi-agent personalization and real-time inventory allocation swarm for a global retail network.</p>
 <hr>
-<h2>1. Industry and Problem</h2>
+<h2 id="1-industry-and-problem">1. Industry and Problem</h2>
 <ul>
 <li><strong>Industry</strong>: E-Commerce &amp; Retail Technology at Scale.</li>
 <li><strong>The Problem</strong>: Our multi-tenant retail SaaS platform powered online stores for over 85 major global brands. During peak flash sales and Cyber Week events, legacy monolithic recommendation engines failed to adjust dynamic pricing and inventory reservations in real time.</li>
 <li><strong>Business Impact</strong>: Out-of-sync inventory data led to overselling out-of-stock items, resulting in <strong>14,000 order cancellations per week</strong>, high customer support overhead, and severe brand reputation damage.</li>
 </ul>
 <hr>
-<h2>2. Team Size and Composition</h2>
+<h2 id="2-team-size-and-composition">2. Team Size and Composition</h2>
 <p>We led a high-velocity engineering pod of <strong>7 engineers</strong>:</p>
 <ul>
 <li><strong>1 Tech Lead / Principal Engineer</strong> (Author - Agent Consensus Architecture &amp; Distributed State Design)</li>
@@ -123,7 +138,7 @@
 <li><strong>1 Cloud DevOps Specialist</strong> (GCP Terraform, Cloud Tasks &amp; Infrastructure Monitoring)</li>
 </ul>
 <hr>
-<h2>3. Duration</h2>
+<h2 id="3-duration">3. Duration</h2>
 <ul>
 <li><strong>Total Project Lifecycle</strong>: <strong>5 Months</strong> (conceived in June, fully deployed prior to Black Friday peak).<ul>
 <li><em>Month 1</em>: Architecture design, Redis lock arbitration prototyping, and Pydantic schema contracts.</li>
@@ -134,7 +149,7 @@
 </li>
 </ul>
 <hr>
-<h2>4. Architecture</h2>
+<h2 id="4-architecture">4. Architecture</h2>
 <p>The architecture deployed specialized agent worker nodes coordinated via a central Redis Blackboard store:</p>
 <div class="mermaid">graph TD
   A[Shopper Session HTTP Event] --&gt; B[GCP Cloud API Gateway]
@@ -156,7 +171,7 @@
   E --&gt; J
   F --&gt; J
   J --&gt; K[Personalized Product Offer Stream]</div>
-<h3>Tech Stack Breakdown</h3>
+<h3 id="tech-stack-breakdown">Tech Stack Breakdown</h3>
 <ul>
 <li><strong>Agent Swarm Compute</strong>: GCP Cloud Run serverless container pool.</li>
 <li><strong>State &amp; Lock Storage</strong>: GCP Redis Cluster (Blackboard state store + distributed locks) + Cloud Bigtable (Low-latency user behavior graphs).</li>
@@ -164,14 +179,14 @@
 <li><strong>Queueing</strong>: Cloud Tasks (Rate-limiting downstream inventory ERP connections).</li>
 </ul>
 <hr>
-<h2>5. Scale</h2>
+<h2 id="5-scale">5. Scale</h2>
 <ul>
 <li><strong>Peak Traffic Volume</strong>: <strong>145,000 requests per second (RPS)</strong> during Cyber Monday peak.</li>
 <li><strong>Active User Profiles</strong>: <strong>42 Million concurrent shopper sessions</strong>.</li>
 <li><strong>Latency SLA</strong>: <strong>&lt; 28 milliseconds P99 total response time</strong> for dynamic offer rendering.</li>
 </ul>
 <hr>
-<h2>6. Your Personal Contribution</h2>
+<h2 id="6-your-personal-contribution">6. Your Personal Contribution</h2>
 <p>As <strong>Tech Lead / Principal Engineer</strong>, I personally designed and implemented:</p>
 <ol>
 <li><strong>The Distributed Inventory Lock Protocol</strong>: Built a Redis-backed mutual exclusion lock arbitrator that prevents two subagents from allocating the same warehouse stock unit simultaneously.</li>
@@ -230,14 +245,14 @@ class InventoryLockArbitrator:
 if __name__ == &quot;__main__&quot;:
     print(&quot;🛒 [E-Commerce Swarm Engine] Initializing Inventory Lock Test...&quot;)</code></pre>
 <hr>
-<h2>7. Difficult Decision</h2>
+<h2 id="7-difficult-decision">7. Difficult Decision</h2>
 <ul>
 <li><strong>The Decision</strong>: <strong>Using Redis In-Memory Locks over PostgreSQL Advisory Locks</strong>.</li>
 <li><strong>The Trade-Off</strong>: PostgreSQL advisory locks were already available in our existing primary database and guaranteed strict ACID compliance. However, routing 145,000 RPS of locking traffic to PostgreSQL would have overwhelmed DB connection pools.</li>
 <li><strong>Rationale</strong>: We chose Redis Cluster with automatic TTL expiration. Even though Redis lacks full ACID durability, its sub-millisecond memory performance was essential to achieve our 28ms P99 latency SLA.</li>
 </ul>
 <hr>
-<h2>8. Incident or Failure</h2>
+<h2 id="8-incident-or-failure">8. Incident or Failure</h2>
 <ul>
 <li><strong>The Incident (Month 4 - Load Testing)</strong>: During a simulated Cyber Monday 150k RPS load test, a network partition between Cloud Run and the Redis cluster caused worker agents to fail silently while holding inventory locks.</li>
 <li><strong>Root Cause Analysis</strong>: Worker containers lacked automatic <code>try/finally</code> lock cleanup routines. When a worker instance timed out, the lock remained active for 30 seconds, blocking all subsequent customer checkouts for popular items.</li>
@@ -249,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
 </li>
 </ul>
 <hr>
-<h2>9. Measured Result</h2>
+<h2 id="9-measured-result">9. Measured Result</h2>
 <p>Following full production deployment across Black Friday &amp; Cyber Week:</p>
 <ul>
 <li><strong>99.998% Inventory Accuracy</strong>: Zero instances of out-of-stock overselling across 14 million orders.</li>
@@ -257,7 +272,7 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>Zero System Outages</strong>: Handled peak 145,000 RPS traffic seamlessly without human manual intervention.</li>
 </ul>
 <hr>
-<h2>10. Lesson Learned</h2>
+<h2 id="10-lesson-learned">10. Lesson Learned</h2>
 <blockquote>
 <p><strong>&quot;Never hold distributed locks across network boundaries without strict TTL caps.&quot;</strong></p>
 <p>As Tech Lead, this project reinforced that in high-concurrency systems, lock contention is your worst enemy. Locks must be held for milliseconds, bounded by automatic TTL expiration, and wrapped inside fail-safe execution context managers to prevent system-wide gridlock.</p>
@@ -289,6 +304,23 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-industry-and-problem" class="toc-link">1. Industry and Problem</a></li>
+              <li class="toc-item toc-h2"><a href="#2-team-size-and-composition" class="toc-link">2. Team Size and Composition</a></li>
+              <li class="toc-item toc-h2"><a href="#3-duration" class="toc-link">3. Duration</a></li>
+              <li class="toc-item toc-h2"><a href="#4-architecture" class="toc-link">4. Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#5-scale" class="toc-link">5. Scale</a></li>
+              <li class="toc-item toc-h2"><a href="#6-your-personal-contribution" class="toc-link">6. Your Personal Contribution</a></li>
+              <li class="toc-item toc-h2"><a href="#7-difficult-decision" class="toc-link">7. Difficult Decision</a></li>
+              <li class="toc-item toc-h2"><a href="#8-incident-or-failure" class="toc-link">8. Incident or Failure</a></li>
+              <li class="toc-item toc-h2"><a href="#9-measured-result" class="toc-link">9. Measured Result</a></li>
+              <li class="toc-item toc-h2"><a href="#10-lesson-learned" class="toc-link">10. Lesson Learned</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-silent-creep-of-code-rot">The Silent Creep of Code Rot</a></li>
+                <li><a href="#1-under-the-hood-ast-based-detection-vs-regular-expressions">1. Under the Hood: AST-Based Detection vs. Regular Expressions</a></li>
+                <li><a href="#2-setting-up-non-interfering-background-daemons">2. Setting up Non-Interfering Background Daemons</a></li>
+                <li><a href="#code-demo-continuous-ast-refactoring-daemon">Code Demo: Continuous AST Refactoring Daemon</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ In traditional engineering, codebases rot gradually. Outdated API libraries, dep
 </div>
 </div>
 <hr>
-<h2>The Silent Creep of Code Rot</h2>
+<h2 id="the-silent-creep-of-code-rot">The Silent Creep of Code Rot</h2>
 <p>Every time a library releases a new version, or a team updates its style guide, the repository accumulates technical debt. Manual refactoring is expensive, and developers rarely prioritize updating legacy files.</p>
 <p>Instead of running agents on-demand (which requires developer context switches), we can deploy a <strong>Continuous Modernization Daemon</strong>. The daemon runs in the background of your VCS (Version Control System), scanning code structures, upgrading imports, and cleaning codebase paths incrementally.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -130,14 +140,14 @@ flowchart TD
     Commit --&gt; PR[Create Pull Request for TL Review]
     PR --&gt; End</div>
 <hr>
-<h2>1. Under the Hood: AST-Based Detection vs. Regular Expressions</h2>
+<h2 id="1-under-the-hood-ast-based-detection-vs-regular-expressions">1. Under the Hood: AST-Based Detection vs. Regular Expressions</h2>
 <p>Many developers use regex for codebase-wide search and replace (e.g. <code>sed</code>). This is highly fragile under varying spacing, comments, or multi-line function declarations.</p>
 <ul>
 <li><strong>Abstract Syntax Tree (AST) Parsing</strong>: We use Python&#39;s built-in <code>ast</code> module to parse files into structural node trees. This allows us to locate specific class targets, function calls, or imports, regardless of how they are formatted.</li>
 <li><strong>Isolated Refactoring</strong>: Once the target AST nodes are isolated, the rewriter agent updates the code context, reconstructs the file, and runs standard formatting checks (like <code>black</code> or <code>yapf</code>) to ensure styling consistency.</li>
 </ul>
 <hr>
-<h2>2. Setting up Non-Interfering Background Daemons</h2>
+<h2 id="2-setting-up-non-interfering-background-daemons">2. Setting up Non-Interfering Background Daemons</h2>
 <p>Running daemons in production requires strict resource constraints:</p>
 <ol>
 <li><strong>Low-CPU Scheduling</strong>: Running scans inside low-priority system threads to prevent background jobs from resource-starving human developer workspaces or build nodes.</li>
@@ -145,7 +155,7 @@ flowchart TD
 <li><strong>Strict Sandboxing</strong>: Writing refactored file changes inside isolated environments to prevent execution loops from modifying critical system modules.</li>
 </ol>
 <hr>
-<h2>Code Demo: Continuous AST Refactoring Daemon</h2>
+<h2 id="code-demo-continuous-ast-refactoring-daemon">Code Demo: Continuous AST Refactoring Daemon</h2>
 <p>Below is a Python implementation of a background rewriter daemon. It scans a directory, parses files into AST structures, identifies outdated log function usage, refactors the code to use a modern log configuration, and verifies compilation.</p>
 <pre><code class="language-python">import os
 import ast
@@ -254,7 +264,7 @@ def initialize_system():
     if os.path.exists(temp_dir):
         os.rmdir(temp_dir)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>AST Verification Over Regex</strong>: Never use string replacements or regex scripts to perform codebase-wide refactoring. Enforce structural AST parsing to avoid syntax failures.</li>
 <li><strong>Decouple Daemon Scheduling</strong>: Run modernization runs in background worker cron tasks during off-peak traffic hours to minimize build pipeline congestion.</li>
@@ -287,6 +297,18 @@ def initialize_system():
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-silent-creep-of-code-rot" class="toc-link">The Silent Creep of Code Rot</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-ast-based-detection-vs-regular-expressions" class="toc-link">1. Under the Hood: AST-Based Detection vs. Regular Expressions</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-non-interfering-background-daemons" class="toc-link">2. Setting up Non-Interfering Background Daemons</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-continuous-ast-refactoring-daemon" class="toc-link">Code Demo: Continuous AST Refactoring Daemon</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

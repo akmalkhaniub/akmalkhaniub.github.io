@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#ast-driven-test-generation-architecture">AST-Driven Test Generation Architecture</a></li>
+                <li><a href="#python-implementation-ast-structural-test-synthesizer">Python Implementation: AST Structural Test Synthesizer</a></li>
+                <li><a href="#important-ast-test-generation-guardrails">Important AST Test Generation Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When integrating autonomous AI coding agents into legacy codebases, manual unit test creation becomes a significant velocity bottleneck. Developers often struggle to manually write tests for complex legacy functions with deep conditional nesting and undocumented branch logic.</p>
 <p>Relying on naive prompt engineering (e.g. <em>&quot;Write a unit test for this code snippet&quot;</em>) frequently fails because the LLM lacks structural awareness of all branch paths, boundary exceptions, and type signatures.</p>
 <p>To automate test generation deterministically, modern platforms use <strong>Abstract Syntax Tree (AST) Parsing</strong>.</p>
 <p>By analyzing the AST representation of a codebase, an automated Test Generator inspects every decision node (<code>If</code>, <code>For</code>, <code>Try</code>, <code>Match</code>), extracts parameter type hints, and synthesizes executable unit tests designed to achieve <strong>100% Branch Coverage</strong>.</p>
 <p>This article details how to build an AST-driven test generator and enforce coverage gates in CI/CD.</p>
 <hr>
-<h2>AST-Driven Test Generation Architecture</h2>
+<h2 id="ast-driven-test-generation-architecture">AST-Driven Test Generation Architecture</h2>
 <p>The AST Test Synthesizer parses source code into structural nodes before prompting an LLM to generate targeted assertions:</p>
 <div class="mermaid">graph TD
   A[Target Source Code File] --&gt; B[Python AST Parser ast.parse]
@@ -129,14 +138,14 @@
   
   I --&gt;|Branch Coverage = 100%| J[✅ CI/CD Security Gate Passed]
   I --&gt;|Branch Coverage &lt; 100%| K[❌ Reject &amp; Re-prompt Uncovered Branches]</div>
-<h3>Structural Branch Discovery Steps</h3>
+<h3 id="structural-branch-discovery-steps">Structural Branch Discovery Steps</h3>
 <ol>
 <li><strong>Node Visitor Inspection</strong>: Traversing the AST using <code>ast.NodeVisitor</code> to record every function signature, argument default value, and type annotation (<code>int</code>, <code>Optional[str]</code>).</li>
 <li><strong>Decision Path Extraction</strong>: Identifying conditional branches (<code>If</code> nodes, <code>Compare</code> expressions) to infer exact boundary values (e.g. testing <code>x == 0</code>, <code>x &lt; 0</code>, and <code>x &gt; 0</code>).</li>
 <li><strong>Automated Coverage Enforcement</strong>: Executing <code>pytest-cov --cov-branch</code> to verify that 100% of logical branches (both <code>True</code> and <code>False</code> execution paths) are covered by the generated test suite.</li>
 </ol>
 <hr>
-<h2>Python Implementation: AST Structural Test Synthesizer</h2>
+<h2 id="python-implementation-ast-structural-test-synthesizer">Python Implementation: AST Structural Test Synthesizer</h2>
 <p>Here is a production Python implementation using Python&#39;s native <code>ast</code> module (<code>ast.NodeVisitor</code>) that analyzes target functions, extracts branch decision paths, and generates structured test templates:</p>
 <pre><code class="language-python">import ast
 import json
@@ -237,7 +246,7 @@ def process_user_order(order_id: str, amount: float, is_vip: bool) -&gt; bool:
     print(&quot;=&quot; * 60)
     print(test_suite)</code></pre>
 <hr>
-<h2>Important AST Test Generation Guardrails</h2>
+<h2 id="important-ast-test-generation-guardrails">Important AST Test Generation Guardrails</h2>
 <p>When automating AST test generation in CI/CD:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -250,7 +259,7 @@ def process_user_order(order_id: str, amount: float, is_vip: bool) -&gt; bool:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying AST Automated Test Generation report:</p>
 <ul>
 <li><strong>100% Branch Coverage Compliance</strong>: AST branch extraction ensures zero un-tested conditional paths in production pull requests.</li>
@@ -283,6 +292,17 @@ def process_user_order(order_id: str, amount: float, is_vip: bool) -&gt; bool:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#ast-driven-test-generation-architecture" class="toc-link">AST-Driven Test Generation Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-ast-structural-test-synthesizer" class="toc-link">Python Implementation: AST Structural Test Synthesizer</a></li>
+              <li class="toc-item toc-h2"><a href="#important-ast-test-generation-guardrails" class="toc-link">Important AST Test Generation Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-blackboard-race-condition">The Blackboard Race Condition</a></li>
+                <li><a href="#1-defining-structural-state-invariants">1. Defining Structural State Invariants</a></li>
+                <li><a href="#2-implementing-row-locks-and-rollbacks">2. Implementing Row Locks and Rollbacks</a></li>
+                <li><a href="#code-demo-transactional-state-store-with-invariants">Code Demo: Transactional State Store with Invariants</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Multi-agent systems often communicate using a shared state space, commonly model
 </div>
 </div>
 <hr>
-<h2>The Blackboard Race Condition</h2>
+<h2 id="the-blackboard-race-condition">The Blackboard Race Condition</h2>
 <p>When scaling multi-agent topologies, synchronizing agent context via direct messaging gets expensive and slow. Instead, we use a central database to store session state, letting agents query and write updates independently.</p>
 <p>However, since agents execute asynchronous processes, they can write conflicting information. For example, if two worker agents try to assign the same task to themselves simultaneously, both might write their name to the task document, violating structural invariants.</p>
 <p>To guarantee system stability, we cannot rely on LLM prompts to behave. We must implement <strong>system state invariants</strong> at the application repository and database transaction level.</p>
@@ -127,7 +137,7 @@ flowchart TD
     
     Rollback --&gt; Reject([Reject Agent Request &amp; Log Error])</div>
 <hr>
-<h2>1. Defining Structural State Invariants</h2>
+<h2 id="1-defining-structural-state-invariants">1. Defining Structural State Invariants</h2>
 <p>State invariants represent absolute rules that the application state must satisfy at all times:</p>
 <ul>
 <li><strong>Linear Lifecycle Progression</strong>: Preventing an agent from moving a work item from <code>Backlog</code> to <code>Deployment</code> without passing through <code>Testing</code>.</li>
@@ -135,14 +145,14 @@ flowchart TD
 <li><strong>Property Conservation</strong>: Enforcing value boundaries (e.g. &quot;total calculated budget must equal the sum of line items&quot;).</li>
 </ul>
 <hr>
-<h2>2. Implementing Row Locks and Rollbacks</h2>
+<h2 id="2-implementing-row-locks-and-rollbacks">2. Implementing Row Locks and Rollbacks</h2>
 <p>To prevent race conditions, the repository layer must enforce:</p>
 <ol>
 <li><strong>Optimistic Concurrency Control (OCC)</strong>: Tracking version numbers on state documents. If an agent tries to write an update based on a version that has already changed, the transaction fails and requires a retry.</li>
 <li><strong>Pessimistic Row Locking (<code>SELECT FOR UPDATE</code>)</strong>: Locking target state rows during transaction execution to prevent other agent threads from executing concurrent edits.</li>
 </ol>
 <hr>
-<h2>Code Demo: Transactional State Store with Invariants</h2>
+<h2 id="code-demo-transactional-state-store-with-invariants">Code Demo: Transactional State Store with Invariants</h2>
 <p>Below is a Python implementation of a transaction-wrapped state repository. It enforces data validation rules on state updates and rolls back the database transition if the rules are violated.</p>
 <pre><code class="language-python">import json
 import copy
@@ -244,7 +254,7 @@ if __name__ == &quot;__main__&quot;:
     success, msg = store.update_state(&quot;TASK-100&quot;, payload_b, 1)
     print(f&quot;Result: **{success}** | Message: {msg}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Enforce Optimistic Concurrency</strong>: Include version metrics inside all state tables and blackboard schemas to prevent concurrent agent overwrites.</li>
 <li><strong>Isolate Logic Assertions</strong>: Run state invariant validations inside transaction boundaries. Ensure any validation failure triggers a full rollback.</li>
@@ -277,6 +287,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-blackboard-race-condition" class="toc-link">The Blackboard Race Condition</a></li>
+              <li class="toc-item toc-h2"><a href="#1-defining-structural-state-invariants" class="toc-link">1. Defining Structural State Invariants</a></li>
+              <li class="toc-item toc-h2"><a href="#2-implementing-row-locks-and-rollbacks" class="toc-link">2. Implementing Row Locks and Rollbacks</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-transactional-state-store-with-invariants" class="toc-link">Code Demo: Transactional State Store with Invariants</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#decoupled-object-storage-architecture-lsm-metadata-index">Decoupled Object Storage Architecture &amp; LSM Metadata Index</a></li>
+                <li><a href="#python-implementation-lsm-metadata-catalog-s3-list-bucket-engine">Python Implementation: LSM Metadata Catalog &amp; S3 List Bucket Engine</a></li>
+                <li><a href="#metadata-catalog-gotchas-best-practices">Metadata Catalog Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In modern cloud data architectures, <strong>Object Storage</strong> (<strong>AWS S3</strong>, <strong>Google Cloud Storage</strong>, <strong>MinIO</strong>, <strong>Ceph RADOS</strong>) serves as the primary storage tier for datalakes, AI model checkpoints, and enterprise analytics.</p>
 <p>Managing trillions of objects requires storing two distinct types of data:</p>
 <ol>
@@ -114,7 +123,7 @@
 <p>To achieve sub-millisecond metadata lookups and support fast lexicographical range scans (<code>LIST bucket/prefix/</code>), object stores decouple blob data from metadata using <strong>LSM-Tree Key-Value Catalogs</strong> (<strong>FoundationDB</strong>, <strong>RocksDB</strong>).</p>
 <p>This article details data/metadata decoupling, LSM-Tree metadata indexing, prefix-sharded partitioning, and strongly consistent S3 bucket listing mechanics.</p>
 <hr>
-<h2>Decoupled Object Storage Architecture &amp; LSM Metadata Index</h2>
+<h2 id="decoupled-object-storage-architecture-lsm-metadata-index">Decoupled Object Storage Architecture &amp; LSM Metadata Index</h2>
 <p>How frontend S3 API gateways route requests to decoupled LSM Metadata Catalogs and Data Storage Nodes:</p>
 <div class="mermaid">graph TD
   subgraph Client S3 API Request
@@ -130,7 +139,7 @@
     S3Proxy --&gt;|3. Read Raw Binary Payload Bytes| DataNode1[Data Storage Node 1: Block Offset 0x4F00]
     S3Proxy --&gt;|3. Read Raw Binary Payload Bytes| DataNode2[Data Storage Node 2: Block Offset 0x9A00]
   end</div>
-<h3>Core Object Storage Metadata Principles</h3>
+<h3 id="core-object-storage-metadata-principles">Core Object Storage Metadata Principles</h3>
 <ol>
 <li><strong>Decoupling Data Payloads from Metadata</strong>:<ul>
 <li><em>Data Blobs</em>: Stored in chunked raw storage volumes (or erasure-coded blocks) optimized for high sequential network throughput.</li>
@@ -154,7 +163,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: LSM Metadata Catalog &amp; S3 List Bucket Engine</h2>
+<h2 id="python-implementation-lsm-metadata-catalog-s3-list-bucket-engine">Python Implementation: LSM Metadata Catalog &amp; S3 List Bucket Engine</h2>
 <p>Here is a production-grade Python implementation of an LSM-Tree Metadata Catalog Engine with Prefix Range Scans and Strongly Consistent S3 Bucket Listing:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional, Tuple
@@ -238,7 +247,7 @@ if __name__ == &quot;__main__&quot;:
     # 3. Execute S3 List Objects Prefix Scan (Range scan over 'logs/2026/08/')
     catalog.list_objects_prefix_scan(bucket=&quot;prod-datalake&quot;, prefix=&quot;logs/2026/08/&quot;)</code></pre>
 <hr>
-<h2>Metadata Catalog Gotchas &amp; Best Practices</h2>
+<h2 id="metadata-catalog-gotchas-best-practices">Metadata Catalog Gotchas &amp; Best Practices</h2>
 <p>When operating object metadata catalogs:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -251,7 +260,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Decoupled object storage metadata architectures (such as <strong>AWS S3</strong>, <strong>MinIO Enterprise</strong>, and <strong>Ceph RADOS Gateway</strong>) report:</p>
 <ul>
 <li><strong>Strong Read-After-Write Consistency</strong>: Immediate global visibility for newly uploaded objects without eventual consistency propagation delays.</li>
@@ -284,6 +293,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#decoupled-object-storage-architecture-lsm-metadata-index" class="toc-link">Decoupled Object Storage Architecture &amp; LSM Metadata Index</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-lsm-metadata-catalog-s3-list-bucket-engine" class="toc-link">Python Implementation: LSM Metadata Catalog &amp; S3 List Bucket Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#metadata-catalog-gotchas-best-practices" class="toc-link">Metadata Catalog Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

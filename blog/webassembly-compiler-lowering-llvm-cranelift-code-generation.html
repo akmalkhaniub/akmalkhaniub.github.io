@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#wasm-bytecode-stack-to-register-lowering-pipeline-architecture">Wasm Bytecode Stack to Register Lowering Pipeline Architecture</a></li>
+                <li><a href="#python-implementation-wasm-stack-to-register-compiler-lowering-engine">Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine</a></li>
+                <li><a href="#wasm-compiler-gotchas-best-practices">Wasm Compiler Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When deploying WebAssembly (Wasm) binaries in high-speed serverless runtimes (<strong>Wasmtime</strong>, <strong>Wasmer</strong>, <strong>V8 Liftoff</strong>), executing Wasm bytecode via pure stack machine interpretation is too slow for production workloads.</p>
 <p>WebAssembly bytecode is structured around a <strong>Stack-Based Virtual Machine</strong> architecture. Operands are pushed onto an implicit evaluation stack and popped by subsequent operations (<code>i32.const 10</code>, <code>i32.const 20</code>, <code>i32.add</code>).</p>
 <p>However, physical CPU hardware (x86_64, ARM64, RISC-V) operates on <strong>Register Machine</strong> architectures.</p>
 <p>To achieve native execution speeds, Wasm JIT and AOT compilers (<strong>Cranelift</strong>, <strong>LLVM <code>wasm32</code></strong>) lower stack-based Wasm bytecode into explicit <strong>Register Machine Intermediate Representation (SSA)</strong> before emitting target assembly.</p>
 <p>This article details stack-to-register translation, Cranelift IR (CLIF) lowering, SIMD vectorization, and memory bounds checking.</p>
 <hr>
-<h2>Wasm Bytecode Stack to Register Lowering Pipeline Architecture</h2>
+<h2 id="wasm-bytecode-stack-to-register-lowering-pipeline-architecture">Wasm Bytecode Stack to Register Lowering Pipeline Architecture</h2>
 <p>How Cranelift lowers stack-based Wasm bytecode into SSA register machine code and native assembly:</p>
 <div class="mermaid">graph TD
   subgraph WebAssembly Bytecode (Stack Machine Model)
@@ -127,7 +136,7 @@
     CLIF --&gt;|4. Inject Memory Bounds Check| BoundsCheck[Check: v_addr + size &lt;= linear_memory_bound]
     BoundsCheck --&gt;|5. Backend Register Allocation| NativeASM[&quot;Native Assembly: MOV EAX, 10; ADD EAX, 20&quot;]
   end</div>
-<h3>Core Wasm Lowering Principles</h3>
+<h3 id="core-wasm-lowering-principles">Core Wasm Lowering Principles</h3>
 <ol>
 <li><strong>Symbolic Stack Machine to Register Translation</strong>: During single-pass compilation, the compiler maintains a <strong>Symbolic Operand Stack</strong>. Instead of pushing raw values onto a physical RAM stack during execution, the compiler pushes symbolic <strong>SSA Virtual Registers</strong> (<code>v0, v1, v2</code>) onto a compile-time stack.<ul>
 <li><code>i32.const 10</code> → Emits <code>v0 = iconst.i32 10</code>, pushes <code>v0</code> to symbolic stack.</li>
@@ -141,7 +150,7 @@ $$\text{if } (\text{offset} + \text{bytes} &gt; \text{memory_bound}) → \text{t
 <li><strong>128-Bit SIMD Vectorization</strong>: Wasm <code>v128</code> vector instructions (<code>i32x4.add</code>, <code>f32x4.mul</code>) are lowered directly to target CPU SIMD vector instructions (x86 SSE/AVX2 <code>PADDD</code> / <code>MULPS</code> or ARM NEON <code>VADD.I32</code>).</li>
 </ol>
 <hr>
-<h2>Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine</h2>
+<h2 id="python-implementation-wasm-stack-to-register-compiler-lowering-engine">Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine</h2>
 <p>Here is a production-grade Python implementation of a Wasm Bytecode Stack Machine to SSA Register Machine Lowering Compiler:</p>
 <pre><code class="language-python">from typing import List, Dict, Tuple, Optional
 from pydantic import BaseModel
@@ -239,7 +248,7 @@ if __name__ == &quot;__main__&quot;:
         else:
             print(f&quot;   • {instr.dest_reg:6s} = {instr.opcode:14s} {instr.arg1}&quot;)</code></pre>
 <hr>
-<h2>Wasm Compiler Gotchas &amp; Best Practices</h2>
+<h2 id="wasm-compiler-gotchas-best-practices">Wasm Compiler Gotchas &amp; Best Practices</h2>
 <p>When engineering WebAssembly code generators:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -252,7 +261,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Runtimes utilizing Cranelift and LLVM Wasm lowering (such as <strong>Wasmtime</strong> and <strong>Fastly Compute@Edge</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Compilation &amp; Execution</strong>: Cranelift lowers and compiles WebAssembly binaries to native machine code $10\times$ faster than standard AOT compilers.</li>
@@ -285,6 +294,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#wasm-bytecode-stack-to-register-lowering-pipeline-architecture" class="toc-link">Wasm Bytecode Stack to Register Lowering Pipeline Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-wasm-stack-to-register-compiler-lowering-engine" class="toc-link">Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#wasm-compiler-gotchas-best-practices" class="toc-link">Wasm Compiler Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

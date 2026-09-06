@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#linux-virtual-memory-translation-hugepages-architecture">Linux Virtual Memory Translation &amp; HugePages Architecture</a></li>
+                <li><a href="#python-implementation-virtual-memory-page-table-tlb-simulator">Python Implementation: Virtual Memory Page Table &amp; TLB Simulator</a></li>
+                <li><a href="#linux-memory-architecture-gotchas-best-practices">Linux Memory Architecture Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-performance database storage engines (such as PostgreSQL, Redis, MongoDB, and RocksDB) running on modern Linux servers with terabytes of RAM, CPU performance is heavily influenced by <strong>Linux Virtual Memory Management</strong>.</p>
 <p>By default, the Linux kernel divides physical memory into <strong>4 KB Page Frames</strong>.</p>
 <p>To translate a virtual memory address used by an application to a physical RAM address, the CPU Memory Management Unit (MMU) traverses a 4-level page table hierarchy (PGD → PUD → PMD → PTE).</p>
@@ -111,7 +120,7 @@
 <p>This causes severe <strong>Translation Lookaside Buffer (TLB) Cache Thrashing</strong>, where the CPU spends up to $20%$ of its clock cycles resolving virtual memory page faults.</p>
 <p>This article details Linux virtual memory page translation, Explicit HugePages, and Transparent Huge Pages (THP).</p>
 <hr>
-<h2>Linux Virtual Memory Translation &amp; HugePages Architecture</h2>
+<h2 id="linux-virtual-memory-translation-hugepages-architecture">Linux Virtual Memory Translation &amp; HugePages Architecture</h2>
 <p>How 4-Level Page Table Translation works and how HugePages reduce TLB cache misses by 512x:</p>
 <div class="mermaid">graph TD
   VirtualAddr[Virtual Memory Address: 0x7FFF80001000] --&gt; MMU[CPU Memory Management Unit]
@@ -133,7 +142,7 @@
     PMD -.-&gt;|HugePage Bit Set| HugePageRAM[Physical 2MB HugePage Frame]
     HugePageRAM --&gt;|Reduces TLB Entries by 512x!| PhysicalRAM
   end</div>
-<h3>Core Virtual Memory Principles</h3>
+<h3 id="core-virtual-memory-principles">Core Virtual Memory Principles</h3>
 <ol>
 <li><strong>Virtual-to-Physical Address Translation</strong>: Applications operate entirely within virtual address spaces. The hardware Memory Management Unit (MMU) translates virtual addresses to physical RAM addresses using page tables.</li>
 <li><strong>Translation Lookaside Buffer (TLB)</strong>: A small, high-speed CPU hardware cache (typically 1,500 entries) that stores recent virtual-to-physical page address mappings. A TLB hit resolves in $&lt;1\text{ns}$, while a TLB miss forces a 4-level page table memory walk taking $15\text{ns}$ to $30\text{ns}$.</li>
@@ -141,7 +150,7 @@
 <li><strong>Transparent Huge Pages (THP) &amp; <code>khugepaged</code></strong>: An OS kernel thread (<code>khugepaged</code>) that attempts to automatically collapse contiguous $4\text{ KB}$ pages into $2\text{ MB}$ HugePages in the background. However, <code>khugepaged</code> triggers synchronous memory defragmentation and allocation locks, causing <strong>unpredictable $200\text{ms}$ to $1,000\text{ms}$ latency spikes</strong> in databases!</li>
 </ol>
 <hr>
-<h2>Python Implementation: Virtual Memory Page Table &amp; TLB Simulator</h2>
+<h2 id="python-implementation-virtual-memory-page-table-tlb-simulator">Python Implementation: Virtual Memory Page Table &amp; TLB Simulator</h2>
 <p>Here is a production-grade Python simulation of a 4-Level Virtual Memory Page Table Translator comparing 4KB Standard Pages vs 2MB HugePages:</p>
 <pre><code class="language-python">import random
 from typing import Dict, Tuple, Optional
@@ -234,7 +243,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • 4KB Pages: {hits_4k} TLB Hits | {miss_4k} TLB Misses ({miss_4k/1000*100:.1f}% Miss Rate)&quot;)
     print(f&quot;   • 2MB Pages: {hits_2m} TLB Hits | {miss_2m} TLB Misses ({miss_2m/1000*100:.1f}% Miss Rate - Dramatically Lower Hits Penalty!)&quot;)</code></pre>
 <hr>
-<h2>Linux Memory Architecture Gotchas &amp; Best Practices</h2>
+<h2 id="linux-memory-architecture-gotchas-best-practices">Linux Memory Architecture Gotchas &amp; Best Practices</h2>
 <p>When operating Linux production servers:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -247,7 +256,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Systems optimizing Linux virtual memory and HugePages report:</p>
 <ul>
 <li><strong>Over 15% CPU Performance Boost</strong>: Reducing TLB cache misses allows CPU cores to execute application instructions without stalling on page table walks.</li>
@@ -280,6 +289,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#linux-virtual-memory-translation-hugepages-architecture" class="toc-link">Linux Virtual Memory Translation &amp; HugePages Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-virtual-memory-page-table-tlb-simulator" class="toc-link">Python Implementation: Virtual Memory Page Table &amp; TLB Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#linux-memory-architecture-gotchas-best-practices" class="toc-link">Linux Memory Architecture Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

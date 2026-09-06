@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#what-is-quantization">What is Quantization?</a></li>
+                <li><a href="#gguf-vs-awq-vs-exl2-the-trade-off-matrix">GGUF vs. AWQ vs. EXL2: The Trade-Off Matrix</a></li>
+                <li><a href="#vram-sizing-calculation-formula">VRAM Sizing Calculation formula</a></li>
+                <li><a href="#serving-awq-models-with-vllm-in-production">Serving AWQ Models with vLLM in Production</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Deploying open-source LLMs (like Llama-3, Mistral, or DeepSeek) locally or on pr
 </div>
 </div>
 <hr>
-<h2>What is Quantization?</h2>
+<h2 id="what-is-quantization">What is Quantization?</h2>
 <p>An LLM&#39;s weights are originally stored as 16-bit floating-point numbers (FP16 or BF16). A 70-billion parameter model requires around 140 GB of VRAM just to load. Quantization compresses these weights into lower bit-depth integers (like 4-bit, 5-bit, or 8-bit), allowing massive models to run on single consumer or enterprise GPUs.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart LR
@@ -120,22 +130,22 @@ flowchart LR
     INT4 --&gt; AWQ[AWQ format &lt;br&gt; Activation-Aware, GPU only]
     INT4 --&gt; EXL2[EXL2 format &lt;br&gt; ExLlamaV2, High-speed GPU]</div>
 <hr>
-<h2>GGUF vs. AWQ vs. EXL2: The Trade-Off Matrix</h2>
-<h3>1. GGUF (GPT-Generated Unified Format)</h3>
+<h2 id="gguf-vs-awq-vs-exl2-the-trade-off-matrix">GGUF vs. AWQ vs. EXL2: The Trade-Off Matrix</h2>
+<h3 id="1-gguf-gpt-generated-unified-format">1. GGUF (GPT-Generated Unified Format)</h3>
 <ul>
 <li><strong>Best For</strong>: CPU-only or mixed CPU+GPU environments.</li>
 <li><strong>Engine</strong>: llama.cpp</li>
 <li><strong>Key Benefit</strong>: Allows you to split the model layers, loading part in GPU VRAM and offloading the remainder to slower system RAM (CPU).</li>
 <li><strong>Limitations</strong>: CPU execution is slow.</li>
 </ul>
-<h3>2. AWQ (Activation-Aware Weight Quantization)</h3>
+<h3 id="2-awq-activation-aware-weight-quantization">2. AWQ (Activation-Aware Weight Quantization)</h3>
 <ul>
 <li><strong>Best For</strong>: GPU server deployments (vLLM, TGI).</li>
 <li><strong>Engine</strong>: vLLM, TensorRT-LLM</li>
 <li><strong>Key Benefit</strong>: Observes model activations during calibration to preserve the most critical weights, keeping accuracy high.</li>
 <li><strong>Limitations</strong>: Requires dedicated GPUs (CUDA).</li>
 </ul>
-<h3>3. EXL2 (ExLlamaV2 Format)</h3>
+<h3 id="3-exl2-exllamav2-format">3. EXL2 (ExLlamaV2 Format)</h3>
 <ul>
 <li><strong>Best For</strong>: Maximum token generation speeds on GPUs.</li>
 <li><strong>Engine</strong>: ExLlamaV2, TabbyAPI</li>
@@ -143,7 +153,7 @@ flowchart LR
 <li><strong>Limitations</strong>: GPU only.</li>
 </ul>
 <hr>
-<h2>VRAM Sizing Calculation formula</h2>
+<h2 id="vram-sizing-calculation-formula">VRAM Sizing Calculation formula</h2>
 <p>To calculate how much VRAM you need to load a model:</p>
 <p>[\text{VRAM (GB)} = \left( \frac{\text{Parameters (B)} \times \text{Bits per Parameter}}{8} \right) \times 1.2]</p>
 <p><em>Note: The (1.2) multiplier represents a 20% overhead buffer for the context window (KV Cache) and model activations during runtime.</em></p>
@@ -162,9 +172,9 @@ def estimate_vram_requirements(param_count_billions: float, bits_per_param: floa
 needed = estimate_vram_requirements(param_count_billions=8.0, bits_per_param=4.0)
 print(f&quot;Estimated VRAM: {needed:.2f} GB (Fits on a single 16GB or 24GB VRAM GPU)&quot;)</code></pre>
 <hr>
-<h2>Serving AWQ Models with vLLM in Production</h2>
+<h2 id="serving-awq-models-with-vllm-in-production">Serving AWQ Models with vLLM in Production</h2>
 <p>vLLM is a high-performance LLM serving engine. It natively supports AWQ and GPTQ quantized models, providing extreme throughput using PagedAttention.</p>
-<h3>Docker Run Config:</h3>
+<h3 id="docker-run-config">Docker Run Config:</h3>
 <p>Here is how to spin up a Docker container serving an 8B AWQ model locally:</p>
 <pre><code class="language-bash">docker run --gpus all \
   -v ~/.cache/huggingface:/root/.cache/huggingface \
@@ -176,7 +186,7 @@ print(f&quot;Estimated VRAM: {needed:.2f} GB (Fits on a single 16GB or 24GB VRAM
   --max-model-len 8192</code></pre>
 <p>Once running, the container exposes an OpenAI-compatible API on port <code>8000</code>, allowing you to route user prompts instantly.</p>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>Selecting the right quantization format is critical for local LLM cost and speed:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Choose GGUF for edge/local client dev</strong>: GGUF is perfect for running on laptops (macOS/Windows) because it allows CPU RAM offloading.</li>
@@ -210,6 +220,18 @@ print(f&quot;Estimated VRAM: {needed:.2f} GB (Fits on a single 16GB or 24GB VRAM
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#what-is-quantization" class="toc-link">What is Quantization?</a></li>
+              <li class="toc-item toc-h2"><a href="#gguf-vs-awq-vs-exl2-the-trade-off-matrix" class="toc-link">GGUF vs. AWQ vs. EXL2: The Trade-Off Matrix</a></li>
+              <li class="toc-item toc-h2"><a href="#vram-sizing-calculation-formula" class="toc-link">VRAM Sizing Calculation formula</a></li>
+              <li class="toc-item toc-h2"><a href="#serving-awq-models-with-vllm-in-production" class="toc-link">Serving AWQ Models with vLLM in Production</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#sharded-database-data-routing-architecture">Sharded Database Data Routing Architecture</a></li>
+                <li><a href="#python-implementation-global-data-router-scatter-gather-engine">Python Implementation: Global Data Router &amp; Scatter-Gather Engine</a></li>
+                <li><a href="#sharding-gotchas-guardrails">Sharding Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When a web application scales from thousands to tens of millions of active users, a single monolithic database instance—no matter how large the underlying cloud hardware—inevitably hits physical scaling limits. Read replicas can offload query volume, but all write transactions must still pass through a single primary database node, creating write bottleneck saturation.</p>
 <p>To achieve virtually unlimited database scale, software architects implement <strong>Database Sharding</strong> (Horizontal Partitioning).</p>
 <p>Sharding splits a massive database table across multiple independent physical database instances (<strong>shards</strong>). A <strong>Global Data Router</strong> inspects incoming queries and routes transactions to the exact shard instance hosting the target record.</p>
 <p>This article details how to design and build a sharded database router with scatter-gather query capabilities.</p>
 <hr>
-<h2>Sharded Database Data Routing Architecture</h2>
+<h2 id="sharded-database-data-routing-architecture">Sharded Database Data Routing Architecture</h2>
 <p>How the Global Data Router intercepts application queries and routes transactions across isolated shard nodes:</p>
 <div class="mermaid">graph TD
   A[Client API Request] --&gt; B[Global Data Router]
@@ -132,14 +141,14 @@
     H --&gt;|Parallel Execution| G
     H --&gt;|4. Merge &amp; Sort Results| I[Return Consolidated Response]
   end</div>
-<h3>Core Sharding Mechanics</h3>
+<h3 id="core-sharding-mechanics">Core Sharding Mechanics</h3>
 <ol>
 <li><strong>Sharding Key Selection</strong>: The most critical architectural choice in database sharding. Selecting a high-cardinality key (such as <code>user_id</code> or <code>tenant_id</code>) ensures uniform data distribution and avoids hotspot shards.</li>
 <li><strong>Scatter-Gather Queries</strong>: While single-row lookups (<code>WHERE user_id = &#39;usr_102&#39;</code>) route cleanly to a single shard, queries lacking a sharding key (<code>WHERE created_at &gt; &#39;2026-08-01&#39;</code>) must be executed in parallel across <em>all</em> shard nodes (<strong>scatter</strong>), and their results merged and sorted in memory (<strong>gather</strong>).</li>
 <li><strong>Global Reference Tables</strong>: Small, rarely updated lookup tables (such as country codes or currency conversion rates) are replicated asynchronously to every shard instance so that local SQL <code>JOIN</code> operations can complete within a single shard without cross-network joins.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Global Data Router &amp; Scatter-Gather Engine</h2>
+<h2 id="python-implementation-global-data-router-scatter-gather-engine">Python Implementation: Global Data Router &amp; Scatter-Gather Engine</h2>
 <p>Here is a production-grade Python implementation of a Global Data Router featuring Hash-based sharding and a parallel Scatter-Gather execution pool:</p>
 <pre><code class="language-python">import hashlib
 import concurrent.futures
@@ -255,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
     for vip in vip_users:
         print(f&quot;   • {vip.name} ({vip.user_id}) -&gt; ${vip.account_balance:,.2f}&quot;)</code></pre>
 <hr>
-<h2>Sharding Gotchas &amp; Guardrails</h2>
+<h2 id="sharding-gotchas-guardrails">Sharding Gotchas &amp; Guardrails</h2>
 <p>When architecture sharded database systems:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -268,7 +277,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams implementing database sharding report:</p>
 <ul>
 <li><strong>Linear Scale-Out Capability</strong>: Adding physical database shards increases write throughput linearly without hitting single-node hardware ceilings.</li>
@@ -301,6 +310,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#sharded-database-data-routing-architecture" class="toc-link">Sharded Database Data Routing Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-global-data-router-scatter-gather-engine" class="toc-link">Python Implementation: Global Data Router &amp; Scatter-Gather Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#sharding-gotchas-guardrails" class="toc-link">Sharding Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

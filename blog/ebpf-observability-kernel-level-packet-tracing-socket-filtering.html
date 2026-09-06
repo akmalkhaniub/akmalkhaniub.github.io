@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#ebpf-in-kernel-execution-pipeline-architecture">eBPF In-Kernel Execution Pipeline Architecture</a></li>
+                <li><a href="#python-implementation-ebpf-packet-filter-map-simulator">Python Implementation: eBPF Packet Filter &amp; Map Simulator</a></li>
+                <li><a href="#ebpf-implementation-gotchas-best-practices">eBPF Implementation Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Traditionally, monitoring network traffic, profiling CPU usage, or debugging system call latencies required installing heavy user-space daemons, injecting sidecar proxies, or writing complex kernel modules. Sidecar proxies (like Envoy) inspect network packets by intercepting TCP connections, but this introduces additional CPU context switches and network latency.</p>
 <p>The modern paradigm for Linux system observability, networking, and security is <strong>eBPF (Extended Berkeley Packet Filter)</strong>.</p>
 <p>eBPF allows developers to run custom, sandboxed 64-bit RISC bytecode directly inside the Linux kernel at near-bare-metal execution speeds without modifying Linux kernel source code or loading dangerous Kernel Modules (LKMs).</p>
 <p>By attaching eBPF programs to kernel probes (<strong>kprobes</strong>), user probes (<strong>uprobes</strong>), and network driver hooks (<strong>XDP</strong>), platform engineers achieve zero-overhead observability and kernel-level socket filtering.</p>
 <p>This article details eBPF architecture, in-kernel verification, and BPF map data sharing.</p>
 <hr>
-<h2>eBPF In-Kernel Execution Pipeline Architecture</h2>
+<h2 id="ebpf-in-kernel-execution-pipeline-architecture">eBPF In-Kernel Execution Pipeline Architecture</h2>
 <p>How eBPF bytecode is verified, JIT-compiled, and executed inside Linux kernel hook points:</p>
 <div class="mermaid">graph TD
   UserApp[User Space C / Python / Go Code] --&gt;|1. Compile C to eBPF Bytecode| Bytecode[eBPF Bytecode File]
@@ -130,7 +139,7 @@
     Engine --&gt;|6. Atomic Updates| BPFMap[(eBPF Maps: Hash / Ring Buffer)]
     BPFMap -.-&gt;|7. Read Telemetry Metrics| UserApp
   end</div>
-<h3>Core eBPF Principles &amp; Hooks</h3>
+<h3 id="core-ebpf-principles-hooks">Core eBPF Principles &amp; Hooks</h3>
 <ol>
 <li><strong>In-Kernel Verifier</strong>: Before eBPF bytecode is loaded, the kernel&#39;s static verifier analyzes all execution paths. It enforces safety constraints: guaranteeing no infinite loops, verifying array boundary memory access, and ensuring no uninitialized registers are read.</li>
 <li><strong>JIT (Just-In-Time) Compiler</strong>: Once verified, the JIT compiler translates the generic 64-bit eBPF bytecode into native host CPU instructions (<code>x86_64</code> or <code>ARM64</code>), executing at native C speed with zero interpreter overhead.</li>
@@ -143,7 +152,7 @@
 <li><strong>eBPF Maps</strong>: Key-value data structures shared between kernel space and user space, allowing eBPF programs to record counters, IP blacklists, and latency histograms without making system calls.</li>
 </ol>
 <hr>
-<h2>Python Implementation: eBPF Packet Filter &amp; Map Simulator</h2>
+<h2 id="python-implementation-ebpf-packet-filter-map-simulator">Python Implementation: eBPF Packet Filter &amp; Map Simulator</h2>
 <p>Here is a production-grade Python simulation of an eBPF Network Packet Filter and BPF Hash Map metric counter:</p>
 <pre><code class="language-python">import time
 import random
@@ -223,7 +232,7 @@ if __name__ == &quot;__main__&quot;:
     for ip, (pkt_cnt, byte_cnt) in metrics.items():
         print(f&quot;   • IP '{ip}': {pkt_cnt} Packets | Total Volume: {byte_cnt:,} bytes&quot;)</code></pre>
 <hr>
-<h2>eBPF Implementation Gotchas &amp; Best Practices</h2>
+<h2 id="ebpf-implementation-gotchas-best-practices">eBPF Implementation Gotchas &amp; Best Practices</h2>
 <p>When writing eBPF programs:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -236,7 +245,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Platforms built on eBPF (such as <strong>Cilium</strong>, <strong>Falco</strong>, and <strong>Pixie</strong>) report:</p>
 <ul>
 <li><strong>Zero-Sidecar Service Mesh Efficiency</strong>: Replacing heavy Envoy sidecar proxies with kernel-level eBPF socket routing reduces CPU overhead by up to $80%$ and eliminates sidecar memory footprints.</li>
@@ -269,6 +278,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#ebpf-in-kernel-execution-pipeline-architecture" class="toc-link">eBPF In-Kernel Execution Pipeline Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-ebpf-packet-filter-map-simulator" class="toc-link">Python Implementation: eBPF Packet Filter &amp; Map Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#ebpf-implementation-gotchas-best-practices" class="toc-link">eBPF Implementation Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

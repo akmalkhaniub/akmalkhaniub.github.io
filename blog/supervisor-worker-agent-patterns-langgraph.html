@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#why-single-agent-loops-hit-a-ceiling">Why Single-Agent Loops Hit a Ceiling</a></li>
+                <li><a href="#the-supervisor-worker-topology">The Supervisor-Worker Topology</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#langgraph-implementation-stateful-supervisor-worker-graph">LangGraph Implementation: Stateful Supervisor-Worker Graph</a></li>
+                <li><a href="#execution-flow-state-transitions">Execution Flow &amp; State Transitions</a></li>
+                <li><a href="#crewai-alternative-declarative-agent-teams">CrewAI Alternative: Declarative Agent Teams</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +123,7 @@ Single-agent loops break under real enterprise complexity. When tasks require pa
 </div>
 </div>
 <hr>
-<h2>Why Single-Agent Loops Hit a Ceiling</h2>
+<h2 id="why-single-agent-loops-hit-a-ceiling">Why Single-Agent Loops Hit a Ceiling</h2>
 <p>A naive agent loop looks like this: one LLM receives a task, calls tools, observes results, and repeats until done. For isolated, well-scoped problems this is sufficient. But in enterprise production environments, single-agent loops suffer from three critical failure modes:</p>
 <ol>
 <li><strong>Context Window Saturation</strong>: A 128K context window sounds large, but a 10-step research agent accumulates tool outputs, observations, and reasoning traces rapidly — often exceeding limits mid-task.</li>
@@ -120,7 +132,7 @@ Single-agent loops break under real enterprise complexity. When tasks require pa
 </ol>
 <p>The Supervisor-Worker pattern solves all three by decomposing agent responsibilities into a hierarchy.</p>
 <hr>
-<h2>The Supervisor-Worker Topology</h2>
+<h2 id="the-supervisor-worker-topology">The Supervisor-Worker Topology</h2>
 <p>In this pattern, a <strong>Supervisor</strong> (also called an Orchestrator) receives the high-level goal, decomposes it into sub-tasks, and dispatches each to a specialised <strong>Worker</strong> agent. Workers operate independently — often in parallel — and return structured results to the Supervisor, which synthesises the final output.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 graph TD
@@ -143,14 +155,14 @@ graph TD
     style W2 fill:#0f172a,stroke:#10b981,stroke-width:2px
     style W3 fill:#0f172a,stroke:#f59e0b,stroke-width:2px
     style M fill:#1e293b,stroke:#6b7280,stroke-width:2px</div>
-<h3>Role Contracts</h3>
+<h3 id="role-contracts">Role Contracts</h3>
 <ul>
 <li><strong>Supervisor</strong>: Receives user intent, creates a task plan, routes sub-tasks, waits for all worker responses, and produces the final user-facing output. Uses a powerful frontier model (Claude 3.5 Sonnet, GPT-4o).</li>
 <li><strong>Workers</strong>: Receive a narrow, well-defined sub-task. Execute one domain function (search, code, summarise). Return a structured JSON response — not free-form text. Can use smaller, cheaper models (GPT-4o-mini, Gemini Flash).</li>
 <li><strong>Message Bus</strong>: Tracks all inter-agent messages, tool calls, and state transitions. In LangGraph this is the <code>StateGraph</code>; in CrewAI this is the <code>Crew</code> memory object.</li>
 </ul>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -176,7 +188,7 @@ graph TD
 </tr>
 </tbody></table>
 <hr>
-<h2>LangGraph Implementation: Stateful Supervisor-Worker Graph</h2>
+<h2 id="langgraph-implementation-stateful-supervisor-worker-graph">LangGraph Implementation: Stateful Supervisor-Worker Graph</h2>
 <p>LangGraph models multi-agent systems as directed state graphs. Each node is an agent; edges define control flow. Below is a complete, runnable Python implementation.</p>
 <pre><code class="language-python">import operator
 from typing import Annotated, TypedDict, List, Literal
@@ -307,7 +319,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n===== FINAL ANSWER =====&quot;)
     print(result[&quot;final_answer&quot;])</code></pre>
 <hr>
-<h2>Execution Flow &amp; State Transitions</h2>
+<h2 id="execution-flow-state-transitions">Execution Flow &amp; State Transitions</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981'}}}%%
 sequenceDiagram
     participant U as User
@@ -327,7 +339,7 @@ sequenceDiagram
     S-&gt;&gt;SY: Merge all 3 results
     SY--&gt;&gt;U: Final coherent answer</div>
 <hr>
-<h2>CrewAI Alternative: Declarative Agent Teams</h2>
+<h2 id="crewai-alternative-declarative-agent-teams">CrewAI Alternative: Declarative Agent Teams</h2>
 <p>For teams that prefer a higher-level abstraction, <strong>CrewAI</strong> provides a declarative API for defining agent roles, goals, and backstories, automatically managing task routing via its internal planning layer.</p>
 <pre><code class="language-python">from crewai import Agent, Task, Crew, Process
 from langchain_anthropic import ChatAnthropic
@@ -388,7 +400,7 @@ crew = Crew(
 result = crew.kickoff()
 print(result.raw)</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>The Supervisor-Worker pattern transforms fragile single-agent loops into resilient, specialised teams that mirror how elite human engineering squads operate. By separating concerns into Supervisor (planning) and Workers (execution), you gain context isolation, parallel throughput, and structural quality review.</p>
 <ul>
 <li><strong>Use LangGraph</strong> when you need fine-grained control over state transitions, custom edge routing logic, and enterprise-grade checkpointing.</li>
@@ -397,7 +409,7 @@ print(result.raw)</code></pre>
 </ul>
 <p>In our next article, we will explore <strong>Tool-Calling Contracts &amp; Error Recovery</strong>: how to design robust tool schemas that prevent agents from hallucinating parameters, and how to implement graceful degradation when tools fail.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>LangGraph Documentation</strong>: <a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">Building Multi-Agent Architectures</a></li>
 <li><strong>CrewAI Documentation</strong>: <a href="https://docs.crewai.com/" target="_blank" rel="noopener">Multi-Agent Role-Playing Frameworks</a></li>
@@ -430,6 +442,20 @@ print(result.raw)</code></pre>
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#why-single-agent-loops-hit-a-ceiling" class="toc-link">Why Single-Agent Loops Hit a Ceiling</a></li>
+              <li class="toc-item toc-h2"><a href="#the-supervisor-worker-topology" class="toc-link">The Supervisor-Worker Topology</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#langgraph-implementation-stateful-supervisor-worker-graph" class="toc-link">LangGraph Implementation: Stateful Supervisor-Worker Graph</a></li>
+              <li class="toc-item toc-h2"><a href="#execution-flow-state-transitions" class="toc-link">Execution Flow &amp; State Transitions</a></li>
+              <li class="toc-item toc-h2"><a href="#crewai-alternative-declarative-agent-teams" class="toc-link">CrewAI Alternative: Declarative Agent Teams</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

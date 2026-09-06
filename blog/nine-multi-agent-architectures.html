@@ -104,8 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-9-architectural-patterns">The 9 Architectural Patterns</a></li>
+                <li><a href="#matching-architecture-to-task-performance-data">Matching Architecture to Task: Performance Data</a></li>
+                <li><a href="#the-architectural-selection-checklist">The Architectural Selection Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article defines and compares nine core multi-agent architectural patterns, detailing when to use them, their real-world analogies, and their failure modes.</li>
 <li><strong>Why it matters:</strong> Selecting the wrong multi-agent pattern can lead to massive latency, excessive token costs, or system deadlocks, directly impacting system performance and budget.</li>
@@ -116,64 +126,64 @@
 <p>Multi-agent design is a library of patterns. Selecting the wrong pattern results in massive latency, excessive token costs, or system deadlock.</p>
 <p>For each pattern, this article defines what it is, when to use it, the real-world organizational analogy, and its typical failure modes. These architectures are designed to help you organize multiple LLM nodes into cohesive software systems, as referenced in our public <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a> monorepo.</p>
 <hr>
-<h2>The 9 Architectural Patterns</h2>
-<h3>1. Supervisor-Worker (Centralized Dispatch)</h3>
+<h2 id="the-9-architectural-patterns">The 9 Architectural Patterns</h2>
+<h3 id="1-supervisor-worker-centralized-dispatch">1. Supervisor-Worker (Centralized Dispatch)</h3>
 <ul>
 <li><strong>What it is</strong>: A central supervisor LLM plans, delegates sub-tasks to specialized workers, gathers results, and decides when the task is complete.</li>
 <li><strong>When to use</strong>: Open-ended support triage, devrel dispatch, and query routing where steps cannot be predicted.</li>
 <li><strong>Analogy</strong>: A manager assigning tasks to specialist developers.</li>
 <li><strong>Failure Mode</strong>: The supervisor becomes a bottleneck. If the supervisor hallucinates, the entire squad gets stuck.</li>
 </ul>
-<h3>2. Hierarchical Org (Nested Delegation)</h3>
+<h3 id="2-hierarchical-org-nested-delegation">2. Hierarchical Org (Nested Delegation)</h3>
 <ul>
 <li><strong>What it is</strong>: A supervisor coordinates sub-supervisors, which in turn coordinate specialized workers. State is aggregated up the chain.</li>
 <li><strong>When to use</strong>: Highly complex multi-domain systems (e.g., executing a full software build, from requirement analysis down to unit testing).</li>
 <li><strong>Analogy</strong>: A corporate hierarchy: VP → Directors → Engineers.</li>
 <li><strong>Failure Mode</strong>: Severe latency and context loss as information is filtered through multiple layers of supervisors.</li>
 </ul>
-<h3>3. Sequential Pipeline (Linear Chain)</h3>
+<h3 id="3-sequential-pipeline-linear-chain">3. Sequential Pipeline (Linear Chain)</h3>
 <ul>
 <li><strong>What it is</strong>: Agents execute tasks in a fixed, linear order. The output of Agent A becomes the input of Agent B.</li>
 <li><strong>When to use</strong>: Document processing, data translation, or report drafting where stages are clean and linear.</li>
 <li><strong>Analogy</strong>: A factory assembly line.</li>
 <li><strong>Failure Mode</strong>: Upstream errors compound. If Agent 1 makes a mistake, Agent 2 building on top of it will propagate the error.</li>
 </ul>
-<h3>4. Evaluator-Optimizer (Refinement Loop)</h3>
+<h3 id="4-evaluator-optimizer-refinement-loop">4. Evaluator-Optimizer (Refinement Loop)</h3>
 <ul>
 <li><strong>What it is</strong>: A generator agent designs an output, and an independent evaluator agent reviews it against a rubric. The generator refines the output based on the critique.</li>
 <li><strong>When to use</strong>: Writing code, compiling documents, translating complex legal text.</li>
 <li><strong>Analogy</strong>: A writer drafting a chapter and an editor revising it.</li>
 <li><strong>Failure Mode</strong>: Infinite refinement loops if the evaluator and generator disagree on subjective metrics.</li>
 </ul>
-<h3>5. Debate / Panel of Experts (Adversarial Swarm)</h3>
+<h3 id="5-debate-panel-of-experts-adversarial-swarm">5. Debate / Panel of Experts (Adversarial Swarm)</h3>
 <ul>
 <li><strong>What it is</strong>: Multiple agents with contrasting system prompts debate an issue. A referee agent synthesizes their arguments into a consensus.</li>
 <li><strong>When to use</strong>: Complex medical diagnosis, investment research, or bias reduction.</li>
 <li><strong>Analogy</strong>: A court trial with opposing lawyers and a judge.</li>
 <li><strong>Failure Mode</strong>: Bloated token costs due to extensive multi-turn debates.</li>
 </ul>
-<h3>6. Blackboard / Shared Memory</h3>
+<h3 id="6-blackboard-shared-memory">6. Blackboard / Shared Memory</h3>
 <ul>
 <li><strong>What it is</strong>: Agents read and write to a shared global state board. There is no supervisor; agents query the board and act whenever they find data matching their skills.</li>
 <li><strong>When to use</strong>: Supply-chain logistics, multiplayer game coordination, dynamic scheduling.</li>
 <li><strong>Analogy</strong>: A hospital team updating a shared patient chart.</li>
 <li><strong>Failure Mode</strong>: Race conditions and state corruption if two agents overwrite the same board key concurrently.</li>
 </ul>
-<h3>7. Swarm / Decentralized Handoff</h3>
+<h3 id="7-swarm-decentralized-handoff">7. Swarm / Decentralized Handoff</h3>
 <ul>
 <li><strong>What it is</strong>: Agents coordinate dynamically by handing tasks to each other using tools. There is no supervisor; the flow is determined by the agents themselves.</li>
 <li><strong>When to use</strong>: Dynamic customer support where agents hand off the ticket to payment, technical, or legal agents.</li>
 <li><strong>Analogy</strong>: An emergency response team coordinating dynamically on the ground.</li>
 <li><strong>Failure Mode</strong>: Loops where Agent A routes to Agent B, which routes back to Agent A.</li>
 </ul>
-<h3>8. Human-in-the-Loop (HITL) Breakpoints</h3>
+<h3 id="8-human-in-the-loop-hitl-breakpoints">8. Human-in-the-Loop (HITL) Breakpoints</h3>
 <ul>
 <li><strong>What it is</strong>: The system executes autonomously until it hits a sensitive node (e.g., database writes, sending emails), pauses, and waits for human approval before resuming.</li>
 <li><strong>When to use</strong>: Automated payments, server deployments, public communication.</li>
 <li><strong>Analogy</strong>: A junior developer requesting a PR review from a senior manager.</li>
 <li><strong>Failure Mode</strong>: System blockages if human approvals are delayed, stalling background worker queues.</li>
 </ul>
-<h3>9. Event-Driven Agents</h3>
+<h3 id="9-event-driven-agents">9. Event-Driven Agents</h3>
 <ul>
 <li><strong>What it is</strong>: Agents trigger actions based on system events, pub-sub messages, or state updates rather than direct calls.</li>
 <li><strong>When to use</strong>: Continuous infrastructure monitoring, fraud detection, real-time alerts.</li>
@@ -181,7 +191,7 @@
 <li><strong>Failure Mode</strong>: Event storms where one agent&#39;s event triggers another, causing a recursive cycle of API calls.</li>
 </ul>
 <hr>
-<h2>Matching Architecture to Task: Performance Data</h2>
+<h2 id="matching-architecture-to-task-performance-data">Matching Architecture to Task: Performance Data</h2>
 <p>A recent 2026 paper, <em>Benchmarking Multi-Agent LLM Architectures for Financial Document Processing</em>, analyzed the tradeoffs between these patterns. The researchers found:</p>
 <ul>
 <li><strong>Sequential chains</strong> have the lowest token cost but fail on complex reasoning.</li>
@@ -190,14 +200,14 @@
 </ul>
 <p>The golden rule: <strong>Start with sequential pipelines or supervisor-worker. Only move to swarms or debates when reasoning complexity demands it.</strong></p>
 <hr>
-<h2>The Architectural Selection Checklist</h2>
+<h2 id="the-architectural-selection-checklist">The Architectural Selection Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Define the Predictability Factor</strong>: If the workflow is 100% predictable, use a <strong>Sequential Pipeline</strong>.</li>
 <li><input disabled="" type="checkbox"> <strong>Identify High-Risk Gates</strong>: Place a <strong>Human-in-the-Loop Breakpoint</strong> before any action that mutates external databases or executes financial transactions.</li>
 <li><input disabled="" type="checkbox"> <strong>Audit the Loop Breaks</strong>: If using <strong>Evaluator-Optimizer</strong> or <strong>Debate</strong>, implement a hard limit on iteration turns (e.g., maximum 3 turns) to control costs.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Designing robust multi-agent systems requires balancing reasoning capabilities against latency and cost.</p>
 <ol>
 <li><strong>Start Simple:</strong> Begin with predictable sequential pipelines or supervisor-worker patterns before escalating to complex, decentralized architectures like swarms or debates.</li>
@@ -206,7 +216,7 @@
 </ol>
 <p><em>Takeaway:</em> <em>The most effective multi-agent system is the simplest one that reliably solves the problem without unnecessary coordination overhead.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Benchmarking MAS in Finance</strong>: <em>Benchmarking Multi-Agent LLM Architectures for Financial Document Processing</em> (March 2026). Comparative study of cost-accuracy tradeoffs across sequential, hierarchical, and evaluator topologies. <a href="https://arxiv.org/abs/2603.09452" target="_blank" rel="noopener">arXiv:2603.09452</a> (Needs verification)</li>
 <li><strong>Anthropic Architecture Guide</strong>: <a href="https://www.anthropic.com/research/building-effective-agents" target="_blank" rel="noopener">Building Effective Agents</a> (December 2024). Explains workflow structures and basic routing patterns.</li>
@@ -239,6 +249,18 @@
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-9-architectural-patterns" class="toc-link">The 9 Architectural Patterns</a></li>
+              <li class="toc-item toc-h2"><a href="#matching-architecture-to-task-performance-data" class="toc-link">Matching Architecture to Task: Performance Data</a></li>
+              <li class="toc-item toc-h2"><a href="#the-architectural-selection-checklist" class="toc-link">The Architectural Selection Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

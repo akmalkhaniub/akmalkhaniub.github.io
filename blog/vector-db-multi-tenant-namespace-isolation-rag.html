@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-danger-of-global-vector-scans">The Danger of Global Vector Scans</a></li>
+                <li><a href="#1-namespace-partitioning-topologies">1. Namespace Partitioning Topologies</a></li>
+                <li><a href="#2-decoupling-the-query-gateway">2. Decoupling the Query Gateway</a></li>
+                <li><a href="#code-demo-secure-namespace-filter-constructor">Code Demo: Secure Namespace Filter Constructor</a></li>
+                <li><a href="#security-takeaways-for-infrastructure-leads">Security Takeaways for Infrastructure Leads</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Multi-agent platforms deployed in enterprise environments frequently handle mult
 </div>
 </div>
 <hr>
-<h2>The Danger of Global Vector Scans</h2>
+<h2 id="the-danger-of-global-vector-scans">The Danger of Global Vector Scans</h2>
 <p>In naive RAG implementations, all tenant embeddings are stored in a single flat database collection:</p>
 <ul>
 <li><strong>The Filter Bypass Threat</strong>: If an agent requests documentation context, relying on semantic distance alone can retrieve another tenant&#39;s files if the text shares semantic similarities.</li>
@@ -129,21 +139,21 @@ flowchart TD
     DB --&gt;|Fetch matches matching namespace| Filter[Strict Output Validation Gate]
     Filter --&gt; Return[Return Isolated Results]</div>
 <hr>
-<h2>1. Namespace Partitioning Topologies</h2>
+<h2 id="1-namespace-partitioning-topologies">1. Namespace Partitioning Topologies</h2>
 <p>We choose between two primary multi-tenant architectures:</p>
 <ul>
 <li><strong>Logical Isolation (Metadata Filtering)</strong>: All tenant vectors reside in the same collection, partitioned using a metadata field (e.g. <code>tenant_id = &#39;tenant_A&#39;</code>). This is cost-effective but requires strict gatekeepers to prevent filter omissions.</li>
 <li><strong>Physical Isolation (Multi-Collection)</strong>: Creating dedicated physical vector databases or collections per tenant. This offers the highest security boundary but increases infrastructure overhead.</li>
 </ul>
 <hr>
-<h2>2. Decoupling the Query Gateway</h2>
+<h2 id="2-decoupling-the-query-gateway">2. Decoupling the Query Gateway</h2>
 <p>The security boundary must reside in the <strong>API Gateway Layer</strong>, not in the agent logic:</p>
 <ol>
 <li>The gateway decrypts the client&#39;s session JWT and extracts the <code>tenant_id</code>.</li>
 <li>It constructs the query payload, injecting the tenant filter metadata programmatically before forwarding the request to the database.</li>
 </ol>
 <hr>
-<h2>Code Demo: Secure Namespace Filter Constructor</h2>
+<h2 id="code-demo-secure-namespace-filter-constructor">Code Demo: Secure Namespace Filter Constructor</h2>
 <p>Below is a Python implementation of a query constructor. It decodes tenant variables, compiles secure query payloads, and blocks unpartitioned searches.</p>
 <pre><code class="language-python">import json
 from typing import Dict, Any, Tuple
@@ -196,7 +206,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;\n[User B] Execution Status: {success_b}&quot;)
     print(f&quot;👉 Returned Documents: {results_b}&quot;)</code></pre>
 <hr>
-<h2>Security Takeaways for Infrastructure Leads</h2>
+<h2 id="security-takeaways-for-infrastructure-leads">Security Takeaways for Infrastructure Leads</h2>
 <ul>
 <li><strong>Inject Filters at the Gateway</strong>: Never allow frontend agents to build database queries directly. Enforce tenant filters at the backend API gateway layer.</li>
 <li><strong>Encrypt Namespace Keys</strong>: Use secure cryptographic hashes as tenant metadata partition keys to prevent data exposure.</li>
@@ -229,6 +239,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-danger-of-global-vector-scans" class="toc-link">The Danger of Global Vector Scans</a></li>
+              <li class="toc-item toc-h2"><a href="#1-namespace-partitioning-topologies" class="toc-link">1. Namespace Partitioning Topologies</a></li>
+              <li class="toc-item toc-h2"><a href="#2-decoupling-the-query-gateway" class="toc-link">2. Decoupling the Query Gateway</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-secure-namespace-filter-constructor" class="toc-link">Code Demo: Secure Namespace Filter Constructor</a></li>
+              <li class="toc-item toc-h2"><a href="#security-takeaways-for-infrastructure-leads" class="toc-link">Security Takeaways for Infrastructure Leads</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

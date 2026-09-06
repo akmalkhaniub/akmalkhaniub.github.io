@@ -104,6 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-gap-between-docker-tutorials-and-production-reality">The Gap Between Docker Tutorials and Production Reality</a></li>
+                <li><a href="#blind-spot-1-pid-1-and-the-sigterm-that-never-arrives">Blind Spot 1: PID 1 and the SIGTERM That Never Arrives</a></li>
+                <li><a href="#blind-spot-2-layer-cache-busted-by-wrong-copy-order">Blind Spot 2: Layer Cache Busted by Wrong COPY Order</a></li>
+                <li><a href="#blind-spot-3-running-as-root-is-a-security-incident-waiting-to-happen">Blind Spot 3: Running as Root Is a Security Incident Waiting to Happen</a></li>
+                <li><a href="#blind-spot-4-secrets-baked-into-image-layers-are-permanent">Blind Spot 4: Secrets Baked Into Image Layers Are Permanent</a></li>
+                <li><a href="#blind-spot-5-your-dockerignore-is-being-ignored">Blind Spot 5: Your .dockerignore Is Being Ignored</a></li>
+                <li><a href="#blind-spot-6-no-healthcheck-kubernetes-sends-traffic-to-dead-containers">Blind Spot 6: No HEALTHCHECK = Kubernetes Sends Traffic to Dead Containers</a></li>
+                <li><a href="#blind-spot-7-multi-stage-builds-shipping-dev-dependencies-to-production">Blind Spot 7: Multi-Stage Builds — Shipping Dev Dependencies to Production</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +125,7 @@ Docker tutorials get you from zero to a running container in 10 minutes. What th
 </div>
 </div>
 <hr>
-<h2>The Gap Between Docker Tutorials and Production Reality</h2>
+<h2 id="the-gap-between-docker-tutorials-and-production-reality">The Gap Between Docker Tutorials and Production Reality</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart LR
     subgraph Tutorial Dockerfile
@@ -141,7 +155,7 @@ flowchart LR
     style P6 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style P7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
 <hr>
-<h2>Blind Spot 1: PID 1 and the SIGTERM That Never Arrives</h2>
+<h2 id="blind-spot-1-pid-1-and-the-sigterm-that-never-arrives">Blind Spot 1: PID 1 and the SIGTERM That Never Arrives</h2>
 <p><strong>Symptom</strong>: <code>docker stop</code> takes exactly 10 seconds before force-killing the container. Database connections are severed mid-transaction. BullMQ jobs are abandoned mid-execution. Your &quot;graceful shutdown&quot; code never runs.</p>
 <p><strong>Root cause</strong>: When you run <code>CMD python app.py</code>, Docker makes <code>python</code> PID 1. Linux only sends <code>SIGTERM</code> to PID 1. But <code>python</code> (and <code>node</code>, <code>uvicorn</code>, etc.) don&#39;t forward signals to child processes by default. After 10 seconds, Docker escalates to <code>SIGKILL</code> — no cleanup possible.</p>
 <pre><code class="language-dockerfile"># Python/Node becomes PID 1 — doesn't handle signals correctly
@@ -180,7 +194,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)</code></pre>
 <hr>
-<h2>Blind Spot 2: Layer Cache Busted by Wrong COPY Order</h2>
+<h2 id="blind-spot-2-layer-cache-busted-by-wrong-copy-order">Blind Spot 2: Layer Cache Busted by Wrong COPY Order</h2>
 <p><strong>Symptom</strong>: Every CI build reinstalls all Python packages from scratch even when you only changed a single <code>.py</code> file. 8-minute builds instead of 30-second ones.</p>
 <p><strong>Root cause</strong>: Docker layer cache is invalidated when any file in a <code>COPY</code> command changes. If you <code>COPY . .</code> before <code>RUN pip install</code>, any code change invalidates the pip install layer.</p>
 <pre><code class="language-dockerfile"># COPY . . before pip install — any code change busts the cache
@@ -215,7 +229,7 @@ RUN npm run build
 
 CMD [&quot;node&quot;, &quot;dist/server.js&quot;]</code></pre>
 <hr>
-<h2>Blind Spot 3: Running as Root Is a Security Incident Waiting to Happen</h2>
+<h2 id="blind-spot-3-running-as-root-is-a-security-incident-waiting-to-happen">Blind Spot 3: Running as Root Is a Security Incident Waiting to Happen</h2>
 <p><strong>Symptom</strong>: A dependency vulnerability or code execution bug inside your container gives attackers root access to the host in misconfigured environments.</p>
 <p><strong>Root cause</strong>: Docker containers run as <code>root</code> (UID 0) by default. If your container is ever compromised — through a vulnerable npm package, a deserialization exploit, or a path traversal — the attacker has root inside the container, which may translate to host root depending on Docker daemon configuration.</p>
 <pre><code class="language-dockerfile"># Running as root (Docker default)
@@ -245,7 +259,7 @@ USER appuser  # ← Switch to non-root before CMD
 EXPOSE 8000
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]</code></pre>
 <hr>
-<h2>Blind Spot 4: Secrets Baked Into Image Layers Are Permanent</h2>
+<h2 id="blind-spot-4-secrets-baked-into-image-layers-are-permanent">Blind Spot 4: Secrets Baked Into Image Layers Are Permanent</h2>
 <p><strong>Symptom</strong>: You delete the <code>ENV API_KEY=secret</code> line from your Dockerfile and rebuild. The secret is still retrievable from the old image layer with <code>docker history</code> or <code>docker save</code>.</p>
 <p><strong>Root cause</strong>: Docker image layers are immutable and cumulative. Even if you <code>RUN unset API_KEY</code> in a later layer, the secret exists in the earlier layer forever — visible to anyone who can pull the image.</p>
 <pre><code class="language-dockerfile"># Secret in ENV — permanent in image history
@@ -268,7 +282,7 @@ RUN --mount=type=secret,id=pip_config,target=/root/.pip/pip.conf \
 # Build with: docker build --secret id=pip_config,src=pip.conf .
 # Secret NEVER appears in any layer</code></pre>
 <hr>
-<h2>Blind Spot 5: Your <code>.dockerignore</code> Is Being Ignored</h2>
+<h2 id="blind-spot-5-your-dockerignore-is-being-ignored">Blind Spot 5: Your <code>.dockerignore</code> Is Being Ignored</h2>
 <p><strong>Symptom</strong>: Build context takes 45 seconds to send to Docker daemon. Your image contains <code>node_modules</code>, <code>.git</code>, <code>.env</code>, and your entire test dataset.</p>
 <p><strong>Root cause</strong>: <code>.dockerignore</code> only works if it&#39;s in the <strong>build context directory</strong> (where you run <code>docker build</code>). If you run <code>docker build</code> from a parent directory, or if the file has Windows line endings, it may be silently skipped.</p>
 <pre><code class="language-bash"># Check what's being sent to Docker daemon
@@ -326,7 +340,7 @@ models/          # Local model weights — use volumes in production
 .DS_Store
 Thumbs.db</code></pre>
 <hr>
-<h2>Blind Spot 6: No HEALTHCHECK = Kubernetes Sends Traffic to Dead Containers</h2>
+<h2 id="blind-spot-6-no-healthcheck-kubernetes-sends-traffic-to-dead-containers">Blind Spot 6: No HEALTHCHECK = Kubernetes Sends Traffic to Dead Containers</h2>
 <p><strong>Symptom</strong>: Your pod is running (Kubernetes shows <code>Running</code> status) but returning 500 errors. Kubernetes keeps sending traffic because it doesn&#39;t know the app is broken.</p>
 <pre><code class="language-dockerfile"># No health check — orchestrators assume &quot;running&quot; = &quot;healthy&quot;
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
@@ -360,7 +374,7 @@ async def health_check():
     
     return checks</code></pre>
 <hr>
-<h2>Blind Spot 7: Multi-Stage Builds — Shipping Dev Dependencies to Production</h2>
+<h2 id="blind-spot-7-multi-stage-builds-shipping-dev-dependencies-to-production">Blind Spot 7: Multi-Stage Builds — Shipping Dev Dependencies to Production</h2>
 <p><strong>Symptom</strong>: Your Python or Node.js production image is 1.8GB. It contains pytest, mypy, eslint, TypeScript compiler, and test fixtures that have no business running in production.</p>
 <pre><code class="language-dockerfile"># Multi-stage build — lean production image
 # Stage 1: Builder (has dev tools, compilers, test deps)
@@ -417,7 +431,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
 EXPOSE 8000
 CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;, &quot;--workers&quot;, &quot;2&quot;]</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Docker&#39;s simplicity is a double-edged sword — it hides complexity that resurfaces as production incidents. The failures above follow a pattern: they&#39;re invisible in development (fast machine, no proxy, running as you) and catastrophic in production (slow CI, proxied, rootless Kubernetes).</p>
 <ul>
 <li><strong>Always use exec form <code>CMD [&quot;executable&quot;, &quot;arg&quot;]</code></strong> — never shell form <code>CMD executable arg</code>. Exec form is PID 1, receives signals correctly, and is the only form that enables graceful shutdown.</li>
@@ -425,7 +439,7 @@ CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.
 <li><strong>Never use ENV or RUN to handle secrets</strong> — use Docker BuildKit <code>--mount=type=secret</code> for build-time secrets and runtime environment injection for application secrets.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>Docker Multi-Stage Builds</strong>: <a href="https://docs.docker.com/build/building/multi-stage/" target="_blank" rel="noopener">Use multi-stage builds</a></li>
 <li><strong>Docker BuildKit Secrets</strong>: <a href="https://docs.docker.com/build/building/secrets/" target="_blank" rel="noopener">Build secrets reference</a></li>
@@ -459,6 +473,22 @@ CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-gap-between-docker-tutorials-and-production-reality" class="toc-link">The Gap Between Docker Tutorials and Production Reality</a></li>
+              <li class="toc-item toc-h2"><a href="#blind-spot-1-pid-1-and-the-sigterm-that-never-arrives" class="toc-link">Blind Spot 1: PID 1 and the SIGTERM That Never Arrives</a></li>
+              <li class="toc-item toc-h2"><a href="#blind-spot-2-layer-cache-busted-by-wrong-copy-order" class="toc-link">Blind Spot 2: Layer Cache Busted by Wrong COPY Order</a></li>
+              <li class="toc-item toc-h2"><a href="#blind-spot-3-running-as-root-is-a-security-incident-waiting-to-happen" class="toc-link">Blind Spot 3: Running as Root Is a Security Incident Waiting to Happen</a></li>
+              <li class="toc-item toc-h2"><a href="#blind-spot-4-secrets-baked-into-image-layers-are-permanent" class="toc-link">Blind Spot 4: Secrets Baked Into Image Layers Are Permanent</a></li>
+              <li class="toc-item toc-h2"><a href="#blind-spot-5-your-dockerignore-is-being-ignored" class="toc-link">Blind Spot 5: Your .dockerignore Is Being Ignored</a></li>
+              <li class="toc-item toc-h2"><a href="#blind-spot-6-no-healthcheck-kubernetes-sends-traffic-to-dead-containers" class="toc-link">Blind Spot 6: No HEALTHCHECK = Kubernetes Sends Traffic to Dead Containers</a></li>
+              <li class="toc-item toc-h2"><a href="#blind-spot-7-multi-stage-builds-shipping-dev-dependencies-to-production" class="toc-link">Blind Spot 7: Multi-Stage Builds — Shipping Dev Dependencies to Production</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

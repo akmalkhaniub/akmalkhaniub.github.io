@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#lifespan-resource-tracing-architecture">Lifespan Resource &amp; Tracing Architecture</a></li>
+                <li><a href="#python-implementation-observable-fastapi-microservice">Python Implementation: Observable FastAPI Microservice</a></li>
+                <li><a href="#observability-lifespan-gotchas">Observability &amp; Lifespan Gotchas</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In distributed microservice architectures, tracking request lifecycles as they navigate across multiple API gateways, database pools, and asynchronous workers is essential for maintaining uptime. A failure or latency spike in a downstream service must be instantly traceable back to the originating HTTP request.</p>
 <p>Modern FastAPI applications manage global application state and connection resources using <strong>Lifespan Handlers</strong> (<code>asynccontextmanager</code>), replacing legacy startup/shutdown event hooks.</p>
 <p>By combining FastAPI lifespan state management with <strong>OpenTelemetry middleware</strong>, developers can instrument zero-downtime resource pooling and propagate W3C distributed tracing contexts across microservice boundaries.</p>
 <p>This article details how to construct an production-ready observable FastAPI service.</p>
 <hr>
-<h2>Lifespan Resource &amp; Tracing Architecture</h2>
+<h2 id="lifespan-resource-tracing-architecture">Lifespan Resource &amp; Tracing Architecture</h2>
 <p>The execution lifecycle of a FastAPI service managed by async lifespan generators and OpenTelemetry context propagation:</p>
 <div class="mermaid">graph TD
   A[ASGI Server Launch] --&gt; B[FastAPI Lifespan Startup Phase]
@@ -131,13 +140,13 @@
   E --&gt;|ASGI Server Shutdown Signal| H[Lifespan Teardown Phase]
   H --&gt;|Close Pool Connections| C
   H --&gt;|Flush Spans| D</div>
-<h3>Lifespan vs. Legacy Event Hooks</h3>
+<h3 id="lifespan-vs-legacy-event-hooks">Lifespan vs. Legacy Event Hooks</h3>
 <ol>
 <li><strong>Unified Context</strong>: The modern <code>lifespan</code> parameter takes an <code>@asynccontextmanager</code> function. All code executing before the <code>yield</code> runs during startup, while code executing after <code>yield</code> runs during graceful shutdown. This ensures setup and teardown logic share the same local scope variables (like DB pools or AI model instances).</li>
 <li><strong>OpenTelemetry Middleware</strong>: Automatic ASGI instrumentation wraps every HTTP request in a trace span, automatically extracting incoming W3C <code>traceparent</code> headers (<code>00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01</code>) and appending outgoing trace headers to downstream HTTP requests.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Observable FastAPI Microservice</h2>
+<h2 id="python-implementation-observable-fastapi-microservice">Python Implementation: Observable FastAPI Microservice</h2>
 <p>Here is a production-grade Python script demonstrating a FastAPI application with lifespan database pool management and OpenTelemetry distributed tracing middleware:</p>
 <pre><code class="language-python">import asyncio
 from contextlib import asynccontextmanager
@@ -243,7 +252,7 @@ if __name__ == &quot;__main__&quot;:
 
     asyncio.run(run_test())</code></pre>
 <hr>
-<h2>Observability &amp; Lifespan Gotchas</h2>
+<h2 id="observability-lifespan-gotchas">Observability &amp; Lifespan Gotchas</h2>
 <p>When implementing telemetry and lifespan handlers:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -256,7 +265,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying lifespan context management and OpenTelemetry report:</p>
 <ul>
 <li><strong>Zero Resource Leaks</strong>: Managing database pools within lifespan context guarantees clean connection teardowns during rolling deployment reloads.</li>
@@ -289,6 +298,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#lifespan-resource-tracing-architecture" class="toc-link">Lifespan Resource &amp; Tracing Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-observable-fastapi-microservice" class="toc-link">Python Implementation: Observable FastAPI Microservice</a></li>
+              <li class="toc-item toc-h2"><a href="#observability-lifespan-gotchas" class="toc-link">Observability &amp; Lifespan Gotchas</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-memory-bandwidth-bottleneck-in-autoregressive-llms">1. The Memory Bandwidth Bottleneck in Autoregressive LLMs</a></li>
+                <li><a href="#2-the-mathematical-foundation-of-speculative-sampling">2. The Mathematical Foundation of Speculative Sampling</a></li>
+                <li><a href="#3-medusa-multi-head-tree-attention">3. Medusa Multi-Head Tree Attention</a></li>
+                <li><a href="#python-implementation-speculative-decoding-verification-simulator">Python Implementation: Speculative Decoding &amp; Verification Simulator</a></li>
+                <li><a href="#summary-inference-acceleration-comparison">Summary: Inference Acceleration Comparison</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>In modern large language model infrastructure (<strong>vLLM</strong>, <strong>TensorRT-LLM</strong>, <strong>HuggingFace TGI</strong>, <strong>SGLang</strong>), autoregressive token generation has historically suffered from a severe hardware limitation: <strong>GPU memory bandwidth starvation</strong>.</p>
 <p>When serving a large 70-billion parameter model (<code>float16</code> weights = $140\text{ GB}$), generating a single token requires transferring all $140\text{ GB}$ of model weights from High Bandwidth Memory (HBM) into on-chip GPU SRAM.</p>
 <p>Because the arithmetic intensity is extremely low during single-batch generation, <strong>GPU Tensor Cores sit idle for $&gt; 90%$ of clock cycles</strong>, purely waiting for memory bus transfers.</p>
@@ -122,7 +133,7 @@
     end
   end</div>
 <hr>
-<h2>1. The Memory Bandwidth Bottleneck in Autoregressive LLMs</h2>
+<h2 id="1-the-memory-bandwidth-bottleneck-in-autoregressive-llms">1. The Memory Bandwidth Bottleneck in Autoregressive LLMs</h2>
 <p>During standard autoregressive generation, generating $N$ tokens requires $N$ sequential forward passes:</p>
 <p>$$\text{Time per Token} = \frac{\text{Model Weights Size (Bytes)}}{\text{GPU Memory Bandwidth (Bytes/sec)}} + \text{Compute Latency}$$</p>
 <p>On an Nvidia H100 GPU ($3.35\text{ TB/s}$ memory bandwidth) running a 70B model ($140\text{ GB}$ weights):</p>
@@ -130,7 +141,7 @@
 <p>Notice that whether we compute 1 token or 5 tokens simultaneously, the time required to read the $140\text{ GB}$ weights across the GPU bus is almost identical.</p>
 <p>The core insight of speculative decoding is to <strong>turn memory-bound waiting time into useful parallel tensor compute</strong>.</p>
 <hr>
-<h2>2. The Mathematical Foundation of Speculative Sampling</h2>
+<h2 id="2-the-mathematical-foundation-of-speculative-sampling">2. The Mathematical Foundation of Speculative Sampling</h2>
 <p>Introduced independently by Leviathan et al. (Google) and Chen et al. (DeepMind) in 2022, speculative decoding pairs a massive <strong>Target Model ($M_{\text{target}}$, e.g. 70B)</strong> with a lightweight, ultrafast <strong>Draft Model ($M_{\text{draft}}$, e.g. 8B)</strong>.</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -148,7 +159,7 @@
   
   Note over T: Accepts w1, w2, w3; Rejects w4; Emits correction w4*
   T--&gt;&gt;Out: Emits 4 tokens [w1, w2, w3, w4*] in a SINGLE forward pass!</div>
-<h3>The Acceptance Sampling Rule (Zero Distributional Drift)</h3>
+<h3 id="the-acceptance-sampling-rule-zero-distributional-drift">The Acceptance Sampling Rule (Zero Distributional Drift)</h3>
 <p>To guarantee that the generated text matches the target model&#39;s exact probability distribution $P_{\text{target}}$, candidate token $x_k$ is accepted with probability:</p>
 <p>$$\alpha = \min\left(1, \frac{P_{\text{target}}(x_k \mid x_{&lt;k})}{P_{\text{draft}}(x_k \mid x_{&lt;k})}\right)$$</p>
 <ul>
@@ -162,7 +173,7 @@ $$P_{\text{residual}}(x) = \text{normalize}\left(\max\left(0, P_{\text{target}}(
 </div>
 </div>
 <hr>
-<h2>3. Medusa Multi-Head Tree Attention</h2>
+<h2 id="3-medusa-multi-head-tree-attention">3. Medusa Multi-Head Tree Attention</h2>
 <p>While speculative decoding with a draft model is powerful, managing two separate models in GPU memory introduces deployment friction (dual KV-caches, model loading overhead).</p>
 <p><strong>Medusa</strong> (Cai et al., 2023) eliminates the draft model entirely by adding <strong>multiple lightweight Feed-Forward prediction heads</strong> directly on top of the target model’s final transformer layer:</p>
 <div class="mermaid">graph TD
@@ -172,7 +183,7 @@ $$P_{\text{residual}}(x) = \text{normalize}\left(\max\left(0, P_{\text{target}}(
   H0 --&gt; T1[&quot;Token w1&quot;]
   H1 --&gt; T2[&quot;Token w2&quot;]
   H2 --&gt; T3[&quot;Token w3&quot;]</div>
-<h3>Tree-Structured Attention Verification</h3>
+<h3 id="tree-structured-attention-verification">Tree-Structured Attention Verification</h3>
 <p>Rather than predicting a single linear chain of tokens, Medusa heads generate top-$k$ candidates for each position, forming a <strong>Candidate Prefix Tree</strong>.</p>
 <div class="mermaid">graph TD
   subgraph Medusa Candidate Tree (Evaluated in 1 Forward Pass)
@@ -188,7 +199,7 @@ $$P_{\text{residual}}(x) = \text{normalize}\left(\max\left(0, P_{\text{target}}(
   end</div>
 <p>By applying a custom <strong>2D Tree Attention Mask</strong>, the target model verifies all candidate branches (e.g. 64 simultaneous paths) in a <strong>single forward pass</strong>, accepting the longest valid path.</p>
 <hr>
-<h2>Python Implementation: Speculative Decoding &amp; Verification Simulator</h2>
+<h2 id="python-implementation-speculative-decoding-verification-simulator">Python Implementation: Speculative Decoding &amp; Verification Simulator</h2>
 <p>Here is a Python implementation simulating speculative drafting, parallel target verification, and speedup measurement:</p>
 <pre><code class="language-python">import time
 import numpy as np
@@ -287,7 +298,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot; • Standard Target Time      : {standard_target_time:.3f}s&quot;)
     print(f&quot; • Effective Speedup         : {speedup:.2f}x Faster (Lossless)&quot;)</code></pre>
 <hr>
-<h2>Summary: Inference Acceleration Comparison</h2>
+<h2 id="summary-inference-acceleration-comparison">Summary: Inference Acceleration Comparison</h2>
 <table>
 <thead>
 <tr>
@@ -328,7 +339,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>By decoupling token proposal from verification, <strong>Speculative Decoding and Medusa Tree Attention break the fundamental memory bandwidth bottleneck of modern LLMs</strong>.</p>
 <p>Inference frameworks running speculative sampling deliver dramatically lower Time-to-First-Token and higher sustained throughput, driving down AI operating costs without compromising a single ounce of model intelligence.</p>
 
@@ -358,6 +369,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-memory-bandwidth-bottleneck-in-autoregressive-llms" class="toc-link">1. The Memory Bandwidth Bottleneck in Autoregressive LLMs</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-mathematical-foundation-of-speculative-sampling" class="toc-link">2. The Mathematical Foundation of Speculative Sampling</a></li>
+              <li class="toc-item toc-h2"><a href="#3-medusa-multi-head-tree-attention" class="toc-link">3. Medusa Multi-Head Tree Attention</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-speculative-decoding-verification-simulator" class="toc-link">Python Implementation: Speculative Decoding &amp; Verification Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-inference-acceleration-comparison" class="toc-link">Summary: Inference Acceleration Comparison</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

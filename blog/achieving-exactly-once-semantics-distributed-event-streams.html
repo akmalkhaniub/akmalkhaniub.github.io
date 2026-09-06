@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#kafka-two-phase-commit-transactional-architecture">Kafka Two-Phase Commit Transactional Architecture</a></li>
+                <li><a href="#python-implementation-transactional-kafka-producer-eos-pipeline">Python Implementation: Transactional Kafka Producer &amp; EOS Pipeline</a></li>
+                <li><a href="#eos-implementation-gotchas-guardrails">EOS Implementation Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In distributed stream processing systems, network timeouts, broker restarts, and consumer group rebalances inevitably cause message re-transmissions. Under default configurations, streaming engines provide <strong>At-Least-Once</strong> delivery, resulting in duplicate records being processed by downstream database sinks or financial transaction systems.</p>
 <p>Achieving true <strong>Exactly-Once Semantics (EOS)</strong> guarantees that every event record is processed atomically—preventing both data loss and message duplication.</p>
 <p>Kafka achieves EOS through <strong>Idempotent Producers</strong>, the <strong>Transactional Coordinator</strong>, and two-phase commit protocols (<code>read_committed</code>).</p>
 <p>This article details the end-to-end mechanics required to build fault-tolerant EOS event pipelines.</p>
 <hr>
-<h2>Kafka Two-Phase Commit Transactional Architecture</h2>
+<h2 id="kafka-two-phase-commit-transactional-architecture">Kafka Two-Phase Commit Transactional Architecture</h2>
 <p>The two-phase commit protocol coordinating atomic multi-partition writes:</p>
 <div class="mermaid">graph TD
   A[Transactional Producer] --&gt;|1. InitTransactions| B[Kafka Transaction Coordinator]
@@ -130,14 +139,14 @@
   
   C --&gt;|Filter Control Markers| F[Read-Committed Consumer: Sees only committed events]
   D --&gt; F</div>
-<h3>Core Prerequisites for Exactly-Once Semantics</h3>
+<h3 id="core-prerequisites-for-exactly-once-semantics">Core Prerequisites for Exactly-Once Semantics</h3>
 <ol>
 <li><strong>Idempotent Producer (<code>enable.idempotence=true</code>)</strong>: Every producer is assigned a 64-bit Producer ID (PID). Each batch sent to a topic partition includes a monotonically increasing Sequence Number. If a network retry occurs, the Kafka broker compares the batch sequence number against its expected sequence counter and drops duplicate batches cleanly.</li>
 <li><strong>Transactional Coordinator &amp; Log</strong>: Multi-partition writes (such as consuming from topic A, updating internal state, and writing to topic B) are grouped into a single atomic transaction. The Transaction Coordinator writes transaction markers (<code>PREPARE_COMMIT</code>, <code>COMMITTED</code>, or <code>ABORTED</code>) to the internal <code>__transaction_state</code> log topic.</li>
 <li><strong>Read-Committed Consumers (<code>isolation.level=read_committed</code>)</strong>: Downstream consumers filter out uncommitted messages or aborted transaction blocks, advancing offsets only up to the last stable offset (LSO).</li>
 </ol>
 <hr>
-<h2>Python Implementation: Transactional Kafka Producer &amp; EOS Pipeline</h2>
+<h2 id="python-implementation-transactional-kafka-producer-eos-pipeline">Python Implementation: Transactional Kafka Producer &amp; EOS Pipeline</h2>
 <p>Here is a production-grade Python simulation of an Idempotent Transactional Kafka Producer and Read-Committed Consumer pipeline:</p>
 <pre><code class="language-python">import time
 from typing import List, Dict, Any, Optional
@@ -234,7 +243,7 @@ if __name__ == &quot;__main__&quot;:
     # Verify committed log length
     print(f&quot;\n📊 Total Committed Log Entries: {len(partition_a.committed_log)} (Zero duplication!)&quot;)</code></pre>
 <hr>
-<h2>EOS Implementation Gotchas &amp; Guardrails</h2>
+<h2 id="eos-implementation-gotchas-guardrails">EOS Implementation Gotchas &amp; Guardrails</h2>
 <p>When configuring Exactly-Once Semantics:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -247,7 +256,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying EOS pipelines with Kafka report:</p>
 <ul>
 <li><strong>Zero Duplicate Payments</strong>: Idempotent producers and transactional commit markers prevent duplicate financial charges during network socket drops.</li>
@@ -280,6 +289,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#kafka-two-phase-commit-transactional-architecture" class="toc-link">Kafka Two-Phase Commit Transactional Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-transactional-kafka-producer-eos-pipeline" class="toc-link">Python Implementation: Transactional Kafka Producer &amp; EOS Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#eos-implementation-gotchas-guardrails" class="toc-link">EOS Implementation Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

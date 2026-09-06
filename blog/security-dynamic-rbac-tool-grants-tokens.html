@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-danger-of-over-privileged-agent-swarms">The Danger of Over-Privileged Agent Swarms</a></li>
+                <li><a href="#1-defining-fine-grained-tool-scopes">1. Defining Fine-Grained Tool Scopes</a></li>
+                <li><a href="#2-decoupling-authorization-gates">2. Decoupling Authorization Gates</a></li>
+                <li><a href="#code-demo-scoped-tool-rbac-gateway">Code Demo: Scoped Tool RBAC Gateway</a></li>
+                <li><a href="#security-takeaways">Security Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Sharing global access tokens across multi-agent systems is a major security flaw
 </div>
 </div>
 <hr>
-<h2>The Danger of Over-Privileged Agent Swarms</h2>
+<h2 id="the-danger-of-over-privileged-agent-swarms">The Danger of Over-Privileged Agent Swarms</h2>
 <p>In basic systems, agents share a single API key or run with root host privileges:</p>
 <ul>
 <li><strong>Horizontal Privilege Escalation</strong>: A database auditor agent should not have permission to delete files or run git pushes, but shared credentials grant these capabilities.</li>
@@ -129,7 +139,7 @@ flowchart TD
     Match --&gt;|No: Unauthorized path| Reject([Block Tool Action: Log Alert])
     Match --&gt;|Yes: Authorized| Execute([Execute Tool &amp; Return File Content])</div>
 <hr>
-<h2>1. Defining Fine-Grained Tool Scopes</h2>
+<h2 id="1-defining-fine-grained-tool-scopes">1. Defining Fine-Grained Tool Scopes</h2>
 <p>We structure scope claims using hierarchical patterns:</p>
 <ul>
 <li><strong>Read-only Filesystem (<code>files:read:&lt;path&gt;</code>)</strong>: Restricting file-read operations to specific workspace subdirectories.</li>
@@ -137,14 +147,14 @@ flowchart TD
 <li><strong>Limited System Access (<code>system:write:&lt;target&gt;</code>)</strong>: Blocking shell commands unless target scripts are explicitly authorized.</li>
 </ul>
 <hr>
-<h2>2. Decoupling Authorization Gates</h2>
+<h2 id="2-decoupling-authorization-gates">2. Decoupling Authorization Gates</h2>
 <p>The authorization gate resides in the <strong>Tool Router Proxy</strong>, not the agent codebase:</p>
 <ol>
 <li>Child agents submit tool requests alongside their assigned JWT token.</li>
 <li>The router validates the token signature, checks claims against path parameters, and blocks execution if scopes are missing.</li>
 </ol>
 <hr>
-<h2>Code Demo: Scoped Tool RBAC Gateway</h2>
+<h2 id="code-demo-scoped-tool-rbac-gateway">Code Demo: Scoped Tool RBAC Gateway</h2>
 <p>Below is a Python implementation of an RBAC tool gateway. It parses session tokens, evaluates path permissions, and blocks unauthorized tool actions.</p>
 <pre><code class="language-python">import json
 from typing import Dict, Any, Tuple
@@ -212,7 +222,7 @@ if __name__ == &quot;__main__&quot;:
     success_3, msg_3 = gateway.verify_tool_access(token_3, &quot;files:write&quot;, path_3)
     print(f&quot;\n[Run #3] Target: {path_3}\n👉 {msg_3}&quot;)</code></pre>
 <hr>
-<h2>Security Takeaways</h2>
+<h2 id="security-takeaways">Security Takeaways</h2>
 <ul>
 <li><strong>Avoid Unified Master Keys</strong>: Never supply parent root access keys directly to worker agent nodes. Enforce token scopes.</li>
 <li><strong>Isolate Filesystem Tools</strong>: Restrict filesystem reads and writes to specific subdirectories using path validation checks.</li>
@@ -245,6 +255,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-danger-of-over-privileged-agent-swarms" class="toc-link">The Danger of Over-Privileged Agent Swarms</a></li>
+              <li class="toc-item toc-h2"><a href="#1-defining-fine-grained-tool-scopes" class="toc-link">1. Defining Fine-Grained Tool Scopes</a></li>
+              <li class="toc-item toc-h2"><a href="#2-decoupling-authorization-gates" class="toc-link">2. Decoupling Authorization Gates</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-scoped-tool-rbac-gateway" class="toc-link">Code Demo: Scoped Tool RBAC Gateway</a></li>
+              <li class="toc-item toc-h2"><a href="#security-takeaways" class="toc-link">Security Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

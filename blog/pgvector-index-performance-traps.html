@@ -104,6 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-pgvector-performance-cliff">The pgvector Performance Cliff</a></li>
+                <li><a href="#trap-1-no-index-silent-sequential-scan">Trap 1: No Index — Silent Sequential Scan</a></li>
+                <li><a href="#trap-2-wrong-distance-operator-index-silently-ignored">Trap 2: Wrong Distance Operator — Index Silently Ignored</a></li>
+                <li><a href="#trap-3-where-filters-before-ann-exact-scan-fallback">Trap 3: WHERE Filters Before ANN — Exact Scan Fallback</a></li>
+                <li><a href="#trap-4-default-efsearch-40-gives-poor-recall">Trap 4: Default ef_search = 40 Gives Poor Recall</a></li>
+                <li><a href="#trap-5-table-bloat-degrades-hnsw-graph-quality-over-time">Trap 5: Table Bloat Degrades HNSW Graph Quality Over Time</a></li>
+                <li><a href="#trap-6-limit-without-enough-candidates-for-reranking">Trap 6: LIMIT Without Enough Candidates for Reranking</a></li>
+                <li><a href="#trap-7-not-using-explain-analyze-to-confirm-index-usage">Trap 7: Not Using EXPLAIN ANALYZE to Confirm Index Usage</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +125,7 @@ pgvector is the most accessible path to production vector search — it lives in
 </div>
 </div>
 <hr>
-<h2>The pgvector Performance Cliff</h2>
+<h2 id="the-pgvector-performance-cliff">The pgvector Performance Cliff</h2>
 <p>pgvector supports two search modes: <strong>exact k-NN</strong> (sequential scan — always correct, O(n) cost) and <strong>approximate nearest neighbour / ANN</strong> (index-based — fast, slightly approximate). The danger is that pgvector silently falls back to exact scan in ways that produce no errors — just a query that takes 4 seconds instead of 4 milliseconds.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
@@ -131,7 +145,7 @@ flowchart TD
     style S4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style S5 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
 <hr>
-<h2>Trap 1: No Index — Silent Sequential Scan</h2>
+<h2 id="trap-1-no-index-silent-sequential-scan">Trap 1: No Index — Silent Sequential Scan</h2>
 <p><strong>Symptom</strong>: Queries work on 10K rows. After you load 500K documents, the same query takes 8 seconds. No errors.</p>
 <p><strong>Root cause</strong>: pgvector has no index by default. Every vector similarity query performs a full table scan, computing distance to every row.</p>
 <pre><code class="language-sql">-- ❌ No index — O(n) scan on every query
@@ -189,7 +203,7 @@ LIMIT 5;
 </tr>
 </tbody></table>
 <hr>
-<h2>Trap 2: Wrong Distance Operator — Index Silently Ignored</h2>
+<h2 id="trap-2-wrong-distance-operator-index-silently-ignored">Trap 2: Wrong Distance Operator — Index Silently Ignored</h2>
 <p><strong>Symptom</strong>: You create an HNSW index with <code>vector_cosine_ops</code> but your query uses <code>&lt;-&gt;</code> (L2 distance). The index is never used. Full sequential scan on every query.</p>
 <p><strong>Root cause</strong>: pgvector has three distance operators, each requiring its own index operator class:</p>
 <pre><code class="language-sql">-- The three operators and their index classes:
@@ -215,7 +229,7 @@ SELECT * FROM documents ORDER BY embedding &lt;-&gt; $1::vector LIMIT 5;  -- ✅
 -- Check which index your query is using
 EXPLAIN SELECT * FROM documents ORDER BY embedding &lt;=&gt; $1::vector LIMIT 5;</code></pre>
 <hr>
-<h2>Trap 3: WHERE Filters Before ANN — Exact Scan Fallback</h2>
+<h2 id="trap-3-where-filters-before-ann-exact-scan-fallback">Trap 3: WHERE Filters Before ANN — Exact Scan Fallback</h2>
 <p><strong>Symptom</strong>: Adding a <code>WHERE tenant_id = $2</code> filter to your vector search causes 100× slowdown. The more selective the filter, the slower it gets.</p>
 <p><strong>Root cause</strong>: pgvector&#39;s HNSW/IVFFlat indexes operate on the full vector space. When you add a <code>WHERE</code> clause, PostgreSQL must apply the filter either before or after the ANN search. If applied before (pre-filter), the index is useless for the filtered subset. If applied after (post-filter), you may scan thousands of ANN results to find <code>top_k</code> that match the filter.</p>
 <pre><code class="language-sql">-- ❌ Pre-filter kills index effectiveness
@@ -250,7 +264,7 @@ WHERE tenant_id = $2
 ORDER BY dist
 LIMIT 5;</code></pre>
 <hr>
-<h2>Trap 4: Default <code>ef_search = 40</code> Gives Poor Recall</h2>
+<h2 id="trap-4-default-efsearch-40-gives-poor-recall">Trap 4: Default <code>ef_search = 40</code> Gives Poor Recall</h2>
 <p><strong>Symptom</strong>: Your semantic search misses obviously relevant documents. Manual inspection shows the right document exists in the table but isn&#39;t returned in top-5.</p>
 <p><strong>Root cause</strong>: <code>ef_search</code> controls how many candidate nodes HNSW explores during search. The default is 40 — fast but low recall on large or complex datasets. The right value depends on your data distribution and the <code>m</code> parameter used at build time.</p>
 <pre><code class="language-sql">-- Check current ef_search
@@ -298,7 +312,7 @@ async def vector_search(
     )
     return [dict(row) for row in results]</code></pre>
 <hr>
-<h2>Trap 5: Table Bloat Degrades HNSW Graph Quality Over Time</h2>
+<h2 id="trap-5-table-bloat-degrades-hnsw-graph-quality-over-time">Trap 5: Table Bloat Degrades HNSW Graph Quality Over Time</h2>
 <p><strong>Symptom</strong>: Search quality gradually degrades over weeks as documents are inserted and deleted. Same queries return different (worse) results.</p>
 <p><strong>Root cause</strong>: PostgreSQL&#39;s MVCC (multi-version concurrency control) keeps old row versions (dead tuples) in the table. HNSW indexes also accumulate dead entries from deleted vectors. Without regular <code>VACUUM</code>, the index graph degrades.</p>
 <pre><code class="language-sql">-- Check table and index bloat
@@ -327,7 +341,7 @@ ALTER TABLE documents SET (
     autovacuum_vacuum_cost_delay = 2         -- Less I/O throttling for faster cleanup
 );</code></pre>
 <hr>
-<h2>Trap 6: <code>LIMIT</code> Without Enough Candidates for Reranking</h2>
+<h2 id="trap-6-limit-without-enough-candidates-for-reranking">Trap 6: <code>LIMIT</code> Without Enough Candidates for Reranking</h2>
 <p><strong>Symptom</strong>: You retrieve top-5 vectors to feed into a cross-encoder reranker. Reranker outputs poor results because the top-5 ANN results don&#39;t include the actually-best matches.</p>
 <p><strong>Root cause</strong>: ANN is approximate — the top-5 returned may not be the true top-5. Reranking can only improve ordering within the candidate set. If the true best match is ranked #12 by ANN, it never reaches your reranker.</p>
 <pre><code class="language-python"># Retrieving only top_k for reranking — reranker can't fix ANN misses
@@ -352,7 +366,7 @@ async def search_and_rerank_good(
     reranked = reranker.rerank(query, candidates)
     return reranked[:top_k]</code></pre>
 <hr>
-<h2>Trap 7: Not Using <code>EXPLAIN ANALYZE</code> to Confirm Index Usage</h2>
+<h2 id="trap-7-not-using-explain-analyze-to-confirm-index-usage">Trap 7: Not Using <code>EXPLAIN ANALYZE</code> to Confirm Index Usage</h2>
 <p>The single most important habit with pgvector: <strong>always verify your index is being used</strong> before declaring your setup correct.</p>
 <pre><code class="language-sql">-- Full diagnostics query
 EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
@@ -392,7 +406,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
     
     return plan</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>pgvector&#39;s greatest strength — living inside Postgres — is also its greatest trap. When it silently falls back to sequential scan, you get no error, no warning, and no indication that your &quot;fast&quot; vector search is actually O(n). Treat <code>EXPLAIN ANALYZE</code> as mandatory, not optional.</p>
 <ul>
 <li><strong>Build the right index for your distance metric</strong> — <code>vector_cosine_ops</code> for cosine, <code>vector_l2_ops</code> for L2. Mismatching operator and index class means the index is never used.</li>
@@ -400,7 +414,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
 <li><strong>Retrieve 10–20× more candidates than you need when reranking</strong> — ANN approximation errors can only be corrected if the correct results are in the candidate set.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>pgvector GitHub</strong>: <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> pgvector: Open-source vector similarity search for Postgres</a></li>
 <li><strong>pgvector HNSW Parameters</strong>: <a href="https://github.com/pgvector/pgvector#hnsw" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> Indexing configuration guide</a></li>
@@ -434,6 +448,22 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-pgvector-performance-cliff" class="toc-link">The pgvector Performance Cliff</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-1-no-index-silent-sequential-scan" class="toc-link">Trap 1: No Index — Silent Sequential Scan</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-2-wrong-distance-operator-index-silently-ignored" class="toc-link">Trap 2: Wrong Distance Operator — Index Silently Ignored</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-3-where-filters-before-ann-exact-scan-fallback" class="toc-link">Trap 3: WHERE Filters Before ANN — Exact Scan Fallback</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-4-default-efsearch-40-gives-poor-recall" class="toc-link">Trap 4: Default ef_search = 40 Gives Poor Recall</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-5-table-bloat-degrades-hnsw-graph-quality-over-time" class="toc-link">Trap 5: Table Bloat Degrades HNSW Graph Quality Over Time</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-6-limit-without-enough-candidates-for-reranking" class="toc-link">Trap 6: LIMIT Without Enough Candidates for Reranking</a></li>
+              <li class="toc-item toc-h2"><a href="#trap-7-not-using-explain-analyze-to-confirm-index-usage" class="toc-link">Trap 7: Not Using EXPLAIN ANALYZE to Confirm Index Usage</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

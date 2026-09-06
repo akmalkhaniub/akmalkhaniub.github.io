@@ -84,5 +84,94 @@
         openZoom(`<img src="${img.src}" alt="${img.alt || ''}" style="max-width:100%; height:auto;">`);
       });
     });
+
+    // Active Table of Contents (TOC) Highlighting
+    const tocLinks = document.querySelectorAll('.toc-link');
+    const headings = Array.from(document.querySelectorAll('.article-body h2[id]'));
+
+    if (tocLinks.length > 0 && headings.length > 0) {
+      const linkMap = new Map();
+      tocLinks.forEach(link => {
+        const targetId = link.getAttribute('href').replace(/^#/, '');
+        linkMap.set(targetId, link);
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            tocLinks.forEach(l => l.classList.remove('active'));
+            const activeLink = linkMap.get(entry.target.id);
+            if (activeLink) {
+              activeLink.classList.add('active');
+            }
+          }
+        });
+      }, {
+        rootMargin: '-80px 0px -65% 0px',
+        threshold: 0
+      });
+
+      headings.forEach(h => observer.observe(h));
+    }
+
+    // Scholarly Citations Tooltip Popup & Backlink Navigation
+    let lastCitationSource = null;
+    const tooltip = document.createElement('div');
+    tooltip.className = 'citation-tooltip';
+    tooltip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tooltip);
+
+    document.querySelectorAll('.citation-link').forEach(link => {
+      const refId = link.getAttribute('data-ref');
+      const targetItem = document.getElementById(`ref-${refId}`);
+      if (!targetItem) return;
+
+      // Show citation hovercard
+      link.addEventListener('mouseenter', () => {
+        const clone = targetItem.cloneNode(true);
+        const backLink = clone.querySelector('.citation-backlink');
+        if (backLink) backLink.remove();
+
+        tooltip.innerHTML = `<strong>[${refId}]</strong> ${clone.innerHTML.trim()}`;
+        tooltip.classList.add('visible');
+
+        const rect = link.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        let top = rect.top - tooltipRect.height - 10;
+        let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+        if (top < 10) {
+          top = rect.bottom + 10;
+        }
+        if (left < 10) left = 10;
+        if (left + tooltipRect.width > window.innerWidth - 10) {
+          left = window.innerWidth - tooltipRect.width - 10;
+        }
+
+        tooltip.style.top = `${top + window.scrollY}px`;
+        tooltip.style.left = `${left + window.scrollX}px`;
+      });
+
+      link.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('visible');
+      });
+
+      link.addEventListener('click', () => {
+        lastCitationSource = link;
+      });
+    });
+
+    // Backlink return to prose
+    document.querySelectorAll('.citation-backlink').forEach(backlink => {
+      backlink.addEventListener('click', (e) => {
+        if (lastCitationSource) {
+          e.preventDefault();
+          lastCitationSource.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          lastCitationSource.classList.add('citation-highlight');
+          setTimeout(() => lastCitationSource.classList.remove('citation-highlight'), 1800);
+        }
+      });
+    });
   });
 })();
+

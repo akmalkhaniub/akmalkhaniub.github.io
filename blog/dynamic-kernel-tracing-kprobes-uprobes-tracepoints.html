@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#linux-tracing-subsystems-ebpf-event-pipeline">Linux Tracing Subsystems &amp; eBPF Event Pipeline</a></li>
+                <li><a href="#python-implementation-kprobe-uprobe-event-telemetry-dispatcher">Python Implementation: Kprobe &amp; Uprobe Event Telemetry Dispatcher</a></li>
+                <li><a href="#dynamic-tracing-gotchas-best-practices">Dynamic Tracing Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In production distributed systems, diagnosing performance anomalies, hidden latency spikes, or memory leaks using traditional debugging tools (<code>strace</code>, <code>gdb</code>, <code>lsof</code>) is impossible.</p>
 <p>Tools like <code>strace</code> rely on the Linux <code>ptrace()</code> system call, which stops process execution on every system call entry and exit. This introduces a <strong>$100\times$ to $500\times$ latency penalty</strong>, making it far too dangerous to run against live production databases or web servers.</p>
 <p>To achieve zero-overhead, production-safe system telemetry, Linux combines <strong>eBPF</strong> with three powerful tracing subsystems: <strong>Kprobes</strong>, <strong>Uprobes</strong>, and <strong>Tracepoints</strong>.</p>
 <p>By dynamically instrumenting kernel C functions and user-space ELF binaries at runtime without modifying code or restarting processes, tools like <strong>bpftrace</strong> and <strong>BCC</strong> deliver deep runtime observability.</p>
 <p>This article details Kprobe instruction patching, Uprobe user-space symbol tracking, and Kernel Tracepoint events.</p>
 <hr>
-<h2>Linux Tracing Subsystems &amp; eBPF Event Pipeline</h2>
+<h2 id="linux-tracing-subsystems-ebpf-event-pipeline">Linux Tracing Subsystems &amp; eBPF Event Pipeline</h2>
 <p>How Kprobes, Uprobes, and Tracepoints capture telemetry events inside the kernel:</p>
 <div class="mermaid">graph TD
   subgraph User-Space Application (e.g. OpenSSL / MySQL)
@@ -128,7 +137,7 @@
     eBPFProg --&gt;|5. Push Struct Event| BPF_RingBuf[BPF Ring Buffer: BPF_MAP_TYPE_RINGBUF]
     BPF_RingBuf --&gt;|6. Zero-Copy Poll| BPFTraceDaemon[User-Space Observability Daemon / bpftrace]
   end</div>
-<h3>Core Linux Tracing Mechanisms</h3>
+<h3 id="core-linux-tracing-mechanisms">Core Linux Tracing Mechanisms</h3>
 <ol>
 <li><strong>Kernel Probes (Kprobes &amp; Kretprobes)</strong>:<ul>
 <li><strong>Kprobes</strong>: Dynamically instruments almost any kernel function entry point. When attached, the kernel replaces the target instruction with a breakpoint instruction (<code>INT 3</code> on x86). When hit, the CPU triggers a trap, executes the attached eBPF program with full access to function arguments (<code>pt_regs</code>), and resumes normal execution.</li>
@@ -144,7 +153,7 @@
 <li><strong>BPF Ring Buffer (<code>BPF_MAP_TYPE_RINGBUF</code>)</strong>: A high-performance lockless ring buffer used by eBPF programs to stream telemetry events to user space. It replaces the older <code>BPF_MAP_TYPE_PERF_EVENT_ARRAY</code>, reducing memory overhead by sharing a single ring buffer across all CPU cores.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Kprobe &amp; Uprobe Event Telemetry Dispatcher</h2>
+<h2 id="python-implementation-kprobe-uprobe-event-telemetry-dispatcher">Python Implementation: Kprobe &amp; Uprobe Event Telemetry Dispatcher</h2>
 <p>Here is a production-grade Python implementation of a Kprobe and Uprobe Event Telemetry Dispatcher Engine:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Callable, Optional
@@ -237,7 +246,7 @@ if __name__ == &quot;__main__&quot;:
     for e in events:
         print(f&quot;   • [{e.probe_type}] Symbol: '{e.symbol_name}' | PID: {e.pid} | Payload: {e.args}&quot;)</code></pre>
 <hr>
-<h2>Dynamic Tracing Gotchas &amp; Best Practices</h2>
+<h2 id="dynamic-tracing-gotchas-best-practices">Dynamic Tracing Gotchas &amp; Best Practices</h2>
 <p>When deploying eBPF tracing programs:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -250,7 +259,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Platforms adopting eBPF dynamic tracing (such as <strong>Datadog</strong>, <strong>New Relic</strong>, and <strong>bpftrace</strong>) report:</p>
 <ul>
 <li><strong>Zero Application Modifications</strong>: Instrumenting user-space binaries (OpenSSL, MySQL) delivers deep APM observability without modifying source code or re-deploying containers.</li>
@@ -283,6 +292,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#linux-tracing-subsystems-ebpf-event-pipeline" class="toc-link">Linux Tracing Subsystems &amp; eBPF Event Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-kprobe-uprobe-event-telemetry-dispatcher" class="toc-link">Python Implementation: Kprobe &amp; Uprobe Event Telemetry Dispatcher</a></li>
+              <li class="toc-item toc-h2"><a href="#dynamic-tracing-gotchas-best-practices" class="toc-link">Dynamic Tracing Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

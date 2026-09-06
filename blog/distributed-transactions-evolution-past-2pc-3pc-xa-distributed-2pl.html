@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-jim-grays-atomic-commit-two-phase-commit-2pc">1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</a></li>
+                <li><a href="#2-three-phase-commit-3pc-skeens-non-blocking-attempt">2. Three-Phase Commit (3PC): Skeen's Non-Blocking Attempt</a></li>
+                <li><a href="#3-xopen-xa-distributed-two-phase-locking-2pl">3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</a></li>
+                <li><a href="#4-why-large-scale-e-commerce-abandoned-monolithic-2pc">4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC</a></li>
+                <li><a href="#python-simulation-distributed-deadlock-detection-3pc-state-machine">Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</a></li>
+                <li><a href="#engineering-lessons-from-the-classical-era">Engineering Lessons from the Classical Era</a></li>
+                <li><a href="#next-in-the-series">Next in the Series</a></li>
+              </ul>
+            </details>
 <p>In the early decades of distributed systems and enterprise software (<strong>Amazon</strong>, <strong>eBay</strong>, <strong>Oracle</strong>, <strong>Tuxedo</strong>, <strong>Java JTA/XA</strong>), maintaining transactional integrity across multiple physical databases was treated as an all-or-nothing requirement.</p>
 <p>Engineers demanded the same strict <strong>ACID</strong> guarantees (Atomicity, Consistency, Isolation, Durability) across distributed networks that they enjoyed on a single mainframe.</p>
 <p>However, as internet-scale e-commerce platforms scaled from thousands to millions of concurrent shoppers in the late 1990s and early 2000s, classical distributed transaction protocols—specifically <strong>Two-Phase Commit (2PC)</strong>, <strong>Three-Phase Commit (3PC)</strong>, and <strong>X/Open XA Distributed Two-Phase Locking (2PL)</strong>—collapsed under their own synchronization overhead.</p>
@@ -121,12 +133,12 @@
   
   style Locks fill:#f43f5e,stroke:#881337,color:#ffffff</div>
 <hr>
-<h2>1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</h2>
+<h2 id="1-jim-grays-atomic-commit-two-phase-commit-2pc">1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</h2>
 <p>In his seminal 1978 paper, <em>Notes on Data Base Operating Systems</em>, Turing Award winner <strong>Jim Gray</strong> formalized the fundamental challenge of distributed consensus:</p>
 <blockquote>
 <p><em>How can multiple independent computing nodes, communicating over unreliable networks, agree to commit a transaction atomically if any single node can crash or vote to abort?</em></p>
 </blockquote>
-<h3>The Two-Phase Commit Protocol Mechanics</h3>
+<h3 id="the-two-phase-commit-protocol-mechanics">The Two-Phase Commit Protocol Mechanics</h3>
 <p>The 2PC protocol operates between a central <strong>Coordinator</strong> and multiple distributed <strong>Participants</strong> (Resource Managers):</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -153,7 +165,7 @@
   P1--&gt;&gt;C: ACK
   P2--&gt;&gt;C: ACK
   C-&gt;&gt;App: Tx Success</div>
-<h3>The Fatal Flaw: The Blocking Coordinator Vulnerability</h3>
+<h3 id="the-fatal-flaw-the-blocking-coordinator-vulnerability">The Fatal Flaw: The Blocking Coordinator Vulnerability</h3>
 <p>The fundamental flaw of 2PC is that <strong>it is a blocking protocol</strong>.</p>
 <p>Consider the <strong>uncertainty window</strong> ($[t_{\text{voted}}, t_{\text{commit}}]$):</p>
 <ol>
@@ -164,7 +176,7 @@
 <p>$$\text{Lock Hold Duration } T_{\text{lock}} = \infty \quad (\text{until Coordinator recovery})$$</p>
 <p>Any other concurrent transactions attempting to access those locked rows are queued indefinitely, leading to resource exhaustion, thread pool starvation, and total system outage.</p>
 <hr>
-<h2>2. Three-Phase Commit (3PC): Skeen&#39;s Non-Blocking Attempt</h2>
+<h2 id="2-three-phase-commit-3pc-skeens-non-blocking-attempt">2. Three-Phase Commit (3PC): Skeen&#39;s Non-Blocking Attempt</h2>
 <p>In 1981, <strong>Dale Skeen</strong> introduced the <strong>Three-Phase Commit (3PC)</strong> protocol (<em>Nonblocking Commit Protocols</em>). 3PC aimed to eliminate the blocking vulnerability by inserting a buffer state—the <code>Pre-Commit</code> phase—and establishing timeout-based transitions.</p>
 <div class="mermaid">stateDiagram-v2
   [*] --&gt; Init
@@ -175,7 +187,7 @@
   PreCommitted --&gt; Aborted : Timeout before Pre-Commit
   Committed --&gt; [*]
   Aborted --&gt; [*]</div>
-<h3>The 3PC State Invariant</h3>
+<h3 id="the-3pc-state-invariant">The 3PC State Invariant</h3>
 <p>Skeen proved that an atomic commit protocol is non-blocking under node crashes if and only if:</p>
 <ol>
 <li>No state transition allows a transition directly from a state where commit is possible to a state where abort is possible without passing through an intermediate state.</li>
@@ -187,7 +199,7 @@
 <li><strong>Phase 2 (Pre-Commit)</strong>: If all vote <code>YES</code>, coordinator sends <code>PRE_COMMIT</code>. Participants enter <code>Pre-Commit</code> state and ack. No locks are released, but participants know all peers voted <code>YES</code>.</li>
 <li><strong>Phase 3 (Do-Commit)</strong>: Coordinator sends <code>DO_COMMIT</code>. Participants apply writes and release locks.</li>
 </ol>
-<h3>Why 3PC Failed in Practice: Network Partitions ($P$ in CAP)</h3>
+<h3 id="why-3pc-failed-in-practice-network-partitions-p-in-cap">Why 3PC Failed in Practice: Network Partitions ($P$ in CAP)</h3>
 <p>While 3PC is non-blocking under <strong>isolated fail-stop node crashes</strong>, it <strong>completely breaks down under network partitions</strong>.</p>
 <p>If a network partition splits the coordinator from a subset of participants:</p>
 <ul>
@@ -197,7 +209,7 @@
 </ul>
 <p>Because asynchronous networks (like the internet or multi-switch datacenters) cannot distinguish between a dead node and a slow network partition, <strong>3PC was virtually never adopted in production databases</strong>.</p>
 <hr>
-<h2>3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</h2>
+<h2 id="3-xopen-xa-distributed-two-phase-locking-2pl">3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</h2>
 <p>In 1991, the Open Group published the <strong>X/Open Distributed Transaction Processing (DTP) XA Specification</strong>.</p>
 <p>XA standardized the interface between an AP (Application Program), a TM (Transaction Manager, like BEA Tuxedo or IBM CICS), and multiple RMs (Resource Managers, like Oracle, DB2, or Sybase).</p>
 <div class="mermaid">graph TD
@@ -206,13 +218,13 @@
   AP --&gt;|SQL Queries| RM2[&quot;Resource Manager 2 (DB2)&quot;]
   TM --&gt;|xa_open / xa_prepare / xa_commit| RM1
   TM --&gt;|xa_open / xa_prepare / xa_commit| RM2</div>
-<h3>Distributed Two-Phase Locking (2PL) &amp; Distributed Deadlocks</h3>
+<h3 id="distributed-two-phase-locking-2pl-distributed-deadlocks">Distributed Two-Phase Locking (2PL) &amp; Distributed Deadlocks</h3>
 <p>XA enforced serializability across databases using <strong>Strict Distributed Two-Phase Locking (Strict 2PL)</strong>:</p>
 <ul>
 <li><strong>Growing Phase</strong>: Transactions acquire shared (<code>S</code>) or exclusive (<code>X</code>) locks on every database as operations execute.</li>
 <li><strong>Shrinking Phase</strong>: Locks cannot be released until the global 2PC transaction either completely commits or aborts.</li>
 </ul>
-<h3>The Distributed Deadlock Problem</h3>
+<h3 id="the-distributed-deadlock-problem">The Distributed Deadlock Problem</h3>
 <p>In a single database, deadlocks are detected via an in-memory Wait-For-Graph (WFG) cycle detector. In distributed XA transactions across distinct database instances, deadlocks form <strong>distributed cycles</strong>:</p>
 <div class="mermaid">graph LR
   Tx1((Tx 1)) --&gt;|Holds Lock on Table A, Waits for Table B| DB2[(Oracle Node 2)]
@@ -225,15 +237,15 @@
 <p>Neither Oracle Node 1 nor Oracle Node 2 has the global graph in its local memory. Without expensive global deadlock detection algorithms (like Obermarck’s path-pushing algorithm or Chandy-Misra-Haas probe computation), systems were forced to rely on <strong>lock wait timeouts</strong>.</p>
 <p>Under heavy e-commerce holiday traffic, lock wait timeouts triggered cascading abort storms, consuming CPU while completing zero useful work.</p>
 <hr>
-<h2>4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC</h2>
+<h2 id="4-why-large-scale-e-commerce-abandoned-monolithic-2pc">4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC</h2>
 <p>During the late 1990s and early 2000s, pioneering internet platforms hit a hard architectural wall with classical 2PC and XA transactions:</p>
-<h3>The Early Amazon &quot;Gurupa&quot; Bottleneck</h3>
+<h3 id="the-early-amazon-gurupa-bottleneck">The Early Amazon &quot;Gurupa&quot; Bottleneck</h3>
 <p>In Amazon’s original monolithic architecture, the central Oracle database (internally named <em>&quot;Gurupa&quot;</em>) handled customer accounts, orders, inventory, and payment tracking.</p>
 <p>When Amazon attempted to split Gurupa into distributed domain databases (Orders DB, Inventory DB, Payments DB) using XA/2PC, checkout latencies spiked exponentially during Black Friday events.</p>
 <p>The math of 2PC latency explained why:</p>
 <p>$$\text{Latency}<em>{\text{2PC}} = \sum</em>{i=1}^N 2 \cdot \text{RTT}<em>i + \max(\text{Disk Write Time}</em>{\text{WAL}})$$</p>
 <p>If any single participant experienced a disk I/O stall or network packet drop, the entire checkout pipeline froze.</p>
-<h3>eBay&#39;s Architectural Shift: Randy Shoup &amp; Dan Pritchett</h3>
+<h3 id="ebays-architectural-shift-randy-shoup-dan-pritchett">eBay&#39;s Architectural Shift: Randy Shoup &amp; Dan Pritchett</h3>
 <p>In 2008, eBay’s chief architect <strong>Dan Pritchett</strong> published <em>BASE: An Acid Alternative</em>, and <strong>Randy Shoup</strong> documented eBay’s complete banishment of XA transactions:</p>
 <blockquote>
 <p><em>&quot;At eBay scale, we realized that 2PC is an anti-availability pattern. If you link 5 databases with 2PC, each with 99.9% availability, your overall transactional availability drops to $(0.999)^5 = 99.5%$. At millions of transactions per hour, 2PC turns isolated transient glitches into global outages.&quot;</em></p>
@@ -245,7 +257,7 @@
 <li>Asynchronously deliver messages to Inventory and Payment services with idempotency checks and compensating refunds.</li>
 </ol>
 <hr>
-<h2>Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</h2>
+<h2 id="python-simulation-distributed-deadlock-detection-3pc-state-machine">Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</h2>
 <p>To understand how classical systems attempted to resolve 2PL lock cycles, here is a Python implementation of a distributed Wait-For Graph (WFG) deadlock cycle detector using Tarjan&#39;s Strongly Connected Components (SCC) algorithm:</p>
 <pre><code class="language-python">from typing import Dict, List, Set
 
@@ -332,7 +344,7 @@ if __name__ == &quot;__main__&quot;:
     else:
         print(&quot; ✅ No distributed deadlocks found.&quot;)</code></pre>
 <hr>
-<h2>Engineering Lessons from the Classical Era</h2>
+<h2 id="engineering-lessons-from-the-classical-era">Engineering Lessons from the Classical Era</h2>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
   <div class="alert-content"><p><strong>Synchronous 2PC Locks are Fatal at Scale</strong>: Holding database row locks across remote network roundtrips directly couples the throughput of your fastest service to the latency and failure rate of your slowest dependency.</p>
@@ -349,7 +361,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Next in the Series</h2>
+<h2 id="next-in-the-series">Next in the Series</h2>
 <p>In <strong>Part 2</strong>, we will explore <strong>The Present (2010s–2020s)</strong>: How Google solved distributed consistency at global scale with <strong>Spanner and TrueTime</strong>, how CockroachDB &amp; YugabyteDB implement <strong>Multi-Raft with Hybrid Logical Clocks</strong>, and how <strong>Uber &amp; Netflix</strong> revolutionized microservices using <strong>Event-Driven Sagas (Cadence / Conductor)</strong>.</p>
 
           </div>
@@ -378,6 +390,20 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-jim-grays-atomic-commit-two-phase-commit-2pc" class="toc-link">1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</a></li>
+              <li class="toc-item toc-h2"><a href="#2-three-phase-commit-3pc-skeens-non-blocking-attempt" class="toc-link">2. Three-Phase Commit (3PC): Skeen's Non-Blocking Attempt</a></li>
+              <li class="toc-item toc-h2"><a href="#3-xopen-xa-distributed-two-phase-locking-2pl" class="toc-link">3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</a></li>
+              <li class="toc-item toc-h2"><a href="#4-why-large-scale-e-commerce-abandoned-monolithic-2pc" class="toc-link">4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC</a></li>
+              <li class="toc-item toc-h2"><a href="#python-simulation-distributed-deadlock-detection-3pc-state-machine" class="toc-link">Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</a></li>
+              <li class="toc-item toc-h2"><a href="#engineering-lessons-from-the-classical-era" class="toc-link">Engineering Lessons from the Classical Era</a></li>
+              <li class="toc-item toc-h2"><a href="#next-in-the-series" class="toc-link">Next in the Series</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

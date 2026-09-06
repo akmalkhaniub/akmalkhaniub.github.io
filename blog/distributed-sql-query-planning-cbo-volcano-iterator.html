@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#distributed-sql-query-planning-execution-architecture">Distributed SQL Query Planning &amp; Execution Architecture</a></li>
+                <li><a href="#python-implementation-distributed-sql-volcano-engine-with-hash-join">Python Implementation: Distributed SQL Volcano Engine with Hash Join</a></li>
+                <li><a href="#distributed-sql-gotchas-best-practices">Distributed SQL Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When an application submits a complex declarative SQL query to a distributed relational database (<strong>CockroachDB</strong>, <strong>Trino / Presto</strong>, <strong>TiDB</strong>, <strong>Apache Impala</strong>), the database face a major engineering challenge.</p>
 <p>The user specifies <em>what</em> data they want—not <em>how</em> to fetch or join it across hundreds of storage shards.</p>
 <p>Transforming raw SQL text into an optimal distributed physical execution plan requires a multi-stage <strong>Query Compiler</strong>: parsing ASTs, rewriting logical plans, evaluating execution costs via a <strong>Cost-Based Optimizer (CBO)</strong>, and executing physical operators using the <strong>Volcano Iterator Model</strong>.</p>
 <p>By distributing <strong>Exchange Operators</strong> (<code>Scatter</code>, <code>Gather</code>, <code>Hash-Repartition</code>), distributed SQL engines execute complex multi-table joins at petabyte scale.</p>
 <p>This article details Volcano iterator interfaces, Cost-Based Optimization formulas, and distributed Exchange operator mechanics.</p>
 <hr>
-<h2>Distributed SQL Query Planning &amp; Execution Architecture</h2>
+<h2 id="distributed-sql-query-planning-execution-architecture">Distributed SQL Query Planning &amp; Execution Architecture</h2>
 <p>How SQL queries are transformed from declarative text to a distributed Volcano execution graph:</p>
 <div class="mermaid">graph TD
   SQLText[&quot;SQL: SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id&quot;] --&gt; AST[SQL Parser &amp; Logical Planner]
@@ -130,7 +139,7 @@
       HashJoin --&gt;|5. Push Hash-Repartition Exchange| Node2[Node 2: Scan orders Table - Shard 10]
     end
   end</div>
-<h3>Core Query Engine Components</h3>
+<h3 id="core-query-engine-components">Core Query Engine Components</h3>
 <ol>
 <li><strong>Volcano Iterator Model (Pull-Based Processing)</strong>: Designed by Goetz Graefe, the Volcano model standardizes physical query operators (Scan, Filter, HashJoin, Aggregate) around three primary interface methods:<ul>
 <li><code>open()</code>: Initializes operator state and allocates internal buffers.</li>
@@ -150,7 +159,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Distributed SQL Volcano Engine with Hash Join</h2>
+<h2 id="python-implementation-distributed-sql-volcano-engine-with-hash-join">Python Implementation: Distributed SQL Volcano Engine with Hash Join</h2>
 <p>Here is a production-grade Python implementation of a Distributed SQL Query Execution Engine featuring the Volcano Iterator Model, Physical Hash Join, and Exchange Operators:</p>
 <pre><code class="language-python">from typing import List, Dict, Tuple, Optional, Any
 from pydantic import BaseModel
@@ -272,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
 
     join_operator.close()</code></pre>
 <hr>
-<h2>Distributed SQL Gotchas &amp; Best Practices</h2>
+<h2 id="distributed-sql-gotchas-best-practices">Distributed SQL Gotchas &amp; Best Practices</h2>
 <p>When engineering distributed query engines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -285,7 +294,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Query engines using CBO and Vectorized Volcano execution (such as <strong>Trino</strong>, <strong>ClickHouse</strong>, and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Over $20\times$ Faster Complex Multi-Join Queries</strong>: Cost-Based Optimization selects minimal-network physical join strategies.</li>
@@ -318,6 +327,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#distributed-sql-query-planning-execution-architecture" class="toc-link">Distributed SQL Query Planning &amp; Execution Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-distributed-sql-volcano-engine-with-hash-join" class="toc-link">Python Implementation: Distributed SQL Volcano Engine with Hash Join</a></li>
+              <li class="toc-item toc-h2"><a href="#distributed-sql-gotchas-best-practices" class="toc-link">Distributed SQL Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

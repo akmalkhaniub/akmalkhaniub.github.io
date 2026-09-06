@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#circuit-breaker-finite-state-machine-architecture">Circuit Breaker Finite State Machine Architecture</a></li>
+                <li><a href="#python-implementation-rate-limiter-circuit-breaker-engine">Python Implementation: Rate Limiter &amp; Circuit Breaker Engine</a></li>
+                <li><a href="#resilience-implementation-gotchas-guardrails">Resilience Implementation Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-concurrency microservice architectures, an un-throttled burst of traffic or a slow downstream database dependency can quickly cascade across an entire cluster. When a downstream microservice experiences latency spikes, upstream callers hold open connection sockets waiting for timeouts, leading to thread pool exhaustion and complete system blackouts.</p>
 <p>To build fault-tolerant systems, software architects enforce two critical resilience patterns: <strong>Distributed Rate Limiting</strong> and <strong>Circuit Breakers</strong>.</p>
 <p>Distributed rate limiting prevents malicious or runaway API clients from overwhelming services, while Circuit Breakers isolate failing downstream dependencies by failing fast and serving graceful fallbacks.</p>
 <p>This article details how to construct rate limiters and finite state machine circuit breakers.</p>
 <hr>
-<h2>Circuit Breaker Finite State Machine Architecture</h2>
+<h2 id="circuit-breaker-finite-state-machine-architecture">Circuit Breaker Finite State Machine Architecture</h2>
 <p>The operational state transitions of a resilience Circuit Breaker:</p>
 <div class="mermaid">graph TD
   subgraph CLOSED State: Normal Operation
@@ -128,7 +137,7 @@
     F --&gt;|Yes: Service Recovered| A
     F --&gt;|No: Service Still Failing| C
   end</div>
-<h3>Core Resilience Mechanisms</h3>
+<h3 id="core-resilience-mechanisms">Core Resilience Mechanisms</h3>
 <ol>
 <li><strong>Sliding Window Rate Limiting</strong>: Unlike Fixed Window counters (which suffer from boundary spike vulnerability at minute boundaries), Sliding Window counters calculate request rates across a continuous sliding time window (e.g. last 60 seconds) using atomic Redis Lua scripts.</li>
 <li><strong>Circuit Breaker Finite State Machine</strong>:<ul>
@@ -140,7 +149,7 @@
 <li><strong>Bulkhead Isolation</strong>: Isolating worker thread pools per downstream service so that a slow dependency cannot consume all global threads.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Rate Limiter &amp; Circuit Breaker Engine</h2>
+<h2 id="python-implementation-rate-limiter-circuit-breaker-engine">Python Implementation: Rate Limiter &amp; Circuit Breaker Engine</h2>
 <p>Here is a production-grade Python simulation of a Sliding Window Rate Limiter and a finite state machine Circuit Breaker with fallback:</p>
 <pre><code class="language-python">import time
 from typing import Callable, Any, Dict, Optional
@@ -276,7 +285,7 @@ if __name__ == &quot;__main__&quot;:
     res = circuit(flaky_downstream_service, fallback_service, should_fail=False)
     print(f&quot;  Response: {res}&quot;)</code></pre>
 <hr>
-<h2>Resilience Implementation Gotchas &amp; Guardrails</h2>
+<h2 id="resilience-implementation-gotchas-guardrails">Resilience Implementation Gotchas &amp; Guardrails</h2>
 <p>When configuring rate limiters and circuit breakers:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -289,7 +298,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying resilience circuit breakers and rate limiters report:</p>
 <ul>
 <li><strong>Zero Cascading Outages</strong>: Circuit breakers stop failing services from locking up upstream API gateways.</li>
@@ -322,6 +331,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#circuit-breaker-finite-state-machine-architecture" class="toc-link">Circuit Breaker Finite State Machine Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-rate-limiter-circuit-breaker-engine" class="toc-link">Python Implementation: Rate Limiter &amp; Circuit Breaker Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#resilience-implementation-gotchas-guardrails" class="toc-link">Resilience Implementation Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

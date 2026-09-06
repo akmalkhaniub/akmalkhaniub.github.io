@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#product-quantization-compression-flow">Product Quantization Compression Flow</a></li>
+                <li><a href="#python-implementation-product-quantization-encoder">Python Implementation: Product Quantization Encoder</a></li>
+                <li><a href="#quantization-gotchas-guardrails">Quantization Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Storing raw vectors in memory becomes cost-prohibitive at scale. For example, a dataset of 100 million vectors with 1536 dimensions stored as 32-bit floating points (FP32) requires approximately 614 GB of raw RAM—excluding HNSW graph indices, which double that memory footprint.</p>
 <p>To scale search systems efficiently, vector databases implement lossy compression techniques like <strong>Scalar Quantization (SQ)</strong> and <strong>Product Quantization (PQ)</strong>.</p>
 <p>By converting floating-point vectors into compact quantized representations, databases can compress indices by up to 95%, trading a small drop in search accuracy for massive hardware cost savings.</p>
 <p>This article details the mechanics of SQ and PQ compression algorithms.</p>
 <hr>
-<h2>Product Quantization Compression Flow</h2>
+<h2 id="product-quantization-compression-flow">Product Quantization Compression Flow</h2>
 <p>Product Quantization splits vectors into sub-spaces and encodes them using codebook cluster IDs:</p>
 <div class="mermaid">graph TD
   A[Raw Vector: 1024-dim FP32 - 4096 Bytes] --&gt; B[Split into 8 Sub-Vectors of 128-dim]
@@ -124,14 +133,14 @@
   
   E --&gt; G[Quantized Vector: 8 Bytes total - 99.8% Compression]
   F --&gt; G</div>
-<h3>Quantization Strategies</h3>
+<h3 id="quantization-strategies">Quantization Strategies</h3>
 <ol>
 <li><strong>Scalar Quantization (SQ8)</strong>: Standardizes and clips float values to fit within a dynamic range of 256 values, mapping them to 8-bit integers (<code>INT8</code>). This cuts memory consumption by 75% while maintaining high recall (often $&gt;98%$).</li>
 <li><strong>Product Quantization (PQ)</strong>: Segments vectors into $M$ sub-vectors. For each sub-space, a K-Means clustering algorithm is run to build a <strong>codebook</strong> of 256 centroids. Each sub-vector is then replaced with its closest 1-byte centroid ID.</li>
 <li><strong>Asymmetric Distance Computation (ADC)</strong>: When searching, the query vector is kept in raw FP32 format. Distance is computed directly against the database&#39;s compressed codebook tables, saving CPU cycles by avoiding full decompression runs.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Product Quantization Encoder</h2>
+<h2 id="python-implementation-product-quantization-encoder">Python Implementation: Product Quantization Encoder</h2>
 <p>Here is a production-grade Python implementation of a Product Quantization encoder. It segments high-dimensional vectors, assigns them to simulated codebook centroids, and executes asymmetric distance calculations:</p>
 <pre><code class="language-python">import numpy as np
 from typing import List, Dict, Tuple
@@ -226,7 +235,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot; Asymmetric Distance   : {adc_dist:.4f}&quot;)
     print(f&quot; Approximation Error   : {abs(exact_dist - adc_dist):.4f}&quot;)</code></pre>
 <hr>
-<h2>Quantization Gotchas &amp; Guardrails</h2>
+<h2 id="quantization-gotchas-guardrails">Quantization Gotchas &amp; Guardrails</h2>
 <p>When configuring vector compression:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -239,7 +248,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying quantized index partitions report:</p>
 <ul>
 <li><strong>90% Infrastructure Cost Reductions</strong>: Compressing vector indices enables hosting a 1-billion vector dataset on a fraction of the hardware, avoiding massive RAM costs.</li>
@@ -272,6 +281,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#product-quantization-compression-flow" class="toc-link">Product Quantization Compression Flow</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-product-quantization-encoder" class="toc-link">Python Implementation: Product Quantization Encoder</a></li>
+              <li class="toc-item toc-h2"><a href="#quantization-gotchas-guardrails" class="toc-link">Quantization Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

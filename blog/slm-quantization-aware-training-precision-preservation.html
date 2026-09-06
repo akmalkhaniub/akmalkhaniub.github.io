@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-threat-of-quantization-noise">The Threat of Quantization Noise</a></li>
+                <li><a href="#1-simulating-integer-clamping-fake-quantization">1. Simulating Integer Clamping (Fake Quantization)</a></li>
+                <li><a href="#2-straight-through-estimators-ste">2. Straight-Through Estimators (STE)</a></li>
+                <li><a href="#code-demo-quantization-aware-training-simulator">Code Demo: Quantization-Aware Training Simulator</a></li>
+                <li><a href="#quantization-aware-takeaways">Quantization-Aware Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Deploying fine-tuned models to edge devices requires converting high-precision w
 </div>
 </div>
 <hr>
-<h2>The Threat of Quantization Noise</h2>
+<h2 id="the-threat-of-quantization-noise">The Threat of Quantization Noise</h2>
 <p>In standard compression workflows:</p>
 <ul>
 <li><strong>The Post-Training Drop</strong>: Quantizing a custom-tuned adapter post-hoc rounds floating-point values to discrete integer steps, destroying high-precision representations.</li>
@@ -131,21 +141,21 @@ flowchart TD
     DeScale --&gt; Forward[Execute forward training pass]
     Forward --&gt; Backprop[Calculate Gradients &amp; Update FP32 weights]</div>
 <hr>
-<h2>1. Simulating Integer Clamping (Fake Quantization)</h2>
+<h2 id="1-simulating-integer-clamping-fake-quantization">1. Simulating Integer Clamping (Fake Quantization)</h2>
 <p>To implement simulated low-bit training:</p>
 <ul>
 <li><strong>Scale weights to range</strong>: Multiply weights by a scale factor derived from the maximum parameter ranges.</li>
 <li><strong>Clamp values</strong>: Restrict outputs to target bit bounds (e.g. mapping to <code>[-8, 7]</code> for signed 4-bit configurations) to simulate clipping.</li>
 </ul>
 <hr>
-<h2>2. Straight-Through Estimators (STE)</h2>
+<h2 id="2-straight-through-estimators-ste">2. Straight-Through Estimators (STE)</h2>
 <p>Since rounding is a non-differentiable step (gradient is zero almost everywhere):</p>
 <ol>
 <li><strong>Pass gradients unchanged</strong>: Use a Straight-Through Estimator (STE) during backpropagation to bypass the rounding derivative.</li>
 <li><strong>Apply updates</strong>: Apply calculated gradients directly to the high-precision weights.</li>
 </ol>
 <hr>
-<h2>Code Demo: Quantization-Aware Training Simulator</h2>
+<h2 id="code-demo-quantization-aware-training-simulator">Code Demo: Quantization-Aware Training Simulator</h2>
 <p>Below is a Python implementation of a quantization-aware training simulator. It injects fake quantization noise into weights, executes forward passes, and updates floating parameters.</p>
 <pre><code class="language-python">import numpy as np
 from typing import Tuple
@@ -202,7 +212,7 @@ if __name__ == &quot;__main__&quot;:
     print(simulated_weights)
     print(f&quot;\nLayer Output with Quantization Noise: {output}&quot;)</code></pre>
 <hr>
-<h2>Quantization-Aware Takeaways</h2>
+<h2 id="quantization-aware-takeaways">Quantization-Aware Takeaways</h2>
 <ul>
 <li><strong>Simulate Rounding Noise</strong>: Inject quantization rounding errors during training to train models to adapt to noise.</li>
 <li><strong>Keep High-Precision Backups</strong>: Maintain master weights in high-precision (FP32) to aggregate gradients.</li>
@@ -235,6 +245,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-threat-of-quantization-noise" class="toc-link">The Threat of Quantization Noise</a></li>
+              <li class="toc-item toc-h2"><a href="#1-simulating-integer-clamping-fake-quantization" class="toc-link">1. Simulating Integer Clamping (Fake Quantization)</a></li>
+              <li class="toc-item toc-h2"><a href="#2-straight-through-estimators-ste" class="toc-link">2. Straight-Through Estimators (STE)</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-quantization-aware-training-simulator" class="toc-link">Code Demo: Quantization-Aware Training Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#quantization-aware-takeaways" class="toc-link">Quantization-Aware Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#modern-memory-allocator-architecture">Modern Memory Allocator Architecture</a></li>
+                <li><a href="#python-implementation-thread-caching-memory-allocator-simulator">Python Implementation: Thread-Caching Memory Allocator Simulator</a></li>
+                <li><a href="#memory-allocator-gotchas-best-practices">Memory Allocator Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In multi-threaded server applications (such as Redis, RocksDB, and Envoy Proxy), allocation of heap memory via standard C library functions (<code>malloc()</code> and <code>free()</code>) becomes a major performance bottleneck.</p>
 <p>Standard Glibc allocators (<code>ptmalloc</code>) rely on centralized mutex locks to protect global heap arenas. When hundreds of concurrent worker threads attempt to allocate small memory blocks simultaneously, threads spend up to <strong>70% of their execution time waiting on <code>malloc</code> lock contention</strong>.</p>
 <p>Furthermore, naive heap management leads to <strong>Memory Fragmentation</strong>, where physical RAM remains un-reclaimed despite thousands of freed objects.</p>
 <p>To achieve lock-free, sub-5ns allocation latencies and zero fragmentation, high-performance systems use specialized memory allocators: <strong>jemalloc</strong> (developed by Jason Evans for FreeBSD/Meta) and <strong>tcmalloc</strong> (Thread-Caching Malloc developed by Google).</p>
 <p>This article details thread-local caches (<code>tcache</code>), size class binning, and arena partitioning mechanics.</p>
 <hr>
-<h2>Modern Memory Allocator Architecture</h2>
+<h2 id="modern-memory-allocator-architecture">Modern Memory Allocator Architecture</h2>
 <p>How jemalloc/tcmalloc route memory requests through fast-path thread caches and slow-path arenas:</p>
 <div class="mermaid">graph TD
   Thread1[Worker Thread 1] --&gt;|1. Fast-Path: Small Alloc &lt;= 32KB| TCache1[Thread-Local Cache: tcache]
@@ -129,7 +138,7 @@
   end
   
   Slab --&gt;|5. mmap() / sbrk()| HostOS[Host OS Kernel Memory]</div>
-<h3>Core Memory Allocator Design Principles</h3>
+<h3 id="core-memory-allocator-design-principles">Core Memory Allocator Design Principles</h3>
 <ol>
 <li><strong>Thread-Local Caches (<code>tcache</code>)</strong>: Each thread maintains a private, lock-free memory cache for small allocation sizes ($\le 32\text{ KB}$). Allocating memory from <code>tcache</code> requires no mutex locking or atomic synchronization, executing in <strong>under 5 nanoseconds</strong>.</li>
 <li><strong>Size Class Binning</strong>: To eliminate external memory fragmentation, memory blocks are categorized into discrete size classes (e.g. 8B, 16B, 32B, 48B, 64B... up to 32KB). Requests are rounded up to the nearest size class bin, ensuring objects of identical size share contiguous memory pages (<strong>Slabs</strong>).</li>
@@ -137,7 +146,7 @@
 <li><strong>Extent &amp; Chunk Allocation</strong>: Arenas manage memory in large $2\text{ MB}$ chunks divided into $4\text{ KB}$ pages (extents). When an arena runs out of memory, it calls <code>mmap(MAP_ANONYMOUS)</code> to request large memory blocks directly from the OS kernel.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Thread-Caching Memory Allocator Simulator</h2>
+<h2 id="python-implementation-thread-caching-memory-allocator-simulator">Python Implementation: Thread-Caching Memory Allocator Simulator</h2>
 <p>Here is a production-grade Python simulation of a Thread-Caching Memory Allocator featuring Thread Caches, Size Class Bins, and Arenas:</p>
 <pre><code class="language-python">import threading
 from typing import Dict, List, Optional
@@ -223,7 +232,7 @@ if __name__ == &quot;__main__&quot;:
     t1.join()
     t2.join()</code></pre>
 <hr>
-<h2>Memory Allocator Gotchas &amp; Best Practices</h2>
+<h2 id="memory-allocator-gotchas-best-practices">Memory Allocator Gotchas &amp; Best Practices</h2>
 <p>When tuning application memory allocators:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -236,7 +245,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Organizations replacing standard <code>ptmalloc</code> with <strong>jemalloc</strong> or <strong>tcmalloc</strong> report:</p>
 <ul>
 <li><strong>Over 30% Latency Reduction</strong>: Eliminating <code>malloc()</code> lock contention speeds up multi-threaded API response times.</li>
@@ -269,6 +278,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#modern-memory-allocator-architecture" class="toc-link">Modern Memory Allocator Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-thread-caching-memory-allocator-simulator" class="toc-link">Python Implementation: Thread-Caching Memory Allocator Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#memory-allocator-gotchas-best-practices" class="toc-link">Memory Allocator Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#btree-page-layout-latch-crabbing-architecture">B+Tree Page Layout &amp; Latch Crabbing Architecture</a></li>
+                <li><a href="#python-implementation-slotted-page-btree-latch-crabbing-engine">Python Implementation: Slotted-Page B+Tree &amp; Latch Crabbing Engine</a></li>
+                <li><a href="#btree-storage-gotchas-best-practices">B+Tree Storage Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In relational storage engines (<strong>PostgreSQL btree</strong>, <strong>MySQL InnoDB</strong>, <strong>SQLite</strong>, <strong>Oracle</strong>), <strong>B+Trees</strong> are the foundational data structure driving primary keys and secondary indexes.</p>
 <p>Unlike standard in-memory binary search trees (AVL, Red-Black), B+Trees are specifically engineered for <strong>block-oriented disk and NVMe storage</strong>.</p>
 <p>With a high branching factor $B$ (typically hundreds of keys per $8\text{ KB}$ page), a B+Tree can index billions of rows with a tree height of only $3$ or $4$ disk seeks.</p>
 <p>However, supporting concurrent read/write transactions at high throughput requires managing complex physical page layouts (<strong>Slotted-Page Architecture</strong>), handling <strong>Page Splitting</strong>, and preventing concurrency deadlocks via <strong>Latch Crabbing (Lock Coupling)</strong>.</p>
 <p>This article details B+Tree slotted page layouts, Page Splitting algorithms, Latch Crabbing concurrency protocols, and Write Amplification mitigation.</p>
 <hr>
-<h2>B+Tree Page Layout &amp; Latch Crabbing Architecture</h2>
+<h2 id="btree-page-layout-latch-crabbing-architecture">B+Tree Page Layout &amp; Latch Crabbing Architecture</h2>
 <p>How Slotted-Page layouts organize tuples inside $8\text{ KB}$ disk blocks and how Latch Crabbing lock coupling navigates concurrent trees:</p>
 <div class="mermaid">graph TD
   subgraph Slotted-Page Disk Block Layout (8 KB Fixed Size)
@@ -126,7 +135,7 @@
     ChildLatch --&gt;|4. Safe! Release Read Latch on Root| ReleaseRoot[Release Parent Latch]
     ReleaseRoot --&gt;|5. Traverse to Leaf Page| Leaf[Leaf Page P9: Return Value]
   end</div>
-<h3>Core B+Tree Mechanics</h3>
+<h3 id="core-btree-mechanics">Core B+Tree Mechanics</h3>
 <ol>
 <li><strong>B+Tree vs Classic B-Tree Structural Difference</strong>:<ul>
 <li><em>B-Tree</em>: Stores data key-value records in both internal nodes and leaf nodes.</li>
@@ -153,7 +162,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Slotted-Page B+Tree &amp; Latch Crabbing Engine</h2>
+<h2 id="python-implementation-slotted-page-btree-latch-crabbing-engine">Python Implementation: Slotted-Page B+Tree &amp; Latch Crabbing Engine</h2>
 <p>Here is a production-grade Python implementation of a Slotted-Page B+Tree Node Layout and Latch Crabbing Traversal Engine:</p>
 <pre><code class="language-python">import struct
 from typing import Dict, List, Optional, Tuple
@@ -268,7 +277,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n🔍 Executing Latch Crabbing Search for Key = 75:&quot;)
     target_leaf = tree.search_latch_crabbing(search_key=75)</code></pre>
 <hr>
-<h2>B+Tree Storage Gotchas &amp; Best Practices</h2>
+<h2 id="btree-storage-gotchas-best-practices">B+Tree Storage Gotchas &amp; Best Practices</h2>
 <p>When tuning B+Tree indexes:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -281,7 +290,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Storage engines deploying B+Tree slotted pages and latch crabbing (such as <strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, and <strong>SQLite</strong>) report:</p>
 <ul>
 <li><strong>$O(\log_B N)$ Lightning-Fast Point Lookups</strong>: Reading keys from a billion-row table in under $4$ physical disk block seeks.</li>
@@ -314,6 +323,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#btree-page-layout-latch-crabbing-architecture" class="toc-link">B+Tree Page Layout &amp; Latch Crabbing Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-slotted-page-btree-latch-crabbing-engine" class="toc-link">Python Implementation: Slotted-Page B+Tree &amp; Latch Crabbing Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#btree-storage-gotchas-best-practices" class="toc-link">B+Tree Storage Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

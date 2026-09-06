@@ -104,6 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-blast-radius-anatomy-why-multi-az-is-not-fault-isolation">1. The Blast Radius Anatomy: Why Multi-AZ Is Not Fault Isolation</a></li>
+                <li><a href="#2-anatomy-of-an-isolated-cell">2. Anatomy of an Isolated Cell</a></li>
+                <li><a href="#3-the-stateless-thin-cell-router">3. The Stateless Thin Cell Router</a></li>
+                <li><a href="#4-zero-downtime-cell-evacuation">4. Zero-Downtime Cell Evacuation</a></li>
+                <li><a href="#python-implementation-cell-based-router-with-dynamic-evacuation">Python Implementation: Cell-Based Router with Dynamic Evacuation</a></li>
+                <li><a href="#architectural-comparison-matrix">Architectural Comparison Matrix</a></li>
+                <li><a href="#the-engineering-law-of-blast-radiuses">The Engineering Law of Blast Radiuses</a></li>
+              </ul>
+            </details>
 <p>When naval architects design an ocean liner, their primary obsession is not preventing hull breaches. Icebergs, torpedoes, and submerged reefs are assumed to be inevitable. Their obsession is <strong>compartmentalization</strong>: dividing the hull with vertical steel bulkheads so that a catastrophic puncture in Compartment 3 cannot flood Compartments 4 through 12.</p>
 <p>In modern cloud engineering, most systems are built like the <em>Titanic</em> before its maiden voyage: proud, massively scaled, redundant across multiple availability zones, but fundamentally sharing a single continuous bilge.</p>
 <p>Consider a standard enterprise multi-tenant microservices architecture. One hundred thousand business customers share a regional Kubernetes cluster, an API gateway fleet, and a PostgreSQL primary. The marketing team celebrates having active-active deployment across three AWS Availability Zones.</p>
@@ -128,7 +140,7 @@
     end
   end</div>
 <hr>
-<h2>1. The Blast Radius Anatomy: Why Multi-AZ Is Not Fault Isolation</h2>
+<h2 id="1-the-blast-radius-anatomy-why-multi-az-is-not-fault-isolation">1. The Blast Radius Anatomy: Why Multi-AZ Is Not Fault Isolation</h2>
 <p>Why do multi-zone regional deployments routinely collapse into total outages?</p>
 <p>In distributed systems, high availability is not a function of server count; it is a function of <strong>failure independence</strong>. Standard multi-AZ deployments share four critical failure vectors:</p>
 <table>
@@ -162,7 +174,7 @@
 </tbody></table>
 <p>If two components share a database connection string, an IAM role, or an internal DNS zone, they share fate. When failure occurs, your blast radius is the entire shared state boundary.</p>
 <hr>
-<h2>2. Anatomy of an Isolated Cell</h2>
+<h2 id="2-anatomy-of-an-isolated-cell">2. Anatomy of an Isolated Cell</h2>
 <p>In a Cell-Based Architecture, a <strong>Cell</strong> is an independent, complete, self-contained instance of the entire platform stack:</p>
 <pre><code class="language-plaintext">Cell-04 Topology (Dedicated 5,000-Tenant Blast Domain)
  ├── Microservices    : Dedicated application pods (Auth, Billing, Processing)
@@ -170,12 +182,12 @@
  ├── Caching Layer    : Dedicated Redis cluster
  └── Message Queues   : Dedicated Kafka / SQS brokers
  * Invariant: ZERO shared runtime dependencies with Cell-01, Cell-02, or Cell-03</code></pre>
-<h3>The Sizing Invariant: Fixed Maximum Cell Scale</h3>
+<h3 id="the-sizing-invariant-fixed-maximum-cell-scale">The Sizing Invariant: Fixed Maximum Cell Scale</h3>
 <p>The foundational rule of cell design is: <strong>Never make cells bigger; make more cells.</strong></p>
 <p>Standard cloud platforms scale by continuously expanding their clusters—adding more nodes, increasing database instance sizes, tuning connection pool ceilings. This introduces nonlinear complexity: larger databases suffer longer vacuum times, cross-node gossip protocols saturate network switches, and failover latencies balloon.</p>
 <p>In a cell-based architecture, every cell is hard-capped at a predictable scale (e.g., maximum 5,000 tenants or 10,000 requests per second). When platform traffic doubles, engineering does not re-architect existing cells; they provision ten new identical cells. Because cell geometry is uniform, performance characteristics and recovery times are 100% predictable.</p>
 <hr>
-<h2>3. The Stateless Thin Cell Router</h2>
+<h2 id="3-the-stateless-thin-cell-router">3. The Stateless Thin Cell Router</h2>
 <p>To direct incoming client traffic to the appropriate cell without introducing a single point of failure, the architecture deploys an ultra-lean <strong>Thin Cell Router</strong> layer:</p>
 <div class="mermaid">graph LR
   Client[Inbound Request: tenant_id = 'org_402'] --&gt; Router[Stateless Thin Cell Router]
@@ -184,14 +196,14 @@
   
   style Router fill:#1e293b,stroke:#3b82f6,color:#ffffff
   style Cell3 fill:#064e3b,stroke:#10b981,color:#ffffff</div>
-<h3>Core Invariants of the Cell Router:</h3>
+<h3 id="core-invariants-of-the-cell-router">Core Invariants of the Cell Router:</h3>
 <ul>
 <li><strong>Zero Business Logic</strong>: The router performs no authentication checks, no database lookups, and no request body parsing. It only inspects routing tokens (e.g., URL subdomains, HTTP headers, or API keys).</li>
 <li><strong>In-Memory Deterministic Routing</strong>: Routing decisions are made via consistent hashing algorithms or memory-mapped routing tables cached directly in proxy memory (Envoy / OpenResty).</li>
 <li><strong>Failure Independence</strong>: If the router process restarts, it recovers in milliseconds because it carries zero persistent state.</li>
 </ul>
 <hr>
-<h2>4. Zero-Downtime Cell Evacuation</h2>
+<h2 id="4-zero-downtime-cell-evacuation">4. Zero-Downtime Cell Evacuation</h2>
 <p>When hardware degradations, network partitions, or memory leaks degrade a cell, operations teams do not attempt live in-place surgery. They trigger <strong>Cell Evacuation</strong>:</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -207,7 +219,7 @@
   Note over CellOld: Cell 3 drained and isolated for offline forensics</div>
 <p>By swapping an in-memory routing pointer, the control plane diverts tenant traffic to a warm standby cell in <strong>under two seconds</strong>, eliminating user-facing downtime while isolating the degraded environment for offline forensic analysis.</p>
 <hr>
-<h2>Python Implementation: Cell-Based Router with Dynamic Evacuation</h2>
+<h2 id="python-implementation-cell-based-router-with-dynamic-evacuation">Python Implementation: Cell-Based Router with Dynamic Evacuation</h2>
 <p>The following Python script models a deterministic multi-tenant cell router with consistent hashing, tenant health isolation, and instant emergency cell evacuation:</p>
 <pre><code class="language-python">import hashlib
 from dataclasses import dataclass
@@ -285,7 +297,7 @@ if __name__ == &quot;__main__&quot;:
         routed = cluster.route_request(t)
         print(f&quot;  Tenant {t} -&gt; Routed safely to Cell {routed}&quot;)</code></pre>
 <hr>
-<h2>Architectural Comparison Matrix</h2>
+<h2 id="architectural-comparison-matrix">Architectural Comparison Matrix</h2>
 <table>
 <thead>
 <tr>
@@ -321,7 +333,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>The Engineering Law of Blast Radiuses</h2>
+<h2 id="the-engineering-law-of-blast-radiuses">The Engineering Law of Blast Radiuses</h2>
 <p>Complex systems will always fail in ways their designers could not foresee. Software bugs, configuration mistakes, and hardware faults are statistical certainties.</p>
 <p>The mark of mature cloud engineering is not the hubris of attempting to eliminate all errors; it is the wisdom of <strong>bounding the blast radius</strong>. By carving platforms into hermetic, self-sufficient cells, architects ensure that when the inevitable catastrophe strikes, ninety-five percent of their customers never even notice.</p>
 
@@ -351,6 +363,20 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-blast-radius-anatomy-why-multi-az-is-not-fault-isolation" class="toc-link">1. The Blast Radius Anatomy: Why Multi-AZ Is Not Fault Isolation</a></li>
+              <li class="toc-item toc-h2"><a href="#2-anatomy-of-an-isolated-cell" class="toc-link">2. Anatomy of an Isolated Cell</a></li>
+              <li class="toc-item toc-h2"><a href="#3-the-stateless-thin-cell-router" class="toc-link">3. The Stateless Thin Cell Router</a></li>
+              <li class="toc-item toc-h2"><a href="#4-zero-downtime-cell-evacuation" class="toc-link">4. Zero-Downtime Cell Evacuation</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-cell-based-router-with-dynamic-evacuation" class="toc-link">Python Implementation: Cell-Based Router with Dynamic Evacuation</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-comparison-matrix" class="toc-link">Architectural Comparison Matrix</a></li>
+              <li class="toc-item toc-h2"><a href="#the-engineering-law-of-blast-radiuses" class="toc-link">The Engineering Law of Blast Radiuses</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

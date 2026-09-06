@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#pbft-three-phase-voting-flow">PBFT Three-Phase Voting Flow</a></li>
+                <li><a href="#python-implementation-pbft-4-node-agent-swarm-validator">Python Implementation: PBFT 4-Node Agent Swarm Validator</a></li>
+                <li><a href="#bft-implementation-gotchas-guardrails">BFT Implementation Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When multi-agent systems collaborate on mission-critical workflows (such as financial auditing or automated infrastructure deployment), traditional crash-fault consensus protocols (like Raft) are insufficient. Crash-fault algorithms assume that nodes either perform correctly or stop functioning entirely.</p>
 <p>In AI agent networks, nodes frequently exhibit <strong>Byzantine Faults</strong>—generating hallucinated code, omitting data fields, or returning corrupted tool execution results while continuing to operate normally.</p>
 <p>To prevent a single faulty or compromised agent from corrupting global swarm state, developers deploy <strong>Practical Byzantine Fault Tolerance (PBFT)</strong> consensus engines.</p>
@@ -111,7 +120,7 @@
 $$N \ge 3f + 1$$</p>
 <p>This article details how to implement PBFT voting protocols for agent swarms.</p>
 <hr>
-<h2>PBFT Three-Phase Voting Flow</h2>
+<h2 id="pbft-three-phase-voting-flow">PBFT Three-Phase Voting Flow</h2>
 <p>The three-phase voting pipeline used to validate proposed agent execution states:</p>
 <div class="mermaid">graph TD
   A[Client Request / Primary Agent Proposal] --&gt; B[Phase 1: Pre-Prepare]
@@ -126,14 +135,14 @@ $$N \ge 3f + 1$$</p>
   
   F --&gt;|Yes: Verified State| G[Execute &amp; Commit Agent Swarm Action]
   F --&gt;|No: Reject| H[Trigger Primary View Change / Abort]</div>
-<h3>PBFT Consensus Phases</h3>
+<h3 id="pbft-consensus-phases">PBFT Consensus Phases</h3>
 <ol>
 <li><strong>Pre-Prepare</strong>: The Primary Agent receives a task proposal, assigns a sequence number, and broadcasts a <code>Pre-Prepare</code> message containing the proposal digest to all Backup Validator Agents.</li>
 <li><strong>Prepare</strong>: Each Backup Validator Agent verifies the proposal against local schema/logic rules and broadcasts a signed <code>Prepare</code> message to all peers. Nodes wait until they collect $2f + 1$ matching Prepare messages.</li>
 <li><strong>Commit</strong>: Once a node achieves Prepare quorum, it broadcasts a <code>Commit</code> message. Nodes wait for $2f + 1$ matching Commit messages before executing the action, ensuring global consensus even if the Primary is malicious.</li>
 </ol>
 <hr>
-<h2>Python Implementation: PBFT 4-Node Agent Swarm Validator</h2>
+<h2 id="python-implementation-pbft-4-node-agent-swarm-validator">Python Implementation: PBFT 4-Node Agent Swarm Validator</h2>
 <p>Here is a production-grade Python implementation of a 4-node PBFT validator ($N=4$, $f=1$). It handles a scenario where 1 agent node emits hallucinated/corrupted output, successfully filtering out the faulty vote to achieve consensus:</p>
 <pre><code class="language-python">import hashlib
 
@@ -259,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
         for c_msg in commit_msgs:
             node.receive_commit(c_msg, max_faults)</code></pre>
 <hr>
-<h2>BFT Implementation Gotchas &amp; Guardrails</h2>
+<h2 id="bft-implementation-gotchas-guardrails">BFT Implementation Gotchas &amp; Guardrails</h2>
 <p>When deploying BFT consensus in AI swarms:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -272,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying PBFT agent validation report:</p>
 <ul>
 <li><strong>100% Elimination of Bad Automated Edits</strong>: Multi-node threshold voting prevents hallucinated or malicious code changes from reaching production pipelines.</li>
@@ -305,6 +314,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#pbft-three-phase-voting-flow" class="toc-link">PBFT Three-Phase Voting Flow</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-pbft-4-node-agent-swarm-validator" class="toc-link">Python Implementation: PBFT 4-Node Agent Swarm Validator</a></li>
+              <li class="toc-item toc-h2"><a href="#bft-implementation-gotchas-guardrails" class="toc-link">BFT Implementation Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

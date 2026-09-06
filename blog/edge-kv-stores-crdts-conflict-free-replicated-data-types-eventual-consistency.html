@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#global-edge-replication-crdt-convergence-architecture">Global Edge Replication &amp; CRDT Convergence Architecture</a></li>
+                <li><a href="#python-implementation-lww-element-set-crdt-engine">Python Implementation: LWW-Element-Set CRDT Engine</a></li>
+                <li><a href="#edge-crdt-gotchas-best-practices">Edge CRDT Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In global edge computing architectures (such as <strong>Cloudflare KV</strong>, <strong>Fastly Fanout</strong>, and <strong>AWS DynamoDB Global Tables</strong>), servicing user requests with sub-10ms latency requires reading and writing state at local Edge Points of Presence (PoPs) distributed across Europe, Asia, and the Americas.</p>
 <p>Routing every write back to a single primary database region in <code>us-east-1</code> introduces $200\text{ms} - 400\text{ms}$ cross-continental network round-trips, defeating the purpose of edge compute.</p>
 <p>However, accepting local writes at multiple global edge nodes simultaneously creates <strong>concurrent state conflicts</strong>.</p>
 <p>Under the <strong>CAP Theorem</strong>, high-availability edge databases prioritize <strong>Availability</strong> and <strong>Partition Tolerance</strong> (AP systems). To guarantee that edge replicas converge to identical states without centralized locking, systems engineers utilize <strong>Conflict-Free Replicated Data Types (CRDTs)</strong>.</p>
 <p>This article details State-Based vs Operation-Based CRDT mechanics and LWW-Element-Set convergence proofs.</p>
 <hr>
-<h2>Global Edge Replication &amp; CRDT Convergence Architecture</h2>
+<h2 id="global-edge-replication-crdt-convergence-architecture">Global Edge Replication &amp; CRDT Convergence Architecture</h2>
 <p>How concurrent writes at global edge nodes merge deterministically via CRDTs:</p>
 <div class="mermaid">graph TD
   subgraph Edge Node: Tokyo PoP (Asia)
@@ -127,7 +136,7 @@
   end
   
   SyncEngine --&gt;|4. Deterministic Convergence: T2 &gt; T1 -&gt; val='light'| ConvergedState[(Converged Global Edge State: 'light')]</div>
-<h3>Core CRDT Mathematical Properties</h3>
+<h3 id="core-crdt-mathematical-properties">Core CRDT Mathematical Properties</h3>
 <ol>
 <li><strong>Strong Eventual Consistency (SEC)</strong>: If two edge replicas have received the same set of updates (regardless of the order in which updates were received), they are guaranteed to be in identical states.</li>
 <li><strong>State-Based CRDTs (CvRDT)</strong>: Replicas sync state by sending their full state vectors to peer nodes. States are merged using a <strong>Join Semi-Lattice</strong> operator ($\sqcup$) that must satisfy three algebraic properties:<ul>
@@ -139,7 +148,7 @@
 <li><strong>LWW-Element-Set (Last-Write-Wins Element Set)</strong>: A common CRDT construction for Key-Value stores. Each key entry contains an <strong>Add Set</strong> and a <strong>Remove Set</strong> tagged with wall-clock timestamps ($T$) and node IDs. When merging two replicas, the entry with the highest timestamp ($T_{\text{max}}$) wins. If timestamps are identical, a deterministic tie-breaker (such as lexicographical comparison of client IDs) is applied.</li>
 </ol>
 <hr>
-<h2>Python Implementation: LWW-Element-Set CRDT Engine</h2>
+<h2 id="python-implementation-lww-element-set-crdt-engine">Python Implementation: LWW-Element-Set CRDT Engine</h2>
 <p>Here is a production-grade Python implementation of an LWW-Element-Set CRDT Key-Value Engine for multi-region edge synchronization:</p>
 <pre><code class="language-python">import time
 from typing import Dict, Optional, Tuple, Any
@@ -250,7 +259,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;\n After Sync  -&gt; Tokyo 'session_config': {tokyo_node.get('session_config')} (CONVERGED)&quot;)
     print(f&quot; After Sync  -&gt; London 'session_config': {london_node.get('session_config')} (CONVERGED)&quot;)</code></pre>
 <hr>
-<h2>Edge CRDT Gotchas &amp; Best Practices</h2>
+<h2 id="edge-crdt-gotchas-best-practices">Edge CRDT Gotchas &amp; Best Practices</h2>
 <p>When deploying distributed edge key-value stores:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -263,7 +272,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Global edge databases utilizing CRDT eventual consistency (such as <strong>Cloudflare KV</strong>) report:</p>
 <ul>
 <li><strong>Sub-10ms Global Read &amp; Write Latency</strong>: Servicing user requests locally from over 300 global edge locations.</li>
@@ -296,6 +305,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#global-edge-replication-crdt-convergence-architecture" class="toc-link">Global Edge Replication &amp; CRDT Convergence Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-lww-element-set-crdt-engine" class="toc-link">Python Implementation: LWW-Element-Set CRDT Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#edge-crdt-gotchas-best-practices" class="toc-link">Edge CRDT Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

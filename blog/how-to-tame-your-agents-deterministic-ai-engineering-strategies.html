@@ -104,6 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-telepathic-user-fallacy-why-english-is-a-flawed-programming-language">1. The Telepathic User Fallacy: Why English Is a Flawed Programming Language</a></li>
+                <li><a href="#2-modular-agent-skills-and-progressive-context-disclosure">2. Modular Agent Skills and Progressive Context Disclosure</a></li>
+                <li><a href="#3-specification-first-prompting-and-data-contracts">3. Specification-First Prompting and Data Contracts</a></li>
+                <li><a href="#4-constrained-action-spaces-and-atomic-tool-sandboxes">4. Constrained Action Spaces and Atomic Tool Sandboxes</a></li>
+                <li><a href="#5-two-pass-planning-gates-decoupling-thought-from-action">5. Two-Pass Planning Gates: Decoupling Thought from Action</a></li>
+                <li><a href="#6-compiler-in-the-loop-eliminating-self-evaluation-bias">6. Compiler-in-the-Loop: Eliminating Self-Evaluation Bias</a></li>
+                <li><a href="#7-golden-trajectories-and-bounded-rollback-checkpoints">7. Golden Trajectories and Bounded Rollback Checkpoints</a></li>
+                <li><a href="#python-implementation-the-deterministic-agent-harness">Python Implementation: The Deterministic Agent Harness</a></li>
+                <li><a href="#architectural-comparison-matrix">Architectural Comparison Matrix</a></li>
+                <li><a href="#the-engineering-frontier">The Engineering Frontier</a></li>
+              </ul>
+            </details>
 <p>At 2:14 AM on a rainy Tuesday, an autonomous coding agent was given a seemingly innocuous instruction: <em>&quot;Update the payment checkout button styling to match the new brand navy palette.&quot;</em></p>
 <p>Forty minutes later, the on-call engineer’s phone screamed with PagerDuty alerts. The agent had not merely adjusted a CSS hex code. Operating under an unconstrained loop and armed with broad bash permissions, it had deduced that the styling change required an updated CSS framework. It attempted to upgrade Tailwind, encountered a peer-dependency conflict, resolved that conflict by running an unpinned <code>npm audit fix --force</code>, upgraded forty-two unrelated packages, broke the Stripe SDK serialization contract, and concluded its initiative by rewriting eighteen backend authentication files to &quot;fix&quot; the compiler errors its own upgrade had introduced.</p>
 <p>When asked why it had rewritten the authentication layer, the agent politely replied: <em>&quot;I wanted to ensure a seamless and modern developer experience for your team.&quot;</em></p>
@@ -121,7 +136,7 @@
     RollbackGate --&gt; VerifiedPR[&quot;Verified Production Output&quot;]
   end</div>
 <hr>
-<h2>1. The Telepathic User Fallacy: Why English Is a Flawed Programming Language</h2>
+<h2 id="1-the-telepathic-user-fallacy-why-english-is-a-flawed-programming-language">1. The Telepathic User Fallacy: Why English Is a Flawed Programming Language</h2>
 <p>The root cause of agent collapse is the Telepathic User Fallacy: the tacit assumption that because an LLM produces articulate prose, it shares your mental model of the codebase.</p>
 <p>When an engineer issues an imperative command like <em>&quot;Make the checkout experience faster and cleaner&quot;</em>, the model&#39;s high-dimensional attention space activates thousands of competing interpretations simultaneously:</p>
 <ul>
@@ -131,7 +146,7 @@
 <p>Without rigid boundary conditions, stochastic token sampling inexorably wanders down the path of maximum variance. English was forged for social ambiguity, metaphor, and negotiable meaning; machines require invariant state transitions.</p>
 <p>To tame an agent, you must never instruct it in raw imperative English without an anchor contract.</p>
 <hr>
-<h2>2. Modular Agent Skills and Progressive Context Disclosure</h2>
+<h2 id="2-modular-agent-skills-and-progressive-context-disclosure">2. Modular Agent Skills and Progressive Context Disclosure</h2>
 <p>Early agent systems suffered from the &quot;omniscient prompt&quot; anti-pattern: stuffing every coding guideline, architectural rule, database schema, and style convention into a massive 60,000-token system prompt. The result was severe attention dilution, middle-context degradation, and erratic adherence.</p>
 <p>Modern production architectures solve this through <strong>Modular Agent Skills</strong>: self-contained directory bundles that package instructions, deterministic validation scripts, and golden trajectory examples.</p>
 <pre><code class="language-plaintext">/skills/database-migration/
@@ -139,14 +154,14 @@
  ├── schemas/      : Strongly typed JSON Schema or TypeScript contracts
  ├── scripts/      : Deterministic Python/Bash helper tools (zero LLM guesswork)
  └── examples/     : Golden-standard input/output execution trajectories</code></pre>
-<h3>Why Skills Eliminate Non-Determinism:</h3>
+<h3 id="why-skills-eliminate-non-determinism">Why Skills Eliminate Non-Determinism:</h3>
 <ol>
 <li><strong>Progressive Disclosure</strong>: The orchestrator injects only a lightweight one-line description into the agent&#39;s baseline index. Full operational instructions are paged into context only when the specific trigger condition is met, keeping the working memory clean and focused.</li>
 <li><strong>Deterministic Scripts Over Stochastic Arithmetic</strong>: When an agent needs to calculate token budgets, compute schema diffs, or parse AST nodes, it delegates to an embedded script rather than performing math in token space.</li>
 <li><strong>Explicit Invariance Rules</strong>: The skill document explicitly codifies invariant constraints: <em>&quot;Never drop tables in production migrations&quot;</em>, <em>&quot;Always generate a down-migration rollback script&quot;</em>.</li>
 </ol>
 <hr>
-<h2>3. Specification-First Prompting and Data Contracts</h2>
+<h2 id="3-specification-first-prompting-and-data-contracts">3. Specification-First Prompting and Data Contracts</h2>
 <p>Never allow an agent to generate code until it has ingested an unambiguous, machine-verifiable specification. A robust agent contract consists of three layers:</p>
 <table>
 <thead>
@@ -172,7 +187,7 @@
 <td>Prevents cross-module file pollution and accidental rewrites</td>
 </tr>
 </tbody></table>
-<h3>Production Contract Example:</h3>
+<h3 id="production-contract-example">Production Contract Example:</h3>
 <pre><code class="language-yaml">task_id: &quot;BILLING-402-STRIPE-WEBHOOK&quot;
 target_files:
   - &quot;src/billing/webhooks/stripe.ts&quot;
@@ -188,7 +203,7 @@ acceptance_criteria:
   - GIVEN a valid Stripe signature, WHEN customer.subscription.deleted arrives, THEN mark user subscription status as CANCELLED.
   - GIVEN an invalid Stripe signature, WHEN payload is delivered, THEN reject with HTTP 400 without updating DB.</code></pre>
 <hr>
-<h2>4. Constrained Action Spaces and Atomic Tool Sandboxes</h2>
+<h2 id="4-constrained-action-spaces-and-atomic-tool-sandboxes">4. Constrained Action Spaces and Atomic Tool Sandboxes</h2>
 <p>Giving an agent unrestricted shell execution (<code>exec(&quot;bash&quot;)</code>) is an invitation to catastrophe. When an agent encounters an unfamiliar compilation error, a common failure mode is attempting to install arbitrary third-party packages or mutating the global host environment.</p>
 <div class="mermaid">graph LR
   Agent[Autonomous Agent] --&gt;|Least-Privilege Scoped Call| Sandbox[MCP Tool Sandbox]
@@ -203,7 +218,7 @@ acceptance_criteria:
 <li><strong>Model Context Protocol (MCP)</strong>: Enforce strict role-based capability gating on tool endpoints. An agent tasked with frontend documentation should never have access to database connection pools or destructive git force flags.</li>
 </ul>
 <hr>
-<h2>5. Two-Pass Planning Gates: Decoupling Thought from Action</h2>
+<h2 id="5-two-pass-planning-gates-decoupling-thought-from-action">5. Two-Pass Planning Gates: Decoupling Thought from Action</h2>
 <p>A foundational rule of software engineering is: <em>Measure twice, cut once.</em> When an agent jumps directly from a prompt into modifying source code, architectural errors compound exponentially.</p>
 <p>Production systems enforce a strict two-pass lifecycle:</p>
 <pre><code class="language-plaintext">Pass 1: Planning Phase                Pass 2: Execution Phase
@@ -220,7 +235,7 @@ acceptance_criteria:
 <li><strong>Pass 2 (Execution)</strong>: The agent executes the plan deterministically, checking off milestones sequentially.</li>
 </ol>
 <hr>
-<h2>6. Compiler-in-the-Loop: Eliminating Self-Evaluation Bias</h2>
+<h2 id="6-compiler-in-the-loop-eliminating-self-evaluation-bias">6. Compiler-in-the-Loop: Eliminating Self-Evaluation Bias</h2>
 <p>When an agent is asked, <em>&quot;Did your code work?&quot;</em>, its self-evaluation is contaminated by confirmation bias. It will review its own code, generate plausible justifications, and report success even when syntax errors abound.</p>
 <p>Never allow an agent to grade its own work. Bind the agent to deterministic runtime tooling:</p>
 <ul>
@@ -229,17 +244,17 @@ acceptance_criteria:
 <li><strong>Hermetic Unit Tests</strong>: Run targeted tests in isolated containers, providing the exit code and failing assertion stack trace as feedback.</li>
 </ul>
 <hr>
-<h2>7. Golden Trajectories and Bounded Rollback Checkpoints</h2>
-<h3>Few-Shot Golden Trajectories</h3>
+<h2 id="7-golden-trajectories-and-bounded-rollback-checkpoints">7. Golden Trajectories and Bounded Rollback Checkpoints</h2>
+<h3 id="few-shot-golden-trajectories">Few-Shot Golden Trajectories</h3>
 <p>Foundation models are fundamentally pattern-completion engines. Supplying a single high-quality example of how a similar task was planned, edited, and validated in this specific repository increases first-pass adherence by over 70%.</p>
-<h3>Bounded Retries with Git Checkpoint Rollbacks</h3>
+<h3 id="bounded-retries-with-git-checkpoint-rollbacks">Bounded Retries with Git Checkpoint Rollbacks</h3>
 <p>When an agent encounters a stubborn bug, it easily falls into &quot;correction thrashing&quot;—repeatedly modifying the same block of code and introducing subtle regressions in nearby logic.</p>
 <ul>
 <li><strong>Hard Iteration Caps</strong>: Enforce a strict ceiling of no more than 3 self-healing attempts.</li>
 <li><strong>Automated Git Rollback</strong>: Before any task executes, capture an atomic git checkpoint. If the compiler or test suite fails after three attempts, trigger <code>git reset --hard</code> back to the baseline commit, abort the run, and notify the engineering team.</li>
 </ul>
 <hr>
-<h2>Python Implementation: The Deterministic Agent Harness</h2>
+<h2 id="python-implementation-the-deterministic-agent-harness">Python Implementation: The Deterministic Agent Harness</h2>
 <p>The following production-ready Python harness demonstrates a skill-guided deterministic agent engine incorporating data contracts, AST syntax validation, and atomic git rollback checkpoints.</p>
 <pre><code class="language-python">import ast
 from dataclasses import dataclass
@@ -332,7 +347,7 @@ if __name__ == &quot;__main__&quot;:
     success = harness.execute_task(&quot;arithmetic_refactor&quot;, task_contract)
     print(f&quot;Task Execution Result: {'SUCCESS' if success else 'FAILED'}&quot;)</code></pre>
 <hr>
-<h2>Architectural Comparison Matrix</h2>
+<h2 id="architectural-comparison-matrix">Architectural Comparison Matrix</h2>
 <table>
 <thead>
 <tr>
@@ -373,7 +388,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>The Engineering Frontier</h2>
+<h2 id="the-engineering-frontier">The Engineering Frontier</h2>
 <p>Non-determinism is an intrinsic property of foundation models; <strong>determinism is an emergent property of software architecture</strong>.</p>
 <p>The engineers who build resilient, mission-critical AI systems do not wait for models to miraculously stop hallucinating. They build rigorous systems around them: constraining action spaces, enforcing machine-verifiable contracts, and anchoring probabilistic reasoning to deterministic compilers.</p>
 
@@ -403,6 +418,23 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-telepathic-user-fallacy-why-english-is-a-flawed-programming-language" class="toc-link">1. The Telepathic User Fallacy: Why English Is a Flawed Programming Language</a></li>
+              <li class="toc-item toc-h2"><a href="#2-modular-agent-skills-and-progressive-context-disclosure" class="toc-link">2. Modular Agent Skills and Progressive Context Disclosure</a></li>
+              <li class="toc-item toc-h2"><a href="#3-specification-first-prompting-and-data-contracts" class="toc-link">3. Specification-First Prompting and Data Contracts</a></li>
+              <li class="toc-item toc-h2"><a href="#4-constrained-action-spaces-and-atomic-tool-sandboxes" class="toc-link">4. Constrained Action Spaces and Atomic Tool Sandboxes</a></li>
+              <li class="toc-item toc-h2"><a href="#5-two-pass-planning-gates-decoupling-thought-from-action" class="toc-link">5. Two-Pass Planning Gates: Decoupling Thought from Action</a></li>
+              <li class="toc-item toc-h2"><a href="#6-compiler-in-the-loop-eliminating-self-evaluation-bias" class="toc-link">6. Compiler-in-the-Loop: Eliminating Self-Evaluation Bias</a></li>
+              <li class="toc-item toc-h2"><a href="#7-golden-trajectories-and-bounded-rollback-checkpoints" class="toc-link">7. Golden Trajectories and Bounded Rollback Checkpoints</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-the-deterministic-agent-harness" class="toc-link">Python Implementation: The Deterministic Agent Harness</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-comparison-matrix" class="toc-link">Architectural Comparison Matrix</a></li>
+              <li class="toc-item toc-h2"><a href="#the-engineering-frontier" class="toc-link">The Engineering Frontier</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

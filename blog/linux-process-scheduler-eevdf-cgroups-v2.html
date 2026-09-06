@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#eevdf-scheduling-cgroups-v2-architecture">EEVDF Scheduling &amp; Cgroups v2 Architecture</a></li>
+                <li><a href="#python-implementation-eevdf-scheduler-cgroup-quota-simulator">Python Implementation: EEVDF Scheduler &amp; Cgroup Quota Simulator</a></li>
+                <li><a href="#scheduler-cgroup-gotchas-best-practices">Scheduler &amp; Cgroup Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-concurrency cloud environments running thousands of Docker/Kubernetes container workloads on a single physical host, the Linux kernel CPU scheduler is the ultimate arbiter of system latency and fairness.</p>
 <p>For over 15 years, Linux relied on the <strong>Completely Fair Scheduler (CFS)</strong>. While CFS ensured proportional CPU distribution over long time windows, it struggled with <strong>latency-sensitive tasks</strong>: interactive or real-time tasks could be delayed by CPU-bound batch tasks until their $vruntime$ caught up.</p>
 <p>To solve CFS latency deficiencies, Linux kernel 6.6 replaced CFS with <strong>EEVDF (Earliest Eligible Virtual Deadline First)</strong>, authored by Peter Zijlstra based on Peter Shenoy&#39;s seminal 1995 research.</p>
 <p>Combined with <strong>Cgroups v2</strong> unified resource hierarchies, EEVDF delivers deterministic CPU latency guarantees for containerized workloads.</p>
 <p>This article details EEVDF virtual deadline math, lag eligibility, and Cgroups v2 resource limit enforcement.</p>
 <hr>
-<h2>EEVDF Scheduling &amp; Cgroups v2 Architecture</h2>
+<h2 id="eevdf-scheduling-cgroups-v2-architecture">EEVDF Scheduling &amp; Cgroups v2 Architecture</h2>
 <p>How the EEVDF scheduler selects tasks based on Lag Eligibility and Virtual Deadlines:</p>
 <div class="mermaid">graph TD
   subgraph Kubernetes Container Pods (Cgroups v2 Limits)
@@ -130,7 +139,7 @@
   subgraph CPU Execution Context
     EarliestDeadline --&gt;|3. Dispatch Time Slice q| CPUCore[Physical CPU Core Execution]
   end</div>
-<h3>Core EEVDF &amp; Cgroups v2 Principles</h3>
+<h3 id="core-eevdf-cgroups-v2-principles">Core EEVDF &amp; Cgroups v2 Principles</h3>
 <ol>
 <li><strong>Virtual Runtime ($vruntime$) &amp; Lag</strong>: The scheduler maintains a monotonic system virtual time $V$. A task&#39;s <strong>Lag</strong> represents the difference between the CPU time the task <em>should</em> have received versus what it <em>actually</em> consumed:
 $$\text{Lag}_i = V - vruntime_i$$<ul>
@@ -145,7 +154,7 @@ where $q$ is the requested latency time slice (slice request) and $w_i$ is the t
 <li><strong>Cgroups v2 Unified Hierarchy</strong>: Cgroups v2 replaces the fragmented, multi-hierarchy architecture of Cgroups v1 with a single unified tree. Resource limits (<code>cpu.max</code>, <code>memory.max</code>, <code>io.max</code>) are enforced at process group boundaries. Hard quota enforcement (<code>cpu.max = 50000 100000</code>) throttles containers exceeding their allotted $50\text{ms}$ per $100\text{ms}$ period.</li>
 </ol>
 <hr>
-<h2>Python Implementation: EEVDF Scheduler &amp; Cgroup Quota Simulator</h2>
+<h2 id="python-implementation-eevdf-scheduler-cgroup-quota-simulator">Python Implementation: EEVDF Scheduler &amp; Cgroup Quota Simulator</h2>
 <p>Here is a production-grade Python implementation of an EEVDF CPU Process Scheduler and Cgroups v2 Quota Controller Simulator:</p>
 <pre><code class="language-python">from typing import List, Dict, Optional
 from pydantic import BaseModel
@@ -255,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(f&quot;\n📊 Cgroups v2 Quota Usage: {cgroup.used_in_period}/{cgroup.quota_ms} ms consumed.&quot;)</code></pre>
 <hr>
-<h2>Scheduler &amp; Cgroup Gotchas &amp; Best Practices</h2>
+<h2 id="scheduler-cgroup-gotchas-best-practices">Scheduler &amp; Cgroup Gotchas &amp; Best Practices</h2>
 <p>When configuring Linux process scheduling:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -268,7 +277,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Upgrading to Linux kernel 6.6+ EEVDF and Cgroups v2 (such as <strong>Fedora</strong>, <strong>Ubuntu 24.04</strong>, and <strong>AWS Bottlerocket</strong>) reports:</p>
 <ul>
 <li><strong>Over 50% Reduction in Tail Latency for Interactive Services</strong>: Earliest Virtual Deadline sorting allows audio, video, and HTTP API workloads to pre-empt batch background processing instantly.</li>
@@ -301,6 +310,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#eevdf-scheduling-cgroups-v2-architecture" class="toc-link">EEVDF Scheduling &amp; Cgroups v2 Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-eevdf-scheduler-cgroup-quota-simulator" class="toc-link">Python Implementation: EEVDF Scheduler &amp; Cgroup Quota Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#scheduler-cgroup-gotchas-best-practices" class="toc-link">Scheduler &amp; Cgroup Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#jit-compilation-deoptimization-pipeline-architecture">JIT Compilation &amp; Deoptimization Pipeline Architecture</a></li>
+                <li><a href="#python-implementation-tracing-jit-engine-with-deoptimization-guards">Python Implementation: Tracing JIT Engine with Deoptimization Guards</a></li>
+                <li><a href="#jit-compiler-gotchas-best-practices">JIT Compiler Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Dynamically typed programming languages (such as JavaScript, Python, Lua, and Ruby) provide immense developer ergonomics.</p>
 <p>However, executing dynamic languages via traditional interpreters introduces severe performance penalties. The interpreter must repeatedly inspect variable types, unbox integer values, and perform virtual method lookups inside tight loops, running <strong>$10\times$ to $50\times$ slower than compiled C code</strong>.</p>
 <p>To achieve near-native execution speeds without sacrificing dynamic language flexibility, modern runtimes (<strong>V8</strong>, <strong>PyPy</strong>, <strong>LuaJIT</strong>, <strong>JVM C2</strong>) employ <strong>Just-In-Time (JIT) Compilation</strong>.</p>
 <p>JIT compilers dynamically monitor program execution, identify &quot;hot&quot; loop traces, speculatively compile specialized native machine code based on runtime types, and insert <strong>Deoptimization (Deopt)</strong> guardrails.</p>
 <p>This article details hot loop profiling, speculative type specialization, and deoptimization bailout mechanics.</p>
 <hr>
-<h2>JIT Compilation &amp; Deoptimization Pipeline Architecture</h2>
+<h2 id="jit-compilation-deoptimization-pipeline-architecture">JIT Compilation &amp; Deoptimization Pipeline Architecture</h2>
 <p>How JIT engines profile hot loops, emit specialized machine code, and deoptimize when type guards fail:</p>
 <div class="mermaid">graph TD
   subgraph Phase 1: Baseline Execution &amp; Profiling
@@ -131,7 +140,7 @@
     
     Deopt --&gt;|5. Reconstruct Interpreter Frame &amp; Revert| Interpreter
   end</div>
-<h3>Core JIT Compiler Principles</h3>
+<h3 id="core-jit-compiler-principles">Core JIT Compiler Principles</h3>
 <ol>
 <li><strong>Hot Loop Profiling</strong>: Runtimes start execution in a lightweight interpreter. Execution counters monitor loop iterations and function calls. When an execution count breaches a threshold (e.g. $1,000$ iterations), the loop is flagged as <strong>Hot</strong> and scheduled for JIT compilation.</li>
 <li><strong>Tracing JIT vs Method JIT</strong>:<ul>
@@ -143,7 +152,7 @@
 <li><strong>Type Guards &amp; Deoptimization (Deopt)</strong>: Because the language is dynamic, a user might eventually pass a string to <code>a + b</code>. To preserve correctness, the JIT embeds inline <strong>Type Guards</strong> before specialized instructions. If a type guard fails, the JIT triggers <strong>Deoptimization</strong>: it halts native code execution, reconstructs the interpreter stack frame, and safely transfers execution back to the baseline interpreter (<strong>On-Stack Replacement / OSR</strong>).</li>
 </ol>
 <hr>
-<h2>Python Implementation: Tracing JIT Engine with Deoptimization Guards</h2>
+<h2 id="python-implementation-tracing-jit-engine-with-deoptimization-guards">Python Implementation: Tracing JIT Engine with Deoptimization Guards</h2>
 <p>Here is a production-grade Python implementation of a Tracing JIT Engine featuring Hot Loop Profiling, Speculative Type Specialization, and Deoptimization Bailouts:</p>
 <pre><code class="language-python">from typing import List, Any, Dict, Optional
 from pydantic import BaseModel
@@ -230,7 +239,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n5th Iteration (Injecting String Type Violation):&quot;)
     res = jit.execute_loop_body(loop_id, a=&quot;Hello &quot;, b=&quot;World&quot;)</code></pre>
 <hr>
-<h2>JIT Compiler Gotchas &amp; Best Practices</h2>
+<h2 id="jit-compiler-gotchas-best-practices">JIT Compiler Gotchas &amp; Best Practices</h2>
 <p>When designing or tuning JIT-compiled runtimes:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -243,7 +252,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Runtimes adopting dynamic JIT compilation (such as <strong>V8 TurboFan</strong>, <strong>PyPy</strong>, and <strong>Java HotSpot C2</strong>) report:</p>
 <ul>
 <li><strong>$10\times$ to $50\times$ Execution Speedup</strong>: Accelerating dynamic scripting languages to match compiled C/C++ execution speeds.</li>
@@ -276,6 +285,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#jit-compilation-deoptimization-pipeline-architecture" class="toc-link">JIT Compilation &amp; Deoptimization Pipeline Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-tracing-jit-engine-with-deoptimization-guards" class="toc-link">Python Implementation: Tracing JIT Engine with Deoptimization Guards</a></li>
+              <li class="toc-item toc-h2"><a href="#jit-compiler-gotchas-best-practices" class="toc-link">JIT Compiler Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

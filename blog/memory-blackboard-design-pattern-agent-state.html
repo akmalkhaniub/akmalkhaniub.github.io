@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-message-passing-bottleneck">The Message-Passing Bottleneck</a></li>
+                <li><a href="#1-under-the-hood-structuring-the-blackboard">1. Under the Hood: Structuring the Blackboard</a></li>
+                <li><a href="#2-concurrency-safety-preventing-collision-drifts">2. Concurrency Safety: Preventing Collision Drifts</a></li>
+                <li><a href="#code-demo-concurrency-safe-blackboard-manager">Code Demo: Concurrency-Safe Blackboard Manager</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Basic multi-agent architectures rely on sequential message passing (e.g. Agent A
 </div>
 </div>
 <hr>
-<h2>The Message-Passing Bottleneck</h2>
+<h2 id="the-message-passing-bottleneck">The Message-Passing Bottleneck</h2>
 <p>When agents pass states sequentially:</p>
 <ul>
 <li><strong>State Drifts</strong>: Agent C might run an action based on outdated parameters if Agent B updated the task scope without propagating the change.</li>
@@ -127,7 +137,7 @@ flowchart TD
     Agent1 --&gt;|Commit JSON Update| BB
     BB --&gt;|Release Lock &amp; Dispatch Update| Agent2</div>
 <hr>
-<h2>1. Under the Hood: Structuring the Blackboard</h2>
+<h2 id="1-under-the-hood-structuring-the-blackboard">1. Under the Hood: Structuring the Blackboard</h2>
 <p>The blackboard database schema holds the task context:</p>
 <ul>
 <li><strong>The State Document</strong>: A structured JSON object containing variable matrices, code generation paths, and tool flags.</li>
@@ -135,14 +145,14 @@ flowchart TD
 <li><strong>Lock Keys</strong>: Status markers restricting write access while an agent performs multi-step modifications.</li>
 </ul>
 <hr>
-<h2>2. Concurrency Safety: Preventing Collision Drifts</h2>
+<h2 id="2-concurrency-safety-preventing-collision-drifts">2. Concurrency Safety: Preventing Collision Drifts</h2>
 <p>When multiple agents write to the blackboard:</p>
 <ol>
 <li><strong>Optimistic Concurrency Control (OCC)</strong>: Before writing, the agent verifies that the <code>version_id</code> in the database matches the version it read. If the version has changed, it rolls back and retries.</li>
 <li><strong>Subscription Triggers</strong>: Agents subscribe to state changes, triggering execution loops automatically when other agents update dependency nodes.</li>
 </ol>
 <hr>
-<h2>Code Demo: Concurrency-Safe Blackboard Manager</h2>
+<h2 id="code-demo-concurrency-safe-blackboard-manager">Code Demo: Concurrency-Safe Blackboard Manager</h2>
 <p>Below is a Python implementation of a blackboard state coordinator. It coordinates concurrent agent updates, evaluates version pointers, and handles transactional lock rollbacks.</p>
 <pre><code class="language-python">import json
 from typing import Dict, Any, Tuple
@@ -194,7 +204,7 @@ if __name__ == &quot;__main__&quot;:
     success_2, msg_2 = bb.commit_state(state_coder, ver_coder)
     print(f&quot;💾 [Agent 2] Commit Attempt: {msg_2}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Enforce Optimistic Locks</strong>: Never permit direct, unversioned state writes. Always validate <code>version_id</code> properties before committing updates.</li>
 <li><strong>Isolate Task Sub-keys</strong>: Divide the blackboard JSON structure into independent domains (e.g. <code>architecture</code>, <code>code</code>, <code>testing</code>) to minimize write conflicts.</li>
@@ -227,6 +237,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-message-passing-bottleneck" class="toc-link">The Message-Passing Bottleneck</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-structuring-the-blackboard" class="toc-link">1. Under the Hood: Structuring the Blackboard</a></li>
+              <li class="toc-item toc-h2"><a href="#2-concurrency-safety-preventing-collision-drifts" class="toc-link">2. Concurrency Safety: Preventing Collision Drifts</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-concurrency-safe-blackboard-manager" class="toc-link">Code Demo: Concurrency-Safe Blackboard Manager</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

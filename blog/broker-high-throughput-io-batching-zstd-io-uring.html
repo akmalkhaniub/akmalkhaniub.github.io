@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#high-throughput-io-architecture-batching-iouring">High-Throughput I/O Architecture: Batching &amp; io_uring</a></li>
+                <li><a href="#python-implementation-record-batching-linux-iouring-simulator">Python Implementation: Record Batching &amp; Linux io_uring Simulator</a></li>
+                <li><a href="#high-throughput-io-gotchas-best-practices">High-Throughput I/O Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In modern high-frequency event infrastructure (<strong>Kafka Brokers</strong>, <strong>Apache Pulsar</strong>, <strong>Redpanda</strong>, <strong>DragonflyDB</strong>), message systems process millions of IOPS over 100Gbps network interfaces.</p>
 <p>When handling small payload events ($100\text{ Bytes}$ per JSON clickstream record), traditional operating system I/O models suffer from severe <strong>System Call (syscall) Context Switching</strong> and <strong>CPU Interrupt Storms</strong>.</p>
 <p>If a broker invokes <code>read()</code> and <code>write()</code> syscalls for every individual $100\text{ Byte}$ message, CPU cores spend over $80%$ of their cycles context-switching between user-space and kernel-space.</p>
 <p>To saturate multi-gigabyte network pipelines, next-generation message brokers deploy <strong>Client-Side Record Batching</strong>, <strong>End-to-End Zstd Compression</strong>, and <strong>Linux <code>io_uring</code> Ring Buffers</strong>.</p>
 <p>This article details client record batching parameters (<code>batch.size</code>, <code>linger.ms</code>), dictionary-based Zstd streaming compression, POSIX <code>epoll</code> bottlenecks, and Linux <code>io_uring</code> Submission/Completion queue ring buffers.</p>
 <hr>
-<h2>High-Throughput I/O Architecture: Batching &amp; io_uring</h2>
+<h2 id="high-throughput-io-architecture-batching-iouring">High-Throughput I/O Architecture: Batching &amp; io_uring</h2>
 <p>How Client Batching, Zstd Compression, and Linux <code>io_uring</code> Ring Buffers eliminate syscall overhead:</p>
 <div class="mermaid">graph TD
   subgraph Client-Side Record Batching &amp; Compression
@@ -124,7 +133,7 @@
     KernelIO --&gt;|3. Complete I/O Async| CQ[Completion Queue Ring Buffer: CQ]
     CQ --&gt;|4. Lock-Free Pop Result| Broker[Broker Event Processing Loop]
   end</div>
-<h3>Core High-Throughput I/O Principles</h3>
+<h3 id="core-high-throughput-io-principles">Core High-Throughput I/O Principles</h3>
 <ol>
 <li><strong>Client-Side Record Batching Mechanics</strong>:<ul>
 <li><strong><code>batch.size</code></strong>: Specifies the maximum memory size (e.g. $64\text{ KB}$) allocated for batching records destined for a single partition.</li>
@@ -154,7 +163,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Record Batching &amp; Linux io_uring Simulator</h2>
+<h2 id="python-implementation-record-batching-linux-iouring-simulator">Python Implementation: Record Batching &amp; Linux io_uring Simulator</h2>
 <p>Here is a production-grade Python implementation of a High-Throughput Record Batching Engine and Linux <code>io_uring</code> Ring Buffer Simulator:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional
@@ -254,7 +263,7 @@ if __name__ == &quot;__main__&quot;:
     # 3. Kernel Process io_uring Submission Queue
     io_uring.kernel_sq_poll_loop()</code></pre>
 <hr>
-<h2>High-Throughput I/O Gotchas &amp; Best Practices</h2>
+<h2 id="high-throughput-io-gotchas-best-practices">High-Throughput I/O Gotchas &amp; Best Practices</h2>
 <p>When tuning broker network and storage I/O:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -267,7 +276,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>High-Throughput I/O architectures (in <strong>Kafka Brokers</strong>, <strong>Redpanda</strong>, and <strong>Linux 5.1+ io_uring Engines</strong>) report:</p>
 <ul>
 <li><strong>Over $3\times$ Higher Storage IOPS via <code>io_uring</code></strong>: Shared Submission/Completion ring buffers eliminate syscall context switching overhead.</li>
@@ -300,6 +309,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#high-throughput-io-architecture-batching-iouring" class="toc-link">High-Throughput I/O Architecture: Batching &amp; io_uring</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-record-batching-linux-iouring-simulator" class="toc-link">Python Implementation: Record Batching &amp; Linux io_uring Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#high-throughput-io-gotchas-best-practices" class="toc-link">High-Throughput I/O Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

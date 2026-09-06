@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-economics-of-inference-routing">The Economics of Inference Routing</a></li>
+                <li><a href="#1-gateway-resilience-fallbacks-and-retries">1. Gateway Resilience: Fallbacks and Retries</a></li>
+                <li><a href="#2-decoupling-runtimes">2. Decoupling Runtimes</a></li>
+                <li><a href="#code-demo-resilient-circuit-breaker-routing-proxy">Code Demo: Resilient Circuit Breaker Routing Proxy</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ In enterprise multi-agent applications, routing tasks to optimal model providers
 </div>
 </div>
 <hr>
-<h2>The Economics of Inference Routing</h2>
+<h2 id="the-economics-of-inference-routing">The Economics of Inference Routing</h2>
 <p>A production-grade system manages cost and latency profiles:</p>
 <ul>
 <li><strong>The Cost-Performance Curve</strong>: Frontier models (e.g. Claude 3.5 Sonnet, GPT-4o) are highly capable but expensive. Small, local models (e.g. Llama-3B) are cheap and fast but lack complex reasoning context.</li>
@@ -130,17 +140,17 @@ flowchart TD
     Trip --&gt;|Switch State: Open| RouteFallback[Route to Fallback: local Llama-3B]
     RouteFallback --&gt; Return</div>
 <hr>
-<h2>1. Gateway Resilience: Fallbacks and Retries</h2>
+<h2 id="1-gateway-resilience-fallbacks-and-retries">1. Gateway Resilience: Fallbacks and Retries</h2>
 <p>When a model provider suffers an outage or returns an HTTP 429 (rate limit):</p>
 <ol>
 <li><strong>Fallback List</strong>: The gateway intercepts the exception and immediately retries the request using a backup provider configured in the fallback list.</li>
 <li><strong>Circuit Breakers</strong>: If the primary provider fails multiple times, the gateway trips its circuit breaker, routing all subsequent traffic directly to the fallback provider for a cooldown period before attempting to check the primary again.</li>
 </ol>
 <hr>
-<h2>2. Decoupling Runtimes</h2>
+<h2 id="2-decoupling-runtimes">2. Decoupling Runtimes</h2>
 <p>Using unified interfaces (like LiteLLM&#39;s standardized OpenAI-format requests) allows developers to swap backing LLMs (e.g. swapping Anthropic endpoints for local Ollama runtimes) by modifying configuration JSONs, eliminating the need to write custom provider integration wrappers.</p>
 <hr>
-<h2>Code Demo: Resilient Circuit Breaker Routing Proxy</h2>
+<h2 id="code-demo-resilient-circuit-breaker-routing-proxy">Code Demo: Resilient Circuit Breaker Routing Proxy</h2>
 <p>Below is a Python implementation of a routing gateway proxy. It coordinates task routing, tracks failure limits, trips circuit breakers during provider outages, and routes requests to fallback models.</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, Tuple, List
@@ -217,7 +227,7 @@ if __name__ == &quot;__main__&quot;:
         print(f&quot;Response: {response}&quot;)
         time.sleep(1)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Deploy Unified Gateways</strong>: Use systems like LiteLLM to standardize prompt schemas across various LLM providers.</li>
 <li><strong>Enforce Circuit Breakers</strong>: Wrap provider connections in circuit breakers to route traffic around offline API endpoints automatically.</li>
@@ -250,6 +260,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-economics-of-inference-routing" class="toc-link">The Economics of Inference Routing</a></li>
+              <li class="toc-item toc-h2"><a href="#1-gateway-resilience-fallbacks-and-retries" class="toc-link">1. Gateway Resilience: Fallbacks and Retries</a></li>
+              <li class="toc-item toc-h2"><a href="#2-decoupling-runtimes" class="toc-link">2. Decoupling Runtimes</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-resilient-circuit-breaker-routing-proxy" class="toc-link">Code Demo: Resilient Circuit Breaker Routing Proxy</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

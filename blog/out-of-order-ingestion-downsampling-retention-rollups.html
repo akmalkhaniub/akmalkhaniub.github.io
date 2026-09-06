@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#out-of-order-ingestion-downsampling-architecture">Out-of-Order Ingestion &amp; Downsampling Architecture</a></li>
+                <li><a href="#python-implementation-ooo-ingestion-downsampling-engine">Python Implementation: OOO Ingestion &amp; Downsampling Engine</a></li>
+                <li><a href="#downsampling-ooo-gotchas-best-practices">Downsampling &amp; OOO Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In petabyte-scale observability platforms (<strong>Thanos</strong>, <strong>Cortex</strong>, <strong>VictoriaMetrics</strong>, <strong>Grafana Mimir</strong>), telemetry pipelines process millions of metric streams continuously.</p>
 <p>Operating production time-series systems introduces two major data engineering hurdles: <strong>Out-of-Order (OOO) Metric Ingestion</strong> and <strong>High-Volume Historical Storage Costs</strong>.</p>
 <p>When mobile client devices or edge IoT nodes reconnect after a network partition, they transmit historical metrics out of timestamp order.</p>
@@ -111,7 +120,7 @@
 <p>To resolve these challenges, modern TSDB platforms implement <strong>Out-of-Order Head Buffers</strong> and <strong>Automated Downsampling Rollups</strong>.</p>
 <p>This article details OOO skip-list buffering, background chunk merging, multi-resolution downsampling (1s → 5m → 1h), rollup aggregation functions (<code>min</code>, <code>max</code>, <code>sum</code>, <code>count</code>), and automated retention tiering.</p>
 <hr>
-<h2>Out-of-Order Ingestion &amp; Downsampling Architecture</h2>
+<h2 id="out-of-order-ingestion-downsampling-architecture">Out-of-Order Ingestion &amp; Downsampling Architecture</h2>
 <p>How time-series databases handle late-arriving metrics and execute automated multi-tier downsampling rollups:</p>
 <div class="mermaid">graph TD
   subgraph Out-of-Order (OOO) Ingestion Pipeline
@@ -127,7 +136,7 @@
     RawTier --&gt;|Thanos Downsampler| Tier5m[&quot;5-Minute Rollup (min, max, sum, count) - Retained 90 Days&quot;]
     Tier5m --&gt;|Thanos Downsampler| Tier1h[&quot;1-Hour Rollup (Long-Term Archive) - Retained 2 Years&quot;]
   end</div>
-<h3>Core Downsampling &amp; OOO Mechanics</h3>
+<h3 id="core-downsampling-ooo-mechanics">Core Downsampling &amp; OOO Mechanics</h3>
 <ol>
 <li><strong>The Out-of-Order (OOO) Ingestion Problem</strong>:<ul>
 <li>Standard Gorilla compression algorithms rely on strictly monotonically increasing timestamps ($t_n &gt; t_{n-1}$).</li>
@@ -157,7 +166,7 @@ $$\langle \text{min}, \text{max}, \text{sum}, \text{count} \rangle$$</li>
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: OOO Ingestion &amp; Downsampling Engine</h2>
+<h2 id="python-implementation-ooo-ingestion-downsampling-engine">Python Implementation: OOO Ingestion &amp; Downsampling Engine</h2>
 <p>Here is a production-grade Python implementation of an Out-of-Order Metric Ingestion Buffer and Multi-Tier Downsampling Rollup Engine:</p>
 <pre><code class="language-python">import math
 from typing import Dict, List, Tuple
@@ -258,7 +267,7 @@ if __name__ == &quot;__main__&quot;:
     # 4. Execute 5-Minute Downsampling Rollup Job
     engine.run_5m_downsampling_job(bucket_size_sec=5) # 5s buckets for demo</code></pre>
 <hr>
-<h2>Downsampling &amp; OOO Gotchas &amp; Best Practices</h2>
+<h2 id="downsampling-ooo-gotchas-best-practices">Downsampling &amp; OOO Gotchas &amp; Best Practices</h2>
 <p>When managing long-term metric retention:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -271,7 +280,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Downsampling and OOO ingestion engines (in <strong>Thanos</strong>, <strong>VictoriaMetrics</strong>, and <strong>Grafana Mimir</strong>) report:</p>
 <ul>
 <li><strong>Over $95%$ Reduction in Long-Term Cloud Storage Costs</strong>: Downsampling 1-second raw metrics into 5-minute rollups slashes S3 storage volumes.</li>
@@ -304,6 +313,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#out-of-order-ingestion-downsampling-architecture" class="toc-link">Out-of-Order Ingestion &amp; Downsampling Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-ooo-ingestion-downsampling-engine" class="toc-link">Python Implementation: OOO Ingestion &amp; Downsampling Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#downsampling-ooo-gotchas-best-practices" class="toc-link">Downsampling &amp; OOO Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

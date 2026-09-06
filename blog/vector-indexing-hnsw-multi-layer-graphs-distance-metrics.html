@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#hnsw-multi-layer-graph-ann-traversal-architecture">HNSW Multi-Layer Graph &amp; ANN Traversal Architecture</a></li>
+                <li><a href="#python-implementation-hnsw-multi-layer-vector-graph-engine">Python Implementation: HNSW Multi-Layer Vector Graph Engine</a></li>
+                <li><a href="#vector-indexing-gotchas-best-practices">Vector Indexing Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In enterprise Generative AI systems (<strong>Retrieval-Augmented Generation / RAG</strong>, <strong>Vector Search Engines</strong>, <strong>Recommendation Systems</strong>), applications query millions of high-dimensional embedding vectors (e.g., 1536-dimensional OpenAI embeddings).</p>
 <p>Executing a brute-force exact nearest neighbor search over 10 million 1536-dim vectors requires computing over 15 billion floating-point distance operations per query—stalling response times by over $5\text{ seconds}$.</p>
 <p>To achieve <strong>sub-10 millisecond Approximate Nearest Neighbor (ANN) search</strong>, modern vector databases (<strong>Qdrant</strong>, <strong>Milvus</strong>, <strong>Pinecone</strong>, <strong>pgvector</strong>, <strong>faiss</strong>) rely on <strong>Hierarchical Navigable Small World (HNSW)</strong> graphs.</p>
 <p>By organizing high-dimensional vectors into a multi-layer hierarchy of proximity graphs (similar to 1D skip-lists), HNSW achieves logarithmic $O(\log N)$ search complexity with over $98%$ recall accuracy.</p>
 <p>This article details HNSW multi-layer graph structures, skip-list express lanes, $M$ link constraints, <code>efSearch</code> candidate expansion, and Cosine vs Dot Product vs Euclidean ($L_2$) distance vector math.</p>
 <hr>
-<h2>HNSW Multi-Layer Graph &amp; ANN Traversal Architecture</h2>
+<h2 id="hnsw-multi-layer-graph-ann-traversal-architecture">HNSW Multi-Layer Graph &amp; ANN Traversal Architecture</h2>
 <p>How HNSW navigates top-layer sparse express lanes down to dense Layer 0 local clusters for logarithmic ANN search:</p>
 <div class="mermaid">graph TD
   subgraph Layer 2: Sparse Long-Range Express Lane
@@ -128,7 +137,7 @@
     Node305_L0 --&gt;|5. Dense Local Neighbors| NN2[Nearest Neighbor 2]
     Node305_L0 --&gt;|5. Dense Local Neighbors| NN3[Nearest Neighbor 3]
   end</div>
-<h3>Core Vector Indexing Mechanics</h3>
+<h3 id="core-vector-indexing-mechanics">Core Vector Indexing Mechanics</h3>
 <ol>
 <li><strong>The Brute-Force Flat Search Problem</strong>:<ul>
 <li>Exact nearest neighbor search ($L_2$ or Cosine) has complexity $O(N \cdot d)$, where $N$ is vector count and $d$ is vector dimensionality.</li>
@@ -157,7 +166,7 @@ $$l = \lfloor -\ln(\text{uniform}(0, 1)) \cdot m_L \rfloor$$</li>
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: HNSW Multi-Layer Vector Graph Engine</h2>
+<h2 id="python-implementation-hnsw-multi-layer-vector-graph-engine">Python Implementation: HNSW Multi-Layer Vector Graph Engine</h2>
 <p>Here is a production-grade Python implementation of a Multi-Layer HNSW Vector Graph and ANN Traversal Engine Simulator:</p>
 <pre><code class="language-python">import math
 import random
@@ -279,7 +288,7 @@ if __name__ == &quot;__main__&quot;:
     query = [0.12, 0.88, 0.18, 0.02] # Very close to 101, 202, 404
     hnsw.search_ann_knn(query_vec=query, k=2)</code></pre>
 <hr>
-<h2>Vector Indexing Gotchas &amp; Best Practices</h2>
+<h2 id="vector-indexing-gotchas-best-practices">Vector Indexing Gotchas &amp; Best Practices</h2>
 <p>When tuning HNSW vector indices:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -292,7 +301,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>HNSW vector indexing (in <strong>Qdrant</strong>, <strong>Milvus</strong>, <strong>Pinecone</strong>, and <strong>pgvector</strong>) reports:</p>
 <ul>
 <li><strong>Sub-10ms Query Latency across Millions of Vectors</strong>: Achieves $O(\log N)$ search complexity via multi-layer skip-graph traversal.</li>
@@ -325,6 +334,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#hnsw-multi-layer-graph-ann-traversal-architecture" class="toc-link">HNSW Multi-Layer Graph &amp; ANN Traversal Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-hnsw-multi-layer-vector-graph-engine" class="toc-link">Python Implementation: HNSW Multi-Layer Vector Graph Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#vector-indexing-gotchas-best-practices" class="toc-link">Vector Indexing Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

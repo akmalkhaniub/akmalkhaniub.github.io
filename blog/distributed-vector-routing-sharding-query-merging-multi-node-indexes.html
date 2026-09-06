@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#distributed-vector-search-pipeline">Distributed Vector Search Pipeline</a></li>
+                <li><a href="#python-simulation-distributed-scatter-gather-coordinator">Python Simulation: Distributed Scatter-Gather Coordinator</a></li>
+                <li><a href="#distributed-search-gotchas-guardrails">Distributed Search Gotchas &amp; Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>As vector datasets grow to billions of documents, a single server node can no longer fit the index in memory or handle the CPU query load. To scale, vector databases must partition the index across a cluster of multiple physical machines.</p>
 <p>However, sharding vector spaces is fundamentally more complex than sharding relational databases. Relational tables shard easily on a primary key (e.g. <code>user_id</code>), allowing queries to target a single node. </p>
 <p>In contrast, vector search requires finding the global $k$-nearest neighbors ($k$-NN) of an arbitrary query vector. Because similar vectors could theoretically reside on any shard, databases must implement sophisticated <strong>Distributed Vector Routing</strong> pipelines.</p>
 <p>This article details how to design partition schemes and execute scatter-gather query routing.</p>
 <hr>
-<h2>Distributed Vector Search Pipeline</h2>
+<h2 id="distributed-vector-search-pipeline">Distributed Vector Search Pipeline</h2>
 <p>The query coordinator broadcasts queries to shards and resolves local lists into a global output:</p>
 <div class="mermaid">graph TD
   A[Client Query Vector] --&gt; B[Distributed Coordinator Node]
@@ -131,13 +140,13 @@
   H --&gt; I
   
   I --&gt; J[Final Global Top-K Match List]</div>
-<h3>Partitioning Strategies</h3>
+<h3 id="partitioning-strategies">Partitioning Strategies</h3>
 <ol>
 <li><strong>Document-Based Partitioning (Scatter-Gather)</strong>: Vectors are distributed uniformly across shards (e.g., using round-robin or document ID hashes). The query coordinator broadcasts the query vector to every shard in the cluster. Each shard returns its local top-$k$ results, and the coordinator merges them. This is robust but resource-intensive at scale.</li>
 <li><strong>Cluster-Based Partitioning (Routing)</strong>: The database runs global K-Means clustering to partition the vector space into topological regions. Each shard hosts a specific vector cluster. The coordinator inspects the query vector and only routes it to the closest matching shards, significantly reducing CPU cycles.</li>
 </ol>
 <hr>
-<h2>Python Simulation: Distributed Scatter-Gather Coordinator</h2>
+<h2 id="python-simulation-distributed-scatter-gather-coordinator">Python Simulation: Distributed Scatter-Gather Coordinator</h2>
 <p>Here is a production-grade Python implementation of a distributed query coordinator. It simulates parallel shard index searches and performs a heap-based multi-way merge sort to resolve local candidate lists into the global top-$k$ results:</p>
 <pre><code class="language-python">import heapq
 from typing import List, Dict, Any, Tuple
@@ -222,7 +231,7 @@ if __name__ == &quot;__main__&quot;:
     for rank, item in enumerate(top_matches):
         print(f&quot;Rank {rank + 1:&lt;7} | {item.doc_id:&lt;15} | {item.distance:&lt;15.4f} | Shard {item.shard_id:&lt;12}&quot;)</code></pre>
 <hr>
-<h2>Distributed Search Gotchas &amp; Guardrails</h2>
+<h2 id="distributed-search-gotchas-guardrails">Distributed Search Gotchas &amp; Guardrails</h2>
 <p>When sharding vector indexes:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -235,7 +244,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying distributed vector sharding report:</p>
 <ul>
 <li><strong>Horizontal Scalability</strong>: Clusters easily scale to billions of vectors by adding more index shard instances.</li>
@@ -268,6 +277,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#distributed-vector-search-pipeline" class="toc-link">Distributed Vector Search Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#python-simulation-distributed-scatter-gather-coordinator" class="toc-link">Python Simulation: Distributed Scatter-Gather Coordinator</a></li>
+              <li class="toc-item toc-h2"><a href="#distributed-search-gotchas-guardrails" class="toc-link">Distributed Search Gotchas &amp; Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

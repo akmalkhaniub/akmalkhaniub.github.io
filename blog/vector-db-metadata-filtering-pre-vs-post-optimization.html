@@ -104,6 +104,14 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-three-filtering-paradigms">The Three Filtering Paradigms</a></li>
+                <li><a href="#implementing-in-graph-filtering">Implementing In-Graph Filtering</a></li>
+                <li><a href="#important-pitfalls-in-hybrid-search">Important Pitfalls in Hybrid Search</a></li>
+              </ul>
+            </details>
 <p>In production Retrieval-Augmented Generation (RAG) systems, vector similarity queries are rarely executed in isolation. Most enterprise applications require queries constrained by strict metadata filters, such as:</p>
 <ul>
 <li><em>Locating document chunks matching a user query</em> <strong>AND</strong> <em>belonging strictly to <code>tenant_id = 45</code></em>.</li>
@@ -111,7 +119,7 @@
 </ul>
 <p>Integrating traditional relational filtering (metadata) with Approximate Nearest Neighbor (ANN) vector search is a challenging engineering problem. This article compares <strong>Post-Filtering</strong>, <strong>Pre-Filtering</strong>, and <strong>In-Graph (Single-Stage) Filtering</strong>, demonstrating how to execute optimized hybrid searches in <strong>pgvector</strong> and <strong>Qdrant</strong>.</p>
 <hr>
-<h2>The Three Filtering Paradigms</h2>
+<h2 id="the-three-filtering-paradigms">The Three Filtering Paradigms</h2>
 <div class="mermaid">graph TD
   subgraph Post-Filtering
     A[HNSW Vector Search] --&gt;|Get top 100| B[Filter out non-matching metadata]
@@ -125,24 +133,24 @@
     G[HNSW Graph Traversal] --&gt;|Evaluate metadata on graph hops| H[Only route through matching nodes]
     H --&gt;|Optimal: Fast &amp; complete| I[Return top 10 matching items]
   end</div>
-<h3>1. Post-Filtering</h3>
+<h3 id="1-post-filtering">1. Post-Filtering</h3>
 <p>In Post-Filtering, the database executes a standard HNSW vector search first, retrieves the top $K$ results (e.g. $K=100$), and then discards any items that do not match the metadata filter.</p>
 <ul>
 <li><strong>The Problem (Recall Collapse)</strong>: If the metadata filter is highly restrictive (e.g. matches only 1% of your database), almost all of the top 100 items will be discarded. The client receives an incomplete or empty result set, even though matching documents exist in the database.</li>
 </ul>
-<h3>2. Pre-Filtering</h3>
+<h3 id="2-pre-filtering">2. Pre-Filtering</h3>
 <p>Pre-Filtering executes the metadata scan first (e.g. using a relational B-Tree index) to isolate all matching document IDs, and then performs a vector similarity search across that subset.</p>
 <ul>
 <li><strong>The Problem (Latency Scaling)</strong>: If the metadata filter matches a large subset (e.g. 500,000 documents), the database must perform a brute-force vector search across the entire subset because the pre-built HNSW graph index cannot be traversed for arbitrary sub-segments. Latency degrades to hundreds of milliseconds.</li>
 </ul>
-<h3>3. In-Graph (Single-Stage) Filtering</h3>
+<h3 id="3-in-graph-single-stage-filtering">3. In-Graph (Single-Stage) Filtering</h3>
 <p>Single-stage filtering evaluates metadata constraints directly during the HNSW graph traversal. When the query router hops from node to node, it checks the node&#39;s metadata payload. If the metadata does not match, the router ignores the link and routes only through nodes that satisfy the criteria.</p>
 <ul>
 <li><strong>The Benefit</strong>: It guarantees both <strong>sub-10ms latency</strong> and <strong>100% accurate recall</strong> by keeping the graph traversal active only on valid nodes.</li>
 </ul>
 <hr>
-<h2>Implementing In-Graph Filtering</h2>
-<h3>1. Single-Stage Filtering in Qdrant</h3>
+<h2 id="implementing-in-graph-filtering">Implementing In-Graph Filtering</h2>
+<h3 id="1-single-stage-filtering-in-qdrant">1. Single-Stage Filtering in Qdrant</h3>
 <p>Qdrant is built from the ground up to handle in-graph filtering natively. When you submit a filter object alongside your vector query, Qdrant&#39;s query engine dynamically decides whether to use a pre-filter scan or an in-graph HNSW traversal depending on the metadata cardinality.</p>
 <p>Here is a production query payload executing an in-graph filter:</p>
 <pre><code class="language-json">{
@@ -168,7 +176,7 @@
     &quot;hnsw_ef&quot;: 64
   }
 }</code></pre>
-<h3>2. Hybrid Querying in pgvector (PostgreSQL)</h3>
+<h3 id="2-hybrid-querying-in-pgvector-postgresql">2. Hybrid Querying in pgvector (PostgreSQL)</h3>
 <p>In PostgreSQL, pgvector version 0.5+ supports HNSW index scans combined with standard <code>WHERE</code> filters. To optimize this, ensure you have both the HNSW index on the vector column and standard B-Tree indexes on your metadata columns:</p>
 <pre><code class="language-sql">-- 1. Create indexes
 CREATE INDEX CONCURRENTLY idx_docs_tenant ON documents (tenant_id);
@@ -183,7 +191,7 @@ WHERE tenant_id = 'tenant-abcd-1234'
 ORDER BY embedding &lt;=&gt; '[0.015, -0.024, 0.087]'
 LIMIT 5;</code></pre>
 <hr>
-<h2>Important Pitfalls in Hybrid Search</h2>
+<h2 id="important-pitfalls-in-hybrid-search">Important Pitfalls in Hybrid Search</h2>
 <p>Avoid these common index performance traps:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -222,6 +230,16 @@ LIMIT 5;</code></pre>
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-three-filtering-paradigms" class="toc-link">The Three Filtering Paradigms</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-in-graph-filtering" class="toc-link">Implementing In-Graph Filtering</a></li>
+              <li class="toc-item toc-h2"><a href="#important-pitfalls-in-hybrid-search" class="toc-link">Important Pitfalls in Hybrid Search</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

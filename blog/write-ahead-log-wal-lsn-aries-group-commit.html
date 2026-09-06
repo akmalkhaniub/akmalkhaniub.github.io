@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#wal-aries-crash-recovery-architecture">WAL &amp; ARIES Crash Recovery Architecture</a></li>
+                <li><a href="#python-implementation-wal-storage-engine-aries-recovery-engine">Python Implementation: WAL Storage Engine &amp; ARIES Recovery Engine</a></li>
+                <li><a href="#wal-recovery-gotchas-best-practices">WAL &amp; Recovery Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In relational and key-value database engines (<strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, <strong>SQLite</strong>, <strong>CockroachDB</strong>), ensuring <strong>ACID Durability</strong> means committed data must survive operating system crashes, hardware failure, and sudden power loss.</p>
 <p>Writing random database data pages ($8\text{ KB}$ or $16\text{ KB}$ blocks) directly to disk on every transaction is far too slow and unsafe: a power outage mid-page write corrupts disk sectors (<strong>Torn Pages</strong>).</p>
 <p>To guarantee durability with high performance, storage engines rely on a <strong>Write-Ahead Log (WAL)</strong> (also known as the Redo Log).</p>
 <p>By enforcing the <strong>WAL Protocol</strong>—writing sequential append-only log records before modifying dirty memory pages—and applying the <strong>ARIES Recovery Protocol</strong>, databases restore perfect consistency after unexpected crashes.</p>
 <p>This article details Log Sequence Numbers (LSN), ARIES 3-phase recovery (Analysis, Redo, Undo), and Group Commit throughput optimization.</p>
 <hr>
-<h2>WAL &amp; ARIES Crash Recovery Architecture</h2>
+<h2 id="wal-aries-crash-recovery-architecture">WAL &amp; ARIES Crash Recovery Architecture</h2>
 <p>How the ARIES recovery protocol restores database state following a crash:</p>
 <div class="mermaid">graph TD
   subgraph Pre-Crash Database Execution
@@ -128,7 +137,7 @@
     
     Undo --&gt;|Write CLR Records| ActiveDB[🎉 Database Ready for Production!]
   end</div>
-<h3>Core WAL &amp; ARIES Principles</h3>
+<h3 id="core-wal-aries-principles">Core WAL &amp; ARIES Principles</h3>
 <ol>
 <li><strong>The Write-Ahead Logging (WAL) Protocol</strong>:<ul>
 <li><em>Rule 1</em>: An uncommitted transaction&#39;s dirty data page can <em>never</em> be written to disk until the corresponding WAL record describing the modification is flushed to persistent storage.</li>
@@ -150,7 +159,7 @@
 <li><strong>Group Commit Optimization</strong>: Executing a disk <code>fsync()</code> for every individual single-row transaction caps throughput at the physical drive&#39;s IOPS limit ($\approx 500\text{ fsyncs/sec}$ on HDD or $10,000$ on NVMe). <strong>Group Commit</strong> holds flushing threads for a microsecond window, batching hundreds of concurrent transaction commits into a single combined <code>fsync()</code> call!</li>
 </ol>
 <hr>
-<h2>Python Implementation: WAL Storage Engine &amp; ARIES Recovery Engine</h2>
+<h2 id="python-implementation-wal-storage-engine-aries-recovery-engine">Python Implementation: WAL Storage Engine &amp; ARIES Recovery Engine</h2>
 <p>Here is a production-grade Python implementation of a Write-Ahead Log (WAL) Storage Engine featuring Group Commit and ARIES 3-Phase Crash Recovery:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel
@@ -290,7 +299,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(f&quot;\n📊 Recovered Disk Data Pages: {db.disk_pages['page_A'].content}, {db.disk_pages['page_B'].content}&quot;)</code></pre>
 <hr>
-<h2>WAL &amp; Recovery Gotchas &amp; Best Practices</h2>
+<h2 id="wal-recovery-gotchas-best-practices">WAL &amp; Recovery Gotchas &amp; Best Practices</h2>
 <p>When tuning WAL and crash recovery:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -303,7 +312,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Storage engines deploying WAL and ARIES recovery (such as <strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, and <strong>SQLite</strong>) report:</p>
 <ul>
 <li><strong>Zero Data Corruption During Sudden Power Loss</strong>: ARIES Redo/Undo phases restore database consistency in seconds after abrupt crashes.</li>
@@ -336,6 +345,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#wal-aries-crash-recovery-architecture" class="toc-link">WAL &amp; ARIES Crash Recovery Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-wal-storage-engine-aries-recovery-engine" class="toc-link">Python Implementation: WAL Storage Engine &amp; ARIES Recovery Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#wal-recovery-gotchas-best-practices" class="toc-link">WAL &amp; Recovery Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

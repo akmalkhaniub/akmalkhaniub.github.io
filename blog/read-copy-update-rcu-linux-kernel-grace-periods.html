@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#read-copy-update-rcu-architecture-grace-periods">Read-Copy-Update (RCU) Architecture &amp; Grace Periods</a></li>
+                <li><a href="#python-implementation-read-copy-update-rcu-engine">Python Implementation: Read-Copy-Update (RCU) Engine</a></li>
+                <li><a href="#rcu-synchronization-gotchas-best-practices">RCU Synchronization Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In operating system kernels (<strong>Linux Kernel VFS directory cache, IP routing tables, network packet filters</strong>), data structures are read millions of times per second and updated only occasionally.</p>
 <p>Using traditional <strong>Read-Write Locks (<code>rwlock</code>)</strong> for read-heavy workloads causes severe performance degradation: every reader thread must atomically increment a reader count, bouncing cache lines between CPU sockets.</p>
 <p>To achieve <strong>zero-overhead, lockless read operations</strong>, the Linux kernel relies on <strong>Read-Copy-Update (RCU)</strong>.</p>
@@ -111,7 +120,7 @@
 <p>Updaters perform mutations using <strong>Copy-On-Write (COW)</strong> and defer memory deallocation until all reader threads pass through a <strong>Quiescent State</strong> during a <strong>Grace Period</strong>.</p>
 <p>This article details <code>rcu_read_lock</code>, Copy-On-Write pointer swaps, Quiescent State detection, and <code>synchronize_rcu()</code> Grace Period mechanics.</p>
 <hr>
-<h2>Read-Copy-Update (RCU) Architecture &amp; Grace Periods</h2>
+<h2 id="read-copy-update-rcu-architecture-grace-periods">Read-Copy-Update (RCU) Architecture &amp; Grace Periods</h2>
 <p>How RCU enables zero-overhead lockless reads while deferring memory reclamation until a Grace Period completes:</p>
 <div class="mermaid">graph TD
   subgraph Reader Threads (Zero Lock Overhead)
@@ -127,7 +136,7 @@
   subgraph Memory Reclamation
     GracePeriod --&gt;|4. Every CPU Passed Quiescent State| FreeOld[kfree(Old Node A) - Safe Deallocation!]
   end</div>
-<h3>Core RCU Components &amp; Principles</h3>
+<h3 id="core-rcu-components-principles">Core RCU Components &amp; Principles</h3>
 <ol>
 <li><strong>Read-Side Critical Sections (<code>rcu_read_lock()</code> / <code>rcu_read_unlock()</code>)</strong>:<ul>
 <li><em>Zero Overhead</em>: In non-preemptible kernels, <code>rcu_read_lock()</code> simply disables CPU preemption (<code>preempt_disable()</code>). It executes <strong>zero atomic instructions</strong>, acquires zero locks, and invalidates zero L1/L2 cache lines!</li>
@@ -149,7 +158,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Read-Copy-Update (RCU) Engine</h2>
+<h2 id="python-implementation-read-copy-update-rcu-engine">Python Implementation: Read-Copy-Update (RCU) Engine</h2>
 <p>Here is a production-grade Python implementation of a Read-Copy-Update (RCU) Engine with Quiescent State Detection and Grace Period Memory Reclamation:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional
@@ -257,7 +266,7 @@ if __name__ == &quot;__main__&quot;:
     rcu.rcu_read_lock(cpu_id=2)
     rcu.rcu_read_unlock(cpu_id=2)</code></pre>
 <hr>
-<h2>RCU Synchronization Gotchas &amp; Best Practices</h2>
+<h2 id="rcu-synchronization-gotchas-best-practices">RCU Synchronization Gotchas &amp; Best Practices</h2>
 <p>When deploying Read-Copy-Update:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -270,7 +279,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Read-Copy-Update infrastructure (such as <strong>Linux Kernel VFS</strong>, <strong>DPDK Packet Processing</strong>, and <strong>User-Space RCU (URCU)</strong>) reports:</p>
 <ul>
 <li><strong>Zero Read-Side Locking Overhead</strong>: Lockless reader execution eliminates atomic instruction overhead and CPU cache line invalidations.</li>
@@ -303,6 +312,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#read-copy-update-rcu-architecture-grace-periods" class="toc-link">Read-Copy-Update (RCU) Architecture &amp; Grace Periods</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-read-copy-update-rcu-engine" class="toc-link">Python Implementation: Read-Copy-Update (RCU) Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#rcu-synchronization-gotchas-best-practices" class="toc-link">RCU Synchronization Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

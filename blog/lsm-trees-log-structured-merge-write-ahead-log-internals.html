@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#lsm-tree-write-compaction-pipeline-architecture">LSM-Tree Write &amp; Compaction Pipeline Architecture</a></li>
+                <li><a href="#python-implementation-lsm-tree-storage-engine">Python Implementation: LSM-Tree Storage Engine</a></li>
+                <li><a href="#lsm-tree-gotchas-best-practices">LSM-Tree Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Traditional relational databases (like PostgreSQL or MySQL InnoDB) rely on <strong>B-Tree</strong> page structures for data storage. While B-Trees excel at fast read operations, they require modifying data pages <strong>in place</strong> on disk.</p>
 <p>For write-heavy enterprise workloads (logging millions of metrics, processing financial transactions, or ingesting event streams), in-place disk updates cause heavy random write I/O, leading to severe storage performance bottlenecks.</p>
 <p>To achieve maximum write throughput, high-performance database engines (<strong>RocksDB</strong>, <strong>LevelDB</strong>, <strong>Apache Cassandra</strong>, <strong>ScyllaDB</strong>) utilize <strong>Log-Structured Merge (LSM) Trees</strong>.</p>
 <p>LSM Trees convert random write operations into sequential disk appends by buffering writes in memory and periodically flushing immutable <strong>Sorted String Tables (SSTables)</strong> to disk.</p>
 <p>This article details the WAL, MemTable, SSTable, and Compaction mechanics of LSM Tree storage engines.</p>
 <hr>
-<h2>LSM-Tree Write &amp; Compaction Pipeline Architecture</h2>
+<h2 id="lsm-tree-write-compaction-pipeline-architecture">LSM-Tree Write &amp; Compaction Pipeline Architecture</h2>
 <p>How an LSM Tree processes writes via WAL + MemTable and flushes immutable SSTables to disk:</p>
 <div class="mermaid">graph TD
   WriteReq[Client Write: SET key=val] --&gt;|1. Sequential Disk Append| WAL[(Write-Ahead Log WAL)]
@@ -130,7 +139,7 @@
   subgraph Read Acceleration
     BloomFilter[Bloom Filters] -.-&gt;|Check Key Existence| SST_L0
   end</div>
-<h3>Core LSM-Tree Components</h3>
+<h3 id="core-lsm-tree-components">Core LSM-Tree Components</h3>
 <ol>
 <li><strong>Write-Ahead Log (WAL)</strong>: An append-only file on disk. Every incoming write operation is appended to the WAL before being inserted into memory. If the database crashes, the engine replays the WAL to reconstruct the in-memory state.</li>
 <li><strong>MemTable</strong>: An in-memory concurrent data structure (typically a SkipList or Red-Black Tree) that maintains key-value pairs in sorted order. All <code>SET</code> and <code>DELETE</code> operations are written to the MemTable.</li>
@@ -138,7 +147,7 @@
 <li><strong>Leveled Compaction</strong>: Background processes that merge overlapping SSTables across levels ($L_0 → L_1 → L_2$). Compaction reclaims disk space by purging deleted tombstones and overwritten old key versions, maintaining bounded read amplification.</li>
 </ol>
 <hr>
-<h2>Python Implementation: LSM-Tree Storage Engine</h2>
+<h2 id="python-implementation-lsm-tree-storage-engine">Python Implementation: LSM-Tree Storage Engine</h2>
 <p>Here is a production-grade Python implementation of an LSM-Tree Storage Engine with WAL logging, in-memory MemTable, SSTables, and Bloom Filter checks:</p>
 <pre><code class="language-python">import os
 import json
@@ -277,7 +286,7 @@ if __name__ == &quot;__main__&quot;:
     db.delete(&quot;user_102&quot;)
     print(f&quot;   • Read 'user_102' After Delete: {db.get('user_102')} (Correctly returned None)&quot;)</code></pre>
 <hr>
-<h2>LSM-Tree Gotchas &amp; Best Practices</h2>
+<h2 id="lsm-tree-gotchas-best-practices">LSM-Tree Gotchas &amp; Best Practices</h2>
 <p>When tuning LSM Tree databases:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -290,7 +299,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>High-throughput storage engines utilizing LSM Trees (such as <strong>RocksDB</strong>) report:</p>
 <ul>
 <li><strong>Over 500,000 Writes per Second per Node</strong>: Transforming random disk I/O into sequential SSTable flushes saturates NVMe SSD write bandwidth.</li>
@@ -323,6 +332,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#lsm-tree-write-compaction-pipeline-architecture" class="toc-link">LSM-Tree Write &amp; Compaction Pipeline Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-lsm-tree-storage-engine" class="toc-link">Python Implementation: LSM-Tree Storage Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#lsm-tree-gotchas-best-practices" class="toc-link">LSM-Tree Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

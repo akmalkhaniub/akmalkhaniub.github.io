@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#memory-consistency-architecture-acquire-release-synchronization">Memory Consistency Architecture &amp; Acquire-Release Synchronization</a></li>
+                <li><a href="#python-implementation-memory-store-buffer-acquire-release-simulator">Python Implementation: Memory Store Buffer &amp; Acquire-Release Simulator</a></li>
+                <li><a href="#memory-model-gotchas-best-practices">Memory Model Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-performance multi-core software engineering (C++20, Rust, Go runtime, Linux Kernel), developers write concurrent programs assuming that memory operations execute in exact source-code order.</p>
 <p>However, modern CPUs (x86-64, ARM64, Apple Silicon) and optimizing compilers aggressively <strong>reorder memory loads and stores</strong> to keep hardware instruction execution pipelines saturated.</p>
 <p>Without proper synchronization, a write performed by Core 0 may not become visible to Core 1 for hundreds of clock cycles, causing subtle race conditions and memory corruption.</p>
 <p>To build lock-free algorithms correctly without sacrificing CPU hardware performance, engineers must master <strong>Hardware Memory Models</strong>, <strong>C++11 Memory Orders</strong>, and <strong>CPU Memory Fences</strong>.</p>
 <p>This article details Sequential Consistency, x86 Total Store Order (TSO), ARM Weak Memory Ordering, Acquire-Release semantics, and CPU assembly fence instructions.</p>
 <hr>
-<h2>Memory Consistency Architecture &amp; Acquire-Release Synchronization</h2>
+<h2 id="memory-consistency-architecture-acquire-release-synchronization">Memory Consistency Architecture &amp; Acquire-Release Synchronization</h2>
 <p>How CPU Store Buffers cause Store-Load reordering and how Acquire-Release semantics establish synchronization barriers:</p>
 <div class="mermaid">graph TD
   subgraph CPU Core 0 (Producer Thread)
@@ -123,7 +132,7 @@
     RAM --&gt;|Sync Pair Established| R1[&quot;Acquire Load: flag.load(memory_order_acquire) == 1&quot;]
     R1 --&gt;|Prevents reordering reads BEFORE acquire| R2[Read Data: r1 = data]
   end</div>
-<h3>Core Memory Model Concepts</h3>
+<h3 id="core-memory-model-concepts">Core Memory Model Concepts</h3>
 <ol>
 <li><strong>The Three Hardware Memory Consistency Models</strong>:<ul>
 <li><strong>Sequential Consistency (SC)</strong>: The mental model assumed by programmers. All operations execute in a strict, single global interleaved sequence. <em>Too slow for hardware implementations!</em></li>
@@ -154,7 +163,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Memory Store Buffer &amp; Acquire-Release Simulator</h2>
+<h2 id="python-implementation-memory-store-buffer-acquire-release-simulator">Python Implementation: Memory Store Buffer &amp; Acquire-Release Simulator</h2>
 <p>Here is a production-grade Python implementation simulating CPU Store Buffers, Store-Load Reordering, and Acquire-Release Synchronization Barriers:</p>
 <pre><code class="language-python">from typing import Dict, Optional, Tuple
 from pydantic import BaseModel
@@ -232,7 +241,7 @@ if __name__ == &quot;__main__&quot;:
         data_val = core1.read_memory(&quot;data&quot;, memory_order=&quot;RELAXED&quot;)
         print(f&quot;\n 🎉 [Acquire-Release Sync Successful!] Core 1 safely observed data = {data_val}&quot;)</code></pre>
 <hr>
-<h2>Memory Model Gotchas &amp; Best Practices</h2>
+<h2 id="memory-model-gotchas-best-practices">Memory Model Gotchas &amp; Best Practices</h2>
 <p>When writing low-level lock-free code:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -245,7 +254,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>High-performance runtimes mastering hardware memory models (such as <strong>Rust Tokio</strong>, <strong>Go Runtime Garbage Collector</strong>, and <strong>JVM C2 Compiler</strong>) report:</p>
 <ul>
 <li><strong>Up to $40%$ Lower Lock-Free Overhead</strong>: Replacing expensive <code>seq_cst</code> memory fences with lightweight <code>acquire-release</code> atomic operations eliminates CPU pipeline flush stalls.</li>
@@ -278,6 +287,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#memory-consistency-architecture-acquire-release-synchronization" class="toc-link">Memory Consistency Architecture &amp; Acquire-Release Synchronization</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-memory-store-buffer-acquire-release-simulator" class="toc-link">Python Implementation: Memory Store Buffer &amp; Acquire-Release Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#memory-model-gotchas-best-practices" class="toc-link">Memory Model Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

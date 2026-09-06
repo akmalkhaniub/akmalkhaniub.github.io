@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-multi-agent-structural-ceiling-on2-chaos">1. The Multi-Agent Structural Ceiling ($O(N^2)$ Chaos)</a></li>
+                <li><a href="#2-the-safety-elevator-for-multi-agent-ipc">2. The &quot;Safety Elevator&quot; for Multi-Agent IPC</a></li>
+                <li><a href="#3-high-throughput-event-driven-pubsub-routing">3. High-Throughput Event-Driven Pub/Sub Routing</a></li>
+                <li><a href="#python-implementation-lock-free-hierarchical-agent-ipc-router">Python Implementation: Lock-Free Hierarchical Agent IPC Router</a></li>
+                <li><a href="#summary-overcoming-the-structural-ceiling">Summary: Overcoming the Structural Ceiling</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>In the 1850s, civil engineers had already mastered the structural metallurgy required to build 10- and 20-story buildings using cast iron frames and load-bearing masonry.</p>
 <p>Yet, cities across the world remained flat, capped at <strong>5 to 6 stories</strong>.</p>
 <p>The bottleneck was not structural—it was <strong>vertical human transport</strong>. Humans physically refused to climb more than five flights of stairs.</p>
@@ -119,7 +130,7 @@
     U1850[&quot;1900s: 100-Story Modern Skyscraper Skylines Unlocked&quot;] &lt;---&gt; U2026[&quot;2026: 500+ Coordinated Enterprise Agent Fleets Running Concurrently&quot;]
   end</div>
 <hr>
-<h2>1. The Multi-Agent Structural Ceiling ($O(N^2)$ Chaos)</h2>
+<h2 id="1-the-multi-agent-structural-ceiling-on2-chaos">1. The Multi-Agent Structural Ceiling ($O(N^2)$ Chaos)</h2>
 <p>In naive multi-agent frameworks, agents communicate in a flat peer-to-peer mesh.</p>
 <p>When a 10-agent swarm attempts to coordinate on a software delivery mission:</p>
 <p>$$\text{Communication Channels} = \frac{N(N - 1)}{2} = \frac{10 \times 9}{2} = \mathbf{45 \text{ cross-dialogue streams}}$$</p>
@@ -131,27 +142,27 @@
        \  |  /     \  |  /                               [Coder] [QA] [Auditor] [Policy]
         \ v /       \ v /                                 (Strict O(N) Delta Routing)
          [F] &lt;-----&gt; [G]</code></pre>
-<h3>The 3 Fatal Symptoms of the Context Ceiling:</h3>
+<h3 id="the-3-fatal-symptoms-of-the-context-ceiling">The 3 Fatal Symptoms of the Context Ceiling:</h3>
 <ol>
 <li><strong>Quadratic Token Cost Explosion</strong>: When every agent appends the conversational transcripts of 9 other agents into its working memory, token consumption grows quadratically ($O(N^2)$), driving API costs into thousands of dollars per single user request.</li>
 <li><strong>The &quot;Lost in the Chorus&quot; Attention Degradation</strong>: As prompts balloon with 100,000 tokens of cross-agent banter, the LLM’s attention mechanism dilutes, resulting in missed instructions and circular hallucinations.</li>
 <li><strong>Deadlocks and Race Conditions</strong>: Without centralized sequence coordination, Agent $A$ waits for Agent $B$’s output while Agent $B$ waits for Agent $A$’s confirmation.</li>
 </ol>
 <hr>
-<h2>2. The &quot;Safety Elevator&quot; for Multi-Agent IPC</h2>
+<h2 id="2-the-safety-elevator-for-multi-agent-ipc">2. The &quot;Safety Elevator&quot; for Multi-Agent IPC</h2>
 <p>To scale agent fleets from 5 workers to <strong>500+ coordinated enterprise agents</strong>, modern architectures implement three core Inter-Process Communication (IPC) paradigms:</p>
 <pre><code class="language-plaintext">&gt; **THE 3 MULTI-AGENT IPC SCALING PILLARS**
 | 1. Hierarchical Tree Routing      : Strict O(N) Supervisor -&gt; Sub-Supervisor -&gt; Worker delegation |
 | 2. Semantic Delta Compaction      : Passing structured state diffs rather than full chat transcripts|
 | 3. Topic-Filtered Pub/Sub Buses   : Selective event subscriptions (agent.secops.*, agent.db.*)   |
 </code></pre>
-<h3>1. Hierarchical Tree Routing ($O(N)$ Complexity)</h3>
+<h3 id="1-hierarchical-tree-routing-on-complexity">1. Hierarchical Tree Routing ($O(N)$ Complexity)</h3>
 <p>Instead of broadcasting to all peers, worker agents communicate <strong>strictly vertically with their immediate domain lead</strong>:</p>
 <ul>
 <li>A <strong>Frontend Coder Agent</strong> reports only to the <strong>Lead UI Supervisor</strong>.</li>
 <li>The <strong>Lead UI Supervisor</strong> compacts the frontend status into a 3-line delta summary and passes it up to the <strong>Chief Mission Orchestrator</strong>.</li>
 </ul>
-<h3>2. Semantic Delta Compaction (State Diffs Over Transcripts)</h3>
+<h3 id="2-semantic-delta-compaction-state-diffs-over-transcripts">2. Semantic Delta Compaction (State Diffs Over Transcripts)</h3>
 <p>Raw chat transcripts (<code>&quot;Hey, I just ran the linter and it looked good, what do you think?&quot;</code>) are banned from inter-agent IPC.
 Agents exchange immutable, strongly typed <strong>Delta Payloads</strong>:</p>
 <pre><code class="language-json">{
@@ -165,7 +176,7 @@ Agents exchange immutable, strongly typed <strong>Delta Payloads</strong>:</p>
   }
 }</code></pre>
 <hr>
-<h2>3. High-Throughput Event-Driven Pub/Sub Routing</h2>
+<h2 id="3-high-throughput-event-driven-pubsub-routing">3. High-Throughput Event-Driven Pub/Sub Routing</h2>
 <p>At large scale, agents subscribe to a centralized <strong>Topic-Filtered Event Bus</strong> (backed by Redis Streams or Apache Kafka):</p>
 <div class="mermaid">graph TD
   subgraph Distributed Agent Event Bus
@@ -179,7 +190,7 @@ Agents exchange immutable, strongly typed <strong>Delta Payloads</strong>:</p>
   end</div>
 <p>Agents receive <em>only</em> the specific domain events required for their next execution phase, keeping individual context buffers under <strong>4,000 tokens</strong> regardless of how large the total fleet grows.</p>
 <hr>
-<h2>Python Implementation: Lock-Free Hierarchical Agent IPC Router</h2>
+<h2 id="python-implementation-lock-free-hierarchical-agent-ipc-router">Python Implementation: Lock-Free Hierarchical Agent IPC Router</h2>
 <p>Here is a Python implementation demonstrating a <strong>Hierarchical Agent IPC Router with Semantic Delta Compaction and Topic Filtering</strong>:</p>
 <pre><code class="language-python">from collections import defaultdict, deque
 from dataclasses import dataclass
@@ -271,7 +282,7 @@ if __name__ == &quot;__main__&quot;:
     )
     router.publish_delta(msg2)</code></pre>
 <hr>
-<h2>Summary: Overcoming the Structural Ceiling</h2>
+<h2 id="summary-overcoming-the-structural-ceiling">Summary: Overcoming the Structural Ceiling</h2>
 <table>
 <thead>
 <tr>
@@ -307,7 +318,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>Just as the safety elevator transformed urban architecture from 5-story blocks into 100-story skyscrapers, <strong>hierarchical IPC and semantic delta routing unlock the true scale of enterprise multi-agent swarms</strong>.</p>
 <p>By eliminating conversational broadcast noise and enforcing structured topic-filtered communication, software architects build massive, collaborative agent fleets that operate with sub-second responsiveness and flawless coordination.</p>
 
@@ -337,6 +348,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-multi-agent-structural-ceiling-on2-chaos" class="toc-link">1. The Multi-Agent Structural Ceiling ($O(N^2)$ Chaos)</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-safety-elevator-for-multi-agent-ipc" class="toc-link">2. The &quot;Safety Elevator&quot; for Multi-Agent IPC</a></li>
+              <li class="toc-item toc-h2"><a href="#3-high-throughput-event-driven-pubsub-routing" class="toc-link">3. High-Throughput Event-Driven Pub/Sub Routing</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-lock-free-hierarchical-agent-ipc-router" class="toc-link">Python Implementation: Lock-Free Hierarchical Agent IPC Router</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-overcoming-the-structural-ceiling" class="toc-link">Summary: Overcoming the Structural Ceiling</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

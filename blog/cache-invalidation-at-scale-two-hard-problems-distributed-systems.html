@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#cdc-driven-cache-invalidation-architecture">CDC-Driven Cache Invalidation Architecture</a></li>
+                <li><a href="#python-implementation-cdc-backed-cache-invalidator">Python Implementation: CDC-Backed Cache Invalidator</a></li>
+                <li><a href="#invalidation-gotchas-best-practices">Invalidation Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Phil Karlton famously remarked: <em>&quot;There are only two hard things in Computer Science: cache invalidation and naming things.&quot;</em></p>
 <p>In high-concurrency microservice architectures, caching is essential for reducing database query latency and protecting backend databases from read starvation. However, when database records are updated, keeping distributed cache instances in sync with the primary database is notoriously difficult.</p>
 <p>If an application updates a database row but fails to invalidate the corresponding cache key (due to network drops or process crashes), clients receive stale data.</p>
 <p>This article explores the trade-offs of modern caching patterns—<strong>Cache-Aside</strong>, <strong>Write-Through</strong>, <strong>Write-Behind</strong>, and <strong>Refresh-Ahead</strong>—and details how to implement robust <strong>Change Data Capture (CDC)</strong> cache invalidation.</p>
 <hr>
-<h2>CDC-Driven Cache Invalidation Architecture</h2>
+<h2 id="cdc-driven-cache-invalidation-architecture">CDC-Driven Cache Invalidation Architecture</h2>
 <p>How database transaction log streaming guarantees eventual consistency between primary storage and distributed caches:</p>
 <div class="mermaid">graph TD
   A[Client Write Request] --&gt; B[Primary Database Write: PostgreSQL / MySQL]
@@ -130,7 +139,7 @@
   end
   
   I[Client Read Query] --&gt; H</div>
-<h3>Access Topologies &amp; Invalidation Trade-offs</h3>
+<h3 id="access-topologies-invalidation-trade-offs">Access Topologies &amp; Invalidation Trade-offs</h3>
 <ol>
 <li><strong>Cache-Aside (Lazy Loading)</strong>: The application checks the cache first. On a cache miss, it reads from the primary database, populates the cache key with a Time-To-Live (TTL), and returns the result. <em>Trade-off</em>: Read misses incur double round-trips.</li>
 <li><strong>Write-Through</strong>: The application writes to the cache engine, which synchronously writes the updated record to the primary database before acknowledging completion. <em>Trade-off</em>: High write latency.</li>
@@ -138,7 +147,7 @@
 <li><strong>CDC-Driven Invalidation</strong>: Instead of relying on application code to delete cache keys after DB updates, a Change Data Capture (CDC) connector listens directly to the primary database&#39;s Write-Ahead Log (WAL). Any committed <code>UPDATE</code> or <code>DELETE</code> transaction automatically triggers an asynchronous cache invalidation event.</li>
 </ol>
 <hr>
-<h2>Python Implementation: CDC-Backed Cache Invalidator</h2>
+<h2 id="python-implementation-cdc-backed-cache-invalidator">Python Implementation: CDC-Backed Cache Invalidator</h2>
 <p>Here is a production-grade Python simulation of a CDC-driven cache invalidation worker processing database Write-Ahead Log events:</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, Optional
@@ -219,7 +228,7 @@ if __name__ == &quot;__main__&quot;:
     # 4. Subsequent Read Causes Cache Miss (Triggers Re-Fetch)
     print(f&quot;\n🔍 Subsequent Cache Read: {cache.get(cache_key)} (Cache Miss -&gt; Triggers Fresh DB Fetch)&quot;)</code></pre>
 <hr>
-<h2>Invalidation Gotchas &amp; Best Practices</h2>
+<h2 id="invalidation-gotchas-best-practices">Invalidation Gotchas &amp; Best Practices</h2>
 <p>When engineering distributed cache invalidation pipelines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -232,7 +241,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying CDC-driven cache invalidation report:</p>
 <ul>
 <li><strong>Zero Application Code Tangling</strong>: Decoupling cache invalidation into background CDC streams keeps core application code focused solely on business logic.</li>
@@ -265,6 +274,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#cdc-driven-cache-invalidation-architecture" class="toc-link">CDC-Driven Cache Invalidation Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-cdc-backed-cache-invalidator" class="toc-link">Python Implementation: CDC-Backed Cache Invalidator</a></li>
+              <li class="toc-item toc-h2"><a href="#invalidation-gotchas-best-practices" class="toc-link">Invalidation Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

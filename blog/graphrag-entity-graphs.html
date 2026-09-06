@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-limitations-of-naive-vector-search">The Limitations of Naive Vector Search</a></li>
+                <li><a href="#architectural-workflow-from-raw-text-to-graph-queries">Architectural Workflow: From Raw Text to Graph Queries</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#technical-implementation-property-graph-indexing-with-llamaindex-neo4j">Technical Implementation: Property Graph Indexing with LlamaIndex &amp; Neo4j</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ While standard vector-based RAG excels at local information retrieval, it strugg
 </div>
 </div>
 <hr>
-<h2>The Limitations of Naive Vector Search</h2>
+<h2 id="the-limitations-of-naive-vector-search">The Limitations of Naive Vector Search</h2>
 <p>Standard Retrieval-Augmented Generation (RAG) is built on a simple pipeline: split documents into chunks, calculate semantic vector embeddings for each chunk, and retrieve the top-$K$ most similar chunks during query time using cosine similarity.</p>
 <p>This approach is highly effective for localized questions (e.g., <em>&quot;What was the revenue of Company X in Q3?&quot;</em>). However, it fails catastrophically under two scenarios:</p>
 <ol>
@@ -120,7 +130,7 @@ While standard vector-based RAG excels at local information retrieval, it strugg
 </ol>
 <p>Because naive chunking strips away the relationships between entities, the retriever cannot navigate the connections between data blocks. The solution is <strong>GraphRAG</strong> (originally popularized by Microsoft Research), which models documents as structured entities and relationships, mapping them to a unified Knowledge Graph.</p>
 <hr>
-<h2>Architectural Workflow: From Raw Text to Graph Queries</h2>
+<h2 id="architectural-workflow-from-raw-text-to-graph-queries">Architectural Workflow: From Raw Text to Graph Queries</h2>
 <p>A production-grade GraphRAG system operates in two distinct phases: <strong>Graph Ingestion &amp; Construction</strong> and <strong>Hybrid Retrieval (Local vs. Global Querying)</strong>.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 graph TD
@@ -150,19 +160,19 @@ graph TD
     style H fill:#111827,stroke:#10b981,stroke-width:2px
     style I fill:#111827,stroke:#eab308,stroke-width:2px
     style K fill:#1e293b,stroke:#0ea5e9,stroke-width:2px</div>
-<h3>Ingestion Pipeline</h3>
+<h3 id="ingestion-pipeline">Ingestion Pipeline</h3>
 <ol>
 <li><strong>Entity &amp; Relation Extraction</strong>: Documents are parsed by an LLM instructed to extract specific entity classes (e.g., <code>Person</code>, <code>SoftwareComponent</code>, <code>Vulnerability</code>) and relationship links (e.g., <code>DEPENDS_ON</code>, <code>EXPLOITS</code>, <code>IMPLEMENTS</code>).</li>
 <li><strong>Entity Resolution</strong>: Merging duplicate entities (e.g., mapping &quot;API Gateway&quot;, &quot;API Gateway Component&quot;, and &quot;Gateway Service&quot; to a single node).</li>
 <li><strong>Vector Mapping</strong>: Computing vector representations for every entity&#39;s description and saving them to a vector index linked to the graph node.</li>
 </ol>
-<h3>Query Pipeline</h3>
+<h3 id="query-pipeline">Query Pipeline</h3>
 <ul>
 <li><strong>Local Search</strong>: Navigating the immediate neighbors of a specific entity. Ideal for querying detailed dependencies.</li>
 <li><strong>Global Search</strong>: Utilizing hierarchical clustering (like Leiden community detection) to summarize subgroups of the graph. Summaries are pre-calculated, allowing the engine to aggregate thematic answers without traversing the entire database in real-time.</li>
 </ul>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <p>To make an informed architectural decision, we must weigh the system&#39;s pros against its operational overhead:</p>
 <table>
 <thead>
@@ -185,7 +195,7 @@ graph TD
 </tr>
 </tbody></table>
 <hr>
-<h2>Technical Implementation: Property Graph Indexing with LlamaIndex &amp; Neo4j</h2>
+<h2 id="technical-implementation-property-graph-indexing-with-llamaindex-neo4j">Technical Implementation: Property Graph Indexing with LlamaIndex &amp; Neo4j</h2>
 <p>Below is a complete, production-ready implementation of a GraphRAG indexing pipeline using Python, <strong>LlamaIndex</strong>, and <strong>Neo4j</strong>. This script parses text documents, extracts entities/relations, loads them into a Neo4j database, and executes a local graph query.</p>
 <pre><code class="language-python">import os
 from llama_index.core import SimpleDirectoryReader, StorageContext
@@ -263,7 +273,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n[+] GraphRAG Response:&quot;)
     print(res)</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>GraphRAG is not a drop-in replacement for standard vector search, but a powerful extension for complex environments. It transforms the context window from a collection of isolated text fragments into an interconnected web of structured knowledge.</p>
 <ul>
 <li><strong>When to deploy</strong>: Use GraphRAG when your application requires thematic summaries, code dependency mapping, or answering questions spread across multiple files.</li>
@@ -271,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
 </ul>
 <p>In our next article, <a href="file:///G:/ReplitProjects/akmalkhaniub.github.io/blog/hybrid-search-reranking-dense-sparse.html">Hybrid Search &amp; Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders</a>, we will explore how to combine keyword-level search with vector lookups to prevent precise database queries from failing.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>Microsoft Research</strong>: <em>From Local to Global: A GraphRAG Approach to Query-Focused Summarization</em> — <a href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noopener">arXiv:2404.16130</a></li>
 <li><strong>LlamaIndex Guide</strong>: <a href="https://docs.llamaindex.ai/" target="_blank" rel="noopener">Property Graph Index Documentation</a></li>
@@ -304,6 +314,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-limitations-of-naive-vector-search" class="toc-link">The Limitations of Naive Vector Search</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-workflow-from-raw-text-to-graph-queries" class="toc-link">Architectural Workflow: From Raw Text to Graph Queries</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#technical-implementation-property-graph-indexing-with-llamaindex-neo4j" class="toc-link">Technical Implementation: Property Graph Indexing with LlamaIndex &amp; Neo4j</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

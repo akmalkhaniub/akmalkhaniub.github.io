@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-the-context-window-fallacy-cognitive-load">1. The Context Window Fallacy &amp; Cognitive Load</a></li>
+                <li><a href="#2-the-three-tier-memory-hierarchy-architecture">2. The Three-Tier Memory Hierarchy Architecture</a></li>
+                <li><a href="#3-memgpt-letta-os-memory-paging-mechanics">3. MemGPT / Letta OS Memory Paging Mechanics</a></li>
+                <li><a href="#python-implementation-multi-tier-agent-memory-manager">Python Implementation: Multi-Tier Agent Memory Manager</a></li>
+                <li><a href="#memory-architecture-gotchas-best-practices">Memory Architecture Gotchas &amp; Best Practices</a></li>
+                <li><a href="#next-in-the-series">Next in the Series</a></li>
+              </ul>
+            </details>
 <p>As autonomous AI agents (<strong>Agent Fleet Orchestrator</strong>, <strong>MemGPT / Letta</strong>, <strong>Devin</strong>, <strong>AutoGPT</strong>) evolve from single-turn chatbots into persistent software engineers and enterprise operators, managing state across hours, days, and months becomes the central architectural challenge.</p>
 <p>While modern LLMs boast massive context windows (128k to 2M tokens), treating the raw context window as an unbounded memory buffer fails in production.</p>
 <p>Stuffing raw conversation histories into the prompt triggers <strong>attention dilution</strong> (the &quot;needle-in-a-haystack&quot; retrieval degradation), dramatically slows down Time-to-First-Token (TTFT), and incurs quadratic compute costs ($O(N^2)$ self-attention).</p>
@@ -120,16 +131,16 @@
   Tier2 &lt;--&gt;|Background Knowledge Consolidation| Tier3
   Tier3 -.-&gt;|High-Relevance Entity Injections| Tier1</div>
 <hr>
-<h2>1. The Context Window Fallacy &amp; Cognitive Load</h2>
+<h2 id="1-the-context-window-fallacy-cognitive-load">1. The Context Window Fallacy &amp; Cognitive Load</h2>
 <p>Why can&#39;t we simply append all conversation history to a 1M-token context window?</p>
-<h3>The Three Context Window Failure Modes:</h3>
+<h3 id="the-three-context-window-failure-modes">The Three Context Window Failure Modes:</h3>
 <ol>
 <li><strong>The &quot;Lost in the Middle&quot; Phenomenon</strong>: Transformer attention mechanisms prioritize tokens at the extreme beginning (system prompt) and end (latest user prompt). Retrieval accuracy drops by up to $40%$ when critical facts reside in the middle $20%\text{--}80%$ of a massive context buffer.</li>
 <li><strong>Context Contamination &amp; Hallucination Propagation</strong>: Outdated assumptions, dead-end tool errors, and temporary debugging scratchpad text remain in context, poisoning downstream reasoning.</li>
 <li><strong>Quadratic Cost &amp; Latency Inflation</strong>: Re-ingesting 200,000 tokens on every autonomous tool step multiplies API token costs by $50\times$ and increases latency to unacceptable thresholds ($&gt; 15\text{ seconds per step}$).</li>
 </ol>
 <hr>
-<h2>2. The Three-Tier Memory Hierarchy Architecture</h2>
+<h2 id="2-the-three-tier-memory-hierarchy-architecture">2. The Three-Tier Memory Hierarchy Architecture</h2>
 <pre><code class="language-plaintext">
 |                                 TIER 1: WORKING MEMORY                                  |
 |   In-context FIFO buffer: System Persona + Active Plan + ReAct Scratchpad (8k-32k)       |
@@ -149,7 +160,7 @@
 |                                 TIER 3: SEMANTIC GRAPH-RAG                              |
 |   Entity Knowledge Graph: (Subject)-[Predicate]-&gt;(Object), User Preferences, Core Facts  |
 </code></pre>
-<h3>Tier 1: Ephemeral Working Memory (The Active Scratchpad)</h3>
+<h3 id="tier-1-ephemeral-working-memory-the-active-scratchpad">Tier 1: Ephemeral Working Memory (The Active Scratchpad)</h3>
 <ul>
 <li><strong>Scope</strong>: Resides directly inside the LLM&#39;s active prompt.</li>
 <li><strong>Components</strong>:<ul>
@@ -161,7 +172,7 @@
 <li><strong>Management</strong>: When the scratchpad reaches a token budget threshold ($80%$ of working limit), an automated <strong>Summarization &amp; Eviction Daemon</strong> compresses older turns into an executive summary and flushes raw turns to Tier 2.</li>
 </ul>
 <hr>
-<h3>Tier 2: Episodic Memory (Vector Store with Temporal Decay)</h3>
+<h3 id="tier-2-episodic-memory-vector-store-with-temporal-decay">Tier 2: Episodic Memory (Vector Store with Temporal Decay)</h3>
 <ul>
 <li><strong>Scope</strong>: Stores past user conversations, historical code diffs, and executed agent trajectories in PostgreSQL (<code>pgvector</code>) or Redis.</li>
 <li><strong>The Retrieval Scoring Function</strong>:
@@ -176,7 +187,7 @@ Production agents use an <strong>exponential temporal decay hybrid ranking funct
 <li>$\alpha \in [0.6, 0.8]$ balances semantic relevance against recency.</li>
 </ul>
 <hr>
-<h3>Tier 3: Semantic Long-Term Knowledge (Graph-RAG &amp; Entity Triples)</h3>
+<h3 id="tier-3-semantic-long-term-knowledge-graph-rag-entity-triples">Tier 3: Semantic Long-Term Knowledge (Graph-RAG &amp; Entity Triples)</h3>
 <ul>
 <li><strong>Scope</strong>: Unstructured vector search struggles with multi-hop associative queries (e.g. <em>&quot;What database did we decide to use for the project Alex mentioned last Tuesday?&quot;</em>).</li>
 <li><strong>Graph-RAG Mechanics</strong>:
@@ -185,7 +196,7 @@ $$\text{(Entity: Alex)} \xrightarrow{\text{OWNS}} \text{(Project: SpecForge)} \x
 <li>When an agent queries a concept, it performs a hybrid vector search to identify entry nodes, followed by a <strong>2-hop graph neighborhood traversal</strong> in Neo4j or Postgres recursive CTEs, injecting tightly grounded factual relationships into the Tier 1 prompt.</li>
 </ul>
 <hr>
-<h2>3. MemGPT / Letta OS Memory Paging Mechanics</h2>
+<h2 id="3-memgpt-letta-os-memory-paging-mechanics">3. MemGPT / Letta OS Memory Paging Mechanics</h2>
 <p>Inspired by operating system virtual memory management (RAM vs Disk paging), <strong>MemGPT (Letta)</strong> introduced function-calling tools that allow the LLM to actively manage its own memory hierarchy:</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -204,7 +215,7 @@ $$\text{(Entity: Alex)} \xrightarrow{\text{OWNS}} \text{(Project: SpecForge)} \x
 <li><strong><code>archival_memory_search(query, top_k)</code></strong>: Performs semantic search to page external knowledge back into working memory on-demand.</li>
 </ul>
 <hr>
-<h2>Python Implementation: Multi-Tier Agent Memory Manager</h2>
+<h2 id="python-implementation-multi-tier-agent-memory-manager">Python Implementation: Multi-Tier Agent Memory Manager</h2>
 <p>Here is a production-grade Python implementation of a 3-tier agent memory manager with working context budgeting, temporal decay scoring, and entity extraction:</p>
 <pre><code class="language-python">import math
 import time
@@ -341,7 +352,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;=&quot; * 60)
     print(memory.compile_full_context_prompt())</code></pre>
 <hr>
-<h2>Memory Architecture Gotchas &amp; Best Practices</h2>
+<h2 id="memory-architecture-gotchas-best-practices">Memory Architecture Gotchas &amp; Best Practices</h2>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
   <div class="alert-content"><p><strong>Never Rely Solely on Semantic Vector Distance for Time-Sensitive Actions</strong>: In long-running tasks, an action taken $10\text{ seconds ago}$ with moderate semantic relevance is almost always more important than a highly similar action taken $3\text{ weeks ago}$. Always apply <strong>exponential temporal decay</strong> to your vector retrieval scoring.</p>
@@ -353,7 +364,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Next in the Series</h2>
+<h2 id="next-in-the-series">Next in the Series</h2>
 <p>In <strong>Post 400 (Milestone Special)</strong>, we will synthesize these principles into <strong>The Blueprint for Production AI Agent Swarms: 10 Architectural Principles for 99.9% Reliable Autonomous Workflows</strong>.</p>
 
           </div>
@@ -382,6 +393,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-the-context-window-fallacy-cognitive-load" class="toc-link">1. The Context Window Fallacy &amp; Cognitive Load</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-three-tier-memory-hierarchy-architecture" class="toc-link">2. The Three-Tier Memory Hierarchy Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#3-memgpt-letta-os-memory-paging-mechanics" class="toc-link">3. MemGPT / Letta OS Memory Paging Mechanics</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-multi-tier-agent-memory-manager" class="toc-link">Python Implementation: Multi-Tier Agent Memory Manager</a></li>
+              <li class="toc-item toc-h2"><a href="#memory-architecture-gotchas-best-practices" class="toc-link">Memory Architecture Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#next-in-the-series" class="toc-link">Next in the Series</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-request-timeout-bottleneck-in-agentic-systems">The Request-Timeout Bottleneck in Agentic Systems</a></li>
+                <li><a href="#decoupled-agent-queue-lifecycle">Decoupled Agent Queue Lifecycle</a></li>
+                <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
+                <li><a href="#technical-implementation-decoupling-agent-tasks-with-bullmq">Technical Implementation: Decoupling Agent Tasks with BullMQ</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Running multi-step AI agents inside synchronous HTTP request/response loops is a
 </div>
 </div>
 <hr>
-<h2>The Request-Timeout Bottleneck in Agentic Systems</h2>
+<h2 id="the-request-timeout-bottleneck-in-agentic-systems">The Request-Timeout Bottleneck in Agentic Systems</h2>
 <p>In classic web applications, API responses are expected within milliseconds. However, modern AI agent loops are slow:</p>
 <ol>
 <li><strong>Multi-Step Reasoning</strong>: Agents planning steps, executing tools, inspecting results, and writing files frequently require multiple sequential LLM calls.</li>
@@ -120,7 +130,7 @@ Running multi-step AI agents inside synchronous HTTP request/response loops is a
 <p>If your backend executes these runs synchronously within an HTTP POST request, your server threads will block. Under high concurrency, your gateway will exhaust its thread pool, causing incoming client requests to fail. Furthermore, if the user&#39;s connection drops midway, the agent task continues running blindly, consuming expensive API tokens with no client to receive the output.</p>
 <p>The solution is <strong>Asynchronous Event-Driven Decoupling</strong>: return a job ID immediately to the client, push the agent task to a message queue, and process it in the background using dedicated workers.</p>
 <hr>
-<h2>Decoupled Agent Queue Lifecycle</h2>
+<h2 id="decoupled-agent-queue-lifecycle">Decoupled Agent Queue Lifecycle</h2>
 <p>An event-driven agent infrastructure maps jobs through waiting, active, completed, and failed queues, storing progress and intermediate steps in a shared Redis backend.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 graph TD
@@ -143,14 +153,14 @@ graph TD
     style C fill:#0ea5e9,stroke:#0f172a,stroke-width:2px,color:#0f172a
     style D fill:#111827,stroke:#10b981,stroke-width:2px
     style E fill:#1e293b,stroke:#a855f7,stroke-width:2px</div>
-<h3>Key Queue Mechanics</h3>
+<h3 id="key-queue-mechanics">Key Queue Mechanics</h3>
 <ul>
 <li><strong>Job Deferral</strong>: The gateway validates the request, schedules a worker job via BullMQ, and immediately responds with a <code>202 Accepted</code> status and a unique tracking token.</li>
 <li><strong>Worker Execution</strong>: Decoupled workers pull tasks from Redis, executing agent logic step-by-step.</li>
 <li><strong>Error Isolation &amp; Backoff</strong>: If the LLM provider returns a <code>429 Rate Limit Exceeded</code> error, the queue automatically triggers exponential backoff retries, preserving the state of the agent run.</li>
 </ul>
 <hr>
-<h2>What&#39;s Good &amp; What&#39;s Not</h2>
+<h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
 <thead>
 <tr>
@@ -172,7 +182,7 @@ graph TD
 </tr>
 </tbody></table>
 <hr>
-<h2>Technical Implementation: Decoupling Agent Tasks with BullMQ</h2>
+<h2 id="technical-implementation-decoupling-agent-tasks-with-bullmq">Technical Implementation: Decoupling Agent Tasks with BullMQ</h2>
 <p>Below is a complete TypeScript implementation using <strong>BullMQ</strong> and <strong>ioredis</strong> to configure an asynchronous job queue and worker pool.</p>
 <pre><code class="language-typescript">import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import Redis from 'ioredis';
@@ -255,7 +265,7 @@ if (require.main === module) {
   triggerAgentTask('usr_10492', 'Audit database indexing logs and report locking contentions');
 }</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Event-driven queues are the foundation of stable enterprise AI platforms. By transitioning from synchronous block-on-request logic to asynchronous BullMQ workers, you protect your system from API failures, rate-limit blocks, and server crashes.</p>
 <ul>
 <li><strong>Pace your calls</strong>: Use BullMQ&#39;s concurrency settings to restrict the number of parallel LLM calls, matching your API tier&#39;s rate limits.</li>
@@ -263,7 +273,7 @@ if (require.main === module) {
 </ul>
 <p>In our next article, <a href="file:///G:/ReplitProjects/akmalkhaniub.github.io/blog/real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono</a>, we will discuss how to stream these background queue updates back to your frontend in real-time.</p>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>BullMQ Documentation</strong>: <a href="https://docs.bullmq.io/" target="_blank" rel="noopener">Task Queue Manager for Node.js</a></li>
 <li><strong>Redis Architecture</strong>: <a href="https://redis.io/" target="_blank" rel="noopener">How to configure Redis for high-durability caching</a></li>
@@ -296,6 +306,18 @@ if (require.main === module) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-request-timeout-bottleneck-in-agentic-systems" class="toc-link">The Request-Timeout Bottleneck in Agentic Systems</a></li>
+              <li class="toc-item toc-h2"><a href="#decoupled-agent-queue-lifecycle" class="toc-link">Decoupled Agent Queue Lifecycle</a></li>
+              <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#technical-implementation-decoupling-agent-tasks-with-bullmq" class="toc-link">Technical Implementation: Decoupling Agent Tasks with BullMQ</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

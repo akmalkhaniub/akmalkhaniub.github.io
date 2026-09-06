@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#asgi-worker-threadpool-architecture">ASGI Worker &amp; Threadpool Architecture</a></li>
+                <li><a href="#python-implementation-event-loop-profiler-threadpool-offloader">Python Implementation: Event Loop Profiler &amp; Threadpool Offloader</a></li>
+                <li><a href="#event-loop-gotchas-mitigation">Event Loop Gotchas &amp; Mitigation</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>FastAPI delivers exceptional performance when handling I/O-bound web requests. However, in high-concurrency production environments, developers frequently encounter performance degradation caused by a single misconfigured route.</p>
 <p>Because Python&#39;s <code>asyncio</code> event loop runs on a single thread per worker process, executing a single blocking synchronous computation (such as CPU-heavy data transformations or blocking third-party library calls) within an <code>async def</code> endpoint freezes the entire event loop, blocking all other incoming connections.</p>
 <p>To scale FastAPI to tens of thousands of concurrent requests, developers must master <strong>Async Event Loop Optimization</strong> and select the appropriate <strong>Worker Process Architecture</strong>.</p>
 <p>This article details how to profile event loop latency, offload CPU workloads, and configure high-performance ASGI servers.</p>
 <hr>
-<h2>ASGI Worker &amp; Threadpool Architecture</h2>
+<h2 id="asgi-worker-threadpool-architecture">ASGI Worker &amp; Threadpool Architecture</h2>
 <p>Separating non-blocking async network I/O from blocking CPU-bound computations:</p>
 <div class="mermaid">graph TD
   A[Incoming Client Requests] --&gt; B[ASGI Server: Granian / Uvicorn]
@@ -128,13 +137,13 @@
   
   D --&gt; H[FastAPI HTTP Response]
   G --&gt; H</div>
-<h3>Worker Server Comparison</h3>
+<h3 id="worker-server-comparison">Worker Server Comparison</h3>
 <ul>
 <li><strong>Uvicorn (CPython asyncio)</strong>: The reference ASGI server. It uses <code>uvloop</code> (Cython wrapper around <code>libuv</code>) for high-speed event loop execution. It is typically managed by <strong>Gunicorn</strong> to run one worker process per CPU core.</li>
 <li><strong>Granian (Rust / Tokio Core)</strong>: A modern ASGI server written in Rust. It offloads HTTP parsing and socket handling to Rust (<code>hyper</code>), reducing Python memory overhead and boosting concurrency throughput by up to 40% compared to standard Uvicorn worker setups.</li>
 </ul>
 <hr>
-<h2>Python Implementation: Event Loop Profiler &amp; Threadpool Offloader</h2>
+<h2 id="python-implementation-event-loop-profiler-threadpool-offloader">Python Implementation: Event Loop Profiler &amp; Threadpool Offloader</h2>
 <p>Here is a production-grade Python script demonstrating how blocking synchronous calls freeze the event loop, and how to offload CPU-bound computations safely to threadpools using <code>fastapi.concurrency.run_in_threadpool</code>:</p>
 <pre><code class="language-python">import time
 import asyncio
@@ -216,7 +225,7 @@ if __name__ == &quot;__main__&quot;:
 
     asyncio.run(run_simulation())</code></pre>
 <hr>
-<h2>Event Loop Gotchas &amp; Mitigation</h2>
+<h2 id="event-loop-gotchas-mitigation">Event Loop Gotchas &amp; Mitigation</h2>
 <p>When scaling FastAPI applications:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -229,7 +238,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying event-loop optimization strategies report:</p>
 <ul>
 <li><strong>Zero Event Loop Lockups</strong>: Offloading CPU tasks prevents single-route spikes from freezing API gateways.</li>
@@ -262,6 +271,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#asgi-worker-threadpool-architecture" class="toc-link">ASGI Worker &amp; Threadpool Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-event-loop-profiler-threadpool-offloader" class="toc-link">Python Implementation: Event Loop Profiler &amp; Threadpool Offloader</a></li>
+              <li class="toc-item toc-h2"><a href="#event-loop-gotchas-mitigation" class="toc-link">Event Loop Gotchas &amp; Mitigation</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

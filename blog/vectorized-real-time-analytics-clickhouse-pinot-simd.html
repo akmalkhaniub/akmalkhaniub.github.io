@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#vectorized-olap-architecture-simd-processing-pipeline">Vectorized OLAP Architecture &amp; SIMD Processing Pipeline</a></li>
+                <li><a href="#python-implementation-columnar-vectorized-execution-simd-simulator">Python Implementation: Columnar Vectorized Execution &amp; SIMD Simulator</a></li>
+                <li><a href="#vectorized-analytics-gotchas-best-practices">Vectorized Analytics Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-scale analytical platforms (<strong>Uber</strong>, <strong>Cloudflare</strong>, <strong>Stripe</strong>, <strong>DoorDash</strong>), user dashboards demand sub-second SQL aggregation queries over billions of event records.</p>
 <p>Executing an analytical query—such as calculating average transaction amounts grouped by region over the past 30 days—on a traditional row-oriented database (like PostgreSQL) takes minutes and consumes gigabytes of RAM.</p>
 <p>To return analytical query results in under <strong>100 milliseconds</strong>, modern Real-Time OLAP (Online Analytical Processing) engines like <strong>ClickHouse</strong> and <strong>Apache Pinot</strong> combine <strong>Columnar Storage Layouts</strong>, <strong>Sparse Index Data Pruning</strong>, and <strong>Vectorized SIMD Execution</strong>.</p>
 <p>By processing contiguous columnar data vectors using Single Instruction, Multiple Data (<strong>SIMD</strong>) CPU hardware instructions (such as AVX-512), these engines achieve sub-second analytical performance.</p>
 <p>This article details Columnar vs Row-oriented layouts, ClickHouse sparse primary key indices, Apache Pinot segment pruning, Volcano Iterator vs Vectorized execution models, and SIMD hardware acceleration.</p>
 <hr>
-<h2>Vectorized OLAP Architecture &amp; SIMD Processing Pipeline</h2>
+<h2 id="vectorized-olap-architecture-simd-processing-pipeline">Vectorized OLAP Architecture &amp; SIMD Processing Pipeline</h2>
 <p>How ClickHouse and Apache Pinot prune data segments and utilize CPU SIMD vector registers to process billions of rows in milliseconds:</p>
 <div class="mermaid">graph TD
   subgraph User SQL Query Execution
@@ -126,7 +135,7 @@
     SIMDRegisters --&gt;|Single CPU Cycle Execution| SIMDAdd[&quot;4. Hardware Parallel Vector Add (8 x 64-bit Ints per Clock Cycle!)&quot;]
     SIMDAdd --&gt; AggregateResult[&quot;🎉 Sub-100ms Query Aggregation Result&quot;]
   end</div>
-<h3>Core Vectorized Analytics Mechanics</h3>
+<h3 id="core-vectorized-analytics-mechanics">Core Vectorized Analytics Mechanics</h3>
 <ol>
 <li><strong>Row-Oriented (OLTP) vs Columnar (OLAP) Storage</strong>:<ul>
 <li><em>Row Stores (PostgreSQL/MySQL)</em>: Store entire row records contiguously (<code>[id, name, age, country, revenue]</code>). Reading only <code>revenue</code> requires scanning all un-needed row attributes, thrashing CPU L1/L2 caches.</li>
@@ -151,7 +160,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Columnar Vectorized Execution &amp; SIMD Simulator</h2>
+<h2 id="python-implementation-columnar-vectorized-execution-simd-simulator">Python Implementation: Columnar Vectorized Execution &amp; SIMD Simulator</h2>
 <p>Here is a production-grade Python implementation of a Columnar Storage Engine and Vectorized SIMD Aggregator Simulator:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Tuple
@@ -239,7 +248,7 @@ if __name__ == &quot;__main__&quot;:
     target_t = 1700000000 + (2 * 4096)
     ch_engine.execute_vectorized_sum_query(min_time=target_t, target_country=&quot;US&quot;)</code></pre>
 <hr>
-<h2>Vectorized Analytics Gotchas &amp; Best Practices</h2>
+<h2 id="vectorized-analytics-gotchas-best-practices">Vectorized Analytics Gotchas &amp; Best Practices</h2>
 <p>When tuning real-time OLAP engines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -252,7 +261,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Vectorized OLAP engines (such as <strong>ClickHouse</strong>, <strong>Apache Pinot</strong>, and <strong>DuckDB</strong>) report:</p>
 <ul>
 <li><strong>Sub-100ms Query Speeds across Billions of Rows</strong>: Combining sparse index pruning with AVX-512 SIMD vector execution delivers sub-second dashboard rendering.</li>
@@ -285,6 +294,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#vectorized-olap-architecture-simd-processing-pipeline" class="toc-link">Vectorized OLAP Architecture &amp; SIMD Processing Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-columnar-vectorized-execution-simd-simulator" class="toc-link">Python Implementation: Columnar Vectorized Execution &amp; SIMD Simulator</a></li>
+              <li class="toc-item toc-h2"><a href="#vectorized-analytics-gotchas-best-practices" class="toc-link">Vectorized Analytics Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

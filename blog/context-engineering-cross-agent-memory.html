@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-blackboard-memory-sync-lifecycle">The Blackboard Memory Sync Lifecycle</a></li>
+                <li><a href="#synthesis-whats-good-whats-not">Synthesis: What's Good &amp; What's Not</a></li>
+                <li><a href="#implementing-an-mcp-memory-resource-server-in-python">Implementing an MCP Memory Resource Server in Python</a></li>
+                <li><a href="#swarm-state-management-checklist">Swarm State Management Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> An engineering guide on how to design a shared &quot;blackboard&quot; memory architecture using Model Context Protocol (MCP) Resources, enabling a swarm of specialized agents to synchronize state dynamically without inflating prompt contexts.</li>
 <li><strong>Why it matters:</strong> In complex workflows, passing complete transaction histories and state logs between multiple agents (e.g., orchestrator, validator, coder) quickly leads to context exhaustion and model confusion. A centralized memory resource server keeps agent prompts clean and focused.</li>
@@ -118,7 +129,7 @@
 <p>If we pass the full history of every agent&#39;s thoughts and outputs to all other agents in a linear thread, context windows will inflate exponentially. Agents will become distracted by irrelevant details, and token costs will skyrocket.</p>
 <p>To solve this, we implement a <strong>Blackboard Memory Architecture</strong> using <strong>MCP Resources</strong>—centralized, read/write state nodes that agents can query and update on-demand, rather than passing state through message histories.</p>
 <hr>
-<h2>The Blackboard Memory Sync Lifecycle</h2>
+<h2 id="the-blackboard-memory-sync-lifecycle">The Blackboard Memory Sync Lifecycle</h2>
 <p>Below is the architecture of a multi-agent system coordinating through a central MCP memory resource. The Supervisor routes work while specialized agents read from and write to the shared blackboard.</p>
 <div class="mermaid">graph TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
@@ -152,8 +163,8 @@
     style BlackboardMemory fill:#f0fdf4,stroke:#22c55e,stroke-width:2px;
     style MultiAgentSwarm fill:#fbfbfe,stroke:#4f46e5,stroke-width:1px,stroke-dasharray: 5 5;</div>
 <hr>
-<h2>Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
-<h3>1. Centralized Blackboard Memory</h3>
+<h2 id="synthesis-whats-good-whats-not">Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h3 id="1-centralized-blackboard-memory">1. Centralized Blackboard Memory</h3>
 <p>A centralized repository where agents post their inputs, intermediate results, and output structures. Agents query the blackboard on-demand via URI schemas.</p>
 <ul>
 <li><strong>What&#39;s Good (The Pros)</strong>:<ul>
@@ -169,7 +180,7 @@
 </li>
 </ul>
 <hr>
-<h3>2. Message-Passing Chains</h3>
+<h3 id="2-message-passing-chains">2. Message-Passing Chains</h3>
 <p>Agents communicate directly with each other by appending their results directly to the conversation log.</p>
 <ul>
 <li><strong>What&#39;s Good (The Pros)</strong>:<ul>
@@ -182,7 +193,7 @@
 </li>
 </ul>
 <hr>
-<h2>Implementing an MCP Memory Resource Server in Python</h2>
+<h2 id="implementing-an-mcp-memory-resource-server-in-python">Implementing an MCP Memory Resource Server in Python</h2>
 <p>Here is a Python implementation of an MCP server that exposes a shared blackboard using the <code>FastMCP</code> framework. This server exposes a dynamic MCP resource (<code>mcp://state/blackboard</code>) that multi-agent frameworks like LangGraph can query, along with write tools to update variables. This architecture mimics the multi-service synchronization patterns of <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a>.</p>
 <pre><code class="language-python"># blackboard_server.py
 from mcp.server.fastmcp import FastMCP
@@ -241,7 +252,7 @@ def append_blackboard_log(log_entry: str) -&gt; str:
     with state_lock:
         shared_blackboard[&quot;logs&quot;].append(log_entry)
     return &quot;Log entry appended.&quot;</code></pre>
-<h3>Integrating the Memory Resource into LangGraph</h3>
+<h3 id="integrating-the-memory-resource-into-langgraph">Integrating the Memory Resource into LangGraph</h3>
 <p>Here is how a LangGraph agent retrieves the blackboard state dynamically before processing a node:</p>
 <pre><code class="language-python"># agent_node.py
 from langgraph.graph import StateGraph
@@ -275,14 +286,14 @@ def coder_node(state):
         
     return {&quot;messages&quot;: [f&quot;Coder: Generated code for spec: {spec[:30]}...&quot;]}</code></pre>
 <hr>
-<h2>Swarm State Management Checklist</h2>
+<h2 id="swarm-state-management-checklist">Swarm State Management Checklist</h2>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Strict Locking Mechanisms</strong>: Ensure all blackboard write operations are thread-safe (<code>threading.Lock</code> or Redis transaction locks) to prevent race conditions during parallel execution.</li>
 <li><input disabled="" type="checkbox"> <strong>State Compaction</strong>: Keep state manageable by archiving completed logs or truncating old variable versions to prevent blackboard resource files from growing indefinitely.</li>
 <li><input disabled="" type="checkbox"> <strong>Dynamic Event Triggers</strong>: Combine the pull-based blackboard model with push notifications (webhooks or SSE) so agents know exactly when a variable they depend on is updated.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Cross-agent memory synchronization keeps multi-agent networks lightweight and accurate:</p>
 <ol>
 <li><strong>Blackboard Isolation:</strong> Do not pass massive code files or logs directly in message lists. Place them in a central, structured blackboard space instead.</li>
@@ -291,7 +302,7 @@ def coder_node(state):
 </ol>
 <p><em>Takeaway:</em> A tidy context makes a smart agent. Keep agent histories clean by offloading shared state to dedicated MCP resources.</p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>LangGraph State Management</strong>: LangChain Blog. <em>Agent Coordination Patterns with StateGraph</em>. <a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">LangGraph Docs</a>.</li>
 <li><strong>Model Context Protocol Resources</strong>: Model Context Protocol Specifications. <em>Exposing Context Files, Logs, and Data via Resources</em>. <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP Specification</a>.</li>
@@ -324,6 +335,19 @@ def coder_node(state):
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-blackboard-memory-sync-lifecycle" class="toc-link">The Blackboard Memory Sync Lifecycle</a></li>
+              <li class="toc-item toc-h2"><a href="#synthesis-whats-good-whats-not" class="toc-link">Synthesis: What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-an-mcp-memory-resource-server-in-python" class="toc-link">Implementing an MCP Memory Resource Server in Python</a></li>
+              <li class="toc-item toc-h2"><a href="#swarm-state-management-checklist" class="toc-link">Swarm State Management Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

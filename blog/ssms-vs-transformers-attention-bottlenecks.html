@@ -104,8 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#memory-complexity-attention-vs-state-space-models">Memory Complexity: Attention vs. State Space Models</a></li>
+                <li><a href="#synthesis-whats-good-whats-not">Synthesis: What's Good &amp; What's Not</a></li>
+                <li><a href="#modeling-an-ssm-selective-scan-in-python">Modeling an SSM Selective Scan in Python</a></li>
+                <li><a href="#ssm-ingestion-guardrails">SSM Ingestion Guardrails</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> A technical comparison between quadratic-time Self-Attention (used in standard Transformers) and linear-time State Space Models (SSMs like Mamba-2) for long-sequence tasks.</li>
 <li><strong>Why it matters:</strong> As prompt contexts scale into millions of tokens, the $O(N^2)$ VRAM memory footprint of standard attention becomes unsustainable, causing hardware crashes.</li>
@@ -118,7 +129,7 @@
 <p>To break past this barrier, researchers have developed <strong>State Space Models (SSMs)</strong>—most notably <strong>Mamba-2</strong>—to act as a linear-time sequence modeling alternative.</p>
 <p>This article synthesizes the trade-offs of State Space Models vs. Transformers, evaluating <strong>what is good (pros)</strong>, <strong>what is not (cons)</strong>, and how SSM states are computed in PyTorch, drawing from research references tracked in my repository <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a>.</p>
 <hr>
-<h2>Memory Complexity: Attention vs. State Space Models</h2>
+<h2 id="memory-complexity-attention-vs-state-space-models">Memory Complexity: Attention vs. State Space Models</h2>
 <p>As context lengths scale into millions of tokens, the VRAM consumption of self-attention diverges quadratically, while SSMs maintain a constant state size, scaling memory usage linearly.</p>
 <div class="mermaid">graph TD
     classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
@@ -138,21 +149,21 @@
     class PathLinear,LowVRAM linear;
     class PathQuad,HBM_Crash quad;</div>
 <hr>
-<h2>Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
-<h3>What&#39;s Good (The Pros)</h3>
+<h2 id="synthesis-whats-good-whats-not">Synthesis: What&#39;s Good &amp; What&#39;s Not</h2>
+<h3 id="whats-good-the-pros">What&#39;s Good (The Pros)</h3>
 <ul>
 <li><strong>Linear $O(N)$ Complexity</strong>: Mamba scales compute and memory footprint linearly with context length, enabling the processing of massive sequence payloads (entire code repositories or textbooks) on modest hardware.</li>
 <li><strong>No KV-Cache Growth</strong>: Standard transformers must store the Key-Value (KV) cache of all past tokens in memory during generation. SSMs collapse this history into a fixed-size state representation, eliminating VRAM expansion.</li>
 <li><strong>High Inference Throughput</strong>: By avoiding KV-cache read/write cycles, SSMs achieve significantly higher token generation throughput on GPUs.</li>
 </ul>
-<h3>What&#39;s Not (The Cons)</h3>
+<h3 id="whats-not-the-cons">What&#39;s Not (The Cons)</h3>
 <ul>
 <li><strong>Factual Recall Degradation</strong>: Because SSMs compress history into a fixed-size state, they suffer from &quot;information decay.&quot; They perform poorly on &quot;needle-in-a-haystack&quot; tasks where a model must locate a single, precise fact inside a large document.</li>
 <li><strong>Poor Copying and Retrieval</strong>: SSMs struggle with precise text copying or lookup operations—tasks where the explicit routing matrix of Transformer attention shines.</li>
 <li><strong>Training Infrastructure Latency</strong>: The vast majority of deep learning hardware (TPUs/GPUs) and software libraries are optimized for Transformer matrix operations, making custom SSM training pipelines complex to run.</li>
 </ul>
 <hr>
-<h2>Modeling an SSM Selective Scan in Python</h2>
+<h2 id="modeling-an-ssm-selective-scan-in-python">Modeling an SSM Selective Scan in Python</h2>
 <p>The core of the Mamba architecture is the <strong>Selective Scan</strong>. Unlike traditional recurrent neural networks (RNNs) which apply static transition matrices, Mamba dynamically varies its transition matrix based on the current input token, choosing what to remember or forget.</p>
 <p>Here is a PyTorch-style representation of a selective scan state transition, modeled on research structures in our <a href="https://github.com/akmalkhaniub/agentic-apps-portfolio" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> agentic-apps-portfolio</a> repository:</p>
 <pre><code class="language-python">import torch
@@ -207,13 +218,13 @@ class SelectiveScanSSM(nn.Module):
             
         return torch.stack(ys, dim=1) # [batch, seq_len, d_model]</code></pre>
 <hr>
-<h2>SSM Ingestion Guardrails</h2>
+<h2 id="ssm-ingestion-guardrails">SSM Ingestion Guardrails</h2>
 <ul>
 <li><strong>Hybrid Architectures</strong>: For tasks requiring both long context and exact recall, use hybrid models (like Jamba) that interleave Transformer attention layers (for retrieval) with Mamba SSM layers (for context scaling).</li>
 <li><strong>PII/Key Anchoring</strong>: When passing document datasets to SSMs, place key facts or lookup terms at the very beginning of the prompt to maximize the model&#39;s initial state activation.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Breaking the attention memory barrier is essential for the next generation of long-context applications:</p>
 <ol>
 <li><strong>Linear Scaling is Real:</strong> Mamba and other selective state space architectures offer a concrete pathway to processing millions of tokens without linear GPU cluster expansions.</li>
@@ -222,7 +233,7 @@ class SelectiveScanSSM(nn.Module):
 </ol>
 <p><em>Takeaway:</em> Choose your architecture based on your sequence memory bounds vs. your precise factual recall requirements.</p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Mamba Architecture</strong>: Gu &amp; Dao, 2023. <em>Mamba: Linear-Time Sequence Modeling with Selective State Spaces</em>. <a href="https://arxiv.org/abs/2312.00752" target="_blank" rel="noopener">arXiv:2312.00752</a>.</li>
 <li><strong>Mamba-2 Updates</strong>: Dao &amp; Gu, 2024. <em>Transformers are SSMs: Generalized State Space Models</em>. Details on hardware-aware matrix formulations.</li>
@@ -256,6 +267,19 @@ class SelectiveScanSSM(nn.Module):
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#memory-complexity-attention-vs-state-space-models" class="toc-link">Memory Complexity: Attention vs. State Space Models</a></li>
+              <li class="toc-item toc-h2"><a href="#synthesis-whats-good-whats-not" class="toc-link">Synthesis: What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h2"><a href="#modeling-an-ssm-selective-scan-in-python" class="toc-link">Modeling an SSM Selective Scan in Python</a></li>
+              <li class="toc-item toc-h2"><a href="#ssm-ingestion-guardrails" class="toc-link">SSM Ingestion Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

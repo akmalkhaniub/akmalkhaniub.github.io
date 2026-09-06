@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#trajectory-audit-forensic-pipeline-architecture">Trajectory Audit &amp; Forensic Pipeline Architecture</a></li>
+                <li><a href="#python-implementation-trajectory-forensic-parser-reconstructor">Python Implementation: Trajectory Forensic Parser &amp; Reconstructor</a></li>
+                <li><a href="#important-forensic-audit-guardrails">Important Forensic Audit Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When a traditional web application suffers a security incident, SRE and security teams analyze web server access logs, database query histories, and stack traces. However, when an autonomous AI agent is compromised—such as executing an unauthorized database update or exfiltrating data via an indirect prompt injection—standard HTTP logs fail to reveal <em>why</em> the agent chose to perform the action.</p>
 <p>Because agentic workflows involve non-deterministic reasoning, multi-step tool calls, and dynamic context retrieval, security teams need <strong>Trajectory Audit Logs</strong>. </p>
 <p>A Trajectory Audit Log records the complete step-by-step reasoning tree of an agent run: the exact system prompt hash, retrieved context chunks, model output tokens, tool call parameters, and return statuses.</p>
 <p>This article details how to design immutable trajectory audit logging pipelines and perform post-incident forensic analysis on compromised agent runs.</p>
 <hr>
-<h2>Trajectory Audit &amp; Forensic Pipeline Architecture</h2>
+<h2 id="trajectory-audit-forensic-pipeline-architecture">Trajectory Audit &amp; Forensic Pipeline Architecture</h2>
 <p>The forensic logging pipeline captures immutable telemetry at every step of the agent execution lifecycle:</p>
 <div class="mermaid">graph TD
   A[User / System Incident Trigger] --&gt; B[Agent Worker Execution Loop]
@@ -128,14 +137,14 @@
     E --&gt; G[Isolate Compromised Tool Sessions]
     E --&gt; H[Generate Incident Forensic Report &amp; Token Revocation]
   end</div>
-<h3>Forensic Reconstruction Requirements</h3>
+<h3 id="forensic-reconstruction-requirements">Forensic Reconstruction Requirements</h3>
 <ol>
 <li><strong>Cryptographic System Prompt Hash</strong>: Every trajectory record must log the SHA-256 hash of the active system prompt and guardrail version to verify if safety rules were modified.</li>
 <li><strong>Step-Level Causal Tracking</strong>: Each tool execution step must link directly to the preceding LLM reasoning output that triggered it (<code>step_index</code>, <code>parent_step_id</code>).</li>
 <li><strong>Immutable Log Sinks</strong>: Trajectory logs must stream directly to append-only storage (e.g., GCP Cloud Storage buckets with Object Lock or BigQuery append-only tables) to prevent compromised agents from deleting their own audit trails.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Trajectory Forensic Parser &amp; Reconstructor</h2>
+<h2 id="python-implementation-trajectory-forensic-parser-reconstructor">Python Implementation: Trajectory Forensic Parser &amp; Reconstructor</h2>
 <p>Here is a production Python implementation of a Trajectory Forensic Parser that analyzes JSONL audit logs, reconstructs the causal chain of a compromised agent run, and pinpoints the exact prompt injection entry point:</p>
 <pre><code class="language-python">import json
 import hashlib
@@ -246,7 +255,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;🔍 Trajectory Forensic Investigation Report:&quot;)
     print(report.model_dump_json(indent=2))</code></pre>
 <hr>
-<h2>Important Forensic Audit Guardrails</h2>
+<h2 id="important-forensic-audit-guardrails">Important Forensic Audit Guardrails</h2>
 <p>When implementing trajectory logging pipelines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -259,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams establishing Trajectory Audit Logging report:</p>
 <ul>
 <li><strong>Rapid Incident Root-Cause Identification</strong>: Forensic parsers locate the exact prompt injection entry point in seconds rather than hours.</li>
@@ -292,6 +301,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#trajectory-audit-forensic-pipeline-architecture" class="toc-link">Trajectory Audit &amp; Forensic Pipeline Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-trajectory-forensic-parser-reconstructor" class="toc-link">Python Implementation: Trajectory Forensic Parser &amp; Reconstructor</a></li>
+              <li class="toc-item toc-h2"><a href="#important-forensic-audit-guardrails" class="toc-link">Important Forensic Audit Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

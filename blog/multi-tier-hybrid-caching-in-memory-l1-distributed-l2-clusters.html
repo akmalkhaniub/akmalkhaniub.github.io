@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#multi-tier-l1l2-caching-invalidation-architecture">Multi-Tier L1/L2 Caching &amp; Invalidation Architecture</a></li>
+                <li><a href="#python-implementation-multi-tier-l1l2-caching-engine">Python Implementation: Multi-Tier L1/L2 Caching Engine</a></li>
+                <li><a href="#multi-tier-caching-gotchas-best-practices">Multi-Tier Caching Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-concurrency microservice architectures, querying a distributed cache cluster (like <strong>Redis</strong>) delivers low-latency reads. However, even a Redis network hop takes $1\text{ms}$ to $3\text{ms}$ over TCP sockets. When a microservice receives 50,000 requests per second, making TCP calls to Redis for every single request creates network interface saturation and serial CPU overhead.</p>
 <p>To achieve sub-microsecond read performance, software architects deploy <strong>Multi-Tier Hybrid Caching</strong>.</p>
 <p>A Multi-Tier architecture co-locates a ultra-fast <strong>L1 In-Memory Process Cache</strong> directly inside application memory, backed by a high-capacity <strong>L2 Distributed Cache Cluster (Redis)</strong>.</p>
 <p>When data changes, a <strong>Pub/Sub Invalidation Bus</strong> broadcasts invalidation events across all microservice instances, maintaining strict consistency across local L1 process caches.</p>
 <p>This article details how to design and build a multi-tier L1/L2 caching engine.</p>
 <hr>
-<h2>Multi-Tier L1/L2 Caching &amp; Invalidation Architecture</h2>
+<h2 id="multi-tier-l1l2-caching-invalidation-architecture">Multi-Tier L1/L2 Caching &amp; Invalidation Architecture</h2>
 <p>The read path hierarchy and cross-node L1 invalidation bus:</p>
 <div class="mermaid">graph TD
   A[Client Request] --&gt; B[L1 In-Memory Process Cache: Sub-microsecond RAM]
@@ -130,14 +139,14 @@
     H[Data Updated in Node 2] --&gt;|6. Publish Event| I[Redis Pub/Sub Channel]
     I --&gt;|7. Broadcast Invalidation| B
   end</div>
-<h3>Multi-Tier Engine Characteristics</h3>
+<h3 id="multi-tier-engine-characteristics">Multi-Tier Engine Characteristics</h3>
 <ol>
 <li><strong>L1 In-Memory Process Cache</strong>: Co-located inside the application worker&#39;s process memory space. Reads execute in nanoseconds without network overhead. Space is bounded using LRU or LFU eviction policies.</li>
 <li><strong>L2 Distributed Cache Cluster</strong>: Shared across all microservice instances. Holds gigabytes/terabytes of data with high availability, acting as a secondary shield before queries reach primary database storage.</li>
 <li><strong>Pub/Sub Invalidation Synchronization</strong>: When any node updates or deletes a key, it publishes a message to a Redis Pub/Sub channel (<code>l1_invalidation_channel</code>). All subscribed microservice nodes receive the message and evict the corresponding key from their local L1 process memory instantly.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Multi-Tier L1/L2 Caching Engine</h2>
+<h2 id="python-implementation-multi-tier-l1l2-caching-engine">Python Implementation: Multi-Tier L1/L2 Caching Engine</h2>
 <p>Here is a production-grade Python implementation of a Multi-Tier Cache Manager featuring an L1 Process Cache, L2 Distributed Cache, and Redis Pub/Sub invalidation synchronization:</p>
 <pre><code class="language-python">import time
 import threading
@@ -265,7 +274,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n🔍 Node 2 Reading Key After Cross-Node Invalidation...&quot;)
     res2_fresh = node2.get_or_fetch(key, fetch_product_from_db)</code></pre>
 <hr>
-<h2>Multi-Tier Caching Gotchas &amp; Best Practices</h2>
+<h2 id="multi-tier-caching-gotchas-best-practices">Multi-Tier Caching Gotchas &amp; Best Practices</h2>
 <p>When operating multi-tier caching architectures:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -278,7 +287,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying multi-tier hybrid caching report:</p>
 <ul>
 <li><strong>Sub-Microsecond Latency</strong>: Serving 90% of reads directly from L1 in-memory process caches delivers $100\times$ faster response times than single-tier Redis lookups.</li>
@@ -311,6 +320,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#multi-tier-l1l2-caching-invalidation-architecture" class="toc-link">Multi-Tier L1/L2 Caching &amp; Invalidation Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-multi-tier-l1l2-caching-engine" class="toc-link">Python Implementation: Multi-Tier L1/L2 Caching Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#multi-tier-caching-gotchas-best-practices" class="toc-link">Multi-Tier Caching Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

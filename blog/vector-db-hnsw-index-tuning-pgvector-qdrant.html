@@ -104,10 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#under-the-hood-hnsws-layered-routing">Under the Hood: HNSW's Layered Routing</a></li>
+                <li><a href="#tuning-hnsw-indexes-in-production">Tuning HNSW Indexes in Production</a></li>
+                <li><a href="#recall-vs-latency-trade-offs">Recall vs. Latency Trade-offs</a></li>
+                <li><a href="#important-pitfalls-in-index-configuration">Important Pitfalls in Index Configuration</a></li>
+              </ul>
+            </details>
 <p>In vector retrieval applications, matching a user&#39;s query vector against millions of document vectors is computationally expensive. Running a full brute-force linear search (Flat index) guarantees 100% recall, but scales linearly ($O(N)$), degrading latency to hundreds of milliseconds in large datasets.</p>
 <p>To achieve sub-10ms search times, production databases use <strong>Approximate Nearest Neighbor (ANN)</strong> search algorithms. The gold standard for ANN search is the <strong>Hierarchical Navigable Small World (HNSW)</strong> graph index. This article details HNSW&#39;s layered routing architecture and how to tune its parameters (<code>M</code>, <code>efConstruction</code>, and <code>efSearch</code>) in <strong>pgvector</strong> and <strong>Qdrant</strong> to balance search latency and recall accuracy.</p>
 <hr>
-<h2>Under the Hood: HNSW&#39;s Layered Routing</h2>
+<h2 id="under-the-hood-hnsws-layered-routing">Under the Hood: HNSW&#39;s Layered Routing</h2>
 <p>HNSW organizes vectors into a multi-layered graph, mimicking a skip list:</p>
 <ul>
 <li><strong>Upper Layers</strong>: Contain fewer nodes with longer-range links. Queries execute fast, high-level routing to quickly zoom in on the region of interest.</li>
@@ -128,7 +137,7 @@
   end
   L2_A --&gt; L1_A
   L1_B --&gt; L0_B</div>
-<h3>The Core Tuning Knobs</h3>
+<h3 id="the-core-tuning-knobs">The Core Tuning Knobs</h3>
 <ul>
 <li><strong><code>M</code></strong>: The maximum number of bidirectional link connections established for each new node added to the graph. <ul>
 <li><em>Impact</em>: Higher <code>M</code> values improve graph connectivity (improving recall on high-dimensional vectors) but increase memory consumption and index build times.</li>
@@ -144,8 +153,8 @@
 </li>
 </ul>
 <hr>
-<h2>Tuning HNSW Indexes in Production</h2>
-<h3>1. Optimizing pgvector in PostgreSQL</h3>
+<h2 id="tuning-hnsw-indexes-in-production">Tuning HNSW Indexes in Production</h2>
+<h3 id="1-optimizing-pgvector-in-postgresql">1. Optimizing pgvector in PostgreSQL</h3>
 <p>To create a high-performance HNSW index in PostgreSQL, use the <code>hnsw</code> index type and specify your <code>m</code> and <code>ef_construction</code> parameters during index definition:</p>
 <pre><code class="language-sql">-- 1. Create HNSW index with custom hyperparameters
 -- Optimized for 1536-dimensional vectors (e.g. text-embedding-3-small)
@@ -163,7 +172,7 @@ SELECT id, name, description
 FROM products
 ORDER BY embedding_vector &lt;=&gt; '[0.015, -0.024, ..., 0.087]'
 LIMIT 10;</code></pre>
-<h3>2. Configuring Qdrant Collections</h3>
+<h3 id="2-configuring-qdrant-collections">2. Configuring Qdrant Collections</h3>
 <p>In Qdrant, index parameters are configured when creating or updating collections. Here is a REST configuration payload to optimize a Qdrant collection for high-throughput querying:</p>
 <pre><code class="language-json">{
   &quot;name&quot;: &quot;enterprise_kb&quot;,
@@ -191,7 +200,7 @@ LIMIT 10;</code></pre>
   }
 }</code></pre>
 <hr>
-<h2>Recall vs. Latency Trade-offs</h2>
+<h2 id="recall-vs-latency-trade-offs">Recall vs. Latency Trade-offs</h2>
 <table>
 <thead>
 <tr>
@@ -229,7 +238,7 @@ LIMIT 10;</code></pre>
 </tr>
 </tbody></table>
 <hr>
-<h2>Important Pitfalls in Index Configuration</h2>
+<h2 id="important-pitfalls-in-index-configuration">Important Pitfalls in Index Configuration</h2>
 <p>Ensure your configurations avoid these performance bottlenecks:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -268,6 +277,17 @@ LIMIT 10;</code></pre>
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#under-the-hood-hnsws-layered-routing" class="toc-link">Under the Hood: HNSW's Layered Routing</a></li>
+              <li class="toc-item toc-h2"><a href="#tuning-hnsw-indexes-in-production" class="toc-link">Tuning HNSW Indexes in Production</a></li>
+              <li class="toc-item toc-h2"><a href="#recall-vs-latency-trade-offs" class="toc-link">Recall vs. Latency Trade-offs</a></li>
+              <li class="toc-item toc-h2"><a href="#important-pitfalls-in-index-configuration" class="toc-link">Important Pitfalls in Index Configuration</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

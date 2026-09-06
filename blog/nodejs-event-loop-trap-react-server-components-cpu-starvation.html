@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/nodejs-event-loop-trap-react-server-components-cpu-starvation.html">
   <meta property="og:title" content="The Node.js Event Loop Trap in Server Components: CPU Bottlenecks and Thread Starvation">
   <meta property="og:description" content="Why CPU-heavy React Server Components freeze the single-threaded Node.js event loop: libuv threadpool starvation, Kubernetes liveness probe cascades, and offloading heavy compute to worker thread pools.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nodejs-event-loop-trap-react-server-components-cpu-starvation.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-05">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="The Node.js Event Loop Trap in Server Components: CPU Bottlenecks and Thread Starvation">
   <meta name="twitter:description" content="Why CPU-heavy React Server Components freeze the single-threaded Node.js event loop: libuv threadpool starvation, Kubernetes liveness probe cascades, and offloading heavy compute to worker thread pools.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nodejs-event-loop-trap-react-server-components-cpu-starvation.jpg">
 
   <script type="application/ld+json">
 {
@@ -92,7 +92,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="The Node.js Event Loop Trap in Server Components: CPU Bottlenecks and Thread Starvation Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/nodejs-event-loop-trap-react-server-components-cpu-starvation.jpg" class="article-cover-img" alt="The Node.js Event Loop Trap in Server Components: CPU Bottlenecks and Thread Starvation Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">The Node.js Event Loop Trap in Server Components: CPU Bottlenecks and Thread Starvation</h1>
             <div class="article-meta">
@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-why-this-feature-the-false-equivalence-of-client-and-server-rendering">1. Why This Feature? The False Equivalence of Client and Server Rendering</a></li>
+                <li><a href="#2-measuring-the-blast-radius-event-loop-lag-threadpool-starvation">2. Measuring the Blast Radius: Event Loop Lag &amp; Threadpool Starvation</a></li>
+                <li><a href="#3-the-systems-solution-offloading-cpu-bounds-from-the-event-loop">3. The Systems Solution: Offloading CPU Bounds from the Event Loop</a></li>
+                <li><a href="#4-cross-framework-comparison-how-other-backends-avoid-event-loop-freezes">4. Cross-Framework Comparison: How Other Backends Avoid Event Loop Freezes</a></li>
+                <li><a href="#5-architectural-summary">5. Architectural Summary</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <p>In 2010, Ryan Dahl created Node.js around a single, foundational principle: <strong>I/O should be non-blocking, and CPU execution should be minimal</strong>.</p>
 <p>Because Node.js operates on a single-threaded event loop (<code>libuv</code>), it excels at shuffling network packets: taking a request, firing an asynchronous database query, releasing the thread to serve thousands of other clients, and re-awakening when the database responds. As long as your JavaScript code does not perform heavy synchronous computation, a single Node.js process can handle tens of thousands of concurrent connections.</p>
 <p>Then came React Server Components.</p>
@@ -130,8 +141,9 @@
     ThreadFreeze -.-&gt;|Health check timed out!| K8sKill[&quot;Kubernetes SIGKILL: Container Terminated&quot;]
     ThreadFreeze -.-&gt;|Client 3 socket buffer overflows!| SocketDrop[&quot;HTTP 504 Gateway Timeout on Checkout&quot;]
   end</div>
+<p><em>Figure 1: The Node.js event loop phases and CPU thread starvation induced by synchronous Virtual DOM stringification and recursive Flight serialization. Source: Node.js Diagnostics Working Group <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a></sup>.</em></p>
 <hr>
-<h2>1. Why This Feature? The False Equivalence of Client and Server Rendering</h2>
+<h2 id="1-why-this-feature-the-false-equivalence-of-client-and-server-rendering">1. Why This Feature? The False Equivalence of Client and Server Rendering</h2>
 <p>To understand how this trap sprung, you must examine how developer teams transitioned from the Pages Router to the App Router.</p>
 <p>In the Pages Router, server execution was strictly confined to <code>getServerSideProps</code>. Backend developers wrote clean, discrete data-fetching logic, returned a plain JSON object, and passed it to the template. The computational burden of actually traversing the React component tree and building the DOM belonged to the client browser.</p>
 <p>React Server Components dissolved that boundary:</p>
@@ -152,7 +164,7 @@ export default async function ReportPage({ params }) {
     &lt;/div&gt;
   );
 }</code></pre>
-<h3>The Architectural Trap:</h3>
+<h3 id="the-architectural-trap">The Architectural Trap:</h3>
 <p>Developers treat Server Components as if they were running in client-side isolation. But on the server:</p>
 <ol>
 <li><strong>Fiber Tree Reconciliation</strong>: React must traverse thousands of JSX nodes, building an in-memory Virtual DOM tree inside the Node.js V8 heap.</li>
@@ -160,20 +172,20 @@ export default async function ReportPage({ params }) {
 <li><strong>Synchronous Execution</strong>: While React is traversing 5,000 <code>&lt;LogViewerRow&gt;</code> components and serializing their Flight chunks, <strong>the single-threaded Node.js event loop cannot process any other network packets</strong>.</li>
 </ol>
 <hr>
-<h2>2. Measuring the Blast Radius: Event Loop Lag &amp; Threadpool Starvation</h2>
+<h2 id="2-measuring-the-blast-radius-event-loop-lag-threadpool-starvation">2. Measuring the Blast Radius: Event Loop Lag &amp; Threadpool Starvation</h2>
 <p>When the event loop freezes during a synchronous Server Component render, three cascading failures occur across the infrastructure stack:</p>
-<h3>1. The Kubernetes Liveness Probe Cascade</h3>
+<h3 id="1-the-kubernetes-liveness-probe-cascade">1. The Kubernetes Liveness Probe Cascade</h3>
 <p>Kubernetes periodically sends an HTTP GET request to <code>/api/healthz</code> to check if your container is alive.</p>
 <ul>
 <li>If your container fails to respond within 2 seconds, Kubernetes marks the pod as unhealthy.</li>
 <li>If three consecutive probes fail, Kubernetes issues a <code>SIGKILL</code> and restarts the container.</li>
 <li>When your traffic spikes, multiple pods hit the CPU-heavy Server Component simultaneously, their event loops freeze, their health probes fail, and <strong>Kubernetes systematically terminates all your production pods during peak traffic!</strong></li>
 </ul>
-<h3>2. DNS and Crypto Threadpool Exhaustion</h3>
+<h3 id="2-dns-and-crypto-threadpool-exhaustion">2. DNS and Crypto Threadpool Exhaustion</h3>
 <p>Node.js delegates asynchronous filesystem I/O, DNS lookups (<code>dns.lookup()</code>), and cryptographic hashing (<code>crypto.randomUUID()</code>) to an internal C threadpool managed by <code>libuv</code> (default size: 4 threads).</p>
 <p>When Server Actions encrypt closure payloads and Server Components resolve database hostnames, they saturate the <code>libuv</code> threadpool. If the event loop is concurrently blocked by synchronous React rendering, callbacks returning from completed database queries cannot execute.</p>
 <hr>
-<h2>3. The Systems Solution: Offloading CPU Bounds from the Event Loop</h2>
+<h2 id="3-the-systems-solution-offloading-cpu-bounds-from-the-event-loop">3. The Systems Solution: Offloading CPU Bounds from the Event Loop</h2>
 <p>To run React Server Components safely at scale, systems architects must establish a strict boundary: <strong>the main Node.js event loop must only route I/O; heavy computation must be isolated</strong>.</p>
 <div class="mermaid">graph LR
   MainThread[Node.js Main Event Loop] --&gt;|Dispatches CPU Work| WorkerPool[Node.js worker_threads / Piscina Pool]
@@ -182,7 +194,7 @@ export default async function ReportPage({ params }) {
   WorkerPool --&gt; Thread3[Worker Core 3]
   
   MainThread --&gt;|Instant Non-Blocking Response| HealthCheck[Responds to K8s /healthz in &lt; 2ms]</div>
-<h3>Pattern 1: Worker Thread Offloading (<code>worker_threads</code>)</h3>
+<h3 id="pattern-1-worker-thread-offloading-workerthreads">Pattern 1: Worker Thread Offloading (<code>worker_threads</code>)</h3>
 <p>For complex data transformations, aggregations, or markdown/syntax parsing occurring within Server Components, delegate work to a worker thread pool using libraries like <code>piscina</code>:</p>
 <pre><code class="language-typescript">// lib/worker-pool.ts
 import Piscina from 'piscina';
@@ -203,7 +215,7 @@ export default async function ReportPage() {
 
   return &lt;ReportTable data={processed} /&gt;;
 }</code></pre>
-<h3>Pattern 2: Server Component Pagination and Streaming Bounds</h3>
+<h3 id="pattern-2-server-component-pagination-and-streaming-bounds">Pattern 2: Server Component Pagination and Streaming Bounds</h3>
 <p>Never render unbounded lists inside a single Server Component. Always enforce virtualization or pagination boundaries:</p>
 <pre><code class="language-tsx">// Anti-Pattern: Renders 10,000 nodes synchronously
 export default async function Logs({ logs }) {
@@ -216,7 +228,7 @@ export default async function Logs({ page = 1 }) {
   return &lt;PaginatedTable logs={paginatedLogs} /&gt;;
 }</code></pre>
 <hr>
-<h2>4. Cross-Framework Comparison: How Other Backends Avoid Event Loop Freezes</h2>
+<h2 id="4-cross-framework-comparison-how-other-backends-avoid-event-loop-freezes">4. Cross-Framework Comparison: How Other Backends Avoid Event Loop Freezes</h2>
 <table>
 <thead>
 <tr>
@@ -258,10 +270,21 @@ export default async function Logs({ page = 1 }) {
 </tr>
 </tbody></table>
 <hr>
-<h2>5. Architectural Summary</h2>
+<h2 id="5-architectural-summary">5. Architectural Summary</h2>
 <p>React Server Components represent an undeniable leap forward in developer ergonomics, but they fundamentally change the physical demands placed on server runtimes.</p>
 <p>When your UI components run on the server, you are no longer just rendering views; you are allocating server heap memory and consuming server CPU cycles.</p>
 <p>Systems engineers who deploy RSC at scale must profile event loop lag (<code>libuv</code>), monitor p99 response times against <code>/healthz</code>, and treat synchronous JavaScript computation on the server with the same forensic discipline applied to database query optimization.</p>
+<hr>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Belder, B., &amp; Saether, T. (2020)</strong>. <em>libuv Architecture and Design Overview</em>. libuv Project Documentation. <a href="https://libuv.org/" target="_blank" rel="noopener">https://libuv.org/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Node.js Diagnostics Working Group (2024)</strong>. <em>Don&#39;t Block the Event Loop (or the Worker Pool)</em>. Node.js Official Documentation. <a href="https://nodejs.org/en/docs/guides/dont-block-the-event-loop/" target="_blank" rel="noopener">https://nodejs.org/en/docs/guides/dont-block-the-event-loop/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Cantrill, B., Shapiro, M. W., &amp; Leventhal, A. H. (2004)</strong>. <em>Dynamic Instrumentation of Production Systems</em>. Proceedings of the USENIX Annual Technical Conference (ATC &#39;04), 15–28. <a href="https://www.usenix.org/legacy/event/usenix04/tech/general/cantrill.html" target="_blank" rel="noopener">https://www.usenix.org/legacy/event/usenix04/tech/general/cantrill.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>V8 Engine Team (2024)</strong>. <em>High-Performance Garbage Collection and Memory Layout in V8</em>. Chromium Projects. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Fastify Team (2023)</strong>. <em>Benchmarking Node.js Web Frameworks and Latency Percentiles Under CPU Pressure</em>. Fastify Documentation. <a href="https://fastify.dev/docs/latest/Guides/Benchmarking/" target="_blank" rel="noopener">https://fastify.dev/docs/latest/Guides/Benchmarking/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -289,6 +312,19 @@ export default async function Logs({ page = 1 }) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-why-this-feature-the-false-equivalence-of-client-and-server-rendering" class="toc-link">1. Why This Feature? The False Equivalence of Client and Server Rendering</a></li>
+              <li class="toc-item toc-h2"><a href="#2-measuring-the-blast-radius-event-loop-lag-threadpool-starvation" class="toc-link">2. Measuring the Blast Radius: Event Loop Lag &amp; Threadpool Starvation</a></li>
+              <li class="toc-item toc-h2"><a href="#3-the-systems-solution-offloading-cpu-bounds-from-the-event-loop" class="toc-link">3. The Systems Solution: Offloading CPU Bounds from the Event Loop</a></li>
+              <li class="toc-item toc-h2"><a href="#4-cross-framework-comparison-how-other-backends-avoid-event-loop-freezes" class="toc-link">4. Cross-Framework Comparison: How Other Backends Avoid Event Loop Freezes</a></li>
+              <li class="toc-item toc-h2"><a href="#5-architectural-summary" class="toc-link">5. Architectural Summary</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

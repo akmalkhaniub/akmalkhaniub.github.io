@@ -104,18 +104,27 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#crdt-architecture-bounded-semi-lattice-merging">CRDT Architecture &amp; Bounded Semi-Lattice Merging</a></li>
+                <li><a href="#python-implementation-state-based-cvrdt-pn-counter-lww-set-engine">Python Implementation: State-Based (CvRDT) PN-Counter &amp; LWW-Set Engine</a></li>
+                <li><a href="#crdt-gotchas-best-practices">CRDT Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In modern local-first and collaborative applications (<strong>Figma</strong>, <strong>Notion</strong>, <strong>Linear</strong>, <strong>Apple Notes</strong>, <strong>Yjs</strong>, <strong>Automerge</strong>), users edit documents concurrently across web browsers, desktop apps, and offline mobile devices.</p>
 <p>Building real-time collaborative software using traditional central locking leads to unresponsive UI lag and data loss when clients lose internet connectivity.</p>
 <p>While <strong>Operational Transformation (OT)</strong> (used in legacy Google Docs) required a centralized server to order edit operations, modern decentralized systems rely on <strong>Conflict-Free Replicated Data Types (CRDTs)</strong>.</p>
 <p>By structuring data structures around <strong>Bounded Semi-Lattice Mathematics</strong>, CRDTs allow peer-to-peer nodes to mutate local state independently and merge concurrent edits deterministically without a central server.</p>
 <p>This article details State-based (CvRDT) semi-lattices, Operation-based (CmRDT) causal broadcasts, LWW-Element-Set resolution, PN-Counters, and collaborative sequence editing.</p>
 <hr>
-<h2>CRDT Architecture &amp; Bounded Semi-Lattice Merging</h2>
+<h2 id="crdt-architecture-bounded-semi-lattice-merging">CRDT Architecture &amp; Bounded Semi-Lattice Merging</h2>
 <p>How State-Based CRDTs (CvRDT) use mathematical join semi-lattices to achieve deterministic convergence:</p>
 <div class="mermaid">graph TD
   subgraph Peer-to-Peer Concurrent Edits
-    PeerA[Client A: Increments Counter +5] --&gt; StateA[&quot;Local State A: {P: [5, 0], N: [0, 0]}&quot;]
-    PeerB[Client B: Decrements Counter -2] --&gt; StateB[&quot;Local State B: {P: [0, 0], N: [0, 2]}&quot;]
+    PeerA[Client A: Increments Counter +5] --&gt; StateA[&quot;Local State A: {P: <sup class="citation-ref"><a href="#ref-5" class="citation-link" data-ref="5" title="Reference [5]">[5]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>, N: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>}&quot;]
+    PeerB[Client B: Decrements Counter -2] --&gt; StateB[&quot;Local State B: {P: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>, N: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup>}&quot;]
   end
   
   subgraph Network Sync &amp; Semi-Lattice Join Merge (⊔)
@@ -123,10 +132,10 @@
   end
   
   subgraph Deterministic Convergence
-    MergeEngine --&gt;|Max Vector Compute| ConvergedState[&quot;Merged State: {P: [5, 0], N: [0, 2]} -&gt; Final Value = +3&quot;]
+    MergeEngine --&gt;|Max Vector Compute| ConvergedState[&quot;Merged State: {P: <sup class="citation-ref"><a href="#ref-5" class="citation-link" data-ref="5" title="Reference [5]">[5]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>, N: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup>} -&gt; Final Value = +3&quot;]
     ConvergedState --&gt;|Zero Central Server!| PeerA &amp; PeerB
   end</div>
-<h3>Core CRDT Mathematical Mechanics</h3>
+<h3 id="core-crdt-mathematical-mechanics">Core CRDT Mathematical Mechanics</h3>
 <ol>
 <li><strong>State-Based CRDTs (CvRDT - Convergent Replicated Data Types)</strong>:<ul>
 <li>Replicas synchronize by periodically transmitting their full local state payloads to peer nodes over the network.</li>
@@ -153,7 +162,7 @@ $$P_{\text{merged}}[i] = \max(P_A[i], P_B[i]), \quad N_{\text{merged}}[i] = \max
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: State-Based (CvRDT) PN-Counter &amp; LWW-Set Engine</h2>
+<h2 id="python-implementation-state-based-cvrdt-pn-counter-lww-set-engine">Python Implementation: State-Based (CvRDT) PN-Counter &amp; LWW-Set Engine</h2>
 <p>Here is a production-grade Python implementation of a State-Based (CvRDT) PN-Counter and LWW-Element-Set Engine Simulator:</p>
 <pre><code class="language-python">import time
 from typing import Dict, Set, Tuple
@@ -263,7 +272,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;\n 🎉 Converged PN-Counter Value: {node_a.value_pn_counter()} (10 - 3 = 7)&quot;)
     print(f&quot; 🎉 Converged LWW-Set Active Items: {node_a.get_lww_set_values()} (Correctly Deleted via LWW!)&quot;)</code></pre>
 <hr>
-<h2>CRDT Gotchas &amp; Best Practices</h2>
+<h2 id="crdt-gotchas-best-practices">CRDT Gotchas &amp; Best Practices</h2>
 <p>When building collaborative local-first applications:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -276,7 +285,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Conflict-Free Replicated Data Types (in <strong>Figma</strong>, <strong>Notion</strong>, <strong>Linear</strong>, <strong>Apple Notes</strong>, and <strong>Redis CRDTs</strong>) report:</p>
 <ul>
 <li><strong>$100%$ Offline Availability</strong>: Peer-to-peer clients mutate local state instantly without waiting for network round-trips or central server lock approvals.</li>
@@ -309,6 +318,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#crdt-architecture-bounded-semi-lattice-merging" class="toc-link">CRDT Architecture &amp; Bounded Semi-Lattice Merging</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-state-based-cvrdt-pn-counter-lww-set-engine" class="toc-link">Python Implementation: State-Based (CvRDT) PN-Counter &amp; LWW-Set Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#crdt-gotchas-best-practices" class="toc-link">CRDT Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

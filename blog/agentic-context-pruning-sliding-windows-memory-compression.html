@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-context-inflation-problem">The Context Inflation Problem</a></li>
+                <li><a href="#3-core-optimization-techniques">3 Core Optimization Techniques</a></li>
+                <li><a href="#implementing-a-context-compressor-in-python">Implementing a Context Compressor in Python</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +120,7 @@ Long-running agentic workflows—such as analyzing codebase structures, running 
 </div>
 </div>
 <hr>
-<h2>The Context Inflation Problem</h2>
+<h2 id="the-context-inflation-problem">The Context Inflation Problem</h2>
 <p>In a standard agent loop, every message exchanged, prompt executed, and raw tool output (such as SQL tables or raw HTML scans) is appended to the conversation history. On long tasks, this history grows.</p>
 <p>When the context window gets bloated:</p>
 <ol>
@@ -132,15 +141,15 @@ flowchart TD
     
     Compile --&gt; LLM[LLM API Call]</div>
 <hr>
-<h2>3 Core Optimization Techniques</h2>
-<h3>1. Semantic Pruning</h3>
+<h2 id="3-core-optimization-techniques">3 Core Optimization Techniques</h2>
+<h3 id="1-semantic-pruning">1. Semantic Pruning</h3>
 <p>Not all messages are equal. A raw database output containing 5,000 lines of CSV data is useful to the tool-caller agent <em>once</em> to extract a summary. It does not need to stay in the context history for subsequent steps. Semantic pruning involves stripping out raw tool responses and replacing them with a brief summary (e.g., <code>[Tool Output: Successfully fetched 50 pending records]</code>).</p>
-<h3>2. Sliding Windows</h3>
+<h3 id="2-sliding-windows">2. Sliding Windows</h3>
 <p>We restrict the active conversation history to the most recent $N$ messages (e.g. the last 10 messages). Any message older than the window is sliced out of the active context array.</p>
-<h3>3. Recursive Memory Compression</h3>
+<h3 id="3-recursive-memory-compression">3. Recursive Memory Compression</h3>
 <p>To prevent the agent from forgetting the overall goal or key facts when older messages are sliced out, we run an asynchronous summarization task. The model condenses the oldest messages into a running system summary (e.g. &quot;Running Summary of past steps...&quot;), which is permanently injected at the start of the system prompt.</p>
 <hr>
-<h2>Implementing a Context Compressor in Python</h2>
+<h2 id="implementing-a-context-compressor-in-python">Implementing a Context Compressor in Python</h2>
 <p>Below is a complete, production-ready Python class illustrating token calculation, semantic pruning of verbose tool outputs, and sliding window orchestration.</p>
 <pre><code class="language-python">import tiktoken
 from typing import List, Dict, Any
@@ -220,7 +229,7 @@ if __name__ == &quot;__main__&quot;:
     for msg in final_payload:
         print(f&quot;[{msg['role'].upper()}] {msg['content'][:150]}&quot;)</code></pre>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>Implementing context compression controls ensures runtime cost efficiency and model focus:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Run semantic pruning immediately</strong>: Do not let raw, verbose data outputs persist in the message array. Condense them to structured outcomes immediately after invocation.</li>
@@ -255,6 +264,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-context-inflation-problem" class="toc-link">The Context Inflation Problem</a></li>
+              <li class="toc-item toc-h2"><a href="#3-core-optimization-techniques" class="toc-link">3 Core Optimization Techniques</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-a-context-compressor-in-python" class="toc-link">Implementing a Context Compressor in Python</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

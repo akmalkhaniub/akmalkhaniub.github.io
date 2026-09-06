@@ -104,6 +104,14 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#understanding-pgbouncer-pooling-modes">Understanding PgBouncer Pooling Modes</a></li>
+                <li><a href="#how-to-fix-the-prepared-statement-conflict">How to Fix the Prepared Statement Conflict</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +119,7 @@ PgBouncer is the industry standard for managing PostgreSQL connections in high-t
 </div>
 </div>
 <hr>
-<h2>Understanding PgBouncer Pooling Modes</h2>
+<h2 id="understanding-pgbouncer-pooling-modes">Understanding PgBouncer Pooling Modes</h2>
 <p>PgBouncer operates in three modes, each dictating how long a client socket owns a backend server database connection:</p>
 <ol>
 <li><strong>Session Pooling (Default)</strong>: The client keeps the server connection until it disconnects. Prepared statements work perfectly, but you cannot scale past your maximum server connection limit.</li>
@@ -137,10 +145,10 @@ sequenceDiagram
     Proxy--&gt;&gt;ClientB: Crash / Query Failed</div>
 <p>When Client A prepares a query, the driver names it (e.g. <code>S_1</code>) and registers it in the backend connection memory. When Client B is multiplexed onto that same connection by PgBouncer and tries to register its own prepared statement <code>S_1</code>, the database server throws an error because <code>S_1</code> was already defined.</p>
 <hr>
-<h2>How to Fix the Prepared Statement Conflict</h2>
-<h3>Solution 1: Disable Prepared Statements Client-Side (Recommended)</h3>
+<h2 id="how-to-fix-the-prepared-statement-conflict">How to Fix the Prepared Statement Conflict</h2>
+<h3 id="solution-1-disable-prepared-statements-client-side-recommended">Solution 1: Disable Prepared Statements Client-Side (Recommended)</h3>
 <p>The cleanest fix is to tell your database driver <strong>not</strong> to use prepared statements at all. Instead, force it to send raw queries with inline parameter scaling (parameterized queries sent as single-pass executions).</p>
-<h4>Node.js (node-postgres / pg) Config:</h4>
+<h4 id="nodejs-node-postgres-pg-config">Node.js (node-postgres / pg) Config:</h4>
 <p>If using the popular <code>pg</code> driver, disable query caching by telling it not to name queries, which forces it to execute them via the simple query protocol:</p>
 <pre><code class="language-typescript">import { Client } from 'pg';
 
@@ -152,7 +160,7 @@ const client = new Client({
   // DATABASE_URL=&quot;postgresql://user:password@localhost:6432/db?pgbouncer=true&quot;
 });</code></pre>
 <hr>
-<h4>Python (psycopg2 / psycopg3) Config:</h4>
+<h4 id="python-psycopg2-psycopg3-config">Python (psycopg2 / psycopg3) Config:</h4>
 <p>In Python&#39;s <code>psycopg3</code>, you can disable prepared statements globally by setting <code>prepare_threshold</code> to <code>None</code>. This prevents the driver from automatically preparing queries that are executed multiple times:</p>
 <pre><code class="language-python">import os
 import psycopg
@@ -172,7 +180,7 @@ with conn.cursor() as cur:
     )
     print(cur.fetchall())</code></pre>
 <hr>
-<h3>Solution 2: Enable Named Prepared Statements in PgBouncer (v1.21+)</h3>
+<h3 id="solution-2-enable-named-prepared-statements-in-pgbouncer-v121">Solution 2: Enable Named Prepared Statements in PgBouncer (v1.21+)</h3>
 <p>Modern versions of PgBouncer (v1.21+) support server-side prepared statement tracking. PgBouncer will intercept <code>PREPARE</code> and <code>DEALLOCATE</code> commands, tracking them on a per-client basis and automatically deallocating them on backend connections when clients swap.</p>
 <p>To enable this, update your <code>pgbouncer.ini</code> configuration:</p>
 <pre><code class="language-ini">[pgbouncer]
@@ -180,7 +188,7 @@ with conn.cursor() as cur:
 max_prepared_statements = 100
 track_extra_parameters = onload</code></pre>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>When scaling PostgreSQL with PgBouncer:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Always match database configs to pooling modes</strong>: If you run PgBouncer in Transaction Mode, you <em>must</em> disable client-side prepared statements or configure modern statement tracking.</li>
@@ -215,6 +223,16 @@ track_extra_parameters = onload</code></pre>
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#understanding-pgbouncer-pooling-modes" class="toc-link">Understanding PgBouncer Pooling Modes</a></li>
+              <li class="toc-item toc-h2"><a href="#how-to-fix-the-prepared-statement-conflict" class="toc-link">How to Fix the Prepared Statement Conflict</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

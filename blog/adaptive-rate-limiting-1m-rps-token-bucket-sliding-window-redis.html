@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-algorithm-anatomy-token-bucket-vs-leaky-bucket-vs-sliding-windows">1. Algorithm Anatomy: Token Bucket vs Leaky Bucket vs Sliding Windows</a></li>
+                <li><a href="#2-the-tier-1-tier-2-hybrid-synchronization-pattern">2. The Tier-1 / Tier-2 Hybrid Synchronization Pattern</a></li>
+                <li><a href="#3-client-side-resilience-aws-full-jitter-backoff">3. Client-Side Resilience: AWS Full Jitter Backoff</a></li>
+                <li><a href="#python-implementation-high-throughput-token-bucket-with-jitter">Python Implementation: High-Throughput Token Bucket with Jitter</a></li>
+                <li><a href="#architectural-comparison-centralized-vs-hierarchical-rate-limiting">Architectural Comparison: Centralized vs Hierarchical Rate Limiting</a></li>
+                <li><a href="#the-distributed-systems-law">The Distributed Systems Law</a></li>
+              </ul>
+            </details>
 <p>When an API gateway processes one million requests per second, the math of distributed state becomes unforgiving.</p>
 <p>Consider what happens if you implement a classic, naive rate limiter. Every incoming HTTP connection reaches an edge proxy; the edge proxy extracts an API token, serializes a command, and sends an atomic <code>INCR</code> or <code>ZADD</code> to a centralized Redis cluster.</p>
 <p>At one million requests per second, your rate-limiting layer is now generating one million queries per second of internal network traffic. Even with Redis running in-memory on high-performance bare metal, the network interface cards choke on packet serialization. The TCP round-trip between proxy and Redis adds two to five milliseconds of latency to every single client call. If Redis stutters for three hundred milliseconds during a background snapshot, one million inbound HTTP requests pile up in proxy socket buffers. Memory explodes. Cascading timeouts ripple upstream. Your rate limiter, designed to protect your infrastructure from crashing, becomes the single point of failure that destroys it.</p>
@@ -127,7 +138,7 @@
     Bucket1 --&gt;|Permitted| Upstream[&quot;Downstream Services&quot;]
   end</div>
 <hr>
-<h2>1. Algorithm Anatomy: Token Bucket vs Leaky Bucket vs Sliding Windows</h2>
+<h2 id="1-algorithm-anatomy-token-bucket-vs-leaky-bucket-vs-sliding-windows">1. Algorithm Anatomy: Token Bucket vs Leaky Bucket vs Sliding Windows</h2>
 <p>Before architecting the distributed synchronization layer, systems engineers must select the right rate-limiting primitive for the traffic profile:</p>
 <table>
 <thead>
@@ -168,18 +179,18 @@
 <td>Edge reverse proxies (Cloudflare)</td>
 </tr>
 </tbody></table>
-<h3>The Token Bucket Invariant</h3>
+<h3 id="the-token-bucket-invariant">The Token Bucket Invariant</h3>
 <p>The Token Bucket algorithm models rate limits by continuously accumulating tokens at a replenishment rate $r$ up to a maximum burst ceiling $B$:</p>
 <p>$$\text{Current Tokens} = \min\Big(B, ; \text{Previous Tokens} + (\Delta t \times r)\Big)$$</p>
 <p>When a request arrives, the proxy computes $\Delta t = t_{\text{now}} - t_{\text{last}}$, refills the bucket mathematically without running background timer threads, and checks if sufficient tokens exist.</p>
-<h3>The Boundary Edge Exploit and Sliding Window Counters</h3>
+<h3 id="the-boundary-edge-exploit-and-sliding-window-counters">The Boundary Edge Exploit and Sliding Window Counters</h3>
 <p>Fixed window counters (e.g., &quot;1,000 requests per clock minute&quot;) suffer from the Boundary Burst Exploit: an attacker sends 1,000 requests at $t=0:59$ and another 1,000 requests at $t=1:01$. Over a four-second span, the system absorbs 2,000 requests—twice the intended threshold.</p>
 <p>Sliding window counters eliminate this vulnerability by calculating a time-weighted average between the current window and the previous window:</p>
 <p>$$\text{Estimated Count} = \text{Count}<em>{\text{current}} + \text{Count}</em>{\text{previous}} \times \left(\frac{\text{Window Size} - \text{Offset}}{\text{Window Size}}\right)$$</p>
 <p>If an attacker sends 100 requests in the previous 60-second window and 20 requests in the first 15 seconds of the new window, the estimated count is:</p>
 <p>$$\text{Estimated Count} = 20 + 100 \times \left(\frac{60 - 15}{60}\right) = 20 + 75 = 95 \text{ requests}$$</p>
 <hr>
-<h2>2. The Tier-1 / Tier-2 Hybrid Synchronization Pattern</h2>
+<h2 id="2-the-tier-1-tier-2-hybrid-synchronization-pattern">2. The Tier-1 / Tier-2 Hybrid Synchronization Pattern</h2>
 <p>To process one million requests per second without saturating the Redis network layer, production architectures split the rate limiter into two asynchronous tiers:</p>
 <div class="mermaid">sequenceDiagram
   autonumber
@@ -195,9 +206,9 @@
   Note over Edge: Background Batch Flush (Every 50ms)
   Edge-&gt;&gt;Redis: Atomic Batch Sync: Deduct 250 consumed tokens
   Redis--&gt;&gt;Edge: Rebalanced Global Quota Allocation</div>
-<h3>Tier 1: Local In-Memory Fast Path</h3>
+<h3 id="tier-1-local-in-memory-fast-path">Tier 1: Local In-Memory Fast Path</h3>
 <p>Each edge proxy node maintains an in-memory token bucket for active tenants. When a request arrives, the local proxy deducts tokens directly from RAM. Memory access latency is measured in nanoseconds; no network sockets are traversed. Over 99% of valid requests pass through this zero-latency fast path.</p>
-<h3>Tier 2: Asynchronous Global Batch Sync</h3>
+<h3 id="tier-2-asynchronous-global-batch-sync">Tier 2: Asynchronous Global Batch Sync</h3>
 <p>Instead of executing a Redis command on every inbound packet, the edge proxy aggregates token consumption across a 50-millisecond flushing interval. It then transmits a single batched delta update to Redis via an atomic Lua script:</p>
 <pre><code class="language-lua">-- Atomic Global Token Allocation Script
 local tenant_key = KEYS[1]
@@ -222,7 +233,7 @@ else
 end</code></pre>
 <p>By batching consumption over 50-millisecond intervals, a proxy handling 10,000 requests per second reduces its Redis command frequency from 10,000 queries per second to exactly <strong>20 queries per second</strong>—a 99.8% reduction in network overhead.</p>
 <hr>
-<h2>3. Client-Side Resilience: AWS Full Jitter Backoff</h2>
+<h2 id="3-client-side-resilience-aws-full-jitter-backoff">3. Client-Side Resilience: AWS Full Jitter Backoff</h2>
 <p>When an edge node rejects a request with <code>HTTP 429 Too Many Requests</code>, naive client retry logic risks triggering a catastrophic <strong>Thundering Herd</strong>.</p>
 <p>If 10,000 clients fail simultaneously and all apply standard exponential backoff ($t = 2^{\text{attempt}}$), all 10,000 clients will sleep for exactly four seconds and retry simultaneously at $t = 4.0\text{s}$, hammering the recovered system back into a crash state.</p>
 <p>Production systems enforce <strong>AWS Full Jitter Backoff</strong>, which decorrelates retry spikes by drawing sleep durations from a uniform distribution:</p>
@@ -238,7 +249,7 @@ end</code></pre>
     end
   end</div>
 <hr>
-<h2>Python Implementation: High-Throughput Token Bucket with Jitter</h2>
+<h2 id="python-implementation-high-throughput-token-bucket-with-jitter">Python Implementation: High-Throughput Token Bucket with Jitter</h2>
 <p>The following Python module demonstrates a thread-safe in-memory token bucket rate limiter paired with client-side Full Jitter retry calculation:</p>
 <pre><code class="language-python">import random
 import time
@@ -321,7 +332,7 @@ if __name__ == &quot;__main__&quot;:
             print(f&quot;Retry attempt {attempt} succeeded.&quot;)
             break</code></pre>
 <hr>
-<h2>Architectural Comparison: Centralized vs Hierarchical Rate Limiting</h2>
+<h2 id="architectural-comparison-centralized-vs-hierarchical-rate-limiting">Architectural Comparison: Centralized vs Hierarchical Rate Limiting</h2>
 <table>
 <thead>
 <tr>
@@ -352,7 +363,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>The Distributed Systems Law</h2>
+<h2 id="the-distributed-systems-law">The Distributed Systems Law</h2>
 <p>Rate limiting at scale is fundamentally about <strong>failure domains and latency physics</strong>.</p>
 <p>If rate-limiting decisions require synchronous network hops across the datacenter, your rate limiter will inevitably collapse your service during the exact traffic spikes it was designed to absorb. By validating traffic in local proxy memory and synchronizing state through asynchronous batch reconciliation, systems engineers build architectures that remain rock solid under millions of requests per second.</p>
 
@@ -382,6 +393,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-algorithm-anatomy-token-bucket-vs-leaky-bucket-vs-sliding-windows" class="toc-link">1. Algorithm Anatomy: Token Bucket vs Leaky Bucket vs Sliding Windows</a></li>
+              <li class="toc-item toc-h2"><a href="#2-the-tier-1-tier-2-hybrid-synchronization-pattern" class="toc-link">2. The Tier-1 / Tier-2 Hybrid Synchronization Pattern</a></li>
+              <li class="toc-item toc-h2"><a href="#3-client-side-resilience-aws-full-jitter-backoff" class="toc-link">3. Client-Side Resilience: AWS Full Jitter Backoff</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-high-throughput-token-bucket-with-jitter" class="toc-link">Python Implementation: High-Throughput Token Bucket with Jitter</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-comparison-centralized-vs-hierarchical-rate-limiting" class="toc-link">Architectural Comparison: Centralized vs Hierarchical Rate Limiting</a></li>
+              <li class="toc-item toc-h2"><a href="#the-distributed-systems-law" class="toc-link">The Distributed Systems Law</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

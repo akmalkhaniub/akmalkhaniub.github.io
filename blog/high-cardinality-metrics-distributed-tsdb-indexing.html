@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#tsdb-inverted-label-index-gorilla-compression-architecture">TSDB Inverted Label Index &amp; Gorilla Compression Architecture</a></li>
+                <li><a href="#python-implementation-gorilla-xor-tsdb-compressor-engine">Python Implementation: Gorilla XOR TSDB Compressor Engine</a></li>
+                <li><a href="#high-cardinality-tsdb-gotchas-best-practices">High-Cardinality TSDB Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In modern cloud-native platforms monitoring microservices (using <strong>Prometheus</strong>, <strong>Thanos</strong>, <strong>M3DB</strong>, or <strong>VictoriaMetrics</strong>), time series data streams are defined as key-value metric labels:
 <code>http_requests_total{service=&quot;payment&quot;, status=&quot;500&quot;, user_id=&quot;89123&quot;}</code>.</p>
 <p>While metric labels enable flexible querying, adding high-cardinality labels (such as <code>user_id</code>, <code>order_id</code>, or container <code>instance_id</code>) creates <strong>High-Cardinality Explosion</strong>.</p>
@@ -111,7 +120,7 @@
 <p>To store billions of data points per second with sub-millisecond query latencies, Time Series Databases rely on <strong>Gorilla XOR Compression</strong> and <strong>Inverted Label Index Chunks</strong>.</p>
 <p>This article explores high-cardinality TSDB indexing and Gorilla float compression algorithms.</p>
 <hr>
-<h2>TSDB Inverted Label Index &amp; Gorilla Compression Architecture</h2>
+<h2 id="tsdb-inverted-label-index-gorilla-compression-architecture">TSDB Inverted Label Index &amp; Gorilla Compression Architecture</h2>
 <p>How Time Series Databases compress metrics and index label combinations:</p>
 <div class="mermaid">graph TD
   MetricStream[&quot;Metric Stream: http_requests_total{service='payment', status='500'}&quot;] --&gt; LabelIdx[TSDB Inverted Label Index]
@@ -128,14 +137,14 @@
   end
   
   GorillaVal --&gt;|3. Compressed Block (1.37 bytes / sample)| BlockFile[(Immutable TSDB Block File on Disk)]</div>
-<h3>Core TSDB Compression &amp; Indexing Mechanics</h3>
+<h3 id="core-tsdb-compression-indexing-mechanics">Core TSDB Compression &amp; Indexing Mechanics</h3>
 <ol>
 <li><strong>Inverted Label Indexing</strong>: Similar to search engines, TSDBs maintain an inverted index mapping each <code>label_name=label_value</code> pair (e.g. <code>service=auth</code>) to a sorted list of integer <code>series_id</code> pointers.</li>
 <li><strong>Double-Delta Timestamp Compression</strong>: Timestamps are recorded at regular intervals (e.g. every $15$ seconds). Instead of storing raw 64-bit Unix timestamps ($1700000000$), the engine stores the change in time interval: $D = (T_i - T_{i-1}) - (T_{i-1} - T_{i-2})$. If $D=0$ (constant interval), the timestamp compresses down to a single bit (<code>0</code>).</li>
 <li><strong>Gorilla XOR Floating-Point Compression</strong>: Introduced by Facebook in the Gorilla paper. Numerical values (<code>float64</code>) are compressed by XORing the current value $V_i$ with the preceding value $V_{i-1}$. If adjacent values are similar, the XOR result contains leading and trailing zeros. The engine stores only the meaningful middle bits, compressing 8-byte floats down to an average of <strong>$1.37$ bytes per sample</strong>!</li>
 </ol>
 <hr>
-<h2>Python Implementation: Gorilla XOR TSDB Compressor Engine</h2>
+<h2 id="python-implementation-gorilla-xor-tsdb-compressor-engine">Python Implementation: Gorilla XOR TSDB Compressor Engine</h2>
 <p>Here is a production-grade Python implementation of Gorilla XOR Float Compression and a High-Cardinality TSDB Label Indexer:</p>
 <pre><code class="language-python">import struct
 from typing import List, Dict, Tuple, Optional
@@ -239,7 +248,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Gorilla Compressed: {len(compressed_blob)} bytes ({avg_bytes:.2f} bytes / sample)&quot;)
     print(f&quot;   • Compression Ratio: {(1.0 - len(compressed_blob)/uncompressed_bytes) * 100:.1f}% Memory Savings!&quot;)</code></pre>
 <hr>
-<h2>High-Cardinality TSDB Gotchas &amp; Best Practices</h2>
+<h2 id="high-cardinality-tsdb-gotchas-best-practices">High-Cardinality TSDB Gotchas &amp; Best Practices</h2>
 <p>When designing metrics infrastructure:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -252,7 +261,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Platforms implementing Gorilla XOR TSDB compression report:</p>
 <ul>
 <li><strong>Over 85% Disk Storage Savings</strong>: Compressing float64 metrics down to $1.37$ bytes per sample allows storing petabytes of telemetry at low cost.</li>
@@ -285,6 +294,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#tsdb-inverted-label-index-gorilla-compression-architecture" class="toc-link">TSDB Inverted Label Index &amp; Gorilla Compression Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-gorilla-xor-tsdb-compressor-engine" class="toc-link">Python Implementation: Gorilla XOR TSDB Compressor Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#high-cardinality-tsdb-gotchas-best-practices" class="toc-link">High-Cardinality TSDB Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

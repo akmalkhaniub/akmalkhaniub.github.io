@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#dynamic-model-cascading-architecture">Dynamic Model Cascading Architecture</a></li>
+                <li><a href="#python-implementation-hybrid-model-router-gateway">Python Implementation: Hybrid Model Router Gateway</a></li>
+                <li><a href="#important-router-engineering-guardrails">Important Router Engineering Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When architecting production AI agent platforms at scale, system architects face a fundamental dilemma: <strong>frontier cloud APIs</strong> (such as Gemini 1.5 Pro or Claude 3.5 Sonnet) offer unmatched reasoning capabilities, but routing 100% of subagent requests to cloud APIs results in <strong>prohibitive cloud bills</strong> and <strong>high network latency</strong>.</p>
 <p>Conversely, self-hosted Small Language Models (SLMs, such as 4-bit AWQ Llama-3-8B or Qwen-2.5-7B) execute in under 100ms on local GPUs for pennies per million tokens, but may fail on complex multi-step architectural reasoning.</p>
 <p>To achieve enterprise-grade reasoning while reducing operational costs by up to <strong>85%</strong>, high-scale platforms employ <strong>Dynamic Model Cascading</strong>. </p>
 <p>A Model Router dynamically evaluates the complexity of every incoming subtask: routing simple structured tool calls to fast local SLMs while cascading complex reasoning to cloud frontier APIs.</p>
 <p>This article details how to design an intelligent hybrid model router gateway.</p>
 <hr>
-<h2>Dynamic Model Cascading Architecture</h2>
+<h2 id="dynamic-model-cascading-architecture">Dynamic Model Cascading Architecture</h2>
 <p>The router gateway sits between orchestrator swarms and execution model targets:</p>
 <div class="mermaid">graph TD
   A[Subagent Task Request] --&gt; B[Dynamic Model Router Gateway]
@@ -126,14 +135,14 @@
   G --&gt; F
   D --&gt;|Validation Passed| H[Return Result: 80ms, $0.0001]
   F --&gt;|Return Result| I[Return Result: 1200ms, $0.015]</div>
-<h3>Key Routing Criteria</h3>
+<h3 id="key-routing-criteria">Key Routing Criteria</h3>
 <ol>
 <li><strong>Semantic Task Complexity Classifier</strong>: A lightweight embedding classifier or heuristic parser measures prompt intent, requested AST depth, and domain difficulty.</li>
 <li><strong>Deterministic Schema Gatekeeper</strong>: If Tier 1 (Local SLM) generates a response that passes Pydantic structural validation, the result is accepted immediately. If validation fails, the request automatically cascades up to Tier 3 (Cloud API).</li>
 <li><strong>Budget &amp; Rate Limit Awareness</strong>: The router tracks token spending real-time against team budgets and automatically redirects requests to local models if API quotas approach SLA limits.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Hybrid Model Router Gateway</h2>
+<h2 id="python-implementation-hybrid-model-router-gateway">Python Implementation: Hybrid Model Router Gateway</h2>
 <p>Here is a production Python implementation of a Dynamic Model Router Gateway that classifies incoming tasks, routes them across model tiers, enforces fallback verification, and tracks token costs:</p>
 <pre><code class="language-python">import time
 import json
@@ -247,7 +256,7 @@ if __name__ == &quot;__main__&quot;:
     res2 = router.route_and_execute(&quot;task-002&quot;, &quot;Perform full architectural security audit and detect concurrency bugs across all microservices.&quot;)
     print(f&quot;  Result 2: Tier={res2.tier_used} | Latency={res2.latency_ms}ms | Cost=${res2.actual_cost_usd:.5f}\n&quot;)</code></pre>
 <hr>
-<h2>Important Router Engineering Guardrails</h2>
+<h2 id="important-router-engineering-guardrails">Important Router Engineering Guardrails</h2>
 <p>When deploying dynamic model cascading in enterprise platforms:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -260,7 +269,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying Dynamic Model Cascading report:</p>
 <ul>
 <li><strong>85% Reduction in Monthly API Bills</strong>: Offloading routine JSON formatting and tool calls to local SLMs saves tens of thousands of dollars in cloud API tokens.</li>
@@ -293,6 +302,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#dynamic-model-cascading-architecture" class="toc-link">Dynamic Model Cascading Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-hybrid-model-router-gateway" class="toc-link">Python Implementation: Hybrid Model Router Gateway</a></li>
+              <li class="toc-item toc-h2"><a href="#important-router-engineering-guardrails" class="toc-link">Important Router Engineering Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

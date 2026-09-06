@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#single-flight-request-coalescing-topology">Single-Flight Request Coalescing Topology</a></li>
+                <li><a href="#python-implementation-single-flight-xfetch-engine">Python Implementation: Single-Flight &amp; XFetch Engine</a></li>
+                <li><a href="#anti-stampede-gotchas-best-practices">Anti-Stampede Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-concurrency systems, caching hot database queries handles thousands of reads per second. However, a major vulnerability exists when a popular cache key expires or is invalidated: the <strong>Cache Stampede</strong> (also known as the <strong>Thundering Herd Problem</strong>).</p>
 <p>When a hot key expires, thousands of concurrent incoming requests miss the cache simultaneously. Every worker process attempts to query the primary database to recompute the missing value, creating an instantaneous spike in database CPU and connection pool exhaustion.</p>
 <p>To protect backend databases from cache stampedes, software engineers deploy two complementary resilience patterns: <strong>Single-Flight Request Coalescing</strong> and <strong>Probabilistic Early Expiration (XFetch Algorithm)</strong>.</p>
 <p>This article details the math and implementation of both anti-stampede strategies.</p>
 <hr>
-<h2>Single-Flight Request Coalescing Topology</h2>
+<h2 id="single-flight-request-coalescing-topology">Single-Flight Request Coalescing Topology</h2>
 <p>How Single-Flight coalesces 1,000 concurrent cache misses into a single database query:</p>
 <div class="mermaid">graph TD
   subgraph Unprotected Thundering Herd
@@ -123,7 +132,7 @@
     D --&gt;|999 Requests Block &amp; Wait| F[Shared Single Result Broadcast]
     E --&gt;|Single Result| F
   end</div>
-<h3>Anti-Stampede Algorithms</h3>
+<h3 id="anti-stampede-algorithms">Anti-Stampede Algorithms</h3>
 <ol>
 <li><strong>Single-Flight Request Coalescing</strong>: Manages in-flight database requests using a thread-safe mutex dictionary. If a query for key <code>k</code> is already executing, subsequent requests for <code>k</code> subscribe to the active execution channel, blocking until the first request completes and sharing the single returned result.</li>
 <li><strong>Probabilistic Early Expiration (XFetch)</strong>: Instead of waiting for a key to reach its hard expiration time ($\text{TTL}$), incoming requests probabilistically recompute the cache entry <em>before</em> it expires. The probability of early recomputation increases as the key approaches its expiration time and as computation cost $\delta$ increases:
@@ -136,7 +145,7 @@ Where:<ul>
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Single-Flight &amp; XFetch Engine</h2>
+<h2 id="python-implementation-single-flight-xfetch-engine">Python Implementation: Single-Flight &amp; XFetch Engine</h2>
 <p>Here is a production-grade Python implementation of Single-Flight Request Coalescing and the XFetch Probabilistic Early Expiration algorithm:</p>
 <pre><code class="language-python">import time
 import math
@@ -266,7 +275,7 @@ if __name__ == &quot;__main__&quot;:
 
     print(f&quot; ✅ All {len(results)} threads completed successfully with shared result!&quot;)</code></pre>
 <hr>
-<h2>Anti-Stampede Gotchas &amp; Best Practices</h2>
+<h2 id="anti-stampede-gotchas-best-practices">Anti-Stampede Gotchas &amp; Best Practices</h2>
 <p>When implementing anti-stampede protections:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -279,7 +288,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams implementing Single-Flight and XFetch report:</p>
 <ul>
 <li><strong>Zero Database Crashes During Cache Expirations</strong>: Request coalescing prevents thousands of concurrent requests from overwhelming backend databases during key expirations.</li>
@@ -312,6 +321,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#single-flight-request-coalescing-topology" class="toc-link">Single-Flight Request Coalescing Topology</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-single-flight-xfetch-engine" class="toc-link">Python Implementation: Single-Flight &amp; XFetch Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#anti-stampede-gotchas-best-practices" class="toc-link">Anti-Stampede Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

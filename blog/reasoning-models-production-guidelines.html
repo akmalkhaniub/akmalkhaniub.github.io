@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-anatomy-of-a-reasoning-request">The Anatomy of a Reasoning Request</a></li>
+                <li><a href="#problem-1-preventing-connection-timeouts-and-drops">Problem 1: Preventing Connection Timeouts and Drops</a></li>
+                <li><a href="#problem-2-streaming-and-parsing-traces-in-real-time">Problem 2: Streaming and Parsing Traces in Real-Time</a></li>
+                <li><a href="#problem-3-setting-cost-control-and-runaway-guardrails">Problem 3: Setting Cost-Control and Runaway Guardrails</a></li>
+                <li><a href="#implementation-fastapi-streaming-gateway-for-reasoning-models">Implementation: FastAPI Streaming Gateway for Reasoning Models</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +122,7 @@ Reasoning models like DeepSeek-R1, OpenAI o1, and o3-mini have fundamentally shi
 </div>
 </div>
 <hr>
-<h2>The Anatomy of a Reasoning Request</h2>
+<h2 id="the-anatomy-of-a-reasoning-request">The Anatomy of a Reasoning Request</h2>
 <p>Standard completion models (like GPT-4o or Claude 3.5 Sonnet) output text token-by-token directly to the user. Reasoning models, however, split their output into a <strong>thinking phase</strong> (where they explore options, spot errors, and plan responses) and a <strong>completion phase</strong> (the actual answer).</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 sequenceDiagram
@@ -138,28 +149,28 @@ sequenceDiagram
 <li><strong>Runaway Cost Spikes</strong>: A single query on a complex prompt can trigger 8,000+ reasoning tokens, costing several dollars and hitting rate-limit caps.</li>
 </ol>
 <hr>
-<h2>Problem 1: Preventing Connection Timeouts and Drops</h2>
+<h2 id="problem-1-preventing-connection-timeouts-and-drops">Problem 1: Preventing Connection Timeouts and Drops</h2>
 <p>Because reasoning models think before they write, the time-to-first-content-byte (TTFCB) can be extremely high. If your reverse proxy (e.g., Nginx) has a <code>proxy_read_timeout</code> of 30 seconds, it will sever the connection during a long thinking phase.</p>
-<h3>Solutions</h3>
+<h3 id="solutions">Solutions</h3>
 <ul>
 <li><strong>Lower Layer Keep-Alives</strong>: Configure TCP keep-alives at the OS level on your gateway servers.</li>
 <li><strong>Application-Level Heartbeats</strong>: If using Server-Sent Events (SSE), send periodic comments or blank packets (e.g. <code>: ping\n\n</code>) every 5–10 seconds to keep the connection alive while the reasoning model is computing in the background.</li>
 <li><strong>Adjust Gateway Timeouts</strong>: Set reverse proxy, CDN, and ALB read timeouts for reasoning routes to at least 180 seconds.</li>
 </ul>
 <hr>
-<h2>Problem 2: Streaming and Parsing Traces in Real-Time</h2>
+<h2 id="problem-2-streaming-and-parsing-traces-in-real-time">Problem 2: Streaming and Parsing Traces in Real-Time</h2>
 <p>DeepSeek-R1 returns reasoning chunks in a dedicated key <code>reasoning_content</code> in the OpenAI-compatible stream. OpenAI&#39;s models (like <code>o1</code> and <code>o3-mini</code>) now support streaming but use a different key (<code>reasoning_tokens</code>) or output format depending on the API version. </p>
 <p>To support a seamless front-end, your API gateway must parse these chunks, normalize the keys, and send distinct event types (<code>thinking</code> vs. <code>content</code>) to the frontend.</p>
 <hr>
-<h2>Problem 3: Setting Cost-Control and Runaway Guardrails</h2>
+<h2 id="problem-3-setting-cost-control-and-runaway-guardrails">Problem 3: Setting Cost-Control and Runaway Guardrails</h2>
 <p>Reasoning loops can get stuck. If a model falls into an infinite backtracking cycle, it will exhaust its maximum completion token budget, costing you money and degrading latency.</p>
-<h3>Rules of Engagement</h3>
+<h3 id="rules-of-engagement">Rules of Engagement</h3>
 <ol>
 <li><strong>Enforce <code>max_completion_tokens</code></strong>: Always set this limit explicitly. Unlike standard models, a high <code>max_tokens</code> on a reasoning model acts as a hard cap on both thinking and output combined. For DeepSeek-R1, cap it around <code>4000</code> to <code>8000</code> tokens depending on the task complexity.</li>
 <li><strong>Track Live Usage Limits</strong>: Keep a running tally of reasoning tokens received per stream. If the count exceeds your application&#39;s threshold (e.g. 3,000 reasoning tokens for a simple query), sever the stream upstream and throw a user-friendly error to prevent runaway costs.</li>
 </ol>
 <hr>
-<h2>Implementation: FastAPI Streaming Gateway for Reasoning Models</h2>
+<h2 id="implementation-fastapi-streaming-gateway-for-reasoning-models">Implementation: FastAPI Streaming Gateway for Reasoning Models</h2>
 <p>Here is a complete, production-ready FastAPI gateway that handles DeepSeek-R1 streaming, routes thinking tokens to a separate SSE event channel, sends keep-alive pings, and enforces token-usage boundaries.</p>
 <pre><code class="language-python">import asyncio
 import json
@@ -241,14 +252,14 @@ async def chat_endpoint(request: ChatRequest):
         stream_reasoning_handler(request),
         media_type=&quot;text/event-stream&quot;
     )</code></pre>
-<h3>Key Highlights of the Code:</h3>
+<h3 id="key-highlights-of-the-code">Key Highlights of the Code:</h3>
 <ul>
 <li><strong>Separation of Channels</strong>: The gateway yields <code>event: thinking</code> for reasoning and <code>event: content</code> for the final text. The frontend UI can easily listen to these distinct event types and route content to different UI boxes.</li>
 <li><strong>Runaway Guard</strong>: The <code>MAX_REASONING_TOKENS_BUDGET</code> check stops generating tokens if the model enters a reasoning loop, saving you from giant API bills.</li>
 <li><strong>Disconnect Handler</strong>: The <code>asyncio.CancelledError</code> block catches client aborts, allowing you to stop the upstream API stream immediately and avoid paying for unread reasoning tokens.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>To build production-ready systems on top of reasoning models:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Never stream reasoning directly to the content block</strong>: Demultiplex <code>reasoning_content</code> and standard <code>content</code> at the gateway level.</li>
@@ -283,6 +294,19 @@ async def chat_endpoint(request: ChatRequest):
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-anatomy-of-a-reasoning-request" class="toc-link">The Anatomy of a Reasoning Request</a></li>
+              <li class="toc-item toc-h2"><a href="#problem-1-preventing-connection-timeouts-and-drops" class="toc-link">Problem 1: Preventing Connection Timeouts and Drops</a></li>
+              <li class="toc-item toc-h2"><a href="#problem-2-streaming-and-parsing-traces-in-real-time" class="toc-link">Problem 2: Streaming and Parsing Traces in Real-Time</a></li>
+              <li class="toc-item toc-h2"><a href="#problem-3-setting-cost-control-and-runaway-guardrails" class="toc-link">Problem 3: Setting Cost-Control and Runaway Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-fastapi-streaming-gateway-for-reasoning-models" class="toc-link">Implementation: FastAPI Streaming Gateway for Reasoning Models</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

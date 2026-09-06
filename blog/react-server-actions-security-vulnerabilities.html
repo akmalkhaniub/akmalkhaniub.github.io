@@ -104,6 +104,14 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#under-the-hood-server-actions-are-public-endpoints">Under the Hood: Server Actions are Public Endpoints</a></li>
+                <li><a href="#three-server-action-vulnerabilities-and-how-to-fix-them">Three Server Action Vulnerabilities (and How to Fix Them)</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +119,7 @@ Next.js Server Actions are one of the most exciting features in React 19, allowi
 </div>
 </div>
 <hr>
-<h2>Under the Hood: Server Actions are Public Endpoints</h2>
+<h2 id="under-the-hood-server-actions-are-public-endpoints">Under the Hood: Server Actions are Public Endpoints</h2>
 <p>In Next.js, when you define <code>&quot;use server&quot;</code> at the top of a file or function, Next.js compiles that function into a unique API path during build time. </p>
 <p>When a button in the client calls <code>updateProfile(data)</code>, the browser doesn&#39;t execute the function directly. Instead, it fires an HTTP POST request to your page route with a header <code>Next-Action: &lt;action-id&gt;</code> containing serialized arguments.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -128,8 +136,8 @@ sequenceDiagram
     Gateway--&gt;&gt;Client: Return JSON response</div>
 <p>If you don&#39;t validate authorization inside the action itself, <strong>any client can invoke this function</strong> by generating a POST request with arbitrary IDs.</p>
 <hr>
-<h2>Three Server Action Vulnerabilities (and How to Fix Them)</h2>
-<h3>1. Broken Object-Level Authorization (BOLA)</h3>
+<h2 id="three-server-action-vulnerabilities-and-how-to-fix-them">Three Server Action Vulnerabilities (and How to Fix Them)</h2>
+<h3 id="1-broken-object-level-authorization-bola">1. Broken Object-Level Authorization (BOLA)</h3>
 <p>Because Server Actions look like standard local functions, developers often pass database record IDs directly from the client:</p>
 <pre><code class="language-typescript">// ❌ VULNERABLE: Anyone can call this and update arbitrary project IDs
 'use server'
@@ -137,7 +145,7 @@ sequenceDiagram
 export async function deleteProject(projectId: string) {
   await db.project.delete({ where: { id: projectId } });
 }</code></pre>
-<h4>Secure Pattern: Enforce Authentication &amp; Encrypted ID checks</h4>
+<h4 id="secure-pattern-enforce-authentication-encrypted-id-checks">Secure Pattern: Enforce Authentication &amp; Encrypted ID checks</h4>
 <p>Always query the authenticated user session from within the Server Action using a secure server utility, and verify ownership of the resource before making mutations:</p>
 <pre><code class="language-typescript">'use server'
 import { getSession } from '@/lib/auth';
@@ -173,17 +181,17 @@ export async function deleteProject(rawData: unknown) {
   return { success: true };
 }</code></pre>
 <hr>
-<h3>2. Parameter Injection (Schema Validation)</h3>
+<h3 id="2-parameter-injection-schema-validation">2. Parameter Injection (Schema Validation)</h3>
 <p>Form inputs are easily manipulated in the browser dev tools. A malicious user can append hidden fields or input strings that cause database indexing failures or SQL injection risks.</p>
-<h4>Fix: Always parse inputs via Zod</h4>
+<h4 id="fix-always-parse-inputs-via-zod">Fix: Always parse inputs via Zod</h4>
 <p>Never trust the payload shape. Parse raw data objects immediately using a schema parser like Zod, and only pass the structured output keys to your database driver.</p>
 <hr>
-<h3>3. Missing CSRF / Double Submit Cookie Protections</h3>
+<h3 id="3-missing-csrf-double-submit-cookie-protections">3. Missing CSRF / Double Submit Cookie Protections</h3>
 <p>Traditional Next.js API routes require custom CORS/CSRF configurations. Next.js Server Actions include built-in protection against CSRF by validating the <code>Origin</code> header against the host header. However, if your application runs behind multiple proxies or has custom domain mapping, this origin validation can be accidentally disabled or bypassed.</p>
-<h4>Fix: Enforce Strict Header Checks</h4>
+<h4 id="fix-enforce-strict-header-checks">Fix: Enforce Strict Header Checks</h4>
 <p>Ensure your deployment gateway or reverse proxy correctly forwards <code>Host</code> and <code>X-Forwarded-Host</code> headers, and verify that Next.js&#39;s native CORS/CSRF middleware is active in your configuration.</p>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>Next.js Server Actions make data fetching and mutation incredibly clean, but you must treat them with the same security parameters as standard API endpoints:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Never trust client-passed IDs directly</strong>: Validate ownership of the target record using the user context retrieved on the server.</li>
@@ -218,6 +226,16 @@ export async function deleteProject(rawData: unknown) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#under-the-hood-server-actions-are-public-endpoints" class="toc-link">Under the Hood: Server Actions are Public Endpoints</a></li>
+              <li class="toc-item toc-h2"><a href="#three-server-action-vulnerabilities-and-how-to-fix-them" class="toc-link">Three Server Action Vulnerabilities (and How to Fix Them)</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

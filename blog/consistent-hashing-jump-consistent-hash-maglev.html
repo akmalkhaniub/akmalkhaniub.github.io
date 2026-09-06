@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#consistent-hashing-maglev-router-architecture">Consistent Hashing &amp; Maglev Router Architecture</a></li>
+                <li><a href="#python-implementation-consistent-hash-ring-google-jump-hash">Python Implementation: Consistent Hash Ring &amp; Google Jump Hash</a></li>
+                <li><a href="#consistent-hashing-gotchas-best-practices">Consistent Hashing Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In large-scale distributed caching clusters (<strong>Memcached</strong>, <strong>Redis Cluster</strong>, <strong>DynamoDB</strong>, <strong>Cassandra</strong>), horizontal scaling requires partitioning millions of keys across hundreds of cache storage nodes.</p>
 <p>If a cluster uses naive <strong>Modulo Hashing</strong> ($\text{node} = \text{hash}(\text{key}) \pmod N$), adding or removing a single cache node changes $N → N+1$.</p>
 <p>This causes over <strong>99% of all existing keys to remap to different nodes</strong>, completely wiping out cluster cache hit rates and triggering massive database outages.</p>
@@ -111,7 +120,7 @@
 <p>Pioneered by Karger et al. (Ring Hashing) and advanced by Google (<strong>Jump Consistent Hash</strong> and <strong>Maglev Lookup Tables</strong>), consistent hashing guarantees that scaling a cluster from $N$ to $N+1$ nodes remaps strictly $\frac{1}{N+1}$ of keys.</p>
 <p>This article details Hash Rings with Virtual Nodes, Google&#39;s $O(1)$ memory Jump Hash, and Maglev load balancing lookup tables.</p>
 <hr>
-<h2>Consistent Hashing &amp; Maglev Router Architecture</h2>
+<h2 id="consistent-hashing-maglev-router-architecture">Consistent Hashing &amp; Maglev Router Architecture</h2>
 <p>How Hash Rings with Virtual Nodes and Google Jump Consistent Hash route keys to cluster nodes:</p>
 <div class="mermaid">graph TD
   subgraph Ring-Based Consistent Hashing (2^32 Hash Space)
@@ -126,7 +135,7 @@
     KeyID[64-Bit Key Hash] --&gt; JumpAlgo[Jump Hash Loop: b = -1, j = 0]
     JumpAlgo --&gt;|Pseudo-Random Probability Jumps| BucketResult[Calculated Target Bucket Index in O(ln N) Time!]
   end</div>
-<h3>Core Consistent Hashing Algorithms</h3>
+<h3 id="core-consistent-hashing-algorithms">Core Consistent Hashing Algorithms</h3>
 <ol>
 <li><strong>Ring-Based Consistent Hashing (Karger et al.)</strong>:<ul>
 <li>Hashes both cache nodes and data keys into a shared 32-bit circular space ($0$ to $2^{32}-1$).</li>
@@ -148,7 +157,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Consistent Hash Ring &amp; Google Jump Hash</h2>
+<h2 id="python-implementation-consistent-hash-ring-google-jump-hash">Python Implementation: Consistent Hash Ring &amp; Google Jump Hash</h2>
 <p>Here is a production-grade Python implementation of Ring-Based Consistent Hashing (with Virtual Nodes) and Google Jump Consistent Hash:</p>
 <pre><code class="language-python">import hashlib
 import bisect
@@ -265,7 +274,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Jump Hash for Key across 10 Buckets: Target Bucket = #{bucket_10}&quot;)
     print(f&quot;   • Jump Hash for Key across 11 Buckets: Target Bucket = #{bucket_11}&quot;)</code></pre>
 <hr>
-<h2>Consistent Hashing Gotchas &amp; Best Practices</h2>
+<h2 id="consistent-hashing-gotchas-best-practices">Consistent Hashing Gotchas &amp; Best Practices</h2>
 <p>When engineering distributed hash routers:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -278,7 +287,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Consistent hashing deployment (such as in <strong>Amazon DynamoDB</strong>, <strong>Apache Cassandra</strong>, and <strong>Google Maglev routers</strong>) reports:</p>
 <ul>
 <li><strong>Over 90% Remapping Reduction</strong>: Adding a 10th node to a 9-node cluster remaps only $10%$ of cached keys, keeping $90%$ of cache entries active and preventing database load spikes.</li>
@@ -311,6 +320,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#consistent-hashing-maglev-router-architecture" class="toc-link">Consistent Hashing &amp; Maglev Router Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-consistent-hash-ring-google-jump-hash" class="toc-link">Python Implementation: Consistent Hash Ring &amp; Google Jump Hash</a></li>
+              <li class="toc-item toc-h2"><a href="#consistent-hashing-gotchas-best-practices" class="toc-link">Consistent Hashing Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

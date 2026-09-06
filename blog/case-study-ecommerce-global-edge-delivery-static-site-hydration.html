@@ -104,10 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#case-study-overview-the-10-part-framework">Case Study Overview: The 10-Part Framework</a></li>
+                <li><a href="#global-edge-delivery-flow">Global Edge Delivery Flow</a></li>
+                <li><a href="#javascript-implementation-cloudflare-workers-edge-normalizer">JavaScript Implementation: Cloudflare Workers Edge Normalizer</a></li>
+                <li><a href="#the-incident-the-query-string-cache-busting-loop">The Incident: The Query-String Cache-Busting Loop</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>For global retail sites, page speed directly correlates with purchase conversion rates. A 100ms increase in Time to First Byte (TTFB) on product catalog pages can drop user checkout conversions by up to 7%. During high-traffic events, loading pages dynamically from central servers introduces network latency and risks database overload.</p>
 <p>This case study details the architecture, deployment, and operational gotchas of a <strong>Global Edge Delivery &amp; Static Site Hydration</strong> platform designed to serve millions of product pages at sub-50ms speed.</p>
 <hr>
-<h2>Case Study Overview: The 10-Part Framework</h2>
+<h2 id="case-study-overview-the-10-part-framework">Case Study Overview: The 10-Part Framework</h2>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>1. Industry</strong>: E-Commerce &amp; Retail</p>
@@ -123,7 +133,7 @@
 </div>
 </div>
 <hr>
-<h2>Global Edge Delivery Flow</h2>
+<h2 id="global-edge-delivery-flow">Global Edge Delivery Flow</h2>
 <p>The system normalizes incoming client requests at edge nodes, serving static caches locally whenever possible:</p>
 <div class="mermaid">graph TD
   A[Global Client Browsers] --&gt;|Geo-Routed Request| B[Cloudflare Edge Node]
@@ -138,13 +148,13 @@
   
   F --&gt;|Serve &amp; Write Edge Cache| G[Stale-While-Revalidate Sync]
   G --&gt; E</div>
-<h3>High-Speed Delivery Tactics</h3>
+<h3 id="high-speed-delivery-tactics">High-Speed Delivery Tactics</h3>
 <ol>
 <li><strong>Edge URL Sanitization</strong>: By stripping marketing tokens (e.g. <code>utm_source</code>, <code>fbclid</code>, and random query salts) at the edge, we ensure the CDN evaluates clean cache keys, preventing cache-busting attacks.</li>
 <li><strong>Stale-While-Revalidate (SWR)</strong>: Pages are served instantly from the nearest edge cache. If the cached page is stale, a background thread fetches the updated layout from the origin server asynchronously without blocking the user request.</li>
 </ol>
 <hr>
-<h2>JavaScript Implementation: Cloudflare Workers Edge Normalizer</h2>
+<h2 id="javascript-implementation-cloudflare-workers-edge-normalizer">JavaScript Implementation: Cloudflare Workers Edge Normalizer</h2>
 <p>Here is the production-grade JavaScript code for a Cloudflare Workers Edge Middleware script that normalizes request queries, filters marketing noise, and generates custom cache keys:</p>
 <pre><code class="language-javascript">/**
  * Cloudflare Workers Edge Middleware script for e-commerce page routing.
@@ -200,20 +210,20 @@ if (typeof addEventListener !== 'undefined') {
   });
 }</code></pre>
 <hr>
-<h2>The Incident: The Query-String Cache-Busting Loop</h2>
+<h2 id="the-incident-the-query-string-cache-busting-loop">The Incident: The Query-String Cache-Busting Loop</h2>
 <p>During a promotion campaign, we experienced a sudden outage due to cache evasion:</p>
 <div class="alert alert-warning">
   <div class="alert-title"><i class="fa-solid fa-triangle-exclamation"></i> Warning</div>
   <div class="alert-content"><p><strong>The Gotcha</strong>: Marketing campaigns sent emails containing random hash keys appended to links (<code>/product/sneakers?promo_hash=abc123xyz</code>). Because our CDN treated the entire query string as part of the cache key, every single email link resulted in a cache miss. This bypassed the CDN entirely, sending thousands of concurrent site hydration requests directly to our Next.js origin nodes, causing database connection exhaustion.</p>
 </div>
 </div>
-<h3>The Remediation</h3>
+<h3 id="the-remediation">The Remediation</h3>
 <ol>
 <li><strong>Implemented Global Query Normalization</strong>: Deployed the Cloudflare Workers normalization logic detailed above, stripping out non-allowed parameters before cache key lookup.</li>
 <li><strong>Configured Fail-Safe CDN Grace Periods</strong>: Adjusted headers to allow serving expired pages (<code>stale-if-error=86400</code>) during origin database outages, keeping the catalog readable for users.</li>
 </ol>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>By moving routing logic and cache key normalization to edge middleware:</p>
 <ul>
 <li><strong>94% Reduction in Origin Traffic</strong>: Normalizing URL queries stopped invalidation loops and protected origin servers.</li>
@@ -246,6 +256,18 @@ if (typeof addEventListener !== 'undefined') {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#case-study-overview-the-10-part-framework" class="toc-link">Case Study Overview: The 10-Part Framework</a></li>
+              <li class="toc-item toc-h2"><a href="#global-edge-delivery-flow" class="toc-link">Global Edge Delivery Flow</a></li>
+              <li class="toc-item toc-h2"><a href="#javascript-implementation-cloudflare-workers-edge-normalizer" class="toc-link">JavaScript Implementation: Cloudflare Workers Edge Normalizer</a></li>
+              <li class="toc-item toc-h2"><a href="#the-incident-the-query-string-cache-busting-loop" class="toc-link">The Incident: The Query-String Cache-Busting Loop</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

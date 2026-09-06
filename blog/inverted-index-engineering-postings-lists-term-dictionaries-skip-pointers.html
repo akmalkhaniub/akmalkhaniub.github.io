@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#inverted-index-skip-pointer-architecture">Inverted Index &amp; Skip Pointer Architecture</a></li>
+                <li><a href="#python-implementation-inverted-index-skip-pointer-engine">Python Implementation: Inverted Index &amp; Skip Pointer Engine</a></li>
+                <li><a href="#inverted-index-gotchas-best-practices">Inverted Index Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>At the core of every full-text search engine—such as <strong>Apache Lucene</strong>, <strong>Elasticsearch</strong>, <strong>OpenSearch</strong>, and <strong>Meilisearch</strong>—lies a fundamental data structure: the <strong>Inverted Index</strong>.</p>
 <p>Unlike traditional relational databases that map Document IDs to their text contents (Forward Index), an Inverted Index tokenizes text documents and maps unique terms to sorted lists of matching Document IDs, called <strong>Postings Lists</strong>.</p>
 <p>When executing Boolean queries (such as <code>distributed AND systems</code>), the search engine must intersect massive postings lists containing millions of document IDs.</p>
 <p>To accelerate list intersections from linear $O(N + M)$ scans down to $O(\sqrt{N})$, search engineers augment postings lists with <strong>Skip Pointers</strong>.</p>
 <p>This article details the internal data structures of inverted indexes and skip pointer list intersection algorithms.</p>
 <hr>
-<h2>Inverted Index &amp; Skip Pointer Architecture</h2>
+<h2 id="inverted-index-skip-pointer-architecture">Inverted Index &amp; Skip Pointer Architecture</h2>
 <p>How a Term Dictionary maps tokens to sorted Postings Lists with Skip Pointers for fast list intersection:</p>
 <div class="mermaid">graph TD
   subgraph Tokenization &amp; Term Dictionary
@@ -135,14 +144,14 @@
   subgraph Skip Pointer List Intersector
     P1_5 --&gt;|Intersects with 'consensus' Postings| Match[&quot;Matching Documents: [Doc 18, Doc 120]&quot;]
   end</div>
-<h3>Core Inverted Index Primitives</h3>
+<h3 id="core-inverted-index-primitives">Core Inverted Index Primitives</h3>
 <ol>
 <li><strong>Term Dictionary</strong>: A compressed, sorted index mapping string tokens to offset pointers in the postings file. Modern search engines store term dictionaries as <strong>Finite State Transducers (FST)</strong> in memory, enabling sub-millisecond prefix, fuzzy, and exact token lookups.</li>
 <li><strong>Postings Lists</strong>: A sorted sequence of integer Document IDs (<code>[4, 12, 18, 45, 89, 120]</code>) where a term appears. Postings lists are compressed on disk using delta encoding (<strong>VByte</strong> or <strong>Elias-Fano</strong> compression) to minimize disk I/O.</li>
 <li><strong>Skip Pointers</strong>: Auxiliary pointers placed at fixed intervals $S = \lfloor \sqrt{N} \rfloor$ along the postings list. During a Boolean <code>AND</code> list intersection, if the current doc ID in List B is 80, the intersector inspects the skip pointer target on List A ($18 → 120$). Because $120 &gt; 80$, the algorithm skips evaluating intermediate nodes ($45, 89$), bypassing unnecessary comparisons.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Inverted Index &amp; Skip Pointer Engine</h2>
+<h2 id="python-implementation-inverted-index-skip-pointer-engine">Python Implementation: Inverted Index &amp; Skip Pointer Engine</h2>
 <p>Here is a production-grade Python implementation of an Inverted Index with Skip Pointer Postings Lists and an $O(\sqrt{N})$ list intersection engine:</p>
 <pre><code class="language-python">import math
 from typing import List, Dict, Optional, Set
@@ -268,7 +277,7 @@ if __name__ == &quot;__main__&quot;:
     matches = InvertedIndexEngine.intersect_and_with_skips(postings_dist, postings_cons)
     print(f&quot;\n📊 Matching Document IDs: {matches}&quot;)</code></pre>
 <hr>
-<h2>Inverted Index Gotchas &amp; Best Practices</h2>
+<h2 id="inverted-index-gotchas-best-practices">Inverted Index Gotchas &amp; Best Practices</h2>
 <p>When building search engine indexes:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -281,7 +290,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Search platforms implementing skip pointer inverted indexes report:</p>
 <ul>
 <li><strong>$10\times$ Faster Boolean Query Processing</strong>: Skipping non-matching document ID ranges during multi-term intersections speeds up complex filter queries dramatically.</li>
@@ -314,6 +323,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#inverted-index-skip-pointer-architecture" class="toc-link">Inverted Index &amp; Skip Pointer Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-inverted-index-skip-pointer-engine" class="toc-link">Python Implementation: Inverted Index &amp; Skip Pointer Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#inverted-index-gotchas-best-practices" class="toc-link">Inverted Index Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

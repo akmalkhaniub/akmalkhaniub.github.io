@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#grpc-binary-framing-http2-stream-architecture">gRPC Binary Framing &amp; HTTP/2 Stream Architecture</a></li>
+                <li><a href="#python-implementation-protobuf-varint-grpc-framing-engine">Python Implementation: Protobuf Varint &amp; gRPC Framing Engine</a></li>
+                <li><a href="#grpc-protobuf-gotchas-best-practices">gRPC &amp; Protobuf Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Modern microservices require high-speed inter-service communication. Traditional REST APIs over HTTP/1.1 with JSON payloads present significant performance limitations:</p>
 <ol>
 <li><strong>Verbose Payload Sizes</strong>: Repeating JSON key strings (e.g. <code>&quot;transaction_id&quot;: ...</code>) across millions of API calls inflates network bandwidth.</li>
@@ -114,7 +123,7 @@
 <p>gRPC achieves up to $10\times$ higher throughput than REST/JSON by encoding data into dense binary Protobuf wire formats and multiplexing multiple concurrent streams over a single TCP connection.</p>
 <p>This article details how Protobuf varint encoding works and how gRPC frames messages over HTTP/2.</p>
 <hr>
-<h2>gRPC Binary Framing &amp; HTTP/2 Stream Architecture</h2>
+<h2 id="grpc-binary-framing-http2-stream-architecture">gRPC Binary Framing &amp; HTTP/2 Stream Architecture</h2>
 <p>How gRPC packages Protobuf payloads into 5-byte framed messages over HTTP/2 streams:</p>
 <div class="mermaid">graph TD
   subgraph User Application Layer
@@ -133,7 +142,7 @@
   end
   
   TCP --&gt; Server[gRPC Server Processing]</div>
-<h3>Core Serialization &amp; Protocol Mechanics</h3>
+<h3 id="core-serialization-protocol-mechanics">Core Serialization &amp; Protocol Mechanics</h3>
 <ol>
 <li><strong>Protobuf Varint Encoding</strong>: Variable-Length Quantity (Varint) encodes integers using 1 to 10 bytes depending on magnitude. Each byte uses the 7 least significant bits for data and the Most Significant Bit (MSB, <code>0x80</code>) as a Continuation Bit indicating if more bytes follow.</li>
 <li><strong>Tag + Wire Type Field Header</strong>: Fields are encoded as <code>(field_number &lt;&lt; 3) | wire_type</code>. Wire types include <code>0</code> (Varint), <code>1</code> (64-bit fixed), <code>2</code> (Length-delimited strings/embedded messages), and <code>5</code> (32-bit fixed). Field names are never sent over the wire!</li>
@@ -144,7 +153,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Protobuf Varint &amp; gRPC Framing Engine</h2>
+<h2 id="python-implementation-protobuf-varint-grpc-framing-engine">Python Implementation: Protobuf Varint &amp; gRPC Framing Engine</h2>
 <p>Here is a production-grade Python implementation of Protobuf Varint encoding/decoding and the gRPC 5-byte framing protocol:</p>
 <pre><code class="language-python">import struct
 from typing import Tuple, List
@@ -251,7 +260,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;\n4. gRPC Unframing Verification:&quot;)
     print(f&quot;   • Compressed: {is_comp} | Recovered Payload Match: {rec_payload == proto_payload}&quot;)</code></pre>
 <hr>
-<h2>gRPC &amp; Protobuf Gotchas &amp; Best Practices</h2>
+<h2 id="grpc-protobuf-gotchas-best-practices">gRPC &amp; Protobuf Gotchas &amp; Best Practices</h2>
 <p>When building gRPC APIs:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -264,7 +273,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Microservice platforms migrating from REST/JSON to gRPC report:</p>
 <ul>
 <li><strong>70% Network Bandwidth Savings</strong>: Binary Protobuf serialization reduces payload sizes by up to $70%$ compared to JSON text.</li>
@@ -297,6 +306,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#grpc-binary-framing-http2-stream-architecture" class="toc-link">gRPC Binary Framing &amp; HTTP/2 Stream Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-protobuf-varint-grpc-framing-engine" class="toc-link">Python Implementation: Protobuf Varint &amp; gRPC Framing Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#grpc-protobuf-gotchas-best-practices" class="toc-link">gRPC &amp; Protobuf Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

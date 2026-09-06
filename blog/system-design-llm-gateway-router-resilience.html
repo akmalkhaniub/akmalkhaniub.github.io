@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-provider-outage-threat">The Provider Outage Threat</a></li>
+                <li><a href="#1-multi-provider-fallback-routing-chains">1. Multi-Provider Fallback Routing Chains</a></li>
+                <li><a href="#2-implementing-the-circuit-breaker-pattern">2. Implementing the Circuit Breaker Pattern</a></li>
+                <li><a href="#code-demo-resilient-llm-gateway-with-circuit-breakers">Code Demo: Resilient LLM Gateway with Circuit Breakers</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ In production agent swarms, relying on a single LLM provider is a critical point
 </div>
 </div>
 <hr>
-<h2>The Provider Outage Threat</h2>
+<h2 id="the-provider-outage-threat">The Provider Outage Threat</h2>
 <p>For agentic systems, LLM inference API calls are the core execution dependencies. When these calls fail, the entire application fails. </p>
 <p>Three main issues threaten inference connections:</p>
 <ol>
@@ -134,14 +144,14 @@ flowchart TD
         OpenBreaker --&gt; Failover
     end</div>
 <hr>
-<h2>1. Multi-Provider Fallback Routing Chains</h2>
+<h2 id="1-multi-provider-fallback-routing-chains">1. Multi-Provider Fallback Routing Chains</h2>
 <p>A fallback chain defines an ordered routing list of secondary endpoints.</p>
 <ul>
 <li><strong>Semantic Parity</strong>: Ensure that fallback models have similar structural capabilities (e.g. if the primary model is <code>claude-3-5-sonnet</code>, routing fallbacks to <code>gemini-2-0-pro</code> or <code>gpt-4o</code> rather than smaller, non-reasoning SLMs).</li>
 <li><strong>Token Translation</strong>: The gateway must map API parameter configurations (e.g. translation from Anthropic message payloads to Google Gemini syntax models).</li>
 </ul>
 <hr>
-<h2>2. Implementing the Circuit Breaker Pattern</h2>
+<h2 id="2-implementing-the-circuit-breaker-pattern">2. Implementing the Circuit Breaker Pattern</h2>
 <p>A circuit breaker prevents the application from making requests that are likely to fail, saving network resources and processing overhead:</p>
 <ul>
 <li><strong>CLOSED</strong>: Normal state. All requests route to the primary provider.</li>
@@ -149,7 +159,7 @@ flowchart TD
 <li><strong>HALF-OPEN</strong>: After a cooldown period (e.g., 60 seconds), the gateway enters HALF-OPEN state, sending a single test request to the primary. If it succeeds, the breaker resets to CLOSED. If it fails, the breaker returns to OPEN.</li>
 </ul>
 <hr>
-<h2>Code Demo: Resilient LLM Gateway with Circuit Breakers</h2>
+<h2 id="code-demo-resilient-llm-gateway-with-circuit-breakers">Code Demo: Resilient LLM Gateway with Circuit Breakers</h2>
 <p>Below is a Python implementation of a resilient LLM Gateway. It routes mock prompts, counts consecutive errors, manages cooldown timestamps, and switches breaker states dynamically.</p>
 <pre><code class="language-python">import time
 from typing import List, Optional
@@ -243,7 +253,7 @@ if __name__ == &quot;__main__&quot;:
     print(&quot;\n--- Breaker returned to CLOSED ---&quot;)
     print(gateway.execute_prompt(&quot;Final check.&quot;))</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Propagate Status Codes</strong>: Do not hide error types inside your gateway logs. Expose detailed error details (<code>429 Rate Limit</code>, <code>503 Service Unavailable</code>, <code>ConnectionTimeout</code>) to allow downstream routers to make informed fallback decisions.</li>
 <li><strong>Map Token Metrics</strong>: Maintain a token-usage counter inside the gateway. If a backup model is much cheaper or has higher limits, route bulk background jobs (e.g. vector embedding indexing) directly to the backup.</li>
@@ -276,6 +286,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-provider-outage-threat" class="toc-link">The Provider Outage Threat</a></li>
+              <li class="toc-item toc-h2"><a href="#1-multi-provider-fallback-routing-chains" class="toc-link">1. Multi-Provider Fallback Routing Chains</a></li>
+              <li class="toc-item toc-h2"><a href="#2-implementing-the-circuit-breaker-pattern" class="toc-link">2. Implementing the Circuit Breaker Pattern</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-resilient-llm-gateway-with-circuit-breakers" class="toc-link">Code Demo: Resilient LLM Gateway with Circuit Breakers</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

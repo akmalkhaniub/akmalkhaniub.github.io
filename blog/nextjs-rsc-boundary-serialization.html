@@ -104,10 +104,19 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-visualizing-the-boundary">1. Visualizing the Boundary</a></li>
+                <li><a href="#2-serialization-rules-what-crosses-the-boundary">2. Serialization Rules: What Crosses the Boundary?</a></li>
+                <li><a href="#3-common-architectural-pitfalls">3. Common Architectural Pitfalls</a></li>
+                <li><a href="#4-state-sharing-moving-beyond-context-providers">4. State Sharing: Moving Beyond Context Providers</a></li>
+              </ul>
+            </details>
 <p>Understanding the boundaries of React Server Components (RSC) is one of the most critical shifts when moving from traditional client-side SPA frameworks to Next.js App Router. </p>
 <p>Rather than executing all components in the browser, Next.js runs Server Components on the server and streams the resulting UI elements down to the client. This introduces a network and serialization boundary that dictates how we pass data, share state, and structure component trees.</p>
 <hr>
-<h2>1. Visualizing the Boundary</h2>
+<h2 id="1-visualizing-the-boundary">1. Visualizing the Boundary</h2>
 <p>The boundary is unidirectional: Server Components can import and render Client Components, but Client Components cannot directly import and render Server Components as components. They can, however, receive Server Components as <code>children</code> or <code>props</code>.</p>
 <div class="mermaid">graph TD
     subgraph Server Thread
@@ -122,9 +131,9 @@
     B --&gt;|Renders &amp; Passes Serialized Props| D
     A --&gt;|Renders| C</div>
 <hr>
-<h2>2. Serialization Rules: What Crosses the Boundary?</h2>
+<h2 id="2-serialization-rules-what-crosses-the-boundary">2. Serialization Rules: What Crosses the Boundary?</h2>
 <p>When a Server Component passes props to a Client Component, that data must be converted into a string-based protocol (the <strong>RSC Payload</strong>) that the browser can deserialize and reconstruct. This protocol is JSON-like but extends support for streaming elements.</p>
-<h3>Serializable Data (Supported)</h3>
+<h3 id="serializable-data-supported">Serializable Data (Supported)</h3>
 <ul>
 <li><strong>Primitives:</strong> <code>string</code>, <code>number</code>, <code>boolean</code>, <code>null</code>, <code>undefined</code>, <code>bigint</code>.</li>
 <li><strong>Arrays &amp; Plain Objects:</strong> <code>{ name: &quot;John&quot; }</code> (must be pure key-value objects, not instantiated classes).</li>
@@ -132,7 +141,7 @@
 <li><strong>React Elements:</strong> Server Component JSX nodes (e.g. <code>&lt;ServerChild /&gt;</code>) can be passed as props.</li>
 <li><strong>TypedArrays:</strong> <code>Uint8Array</code>, etc.</li>
 </ul>
-<h3>Non-Serializable Data (Unsupported)</h3>
+<h3 id="non-serializable-data-unsupported">Non-Serializable Data (Unsupported)</h3>
 <ul>
 <li><strong>Functions:</strong> Event handlers (e.g., <code>onClick={handleClick}</code>) cannot be passed across the boundary because code execution context cannot be serialized across threads.</li>
 <li><strong>Class Instances:</strong> Instantiated class models (e.g., custom database schemas or ORM entities) lose their prototype chain during serialization.</li>
@@ -140,8 +149,8 @@
 <li><strong>Circular Structures:</strong> Cause infinite loops during serialization.</li>
 </ul>
 <hr>
-<h2>3. Common Architectural Pitfalls</h2>
-<h3>Pitfall A: The &quot;Cannot Serialize Function&quot; Error</h3>
+<h2 id="3-common-architectural-pitfalls">3. Common Architectural Pitfalls</h2>
+<h3 id="pitfall-a-the-cannot-serialize-function-error">Pitfall A: The &quot;Cannot Serialize Function&quot; Error</h3>
 <p>This happens when you accidentally pass an event handler or callback from a Server Component to a Client Component.</p>
 <pre><code class="language-tsx">// ❌ WRONG: Fails because handleClick cannot be serialized
 export default async function ServerPage() {
@@ -157,7 +166,7 @@ export default async function ServerPage() {
   const userId = &quot;user_123&quot;;
   return &lt;ClientButton userId={userId} /&gt;;
 }</code></pre>
-<h3>Pitfall B: Passing ORM Objects Directly</h3>
+<h3 id="pitfall-b-passing-orm-objects-directly">Pitfall B: Passing ORM Objects Directly</h3>
 <p>If you query a database using Prisma or Drizzle, the return values are often objects that contain non-serializable fields (like custom Date objects or nested prototype functions).</p>
 <pre><code class="language-typescript">// ❌ WRONG: Might crash if task.createdAt is a raw Date object
 const task = await db.task.findUnique({ id });
@@ -171,10 +180,10 @@ const sanitizedTask = {
 };
 return &lt;TaskDetailsCard task={sanitizedTask} /&gt;;</code></pre>
 <hr>
-<h2>4. State Sharing: Moving Beyond Context Providers</h2>
+<h2 id="4-state-sharing-moving-beyond-context-providers">4. State Sharing: Moving Beyond Context Providers</h2>
 <p>In a client-side SPA, developers share global state using Context Providers (<code>useContext</code>, Redux, Zustand) wrapped around the root layout. </p>
 <p>In Next.js, wrapping your root layout in a Context Provider <strong>forces all children to become Client Components</strong>, completely disabling the benefits of Server Components for the entire application page.</p>
-<h3>The Architectural Solution: URL State</h3>
+<h3 id="the-architectural-solution-url-state">The Architectural Solution: URL State</h3>
 <p>Instead of React state, use the <strong>URL query string</strong> as your primary state coordinator.</p>
 <pre><code class="language-tsx">// components/filter-sidebar.tsx (Client Component)
 &quot;use client&quot;;
@@ -221,7 +230,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     &lt;/div&gt;
   );
 }</code></pre>
-<h3>Benefits of URL State:</h3>
+<h3 id="benefits-of-url-state">Benefits of URL State:</h3>
 <ol>
 <li><strong>Zero Client Javascript:</strong> The article cards remain pure Server Components; they don&#39;t load state engines in the browser.</li>
 <li><strong>Bookmarkable Pages:</strong> Users can bookmark or share the URL, and it will load the exact filtered layout instantly.</li>
@@ -254,6 +263,17 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-visualizing-the-boundary" class="toc-link">1. Visualizing the Boundary</a></li>
+              <li class="toc-item toc-h2"><a href="#2-serialization-rules-what-crosses-the-boundary" class="toc-link">2. Serialization Rules: What Crosses the Boundary?</a></li>
+              <li class="toc-item toc-h2"><a href="#3-common-architectural-pitfalls" class="toc-link">3. Common Architectural Pitfalls</a></li>
+              <li class="toc-item toc-h2"><a href="#4-state-sharing-moving-beyond-context-providers" class="toc-link">4. State Sharing: Moving Beyond Context Providers</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

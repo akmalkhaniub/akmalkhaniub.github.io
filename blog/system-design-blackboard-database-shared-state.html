@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-handoff-problem">The Handoff Problem</a></li>
+                <li><a href="#designing-a-concurrency-safe-schema">Designing a Concurrency-Safe Schema</a></li>
+                <li><a href="#code-demo-conactivity-safe-blackboard-manager">Code Demo: Conactivity-Safe Blackboard Manager</a></li>
+                <li><a href="#key-takeaways">Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +120,7 @@ As AI agent architectures evolve from simple chain models into complex swarms, s
 </div>
 </div>
 <hr>
-<h2>The Handoff Problem</h2>
+<h2 id="the-handoff-problem">The Handoff Problem</h2>
 <p>In a decentralized swarm, agent nodes must transfer execution control and context data to one another. There are two primary architectural paradigms to handle this:</p>
 <ol>
 <li><strong>Direct Peer-to-Peer Message Passing</strong>: Agent A calls Agent B&#39;s API. This is easy to set up but highly coupled. If Agent B crashes, the state is lost, and auditing execution paths requires complex trace collectors.</li>
@@ -128,14 +137,14 @@ flowchart TD
     end</div>
 <p>Using a blackboard database decouples execution nodes, enforces transactional consistency, and provides built-in auditability of the agent swarm’s reasoning path.</p>
 <hr>
-<h2>Designing a Concurrency-Safe Schema</h2>
+<h2 id="designing-a-concurrency-safe-schema">Designing a Concurrency-Safe Schema</h2>
 <p>When multiple agents write to the same blackboard concurrently, they risk overwrite errors (race conditions). We prevent this using <strong>Transactional Locks</strong>:</p>
 <ul>
 <li><strong>Relational Schema (PostgreSQL)</strong>: We represent the blackboard as a table containing a unique <code>task_id</code>, a status column (<code>PENDING</code>, <code>RUNNING</code>, <code>COMPLETED</code>), and a JSONB column containing the execution context.</li>
 <li><strong>Concurrency Locking</strong>: When an agent claims a task, it runs a <code>SELECT ... FOR UPDATE</code> query. This locks the database row, preventing other agent threads from claiming the same task. The agent updates the status and context, then commits the transaction, releasing the lock.</li>
 </ul>
 <hr>
-<h2>Code Demo: Conactivity-Safe Blackboard Manager</h2>
+<h2 id="code-demo-conactivity-safe-blackboard-manager">Code Demo: Conactivity-Safe Blackboard Manager</h2>
 <p>Below is a complete Python script demonstrating a Blackboard manager using SQLite (with SQLAlchemy) that simulates concurrent workers processing tasks from a shared state repository using row-level transactional boundaries.</p>
 <pre><code class="language-python">import time
 import threading
@@ -244,7 +253,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;Context Payload: {final_task.context}&quot;)
     session.close()</code></pre>
 <hr>
-<h2>Key Takeaways</h2>
+<h2 id="key-takeaways">Key Takeaways</h2>
 <ul>
 <li><strong>Decoupled Swarms</strong>: Blackboard systems decouple agent logic. Workers do not need to know which agent takes the task next; they only need to know how to read and write to the database.</li>
 <li><strong>Audit Trail Out of the Box</strong>: Because all intermediate thought tokens, tool execution payloads, and status changes are committed directly to the database, tracing lineage is trivial.</li>
@@ -277,6 +286,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-handoff-problem" class="toc-link">The Handoff Problem</a></li>
+              <li class="toc-item toc-h2"><a href="#designing-a-concurrency-safe-schema" class="toc-link">Designing a Concurrency-Safe Schema</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-conactivity-safe-blackboard-manager" class="toc-link">Code Demo: Conactivity-Safe Blackboard Manager</a></li>
+              <li class="toc-item toc-h2"><a href="#key-takeaways" class="toc-link">Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

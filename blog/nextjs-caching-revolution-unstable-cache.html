@@ -104,16 +104,25 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-caching-dilemma-static-by-default-vs-uncached">The Caching Dilemma: Static by Default vs. Uncached</a></li>
+                <li><a href="#implementing-selective-caching-with-unstablecache">Implementing Selective Caching with unstable_cache</a></li>
+                <li><a href="#dynamic-on-demand-revalidation">Dynamic On-Demand Revalidation</a></li>
+                <li><a href="#real-world-production-adoption">Real-World Production Adoption</a></li>
+              </ul>
+            </details>
 <p>For years, Next.js was notorious for its aggressive caching behavior. If you ran a standard <code>fetch</code> call in an App Router page, Next.js would automatically intercept and cache the response statically forever unless you explicitly configured dynamic routing parameters. In production, this resulted in countless &quot;stale dashboard&quot; and &quot;out-of-sync product list&quot; bugs that developers struggled to debug.</p>
 <p>Next.js 15 flipped this model on its head by introducing <strong>uncached-by-default</strong> behavior. This article explores the architectural rationale behind this shift, the performance benefits, and how high-volume production platforms safely configure explicit, predictable caching.</p>
 <hr>
-<h2>The Caching Dilemma: Static by Default vs. Uncached</h2>
+<h2 id="the-caching-dilemma-static-by-default-vs-uncached">The Caching Dilemma: Static by Default vs. Uncached</h2>
 <p>In Next.js 13 and 14, standard network requests defaulted to <code>force-cache</code>. This decision was designed to make applications fast by generating static HTML at build time, but it severely violated the principle of least surprise:</p>
 <ul>
 <li><strong>Stale GET Requests</strong>: GET Route Handlers and data fetches were cached permanently unless developers specified <code>{ cache: &#39;no-store&#39; }</code>.</li>
 <li><strong>Out-of-Sync Client States</strong>: Navigating back and forth between client components loaded pre-fetched pages from the client-side router cache rather than pulling fresh server state.</li>
 </ul>
-<h3>The Next.js 15/16 Model</h3>
+<h3 id="the-nextjs-1516-model">The Next.js 15/16 Model</h3>
 <p>In the modern Next.js 15/16 architecture:</p>
 <ol>
 <li><strong>Dynamic fetches by default</strong>: All standard <code>fetch()</code> requests default to <code>no-store</code> unless explicitly configured.</li>
@@ -126,7 +135,7 @@
 </div>
 </div>
 <hr>
-<h2>Implementing Selective Caching with <code>unstable_cache</code></h2>
+<h2 id="implementing-selective-caching-with-unstablecache">Implementing Selective Caching with <code>unstable_cache</code></h2>
 <p>To achieve sub-50ms render times without serving stale data, production systems use Next.js&#39;s low-level <code>unstable_cache</code> API to wrap database and external API operations.</p>
 <p>Here is a production-ready pattern for caching raw database queries in a Next.js server module:</p>
 <pre><code class="language-typescript">import { unstable_cache } from 'next/cache';
@@ -160,7 +169,7 @@ export const getProducts = unstable_cache(
   }
 );</code></pre>
 <hr>
-<h2>Dynamic On-Demand Revalidation</h2>
+<h2 id="dynamic-on-demand-revalidation">Dynamic On-Demand Revalidation</h2>
 <p>When an administrator updates a product&#39;s price or stock, the cache must be purged instantly without waiting for the 3600-second TTL to expire. Production applications handle this via Server Actions and route-handler webhooks utilizing <code>revalidateTag</code> or <code>revalidatePath</code>:</p>
 <pre><code class="language-typescript">'use server';
 
@@ -189,7 +198,7 @@ export async function updateProductStock(productId: string, newStock: number) {
 </div>
 </div>
 <hr>
-<h2>Real-World Production Adoption</h2>
+<h2 id="real-world-production-adoption">Real-World Production Adoption</h2>
 <p>Production sites have adapted to the uncached-by-default shift by implementing tiered caching layouts:</p>
 <div class="mermaid">graph TD
   A[Client Request] --&gt; B[Next.js Server Component]
@@ -232,6 +241,17 @@ export async function updateProductStock(productId: string, newStock: number) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-caching-dilemma-static-by-default-vs-uncached" class="toc-link">The Caching Dilemma: Static by Default vs. Uncached</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-selective-caching-with-unstablecache" class="toc-link">Implementing Selective Caching with unstable_cache</a></li>
+              <li class="toc-item toc-h2"><a href="#dynamic-on-demand-revalidation" class="toc-link">Dynamic On-Demand Revalidation</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-production-adoption" class="toc-link">Real-World Production Adoption</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

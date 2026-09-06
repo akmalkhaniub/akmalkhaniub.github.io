@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#confidential-computing-remote-attestation-architecture">Confidential Computing &amp; Remote Attestation Architecture</a></li>
+                <li><a href="#python-implementation-hardware-attestation-enclave-encryption-engine">Python Implementation: Hardware Attestation &amp; Enclave Encryption Engine</a></li>
+                <li><a href="#confidential-computing-gotchas-best-practices">Confidential Computing Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In multi-tenant public cloud environments (AWS, Azure, Google Cloud), organizations deploy sensitive workloads (financial analytics, healthcare records, proprietary AI models).</p>
 <p>Standard security protocols encrypt <strong>Data-at-Rest</strong> (disk encryption) and <strong>Data-in-Transit</strong> (TLS encryption).</p>
 <p>However, during active execution, <strong>Data-in-Use</strong> remains exposed in plaintext RAM. A compromised host operating system, a rogue hypervisor administrator, or a malicious cloud tenant can inspect host memory buffers to extract secret cryptographic keys and customer data.</p>
@@ -111,7 +120,7 @@
 <p>Pioneered by <strong>Intel SGX (Software Guard Extensions)</strong> and <strong>AMD SEV-SNP (Secure Encrypted Virtualization)</strong>, Confidential Computing creates hardware-isolated <strong>Secure Enclaves</strong> where memory is transparently encrypted at hardware speeds by the CPU controller.</p>
 <p>This article details Enclave Page Cache (EPC) encryption, AMD SEV-SNP memory isolation, and Remote Hardware Attestation.</p>
 <hr>
-<h2>Confidential Computing &amp; Remote Attestation Architecture</h2>
+<h2 id="confidential-computing-remote-attestation-architecture">Confidential Computing &amp; Remote Attestation Architecture</h2>
 <p>How Secure Enclaves isolate memory and provide cryptographic Remote Attestation quotes to verify binary integrity:</p>
 <div class="mermaid">graph TD
   subgraph Untrusted Cloud Infrastructure (Hypervisor / OS Kernel)
@@ -129,7 +138,7 @@
     AttestationQuote --&gt;|3. Transmit Quote over TLS| RemoteClient[Remote Client / Verifier]
     RemoteClient --&gt;|4. Verify Signature via Intel/AMD PKI| Trust[🎉 VERIFIED: Code is running inside Genuine CPU Enclave!]
   end</div>
-<h3>Core Confidential Computing Principles</h3>
+<h3 id="core-confidential-computing-principles">Core Confidential Computing Principles</h3>
 <ol>
 <li><strong>Hardware Memory Encryption Engine (MEE)</strong>: The CPU contains a dedicated hardware encryption engine positioned between the L3 cache and external DRAM controllers. All memory reads and writes crossing the CPU die boundary are dynamically encrypted and decrypted using hardware AES-XTS keys, rendering physical RAM sniffing useless.</li>
 <li><strong>Intel SGX (Application-Level Enclaves)</strong>: Isolates specific user-space code and data into <strong>Enclaves</strong> inside dedicated Enclave Page Cache (EPC) memory. Even if the host OS kernel (<code>root</code>) is fully compromised, it cannot read or write to EPC memory pages.</li>
@@ -142,7 +151,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Hardware Attestation &amp; Enclave Encryption Engine</h2>
+<h2 id="python-implementation-hardware-attestation-enclave-encryption-engine">Python Implementation: Hardware Attestation &amp; Enclave Encryption Engine</h2>
 <p>Here is a production-grade Python implementation of a Confidential Computing Enclave Memory Encryption Engine and Remote Hardware Attestation Simulator:</p>
 <pre><code class="language-python">import hmac
 import hashlib
@@ -246,7 +255,7 @@ if __name__ == &quot;__main__&quot;:
     expected_mrenclave = hashlib.sha256(enclave_code).hexdigest()
     is_valid = verifier.verify_quote(quote, expected_mrenclave=expected_mrenclave, original_challenge=challenge)</code></pre>
 <hr>
-<h2>Confidential Computing Gotchas &amp; Best Practices</h2>
+<h2 id="confidential-computing-gotchas-best-practices">Confidential Computing Gotchas &amp; Best Practices</h2>
 <p>When building enclave applications:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -259,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Confidential Computing deployments (such as <strong>Azure Confidential VMs</strong>, <strong>AWS Nitro Enclaves</strong>, and <strong>Google Cloud Confidential Space</strong>) report:</p>
 <ul>
 <li><strong>Zero-Trust Cloud Processing</strong>: Processing sensitive healthcare and financial data in public clouds without trusting the cloud provider&#39;s infrastructure or personnel.</li>
@@ -292,6 +301,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#confidential-computing-remote-attestation-architecture" class="toc-link">Confidential Computing &amp; Remote Attestation Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-hardware-attestation-enclave-encryption-engine" class="toc-link">Python Implementation: Hardware Attestation &amp; Enclave Encryption Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#confidential-computing-gotchas-best-practices" class="toc-link">Confidential Computing Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

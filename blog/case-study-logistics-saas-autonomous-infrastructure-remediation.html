@@ -104,16 +104,31 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-industry-and-problem">1. Industry and Problem</a></li>
+                <li><a href="#2-team-size-and-composition">2. Team Size and Composition</a></li>
+                <li><a href="#3-duration">3. Duration</a></li>
+                <li><a href="#4-architecture">4. Architecture</a></li>
+                <li><a href="#5-scale">5. Scale</a></li>
+                <li><a href="#6-your-personal-contribution">6. Your Personal Contribution</a></li>
+                <li><a href="#7-difficult-decision">7. Difficult Decision</a></li>
+                <li><a href="#8-incident-or-failure">8. Incident or Failure</a></li>
+                <li><a href="#9-measured-result">9. Measured Result</a></li>
+                <li><a href="#10-lesson-learned">10. Lesson Learned</a></li>
+              </ul>
+            </details>
 <p>Operational outages in global logistics software directly halt physical supply chains—delaying container ships, grounding cargo flights, and stranding freight trucks at customs checkpoints. This case study documents how our team designed, deployed, and operationalized an autonomous infrastructure remediation agent swarm on Google Cloud Platform for a global logistics SaaS provider.</p>
 <hr>
-<h2>1. Industry and Problem</h2>
+<h2 id="1-industry-and-problem">1. Industry and Problem</h2>
 <ul>
 <li><strong>Industry</strong>: Global Supply Chain &amp; Logistics SaaS Infrastructure.</li>
 <li><strong>The Problem</strong>: Our platform managed real-time tracking, customs documentation, and container telemetry across 600 shipping ports. Transient infrastructure issues (database lock contention, stale Redis caches, memory leaks in tracking workers) occurred frequently at 3:00 AM, requiring human SRE on-call engineers to wake up, diagnose stack traces, and manually execute kubectl restarts or database failovers.</li>
 <li><strong>Business Impact</strong>: Average Mean Time to Recovery (MTTR) hovered at <strong>42 minutes per incident</strong>, resulting in <strong>$2.8M annual SLA penalty payouts</strong> to global freight clients.</li>
 </ul>
 <hr>
-<h2>2. Team Size and Composition</h2>
+<h2 id="2-team-size-and-composition">2. Team Size and Composition</h2>
 <p>We assembled a specialized SRE and Systems Architecture team of <strong>6 engineers</strong>:</p>
 <ul>
 <li><strong>1 Tech Lead / Principal SRE Architect</strong> (Author - Autonomous Remediation Spec &amp; HITL Gateway Design)</li>
@@ -123,7 +138,7 @@
 <li><strong>1 Observability Specialist</strong> (Cloud Monitoring, Prometheus &amp; OpenTelemetry Trajectories)</li>
 </ul>
 <hr>
-<h2>3. Duration</h2>
+<h2 id="3-duration">3. Duration</h2>
 <ul>
 <li><strong>Total Project Lifecycle</strong>: <strong>6 Months</strong> (from initial incident triage audit to full production autonomous remediation).<ul>
 <li><em>Months 1–2</em>: Trajectory logging of 200 historical SRE incident playbooks and spec engineering.</li>
@@ -134,7 +149,7 @@
 </li>
 </ul>
 <hr>
-<h2>4. Architecture</h2>
+<h2 id="4-architecture">4. Architecture</h2>
 <p>The architecture isolates agent diagnosis from execution using a HITL Approval Gateway on GCP:</p>
 <div class="mermaid">graph TD
   A[Cloud Monitoring / Alertmanager Incident Trigger] --&gt; B[GCP Cloud Pub/Sub: Incident Event]
@@ -153,7 +168,7 @@
   I --&gt;|Human SRE Grants Signed Token| H
   I --&gt;|Timeout 15 mins / Rejection| J[Escalate to Secondary On-Call]
   H --&gt; K[Post-Remediation Verification Gate]</div>
-<h3>Tech Stack Breakdown</h3>
+<h3 id="tech-stack-breakdown">Tech Stack Breakdown</h3>
 <ul>
 <li><strong>Incident Transport</strong>: GCP Cloud Monitoring Alerting Hooks + Cloud Pub/Sub.</li>
 <li><strong>Agent Triage Engine</strong>: GCP Cloud Run (Python containers) + Vertex AI Gemini 1.5 Pro.</li>
@@ -161,14 +176,14 @@
 <li><strong>Memory &amp; Telemetry</strong>: AlloyDB AI (<code>pgvector</code> playbook retrieval) + BigQuery Incident Trajectory Logs.</li>
 </ul>
 <hr>
-<h2>5. Scale</h2>
+<h2 id="5-scale">5. Scale</h2>
 <ul>
 <li><strong>Monitored Infrastructure</strong>: <strong>1,400 Microservice Containers</strong>, 8 Kubernetes Clusters, 12 Regional PostgreSQL/AlloyDB instances.</li>
 <li><strong>Monthly Alerts Analyzed</strong>: <strong>~18,000 telemetry alerts / month</strong>.</li>
 <li><strong>Remediation SLA</strong>: Autonomous diagnosis and execution completed in <strong>&lt; 45 seconds</strong>.</li>
 </ul>
 <hr>
-<h2>6. Your Personal Contribution</h2>
+<h2 id="6-your-personal-contribution">6. Your Personal Contribution</h2>
 <p>As <strong>Tech Lead / Principal SRE Architect</strong>, I personally designed:</p>
 <ol>
 <li><strong>HITL HMAC Approval Protocol</strong>: Created the cryptographic token gateway that forces the agent to pause execution and obtain signed SRE authorization before executing high-risk commands.</li>
@@ -237,14 +252,14 @@ if __name__ == &quot;__main__&quot;:
     token = remediator.create_hmac_approval_token()
     remediator.execute_remediation(approval_token=token)</code></pre>
 <hr>
-<h2>7. Difficult Decision</h2>
+<h2 id="7-difficult-decision">7. Difficult Decision</h2>
 <ul>
 <li><strong>The Decision</strong>: <strong>Enforcing Mandatory Human Approval for Database Failovers</strong>.</li>
 <li><strong>The Trade-Off</strong>: Requiring human sign-off for database failovers added 2 to 5 minutes of latency while waiting for the on-call engineer to tap &quot;Approve&quot; on Slack. Fully automating failovers would have achieved sub-minute MTTR.</li>
 <li><strong>Rationale</strong>: Automatic database failovers carry risk of split-brain data corruption if an agent misdiagnoses a transient network blip as a node death. Preserving human authorization for high-risk database mutations protected data integrity.</li>
 </ul>
 <hr>
-<h2>8. Incident or Failure</h2>
+<h2 id="8-incident-or-failure">8. Incident or Failure</h2>
 <ul>
 <li><strong>The Incident (Month 5 - Shadow Testing)</strong>: An agent worker encountered a cascade of memory-pressure alerts across 40 container pods. The agent diagnosed each pod failure independently and attempted 40 concurrent <code>kubectl restart</code> calls within 3 seconds.</li>
 <li><strong>Root Cause Analysis</strong>: The initial agent lacked global rate-limiting. Mass concurrent pod restarts triggered an API server CPU spike on the Kubernetes master plane, worsening the outage.</li>
@@ -255,7 +270,7 @@ if __name__ == &quot;__main__&quot;:
 </li>
 </ul>
 <hr>
-<h2>9. Measured Result</h2>
+<h2 id="9-measured-result">9. Measured Result</h2>
 <p>Following full production deployment across 8 Kubernetes clusters:</p>
 <ul>
 <li><strong>MTTR Reduced from 42 Minutes to 1.8 Minutes</strong>: 82% of routine infrastructure incidents (stale caches, memory leaks) are resolved automatically in &lt; 2 minutes.</li>
@@ -263,7 +278,7 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>Zero 3:00 AM On-Call Page Spikes</strong>: SRE engineers avoided over 350 nocturnal wake-up pages per quarter.</li>
 </ul>
 <hr>
-<h2>10. Lesson Learned</h2>
+<h2 id="10-lesson-learned">10. Lesson Learned</h2>
 <blockquote>
 <p><strong>&quot;Automation without rate limits and blast-radius boundaries is just accelerated failure.&quot;</strong></p>
 <p>As Tech Lead, this case study demonstrated that an autonomous remediation engine must have explicit blast-radius limits. Restricting the agent to rate-limited execution queues (Cloud Tasks) and enforcing cryptographic HITL approval gates ensures that automation accelerates recovery without risking infrastructure stability.</p>
@@ -295,6 +310,23 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-industry-and-problem" class="toc-link">1. Industry and Problem</a></li>
+              <li class="toc-item toc-h2"><a href="#2-team-size-and-composition" class="toc-link">2. Team Size and Composition</a></li>
+              <li class="toc-item toc-h2"><a href="#3-duration" class="toc-link">3. Duration</a></li>
+              <li class="toc-item toc-h2"><a href="#4-architecture" class="toc-link">4. Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#5-scale" class="toc-link">5. Scale</a></li>
+              <li class="toc-item toc-h2"><a href="#6-your-personal-contribution" class="toc-link">6. Your Personal Contribution</a></li>
+              <li class="toc-item toc-h2"><a href="#7-difficult-decision" class="toc-link">7. Difficult Decision</a></li>
+              <li class="toc-item toc-h2"><a href="#8-incident-or-failure" class="toc-link">8. Incident or Failure</a></li>
+              <li class="toc-item toc-h2"><a href="#9-measured-result" class="toc-link">9. Measured Result</a></li>
+              <li class="toc-item toc-h2"><a href="#10-lesson-learned" class="toc-link">10. Lesson Learned</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#product-quantization-pq-sub-vector-decomposition-architecture">Product Quantization (PQ) Sub-Vector Decomposition Architecture</a></li>
+                <li><a href="#python-implementation-sq8-product-quantization-engine">Python Implementation: SQ8 &amp; Product Quantization Engine</a></li>
+                <li><a href="#vector-quantization-gotchas-best-practices">Vector Quantization Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Storing and searching billion-scale vector collections presents a formidable RAM infrastructure bottleneck.</p>
 <p>Each $1536$-dimensional vector embedding represented as 32-bit single-precision floating-point numbers (<code>float32</code>) consumes $6,144$ bytes ($1536 \times 4$ bytes). Storing 100 million uncompressed vectors requires <strong>$614.4$ GB of high-speed RAM</strong>—excluding graph index overhead!</p>
 <p>At scale, keeping raw floating-point vectors in memory becomes financially unviable.</p>
@@ -111,7 +120,7 @@
 <p>Quantization techniques—such as <strong>Scalar Quantization (SQ8)</strong> and <strong>Product Quantization (PQ)</strong>—compress continuous float32 vectors into compact integer byte codes.</p>
 <p>This article explores the mathematical mechanics of SQ8, Product Quantization, and Asymmetric Distance Computation (ADC).</p>
 <hr>
-<h2>Product Quantization (PQ) Sub-Vector Decomposition Architecture</h2>
+<h2 id="product-quantization-pq-sub-vector-decomposition-architecture">Product Quantization (PQ) Sub-Vector Decomposition Architecture</h2>
 <p>How Product Quantization splits high-dimensional vectors into sub-vectors and encodes them into byte codes:</p>
 <div class="mermaid">graph TD
   subgraph Raw Float32 Vector (D = 1536 dims, 6144 bytes)
@@ -129,7 +138,7 @@
   subgraph Compressed Byte Code Output (8 bytes total! 99.87% Memory Savings)
     CB1 &amp; CB2 &amp; CB8 --&gt;|3. Assemble Byte Code| Quantized[Quantized Byte Array: [42, 189, ..., 7]]
   end</div>
-<h3>Core Quantization Techniques</h3>
+<h3 id="core-quantization-techniques">Core Quantization Techniques</h3>
 <ol>
 <li><strong>Scalar Quantization (SQ8)</strong>: Quantizes each individual 32-bit float component $v_i$ independently into an 8-bit unsigned integer ($int8$). It computes the global minimum ($\min$) and maximum ($\max$) across vector dimensions:
 $$\tilde{v}_i = \text{round}\left(255 \cdot \frac{v_i - \min}{\max - \min}\right)$$
@@ -138,7 +147,7 @@ SQ8 reduces RAM consumption by <strong>$4\times$</strong> (from $6,144$ bytes do
 <li><strong>Asymmetric Distance Computation (ADC)</strong>: During query processing, the user query vector remains unquantized (<code>float32</code>). The search engine precomputes a $M \times 256$ Look-Up Table (LUT) containing distances between the query&#39;s sub-vectors and all 256 centroids per codebook. Asymmetric distance to any quantized database item is then calculated by summing $M$ array lookups, executing in nanoseconds.</li>
 </ol>
 <hr>
-<h2>Python Implementation: SQ8 &amp; Product Quantization Engine</h2>
+<h2 id="python-implementation-sq8-product-quantization-engine">Python Implementation: SQ8 &amp; Product Quantization Engine</h2>
 <p>Here is a production-grade Python implementation of Scalar Quantization (SQ8), Product Quantization (PQ), and Asymmetric Distance Computation (ADC):</p>
 <pre><code class="language-python">import math
 from typing import List, Tuple
@@ -259,7 +268,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • PQ Centroid IDs:    {list(pq_codes)}&quot;)
     print(f&quot;   • ADC Distance:       {adc_dist:.6f}&quot;)</code></pre>
 <hr>
-<h2>Vector Quantization Gotchas &amp; Best Practices</h2>
+<h2 id="vector-quantization-gotchas-best-practices">Vector Quantization Gotchas &amp; Best Practices</h2>
 <p>When configuring vector database quantization:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -272,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Vector database deployments utilizing Product Quantization report:</p>
 <ul>
 <li><strong>Over 90% RAM Cost Reduction</strong>: Compressing 100M float32 vectors from $614\text{ GB}$ down to $25\text{ GB}$ allows hosting billion-scale vector indexes on modest single-node servers.</li>
@@ -305,6 +314,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#product-quantization-pq-sub-vector-decomposition-architecture" class="toc-link">Product Quantization (PQ) Sub-Vector Decomposition Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-sq8-product-quantization-engine" class="toc-link">Python Implementation: SQ8 &amp; Product Quantization Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#vector-quantization-gotchas-best-practices" class="toc-link">Vector Quantization Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

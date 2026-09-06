@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-distributed-transaction-dilemma">The Distributed Transaction Dilemma</a></li>
+                <li><a href="#1-orchestration-based-vs-choreography-based-sagas">1. Orchestration-Based vs. Choreography-Based Sagas</a></li>
+                <li><a href="#2-designing-idempotent-compensating-steps">2. Designing Idempotent Compensating Steps</a></li>
+                <li><a href="#implementing-a-saga-orchestrator-in-python">Implementing a Saga Orchestrator in Python</a></li>
+                <li><a href="#takeaways-for-system-designers">Takeaways for System Designers</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ As autonomous agent networks are trusted with write access to external APIs—bo
 </div>
 </div>
 <hr>
-<h2>The Distributed Transaction Dilemma</h2>
+<h2 id="the-distributed-transaction-dilemma">The Distributed Transaction Dilemma</h2>
 <p>Consider an autonomous travel booking swarm where three agents execute a pipeline:</p>
 <ol>
 <li><strong>Flight Agent</strong>: Books a flight via a Partner API.</li>
@@ -136,14 +146,14 @@ flowchart TD
     Step3 --&gt;|Trigger Rollback| Comp1
     Comp2 --&gt; FinalState([System Rolled Back Cleanly])</div>
 <hr>
-<h2>1. Orchestration-Based vs. Choreography-Based Sagas</h2>
+<h2 id="1-orchestration-based-vs-choreography-based-sagas">1. Orchestration-Based vs. Choreography-Based Sagas</h2>
 <p>Sagas can be structured in two ways:</p>
 <ul>
 <li><strong>Choreography</strong>: Each agent executes its step, publishes an event, and the next agent listens and executes. While highly decoupled, this becomes difficult to trace and audit in complex agent networks.</li>
 <li><strong>Orchestration</strong>: A central class or controller coordinates execution. It invokes the agents, records progress, and directly triggers compensating actions if any node returns a failure state. For agentic swarms, <strong>Orchestration</strong> is highly recommended as it provides a single source of truth for debugging trace pathways.</li>
 </ul>
 <hr>
-<h2>2. Designing Idempotent Compensating Steps</h2>
+<h2 id="2-designing-idempotent-compensating-steps">2. Designing Idempotent Compensating Steps</h2>
 <p>Compensating actions must be designed with three core principles:</p>
 <ol>
 <li><strong>Idempotency</strong>: A compensation step might fail due to network timeouts and be retried multiple times. The cancel function must be safe to call repeatedly (e.g. <code>cancel_flight(id)</code> must return success even if the flight was already cancelled).</li>
@@ -151,7 +161,7 @@ flowchart TD
 <li><strong>Out-of-Order Handling</strong>: In asynchronous networks, a compensation message might arrive before the forward command (e.g., if a network lag delayed the forward booking). The system must handle this gracefully, ensuring that if a cancel request arrives first, any subsequent forward request is blocked or immediately cancelled.</li>
 </ol>
 <hr>
-<h2>Implementing a Saga Orchestrator in Python</h2>
+<h2 id="implementing-a-saga-orchestrator-in-python">Implementing a Saga Orchestrator in Python</h2>
 <p>Below is a complete Python implementation of a <code>SagaOrchestrator</code> executing a mock multi-agent transaction. It tracks completed steps and automatically triggers compensating rollbacks when a step raises a failure.</p>
 <pre><code class="language-python">import sys
 from typing import List, Callable, Dict, Any
@@ -236,7 +246,7 @@ if __name__ == &quot;__main__&quot;:
     if not success:
         sys.exit(1)</code></pre>
 <hr>
-<h2>Takeaways for System Designers</h2>
+<h2 id="takeaways-for-system-designers">Takeaways for System Designers</h2>
 <ul>
 <li><strong>Map out Sagas Explicitly</strong>: When designing multi-agent flows, always define a compensating rollback action for every forward API call that modifies state.</li>
 <li><strong>Orchestrate for observability</strong>: In agentic ecosystems, rely on an orchestrator to manage state transitions rather than choreographing them blindly across event systems.</li>
@@ -269,6 +279,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-distributed-transaction-dilemma" class="toc-link">The Distributed Transaction Dilemma</a></li>
+              <li class="toc-item toc-h2"><a href="#1-orchestration-based-vs-choreography-based-sagas" class="toc-link">1. Orchestration-Based vs. Choreography-Based Sagas</a></li>
+              <li class="toc-item toc-h2"><a href="#2-designing-idempotent-compensating-steps" class="toc-link">2. Designing Idempotent Compensating Steps</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-a-saga-orchestrator-in-python" class="toc-link">Implementing a Saga Orchestrator in Python</a></li>
+              <li class="toc-item toc-h2"><a href="#takeaways-for-system-designers" class="toc-link">Takeaways for System Designers</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

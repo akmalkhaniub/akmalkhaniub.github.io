@@ -104,6 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#sse-vs-websockets-choose-the-right-tool">SSE vs WebSockets: Choose the Right Tool</a></li>
+                <li><a href="#failure-1-nginx-doesnt-upgrade-to-websocket-protocol">Failure 1: Nginx Doesn't Upgrade to WebSocket Protocol</a></li>
+                <li><a href="#failure-2-phantom-disconnections-from-idle-proxy-timeouts">Failure 2: Phantom Disconnections from Idle Proxy Timeouts</a></li>
+                <li><a href="#failure-3-auth-token-expiry-mid-session">Failure 3: Auth Token Expiry Mid-Session</a></li>
+                <li><a href="#failure-4-message-backpressure-the-silent-data-drop">Failure 4: Message Backpressure — The Silent Data Drop</a></li>
+                <li><a href="#failure-5-broadcasting-to-many-clients-blocks-the-event-loop">Failure 5: Broadcasting to Many Clients Blocks the Event Loop</a></li>
+                <li><a href="#failure-6-close-codes-mean-something-dont-ignore-them">Failure 6: Close Codes Mean Something — Don't Ignore Them</a></li>
+                <li><a href="#failure-7-no-room-cleanup-memory-leak-on-disconnect">Failure 7: No Room Cleanup — Memory Leak on Disconnect</a></li>
+                <li><a href="#failure-8-aws-alb-cloudflare-dont-support-websockets-on-all-plans">Failure 8: AWS ALB / Cloudflare Don't Support WebSockets on All Plans</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +126,7 @@ Server-Sent Events handle 90% of LLM streaming use cases perfectly. But when you
 </div>
 </div>
 <hr>
-<h2>SSE vs WebSockets: Choose the Right Tool</h2>
+<h2 id="sse-vs-websockets-choose-the-right-tool">SSE vs WebSockets: Choose the Right Tool</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     Q1{Does the client&lt;br/&gt;send messages&lt;br/&gt;after connection?} --&gt;|No| SSE[✅ Use SSE&lt;br/&gt;Simpler, HTTP/2 multiplexed&lt;br/&gt;Auto-reconnect built in]
@@ -128,7 +143,7 @@ flowchart TD
 <p><strong>Use SSE for</strong>: LLM token streaming, one-way notifications, progress updates, server push
 <strong>Use WebSockets for</strong>: Chat apps, collaborative editors, agent-to-user tool call feedback, live dashboards with bidirectional controls</p>
 <hr>
-<h2>Failure 1: Nginx Doesn&#39;t Upgrade to WebSocket Protocol</h2>
+<h2 id="failure-1-nginx-doesnt-upgrade-to-websocket-protocol">Failure 1: Nginx Doesn&#39;t Upgrade to WebSocket Protocol</h2>
 <p><strong>Symptom</strong>: WebSocket handshake returns <code>400 Bad Request</code> or <code>101 Switching Protocols</code> never fires. Works on <code>localhost</code>, broken in production.</p>
 <p><strong>Root cause</strong>: WebSocket upgrades require specific HTTP headers that Nginx strips by default: <code>Connection: Upgrade</code> and <code>Upgrade: websocket</code>.</p>
 <pre><code class="language-nginx"># Standard proxy config — strips Upgrade headers
@@ -155,7 +170,7 @@ location /ws {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 }</code></pre>
 <hr>
-<h2>Failure 2: Phantom Disconnections from Idle Proxy Timeouts</h2>
+<h2 id="failure-2-phantom-disconnections-from-idle-proxy-timeouts">Failure 2: Phantom Disconnections from Idle Proxy Timeouts</h2>
 <p><strong>Symptom</strong>: WebSocket connections drop exactly every 60 seconds during idle periods. Clients see <code>1006 Abnormal Closure</code>. Active connections (frequent messages) never drop.</p>
 <p><strong>Root cause</strong>: Load balancers and proxies (AWS ALB default: 60s, Nginx default: 60s) close idle TCP connections. A WebSocket connection with no messages for 60s looks &quot;idle&quot; and gets terminated.</p>
 <p><strong>Fix — Implement heartbeat ping/pong:</strong></p>
@@ -260,7 +275,7 @@ async def websocket_endpoint(websocket: WebSocket):
     finally:
         heartbeat_task.cancel()</code></pre>
 <hr>
-<h2>Failure 3: Auth Token Expiry Mid-Session</h2>
+<h2 id="failure-3-auth-token-expiry-mid-session">Failure 3: Auth Token Expiry Mid-Session</h2>
 <p><strong>Symptom</strong>: User is connected for 2 hours. JWT expires. Next message returns <code>4001 Unauthorized</code>. User loses all session state and has to start over.</p>
 <p><strong>Root cause</strong>: JWTs passed during WebSocket handshake (via query param or cookie) are only validated once — at connection time. They&#39;re never re-checked mid-session. When they expire, the server has no mechanism to challenge the client.</p>
 <pre><code class="language-typescript">// ✅ Token refresh protocol over the WebSocket connection itself
@@ -323,7 +338,7 @@ class AuthenticatedWebSocket {
   }
 }</code></pre>
 <hr>
-<h2>Failure 4: Message Backpressure — The Silent Data Drop</h2>
+<h2 id="failure-4-message-backpressure-the-silent-data-drop">Failure 4: Message Backpressure — The Silent Data Drop</h2>
 <p><strong>Symptom</strong>: Under high load, some WebSocket messages are never delivered. No errors. The server log shows messages sent, client log shows fewer received.</p>
 <p><strong>Root cause</strong>: WebSocket <code>send()</code> is not inherently backpressure-aware. If you send messages faster than the client can consume them, the outgoing buffer fills up and messages are silently dropped once <code>bufferedAmount</code> exceeds the limit.</p>
 <pre><code class="language-typescript">// ❌ No backpressure — silently drops messages under load
@@ -358,7 +373,7 @@ async function streamResultsWithBackpressure(
   }
 }</code></pre>
 <hr>
-<h2>Failure 5: Broadcasting to Many Clients Blocks the Event Loop</h2>
+<h2 id="failure-5-broadcasting-to-many-clients-blocks-the-event-loop">Failure 5: Broadcasting to Many Clients Blocks the Event Loop</h2>
 <p><strong>Symptom</strong>: You have 500 connected WebSocket clients. When you broadcast a message, the server freezes for 200ms while iterating through all connections.</p>
 <pre><code class="language-typescript">// ❌ Synchronous broadcast — blocks event loop for large connection sets
 function broadcastAll(message: string) {
@@ -389,7 +404,7 @@ async function broadcastChunked(message: string, chunkSize = 50) {
   }
 }</code></pre>
 <hr>
-<h2>Failure 6: Close Codes Mean Something — Don&#39;t Ignore Them</h2>
+<h2 id="failure-6-close-codes-mean-something-dont-ignore-them">Failure 6: Close Codes Mean Something — Don&#39;t Ignore Them</h2>
 <p><strong>Symptom</strong>: Client reconnects strategy is too aggressive, causing reconnect storms on planned server maintenance.</p>
 <pre><code class="language-typescript">// ✅ Read the close code before deciding to reconnect
 const ws = new WebSocket('/ws');
@@ -440,7 +455,7 @@ function connect() {
   retryCount = 0; // Reset on successful open
 }</code></pre>
 <hr>
-<h2>Failure 7: No Room Cleanup — Memory Leak on Disconnect</h2>
+<h2 id="failure-7-no-room-cleanup-memory-leak-on-disconnect">Failure 7: No Room Cleanup — Memory Leak on Disconnect</h2>
 <p><strong>Symptom</strong>: Server memory grows linearly with total historical connections. After 24 hours, memory usage is 3× baseline.</p>
 <pre><code class="language-python"># Connections added but never removed on disconnect
 active_connections: dict[str, WebSocket] = {}
@@ -499,7 +514,7 @@ async def room_endpoint(websocket: WebSocket, room_id: str):
     finally:
         manager.disconnect(room_id, websocket)  # ← Always runs</code></pre>
 <hr>
-<h2>Failure 8: AWS ALB / Cloudflare Don&#39;t Support WebSockets on All Plans</h2>
+<h2 id="failure-8-aws-alb-cloudflare-dont-support-websockets-on-all-plans">Failure 8: AWS ALB / Cloudflare Don&#39;t Support WebSockets on All Plans</h2>
 <p><strong>Symptom</strong>: WebSocket works behind Nginx but breaks on AWS ALB or Cloudflare proxy.</p>
 <ul>
 <li><strong>AWS ALB</strong>: Supports WebSocket natively — but requires the target group protocol to be HTTP, not HTTPS. Ensure your EC2/ECS target accepts HTTP and the ALB handles TLS termination.</li>
@@ -528,7 +543,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
   return source;
 }</code></pre>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>WebSockets unlock true bidirectional real-time communication but bring a distinct set of production failure modes compared to SSE. The most dangerous are silent: dropped messages from buffer overflow, phantom disconnections from idle proxies, and memory leaks from missing disconnect cleanup.</p>
 <ul>
 <li><strong>Always implement heartbeats at 25-second intervals</strong> — most proxies and load balancers have 60-second idle timeouts. Heartbeats keep connections alive and detect dead clients.</li>
@@ -536,7 +551,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
 <li><strong>Clean up in <code>finally</code> blocks</strong> — every WebSocket <code>connect</code> must have a corresponding <code>disconnect</code> in a <code>finally</code> clause, or you will leak memory with every closed connection.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>MDN WebSocket API</strong>: <a href="https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code" target="_blank" rel="noopener">WebSocket close codes reference</a></li>
 <li><strong>RFC 6455</strong>: <a href="https://datatracker.ietf.org/doc/html/rfc6455" target="_blank" rel="noopener">The WebSocket Protocol specification</a></li>
@@ -569,6 +584,23 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#sse-vs-websockets-choose-the-right-tool" class="toc-link">SSE vs WebSockets: Choose the Right Tool</a></li>
+              <li class="toc-item toc-h2"><a href="#failure-1-nginx-doesnt-upgrade-to-websocket-protocol" class="toc-link">Failure 1: Nginx Doesn't Upgrade to WebSocket Protocol</a></li>
+              <li class="toc-item toc-h2"><a href="#failure-2-phantom-disconnections-from-idle-proxy-timeouts" class="toc-link">Failure 2: Phantom Disconnections from Idle Proxy Timeouts</a></li>
+              <li class="toc-item toc-h2"><a href="#failure-3-auth-token-expiry-mid-session" class="toc-link">Failure 3: Auth Token Expiry Mid-Session</a></li>
+              <li class="toc-item toc-h2"><a href="#failure-4-message-backpressure-the-silent-data-drop" class="toc-link">Failure 4: Message Backpressure — The Silent Data Drop</a></li>
+              <li class="toc-item toc-h2"><a href="#failure-5-broadcasting-to-many-clients-blocks-the-event-loop" class="toc-link">Failure 5: Broadcasting to Many Clients Blocks the Event Loop</a></li>
+              <li class="toc-item toc-h2"><a href="#failure-6-close-codes-mean-something-dont-ignore-them" class="toc-link">Failure 6: Close Codes Mean Something — Don't Ignore Them</a></li>
+              <li class="toc-item toc-h2"><a href="#failure-7-no-room-cleanup-memory-leak-on-disconnect" class="toc-link">Failure 7: No Room Cleanup — Memory Leak on Disconnect</a></li>
+              <li class="toc-item toc-h2"><a href="#failure-8-aws-alb-cloudflare-dont-support-websockets-on-all-plans" class="toc-link">Failure 8: AWS ALB / Cloudflare Don't Support WebSockets on All Plans</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

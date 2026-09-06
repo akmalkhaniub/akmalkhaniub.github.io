@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#under-the-hood-the-ppr-compiler-model">Under the Hood: The PPR Compiler Model</a></li>
+                <li><a href="#implementing-a-dynamic-product-page">Implementing a Dynamic Product Page</a></li>
+                <li><a href="#important-pitfalls-in-production">Important Pitfalls in Production</a></li>
+                <li><a href="#real-world-production-adoption">Real-World Production Adoption</a></li>
+              </ul>
+            </details>
 <p>In the battle between static and dynamic web rendering, developers have historically faced a binary compromise:</p>
 <ul>
 <li><strong>Static Site Generation (SSG)</strong>: Insanely fast Time to First Byte (TTFB) and robust CDN edge caching, but completely incapable of displaying real-time user-specific content.</li>
@@ -111,7 +120,7 @@
 </ul>
 <p><strong>Partial Prerendering (PPR)</strong> in Next.js 15/16 eliminates this compromise. It allows developers to compile a static, cached HTML layout shell containing nested dynamic holes that stream real-time data over a single connection as it resolves.</p>
 <hr>
-<h2>Under the Hood: The PPR Compiler Model</h2>
+<h2 id="under-the-hood-the-ppr-compiler-model">Under the Hood: The PPR Compiler Model</h2>
 <p>During the build process (<code>next build</code>), when PPR is enabled, the Next.js compiler analyzes the React Server Component (RSC) tree. </p>
 <p>It splits the component tree at every <strong>React Suspense Boundary</strong>:</p>
 <ol>
@@ -126,9 +135,9 @@
   E --&gt; F[React hydration inserts dynamic content into Suspense placeholders]</div>
 <p>When a user visits the URL, they receive the static HTML shell in under 15ms. In the background, the server continues executing dynamic DB queries and streams the resolved HTML snippets over the same connection using HTTP <code>transfer-encoding: chunked</code>.</p>
 <hr>
-<h2>Implementing a Dynamic Product Page</h2>
+<h2 id="implementing-a-dynamic-product-page">Implementing a Dynamic Product Page</h2>
 <p>Here is a real-world production implementation of an e-commerce product page utilizing PPR. The page structure includes static details (title, description) while streaming real-time elements (pricing, cart status, recommendations).</p>
-<h3>1. Main Page Layout (Static Shell)</h3>
+<h3 id="1-main-page-layout-static-shell">1. Main Page Layout (Static Shell)</h3>
 <pre><code class="language-typescript">import { Suspense } from 'react';
 import { ProductGallery, ProductDetails } from '@/components/product-static';
 import { RealtimePricing } from '@/components/pricing-dynamic';
@@ -171,7 +180,7 @@ export default async function ProductPage({ params }: PageProps) {
     &lt;/div&gt;
   );
 }</code></pre>
-<h3>2. Dynamic Segment Component (The Streamed Content)</h3>
+<h3 id="2-dynamic-segment-component-the-streamed-content">2. Dynamic Segment Component (The Streamed Content)</h3>
 <pre><code class="language-typescript">import { fetchPersonalizedPrice } from '@/lib/pricing-service';
 import { cookies } from 'next/headers';
 
@@ -201,7 +210,7 @@ export async function RealtimePricing({ slug }: PricingProps) {
   );
 }</code></pre>
 <hr>
-<h2>Important Pitfalls in Production</h2>
+<h2 id="important-pitfalls-in-production">Important Pitfalls in Production</h2>
 <p>While PPR provides massive UX improvements, developers must design layouts with specific guardrails:</p>
 <div class="alert alert-warning">
   <div class="alert-title"><i class="fa-solid fa-triangle-exclamation"></i> Warning</div>
@@ -214,7 +223,7 @@ export async function RealtimePricing({ slug }: PricingProps) {
 </div>
 </div>
 <hr>
-<h2>Real-World Production Adoption</h2>
+<h2 id="real-world-production-adoption">Real-World Production Adoption</h2>
 <p>Production dashboards and e-commerce platforms have adopted PPR to achieve sub-10ms TTFB while maintaining dynamic capabilities:</p>
 <ul>
 <li><strong>E-Commerce Detail Views</strong>: Pre-renders layout outlines, logos, footer maps, and description copy to CDNs, streaming real-time pricing and stock quantities on load.</li>
@@ -247,6 +256,17 @@ export async function RealtimePricing({ slug }: PricingProps) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#under-the-hood-the-ppr-compiler-model" class="toc-link">Under the Hood: The PPR Compiler Model</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-a-dynamic-product-page" class="toc-link">Implementing a Dynamic Product Page</a></li>
+              <li class="toc-item toc-h2"><a href="#important-pitfalls-in-production" class="toc-link">Important Pitfalls in Production</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-production-adoption" class="toc-link">Real-World Production Adoption</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

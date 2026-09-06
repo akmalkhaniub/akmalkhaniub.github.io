@@ -104,12 +104,21 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#lsm-tree-write-read-architecture">LSM-Tree Write &amp; Read Architecture</a></li>
+                <li><a href="#python-implementation-complete-lsm-tree-storage-engine">Python Implementation: Complete LSM-Tree Storage Engine</a></li>
+                <li><a href="#lsm-tree-compaction-gotchas-trade-offs">LSM-Tree Compaction Gotchas &amp; Trade-offs</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Relational databases traditionally use <strong>B+ Trees</strong> as their core storage engine architecture. While B+ Trees provide exceptional read performance, high-frequency random writes force page updates in arbitrary disk locations, leading to severe disk write amplification and I/O bottlenecks.</p>
 <p>To maximize write throughput on modern SSD and NVMe storage, high-performance databases (such as <strong>RocksDB</strong>, <strong>Cassandra</strong>, and <strong>CockroachDB</strong>) utilize <strong>Log-Structured Merge-trees (LSM-Trees)</strong>.</p>
 <p>By converting random write operations into sequential memory appends, LSM-Trees eliminate random disk I/O. In-memory data buffers (<strong>MemTables</strong>) are periodically flushed to immutable <strong>Sorted String Tables (SSTables)</strong> on disk, which are subsequently merged via background <strong>Compaction</strong> algorithms.</p>
 <p>This article details the low-level internals of LSM-Tree storage engines.</p>
 <hr>
-<h2>LSM-Tree Write &amp; Read Architecture</h2>
+<h2 id="lsm-tree-write-read-architecture">LSM-Tree Write &amp; Read Architecture</h2>
 <p>The write path vs read path execution flow in an LSM-Tree storage engine:</p>
 <div class="mermaid">graph TD
   A[Client Write Request] --&gt; B[Sequential Append: WAL Log]
@@ -130,7 +139,7 @@
   I --&gt;|Miss| K{Check Bloom Filter}
   K --&gt;|Negative| L[Return Key Not Found]
   K --&gt;|Positive| M[Binary Search SSTables]</div>
-<h3>Core LSM-Tree Components</h3>
+<h3 id="core-lsm-tree-components">Core LSM-Tree Components</h3>
 <ol>
 <li><strong>Write-Ahead Log (WAL)</strong>: Before mutating the in-memory MemTable, write operations append sequentially to disk WAL logs. If power drops, the WAL replays un-flushed entries into a fresh MemTable upon reboot.</li>
 <li><strong>MemTable</strong>: An in-memory sorted data structure (typically implemented via a SkipList or Red-Black Tree). Because keys are kept sorted in RAM, inserts and lookups execute in $O(\log N)$ time.</li>
@@ -139,7 +148,7 @@
 <li><strong>Leveled Compaction</strong>: Merges overlapping SSTable files from lower levels ($L_i$) into higher levels ($L_{i+1}$), purging duplicate keys, processing tombstones (deletions), and keeping read amplification low.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Complete LSM-Tree Storage Engine</h2>
+<h2 id="python-implementation-complete-lsm-tree-storage-engine">Python Implementation: Complete LSM-Tree Storage Engine</h2>
 <p>Here is a production-grade Python implementation of an LSM-Tree storage engine featuring a MemTable, disk SSTables, Bloom Filters, and background compaction:</p>
 <pre><code class="language-python">import os
 import math
@@ -270,7 +279,7 @@ if __name__ == &quot;__main__&quot;:
     lsm.get(&quot;user:102&quot;)
     lsm.get(&quot;user:999&quot;)  # Non-existent key</code></pre>
 <hr>
-<h2>LSM-Tree Compaction Gotchas &amp; Trade-offs</h2>
+<h2 id="lsm-tree-compaction-gotchas-trade-offs">LSM-Tree Compaction Gotchas &amp; Trade-offs</h2>
 <p>When operating LSM-tree engines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -283,7 +292,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams deploying LSM-tree engines report:</p>
 <ul>
 <li><strong>10x Higher Write Performance</strong>: Sequential disk writes achieve maximum physical hardware throughput on NVMe SSD drives.</li>
@@ -316,6 +325,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#lsm-tree-write-read-architecture" class="toc-link">LSM-Tree Write &amp; Read Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-complete-lsm-tree-storage-engine" class="toc-link">Python Implementation: Complete LSM-Tree Storage Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#lsm-tree-compaction-gotchas-trade-offs" class="toc-link">LSM-Tree Compaction Gotchas &amp; Trade-offs</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

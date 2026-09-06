@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#indexless-log-aggregation-architecture">Indexless Log Aggregation Architecture</a></li>
+                <li><a href="#python-implementation-indexless-log-aggregation-engine">Python Implementation: Indexless Log Aggregation Engine</a></li>
+                <li><a href="#indexless-log-engine-gotchas-best-practices">Indexless Log Engine Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When operating infrastructure ingesting terabytes or petabytes of application log lines per day, traditional full-text search engines (like <strong>Elasticsearch</strong> or <strong>Splunk</strong>) run into severe cost and write scalability ceilings.</p>
 <p>Elasticsearch builds a comprehensive inverted index for <em>every single token</em> across every log line. At petabyte scale:</p>
 <ol>
@@ -114,7 +123,7 @@
 <p>Instead of indexing every word, systems like Loki index <em>only</em> high-level stream metadata labels, storing raw logs in compressed chunk blocks and executing parallelized map-reduce grep operations during queries.</p>
 <p>This article details indexless log aggregation architecture and columnar chunk compression.</p>
 <hr>
-<h2>Indexless Log Aggregation Architecture</h2>
+<h2 id="indexless-log-aggregation-architecture">Indexless Log Aggregation Architecture</h2>
 <p>How Loki-style indexless log engines partition streams and execute parallel query scans:</p>
 <div class="mermaid">graph TD
   LogStream[&quot;Log Stream: 2026-08-18 10:00:00 [ERROR] Connection Timeout&quot;] --&gt; Ingestor[Log Ingestor Daemon]
@@ -137,7 +146,7 @@
     
     Worker1 &amp; Worker2 --&gt;|6. Merge Matching Lines| UserOutput[User Log Results Output]
   end</div>
-<h3>Core Indexless Log Engine Principles</h3>
+<h3 id="core-indexless-log-engine-principles">Core Indexless Log Engine Principles</h3>
 <ol>
 <li><strong>Stream Label Partitioning</strong>: Logs are grouped into distinct streams identified by a minimal set of key-value labels (e.g., <code>{app=&quot;frontend&quot;, environment=&quot;production&quot;}</code>). Only the stream labels are indexed in memory—the log message content itself is <em>never</em> tokenized or inverted.</li>
 <li><strong>Compressed Chunk Archiving</strong>: As log lines arrive, they are formatted and appended to active stream chunks. When a chunk reaches a size threshold (e.g. $2\text{ MB}$) or time limit (e.g. $2$ hours), it is compressed using high-speed algorithms (<strong>Snappy</strong> or <strong>ZSTD</strong>) and written to low-cost cloud object storage (AWS S3 or GCS).</li>
@@ -145,7 +154,7 @@
 <li><strong>Columnar Log Storage (ClickHouse)</strong>: For structured logs, columnar engines store each JSON log field (<code>status_code</code>, <code>response_time_ms</code>) in separate, contiguous disk blocks with dictionary encoding. Queries analyzing specific fields read <em>only</em> the target columns, skipping $95%$ of unneeded disk bytes.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Indexless Log Aggregation Engine</h2>
+<h2 id="python-implementation-indexless-log-aggregation-engine">Python Implementation: Indexless Log Aggregation Engine</h2>
 <p>Here is a production-grade Python implementation of an Indexless Log Aggregation Engine featuring Stream Label Sharding, Compressed Chunk Archiving, and Parallel Regexp Query Scanners:</p>
 <pre><code class="language-python">import re
 import zlib
@@ -275,7 +284,7 @@ if __name__ == &quot;__main__&quot;:
     for ts, msg in results:
         print(f&quot;   • [Match] {msg}&quot;)</code></pre>
 <hr>
-<h2>Indexless Log Engine Gotchas &amp; Best Practices</h2>
+<h2 id="indexless-log-engine-gotchas-best-practices">Indexless Log Engine Gotchas &amp; Best Practices</h2>
 <p>When designing petabyte-scale logging pipelines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -288,7 +297,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Log aggregation systems utilizing indexless compressed chunks (such as <strong>Grafana Loki</strong>) report:</p>
 <ul>
 <li><strong>Over 90% Storage Cost Reduction</strong>: Storing raw compressed log chunks on cloud object storage (S3) costs $10\times$ less than maintaining full-text inverted indexes on SSDs.</li>
@@ -321,6 +330,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#indexless-log-aggregation-architecture" class="toc-link">Indexless Log Aggregation Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-indexless-log-aggregation-engine" class="toc-link">Python Implementation: Indexless Log Aggregation Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#indexless-log-engine-gotchas-best-practices" class="toc-link">Indexless Log Engine Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

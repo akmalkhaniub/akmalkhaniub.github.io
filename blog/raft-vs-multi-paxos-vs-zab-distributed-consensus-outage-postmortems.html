@@ -104,6 +104,17 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-quorum-mechanics-the-state-machine-replication-paradigm">1. Quorum Mechanics &amp; The State Machine Replication Paradigm</a></li>
+                <li><a href="#2-architectural-comparison-raft-vs-multi-paxos-vs-zab">2. Architectural Comparison: Raft vs Multi-Paxos vs Zab</a></li>
+                <li><a href="#3-real-world-production-outage-post-mortems">3. Real-World Production Outage Post-Mortems</a></li>
+                <li><a href="#python-implementation-multi-node-raft-consensus-engine">Python Implementation: Multi-Node Raft Consensus Engine</a></li>
+                <li><a href="#summary-consensus-trade-offs">Summary: Consensus Trade-Offs</a></li>
+                <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+              </ul>
+            </details>
 <p>In distributed database architecture and cloud control planes (<strong>Kubernetes etcd</strong>, <strong>CockroachDB</strong>, <strong>Apache Kafka KRaft</strong>, <strong>Apache ZooKeeper</strong>, <strong>Google Spanner</strong>), achieving agreement across unreliable networks is the hardest problem in computer science.</p>
 <p>Under the <strong>FLP Impossibility Result</strong> (Fischer, Lynch, and Paterson, 1985), no deterministic asynchronous consensus protocol can guarantee both safety and liveness in the presence of even a single unannounced crash failure.</p>
 <p>To build fault-tolerant State Machine Replication (SMR) engines, modern distributed systems rely on three titan consensus algorithms:</p>
@@ -120,7 +131,7 @@
     Raft[&quot;Raft (2014)\n• Strong Leader / No Holes\n• Term-Based Quorum\n• Powering: etcd, CockroachDB, KRaft&quot;]
   end</div>
 <hr>
-<h2>1. Quorum Mechanics &amp; The State Machine Replication Paradigm</h2>
+<h2 id="1-quorum-mechanics-the-state-machine-replication-paradigm">1. Quorum Mechanics &amp; The State Machine Replication Paradigm</h2>
 <p>In a replicated state machine, an ensemble of $N$ nodes processes client commands.</p>
 <p>To tolerate $F$ node crash failures or network partitions without split-brain, the cluster requires a <strong>Majority Quorum ($Q$)</strong>:</p>
 <p>$$Q = \left\lfloor \frac{N}{2} \right\rfloor + 1 \quad ⟹ \quad N \ge 2F + 1$$</p>
@@ -132,7 +143,7 @@
 | 7         | 4 nodes             | 3 failures             | Global geo-distributed control planes  |
 </code></pre>
 <hr>
-<h2>2. Architectural Comparison: Raft vs Multi-Paxos vs Zab</h2>
+<h2 id="2-architectural-comparison-raft-vs-multi-paxos-vs-zab">2. Architectural Comparison: Raft vs Multi-Paxos vs Zab</h2>
 <pre><code class="language-plaintext">&gt; **CONSENSUS ALGORITHM COMPARISON MATRIX**
 | Dimension            | Multi-Paxos               | Raft                      | Zab (ZooKeeper)    |
 | Leader Model         | Weak / Settle-on-demand   | Strong (Log flows 1-way)  | Strong Primary     |
@@ -143,7 +154,7 @@
 | Primary Implementers | Google Spanner, Chubby    | etcd, CockroachDB, TiKV   | Apache ZooKeeper   |
 </code></pre>
 <hr>
-<h3>1. Multi-Paxos (Lamport)</h3>
+<h3 id="1-multi-paxos-lamport">1. Multi-Paxos (Lamport)</h3>
 <p>Basic Paxos requires <strong>two network round-trips</strong> per consensus decision:</p>
 <ul>
 <li><strong>Phase 1 (Prepare/Promise)</strong>: Proposer acquires leadership over slot $i$.</li>
@@ -154,7 +165,7 @@
 <li><em>The Multi-Paxos Complication</em>: Multi-Paxos allows logs to be committed with &quot;holes&quot; (Slot 4 commits before Slot 3). During leader failover, the new leader must execute complex reconciliation phase to fill missing holes before serving reads.</li>
 </ul>
 <hr>
-<h3>2. Raft (Ongaro &amp; Ousterhout)</h3>
+<h3 id="2-raft-ongaro-ousterhout">2. Raft (Ongaro &amp; Ousterhout)</h3>
 <p>Raft enforces a <strong>Strong Leader Invariant</strong>: log entries flow in strictly one direction from the Leader to Followers.</p>
 <ul>
 <li><strong>Log Matching Property</strong>: If two logs contain an entry with the same index and term, they are identical up to that index.</li>
@@ -179,7 +190,7 @@
   L--&gt;&gt;C: Write Succeeded (x = 100)
   L-&gt;&gt;F2: Heartbeat (Commit Index = 4)</div>
 <hr>
-<h3>3. Zab (ZooKeeper Atomic Broadcast)</h3>
+<h3 id="3-zab-zookeeper-atomic-broadcast">3. Zab (ZooKeeper Atomic Broadcast)</h3>
 <p>Zab is designed specifically for tree-structured state replication.</p>
 <ul>
 <li><strong>64-bit <code>zxid</code></strong>: Composed of a 32-bit <code>epoch</code> (incremented on every leader election) and a 32-bit <code>counter</code> (incremented for each transaction).</li>
@@ -190,21 +201,21 @@
 </li>
 </ul>
 <hr>
-<h2>3. Real-World Production Outage Post-Mortems</h2>
-<h3>Post-Mortem 1: The Kubernetes <code>etcd</code> Split-Brain Partition Thrash</h3>
+<h2 id="3-real-world-production-outage-post-mortems">3. Real-World Production Outage Post-Mortems</h2>
+<h3 id="post-mortem-1-the-kubernetes-etcd-split-brain-partition-thrash">Post-Mortem 1: The Kubernetes <code>etcd</code> Split-Brain Partition Thrash</h3>
 <ul>
 <li><strong>Incident</strong>: A network blip severed Node $A$ from the rest of a 3-node etcd cluster. Node $A$ immediately timed out, incremented its term number, and broadcasted <code>RequestVote</code>.</li>
 <li><strong>The Root Cause</strong>: Because Node $A$ had a higher term number, when the network healed, it forced the healthy leader to step down, triggering an unneeded cluster-wide election storm that disrupted the entire Kubernetes API server for 45 seconds.</li>
 <li><strong>The Fix: Raft Pre-Vote Phase</strong>: Before incrementing its term, a node enters an exploratory <strong>Pre-Vote phase</strong>. It only initiates a real election if a majority quorum confirms the current leader is unresponsive.</li>
 </ul>
-<h3>Post-Mortem 2: The CockroachDB Range Leaseholder Split-Brain</h3>
+<h3 id="post-mortem-2-the-cockroachdb-range-leaseholder-split-brain">Post-Mortem 2: The CockroachDB Range Leaseholder Split-Brain</h3>
 <ul>
 <li><strong>Incident</strong>: Under severe disk I/O saturation on NVMe drives, a CockroachDB node’s write-ahead log (WAL) sync stalled for 9 seconds.</li>
 <li><strong>The Root Cause</strong>: The Raft heartbeat timed out, causing the remaining quorum to elect a new leader. However, the stalled node resumed processing after its I/O stall and served stale reads before it discovered it had lost leadership.</li>
 <li><strong>The Fix: Read-Index &amp; Lease Verification</strong>: For linearizable reads without writing to disk, the leader queries the quorum to verify its lease before returning read results to clients.</li>
 </ul>
 <hr>
-<h2>Python Implementation: Multi-Node Raft Consensus Engine</h2>
+<h2 id="python-implementation-multi-node-raft-consensus-engine">Python Implementation: Multi-Node Raft Consensus Engine</h2>
 <p>Here is a Python implementation of a 3-node Raft consensus cluster with randomized election timeouts, vote coordination, and log entry quorum replication:</p>
 <pre><code class="language-python">import random
 import time
@@ -298,7 +309,7 @@ if __name__ == &quot;__main__&quot;:
     cluster[&quot;node-1&quot;].propose_command(&quot;SET user:101 = 'Alice'&quot;, cluster)
     cluster[&quot;node-1&quot;].propose_command(&quot;SET balance:101 = 5000&quot;, cluster)</code></pre>
 <hr>
-<h2>Summary: Consensus Trade-Offs</h2>
+<h2 id="summary-consensus-trade-offs">Summary: Consensus Trade-Offs</h2>
 <table>
 <thead>
 <tr>
@@ -334,7 +345,7 @@ if __name__ == &quot;__main__&quot;:
 </tr>
 </tbody></table>
 <hr>
-<h2>Architectural Takeaway</h2>
+<h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>Consensus algorithms are the bedrock upon which modern global software is built.</p>
 <p>Whether your architecture relies on <strong>Raft for strict operational clarity</strong>, <strong>Multi-Paxos for parallel multi-slot throughput</strong>, or <strong>Zab for pipelined hierarchical state</strong>, mastering quorum mechanics, pre-vote guards, and read-index leases is essential for building 99.999% resilient distributed platforms.</p>
 
@@ -364,6 +375,19 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-quorum-mechanics-the-state-machine-replication-paradigm" class="toc-link">1. Quorum Mechanics &amp; The State Machine Replication Paradigm</a></li>
+              <li class="toc-item toc-h2"><a href="#2-architectural-comparison-raft-vs-multi-paxos-vs-zab" class="toc-link">2. Architectural Comparison: Raft vs Multi-Paxos vs Zab</a></li>
+              <li class="toc-item toc-h2"><a href="#3-real-world-production-outage-post-mortems" class="toc-link">3. Real-World Production Outage Post-Mortems</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-multi-node-raft-consensus-engine" class="toc-link">Python Implementation: Multi-Node Raft Consensus Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#summary-consensus-trade-offs" class="toc-link">Summary: Consensus Trade-Offs</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

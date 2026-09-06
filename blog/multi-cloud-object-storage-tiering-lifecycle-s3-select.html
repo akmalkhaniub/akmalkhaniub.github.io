@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#multi-tier-lifecycle-zero-downtime-migration-architecture">Multi-Tier Lifecycle &amp; Zero-Downtime Migration Architecture</a></li>
+                <li><a href="#python-implementation-storage-tiering-s3-select-pushdown-engine">Python Implementation: Storage Tiering &amp; S3 Select Pushdown Engine</a></li>
+                <li><a href="#multi-cloud-tiering-gotchas-best-practices">Multi-Cloud Tiering Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In enterprise cloud infrastructure (<strong>AWS</strong>, <strong>Google Cloud</strong>, <strong>Cloudflare R2</strong>, <strong>MinIO</strong>), datasets grow exponentially year over year.</p>
 <p>Storing petabytes of historical logs, compliance backups, and analytical datalakes entirely in <strong>Hot Storage</strong> (e.g. AWS S3 Standard at $$23/\text{TB/month}$) creates massive cloud financial waste. Furthermore, cloud vendor egress fees lock enterprise data inside single proprietary platforms.</p>
 <p>To optimize storage expenditure and maintain data mobility, modern architectures deploy <strong>Automated Storage Tiering</strong> and <strong>Multi-Cloud Zero-Downtime Migration</strong>.</p>
 <p>By combining <strong>Lifecycle Rules</strong> (moving aged data from Hot → Cool → Deep Archive), <strong>Multi-Cloud Proxy Replicators</strong>, and <strong>S3 Select Pushdown Filtering</strong>, engineering teams slash storage costs by over <strong>$80%$</strong>.</p>
 <p>This article details storage class economics, automated lifecycle transition state machines, zero-downtime multi-cloud migration proxying, and S3 Select pushdown query execution.</p>
 <hr>
-<h2>Multi-Tier Lifecycle &amp; Zero-Downtime Migration Architecture</h2>
+<h2 id="multi-tier-lifecycle-zero-downtime-migration-architecture">Multi-Tier Lifecycle &amp; Zero-Downtime Migration Architecture</h2>
 <p>How automated lifecycle policies transition objects across storage tiers and how dual-write proxies migrate data across cloud providers without downtime:</p>
 <div class="mermaid">graph TD
   subgraph Automated Storage Class Lifecycle State Machine
@@ -124,7 +133,7 @@
     Proxy --&gt;|1. Read from New Target (Cloudflare R2)| TargetStore[Cloudflare R2 / MinIO (Zero Egress!)]
     TargetStore -.-&gt;|2. Fallback Miss: Fetch &amp; Replicate| SourceStore[AWS S3 Source Bucket]
   end</div>
-<h3>Core Object Storage Tiering Concepts</h3>
+<h3 id="core-object-storage-tiering-concepts">Core Object Storage Tiering Concepts</h3>
 <ol>
 <li><strong>Storage Class Economics &amp; Tradeoffs</strong>:<ul>
 <li><strong>Hot Storage (S3 Standard / MinIO NVMe)</strong>: High throughput, zero retrieval fees, $$23/\text{TB/month}$. Ideal for active database backups and frequently accessed assets.</li>
@@ -153,7 +162,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Storage Tiering &amp; S3 Select Pushdown Engine</h2>
+<h2 id="python-implementation-storage-tiering-s3-select-pushdown-engine">Python Implementation: Storage Tiering &amp; S3 Select Pushdown Engine</h2>
 <p>Here is a production-grade Python implementation of an Automated Storage Tiering State Machine and an S3 Select Pushdown Query Engine:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional
@@ -242,7 +251,7 @@ if __name__ == &quot;__main__&quot;:
     # 4. Attempt S3 Select Query on Deep Archive Object (Requires Restore!)
     engine.execute_s3_select_query(&quot;backup/db_2025.tar&quot;, sql_filter=&quot;raw&quot;)</code></pre>
 <hr>
-<h2>Multi-Cloud Tiering Gotchas &amp; Best Practices</h2>
+<h2 id="multi-cloud-tiering-gotchas-best-practices">Multi-Cloud Tiering Gotchas &amp; Best Practices</h2>
 <p>When engineering object storage tiering:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -255,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Multi-cloud tiering and S3 Select infrastructure (such as <strong>Netflix S3 Lifecycle</strong>, <strong>Cloudflare R2</strong>, and <strong>MinIO Multi-Cloud</strong>) report:</p>
 <ul>
 <li><strong>Over $80%$ Reduction in Monthly Cloud Storage Bills</strong>: Automatically moving 90-day-old logs to Glacier Deep Archive slashes cloud infrastructure costs.</li>
@@ -288,6 +297,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#multi-tier-lifecycle-zero-downtime-migration-architecture" class="toc-link">Multi-Tier Lifecycle &amp; Zero-Downtime Migration Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-storage-tiering-s3-select-pushdown-engine" class="toc-link">Python Implementation: Storage Tiering &amp; S3 Select Pushdown Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#multi-cloud-tiering-gotchas-best-practices" class="toc-link">Multi-Cloud Tiering Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

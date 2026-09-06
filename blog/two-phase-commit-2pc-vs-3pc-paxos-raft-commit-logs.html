@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#distributed-atomic-commit-architecture">Distributed Atomic Commit Architecture</a></li>
+                <li><a href="#python-implementation-2pc-coordinator-raft-consensus-replicator">Python Implementation: 2PC Coordinator &amp; Raft Consensus Replicator</a></li>
+                <li><a href="#distributed-transaction-gotchas-best-practices">Distributed Transaction Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In distributed database architecture (<strong>PostgreSQL Shards</strong>, <strong>Oracle RAC</strong>, <strong>CockroachDB</strong>, <strong>Google Spanner</strong>), executing multi-node ACID transactions requires <strong>Atomic Commitment Protocols</strong>.</p>
 <p>When a transaction spans multiple database shards, all participating nodes (Cohorts) must agree to either <strong>Commit</strong> the changes permanently or <strong>Abort</strong> them entirely.</p>
 <p>If a single shard commits while another aborts, the database enters an unrecoverable state of data corruption.</p>
@@ -112,7 +121,7 @@
 <p>While <strong>Three-Phase Commit (3PC)</strong> attempted to fix blocking, it fails under real-world network partitions. Modern cloud databases solve this by pairing 2PC with <strong>Paxos or Raft Consensus Replicated Transaction Logs</strong>.</p>
 <p>This article details 2PC Prepare/Commit phases, Coordinator blocking vulnerabilities, 3PC Pre-Commit states, network partition failures, and Paxos/Raft-backed transaction log replication.</p>
 <hr>
-<h2>Distributed Atomic Commit Architecture</h2>
+<h2 id="distributed-atomic-commit-architecture">Distributed Atomic Commit Architecture</h2>
 <p>How classic Two-Phase Commit (2PC) operates, its blocking flaw, and how Raft consensus groups make 2PC fault-tolerant:</p>
 <div class="mermaid">graph TD
   subgraph Classic Two-Phase Commit (2PC) Protocol
@@ -134,7 +143,7 @@
       RaftGroup -.-&gt;|Leader Dies -&gt; Auto Failover| NewLeader[New Raft Leader Resumes 2PC!]
     end
   end</div>
-<h3>Core Atomic Commitment Mechanics</h3>
+<h3 id="core-atomic-commitment-mechanics">Core Atomic Commitment Mechanics</h3>
 <ol>
 <li><strong>Classic Two-Phase Commit (2PC)</strong>:<ul>
 <li><strong>Phase 1 (Prepare / Voting)</strong>:<ol>
@@ -167,7 +176,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: 2PC Coordinator &amp; Raft Consensus Replicator</h2>
+<h2 id="python-implementation-2pc-coordinator-raft-consensus-replicator">Python Implementation: 2PC Coordinator &amp; Raft Consensus Replicator</h2>
 <p>Here is a production-grade Python implementation of a 2PC Transaction Coordinator integrated with a Raft-replicated state log:</p>
 <pre><code class="language-python">import time
 from typing import Dict, List, Optional
@@ -241,7 +250,7 @@ if __name__ == &quot;__main__&quot;:
     # 2. Failed Distributed Transaction (Cohort 3 Votes NO)
     engine.execute_2pc_transaction(txn_id=&quot;txn_1002&quot;, keys=[&quot;user_account_99&quot;], should_fail_cohort=&quot;shard_eu_central&quot;)</code></pre>
 <hr>
-<h2>Distributed Transaction Gotchas &amp; Best Practices</h2>
+<h2 id="distributed-transaction-gotchas-best-practices">Distributed Transaction Gotchas &amp; Best Practices</h2>
 <p>When engineering multi-shard database architectures:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -254,7 +263,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Consensus-backed atomic commit protocols (in <strong>Google Spanner</strong>, <strong>CockroachDB</strong>, and <strong>YugabyteDB</strong>) report:</p>
 <ul>
 <li><strong>Zero 2PC Lock Deadlocks on Coordinator Crashes</strong>: Replicating transaction coordinator state via Raft consensus allows instant leader failover without stalling database locks.</li>
@@ -287,6 +296,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#distributed-atomic-commit-architecture" class="toc-link">Distributed Atomic Commit Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-2pc-coordinator-raft-consensus-replicator" class="toc-link">Python Implementation: 2PC Coordinator &amp; Raft Consensus Replicator</a></li>
+              <li class="toc-item toc-h2"><a href="#distributed-transaction-gotchas-best-practices" class="toc-link">Distributed Transaction Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

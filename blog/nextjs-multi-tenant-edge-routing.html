@@ -104,11 +104,20 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#1-how-path-rewriting-works">1. How Path Rewriting Works</a></li>
+                <li><a href="#2-implementing-the-subdomain-middleware">2. Implementing the Subdomain Middleware</a></li>
+                <li><a href="#3-dynamic-app-folder-structure">3. Dynamic App Folder Structure</a></li>
+                <li><a href="#4-key-production-considerations">4. Key Production Considerations</a></li>
+              </ul>
+            </details>
 <p>In multi-tenant SaaS platforms (such as platforms like Vercel, Shopify, or link shorteners like <strong>Dub.co</strong>), routing user requests dynamically based on the requested domain or subdomain is a fundamental requirement. </p>
 <p>A user visiting <code>tenant1.yourplatform.com/dashboard</code> or a custom mapped domain like <code>mybrand.com/link</code> must see the content tailored to <code>tenant1</code> silently, without the browser performing a visible redirect or showing internal path modifications (like <code>/tenants/tenant1/link</code> in the address bar).</p>
 <p>In Next.js, this is achieved by designing a routing engine inside <code>middleware.ts</code> running on Vercel or Cloudflare <strong>Edge Runtime</strong>.</p>
 <hr>
-<h2>1. How Path Rewriting Works</h2>
+<h2 id="1-how-path-rewriting-works">1. How Path Rewriting Works</h2>
 <p>Unlike a redirect (which sends an HTTP 301/302 back to the browser and updates the URL bar), a <strong>rewrite</strong> is a server-side alias. The server intercepts the request and fetches the response from a different folder path internally while keeping the user&#39;s visible URL intact.</p>
 <pre><code class="language-plaintext">User visits:
 https://tenant-a.myplatform.com/dashboard
@@ -121,7 +130,7 @@ https://tenant-a.myplatform.com/dashboard
 Serves content internally from:
 /app/platforms/[tenantId]/dashboard/page.tsx</code></pre>
 <hr>
-<h2>2. Implementing the Subdomain Middleware</h2>
+<h2 id="2-implementing-the-subdomain-middleware">2. Implementing the Subdomain Middleware</h2>
 <p>Here is a production-ready <code>middleware.ts</code> topology. To keep request times under 15ms, we query a distributed <strong>Redis Key-Value store</strong> via REST requests instead of making heavy SQL database connections.</p>
 <pre><code class="language-typescript">// middleware.ts
 import { NextRequest, NextResponse } from &quot;next/server&quot;;
@@ -193,7 +202,7 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }</code></pre>
 <hr>
-<h2>3. Dynamic App Folder Structure</h2>
+<h2 id="3-dynamic-app-folder-structure">3. Dynamic App Folder Structure</h2>
 <p>To support the middleware rewrites, align your Next.js <code>/app</code> router file layout to match the target rewritten paths:</p>
 <pre><code class="language-text">/app
 ├── (marketing)           # Main website landing pages
@@ -210,14 +219,14 @@ export async function middleware(req: NextRequest) {
         │   └── page.tsx  # Renders tenant dashboard (e.g. tenant-a.com/dashboard)
         └── layout.tsx    # Shared theme/layout for this specific tenant</code></pre>
 <hr>
-<h2>4. Key Production Considerations</h2>
-<h3>A. Edge Runtime Compatibility</h3>
+<h2 id="4-key-production-considerations">4. Key Production Considerations</h2>
+<h3 id="a-edge-runtime-compatibility">A. Edge Runtime Compatibility</h3>
 <p>Next.js middleware runs on V8 isolates, meaning standard Node.js APIs (such as <code>net</code>, <code>child_process</code>, or raw TCP sockets for DB connections) are unavailable. When querying directories or config data:</p>
 <ul>
 <li><strong>DO:</strong> Use HTTP-based REST API requests (like Upstash Redis REST or Supabase HTTP API) to query data.</li>
 <li><strong>DO:</strong> Configure fetch cache intervals (<code>next: { revalidate }</code>) to cache domain mappings directly on Edge nodes, preventing database queries on every click.</li>
 </ul>
-<h3>B. Custom Domain SSL Handshakes</h3>
+<h3 id="b-custom-domain-ssl-handshakes">B. Custom Domain SSL Handshakes</h3>
 <p>If you allow users to point custom domains to your platform:</p>
 <ul>
 <li>You cannot handle SSL cert handshakes directly in Next.js middleware.</li>
@@ -250,6 +259,17 @@ export async function middleware(req: NextRequest) {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#1-how-path-rewriting-works" class="toc-link">1. How Path Rewriting Works</a></li>
+              <li class="toc-item toc-h2"><a href="#2-implementing-the-subdomain-middleware" class="toc-link">2. Implementing the Subdomain Middleware</a></li>
+              <li class="toc-item toc-h2"><a href="#3-dynamic-app-folder-structure" class="toc-link">3. Dynamic App Folder Structure</a></li>
+              <li class="toc-item toc-h2"><a href="#4-key-production-considerations" class="toc-link">4. Key Production Considerations</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

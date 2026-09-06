@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#lock-free-concurrency-the-aba-problem">Lock-Free Concurrency &amp; The ABA Problem</a></li>
+                <li><a href="#python-implementation-lock-free-treiber-stack-hazard-pointers">Python Implementation: Lock-Free Treiber Stack &amp; Hazard Pointers</a></li>
+                <li><a href="#lock-free-concurrency-gotchas-best-practices">Lock-Free Concurrency Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-concurrency systems programming (<strong>Linux Kernel</strong>, <strong>JVM</strong>, <strong>Rust Tokio</strong>, <strong>Database Storage Engines</strong>), multi-threaded worker threads process millions of items per second.</p>
 <p>Traditional <strong>Mutual Exclusion Locks (Mutexes)</strong> suffer from severe performance penalties:</p>
 <ul>
@@ -114,7 +123,7 @@
 <p>Powered by hardware <strong>Compare-And-Swap (CAS)</strong> atomic instructions, <strong>Tagged Pointers</strong>, and <strong>Hazard Pointers</strong>, lock-free algorithms guarantee system-wide progress even under intense thread contention.</p>
 <p>This article details CAS primitives, the Treiber Stack algorithm, the ABA Problem, Tagged Pointers, and Hazard Pointer safe memory reclamation.</p>
 <hr>
-<h2>Lock-Free Concurrency &amp; The ABA Problem</h2>
+<h2 id="lock-free-concurrency-the-aba-problem">Lock-Free Concurrency &amp; The ABA Problem</h2>
 <p>How atomic Compare-And-Swap (CAS) instructions operate, the ABA problem vulnerability, and Hazard Pointer memory safety:</p>
 <div class="mermaid">graph TD
   subgraph Compare-And-Swap (CAS) Loop
@@ -134,7 +143,7 @@
     CorruptedStack -.-&gt; Tagged[Tagged Pointer: Combine Pointer + Version Count]
     CorruptedStack -.-&gt; Hazard[Hazard Pointers: Defer Free until HP Array clear]
   end</div>
-<h3>Core Lock-Free Mechanics</h3>
+<h3 id="core-lock-free-mechanics">Core Lock-Free Mechanics</h3>
 <ol>
 <li><strong>Compare-And-Swap (CAS) Primitive</strong>:<ul>
 <li>Hardware atomic instruction (<code>lock cmpxchg</code> on x86, <code>LDAX/STLX</code> on ARM).</li>
@@ -161,7 +170,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Lock-Free Treiber Stack &amp; Hazard Pointers</h2>
+<h2 id="python-implementation-lock-free-treiber-stack-hazard-pointers">Python Implementation: Lock-Free Treiber Stack &amp; Hazard Pointers</h2>
 <p>Here is a production-grade Python implementation of a Lock-Free Treiber Stack with Tagged Pointers (ABA Mitigation) and a Hazard Pointer Memory Reclamation Engine:</p>
 <pre><code class="language-python">import time
 from typing import List, Optional, Tuple
@@ -286,7 +295,7 @@ if __name__ == &quot;__main__&quot;:
     hp_system.clear_hazard_pointer(thread_id=1)
     hp_system.retire_node(&quot;node_B&quot;)</code></pre>
 <hr>
-<h2>Lock-Free Concurrency Gotchas &amp; Best Practices</h2>
+<h2 id="lock-free-concurrency-gotchas-best-practices">Lock-Free Concurrency Gotchas &amp; Best Practices</h2>
 <p>When designing lock-free data structures:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -299,7 +308,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Lock-free algorithms (such as <strong>Java ConcurrentLinkedQueue</strong>, <strong>Rust crossbeam</strong>, and <strong>Linux Kernel lockless Ring Buffers</strong>) report:</p>
 <ul>
 <li><strong>Zero Thread Blocking</strong>: Worker threads never enter OS sleep/wake cycles, eliminating context switch overhead.</li>
@@ -332,6 +341,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#lock-free-concurrency-the-aba-problem" class="toc-link">Lock-Free Concurrency &amp; The ABA Problem</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-lock-free-treiber-stack-hazard-pointers" class="toc-link">Python Implementation: Lock-Free Treiber Stack &amp; Hazard Pointers</a></li>
+              <li class="toc-item toc-h2"><a href="#lock-free-concurrency-gotchas-best-practices" class="toc-link">Lock-Free Concurrency Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

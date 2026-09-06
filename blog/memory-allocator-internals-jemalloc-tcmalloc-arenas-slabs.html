@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#memory-allocator-architecture-thread-caches">Memory Allocator Architecture &amp; Thread Caches</a></li>
+                <li><a href="#python-implementation-thread-cache-memory-allocator-engine">Python Implementation: Thread-Cache Memory Allocator Engine</a></li>
+                <li><a href="#memory-allocator-gotchas-best-practices">Memory Allocator Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-concurrency systems infrastructure (<strong>Redis</strong>, <strong>RocksDB</strong>, <strong>MySQL</strong>, <strong>Rust Runtimes</strong>, <strong>Java HotSpot JVM</strong>), applications perform millions of dynamic memory allocations (<code>malloc()</code> / <code>free()</code>) per second.</p>
 <p>When running on multi-core servers (e.g. 128-core AMD EPYC machines), traditional C library memory allocators (such as glibc <strong><code>ptmalloc</code></strong>) suffer from severe <strong>Global Mutex Contention</strong>.</p>
 <p>When hundreds of concurrent worker threads request heap memory simultaneously, lock contention over shared heap arenas degrades multi-threaded CPU scaling.</p>
@@ -111,7 +120,7 @@
 <p>By deploying <strong>Thread-Local Caches (<code>tcache</code>)</strong>, <strong>Per-CPU Arenas</strong>, and <strong>Slab/Bin Size Classes</strong>, these allocators fulfill $99%$ of memory requests with <strong>zero lock overhead</strong>.</p>
 <p>This article details <code>ptmalloc</code> lock bottlenecks, <code>tcache</code> thread-local allocation, Per-CPU Arena scaling, Slab/Bin size classes, and Extent management.</p>
 <hr>
-<h2>Memory Allocator Architecture &amp; Thread Caches</h2>
+<h2 id="memory-allocator-architecture-thread-caches">Memory Allocator Architecture &amp; Thread Caches</h2>
 <p>How <code>jemalloc</code> and <code>tcmalloc</code> use Lock-Free Thread-Local Caches (<code>tcache</code>) and Per-CPU Arenas to bypass global allocation locks:</p>
 <div class="mermaid">graph TD
   subgraph Multi-Threaded Allocation Flow
@@ -127,7 +136,7 @@
     Arena1 --&gt; LargeExtents[&quot;Large Extents (4 KB - 4 MB Red-Black Tree Pages)&quot;]
     Arena1 --&gt; HugeExtents[&quot;Huge Allocations (&gt; 4 MB Direct mmap)&quot;]
   end</div>
-<h3>Core Memory Allocator Principles</h3>
+<h3 id="core-memory-allocator-principles">Core Memory Allocator Principles</h3>
 <ol>
 <li><strong>The Lock Contention Problem of Standard Allocators</strong>:<ul>
 <li>Standard glibc <code>ptmalloc</code> divides heap space into a small number of shared arenas.</li>
@@ -162,7 +171,7 @@
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Thread-Cache Memory Allocator Engine</h2>
+<h2 id="python-implementation-thread-cache-memory-allocator-engine">Python Implementation: Thread-Cache Memory Allocator Engine</h2>
 <p>Here is a production-grade Python implementation of a High-Throughput Memory Allocator featuring Lock-Free Thread Caches, Size Class Bins, and Arena Slabs:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional
 from pydantic import BaseModel
@@ -257,7 +266,7 @@ if __name__ == &quot;__main__&quot;:
     # 3. Thread #2 allocates independently from its own tcache
     ptr4 = allocator.allocate(thread_id=2, size_bytes=16)</code></pre>
 <hr>
-<h2>Memory Allocator Gotchas &amp; Best Practices</h2>
+<h2 id="memory-allocator-gotchas-best-practices">Memory Allocator Gotchas &amp; Best Practices</h2>
 <p>When configuring high-performance memory allocators:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -270,7 +279,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Modern high-performance allocators (such as <strong><code>jemalloc</code></strong> and <strong><code>tcmalloc</code></strong>) report:</p>
 <ul>
 <li><strong>Over $3\times$ Higher Multi-Core Allocation Throughput</strong>: Fulfilling small allocations from lock-free <code>tcache</code> arrays avoids glibc <code>ptmalloc</code> mutex lock bottlenecks.</li>
@@ -303,6 +312,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#memory-allocator-architecture-thread-caches" class="toc-link">Memory Allocator Architecture &amp; Thread Caches</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-thread-cache-memory-allocator-engine" class="toc-link">Python Implementation: Thread-Cache Memory Allocator Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#memory-allocator-gotchas-best-practices" class="toc-link">Memory Allocator Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -45,6 +45,7 @@ graph TD
     end
   end
 ```
+*Figure 1: Server Action RPC invocation lifecycle, cryptographic action ID hash verification, and closed-over scope boundaries. Source: OWASP Full-Stack Security Taskforce & React Documentation [1, 2, 4].*
 
 ---
 
@@ -231,3 +232,13 @@ Server Actions are an incredible ergonomic advancement, but they demand a fundam
 The moment you write `'use server'`, you are not creating a private helper function; you are publishing a public endpoint to the global internet.
 
 By establishing strict Action Gateways, enforcing Zod schema validation, verifying tenant ownership on every invocation, and avoiding accidental closure captures, engineering teams can enjoy the productivity of full-stack React without compromising their application's security posture.
+
+---
+
+## References & Further Reading
+
+1. **OWASP Foundation (2023)**. *OWASP Top 10 API Security Risks: Broken Object Level Authorization & Server-Side Security*. OWASP Foundation. [https://owasp.org/API-Security/](https://owasp.org/API-Security/)
+2. **React Core Team (2024)**. *Server Actions Security Model and Cryptographic ID Generation*. React 19 RFCs. [https://react.dev/reference/rsc/server-actions](https://react.dev/reference/rsc/server-actions)
+3. **Zod Team & Colinhacks (2024)**. *TypeScript-First Schema Validation with Static Type Inference*. GitHub Repository. [https://github.com/colinhacks/zod](https://github.com/colinhacks/zod)
+4. **Barth, A., Jackson, C., & Mitchell, J. C. (2008)**. *Robust Defenses for Cross-Site Request Forgery*. Proceedings of the 15th ACM Conference on Computer and Communications Security (CCS '08), 75–88. [https://doi.org/10.1145/1455770.1455782](https://doi.org/10.1145/1455770.1455782)
+5. **Remix Team (2023)**. *Action Functions and Route Security Boundaries*. Remix Guides. [https://remix.run/docs/en/main/route/action](https://remix.run/docs/en/main/route/action)

@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#service-mesh-control-plane-ebpf-data-plane-architecture">Service Mesh Control Plane &amp; eBPF Data Plane Architecture</a></li>
+                <li><a href="#python-implementation-service-mesh-xds-control-plane-traffic-splitter">Python Implementation: Service Mesh xDS Control Plane &amp; Traffic Splitter</a></li>
+                <li><a href="#service-mesh-gotchas-best-practices">Service Mesh Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>As monolithic applications decompose into hundreds of Kubernetes microservices, network communication between services becomes the central backbone of the platform.</p>
 <p>Hardcoding network policies, mutual TLS (mTLS) encryption, traffic shifting (canary deployments), and distributed tracing context propagation directly into application microservice code leads to massive code duplication and maintenance friction across diverse programming languages.</p>
 <p>To decouple networking concerns from application logic, modern cloud architectures deploy a <strong>Service Mesh</strong> (such as <strong>Istio</strong>, <strong>Linkerd</strong>, and <strong>Cilium</strong>).</p>
 <p>A Service Mesh splits microservice networking into an out-of-process <strong>Data Plane</strong> (using <strong>Envoy Proxy</strong> sidecars or kernel <strong>eBPF</strong> acceleration) and a centralized <strong>Control Plane</strong> (using the <strong>xDS protocol</strong>).</p>
 <p>This article details Envoy xDS configuration streaming, mTLS certificate management, and eBPF kernel socket layer bypass mechanics.</p>
 <hr>
-<h2>Service Mesh Control Plane &amp; eBPF Data Plane Architecture</h2>
+<h2 id="service-mesh-control-plane-ebpf-data-plane-architecture">Service Mesh Control Plane &amp; eBPF Data Plane Architecture</h2>
 <p>How the Service Mesh Control Plane manages traffic routing and mTLS via Envoy sidecars and eBPF kernel sockets:</p>
 <div class="mermaid">graph TD
   subgraph Service Mesh Control Plane (Istiod)
@@ -131,7 +140,7 @@
   subgraph Data Plane: Kubernetes Pod B
     Sidecar2 --&gt;|6. Inbound mTLS Decrypted Traffic| AppB[Microservice B Container]
   end</div>
-<h3>Core Service Mesh Principles</h3>
+<h3 id="core-service-mesh-principles">Core Service Mesh Principles</h3>
 <ol>
 <li><strong>Sidecar Architecture</strong>: In traditional sidecar service meshes (Istio), an <strong>Envoy Proxy</strong> daemon container is injected into every Kubernetes Pod. <code>iptables</code> rules redirect all incoming and outgoing pod TCP traffic through Envoy, applying routing rules and mTLS encryption transparently without altering application code.</li>
 <li><strong>Dynamic xDS Protocol</strong>: Envoy proxies do not rely on static configuration files. They connect to the Control Plane via gRPC streaming APIs (<strong>xDS</strong>):<ul>
@@ -145,7 +154,7 @@
 <li><strong>eBPF-Powered Sidecar Acceleration (Cilium)</strong>: Traditional sidecar proxies force network packets to travel up and down the OS TCP/IP stack twice (Pod App → OS Stack → Envoy → OS Stack → Wire), incurring CPU and latency overhead. <strong>eBPF <code>sockmap</code></strong> programs intercept TCP sockets directly at the socket layer in the kernel, transferring memory buffers between sockets in zero-copy mode.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Service Mesh xDS Control Plane &amp; Traffic Splitter</h2>
+<h2 id="python-implementation-service-mesh-xds-control-plane-traffic-splitter">Python Implementation: Service Mesh xDS Control Plane &amp; Traffic Splitter</h2>
 <p>Here is a production-grade Python implementation of a Service Mesh xDS Control Plane and Weight-Based Canary Traffic Splitter Engine:</p>
 <pre><code class="language-python">import random
 from typing import Dict, List, Tuple
@@ -220,7 +229,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Routed to v1 (Stable): {v1_count} requests ({v1_count*10}%)&quot;)
     print(f&quot;   • Routed to v2 (Canary): {v2_count} requests ({v2_count*10}%)&quot;)</code></pre>
 <hr>
-<h2>Service Mesh Gotchas &amp; Best Practices</h2>
+<h2 id="service-mesh-gotchas-best-practices">Service Mesh Gotchas &amp; Best Practices</h2>
 <p>When deploying a Service Mesh:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -233,7 +242,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Platforms adopting Service Meshes (such as <strong>Istio</strong> and <strong>Cilium</strong>) report:</p>
 <ul>
 <li><strong>Zero-Trust Security Alignment</strong>: Automated mTLS and SPIFFE identities encrypt 100% of internal microservice traffic with dynamic certificate rotation.</li>
@@ -266,6 +275,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#service-mesh-control-plane-ebpf-data-plane-architecture" class="toc-link">Service Mesh Control Plane &amp; eBPF Data Plane Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-service-mesh-xds-control-plane-traffic-splitter" class="toc-link">Python Implementation: Service Mesh xDS Control Plane &amp; Traffic Splitter</a></li>
+              <li class="toc-item toc-h2"><a href="#service-mesh-gotchas-best-practices" class="toc-link">Service Mesh Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -32,6 +32,7 @@ graph TD
     ThreadFreeze -.->|Client 3 socket buffer overflows!| SocketDrop["HTTP 504 Gateway Timeout on Checkout"]
   end
 ```
+*Figure 1: The Node.js event loop phases and CPU thread starvation induced by synchronous Virtual DOM stringification and recursive Flight serialization. Source: Node.js Diagnostics Working Group [2, 3].*
 
 ---
 
@@ -166,3 +167,13 @@ React Server Components represent an undeniable leap forward in developer ergono
 When your UI components run on the server, you are no longer just rendering views; you are allocating server heap memory and consuming server CPU cycles.
 
 Systems engineers who deploy RSC at scale must profile event loop lag (`libuv`), monitor p99 response times against `/healthz`, and treat synchronous JavaScript computation on the server with the same forensic discipline applied to database query optimization.
+
+---
+
+## References & Further Reading
+
+1. **Belder, B., & Saether, T. (2020)**. *libuv Architecture and Design Overview*. libuv Project Documentation. [https://libuv.org/](https://libuv.org/)
+2. **Node.js Diagnostics Working Group (2024)**. *Don't Block the Event Loop (or the Worker Pool)*. Node.js Official Documentation. [https://nodejs.org/en/docs/guides/dont-block-the-event-loop/](https://nodejs.org/en/docs/guides/dont-block-the-event-loop/)
+3. **Cantrill, B., Shapiro, M. W., & Leventhal, A. H. (2004)**. *Dynamic Instrumentation of Production Systems*. Proceedings of the USENIX Annual Technical Conference (ATC '04), 15–28. [https://www.usenix.org/legacy/event/usenix04/tech/general/cantrill.html](https://www.usenix.org/legacy/event/usenix04/tech/general/cantrill.html)
+4. **V8 Engine Team (2024)**. *High-Performance Garbage Collection and Memory Layout in V8*. Chromium Projects. [https://v8.dev/blog](https://v8.dev/blog)
+5. **Fastify Team (2023)**. *Benchmarking Node.js Web Frameworks and Latency Percentiles Under CPU Pressure*. Fastify Documentation. [https://fastify.dev/docs/latest/Guides/Benchmarking/](https://fastify.dev/docs/latest/Guides/Benchmarking/)

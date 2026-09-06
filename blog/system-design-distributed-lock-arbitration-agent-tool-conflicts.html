@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-race-condition-hazard-in-swarms">The Race Condition Hazard in Swarms</a></li>
+                <li><a href="#1-acquiring-leases-with-fencing-tokens">1. Acquiring Leases with Fencing Tokens</a></li>
+                <li><a href="#2-validating-resource-write-mutations">2. Validating Resource Write Mutations</a></li>
+                <li><a href="#code-demo-distributed-lock-arbitrator">Code Demo: Distributed Lock Arbitrator</a></li>
+                <li><a href="#lock-arbitration-takeaways">Lock Arbitration Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ When multi-agent systems run concurrent execution loops, worker nodes frequently
 </div>
 </div>
 <hr>
-<h2>The Race Condition Hazard in Swarms</h2>
+<h2 id="the-race-condition-hazard-in-swarms">The Race Condition Hazard in Swarms</h2>
 <p>In uncoordinated multi-agent networks:</p>
 <ul>
 <li><strong>The Simultaneous Mutation Trap</strong>: Worker Agent A reads user balance $100 while Worker Agent B reads balance $100 concurrently. Both write updated values based on initial state, causing lost updates.</li>
@@ -131,21 +141,21 @@ flowchart TD
     Lease1 --&gt;|Write Mutation + Token 101| Storage[(Target Resource DB)]
     Storage --&gt;|Verify Token 101 &gt; Last Token 100| Commit[Commit Transaction]</div>
 <hr>
-<h2>1. Acquiring Leases with Fencing Tokens</h2>
+<h2 id="1-acquiring-leases-with-fencing-tokens">1. Acquiring Leases with Fencing Tokens</h2>
 <p>To manage lock leases safely:</p>
 <ul>
 <li><strong>Acquire Atomic Leases</strong>: Set a key with Time-To-Live (TTL) expiration using atomic store operations (<code>SETNX</code> in Redis).</li>
 <li><strong>Increment Fencing Tokens</strong>: Generate an auto-incrementing integer sequence for every granted lock.</li>
 </ul>
 <hr>
-<h2>2. Validating Resource Write Mutations</h2>
+<h2 id="2-validating-resource-write-mutations">2. Validating Resource Write Mutations</h2>
 <p>The storage target validates incoming lock tokens:</p>
 <ol>
 <li><strong>Compare Fencing Tokens</strong>: Reject any mutation request whose fencing token is less than or equal to the last recorded token.</li>
 <li><strong>Release Leases Atomically</strong>: Ensure lease releases verify lock ownership using Lua scripts or CAS (Compare-And-Swap) operations.</li>
 </ol>
 <hr>
-<h2>Code Demo: Distributed Lock Arbitrator</h2>
+<h2 id="code-demo-distributed-lock-arbitrator">Code Demo: Distributed Lock Arbitrator</h2>
 <p>Below is a Python implementation of a distributed lock arbitrator. It manages TTL leases, issues incremental fencing tokens, and rejects stale write operations.</p>
 <pre><code class="language-python">import time
 from typing import Dict, Any, Tuple, Optional
@@ -209,7 +219,7 @@ if __name__ == &quot;__main__&quot;:
     # 4. Simulate stale Agent attempt with old token (Rejected)
     arbitrator.execute_resource_mutation(&quot;db_user_101&quot;, fencing_token=100, mutation_data=&quot;UPDATE status = 'STALE'&quot;)</code></pre>
 <hr>
-<h2>Lock Arbitration Takeaways</h2>
+<h2 id="lock-arbitration-takeaways">Lock Arbitration Takeaways</h2>
 <ul>
 <li><strong>Enforce Monotonic Fencing Tokens</strong>: Always attach auto-incrementing integer fencing tokens to lock leases.</li>
 <li><strong>Validate Tokens at Storage Targets</strong>: Reject write requests if the provided fencing token is older than the last applied token.</li>
@@ -242,6 +252,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-race-condition-hazard-in-swarms" class="toc-link">The Race Condition Hazard in Swarms</a></li>
+              <li class="toc-item toc-h2"><a href="#1-acquiring-leases-with-fencing-tokens" class="toc-link">1. Acquiring Leases with Fencing Tokens</a></li>
+              <li class="toc-item toc-h2"><a href="#2-validating-resource-write-mutations" class="toc-link">2. Validating Resource Write Mutations</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-distributed-lock-arbitrator" class="toc-link">Code Demo: Distributed Lock Arbitrator</a></li>
+              <li class="toc-item toc-h2"><a href="#lock-arbitration-takeaways" class="toc-link">Lock Arbitration Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

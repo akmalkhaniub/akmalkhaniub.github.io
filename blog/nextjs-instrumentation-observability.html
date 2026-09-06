@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-bootstrapping-lifecycle">The Bootstrapping Lifecycle</a></li>
+                <li><a href="#bootstrapping-opentelemetry-loading-secrets">Bootstrapping OpenTelemetry &amp; Loading Secrets</a></li>
+                <li><a href="#important-pitfalls-in-production">Important Pitfalls in Production</a></li>
+                <li><a href="#real-world-production-adoption">Real-World Production Adoption</a></li>
+              </ul>
+            </details>
 <p>In cloud architectures, monitoring high-throughput applications is essential for diagnosing production failures. While standard APIs (like logging middleware) work in traditional monoliths, serverless and edge environments present unique monitoring challenges:</p>
 <ul>
 <li><strong>Serverless Boot Strapping</strong>: Cold starts launch isolated runtimes on request. There was historically no built-in, unified way in Next.js to initialize monitoring utilities before routing requests.</li>
@@ -111,7 +120,7 @@
 </ul>
 <p>The stabilization of the <strong><code>instrumentation.ts</code></strong> file in Next.js 15/16 solves these bootstrapping issues. It provides a native, standardized entry point to initialize third-party telemetry, register error reporters, and load environment secrets <em>once</em> during server startup.</p>
 <hr>
-<h2>The Bootstrapping Lifecycle</h2>
+<h2 id="the-bootstrapping-lifecycle">The Bootstrapping Lifecycle</h2>
 <p>The <code>instrumentation.ts</code> file is located at the root of the project (or inside <code>/src/</code>). When Next.js compiles the server bundle, it executes the <code>register()</code> function exported by this file before handling any requests:</p>
 <div class="mermaid">sequenceDiagram
   participant Host as Docker / Serverless Engine
@@ -129,9 +138,9 @@
   Next-&gt;&gt;Page: Begin accepting User Connections</div>
 <p>Because <code>register()</code> runs once on startup across both Node.js and Edge runtimes, it is the ideal location to initialize monitoring and load critical application secrets.</p>
 <hr>
-<h2>Bootstrapping OpenTelemetry &amp; Loading Secrets</h2>
+<h2 id="bootstrapping-opentelemetry-loading-secrets">Bootstrapping OpenTelemetry &amp; Loading Secrets</h2>
 <p>Here is a production-grade implementation of <code>instrumentation.ts</code> that loads API secrets from an external vault on server boot and registers OpenTelemetry tracing.</p>
-<h3>1. The Instrumentation Configuration (<code>instrumentation.ts</code>)</h3>
+<h3 id="1-the-instrumentation-configuration-instrumentationts">1. The Instrumentation Configuration (<code>instrumentation.ts</code>)</h3>
 <pre><code class="language-typescript">/**
  * Global Next.js boot hook.
  * Executes once when the server process starts up.
@@ -157,7 +166,7 @@ export async function register() {
     // Initialize Edge-compatible monitors (e.g. Honeycomb/Logflare)
   }
 }</code></pre>
-<h3>2. The Secret Vault Loader (<code>lib/secrets-vault.ts</code>)</h3>
+<h3 id="2-the-secret-vault-loader-libsecrets-vaultts">2. The Secret Vault Loader (<code>lib/secrets-vault.ts</code>)</h3>
 <pre><code class="language-typescript">/**
  * Mock Secrets Loader mimicking AWS Secrets Manager / HashiCorp Vault.
  */
@@ -177,7 +186,7 @@ export async function loadSecrets() {
   
   console.log('[Vault] Database secrets loaded successfully.');
 }</code></pre>
-<h3>3. The OpenTelemetry Tracer (<code>lib/otel-node.ts</code>)</h3>
+<h3 id="3-the-opentelemetry-tracer-libotel-nodets">3. The OpenTelemetry Tracer (<code>lib/otel-node.ts</code>)</h3>
 <pre><code class="language-typescript">import { NodeSDK } from '@opentelemetry/sdk-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { Resource } from '@opentelemetry/resources';
@@ -213,7 +222,7 @@ export function initializeOtel() {
   });
 }</code></pre>
 <hr>
-<h2>Important Pitfalls in Production</h2>
+<h2 id="important-pitfalls-in-production">Important Pitfalls in Production</h2>
 <p>When writing bootstrapping logic, keep execution footprints minimal:</p>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
@@ -226,7 +235,7 @@ export function initializeOtel() {
 </div>
 </div>
 <hr>
-<h2>Real-World Production Adoption</h2>
+<h2 id="real-world-production-adoption">Real-World Production Adoption</h2>
 <p>High-traffic portals utilize <code>instrumentation.ts</code> to manage tracing:</p>
 <ul>
 <li><strong>Trace Verification</strong>: Tracing software (such as Langfuse or Datadog) registers spans on server launch, allowing developers to monitor route latency.</li>
@@ -259,6 +268,17 @@ export function initializeOtel() {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-bootstrapping-lifecycle" class="toc-link">The Bootstrapping Lifecycle</a></li>
+              <li class="toc-item toc-h2"><a href="#bootstrapping-opentelemetry-loading-secrets" class="toc-link">Bootstrapping OpenTelemetry &amp; Loading Secrets</a></li>
+              <li class="toc-item toc-h2"><a href="#important-pitfalls-in-production" class="toc-link">Important Pitfalls in Production</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-production-adoption" class="toc-link">Real-World Production Adoption</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-book"></i> Book Chapters</h4>
           <div class="ebook-sidebar-scroll">

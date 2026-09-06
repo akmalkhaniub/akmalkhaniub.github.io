@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#semantic-vs-lexical-match-bottlenecks">Semantic vs. Lexical Match Bottlenecks</a></li>
+                <li><a href="#1-under-the-hood-reciprocal-rank-fusion-rrf">1. Under the Hood: Reciprocal Rank Fusion (RRF)</a></li>
+                <li><a href="#2-decoupling-the-search-pipeline">2. Decoupling the Search Pipeline</a></li>
+                <li><a href="#code-demo-reciprocal-rank-fusion-merger">Code Demo: Reciprocal Rank Fusion Merger</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Vector similarity search is a powerful tool for matching semantic concepts, but 
 </div>
 </div>
 <hr>
-<h2>Semantic vs. Lexical Match Bottlenecks</h2>
+<h2 id="semantic-vs-lexical-match-bottlenecks">Semantic vs. Lexical Match Bottlenecks</h2>
 <p>A production-grade documentation search must handle:</p>
 <ul>
 <li><strong>The Synonym Problem</strong>: A user searches for &quot;database updates,&quot; but the documentation uses the term &quot;schema migrations.&quot; Vector search excels here.</li>
@@ -130,7 +140,7 @@ flowchart TD
     Calc --&gt; Sort[Sort Chunks by Combined Score]
     Sort --&gt; Return[Return Top-K Relevancy Segments]</div>
 <hr>
-<h2>1. Under the Hood: Reciprocal Rank Fusion (RRF)</h2>
+<h2 id="1-under-the-hood-reciprocal-rank-fusion-rrf">1. Under the Hood: Reciprocal Rank Fusion (RRF)</h2>
 <p>RRF is a simple yet effective rank-merging algorithm:
 $$RRF_Score(d \in D) = \sum_{m \in M} \frac{1}{k + r_m(d)}$$</p>
 <ul>
@@ -139,14 +149,14 @@ $$RRF_Score(d \in D) = \sum_{m \in M} \frac{1}{k + r_m(d)}$$</p>
 <li>$k$: A constant parameter (typically set to <code>60</code>) that controls how heavily top-ranked documents are prioritized.</li>
 </ul>
 <hr>
-<h2>2. Decoupling the Search Pipeline</h2>
+<h2 id="2-decoupling-the-search-pipeline">2. Decoupling the Search Pipeline</h2>
 <p>To prevent latency bottlenecks:</p>
 <ol>
 <li><strong>Parallel Execution</strong>: Execute the sparse and dense search queries concurrently using asynchronous threads.</li>
 <li><strong>Standardize Document IDs</strong>: Ensure both index stores use unified document keys to merge scores correctly.</li>
 </ol>
 <hr>
-<h2>Code Demo: Reciprocal Rank Fusion Merger</h2>
+<h2 id="code-demo-reciprocal-rank-fusion-merger">Code Demo: Reciprocal Rank Fusion Merger</h2>
 <p>Below is a Python implementation of a hybrid search rank-merger. It takes mock search result lists from BM25 and vector retrievers, calculates RRF scores, and returns a sorted list of top matches.</p>
 <pre><code class="language-python">import json
 from typing import Dict, List, Tuple
@@ -199,7 +209,7 @@ if __name__ == &quot;__main__&quot;:
     for rank, (doc_id, score) in enumerate(merged_ranks, 1):
         print(f&quot;Rank {rank}: {doc_id} (RRF Combined Score: {score:.5f})&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Set Constant k</strong>: Configure your RRF constant $k$ near <code>60</code> to balance scores between high lexical matches and semantic matches.</li>
 <li><strong>Isolate Query Runtimes</strong>: Run sparse and dense queries concurrently using async task wrappers to minimize search latencies.</li>
@@ -232,6 +242,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#semantic-vs-lexical-match-bottlenecks" class="toc-link">Semantic vs. Lexical Match Bottlenecks</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-reciprocal-rank-fusion-rrf" class="toc-link">1. Under the Hood: Reciprocal Rank Fusion (RRF)</a></li>
+              <li class="toc-item toc-h2"><a href="#2-decoupling-the-search-pipeline" class="toc-link">2. Decoupling the Search Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-reciprocal-rank-fusion-merger" class="toc-link">Code Demo: Reciprocal Rank Fusion Merger</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

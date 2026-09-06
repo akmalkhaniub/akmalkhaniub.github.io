@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#blob-engine-architecture-inode-bottleneck-vs-volume-files">Blob Engine Architecture: Inode Bottleneck vs Volume Files</a></li>
+                <li><a href="#python-implementation-bitcask-seaweedfs-append-only-engine">Python Implementation: Bitcask / SeaweedFS Append-Only Engine</a></li>
+                <li><a href="#blob-storage-gotchas-best-practices">Blob Storage Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In social networks, e-commerce platforms, and messaging applications (<strong>Facebook</strong>, <strong>Instagram</strong>, <strong>Uber</strong>, <strong>LinkedIn</strong>), applications store billions of small files—such as user avatars, profile photos, receipts, and audio snippets ($10\text{ KB}$ to $500\text{ KB}$).</p>
 <p>Storing billions of small files in traditional POSIX filesystems (<strong>ext4</strong>, <strong>XFS</strong>) leads to severe performance degradation:</p>
 <ul>
@@ -114,7 +123,7 @@
 <p>Pioneered by <strong>Facebook Haystack</strong>, <strong>SeaweedFS</strong>, and <strong>Riak Bitcask</strong>, these engines bundle millions of small files sequentially into massive, append-only <strong>Volume Files</strong> managed by lightweight in-memory offset indexes.</p>
 <p>This article details the POSIX inode bottleneck, append-only volume files, in-memory KeyDir indexing, single-seek <code>pread()</code> operations, and background volume compaction.</p>
 <hr>
-<h2>Blob Engine Architecture: Inode Bottleneck vs Volume Files</h2>
+<h2 id="blob-engine-architecture-inode-bottleneck-vs-volume-files">Blob Engine Architecture: Inode Bottleneck vs Volume Files</h2>
 <p>How Facebook Haystack and Bitcask replace POSIX directory trees with single-seek Append-Only Volume Files:</p>
 <div class="mermaid">graph TD
   subgraph Traditional POSIX Filesystem Bottleneck (ext4 / XFS)
@@ -128,7 +137,7 @@
     BlobReq[Read Photo ID 1042] --&gt;|1. O(1) RAM Lookup| KeyDir[&quot;In-Memory KeyDir: File #3 | Offset: 0x0F40 | Size: 16 KB&quot;]
     KeyDir --&gt;|2. Issue pread() at Exact Offset| SingleSeek[&quot;🎯 Single Disk Seek on Volume File #3 (1 Seek!)&quot;]
   end</div>
-<h3>Core Blob Storage Mechanics</h3>
+<h3 id="core-blob-storage-mechanics">Core Blob Storage Mechanics</h3>
 <ol>
 <li><strong>The Small-File Inode Problem</strong>:<ul>
 <li>Standard filesystems allocate metadata (permissions, timestamps, block pointers) in $512\text{-byte}$ or $1\text{ KB}$ <strong>Inodes</strong>.</li>
@@ -154,7 +163,7 @@ $$\text{KeyDir Map}: \text{Key} \longrightarrow \langle \text{Volume_ID}, \text{
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Bitcask / SeaweedFS Append-Only Engine</h2>
+<h2 id="python-implementation-bitcask-seaweedfs-append-only-engine">Python Implementation: Bitcask / SeaweedFS Append-Only Engine</h2>
 <p>Here is a production-grade Python implementation of an Append-Only Blob Storage Engine with an In-Memory KeyDir Index and Volume Compaction:</p>
 <pre><code class="language-python">import io
 import time
@@ -264,7 +273,7 @@ if __name__ == &quot;__main__&quot;:
     # 4. Verify Read after Compaction
     engine.get_blob(&quot;user102_avatar.jpg&quot;)</code></pre>
 <hr>
-<h2>Blob Storage Gotchas &amp; Best Practices</h2>
+<h2 id="blob-storage-gotchas-best-practices">Blob Storage Gotchas &amp; Best Practices</h2>
 <p>When engineering blob storage systems:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -277,7 +286,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Distributed blob storage engines (such as <strong>Facebook Haystack</strong>, <strong>SeaweedFS</strong>, and <strong>Riak Bitcask</strong>) report:</p>
 <ul>
 <li><strong>Over $10\times$ Higher Photo Throughput</strong>: Bundling small files into large volume files eliminates OS inode lock contention and directory traversal penalties.</li>
@@ -310,6 +319,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#blob-engine-architecture-inode-bottleneck-vs-volume-files" class="toc-link">Blob Engine Architecture: Inode Bottleneck vs Volume Files</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-bitcask-seaweedfs-append-only-engine" class="toc-link">Python Implementation: Bitcask / SeaweedFS Append-Only Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#blob-storage-gotchas-best-practices" class="toc-link">Blob Storage Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#stream-stream-interval-join-watermark-architecture">Stream-Stream Interval Join &amp; Watermark Architecture</a></li>
+                <li><a href="#python-implementation-real-time-interval-stream-join-engine">Python Implementation: Real-Time Interval Stream Join Engine</a></li>
+                <li><a href="#stream-join-gotchas-best-practices">Stream Join Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In real-time event-driven architectures (e-commerce order processing, real-time ad attribution, high-frequency trading), combining information from two independent event streams is a fundamental requirement.</p>
 <p>For example, an analytics system must join an <code>AdClick</code> event stream with a <code>Purchase</code> event stream to calculate conversion attribution.</p>
 <p>However, joining two unbounded streams ($A \bowtie B$) in a distributed engine (<strong>Apache Flink</strong>, <strong>Kafka Streams</strong>, <strong>Spark Streaming</strong>) presents a major challenge.</p>
@@ -111,7 +120,7 @@
 <p>To bound state memory consumption, real-time stream engines utilize <strong>Interval Joins</strong>, <strong>Temporal Table Joins</strong>, and <strong>Watermark Alignment</strong>.</p>
 <p>This article details relative interval boundaries ($[t - \tau_1, t + \tau_2]$), temporal state lookup versions, and state eviction mechanisms.</p>
 <hr>
-<h2>Stream-Stream Interval Join &amp; Watermark Architecture</h2>
+<h2 id="stream-stream-interval-join-watermark-architecture">Stream-Stream Interval Join &amp; Watermark Architecture</h2>
 <p>How Interval Joins restrict state retention to relative time windows $[t - 5\text{min}, t + 10\text{min}]$:</p>
 <div class="mermaid">graph TD
   subgraph Unbounded Input Stream A (AdClick Stream)
@@ -131,7 +140,7 @@
     Watermark[Watermark Advances to 10:15] --&gt;|Purge Old Events &lt;= 10:05| EvictState[🗑️ Purge Expired Stream States from RocksDB]
     JoinOp --&gt;|Emit Joined Event| Output[Joined Stream: AdClick + Purchase Matched Payload!]
   end</div>
-<h3>Core Stream Join Mechanics</h3>
+<h3 id="core-stream-join-mechanics">Core Stream Join Mechanics</h3>
 <ol>
 <li><strong>The Unbounded Join Memory Dilemma</strong>: In relational SQL databases, a <code>JOIN</code> operates on finite static tables. In stream processing, events arrive continuously forever. Without time boundaries, the join state grows infinitely ($O(\infty)$ memory).</li>
 <li><strong>Interval Joins (Relative Time Bounding)</strong>:<ul>
@@ -153,7 +162,7 @@ $$t_A - \tau_{\text{lower}} \le t_B \le t_A + \tau_{\text{upper}}$$</li>
 </li>
 </ol>
 <hr>
-<h2>Python Implementation: Real-Time Interval Stream Join Engine</h2>
+<h2 id="python-implementation-real-time-interval-stream-join-engine">Python Implementation: Real-Time Interval Stream Join Engine</h2>
 <p>Here is a production-grade Python implementation of a Real-Time Interval Stream Join Engine featuring State Buffering, Match Evaluation, and Watermark State Purging:</p>
 <pre><code class="language-python">from typing import Dict, List, Optional, Tuple
 from pydantic import BaseModel
@@ -257,7 +266,7 @@ if __name__ == &quot;__main__&quot;:
     # 3. Advance Watermark to t=150s -&gt; Triggers State Purge!
     join_engine.advance_watermark(new_watermark=150.0)</code></pre>
 <hr>
-<h2>Stream Join Gotchas &amp; Best Practices</h2>
+<h2 id="stream-join-gotchas-best-practices">Stream Join Gotchas &amp; Best Practices</h2>
 <p>When building stream join pipelines:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -270,7 +279,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Stream join architectures (such as <strong>Flink SQL</strong>, <strong>Kafka Streams</strong>, and <strong>Spark Structured Streaming</strong>) report:</p>
 <ul>
 <li><strong>Sub-Second Ad Conversion Attribution</strong>: Matching millions of mobile ad clicks with real-time in-app purchases as events stream through the system.</li>
@@ -303,6 +312,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#stream-stream-interval-join-watermark-architecture" class="toc-link">Stream-Stream Interval Join &amp; Watermark Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-real-time-interval-stream-join-engine" class="toc-link">Python Implementation: Real-Time Interval Stream Join Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#stream-join-gotchas-best-practices" class="toc-link">Stream Join Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

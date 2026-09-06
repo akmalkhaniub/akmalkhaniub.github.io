@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#atomic-cas-hazard-pointer-protection-architecture">Atomic CAS &amp; Hazard Pointer Protection Architecture</a></li>
+                <li><a href="#python-implementation-lock-free-stack-with-aba-protection-hazard-pointers">Python Implementation: Lock-Free Stack with ABA Protection &amp; Hazard Pointers</a></li>
+                <li><a href="#lock-free-concurrency-gotchas-best-practices">Lock-Free Concurrency Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In high-concurrency systems (such as high-frequency trading engines, kernel task schedulers, and event loops), utilizing traditional mutex locks (<code>pthread_mutex_t</code> or <code>std::mutex</code>) introduces severe performance penalties.</p>
 <p>Mutexes rely on kernel-level thread blocking. When lock contention occurs, the OS kernel context switches the thread off the CPU, incurring <strong>$1,000\text{ns}$ to $3,000\text{ns}$ context switch overheads</strong>, priority inversion, and potential deadlocks.</p>
 <p>To achieve non-blocking, multi-core scalability, systems engineers design <strong>Lock-Free Data Structures</strong>.</p>
@@ -111,7 +120,7 @@
 <p>However, lock-free pointer manipulations introduce subtle concurrency pitfalls: <strong>The ABA Problem</strong> and <strong>Safe Memory Reclamation</strong>.</p>
 <p>This article details Atomic CAS loops, Michael-Scott Lock-Free Queues, the ABA problem, and Hazard Pointers.</p>
 <hr>
-<h2>Atomic CAS &amp; Hazard Pointer Protection Architecture</h2>
+<h2 id="atomic-cas-hazard-pointer-protection-architecture">Atomic CAS &amp; Hazard Pointer Protection Architecture</h2>
 <p>How Lock-Free Queues use Compare-And-Swap (CAS) and Hazard Pointers to prevent memory corruption:</p>
 <div class="mermaid">graph TD
   subgraph Lock-Free CAS Retry Loop
@@ -131,7 +140,7 @@
     GuardCheck --&gt;|Yes: Reader active!| DeferFree[Defer Free to Retirement List]
     GuardCheck --&gt;|No: Safe to delete| FreeMemory[Reclaim Memory Page]
   end</div>
-<h3>Core Lock-Free Concurrency Mechanics</h3>
+<h3 id="core-lock-free-concurrency-mechanics">Core Lock-Free Concurrency Mechanics</h3>
 <ol>
 <li><strong>Atomic Compare-And-Swap (CAS)</strong>: A hardware-level atomic instruction (<code>LOCK CMPXCHG</code> on x86, <code>LDREX/STREX</code> or <code>CAS</code> on ARM64) that performs an atomic read-modify-write:
 $$\text{CAS}(\text{location}, \text{expected_val}, \text{new_val}) → \text{bool}$$
@@ -146,7 +155,7 @@ If <code>*location == expected_val</code>, the CPU updates <code>*location = new
 <li><strong>Hazard Pointers (Safe Memory Reclamation)</strong>: In lock-free data structures, a thread cannot safely call <code>free(node)</code> because another thread might be dereferencing <code>node-&gt;next</code> concurrently. Before reading a node, a thread publishes the node&#39;s memory address to its thread-local <strong>Hazard Pointer slot</strong>. Freeing threads check the global Hazard Pointer list, deferring memory deletion until no reader holds a hazard pointer to that address.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Lock-Free Stack with ABA Protection &amp; Hazard Pointers</h2>
+<h2 id="python-implementation-lock-free-stack-with-aba-protection-hazard-pointers">Python Implementation: Lock-Free Stack with ABA Protection &amp; Hazard Pointers</h2>
 <p>Here is a production-grade Python simulation of a Lock-Free Treiber Stack with Tagged Pointers (ABA Protection) and Hazard Pointer memory reclamation:</p>
 <pre><code class="language-python">import threading
 import time
@@ -272,7 +281,7 @@ if __name__ == &quot;__main__&quot;:
     for t in threads: t.start()
     for t in threads: t.join()</code></pre>
 <hr>
-<h2>Lock-Free Concurrency Gotchas &amp; Best Practices</h2>
+<h2 id="lock-free-concurrency-gotchas-best-practices">Lock-Free Concurrency Gotchas &amp; Best Practices</h2>
 <p>When designing lock-free data structures:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -285,7 +294,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>High-concurrency systems utilizing lock-free data structures (such as <strong>LMAX Disruptor</strong>, <strong>Linux Kernel RCU</strong>, and <strong>Jellyfish</strong>) report:</p>
 <ul>
 <li><strong>$10\times$ Higher Multi-Core Throughput</strong>: Processing tens of millions of concurrent operations per second without lock acquisition delays.</li>
@@ -318,6 +327,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#atomic-cas-hazard-pointer-protection-architecture" class="toc-link">Atomic CAS &amp; Hazard Pointer Protection Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-lock-free-stack-with-aba-protection-hazard-pointers" class="toc-link">Python Implementation: Lock-Free Stack with ABA Protection &amp; Hazard Pointers</a></li>
+              <li class="toc-item toc-h2"><a href="#lock-free-concurrency-gotchas-best-practices" class="toc-link">Lock-Free Concurrency Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

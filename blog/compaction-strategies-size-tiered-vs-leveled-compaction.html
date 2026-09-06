@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#leveled-compaction-n-way-merge-architecture">Leveled Compaction &amp; N-Way Merge Architecture</a></li>
+                <li><a href="#python-implementation-n-way-merge-sort-compaction-engine">Python Implementation: N-Way Merge-Sort Compaction Engine</a></li>
+                <li><a href="#compaction-gotchas-best-practices">Compaction Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In Log-Structured Merge-Tree (LSM-Tree) databases (<strong>RocksDB</strong>, <strong>LevelDB</strong>, <strong>Apache Cassandra</strong>), flushing in-memory MemTables creates a continuous stream of immutable <strong>Sorted String Table (SSTable)</strong> files on disk.</p>
 <p>Over time, this accumulation introduces severe performance penalties:</p>
 <ol>
@@ -114,7 +123,7 @@
 <p>Compaction reads multiple SSTables, performs an <strong>$N$-Way Merge-Sort</strong>, purges superseded keys and expired tombstones, and writes consolidated SSTables back to disk.</p>
 <p>This article details Size-Tiered Compaction (STCS), Leveled Compaction (LCS), and $N$-Way priority queue merge-sorting algorithms.</p>
 <hr>
-<h2>Leveled Compaction &amp; N-Way Merge Architecture</h2>
+<h2 id="leveled-compaction-n-way-merge-architecture">Leveled Compaction &amp; N-Way Merge Architecture</h2>
 <p>How Leveled Compaction (LCS) organizes SSTables into non-overlapping exponential levels:</p>
 <div class="mermaid">graph TD
   subgraph Level 0 (Overlapping Key Ranges from Flushes)
@@ -133,7 +142,7 @@
   subgraph Level 2 (Max 100MB, Non-Overlapping Ranges)
     L1_3 --&gt;|3. Level 1 Overflow (&gt;10MB)| L2_1[SST File 6: Keys 'a'..'m']
   end</div>
-<h3>Core Compaction Strategies</h3>
+<h3 id="core-compaction-strategies">Core Compaction Strategies</h3>
 <ol>
 <li><strong>Size-Tiered Compaction Strategy (STCS)</strong>:<ul>
 <li><em>Mechanics</em>: Groups SSTables into tiers based on file size. When $N$ SSTables of similar size accumulate (e.g. four $64\text{ MB}$ files), STCS merges them into a single $256\text{ MB}$ file.</li>
@@ -149,7 +158,7 @@
 <li><strong>$N$-Way Priority Queue Merge-Sort</strong>: Merging multiple sorted SSTable streams is implemented using a Min-Heap Priority Queue. The heap tracks the current head element of each SSTable iterator, emitting keys in strict lexicographical order while deduplicating older versions.</li>
 </ol>
 <hr>
-<h2>Python Implementation: N-Way Merge-Sort Compaction Engine</h2>
+<h2 id="python-implementation-n-way-merge-sort-compaction-engine">Python Implementation: N-Way Merge-Sort Compaction Engine</h2>
 <p>Here is a production-grade Python implementation of an $N$-Way Priority Queue Merge-Sort Compaction Engine for Leveled SSTables:</p>
 <pre><code class="language-python">import heapq
 from typing import List, Dict, Tuple, Optional
@@ -255,7 +264,7 @@ if __name__ == &quot;__main__&quot;:
     for k, v in result:
         print(f&quot;   • Key: '{k:12s}' | Value: '{v}'&quot;)</code></pre>
 <hr>
-<h2>Compaction Gotchas &amp; Best Practices</h2>
+<h2 id="compaction-gotchas-best-practices">Compaction Gotchas &amp; Best Practices</h2>
 <p>When tuning LSM compaction strategies:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -268,7 +277,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Storage engines employing Leveled Compaction (such as <strong>RocksDB</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Over 70% Reduction in Space Amplification</strong>: Purging obsolete key versions keeps disk utilization within $1.1\times$ to $1.2\times$ of raw data size.</li>
@@ -301,6 +310,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#leveled-compaction-n-way-merge-architecture" class="toc-link">Leveled Compaction &amp; N-Way Merge Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-n-way-merge-sort-compaction-engine" class="toc-link">Python Implementation: N-Way Merge-Sort Compaction Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#compaction-gotchas-best-practices" class="toc-link">Compaction Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

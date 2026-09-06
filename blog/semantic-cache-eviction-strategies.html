@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-stale-embedding-problem">The Stale Embedding Problem</a></li>
+                <li><a href="#3-pillars-of-semantic-cache-invalidation">3 Pillars of Semantic Cache Invalidation</a></li>
+                <li><a href="#implementation-hashed-semantic-cache-router-in-python">Implementation: Hashed Semantic Cache Router in Python</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +120,7 @@ Implementing a semantic cache (like matching query embedding distances in Redis 
 </div>
 </div>
 <hr>
-<h2>The Stale Embedding Problem</h2>
+<h2 id="the-stale-embedding-problem">The Stale Embedding Problem</h2>
 <p>In traditional web development, we evict caches using direct keys (e.g. <code>DEL user:99</code>). In semantic caching, we search for matching keys using vector similarity.</p>
 <p>If the prompt template changes from <em>&quot;Summarize this text in 3 sentences&quot;</em> to <em>&quot;Summarize this text in 5 bullet points&quot;</em>, a naive vector lookup will match the new user query with the old 3-sentence summary cached under the previous template. The cache is stale, but because the user query embedding is similar, the system returns the wrong output style.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -126,13 +135,13 @@ flowchart TD
     CheckNamespace -- Prompt/Model changed or Cache Purged --&gt; CallLLM
     CallLLM --&gt; SaveCache[5. Save to Cache Namespace]</div>
 <hr>
-<h2>3 Pillars of Semantic Cache Invalidation</h2>
+<h2 id="3-pillars-of-semantic-cache-invalidation">3 Pillars of Semantic Cache Invalidation</h2>
 <p>To build a reliable semantic cache, you must tie cache keys to the variables that define the execution state:</p>
-<h3>1. Hashing the Application Context</h3>
+<h3 id="1-hashing-the-application-context">1. Hashing the Application Context</h3>
 <p>The cache key should not just be the user query. It must include a hash of the <strong>system prompt version</strong> and the <strong>active model name</strong>. If either the prompt template changes or the model is upgraded, the hash changes, automatically partitioning new cached completions from legacy ones.</p>
-<h3>2. Metadata Namespaces</h3>
+<h3 id="2-metadata-namespaces">2. Metadata Namespaces</h3>
 <p>Store cache entries with strict metadata fields (e.g., <code>tenant_id</code>, <code>category</code>, <code>data_version</code>). This allows you to run bulk deletes across specific namespaces without wiping the entire global cache.</p>
-<h3>3. Soft Eviction (Re-evaluation thresholds)</h3>
+<h3 id="3-soft-eviction-re-evaluation-thresholds">3. Soft Eviction (Re-evaluation thresholds)</h3>
 <p>Instead of a binary hit/miss, evaluate similarity scores:</p>
 <ul>
 <li><strong>Score &gt; 0.98</strong>: High confidence. Serve cache instantly.</li>
@@ -140,7 +149,7 @@ flowchart TD
 <li><strong>Score &lt; 0.94</strong>: Cache miss. Route directly to LLM.</li>
 </ul>
 <hr>
-<h2>Implementation: Hashed Semantic Cache Router in Python</h2>
+<h2 id="implementation-hashed-semantic-cache-router-in-python">Implementation: Hashed Semantic Cache Router in Python</h2>
 <p>Below is a Python implementation utilizing <code>redis-py</code> that creates contextual cache keys, conducts vector similarity lookups, and supports namespace-based cache eviction.</p>
 <pre><code class="language-python">import hashlib
 import json
@@ -223,13 +232,13 @@ class SemanticCacheManager:
         for doc in results.docs:
             redis_client.delete(doc.id)
         print(f&quot;Purged {len(results.docs)} entries from cache namespace: {namespace}&quot;)</code></pre>
-<h3>Key Highlights of the Code:</h3>
+<h3 id="key-highlights-of-the-code">Key Highlights of the Code:</h3>
 <ul>
 <li><strong>Context Partitioning</strong>: By prefixing the key with <code>self.context_hash</code>, the cache automatically partitions itself. If you update your prompt, the new queries generate a different hash, rendering the old cache entries unreachable without requiring database-wide drops.</li>
 <li><strong>Granular Eviction</strong>: The <code>purge_namespace</code> method lets you invalidate specific customers&#39; data or categories (e.g., when a user deletes their profile) without affecting global caching.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>An invalidation strategy is the difference between a secure cache and a stale system:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Hash the system parameters</strong>: Always include the system prompt template and model name inside the cache key prefix.</li>
@@ -264,6 +273,17 @@ class SemanticCacheManager:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-stale-embedding-problem" class="toc-link">The Stale Embedding Problem</a></li>
+              <li class="toc-item toc-h2"><a href="#3-pillars-of-semantic-cache-invalidation" class="toc-link">3 Pillars of Semantic Cache Invalidation</a></li>
+              <li class="toc-item toc-h2"><a href="#implementation-hashed-semantic-cache-router-in-python" class="toc-link">Implementation: Hashed Semantic Cache Router in Python</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

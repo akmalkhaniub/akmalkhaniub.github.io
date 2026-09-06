@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#speculative-decoding-parallel-verification-architecture">Speculative Decoding &amp; Parallel Verification Architecture</a></li>
+                <li><a href="#python-implementation-speculative-decoding-rejection-sampler-engine">Python Implementation: Speculative Decoding &amp; Rejection Sampler Engine</a></li>
+                <li><a href="#speculative-decoding-gotchas-best-practices">Speculative Decoding Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>In autoregressive Large Language Model generation, producing output tokens is inherently <strong>Memory-Bandwidth Bound</strong>.</p>
 <p>To generate a single output token from a 70-billion parameter model, the GPU must read all <strong>140 GB of model weights</strong> from HBM memory into compute registers. For a response of 100 tokens, the GPU reads the $140\text{ GB}$ weight matrix 100 sequential times, keeping powerful Tensor Cores vastly underutilized.</p>
 <p>To break this sequential memory bottleneck, inference engines (<strong>vLLM</strong>, <strong>TGI</strong>, <strong>DeepSpeed-FastGen</strong>) employ <strong>Speculative Decoding</strong>.</p>
 <p>Speculative Decoding utilizes a small, lightweight <strong>Draft Model</strong> (e.g., Llama-3-8B) to rapidly generate a candidate sequence of $K$ tokens. A large <strong>Target Model</strong> (e.g., Llama-3-70B) then verifies all $K$ candidate tokens in a <strong>single parallel GPU forward pass</strong>.</p>
 <p>This article details speculative token generation, target parallel verification, and modified rejection sampling algorithms.</p>
 <hr>
-<h2>Speculative Decoding &amp; Parallel Verification Architecture</h2>
+<h2 id="speculative-decoding-parallel-verification-architecture">Speculative Decoding &amp; Parallel Verification Architecture</h2>
 <p>How Speculative Decoding generates $K+1$ tokens in a single target model forward pass:</p>
 <div class="mermaid">graph TD
   Prompt[User Input Prompt] --&gt; DraftModel[Fast Draft Model: Llama-3-8B]
@@ -128,7 +137,7 @@
     Sampler --&gt;|4. Accept First 3 Tokens + Sample 4th Token| Accepted[&quot;Accepted Tokens: ['the', 'capital', 'of', 'France']&quot;]
     Accepted --&gt;|5. Output 4 Tokens in 1 Step (2x - 3x Speedup!)| UserResponse[User Output Stream]
   end</div>
-<h3>Core Speculative Decoding Mechanics</h3>
+<h3 id="core-speculative-decoding-mechanics">Core Speculative Decoding Mechanics</h3>
 <ol>
 <li><strong>Memory-Bandwidth Bound Autoregressive Penalty</strong>: In standard decoding, generating $K$ tokens requires $K$ sequential forward passes through the target model.</li>
 <li><strong>Draft Model Speculation</strong>: A small draft model (which runs $5\times$ to $10\times$ faster due to smaller weight sizes) predicts a candidate sequence of $K$ lookahead tokens: $\hat{x}_1, \hat{x}_2, \dots, \hat{x}_K$.</li>
@@ -138,7 +147,7 @@ $$P_{\text{accept}}(x_i) = \min\left(1, \frac{P_{\text{target}}(x_i)}{P_{\text{d
 If a token is rejected at position $j &lt; K$, generation resumes from position $j$ with a newly sampled target token, discarding remaining candidate tokens.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Speculative Decoding &amp; Rejection Sampler Engine</h2>
+<h2 id="python-implementation-speculative-decoding-rejection-sampler-engine">Python Implementation: Speculative Decoding &amp; Rejection Sampler Engine</h2>
 <p>Here is a production-grade Python implementation of a Speculative Decoding Engine featuring Draft Model Speculation, Target Parallel Verification, and Rejection Sampling:</p>
 <pre><code class="language-python">import torch
 import torch.nn.functional as F
@@ -229,7 +238,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;\n📊 Total Tokens Generated in 3 Forward Steps: {total_tokens_generated} tokens!&quot;)
     print(f&quot;   • Effective Speedup Ratio: {total_tokens_generated / 3.0:.2f}x Tokens per Target Step!&quot;)</code></pre>
 <hr>
-<h2>Speculative Decoding Gotchas &amp; Best Practices</h2>
+<h2 id="speculative-decoding-gotchas-best-practices">Speculative Decoding Gotchas &amp; Best Practices</h2>
 <p>When configuring speculative inference:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -242,7 +251,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Platforms adopting Speculative Decoding (such as <strong>vLLM</strong> and <strong>TensorRT-LLM</strong>) report:</p>
 <ul>
 <li><strong>$2\times$ to $3\times$ Faster End-to-End Latency</strong>: Generating up to 3 tokens per target model forward step without altering output text quality.</li>
@@ -275,6 +284,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#speculative-decoding-parallel-verification-architecture" class="toc-link">Speculative Decoding &amp; Parallel Verification Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-speculative-decoding-rejection-sampler-engine" class="toc-link">Python Implementation: Speculative Decoding &amp; Rejection Sampler Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#speculative-decoding-gotchas-best-practices" class="toc-link">Speculative Decoding Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

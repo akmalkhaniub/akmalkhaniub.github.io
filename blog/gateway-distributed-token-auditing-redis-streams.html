@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-latency-penalty-of-synchronous-auditing">The Latency Penalty of Synchronous Auditing</a></li>
+                <li><a href="#1-under-the-hood-cost-calculations-per-model">1. Under the Hood: Cost Calculations per Model</a></li>
+                <li><a href="#2-decoupling-the-billing-pipeline">2. Decoupling the Billing Pipeline</a></li>
+                <li><a href="#code-demo-real-time-token-auditing-middleware">Code Demo: Real-Time Token Auditing Middleware</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Monitoring inference costs inside enterprise agent swarms is a significant opera
 </div>
 </div>
 <hr>
-<h2>The Latency Penalty of Synchronous Auditing</h2>
+<h2 id="the-latency-penalty-of-synchronous-auditing">The Latency Penalty of Synchronous Auditing</h2>
 <p>In typical system setups:</p>
 <ul>
 <li><strong>The DB Write Bottleneck</strong>: Running database <code>INSERT</code> commands to track token usage during a streaming HTTP connection blocks response threads, increasing latency.</li>
@@ -130,7 +140,7 @@ flowchart TD
     Redis --&gt; Worker[Asynchronous Worker Thread]
     Worker --&gt; DB[(Billing Database Update)]</div>
 <hr>
-<h2>1. Under the Hood: Cost Calculations per Model</h2>
+<h2 id="1-under-the-hood-cost-calculations-per-model">1. Under the Hood: Cost Calculations per Model</h2>
 <p>Different models use distinct pricing rates per 1M tokens:</p>
 <ul>
 <li><strong>Claude 3.5 Sonnet</strong>: $3.00 per 1M input tokens, $15.00 per 1M output tokens.</li>
@@ -138,14 +148,14 @@ flowchart TD
 <li><strong>Qwen-7B (Local)</strong>: $0.00 (Infrastructure cost only).</li>
 </ul>
 <hr>
-<h2>2. Decoupling the Billing Pipeline</h2>
+<h2 id="2-decoupling-the-billing-pipeline">2. Decoupling the Billing Pipeline</h2>
 <p>Using Redis Streams guarantees:</p>
 <ol>
 <li><strong>Zero Thread Blocking</strong>: Publishing to a Redis Stream is an asynchronous memory write, taking under 1 millisecond.</li>
 <li><strong>Horizontal Scaling</strong>: Multiple billing workers can consume from the stream concurrently to write metadata records during high-traffic periods.</li>
 </ol>
 <hr>
-<h2>Code Demo: Real-Time Token Auditing Middleware</h2>
+<h2 id="code-demo-real-time-token-auditing-middleware">Code Demo: Real-Time Token Auditing Middleware</h2>
 <p>Below is a Python implementation of a token auditing gateway proxy. It tracks token counts across a simulated session, calculates pricing per model rates, and publishes records to a mock Redis Stream.</p>
 <pre><code class="language-python">import json
 import time
@@ -220,7 +230,7 @@ if __name__ == &quot;__main__&quot;:
         data = entry[&quot;data&quot;]
         print(f&quot;📥 [Worker] Processed audit for {data['session_id']}: Model: {data['model']} | Cost: ${data['calculated_cost_usd']}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Audit Asynchronously</strong>: Never run database inserts to track token usage inside streaming requests. Publish metadata to Redis Streams instead.</li>
 <li><strong>Define Pricing Matrices</strong>: Maintain a centralized configuration schema mapping provider rates to track costs accurately.</li>
@@ -253,6 +263,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-latency-penalty-of-synchronous-auditing" class="toc-link">The Latency Penalty of Synchronous Auditing</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-cost-calculations-per-model" class="toc-link">1. Under the Hood: Cost Calculations per Model</a></li>
+              <li class="toc-item toc-h2"><a href="#2-decoupling-the-billing-pipeline" class="toc-link">2. Decoupling the Billing Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-real-time-token-auditing-middleware" class="toc-link">Code Demo: Real-Time Token Auditing Middleware</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

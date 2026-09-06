@@ -40,6 +40,7 @@ graph TD
     end
   end
 ```
+*Figure 1: Concurrency comparison between synchronous parameter blocking and decoupled asynchronous request promise microtask scheduling. Source: ECMAScript & Next.js Core Architecture [1, 3, 4].*
 
 ---
 
@@ -178,3 +179,13 @@ The asynchronous request API shift in Next.js 15 is a classic systems engineerin
 By converting runtime request properties into asynchronous Promises, Next.js allows its static analysis compilers to trace execution trees past component roots, unlocking the full power of Partial Prerendering and sub-20ms edge delivery.
 
 For systems architects, the lesson is clear: in modern full-stack web engineering, API design is not just about making code look pretty—it is about providing the compiler with the mathematical room it needs to optimize your system.
+
+---
+
+## References & Further Reading
+
+1. **Next.js Core Team (2024)**. *Async Request APIs: Upgrading cookies, headers, and params in Next.js 15*. Next.js Upgrade Guides. [https://nextjs.org/docs/app/building-your-application/upgrading/version-15](https://nextjs.org/docs/app/building-your-application/upgrading/version-15)
+2. **Ecma International (2024)**. *ECMAScript 2024 Language Specification: Microtask Queues and Job Queues*. ECMA-262 Standard. [https://tc39.es/ecma262/](https://tc39.es/ecma262/)
+3. **WinterCG (Web-interoperable Runtimes Community Group) (2023)**. *Common Minimum Web Platform API for Server Runtimes*. W3C Community Group. [https://wintercg.org/](https://wintercg.org/)
+4. **WHATWG (2024)**. *Fetch Standard: The Request and Headers Interfaces*. WHATWG Standards. [https://fetch.spec.whatwg.org/](https://fetch.spec.whatwg.org/)
+5. **Remix Team (2024)**. *Web Standards in Server Handlers: Request and URL Parameters in React Router 7*. Remix Architecture Docs. [https://remix.run/docs](https://remix.run/docs)

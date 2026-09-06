@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#why-vector-search-fails-for-codebases">Why Vector Search Fails for Codebases</a></li>
+                <li><a href="#1-extracting-dependencies-natively-via-ast">1. Extracting Dependencies Natively via AST</a></li>
+                <li><a href="#2-querying-the-code-graph">2. Querying the Code Graph</a></li>
+                <li><a href="#code-demo-ast-driven-codebase-dependency-parser">Code Demo: AST-Driven Codebase Dependency Parser</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Traditional Retrieval-Augmented Generation (RAG) splits text documents into isol
 </div>
 </div>
 <hr>
-<h2>Why Vector Search Fails for Codebases</h2>
+<h2 id="why-vector-search-fails-for-codebases">Why Vector Search Fails for Codebases</h2>
 <p>Vector embeddings capture semantic similarity (e.g. mapping &quot;charge customer&quot; to &quot;process invoice&quot;). However, software systems are governed by strict <strong>structural relationships</strong> (imports, inheritances, dependency trees):</p>
 <ul>
 <li><strong>The Cascading Signature Bug</strong>: If an agent refactors a billing class method in <code>billing.py</code>, it must locate every file that imports and invokes that class. If those files describe other business logic (e.g. <code>report_generator.py</code>), vector search will miss them due to low semantic similarity.</li>
@@ -131,13 +141,13 @@ flowchart TD
     end</div>
 <p>By traversing the dependency graph, a refactoring agent can identify every file that imports a modified module, ensuring zero compilation errors across the codebase.</p>
 <hr>
-<h2>1. Extracting Dependencies Natively via AST</h2>
+<h2 id="1-extracting-dependencies-natively-via-ast">1. Extracting Dependencies Natively via AST</h2>
 <p>Using standard regex to track imports (e.g., <code>import X</code>) fails when imports are aliased, nested inside functions, or spread across multi-line blocks.</p>
 <ul>
 <li><strong>Abstract Syntax Tree parsing</strong>: We parse Python files using the <code>ast</code> module, scanning specifically for <code>ast.Import</code> and <code>ast.ImportFrom</code> nodes. This guarantees exact detection of dependency mappings.</li>
 </ul>
 <hr>
-<h2>2. Querying the Code Graph</h2>
+<h2 id="2-querying-the-code-graph">2. Querying the Code Graph</h2>
 <p>When an agent plans a refactoring modification:</p>
 <ol>
 <li><strong>Semantic Search</strong>: The agent queries the vector store to locate the class or module to refactor.</li>
@@ -145,7 +155,7 @@ flowchart TD
 <li><strong>Context Assembly</strong>: The gateway injects the target file <em>plus</em> its parent dependency files into the agent&#39;s context window, allowing the agent to refactor the entire import chain in a single pass.</li>
 </ol>
 <hr>
-<h2>Code Demo: AST-Driven Codebase Dependency Parser</h2>
+<h2 id="code-demo-ast-driven-codebase-dependency-parser">Code Demo: AST-Driven Codebase Dependency Parser</h2>
 <p>Below is a Python implementation of a dependency graph indexer. It parses Python file structures using AST, maps import connections, formats an adjacency graph, and provides a utility to retrieve all dependent files.</p>
 <pre><code class="language-python">import ast
 import sys
@@ -218,7 +228,7 @@ def get_status():
     print(f&quot;\n🔍 Query: Which files import '{target_module_2}'?&quot;)
     print(f&quot;👉 Files to Audit: {breaking_risks_2}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Combine Graph &amp; Vector Indices</strong>: Never rely on vector search alone to locate codebase contexts. Maintain a graph index of imports alongside your vector metadata.</li>
 <li><strong>Keep the Graph Up-to-Date</strong>: Run AST parsers in git hooks (pre-commit or pre-merge) to update your codebase dependency graphs automatically as files are created or deleted.</li>
@@ -251,6 +261,18 @@ def get_status():
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#why-vector-search-fails-for-codebases" class="toc-link">Why Vector Search Fails for Codebases</a></li>
+              <li class="toc-item toc-h2"><a href="#1-extracting-dependencies-natively-via-ast" class="toc-link">1. Extracting Dependencies Natively via AST</a></li>
+              <li class="toc-item toc-h2"><a href="#2-querying-the-code-graph" class="toc-link">2. Querying the Code Graph</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-ast-driven-codebase-dependency-parser" class="toc-link">Code Demo: AST-Driven Codebase Dependency Parser</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

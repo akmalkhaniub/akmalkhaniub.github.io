@@ -104,13 +104,22 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#hybrid-context-reranking-architecture">Hybrid Context Reranking Architecture</a></li>
+                <li><a href="#python-implementation-hybrid-reranker-with-pagerank">Python Implementation: Hybrid Reranker with PageRank</a></li>
+                <li><a href="#important-hybrid-retrieval-guardrails">Important Hybrid Retrieval Guardrails</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>When designing Retrieval-Augmented Generation (RAG) context engines for large-scale codebases, selecting <em>which</em> files to load into the LLM context window determines the success of code synthesis.</p>
 <p>If we rely solely on <strong>semantic vector similarity</strong> (cosine distance of query against file chunks), we risk retrieving deep, specific helper files while completely missing the <strong>central coordinator modules</strong> (such as routing classes or interface orchestrators) that bind them together. Conversely, relying only on graph structures retrieves popular modules but misses the semantic intent of the query.</p>
 <p>To select the optimal context, modern platforms implement <strong>Hybrid Retrieval: Vector Cosine + Graph Centrality Ranking</strong>.</p>
 <p>By combining semantic vector scores with graph topological centrality metrics—like <strong>PageRank</strong> and <strong>Degree Centrality</strong>—retrievers rank files based on both relevance to the query and structural importance within the system.</p>
 <p>This article details how to build a hybrid reranking engine.</p>
 <hr>
-<h2>Hybrid Context Reranking Architecture</h2>
+<h2 id="hybrid-context-reranking-architecture">Hybrid Context Reranking Architecture</h2>
 <p>The hybrid retrieval engine merges vector similarity ranks with graph centrality topological ranks:</p>
 <div class="mermaid">graph TD
   A[User / Agent Query] --&gt; B[Initial Retriever Phase]
@@ -124,14 +133,14 @@
   D --&gt; E
   
   E --&gt;|Hybrid Ranked Context List| F[LLM Context Window Ingestion]</div>
-<h3>Centrality Metrics in Software Architecture</h3>
+<h3 id="centrality-metrics-in-software-architecture">Centrality Metrics in Software Architecture</h3>
 <ul>
 <li><strong>Degree Centrality</strong>: Measures how many immediate connections (calls or imports) a node has. A method called by 50 different helper functions has high <em>in-degree centrality</em> and is a critical interface.</li>
 <li><strong>PageRank (Structural Importance)</strong>: Measures the transitive importance of a file. A file imported by other important files gets a higher PageRank.</li>
 <li><strong>Closeness Centrality</strong>: Measures how close a node is to all other nodes in the network on average. High closeness nodes are excellent entry points for tracing system-wide behaviors.</li>
 </ul>
 <hr>
-<h2>Python Implementation: Hybrid Reranker with PageRank</h2>
+<h2 id="python-implementation-hybrid-reranker-with-pagerank">Python Implementation: Hybrid Reranker with PageRank</h2>
 <p>Here is a production Python implementation of a Hybrid Code Retriever. It computes semantic vector similarity and PageRank centrality scores, and applies Reciprocal Rank Fusion (RRF) to output the final ranked context list:</p>
 <pre><code class="language-python">import numpy as np
 from typing import Dict, List, Tuple
@@ -222,7 +231,7 @@ if __name__ == &quot;__main__&quot;:
         pagerank_val = centrality_map[doc]
         print(f&quot; Rank {rank + 1}: {doc} (RRF Score: {score:.5f} | PageRank: {pagerank_val:.4f})&quot;)</code></pre>
 <hr>
-<h2>Important Hybrid Retrieval Guardrails</h2>
+<h2 id="important-hybrid-retrieval-guardrails">Important Hybrid Retrieval Guardrails</h2>
 <p>When configuring hybrid context retrievers:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -235,7 +244,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Teams adopting Hybrid Vector-Centrality Retrieval report:</p>
 <ul>
 <li><strong>Perfect Architectural Context Selection</strong>: Retrievers consistently locate and include critical system-wide routing configurations alongside code snippet matches.</li>
@@ -268,6 +277,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#hybrid-context-reranking-architecture" class="toc-link">Hybrid Context Reranking Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-hybrid-reranker-with-pagerank" class="toc-link">Python Implementation: Hybrid Reranker with PageRank</a></li>
+              <li class="toc-item toc-h2"><a href="#important-hybrid-retrieval-guardrails" class="toc-link">Important Hybrid Retrieval Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

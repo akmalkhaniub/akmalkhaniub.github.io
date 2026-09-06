@@ -104,8 +104,18 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-decoupled-ingestion-pipeline">The Decoupled Ingestion Pipeline</a></li>
+                <li><a href="#building-a-bullmq-worker-in-typescript">Building a BullMQ Worker in TypeScript</a></li>
+                <li><a href="#queue-optimization-and-backoff-guardrails">Queue Optimization and Backoff Guardrails</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
+              </ul>
+            </details>
 <blockquote>
-<h3>📖 Article Overview</h3>
+<h3 id="article-overview">📖 Article Overview</h3>
 <ul>
 <li><strong>What this article is about:</strong> This article details how to build a robust, asynchronous ingestion pipeline for production-grade AI platforms using Redis and BullMQ.</li>
 <li><strong>Why it matters:</strong> It addresses critical challenges like API timeouts, data loss, and LLM rate limits, which are common in high-latency AI operations.</li>
@@ -116,7 +126,7 @@
 <p>Because Large Language Model (LLM) calls, vector embeddings, and web searching are high-latency, unpredictable operations, they must be decoupled from the client-facing HTTP thread.</p>
 <p>To build an ingestion pipeline that handles high throughput, we implement a <strong>Distributed Task Queue Architecture</strong> using <strong>Redis</strong> and <strong>BullMQ</strong>. This ensures that jobs are processed asynchronously in the background, retry logic handles API rate-limits, and queue progress is tracked in real-time.</p>
 <hr>
-<h2>The Decoupled Ingestion Pipeline</h2>
+<h2 id="the-decoupled-ingestion-pipeline">The Decoupled Ingestion Pipeline</h2>
 <p>The architecture separates the frontend API endpoint (which only schedules jobs and returns a task token) from the dedicated worker processes that coordinate the agentic extraction steps.</p>
 <div class="mermaid">sequenceDiagram
     actor User as Client Application
@@ -158,9 +168,9 @@
 <li><strong>Polling / Webhooks</strong>: The client polls the status of the job ID, or the worker triggers a webhook callback upon completion.</li>
 </ol>
 <hr>
-<h2>Building a BullMQ Worker in TypeScript</h2>
+<h2 id="building-a-bullmq-worker-in-typescript">Building a BullMQ Worker in TypeScript</h2>
 <p>Here is a production-grade implementation of a queue processor designed to ingest unstructured files and run them through our extraction service, modeled on background pipelines found in my projects like <a href="https://github.com/akmalkhaniub/healthcare-audit-vault" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> healthcare-audit-vault</a>.</p>
-<h3>1. Defining the Queue and Scheduler</h3>
+<h3 id="1-defining-the-queue-and-scheduler">1. Defining the Queue and Scheduler</h3>
 <pre><code class="language-typescript">import { Queue, QueueEvents } from 'bullmq';
 import IORedis from 'ioredis';
 
@@ -184,7 +194,7 @@ export const documentQueue = new Queue('document-ingestion', {
 });
 
 export const queueEvents = new QueueEvents('document-ingestion', { connection });</code></pre>
-<h3>2. Implementing the Worker</h3>
+<h3 id="2-implementing-the-worker">2. Implementing the Worker</h3>
 <pre><code class="language-typescript">import { Worker, Job } from 'bullmq';
 import { extractClinicalData } from './agentService';
 import { updateDatabaseRecord } from './dbService';
@@ -228,14 +238,14 @@ documentWorker.on('failed', (job, err) =&gt; {
   console.error(`Job ${job?.id} failed with error: ${err.message}`);
 });</code></pre>
 <hr>
-<h2>Queue Optimization and Backoff Guardrails</h2>
+<h2 id="queue-optimization-and-backoff-guardrails">Queue Optimization and Backoff Guardrails</h2>
 <ul>
 <li><strong>Handling LLM Rate Limits</strong>: LLM providers (Anthropic, OpenAI) enforce strict rate-limits (TPM and RPM). Using BullMQ’s built-in <code>limiter</code> option ensures workers slow down dynamically, staying under token budget caps.</li>
 <li><strong>Exponential Backoff</strong>: When a 429 Too Many Requests error occurs, standard loops fail. Our BullMQ configuration uses <code>backoff: { type: &#39;exponential&#39;, delay: 5000 }</code> to wait and retry only when the rate limit cooling period expires.</li>
 <li><strong>Graceful Shutdowns</strong>: Always listen to system termination signals (<code>SIGTERM</code>, <code>SIGINT</code>) to close BullMQ workers gracefully, allowing active jobs to finish or return to the queue.</li>
 </ul>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>Implementing a distributed task queue architecture is fundamental for building resilient and scalable AI ingestion pipelines.</p>
 <ol>
 <li><strong>Asynchronous Processing is Essential:</strong> Decoupling high-latency AI operations from client-facing APIs prevents timeouts, ensures a responsive user experience, and maintains system stability.</li>
@@ -244,7 +254,7 @@ documentWorker.on('failed', (job, err) =&gt; {
 </ol>
 <p><em>Takeaway: Adopting a distributed task queue architecture with tools like BullMQ is a non-negotiable pattern for production-ready AI platforms, ensuring reliability, scalability, and a superior user experience.</em></p>
 <hr>
-<h2>References &amp; Further Reading</h2>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>BullMQ Architecture</strong>: <a href="https://docs.bullmq.io/" target="_blank" rel="noopener">BullMQ Guides</a>. Comprehensive documentation on queues, sandboxed workers, and parent-child dependencies.</li>
 <li><strong>Queueing Theory and Backoffs</strong>: <em>A Study of Backoff Algorithms in Wireless and Distributed Systems</em>. Explains the efficiency of exponential backoff. <a href="https://arxiv.org/abs/1707.02535" target="_blank" rel="noopener">arXiv:1707.02535</a></li>
@@ -277,6 +287,18 @@ documentWorker.on('failed', (job, err) =&gt; {
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-decoupled-ingestion-pipeline" class="toc-link">The Decoupled Ingestion Pipeline</a></li>
+              <li class="toc-item toc-h2"><a href="#building-a-bullmq-worker-in-typescript" class="toc-link">Building a BullMQ Worker in TypeScript</a></li>
+              <li class="toc-item toc-h2"><a href="#queue-optimization-and-backoff-guardrails" class="toc-link">Queue Optimization and Backoff Guardrails</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

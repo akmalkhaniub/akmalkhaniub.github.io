@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-fragility-of-blocking-execution-threads">The Fragility of Blocking Execution Threads</a></li>
+                <li><a href="#1-under-the-hood-serializing-the-agent-context">1. Under the Hood: Serializing the Agent Context</a></li>
+                <li><a href="#2-setting-up-non-blocking-state-stores">2. Setting up Non-Blocking State Stores</a></li>
+                <li><a href="#code-demo-asynchronous-agent-state-checkpointer">Code Demo: Asynchronous Agent State Checkpointer</a></li>
+                <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Multi-agent workflows are non-deterministic, long-running processes. When an age
 </div>
 </div>
 <hr>
-<h2>The Fragility of Blocking Execution Threads</h2>
+<h2 id="the-fragility-of-blocking-execution-threads">The Fragility of Blocking Execution Threads</h2>
 <p>In basic code structures, developers wait for input using blocking loops (e.g. <code>input()</code>). In multi-agent services handling thousands of concurrent users, keeping system threads active during a human-in-the-loop (HITL) gate introduces several problems:</p>
 <ul>
 <li><strong>Resource Exhaustion</strong>: Active threads consume memory, thread pools, and database connections.</li>
@@ -130,7 +140,7 @@ flowchart TD
     Load --&gt; Deserialize[Reconstruct Memory Stack]
     Deserialize --&gt; Resume[Resume Agent: Execution Phase 2]</div>
 <hr>
-<h2>1. Under the Hood: Serializing the Agent Context</h2>
+<h2 id="1-under-the-hood-serializing-the-agent-context">1. Under the Hood: Serializing the Agent Context</h2>
 <p>To checkpoint a running agent, the state store must serialize its execution scope:</p>
 <ul>
 <li><strong>The History Stack</strong>: The complete chain of chat tokens, tool executions, and model responses.</li>
@@ -138,14 +148,14 @@ flowchart TD
 <li><strong>Configuration State</strong>: Variables and tool permissions associated with the session.</li>
 </ul>
 <hr>
-<h2>2. Setting up Non-Blocking State Stores</h2>
+<h2 id="2-setting-up-non-blocking-state-stores">2. Setting up Non-Blocking State Stores</h2>
 <p>A production-grade checkpointer uses:</p>
 <ol>
 <li><strong>Asynchronous Drivers</strong>: Writing serialization blocks asynchronously using async database adaptors to prevent blocking other processing loops.</li>
 <li><strong>Schema Validation</strong>: Using Pydantic models to assert that the state configuration schema matches the application version upon load.</li>
 </ol>
 <hr>
-<h2>Code Demo: Asynchronous Agent State Checkpointer</h2>
+<h2 id="code-demo-asynchronous-agent-state-checkpointer">Code Demo: Asynchronous Agent State Checkpointer</h2>
 <p>Below is a Python script modeling a state serialization checkpointer. It runs a multi-step task, serializes memory and states to a mock database file, pauses execution, and reconstructs the session parameters upon resumption.</p>
 <pre><code class="language-python">import json
 from typing import Dict, Any, List
@@ -211,7 +221,7 @@ if __name__ == &quot;__main__&quot;:
     for line in resumed_memory:
         print(f&quot;   {line}&quot;)</code></pre>
 <hr>
-<h2>Architectural Guidelines</h2>
+<h2 id="architectural-guidelines">Architectural Guidelines</h2>
 <ul>
 <li><strong>Serialize at Graph Boundaries</strong>: Only serialize agent states at clean graph transition boundaries, avoiding mid-execution tool locks.</li>
 <li><strong>Secure State Payload</strong>: Encrypt serialized state values stored in your database to prevent unauthorized developers from viewing API key context.</li>
@@ -244,6 +254,18 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-fragility-of-blocking-execution-threads" class="toc-link">The Fragility of Blocking Execution Threads</a></li>
+              <li class="toc-item toc-h2"><a href="#1-under-the-hood-serializing-the-agent-context" class="toc-link">1. Under the Hood: Serializing the Agent Context</a></li>
+              <li class="toc-item toc-h2"><a href="#2-setting-up-non-blocking-state-stores" class="toc-link">2. Setting up Non-Blocking State Stores</a></li>
+              <li class="toc-item toc-h2"><a href="#code-demo-asynchronous-agent-state-checkpointer" class="toc-link">Code Demo: Asynchronous Agent State Checkpointer</a></li>
+              <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

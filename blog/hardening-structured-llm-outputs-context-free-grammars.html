@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-prompting-deficit-why-parser-schemes-fail">The Prompting Deficit: Why Parser Schemes Fail</a></li>
+                <li><a href="#what-is-an-ebnf-grammar">What is an EBNF Grammar?</a></li>
+                <li><a href="#implementing-guided-generation-with-outlines">Implementing Guided Generation with Outlines</a></li>
+                <li><a href="#edge-guided-decoding-vs-closed-api-json-modes">Edge Guided Decoding vs. Closed API JSON Modes</a></li>
+                <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Feeding LLM outputs directly into downstream API endpoints is risky. Even with d
 </div>
 </div>
 <hr>
-<h2>The Prompting Deficit: Why Parser Schemes Fail</h2>
+<h2 id="the-prompting-deficit-why-parser-schemes-fail">The Prompting Deficit: Why Parser Schemes Fail</h2>
 <p>Traditionally, developers get structured JSON outputs from LLMs by combining system prompts (&quot;always respond in valid JSON&quot;) with validation parsers (like Pydantic). </p>
 <p>This is a reactive approach: the model generates tokens freely, and the parser validates the completed string. If the model generates a single unescaped quote or a missing comma, the entire JSON string becomes invalid, requiring expensive, high-latency API retries.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#d97706', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f59e0b', 'lineColor': '#d97706', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -127,14 +137,14 @@ flowchart TD
     Append --&gt; Prompt</div>
 <p>To solve this, we can act proactively using <strong>Guided Generation</strong>. Instead of parsing after generation, we hook into the model&#39;s token selection loop. At each generation step, a compiler parses the JSON schema into a <strong>Context-Free Grammar (EBNF)</strong>. The EBNF analyzer evaluates the partially generated string and flags which tokens are syntactically valid next steps, setting the probability of all invalid tokens to zero.</p>
 <hr>
-<h2>What is an EBNF Grammar?</h2>
+<h2 id="what-is-an-ebnf-grammar">What is an EBNF Grammar?</h2>
 <p>An <strong>Extended Backus-Naur Form (EBNF)</strong> grammar defines the syntax rules of a language. For example, a simple grammar forcing the model to only output a valid boolean key-value pair looks like this:</p>
 <pre><code class="language-ebnf">root   ::= &quot;{&quot; space &quot;\&quot;status\&quot;:&quot; space boolean &quot;}&quot;
 boolean ::= &quot;true&quot; | &quot;false&quot;
 space   ::= &quot; &quot; | &quot;&quot;</code></pre>
 <p>During generation, if the model has output <code>{&quot;status&quot;: </code>, the only valid next sequences of tokens are those forming the words <code>true</code> or <code>false</code>. If the model attempts to generate <code>&quot;</code> or <code>1</code>, the sampler intercepts and filters those tokens out.</p>
 <hr>
-<h2>Implementing Guided Generation with Outlines</h2>
+<h2 id="implementing-guided-generation-with-outlines">Implementing Guided Generation with Outlines</h2>
 <p>Below is a complete, production-ready Python example using the <strong>Outlines</strong> library to force a local Hugging Face model to return structured user profiles matching a Pydantic schema with 100% reliability.</p>
 <pre><code class="language-python">import pydantic
 from typing import List, Optional
@@ -174,7 +184,7 @@ print(f&quot;Title: {result.current_title}&quot;)
 # Output is a true Pydantic object instance:
 # UserProfile(name='Akmal', age=42, skills=['Python', 'Go', 'Kubernetes'], current_title=None)</code></pre>
 <hr>
-<h2>Edge Guided Decoding vs. Closed API JSON Modes</h2>
+<h2 id="edge-guided-decoding-vs-closed-api-json-modes">Edge Guided Decoding vs. Closed API JSON Modes</h2>
 <table>
 <thead>
 <tr>
@@ -205,7 +215,7 @@ print(f&quot;Title: {result.current_title}&quot;)
 </tr>
 </tbody></table>
 <hr>
-<h2>Conclusion &amp; Takeaways</h2>
+<h2 id="conclusion-takeaways">Conclusion &amp; Takeaways</h2>
 <p>To ensure reliable, crash-free structured data ingestion:</p>
 <ul>
 <li><input disabled="" type="checkbox"> <strong>Enforce structured outputs at the engine level</strong>: Stop relying on post-generation regex or JSON parse try-catch blocks. Mask invalid tokens before they are selected.</li>
@@ -240,6 +250,18 @@ print(f&quot;Title: {result.current_title}&quot;)
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-prompting-deficit-why-parser-schemes-fail" class="toc-link">The Prompting Deficit: Why Parser Schemes Fail</a></li>
+              <li class="toc-item toc-h2"><a href="#what-is-an-ebnf-grammar" class="toc-link">What is an EBNF Grammar?</a></li>
+              <li class="toc-item toc-h2"><a href="#implementing-guided-generation-with-outlines" class="toc-link">Implementing Guided Generation with Outlines</a></li>
+              <li class="toc-item toc-h2"><a href="#edge-guided-decoding-vs-closed-api-json-modes" class="toc-link">Edge Guided Decoding vs. Closed API JSON Modes</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

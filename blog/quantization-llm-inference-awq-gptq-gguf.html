@@ -104,6 +104,15 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#llm-quantization-awq-salient-weight-architecture">LLM Quantization &amp; AWQ Salient Weight Architecture</a></li>
+                <li><a href="#python-implementation-uniform-linear-quantizer-awq-engine">Python Implementation: Uniform Linear Quantizer &amp; AWQ Engine</a></li>
+                <li><a href="#llm-quantization-gotchas-best-practices">LLM Quantization Gotchas &amp; Best Practices</a></li>
+                <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+              </ul>
+            </details>
 <p>Running 70-billion parameter Large Language Models (such as Llama-3-70B) in standard FP16 (16-bit floating-point) precision requires <strong>140 GB of GPU VRAM</strong> just to load the model weights into memory.</p>
 <p>$$\text{VRAM Size} = 70 \times 10^9 \text{ parameters} \times 2 \text{ bytes/parameter} = 140 \text{ GB}$$</p>
 <p>This forces organizations to deploy multi-GPU clusters (e.g., $2 \times \text{NVIDIA A100 } 80\text{GB}$ nodes), incurring steep hardware and hosting costs.</p>
@@ -111,7 +120,7 @@
 <p>Quantization compresses model weight precision from 16-bit floating-point (<code>FP16</code>) down to 8-bit (<code>INT8</code>) or 4-bit (<code>INT4</code>) integers, achieving up to <strong>$4\times$ memory reduction with minimal perplexity degradation</strong>.</p>
 <p>This article explores Post-Training Quantization (PTQ), Activation-aware Weight Quantization (AWQ), GPTQ, and GGUF memory reduction formats.</p>
 <hr>
-<h2>LLM Quantization &amp; AWQ Salient Weight Architecture</h2>
+<h2 id="llm-quantization-awq-salient-weight-architecture">LLM Quantization &amp; AWQ Salient Weight Architecture</h2>
 <p>How AWQ identifies salient weights based on activation magnitudes to preserve accuracy at 4-bit precision:</p>
 <div class="mermaid">graph TD
   subgraph Unquantized Model Weights (FP16: 140 GB VRAM)
@@ -128,7 +137,7 @@
     Protect &amp; Uniform4Bit --&gt; QuantizedModel[(Quantized 4-Bit Model: AWQ / GPTQ / GGUF)]
     QuantizedModel --&gt;|4. High-Speed Inference| ConsumerGPU[Single GPU / Desktop CPU]
   end</div>
-<h3>Core Quantization Algorithms &amp; Formats</h3>
+<h3 id="core-quantization-algorithms-formats">Core Quantization Algorithms &amp; Formats</h3>
 <ol>
 <li><strong>Uniform Linear Quantization (Scale &amp; Zero-Point)</strong>: Maps continuous 16-bit floating-point values ($x$) to discrete $n$-bit integers ($q$).
 $$q = \text{clamp}\left(\text{round}\left(\frac{x}{S}\right) + Z, q_{\text{min}}, q_{\text{max}}\right)$$<ul>
@@ -141,7 +150,7 @@ $$q = \text{clamp}\left(\text{round}\left(\frac{x}{S}\right) + Z, q_{\text{min}}
 <li><strong>GGUF (llama.cpp Binary Format)</strong>: A single-file binary container designed for CPU/GPU hybrid offloading. GGUF packs quantized weight blocks (<code>Q4_K_M</code>, <code>Q5_K_S</code>, <code>Q8_0</code>) along with key-value metadata, allowing desktop CPUs to execute LLM inference via SIMD AVX-512/ARM Neon vector instructions.</li>
 </ol>
 <hr>
-<h2>Python Implementation: Uniform Linear Quantizer &amp; AWQ Engine</h2>
+<h2 id="python-implementation-uniform-linear-quantizer-awq-engine">Python Implementation: Uniform Linear Quantizer &amp; AWQ Engine</h2>
 <p>Here is a production-grade Python implementation of a 4-Bit Uniform Linear Quantizer and AWQ Salient Weight Protection Engine:</p>
 <pre><code class="language-python">import torch
 import math
@@ -227,7 +236,7 @@ if __name__ == &quot;__main__&quot;:
     print(f&quot;   • Standard INT4 Mean Error: {error_std:.6f}&quot;)
     print(f&quot;   • AWQ Protected INT4 Error:  {error_awq:.6f} (Lower Error &amp; Better Perplexity!)&quot;)</code></pre>
 <hr>
-<h2>LLM Quantization Gotchas &amp; Best Practices</h2>
+<h2 id="llm-quantization-gotchas-best-practices">LLM Quantization Gotchas &amp; Best Practices</h2>
 <p>When deploying quantized LLM inference:</p>
 <div class="alert alert-important">
   <div class="alert-title"><i class="fa-solid fa-circle-exclamation"></i> Important</div>
@@ -240,7 +249,7 @@ if __name__ == &quot;__main__&quot;:
 </div>
 </div>
 <hr>
-<h2>Real-World Enterprise Impact</h2>
+<h2 id="real-world-enterprise-impact">Real-World Enterprise Impact</h2>
 <p>Platforms adopting 4-bit LLM quantization (such as <strong>AWQ</strong> and <strong>GGUF</strong>) report:</p>
 <ul>
 <li><strong>75% Reduction in GPU VRAM Costs</strong>: Running Llama-3-70B on a single $40\text{GB}$ GPU node instead of requiring multi-GPU $140\text{GB}$ clusters.</li>
@@ -273,6 +282,17 @@ if __name__ == &quot;__main__&quot;:
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#llm-quantization-awq-salient-weight-architecture" class="toc-link">LLM Quantization &amp; AWQ Salient Weight Architecture</a></li>
+              <li class="toc-item toc-h2"><a href="#python-implementation-uniform-linear-quantizer-awq-engine" class="toc-link">Python Implementation: Uniform Linear Quantizer &amp; AWQ Engine</a></li>
+              <li class="toc-item toc-h2"><a href="#llm-quantization-gotchas-best-practices" class="toc-link">LLM Quantization Gotchas &amp; Best Practices</a></li>
+              <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

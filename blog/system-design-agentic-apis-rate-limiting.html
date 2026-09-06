@@ -104,6 +104,16 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#the-agentic-traffic-pattern">The Agentic Traffic Pattern</a></li>
+                <li><a href="#1-designing-api-schemas-for-llm-comprehension">1. Designing API Schemas for LLM Comprehension</a></li>
+                <li><a href="#2-idempotency-key-propagation-across-swarms">2. Idempotency Key Propagation across Swarms</a></li>
+                <li><a href="#3-implementing-a-rate-limiting-guard-in-fastapi">3. Implementing a Rate-Limiting Guard in FastAPI</a></li>
+                <li><a href="#key-takeaways-for-system-architects">key Takeaways for System Architects</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,7 +121,7 @@ Traditional REST APIs are architected around predictable, linear human behaviors
 </div>
 </div>
 <hr>
-<h2>The Agentic Traffic Pattern</h2>
+<h2 id="the-agentic-traffic-pattern">The Agentic Traffic Pattern</h2>
 <p>When an AI agent executes a multi-step task, it consumes APIs not as a static integration, but as dynamic tools. This creates traffic behaviors that differ fundamentally from human clients:</p>
 <ol>
 <li><strong>High Concurrency and Depth</strong>: An agent might spawn parallel sub-agents, resulting in hundreds of API requests hitting downstream microservices in a single second.</li>
@@ -133,7 +143,7 @@ flowchart TD
         ToolGate --&gt;|Idempotency Guard &amp; Rate Limiter| DB
     end</div>
 <hr>
-<h2>1. Designing API Schemas for LLM Comprehension</h2>
+<h2 id="1-designing-api-schemas-for-llm-comprehension">1. Designing API Schemas for LLM Comprehension</h2>
 <p>To ensure agents execute tool calls reliably, APIs must be designed with LLM consumption in mind:</p>
 <ul>
 <li><strong>Self-Describing Fields</strong>: Prefer verbose, semantic field names (e.g., <code>is_active_subscription</code> instead of <code>act_sub</code>).</li>
@@ -141,14 +151,14 @@ flowchart TD
 <li><strong>Semantic Error Payloads</strong>: Instead of returning a generic <code>400 Bad Request</code>, return a structured JSON response explaining exactly <em>what</em> was invalid and <em>how</em> to correct it. This allows the LLM agent to parse the error and self-correct.</li>
 </ul>
 <hr>
-<h2>2. Idempotency Key Propagation across Swarms</h2>
+<h2 id="2-idempotency-key-propagation-across-swarms">2. Idempotency Key Propagation across Swarms</h2>
 <p>Since agents are prone to network timeouts or validation retries, every write endpoint must enforce <strong>Idempotency</strong>. </p>
 <ul>
 <li><strong>Mechanics</strong>: The client generates a unique <code>Idempotency-Key</code> (typically a UUIDv4) and sends it in the request header. The server stores the key and the resulting response payload in a fast cache (like Redis) with a short TTL (e.g., 24 hours).</li>
 <li><strong>Propagation</strong>: If an orchestrator agent delegates a task to worker agents, it must propagate the root transaction&#39;s idempotency context down the call graph. This guarantees that even if a worker agent crashes and restarts, it cannot execute duplicate operations (e.g., billing a credit card twice).</li>
 </ul>
 <hr>
-<h2>3. Implementing a Rate-Limiting Guard in FastAPI</h2>
+<h2 id="3-implementing-a-rate-limiting-guard-in-fastapi">3. Implementing a Rate-Limiting Guard in FastAPI</h2>
 <p>Below is a complete FastAPI application demonstrating how to enforce idempotency checks and apply a token-bucket rate limiter designed to guard against recursive agentic loops.</p>
 <pre><code class="language-python">import time
 from typing import Dict, Optional
@@ -233,7 +243,7 @@ def execute_transfer(
     print(f&quot;[EXECUTE] Processing new transaction: {transaction_id}&quot;)
     return ToolResponse(**response_data)</code></pre>
 <hr>
-<h2>key Takeaways for System Architects</h2>
+<h2 id="key-takeaways-for-system-architects">key Takeaways for System Architects</h2>
 <ul>
 <li><strong>Standardize Idempotency</strong>: Never expose a state-altering tool to an LLM agent without requiring an idempotency key.</li>
 <li><strong>Design for Error Autonomy</strong>: Include precise diagnostic fields and recovery instructions in error payloads to help agents self-correct without human intervention.</li>
@@ -266,6 +276,18 @@ def execute_transfer(
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#the-agentic-traffic-pattern" class="toc-link">The Agentic Traffic Pattern</a></li>
+              <li class="toc-item toc-h2"><a href="#1-designing-api-schemas-for-llm-comprehension" class="toc-link">1. Designing API Schemas for LLM Comprehension</a></li>
+              <li class="toc-item toc-h2"><a href="#2-idempotency-key-propagation-across-swarms" class="toc-link">2. Idempotency Key Propagation across Swarms</a></li>
+              <li class="toc-item toc-h2"><a href="#3-implementing-a-rate-limiting-guard-in-fastapi" class="toc-link">3. Implementing a Rate-Limiting Guard in FastAPI</a></li>
+              <li class="toc-item toc-h2"><a href="#key-takeaways-for-system-architects" class="toc-link">key Takeaways for System Architects</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">

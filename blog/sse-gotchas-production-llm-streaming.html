@@ -104,6 +104,25 @@
           </div>
 
           <div class="article-body">
+            <details class="mobile-toc">
+              <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
+              <ul class="mobile-toc-list">
+                <li><a href="#why-sse-looks-easy-but-isnt">Why SSE Looks Easy But Isn't</a></li>
+                <li><a href="#the-full-sse-failure-map">The Full SSE Failure Map</a></li>
+                <li><a href="#gotcha-1-your-proxy-is-buffering-everything">Gotcha 1: Your Proxy Is Buffering Everything</a></li>
+                <li><a href="#gotcha-2-http11-browser-connection-limit-6-per-domain">Gotcha 2: HTTP/1.1 Browser Connection Limit (6 Per Domain)</a></li>
+                <li><a href="#gotcha-3-eventsource-cannot-send-authorization-headers">Gotcha 3: EventSource Cannot Send Authorization Headers</a></li>
+                <li><a href="#gotcha-4-cloudflares-100-second-hard-timeout">Gotcha 4: Cloudflare's 100-Second Hard Timeout</a></li>
+                <li><a href="#gotcha-5-nextjs-edge-runtime-buffers-sse">Gotcha 5: Next.js Edge Runtime Buffers SSE</a></li>
+                <li><a href="#gotcha-6-express-compression-middleware-breaks-sse">Gotcha 6: Express compression() Middleware Breaks SSE</a></li>
+                <li><a href="#gotcha-7-python-fastapi-asyncio-generator-must-explicitly-flush">Gotcha 7: Python FastAPI — asyncio Generator Must Explicitly Flush</a></li>
+                <li><a href="#gotcha-8-eventsource-auto-reconnect-replays-duplicate-tokens">Gotcha 8: EventSource Auto-Reconnect Replays Duplicate Tokens</a></li>
+                <li><a href="#gotcha-9-reconnect-storms-on-server-restart">Gotcha 9: Reconnect Storms on Server Restart</a></li>
+                <li><a href="#gotcha-10-connection-leak-client-never-closes-the-stream">Gotcha 10: Connection Leak — Client Never Closes the Stream</a></li>
+                <li><a href="#quick-reference-the-sse-production-checklist">Quick Reference: The SSE Production Checklist</a></li>
+                <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+              </ul>
+            </details>
 <div class="alert alert-note">
   <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
   <div class="alert-content"><p><strong>📖 Article Overview</strong>
@@ -111,14 +130,14 @@ Server-Sent Events (SSE) look deceptively simple — open a connection, stream t
 </div>
 </div>
 <hr>
-<h2>Why SSE Looks Easy But Isn&#39;t</h2>
+<h2 id="why-sse-looks-easy-but-isnt">Why SSE Looks Easy But Isn&#39;t</h2>
 <p>The EventSource API on the browser side is three lines:</p>
 <pre><code class="language-javascript">const source = new EventSource('/api/stream');
 source.onmessage = (e) =&gt; console.log(e.data);</code></pre>
 <p>The server side is barely more. But between your Node.js process and the browser sits a gauntlet: <strong>reverse proxies, CDNs, load balancers, middleware frameworks, and mobile network stacks</strong> — each with their own opinions about what a &quot;response&quot; looks like and when to flush it.</p>
 <p>The result: SSE that works perfectly in local development silently breaks in every production environment it touches.</p>
 <hr>
-<h2>The Full SSE Failure Map</h2>
+<h2 id="the-full-sse-failure-map">The Full SSE Failure Map</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     C[Browser EventSource] --&gt; P1{Proxy / CDN Layer}
@@ -151,7 +170,7 @@ flowchart TD
     style G9 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style G10 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
 <hr>
-<h2>Gotcha 1: Your Proxy Is Buffering Everything</h2>
+<h2 id="gotcha-1-your-proxy-is-buffering-everything">Gotcha 1: Your Proxy Is Buffering Everything</h2>
 <p><strong>Symptom</strong>: Works perfectly on <code>localhost:3000</code>. On production (behind Nginx or an AWS ALB), tokens don&#39;t appear until the full LLM response completes — then dump all at once. Streaming is completely broken.</p>
 <p><strong>Root cause</strong>: Nginx buffers upstream responses by default. It collects the full body before forwarding to the client, making SSE indistinguishable from a slow JSON response.</p>
 <p><strong>Fix — Nginx config:</strong></p>
@@ -202,7 +221,7 @@ async def stream_endpoint():
         }
     )</code></pre>
 <hr>
-<h2>Gotcha 2: HTTP/1.1 Browser Connection Limit (6 Per Domain)</h2>
+<h2 id="gotcha-2-http11-browser-connection-limit-6-per-domain">Gotcha 2: HTTP/1.1 Browser Connection Limit (6 Per Domain)</h2>
 <p><strong>Symptom</strong>: Your app opens multiple SSE streams (e.g., one per chat thread). After 6 concurrent tabs/streams to the same domain, new streams silently fail or existing ones freeze.</p>
 <p><strong>Root cause</strong>: HTTP/1.1 browsers enforce a <strong>maximum of 6 simultaneous connections per domain</strong>. Each SSE stream holds one connection open permanently — 6 streams exhausts the pool for the entire domain, blocking all other requests including regular API calls, image loads, and fetch requests.</p>
 <p><strong>Fix — Option A: Upgrade to HTTP/2</strong> (multiplexes all streams over one TCP connection — solves the problem entirely):</p>
@@ -247,7 +266,7 @@ self.onconnect = (e: MessageEvent) =&gt; {
   };
 };</code></pre>
 <hr>
-<h2>Gotcha 3: EventSource Cannot Send Authorization Headers</h2>
+<h2 id="gotcha-3-eventsource-cannot-send-authorization-headers">Gotcha 3: EventSource Cannot Send Authorization Headers</h2>
 <p><strong>Symptom</strong>: You try to protect your SSE endpoint with a Bearer token. Every other endpoint uses <code>Authorization: Bearer &lt;token&gt;</code>. EventSource silently ignores it — the browser always opens the SSE connection <strong>without custom headers</strong>, sending only cookies.</p>
 <p><strong>Root cause</strong>: The <code>EventSource</code> API does not support custom headers. It is a known, unfixed limitation of the W3C spec.</p>
 <pre><code class="language-typescript">// ❌ THIS DOES NOT WORK — headers are silently ignored
@@ -297,7 +316,7 @@ async function streamWithAuth(url: string, token: string): Promise&lt;void&gt; {
   }
 }</code></pre>
 <hr>
-<h2>Gotcha 4: Cloudflare&#39;s 100-Second Hard Timeout</h2>
+<h2 id="gotcha-4-cloudflares-100-second-hard-timeout">Gotcha 4: Cloudflare&#39;s 100-Second Hard Timeout</h2>
 <p><strong>Symptom</strong>: Long LLM responses (e.g., generating a 5,000-word document) get cut off at exactly 100 seconds on Cloudflare-proxied domains. Connection drops, client gets no completion signal.</p>
 <p><strong>Root cause</strong>: Cloudflare&#39;s free and Pro plans enforce a <strong>100-second HTTP response timeout</strong>. It doesn&#39;t matter if you&#39;re streaming — if the connection is open longer than 100s, Cloudflare terminates it.</p>
 <p><strong>Fix — Send keepalive comments every 15 seconds</strong> (SSE comment lines starting with <code>:</code> are valid per spec, invisible to client, but reset Cloudflare&#39;s idle timeout):</p>
@@ -343,7 +362,7 @@ app.get('/api/stream', async (c) =&gt; {
   });
 });</code></pre>
 <hr>
-<h2>Gotcha 5: Next.js Edge Runtime Buffers SSE</h2>
+<h2 id="gotcha-5-nextjs-edge-runtime-buffers-sse">Gotcha 5: Next.js Edge Runtime Buffers SSE</h2>
 <p><strong>Symptom</strong>: Your Next.js Route Handler at <code>app/api/stream/route.ts</code> doesn&#39;t stream in production — even with <code>export const runtime = &#39;edge&#39;</code>. Vercel deployments receive all tokens at once.</p>
 <p><strong>Root cause</strong>: Next.js&#39;s bundler and some Vercel edge network configurations can buffer ReadableStream responses. You need to explicitly signal streaming intent.</p>
 <pre><code class="language-typescript">// ❌ This may buffer in Next.js production
@@ -397,7 +416,7 @@ export async function GET(request: Request) {
   });
 }</code></pre>
 <hr>
-<h2>Gotcha 6: Express <code>compression()</code> Middleware Breaks SSE</h2>
+<h2 id="gotcha-6-express-compression-middleware-breaks-sse">Gotcha 6: Express <code>compression()</code> Middleware Breaks SSE</h2>
 <p><strong>Symptom</strong>: SSE streams stall randomly. Works in development (no compression), breaks in production where <code>compression()</code> middleware is active.</p>
 <p><strong>Root cause</strong>: Express&#39;s <code>compression</code> middleware buffers response chunks to apply gzip — destroying SSE&#39;s real-time nature. It can&#39;t flush individual SSE events; it holds them waiting for more data to compress efficiently.</p>
 <pre><code class="language-typescript">// ❌ Global compression breaks SSE
@@ -416,7 +435,7 @@ app.use(compression({
   }
 }));</code></pre>
 <hr>
-<h2>Gotcha 7: Python FastAPI — asyncio Generator Must Explicitly Flush</h2>
+<h2 id="gotcha-7-python-fastapi-asyncio-generator-must-explicitly-flush">Gotcha 7: Python FastAPI — asyncio Generator Must Explicitly Flush</h2>
 <p><strong>Symptom</strong>: FastAPI SSE streams in development but not in production with Gunicorn/Uvicorn workers. Tokens batch in groups of ~20 instead of arriving one by one.</p>
 <p><strong>Root cause</strong>: Python&#39;s async generators buffer <code>yield</code> statements depending on the ASGI server configuration and OS socket buffer sizes. You need to yield the newlines as separate flushes.</p>
 <pre><code class="language-python"># May buffer — single yield per event
@@ -469,7 +488,7 @@ async def stream(request: Request):
 <p>Run Uvicorn with <code>--workers 1</code> for SSE-heavy apps, or use <code>--loop uvloop</code> for better async performance:</p>
 <pre><code class="language-bash">uvicorn main:app --host 0.0.0.0 --port 8000 --loop uvloop --timeout-keep-alive 300</code></pre>
 <hr>
-<h2>Gotcha 8: EventSource Auto-Reconnect Replays Duplicate Tokens</h2>
+<h2 id="gotcha-8-eventsource-auto-reconnect-replays-duplicate-tokens">Gotcha 8: EventSource Auto-Reconnect Replays Duplicate Tokens</h2>
 <p><strong>Symptom</strong>: When a network blip causes the SSE connection to drop and reconnect, the client re-renders the entire partial response from the beginning — duplicating tokens that were already displayed.</p>
 <p><strong>Root cause</strong>: <code>EventSource</code> automatically reconnects after disconnection (after ~3 seconds). Without a <code>Last-Event-ID</code> mechanism, the server has no way to know what was already delivered, so it starts from scratch.</p>
 <p><strong>Fix — Implement <code>id:</code> fields and resume-from-offset:</strong></p>
@@ -515,7 +534,7 @@ const source = new EventSource(`/api/stream/${sessionId}`);
 // No extra code needed — browser handles Last-Event-ID automatically!
 source.onmessage = (e) =&gt; appendToken(JSON.parse(e.data).token);</code></pre>
 <hr>
-<h2>Gotcha 9: Reconnect Storms on Server Restart</h2>
+<h2 id="gotcha-9-reconnect-storms-on-server-restart">Gotcha 9: Reconnect Storms on Server Restart</h2>
 <p><strong>Symptom</strong>: You deploy a new server version. All 500 concurrent SSE clients reconnect simultaneously. Your cold-start server is immediately overwhelmed — 500 concurrent LLM calls spike your costs and latency.</p>
 <p><strong>Root cause</strong>: <code>EventSource</code> has a fixed 3-second retry interval. 500 clients all waiting 3 seconds from the same disconnect event all reconnect at <code>t+3s</code> simultaneously — a <strong>thundering herd</strong>.</p>
 <p><strong>Fix — Override retry interval with jitter from the server side:</strong></p>
@@ -554,7 +573,7 @@ function connectSSE() {
 
 connectSSE();</code></pre>
 <hr>
-<h2>Gotcha 10: Connection Leak — Client Never Closes the Stream</h2>
+<h2 id="gotcha-10-connection-leak-client-never-closes-the-stream">Gotcha 10: Connection Leak — Client Never Closes the Stream</h2>
 <p><strong>Symptom</strong>: After the LLM finishes generating, the SSE connection stays open. The server holds the connection alive, consuming a file descriptor and memory. After hundreds of requests, your server hits its open-file-descriptor limit (<code>EMFILE</code> error).</p>
 <p><strong>Root cause</strong>: <code>EventSource</code> never closes itself. You must explicitly send a termination signal and call <code>source.close()</code> on the client, or the connection leaks indefinitely.</p>
 <p><strong>Fix — Send a <code>[DONE]</code> signal and close on both sides:</strong></p>
@@ -598,7 +617,7 @@ useEffect(() =&gt; {
   return () =&gt; source.close();  // ← Cleanup on unmount
 }, []);</code></pre>
 <hr>
-<h2>Quick Reference: The SSE Production Checklist</h2>
+<h2 id="quick-reference-the-sse-production-checklist">Quick Reference: The SSE Production Checklist</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981'}}}%%
 mindmap
   root((SSE Production&lt;br/&gt;Checklist))
@@ -624,7 +643,7 @@ mindmap
       Always close on DONE signal
       Close on component unmount</div>
 <hr>
-<h2>Conclusion &amp; Key Takeaways</h2>
+<h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
 <p>SSE is the right protocol for LLM token streaming — it&#39;s simpler than WebSockets, HTTP/2 compatible, and natively auto-reconnecting. But &quot;simple&quot; doesn&#39;t mean &quot;trivial to deploy&quot;. The pitfalls are infrastructure-level, not code-level, which is why they&#39;re so hard to debug.</p>
 <ul>
 <li><strong><code>X-Accel-Buffering: no</code> is your most important header</strong> — set it on every SSE response and it protects you from Nginx, Varnish, and most CDN buffering with a single line.</li>
@@ -632,7 +651,7 @@ mindmap
 <li><strong>Always send <code>[DONE]</code> and always call <code>source.close()</code></strong> — every unclosed SSE connection is a file descriptor leak that will eventually crash your server under load.</li>
 </ul>
 <hr>
-<h3>Research References &amp; Resources</h3>
+<h3 id="research-references-resources">Research References &amp; Resources</h3>
 <ul>
 <li><strong>W3C SSE Specification</strong>: <a href="https://html.spec.whatwg.org/multipage/server-sent-events.html" target="_blank" rel="noopener">Server-Sent Events Living Standard</a></li>
 <li><strong>MDN EventSource API</strong>: <a href="https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events" target="_blank" rel="noopener">Using server-sent events</a></li>
@@ -666,6 +685,27 @@ mindmap
       </div>
 
       <aside class="blog-sidebar">
+        <div class="sidebar-card article-toc-card" id="article-toc-container">
+          <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
+          <nav class="article-toc">
+            <ul class="toc-list">
+              <li class="toc-item toc-h2"><a href="#why-sse-looks-easy-but-isnt" class="toc-link">Why SSE Looks Easy But Isn't</a></li>
+              <li class="toc-item toc-h2"><a href="#the-full-sse-failure-map" class="toc-link">The Full SSE Failure Map</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-1-your-proxy-is-buffering-everything" class="toc-link">Gotcha 1: Your Proxy Is Buffering Everything</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-2-http11-browser-connection-limit-6-per-domain" class="toc-link">Gotcha 2: HTTP/1.1 Browser Connection Limit (6 Per Domain)</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-3-eventsource-cannot-send-authorization-headers" class="toc-link">Gotcha 3: EventSource Cannot Send Authorization Headers</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-4-cloudflares-100-second-hard-timeout" class="toc-link">Gotcha 4: Cloudflare's 100-Second Hard Timeout</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-5-nextjs-edge-runtime-buffers-sse" class="toc-link">Gotcha 5: Next.js Edge Runtime Buffers SSE</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-6-express-compression-middleware-breaks-sse" class="toc-link">Gotcha 6: Express compression() Middleware Breaks SSE</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-7-python-fastapi-asyncio-generator-must-explicitly-flush" class="toc-link">Gotcha 7: Python FastAPI — asyncio Generator Must Explicitly Flush</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-8-eventsource-auto-reconnect-replays-duplicate-tokens" class="toc-link">Gotcha 8: EventSource Auto-Reconnect Replays Duplicate Tokens</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-9-reconnect-storms-on-server-restart" class="toc-link">Gotcha 9: Reconnect Storms on Server Restart</a></li>
+              <li class="toc-item toc-h2"><a href="#gotcha-10-connection-leak-client-never-closes-the-stream" class="toc-link">Gotcha 10: Connection Leak — Client Never Closes the Stream</a></li>
+              <li class="toc-item toc-h2"><a href="#quick-reference-the-sse-production-checklist" class="toc-link">Quick Reference: The SSE Production Checklist</a></li>
+              <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+            </ul>
+          </nav>
+        </div>
         <div class="sidebar-card">
           <h4><i class="fa-solid fa-list"></i> Latest Articles</h4>
           <ul class="sidebar-post-list">
