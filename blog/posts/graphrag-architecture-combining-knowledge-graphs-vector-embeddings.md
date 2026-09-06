@@ -20,7 +20,7 @@ The GraphRAG pipeline merges dense semantic retrieval with explicit property gra
 graph TD
   A[User / Agent Query] --> B[Dynamic Hybrid Retriever]
   
-  subgraph GraphRAG Knowledge Engine
+  subgraph SG1_GraphragKnowledgeEngine ["GraphRAG Knowledge Engine"]
     B -->|Step 1: Vector Semantic Match| C[(Vector Embedding Index)]
     B -->|Step 2: Explicit Relationship Hop| D[(Neo4j Property Graph)]
     

@@ -14,13 +14,13 @@ To solve this, modern vector engines utilize **Vector Quantization** to compress
 
 ```mermaid
 graph TD
-  subgraph Raw Vector: 1536 floats 6144 bytes
+  subgraph SG1_RawVector1536 ["Raw Vector: 1536 floats 6144 bytes"]
     Raw[1.42, -0.84, ..., 0.12]
   end
-  subgraph Scalar Quantization: 1536 bytes
+  subgraph SG2_ScalarQuantization1536 ["Scalar Quantization: 1536 bytes"]
     SQ[Map float32 range to int8: 127, -64, ..., 10]
   end
-  subgraph Product Quantization: 96 bytes
+  subgraph SG3_ProductQuantization96 ["Product Quantization: 96 bytes"]
     Sub1[Sub-vector 1] --> Centroid1[Centroid Index: 0x05]
     Sub2[Sub-vector 2] --> Centroid2[Centroid Index: 0xA2]
     PQ[Array of centroid byte indices]

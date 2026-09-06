@@ -32,7 +32,7 @@ graph TD
     C --> E[Neo4j Property Graph Store]
     D --> E
     
-    subgraph Query Execution Gate
+    subgraph SG1_QueryExecutionGate ["Query Execution Gate"]
         F[User Query] --> G{Query Classifier}
         G -->|Local Search: Entity Specific| H[Local Query Engine]
         G -->|Global Search: Thematic| I[Global Community Search]

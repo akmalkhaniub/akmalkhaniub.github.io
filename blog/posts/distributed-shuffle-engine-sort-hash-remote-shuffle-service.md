@@ -20,17 +20,17 @@ How distributed engines manage map-side shuffle output files and how Remote Shuf
 
 ```mermaid
 graph TD
-  subgraph Legacy Hash Shuffle (M Mappers x R Reducers File Explosion)
+  subgraph SG1_LegacyHashShuffle ["Legacy Hash Shuffle (M Mappers x R Reducers File Explosion)"]
     Map1[Map Task 1] --> File1[Partition File 1] & File2[Partition File 2] & File3[Partition File R (M x R Files!)]
   end
   
-  subgraph Modern Sort Shuffle (Single Data File + Index File)
+  subgraph SG2_ModernSortShuffle ["Modern Sort Shuffle (Single Data File + Index File)"]
     MapSort[Map Task] -->|Sort Records by Reducer ID| InMemBuffer[In-Memory Sorter Buffer]
     InMemBuffer --> SingleDataFile["📄 Single Data File: [Part 0 Data | Part 1 Data | Part 2 Data]"]
     InMemBuffer --> IndexFile["📑 Index File: [Part 0: Offset 0..1024 | Part 1: Offset 1024..4096]"]
   end
   
-  subgraph Disaggregated Remote Shuffle Service (RSS: Apache Uniffle / Celeborn)
+  subgraph SG3_DisaggregatedRemoteShuffle ["Disaggregated Remote Shuffle Service (RSS: Apache Uniffle / Celeborn)"]
     Executor[Spark Executor (Diskless Cloud Instance)] -->|Push Shuffle Data via Netty| RSSCluster[Remote Shuffle Cluster / Cloud Storage (Zero Local Disk Storage!)]
   end
 ```

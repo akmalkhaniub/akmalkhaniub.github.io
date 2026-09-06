@@ -122,13 +122,13 @@
 <h2 id="multi-tier-lifecycle-zero-downtime-migration-architecture">Multi-Tier Lifecycle &amp; Zero-Downtime Migration Architecture</h2>
 <p>How automated lifecycle policies transition objects across storage tiers and how dual-write proxies migrate data across cloud providers without downtime:</p>
 <div class="mermaid">graph TD
-  subgraph Automated Storage Class Lifecycle State Machine
+  subgraph SG1_AutomatedStorageClass [&quot;Automated Storage Class Lifecycle State Machine&quot;]
     Hot[&quot;🔥 Hot Tier (S3 Standard): $23/TB/mo (0s latency)&quot;] --&gt;|1. Age &gt; 30 Days| Cool[&quot;🧊 Cool Tier (S3 Standard-IA): $12.50/TB/mo&quot;]
     Cool --&gt;|2. Age &gt; 90 Days| Cold[&quot;❄️ Cold Archive (S3 Glacier): $4/TB/mo&quot;]
     Cold --&gt;|3. Age &gt; 365 Days| DeepArchive[&quot;🌌 Deep Archive: $0.99/TB/mo (12h retrieval)&quot;]
   end
   
-  subgraph Multi-Cloud Zero-Downtime Migration Proxy
+  subgraph SG2_MultiCloudZero [&quot;Multi-Cloud Zero-Downtime Migration Proxy&quot;]
     App[Application Request] --&gt; Proxy[Multi-Cloud Proxy Router]
     Proxy --&gt;|1. Read from New Target (Cloudflare R2)| TargetStore[Cloudflare R2 / MinIO (Zero Egress!)]
     TargetStore -.-&gt;|2. Fallback Miss: Fetch &amp; Replicate| SourceStore[AWS S3 Source Bucket]

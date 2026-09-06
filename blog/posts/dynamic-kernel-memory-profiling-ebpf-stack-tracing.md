@@ -20,19 +20,19 @@ How eBPF attaches kprobes and uprobes to record heap allocations and generate me
 
 ```mermaid
 graph TD
-  subgraph Production Userspace & Kernel Space
+  subgraph SG1_ProductionUserspaceKernel ["Production Userspace & Kernel Space"]
     App[User Application / Kernel Module] -->|1. Memory Alloc: malloc(size)| AllocHook["uprobe:libc.so:malloc / kprobe:kmalloc"]
     App -->|2. Memory Free: free(ptr)| FreeHook["uprobe:libc.so:free / kprobe:kfree"]
   end
   
-  subgraph eBPF In-Kernel Tracing Map Pipeline
+  subgraph SG2_EbpfInKernel ["eBPF In-Kernel Tracing Map Pipeline"]
     AllocHook -->|3. Record Pointer + Call Stack ID| AllocMap["eBPF Hash Map: { ptr -> alloc_info_t }"]
     AllocHook -->|4. Capture Stack Unwind| StackMap["eBPF Stack Trace Map: { stack_id -> [IP1, IP2, IP3] }"]
     
     FreeHook -->|5. Delete Pointer Entry| AllocMap
   end
   
-  subgraph Memory Leak Detection & Flamegraphs
+  subgraph SG3_MemoryLeakDetection ["Memory Leak Detection & Flamegraphs"]
     AllocMap -->|6. Scan Remaining Entries (Un-freed!)| LeakDetector[BCC memleak Engine]
     LeakDetector --> Flamegraph["🔥 Memory Leak Flamegraph Output"]
   end

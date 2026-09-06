@@ -12,13 +12,13 @@ To break this shared-fate trap and deliver true **99.999% availability (Five Nin
 
 ```mermaid
 graph TD
-  subgraph Monolithic Regional Cluster vs Cell-Based Architecture
-    subgraph 1. Monolithic Regional Cluster (100% Blast Radius)
+  subgraph SG1_MonolithicRegionalCluster ["Monolithic Regional Cluster vs Cell-Based Architecture"]
+    subgraph SG2_1MonolithicRegional ["1. Monolithic Regional Cluster (100% Blast Radius)"]
       Clients1[100,000 Tenants] --> BigCluster[Single Shared Kubernetes Cluster + PostgreSQL]
       BigCluster -->|Poison Pill Query / Config Crash| Outage[100% OF ALL CUSTOMERS DOWN]
     end
 
-    subgraph 2. Cell-Based Architecture (Strict 5% Blast Radius)
+    subgraph SG3_2CellBased ["2. Cell-Based Architecture (Strict 5% Blast Radius)"]
       Clients2[100,000 Tenants] --> CellRouter[Stateless Thin Cell Router]
       CellRouter -->|Tenants 1-5,000| Cell1["Cell 1: Isolated K8s + Dedicated DB"]
       CellRouter -->|Tenants 5,001-10,000| Cell2["Cell 2: Isolated K8s + Dedicated DB"]

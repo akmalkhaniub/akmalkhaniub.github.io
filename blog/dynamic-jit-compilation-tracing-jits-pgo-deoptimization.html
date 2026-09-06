@@ -122,18 +122,18 @@
 <h2 id="jit-compilation-deoptimization-pipeline-architecture">JIT Compilation &amp; Deoptimization Pipeline Architecture</h2>
 <p>How JIT engines profile hot loops, emit specialized machine code, and deoptimize when type guards fail:</p>
 <div class="mermaid">graph TD
-  subgraph Phase 1: Baseline Execution &amp; Profiling
+  subgraph SG1_Phase1Baseline [&quot;Phase 1: Baseline Execution &amp; Profiling&quot;]
     Interpreter[Baseline Interpreter / Bytecode Loop] --&gt;|1. Increment Loop Counter| Profiler{Hot Loop Threshold Exceeded? &gt; 1000 iter}
     Profiler --&gt;|No: Stay in Interpreter| Interpreter
   end
   
-  subgraph Phase 2: Speculative JIT Machine Code Emission
+  subgraph SG2_Phase2Speculative [&quot;Phase 2: Speculative JIT Machine Code Emission&quot;]
     Profiler --&gt;|Yes: Hot Loop Identified!| TracingJIT[Tracing JIT Compiler]
     TracingJIT --&gt;|2. Inspect Observed Types: e.g. a=INT32, b=INT32| TypeSpec[Speculative Type Specializer]
     TypeSpec --&gt;|3. Emit Assembly: ADD EAX, EBX| MachineCode[Optimized Native Machine Code]
   end
   
-  subgraph Phase 3: High-Speed Execution &amp; Deoptimization
+  subgraph SG3_Phase3High [&quot;Phase 3: High-Speed Execution &amp; Deoptimization&quot;]
     MachineCode --&gt;|4. Execute Native Loop (50x Faster!)| TypeGuard{Type Guard Check: Are inputs still INT32?}
     TypeGuard --&gt;|Pass: Continue Fast Path| MachineCode
     TypeGuard --&gt;|Fail: Input is String!| Deopt[🚨 DEOPTIMIZATION BAILOUT!]

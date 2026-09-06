@@ -16,14 +16,14 @@ The core breakthrough in modern LLM serving is **Continuous Batching** (also kno
 
 ```mermaid
 graph TD
-  subgraph Traditional Static Batching (High Latency)
+  subgraph SG1_TraditionalStaticBatching ["Traditional Static Batching (High Latency)"]
     A[Request 1: 50 Tokens] --> B[Static Batch 1]
     C[Request 2: 500 Tokens] --> B
     B --> D[GPU Processing Loop]
     D -->|Request 1 Finishes Early| E[GPU Idle Seats Wasted Waiting for Request 2]
   end
   
-  subgraph Continuous Batching vLLM / TensorRT-LLM
+  subgraph SG2_ContinuousBatchingVllm ["Continuous Batching vLLM / TensorRT-LLM"]
     F[Request 1: Token 1..50] --> G[Dynamic Iteration Scheduler]
     H[Request 2: Token 1..500] --> G
     I[New Request 3 Arrives] --> G

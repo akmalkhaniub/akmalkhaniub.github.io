@@ -18,18 +18,18 @@ How the Supervisor Agent plans missions, dispatches tasks to parallel worker nod
 
 ```mermaid
 graph TD
-  subgraph User Mission Ingestion
+  subgraph SG1_UserMissionIngestion ["User Mission Ingestion"]
     User[User Engineering Goal] --> Supervisor["LangGraph Supervisor Agent (Planner & Router)"]
   end
   
-  subgraph Parallel Domain Worker Swarm
+  subgraph SG2_ParallelDomainWorker ["Parallel Domain Worker Swarm"]
     Supervisor -->|Dispatch Task 1| Coder["Coder Agent (AST & Code Gen)"]
     Supervisor -->|Dispatch Task 2| Security["Security Auditor Agent (Static Analysis)"]
     Supervisor -->|Dispatch Task 3| DB["Database Planner Agent (Schema & Migrations)"]
     Supervisor -->|Dispatch Task 4| QA["QA Test Runner Agent (Unit & Integration Tests)"]
   end
   
-  subgraph Checkpoint Memory & Telemetry
+  subgraph SG3_CheckpointMemoryTelemetry ["Checkpoint Memory & Telemetry"]
     Coder & Security & DB & QA --> Checkpoint["PostgresSaver Checkpointing (Rollback & Resume)"]
     Checkpoint --> Evaluator["Supervisor Evaluation & Synthesis Gate"]
     Evaluator -->|Approved| MissionSuccess["🎉 Mission Complete (Merged Artifacts)"]

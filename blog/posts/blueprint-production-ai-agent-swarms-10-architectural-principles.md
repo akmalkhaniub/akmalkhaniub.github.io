@@ -18,7 +18,7 @@ This master blueprint synthesizes **10 foundational architectural principles** f
 
 ```mermaid
 graph TD
-  subgraph Production AI Agent Swarm Architecture (The 10 Principles)
+  subgraph SG1_ProductionAiAgent ["Production AI Agent Swarm Architecture (The 10 Principles)"]
     Supervisor["1. Hierarchical Supervisor (O(N) Topology)"]
     StateMachine["2. Deterministic State Machine Gates"]
     MCP["3. Model Context Protocol (MCP) Tool Sandboxes"]
@@ -129,7 +129,7 @@ Unlike local databases where `ROLLBACK` undoes all writes, autonomous agent swar
 
 ```mermaid
 graph TD
-  subgraph Dynamic Semantic Compensation Graph
+  subgraph SG2_DynamicSemanticCompensation ["Dynamic Semantic Compensation Graph"]
     Step1[1. Reserve Cloud GPUs] --> Step2[2. Charge Customer Card]
     Step2 --> Step3[3. Provision Kubernetes Cluster]
     Step3 -->|💥 Cluster Provisioning 500 Error| RollbackManager[Semantic Rollback Supervisor]

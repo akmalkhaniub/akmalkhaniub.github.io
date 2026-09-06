@@ -18,7 +18,7 @@ In flat vector databases:
 flowchart TD
     Doc[Source Document] --> Parent[Large Parent Chunk: 1000 tokens]
     
-    subgraph Chunk Hierarchy
+    subgraph SG1_ChunkHierarchy ["Chunk Hierarchy"]
         Parent --> Child1[Child Chunk 1: 128 tokens]
         Parent --> Child2[Child Chunk 2: 128 tokens]
     end

@@ -122,17 +122,17 @@
 <h2 id="zero-trust-architecture-wireguard-noise-handshake">Zero-Trust Architecture &amp; WireGuard Noise Handshake</h2>
 <p>How WireGuard Noise handshakes and SPIFFE/SPIRE workload identities enforce microsegmentation:</p>
 <div class="mermaid">graph TD
-  subgraph Kubernetes Pod A (Client Workload)
+  subgraph SG1_KubernetesPodA [&quot;Kubernetes Pod A (Client Workload)&quot;]
     WorkloadA[Workload A Container] --&gt;|1. Request SVID via Workload API| SPIRE_Agent1[SPIRE Agent Pod Daemon]
   end
   
-  subgraph SPIFFE/SPIRE Cryptographic Identity Engine
+  subgraph SG2_SpiffeSpireCryptographic [&quot;SPIFFE/SPIRE Cryptographic Identity Engine&quot;]
     SPIRE_Agent1 --&gt;|2. Container Attestation: Cgroup/Namespace| SPIRE_Server[SPIRE Server CA]
     SPIRE_Server --&gt;|3. Issue Short-Lived X.509 SVID| SPIRE_Agent1
     SPIRE_Agent1 --&gt;|4. Mount SPIFFE SVID: spiffe://domain/ns/prod/sa/payment| WorkloadA
   end
   
-  subgraph WireGuard Kernel-Space Encrypted Tunnel (Noise_IK Protocol)
+  subgraph SG3_WireguardKernelSpace [&quot;WireGuard Kernel-Space Encrypted Tunnel (Noise_IK Protocol)&quot;]
     WorkloadA --&gt;|5. Outbound Network Packet| WG0[WireGuard Kernel Interface wg0]
     WG0 --&gt;|6. Noise IK Handshake: Curve25519 + ChaCha20-Poly1305| WG1[WireGuard Kernel Interface wg1]
     WG1 --&gt;|7. Identity-Aware Rule: Is SPIFFE ID Authorized?| WorkloadB[Workload B Container: Payment DB]

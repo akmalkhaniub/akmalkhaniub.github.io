@@ -23,16 +23,16 @@ MCP operates on a clean **Client-Server model** over standardized communication 
 
 ```mermaid
 graph LR
-    subgraph ClientHost [MCP Client: Cursor / Claude Desktop / Custom App]
+    subgraph SG1_ClienthostMcpClient ["ClientHost [MCP Client: Cursor / Claude Desktop / Custom App]"]
         User[User Interface] -->|Prompt query| ModelEngine[LLM Engine]
     end
 
-    subgraph Router [MCP Protocol Layer / JSON-RPC]
+    subgraph SG2_RouterMcpProtocol ["Router [MCP Protocol Layer / JSON-RPC]"]
         ModelEngine -->|1. List Tools| MCPClient[MCP Client SDK]
         MCPClient -->|2. callTool: query_database| MCPServer[MCP Server SDK]
     end
 
-    subgraph Services [MCP Server Layer]
+    subgraph SG3_ServicesMcpServer ["Services [MCP Server Layer]"]
         MCPServer -->|3. Query database| DB[(PostgreSQL Database)]
         MCPServer -->|3. Fetch log files| FS[Filesystem Logs]
         MCPServer -->|3. Fetch git commits| Git[GitHub API]

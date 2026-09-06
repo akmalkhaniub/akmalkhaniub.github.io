@@ -20,17 +20,17 @@ How LeaseLogic processes 120-page commercial lease contracts, verifies clause ci
 
 ```mermaid
 graph TD
-  subgraph Document Ingestion & Spatial Layout Recovery
+  subgraph SG1_DocumentIngestionSpatial ["Document Ingestion & Spatial Layout Recovery"]
     PDF[100+ Page Commercial Lease PDF] --> Parser[Layout-Aware PDF Engine: pdfplumber Bounding Boxes]
     Parser --> Tables[Extracted Tabular Rent Schedules + Text Blocks]
   end
   
-  subgraph Claude 3.5 Structured Extraction Engine
+  subgraph SG2_Claude35 ["Claude 3.5 Structured Extraction Engine"]
     Tables --> ClaudePrompt["Claude 3.5 Sonnet (Enforced Pydantic Schema Tool Use)"]
     ClaudePrompt --> Terms["Validated Lease Terms: Base Rent, Escalations, OpEx Caps, TI Allowance"]
   end
   
-  subgraph Multi-Tenant Citation Store & Financial Modeling
+  subgraph SG3_MultiTenantCitation ["Multi-Tenant Citation Store & Financial Modeling"]
     Terms --> PGVector["Multi-Tenant PostgreSQL pgvector (Hybrid Vector + BM25 Search)"]
     PGVector --> AuditUI["Exact Bounding Box & Page Number Citation Audit"]
     Terms --> NPVEngine["Financial Cashflow Engine: 10-Yr Cashflow, NER & NPV Modeling"]

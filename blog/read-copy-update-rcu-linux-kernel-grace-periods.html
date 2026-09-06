@@ -123,17 +123,17 @@
 <h2 id="read-copy-update-rcu-architecture-grace-periods">Read-Copy-Update (RCU) Architecture &amp; Grace Periods</h2>
 <p>How RCU enables zero-overhead lockless reads while deferring memory reclamation until a Grace Period completes:</p>
 <div class="mermaid">graph TD
-  subgraph Reader Threads (Zero Lock Overhead)
+  subgraph SG1_ReaderThreadsZero [&quot;Reader Threads (Zero Lock Overhead)&quot;]
     Reader1[&quot;rcu_read_lock(): Reads Data Structure (No Locks, No Atomic Ops!)&quot;] --&gt; ReadFinish[&quot;rcu_read_unlock()&quot;]
   end
   
-  subgraph Updater Thread (Copy-On-Write Mutation)
+  subgraph SG2_UpdaterThreadCopy [&quot;Updater Thread (Copy-On-Write Mutation)&quot;]
     OldNode[Original Node A] --&gt;|1. Allocate Copy &amp; Modify| NewNode[New Node A']
     NewNode --&gt;|2. rcu_assign_pointer(): Atomically Swap Pointer| PointerSwap[Global Pointer points to A']
     PointerSwap --&gt;|3. synchronize_rcu(): Wait for Grace Period| GracePeriod[Grace Period: Wait for all CPUs to reach Quiescent State]
   end
   
-  subgraph Memory Reclamation
+  subgraph SG3_MemoryReclamation [&quot;Memory Reclamation&quot;]
     GracePeriod --&gt;|4. Every CPU Passed Quiescent State| FreeOld[kfree(Old Node A) - Safe Deallocation!]
   end</div>
 <h3 id="core-rcu-components-principles">Core RCU Components &amp; Principles</h3>

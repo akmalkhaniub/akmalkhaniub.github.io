@@ -18,7 +18,7 @@ How 2PC Transactions guarantee Exactly-Once processing while DLQ topics safely h
 
 ```mermaid
 graph TD
-  subgraph Exactly-Once Transactional Pipeline (2PC Commit)
+  subgraph SG1_ExactlyOnceTransactional ["Exactly-Once Transactional Pipeline (2PC Commit)"]
     Producer[Idempotent Producer (PID #42)] -->|1. Write Batch (Seq #10)| TopicA[Input Topic Partition]
     Producer -->|2. Register Offsets in Transaction| TxnCoord[Kafka Transaction Coordinator]
     Producer -->|3. Commit Transaction (2PC)| TxnCoord
@@ -26,7 +26,7 @@ graph TD
     TopicA -->|5. Read Only Committed| Consumer[Consumer (read_committed)]
   end
   
-  subgraph Poison Pill Handling & DLQ Retry Topology
+  subgraph SG2_PoisonPillHandling ["Poison Pill Handling & DLQ Retry Topology"]
     Consumer -->|Process Fails!| Retry1["Retry Topic 1 (1s Delay)"]
     Retry1 -->|Failed Max Attempts| DLQ["☠️ Dead Letter Queue (DLQ) Topic"]
     DLQ --> AdminAlert["🚨 Operator Alert & Manual Inspection Dashboard"]

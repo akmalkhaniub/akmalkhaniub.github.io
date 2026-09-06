@@ -19,13 +19,13 @@ A reliable multi-agent system divides memory into three distinct tiers, separati
 
 ```mermaid
 graph TD
-    subgraph Context [1. Ephemeral Task State]
+    subgraph SG1_Context1Ephemeral ["Context [1. Ephemeral Task State]"]
         Thread[Current Node Thread History]
     end
-    subgraph SharedState [2. Shared Session Database]
+    subgraph SG2_Sharedstate2Shared ["SharedState [2. Shared Session Database]"]
         PG[(PostgreSQL JSONB / Redis)]
     end
-    subgraph LongTerm [3. Semantic Memory]
+    subgraph SG3_Longterm3Semantic ["LongTerm [3. Semantic Memory]"]
         Vector[(pgvector / Knowledge Graphs)]
     end
     

@@ -29,19 +29,19 @@ Here is the threat model of Server Actions, and the architectural patterns requi
 
 ```mermaid
 graph TD
-  subgraph The Disappearing Security Perimeter
-    subgraph Traditional API Architecture (Explicit Perimeter)
-      Client1[Browser Client] --> Gateway[API Gateway / Router]
-      Gateway --> AuthMW[Authentication Middleware]
-      AuthMW --> RBAC[Role-Based Authorization]
-      RBAC --> Validator[Schema Validation: Zod / Joi]
-      Validator --> Handler[Protected Internal Service]
+  subgraph SecurityPerimeter ["The Disappearing Security Perimeter"]
+    subgraph TradArch ["Traditional API Architecture: Explicit Perimeter"]
+      Client1["Browser Client"] --> Gateway["API Gateway / Router"]
+      Gateway --> AuthMW["Authentication Middleware"]
+      AuthMW --> RBAC["Role-Based Authorization"]
+      RBAC --> Validator["Schema Validation: Zod / Joi"]
+      Validator --> Handler["Protected Internal Service"]
     end
 
-    subgraph Server Action Architecture (Implicit Endpoint)
-      Client2[Browser Client / Malicious Attacker] -->|cURL POST /?_rsc=action_id| PublicAction["'use server' Action Handler"]
-      PublicAction -.->|Missing Auth Check?| DB[(Direct Database Mutation!)]
-      PublicAction -.->|Captures Closed Scope?| SecretLeak[Leaked Environment Pointers]
+    subgraph ActionArch ["Server Action Architecture: Implicit Endpoint"]
+      Client2["Browser Client or Malicious Attacker"] -->|cURL POST with action ID| PublicAction["Server Action Handler Function"]
+      PublicAction -.->|Missing Auth Check?| DB[("Direct Database Mutation")]
+      PublicAction -.->|Captures Closed Scope?| SecretLeak["Leaked Environment Pointers"]
     end
   end
 ```

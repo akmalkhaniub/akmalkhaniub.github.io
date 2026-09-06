@@ -16,7 +16,7 @@ Today, enterprise AI agents are undergoing their own **Electric Grid Transition*
 
 ```mermaid
 graph TD
-  subgraph The 1890s Steam Factory vs The 2026 Agentic Architecture
+  subgraph SG1_The1890sSteam ["The 1890s Steam Factory vs The 2026 Agentic Architecture"]
     S1890["1890s: On-Site Steam Engine (Private, Isolated Boiler)"] <---> S2026["2026: Monolithic Agent Scripts (Isolated 'agent.py' Processes)"]
     G1890["1910s: Centralized AC Electric Grid (Tesla / Westinghouse)"] <---> G2026["2026: Utility-Scale Agent Compute Fabric (Shared MCP & State Hubs)"]
     M1890["1910s: Fractional Electric Motors on Every Machine"] <---> M2026["2026: Modular Micro-Agents Plugging into Shared Tool Hubs"]
@@ -53,18 +53,18 @@ Modern agent architecture replaces isolated scripts with a **Decoupled Compute &
 
 ```mermaid
 graph TD
-  subgraph Client & Task Layer
+  subgraph SG2_ClientTaskLayer ["Client & Task Layer"]
     User[Enterprise User / Event Stream] --> Dispatcher[Utility Grid Task Dispatcher]
   end
 
-  subgraph The Utility Agent Grid (Shared Middleware)
+  subgraph SG3_TheUtilityAgent ["The Utility Agent Grid (Shared Middleware)"]
     Dispatcher --> Supervisor[Centralized Orchestrator Swarm]
     Supervisor --> Coder[Coder Micro-Agent]
     Supervisor --> Auditor[Auditor Micro-Agent]
     Supervisor --> Deployer[Deployer Micro-Agent]
   end
 
-  subgraph Enterprise Utility Shared Infrastructure
+  subgraph SG4_EnterpriseUtilityShared ["Enterprise Utility Shared Infrastructure"]
     Coder & Auditor & Deployer <--> SharedMCP["1. Global MCP Tool Registry (GitHub, Postgres, Stripe, AWS)"]
     Coder & Auditor & Deployer <--> SharedState["2. Centralized State Fabric (Redis / PostgresSaver Checkpoints)"]
     Coder & Auditor & Deployer <--> SharedMemory["3. Global Vector & Graph-RAG Memory Fabric"]

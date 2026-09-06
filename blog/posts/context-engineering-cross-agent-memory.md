@@ -30,12 +30,12 @@ graph TD
 
     User[User Request] -->|1. Dispatch| Supervisor[Supervisor Agent]
     
-    subgraph MultiAgentSwarm [Agentic Swarm]
+    subgraph SG1_MultiagentswarmAgenticSwarm ["MultiAgentSwarm [Agentic Swarm]"]
         Supervisor -->|2. Task A| CoderAgent[Coder Agent]
         Supervisor -->|3. Task B| TesterAgent[Tester Agent]
     end
     
-    subgraph BlackboardMemory [MCP Blackboard Server]
+    subgraph SG2_BlackboardmemoryMcpBlackboard ["BlackboardMemory [MCP Blackboard Server]"]
         MemoryResource[(MCP Memory Resource / mcp://state/blackboard)]
     end
 

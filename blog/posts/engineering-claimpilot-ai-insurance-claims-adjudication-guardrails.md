@@ -20,18 +20,18 @@ How ClaimPilot ingests FNOL claims, coordinates multi-modal vision and document 
 
 ```mermaid
 graph TD
-  subgraph Multi-Modal Ingestion
+  subgraph SG1_MultiModalIngestion ["Multi-Modal Ingestion"]
     Claimant[Claimant FNOL Submission] --> Uploads[Damage Photos + Police Report PDF + Audio Statement]
     Uploads --> Vision["Multi-Modal Vision Engine (Damage Localization & Severity Scoring)"]
     Uploads --> DocParser["Document Parser: Police Report Entities (Parties, Citations, Fault)"]
   end
   
-  subgraph Structured Claim Synthesis & Fraud Check
+  subgraph SG2_StructuredClaimSynthesis ["Structured Claim Synthesis & Fraud Check"]
     Vision & DocParser --> Synthesizer["Claude 3.5 Sonnet: Structured Claim Extraction (JSON Schema)"]
     Synthesizer --> FraudEngine["Fraud Risk Heuristic Scorer (EXIF, Image Hash & Historical Claims)"]
   end
   
-  subgraph Deterministic Policy Guardrails & Decision Engine
+  subgraph SG3_DeterministicPolicyGuardrails ["Deterministic Policy Guardrails & Decision Engine"]
     FraudEngine --> Guardrails["Deterministic Rules Engine: Policy Limits & Deductible Bounds"]
     Guardrails -->|Low Risk & Within Limits| AutoApprove["🎉 Automated Payout Approval: $Repair - Deductible"]
     Guardrails -->|Fraud Flag or Coverage Dispute| ManualReview["⚠️ Escalate to Senior Human Adjuster"]

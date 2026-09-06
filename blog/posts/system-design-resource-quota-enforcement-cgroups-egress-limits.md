@@ -18,7 +18,7 @@ In unconstrained container setups:
 flowchart TD
     Sandbox[Agent Sandbox Instance] --> LimitGuard{cgroup v2 & Network Egress Guard}
     
-    subgraph Resource Enforcement Layer
+    subgraph SG1_ResourceEnforcementLayer ["Resource Enforcement Layer"]
         LimitGuard -->|Check RAM Usage <= 512MB| RAMCheck[Memory Limit Check]
         LimitGuard -->|Check CPU Quota <= 1.0 Core| CPUCheck[CPU Quota Monitor]
         LimitGuard -->|Check Destination Domain| Proxy[Egress Proxy Whitelist]

@@ -21,12 +21,12 @@ graph TD
   Client1[Web Client A: Connected to Pod 1] -->|1. HTTP Upgrade 101| Gateway1[WebSocket Gateway Pod 1]
   Client2[Web Client B: Connected to Pod 2] -->|1. text/event-stream| Gateway2[SSE Gateway Pod 2]
   
-  subgraph Real-Time Connection Gateway Tier
+  subgraph SG1_RealTimeConnection ["Real-Time Connection Gateway Tier"]
     Gateway1 -->|2. Register Connection: user_101| Reg1[Local Socket Registry Pod 1]
     Gateway2 -->|2. Register Connection: user_202| Reg2[Local Socket Registry Pod 2]
   end
   
-  subgraph Central Pub/Sub Fanout Bus
+  subgraph SG2_CentralPubSub ["Central Pub/Sub Fanout Bus"]
     EventProducer[Event Producer: OrderService] -->|3. Publish Event: user_101| PubSub[Redis / NATS Pub/Sub Bus]
     PubSub -->|4. Fanout Broadcast| Gateway1
     PubSub -->|4. Fanout Broadcast| Gateway2

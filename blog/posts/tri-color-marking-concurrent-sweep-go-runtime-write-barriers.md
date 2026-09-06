@@ -18,7 +18,7 @@ How the Go runtime uses White, Grey, and Black object classifications alongside 
 
 ```mermaid
 graph TD
-  subgraph Tri-Color Abstraction Classification
+  subgraph SG1_TriColorAbstraction ["Tri-Color Abstraction Classification"]
     White["⚪ WHITE Set: Unvisited candidate objects (Allocated/Garbage)"]
     Grey["👵 GREY Set: Reachable live objects whose child pointers are unscanned"]
     Black["🖤 BLACK Set: Confirmed live objects whose children are fully scanned"]
@@ -27,7 +27,7 @@ graph TD
     Grey -->|2. Mark Phase Scans Children| Black
   end
   
-  subgraph Tri-Color Invariant Breakdown & Hybrid Write Barrier Protection
+  subgraph SG2_TriColorInvariant ["Tri-Color Invariant Breakdown & Hybrid Write Barrier Protection"]
     Mutator[Goroutine Mutator Thread] -->|Mutator Action: black.field = white| DangerCheck{Danger: Black points to White!}
     DangerCheck -->|Go Hybrid Write Barrier Intercepts!| Shade[✨ Shade Target White Object -> Turn GREY!]
     Shade --> SafeMark[🎉 Tri-Color Invariant Preserved: Zero Live Object Loss!]

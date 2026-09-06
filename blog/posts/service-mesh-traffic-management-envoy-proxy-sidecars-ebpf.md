@@ -18,22 +18,22 @@ How the Service Mesh Control Plane manages traffic routing and mTLS via Envoy si
 
 ```mermaid
 graph TD
-  subgraph Service Mesh Control Plane (Istiod)
+  subgraph SG1_ServiceMeshControl ["Service Mesh Control Plane (Istiod)"]
     ControlPlane[Control Plane: xDS gRPC Server] -->|1. Stream Dynamic Config (xDS APIs: LDS, RDS, CDS, EDS)| Sidecar1
     ControlPlane -->|1. Stream Dynamic Config| Sidecar2
     CA[SPIFFE / SPIRE CA] -->|2. Issue mTLS X.509 Certs| Sidecar1 & Sidecar2
   end
   
-  subgraph Data Plane: Kubernetes Pod A
+  subgraph SG2_DataPlaneKubernetes ["Data Plane: Kubernetes Pod A"]
     AppA[Microservice A Container] -->|3. Outbound TCP Traffic| Sidecar1[Envoy Proxy Sidecar Container]
   end
   
-  subgraph Kernel eBPF Sockmap Acceleration (Cilium Ambient Mesh)
+  subgraph SG3_KernelEbpfSockmap ["Kernel eBPF Sockmap Acceleration (Cilium Ambient Mesh)"]
     Sidecar1 -->|4. Standard TCP Socket Loopback| KernelSockmap[eBPF sockmap BPF Program]
     KernelSockmap -->|5. Bypass Network Stack & iptables!| Sidecar2[Envoy Proxy Sidecar Container]
   end
   
-  subgraph Data Plane: Kubernetes Pod B
+  subgraph SG4_DataPlaneKubernetes ["Data Plane: Kubernetes Pod B"]
     Sidecar2 -->|6. Inbound mTLS Decrypted Traffic| AppB[Microservice B Container]
   end
 ```

@@ -10,7 +10,7 @@ This article examines the foundational mathematical protocols of distributed tra
 
 ```mermaid
 graph TD
-  subgraph The Classical Distributed Transaction Era (1970s - 2000s)
+  subgraph SG1_TheClassicalDistributed ["The Classical Distributed Transaction Era (1970s - 2000s)"]
     App[Monolithic Application Server] --> TM[XA Transaction Manager / Coordinator]
     TM -->|1. PREPARE| DB1[(Database 1: Order DB)]
     TM -->|1. PREPARE| DB2[(Database 2: Inventory DB)]

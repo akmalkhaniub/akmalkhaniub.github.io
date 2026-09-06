@@ -12,7 +12,7 @@ Today, in 2026, the technology landscape is engulfed in a parallel phenomenon: *
 
 ```mermaid
 graph TD
-  subgraph The 1849 Gold Rush vs The 2026 Agentic Rush
+  subgraph SG1_The1849Gold ["The 1849 Gold Rush vs The 2026 Agentic Rush"]
     P1849["1849: Prospectors Panning Rivers (High Failure Rate)"] <---> P2026["2026: Raw '1-Click' Wrapper Agents (High Hallucination Rate)"]
     I1849["1849: Picks, Shovels, Heavy Denim & Rail"] <---> I2026["2026: Sandboxes, MCP Protocols, Checkpointing & Vector DBs"]
     A1849["1849: Assayers & Escrow Vaults"] <---> A2026["2026: Deterministic Guardrails, Token Metering & Evals"]

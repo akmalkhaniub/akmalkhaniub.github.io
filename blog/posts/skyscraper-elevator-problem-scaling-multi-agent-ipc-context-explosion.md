@@ -18,7 +18,7 @@ Today, multi-agent artificial intelligence networks face their own **Structural 
 
 ```mermaid
 graph TD
-  subgraph The 1850s Skyscraper Ceiling vs The 2026 Multi-Agent Ceiling
+  subgraph SG1_The1850sSkyscraper ["The 1850s Skyscraper Ceiling vs The 2026 Multi-Agent Ceiling"]
     S1850["1850s: Buildings Capped at 5 Stories (Stair Climbing Limit)"] <---> S2026["2026: Swarms Capped at 5 Agents (Context Window & O(N^2) Token Explosion)"]
     O1850["1854: Otis Safety Elevator (Fast, Deterministic Vertical Transit)"] <---> O2026["2026: Hierarchical IPC & Delta Compaction Routing (O(N) Transit)"]
     U1850["1900s: 100-Story Modern Skyscraper Skylines Unlocked"] <---> U2026["2026: 500+ Coordinated Enterprise Agent Fleets Running Concurrently"]
@@ -95,7 +95,7 @@ At large scale, agents subscribe to a centralized **Topic-Filtered Event Bus** (
 
 ```mermaid
 graph TD
-  subgraph Distributed Agent Event Bus
+  subgraph SG2_DistributedAgentEvent ["Distributed Agent Event Bus"]
     Bus[(Central Redis / Kafka Agent Bus)]
     
     Publisher[Coder Agent #12] -->|Publish: event.build.success| Bus

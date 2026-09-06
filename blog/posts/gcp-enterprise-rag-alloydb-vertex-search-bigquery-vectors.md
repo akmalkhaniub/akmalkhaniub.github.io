@@ -18,13 +18,13 @@ The platform unifies structured relational data, vector embeddings, and analytic
 graph TD
   A[Agent Worker Context Request] --> B{Context Type?}
   
-  subgraph Relational Vector & Context (AlloyDB AI)
+  subgraph SG1_RelationalVectorContext ["Relational Vector & Context (AlloyDB AI)"]
     B -->|Structured Code & Tenant Data| C[AlloyDB PostgreSQL Instance]
     C --> D[pgvector + ScaNN Indexing]
     D --> E[Tenant Row-Level Security RLS Filter]
   end
   
-  subgraph Unstructured Document Search (Vertex AI Search)
+  subgraph SG2_UnstructuredDocumentSearch ["Unstructured Document Search (Vertex AI Search)"]
     B -->|Enterprise Docs & Specifications| F[Vertex AI Search Datastore]
     F --> G[Hybrid Dense/Sparse Semantic Search]
   end
@@ -33,7 +33,7 @@ graph TD
   G --> H
   H --> I[Agent Model Prompt]
   
-  subgraph Trajectory Analytics & Drift Evaluation
+  subgraph SG3_TrajectoryAnalyticsDrift ["Trajectory Analytics & Drift Evaluation"]
     I --> J[BigQuery Streaming Ingestion]
     J --> K[BigQuery Vector Distance & Quality Analytics]
   end

@@ -18,13 +18,13 @@ How CPU Store Buffers cause Store-Load reordering and how Acquire-Release semant
 
 ```mermaid
 graph TD
-  subgraph CPU Core 0 (Producer Thread)
+  subgraph SG1_CpuCore0 ["CPU Core 0 (Producer Thread)"]
     W1[Write Data: data = 42] --> W2["Release Store: flag.store(1, memory_order_release)"]
     W1 & W2 --> SB0[Core 0 Store Buffer]
     SB0 -->|Hardware Memory Fence: mfence / dmb| RAM[Main System Memory RAM]
   end
   
-  subgraph CPU Core 1 (Consumer Thread)
+  subgraph SG2_CpuCore1 ["CPU Core 1 (Consumer Thread)"]
     RAM -->|Sync Pair Established| R1["Acquire Load: flag.load(memory_order_acquire) == 1"]
     R1 -->|Prevents reordering reads BEFORE acquire| R2[Read Data: r1 = data]
   end

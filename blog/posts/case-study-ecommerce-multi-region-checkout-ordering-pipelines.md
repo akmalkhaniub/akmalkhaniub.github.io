@@ -39,12 +39,12 @@ The architecture routes checkout requests through regional API endpoints while c
 graph TD
   A[Global User Checkouts] -->|Geo-DNS Routing| B[Regional Edge API Gateways]
   
-  subgraph GKE Regional Deployments
+  subgraph SG1_GkeRegionalDeployments ["GKE Regional Deployments"]
     B -->|US-East Traffic| C[US-East Checkout Service]
     B -->|EU-West Traffic| D[EU-West Checkout Service]
   end
   
-  subgraph Strongly Consistent Storage Layer
+  subgraph SG2_StronglyConsistentStorage ["Strongly Consistent Storage Layer"]
     C -->|Distributed Two-Phase Commit| E[(Google Cloud Spanner Multi-Region)]
     D -->|Distributed Two-Phase Commit| E
   end

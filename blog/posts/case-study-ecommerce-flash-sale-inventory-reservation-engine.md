@@ -40,14 +40,14 @@ graph TD
   A[User Flash Sale Request] --> B[API Gateway / Load Balancer]
   B --> C[GKE Inventory Reservation Microservice]
   
-  subgraph High-Speed Fast Path
+  subgraph SG1_HighSpeedFast ["High-Speed Fast Path"]
     C -->|Execute Atomic Lua Script| D[(Redis Memorystore Cluster)]
   end
   
   D -->|Lease Approved| E[GCP Cloud Tasks Buffer Queue]
   D -->|Sold Out| F[Instant Client Reject: HTTP 429 / 409]
   
-  subgraph Eventual Consistency Slow Path
+  subgraph SG2_EventualConsistencySlow ["Eventual Consistency Slow Path"]
     E -->|Rate-Limited Dispatch| G[GKE Checkout Microservice]
     G -->|Commit Order & Decrement| H[(PostgreSQL Inventory Database)]
   end

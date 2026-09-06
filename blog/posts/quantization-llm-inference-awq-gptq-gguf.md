@@ -20,17 +20,17 @@ How AWQ identifies salient weights based on activation magnitudes to preserve ac
 
 ```mermaid
 graph TD
-  subgraph Unquantized Model Weights (FP16: 140 GB VRAM)
+  subgraph SG1_UnquantizedModelWeights ["Unquantized Model Weights (FP16: 140 GB VRAM)"]
     Weights[FP16 Model Weights W: 70B Params] --> ActMonitor[Activation Magnitude Monitor]
   end
   
-  subgraph AWQ (Activation-aware Weight Quantization) Pipeline
+  subgraph SG2_AwqActivationAware ["AWQ (Activation-aware Weight Quantization) Pipeline"]
     ActMonitor -->|1. Compute Activation Magnitudes |X|| SalientCheck{Identify Salient Weights}
     SalientCheck -->|2. Top 1% High-Activation Weights| Protect[Apply Scale Factor S > 1: Protect Precision]
     SalientCheck -->|3. Remaining 99% Non-Critical Weights| Uniform4Bit[Quantize to INT4 (Scale S & Zero-Point Z)]
   end
   
-  subgraph Compressed Model Representation (INT4: 35 GB VRAM)
+  subgraph SG3_CompressedModelRepresentation ["Compressed Model Representation (INT4: 35 GB VRAM)"]
     Protect & Uniform4Bit --> QuantizedModel[(Quantized 4-Bit Model: AWQ / GPTQ / GGUF)]
     QuantizedModel -->|4. High-Speed Inference| ConsumerGPU[Single GPU / Desktop CPU]
   end

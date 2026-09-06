@@ -10,14 +10,14 @@ To break through this hardware memory wall, modern inference engines leverage **
 
 ```mermaid
 graph TD
-  subgraph Standard Autoregressive vs Speculative Decoding
-    subgraph 1. Standard Autoregressive (Memory Bound: 1 Token Per Pass)
+  subgraph SG1_StandardAutoregressiveVs ["Standard Autoregressive vs Speculative Decoding"]
+    subgraph SG2_1StandardAutoregressive ["1. Standard Autoregressive (Memory Bound: 1 Token Per Pass)"]
       P1[Load 140GB Weights] --> T1[Generate Token 1]
       T1 --> P2[Load 140GB Weights] --> T2[Generate Token 2]
       T2 --> P3[Load 140GB Weights] --> T3[Generate Token 3]
     end
 
-    subgraph 2. Speculative Decoding (Compute Bound: 3-5 Tokens Per Pass)
+    subgraph SG3_2SpeculativeDecoding ["2. Speculative Decoding (Compute Bound: 3-5 Tokens Per Pass)"]
       Draft[Fast Draft Model: Proposes 5 Tokens in 5ms] --> ParallelTarget[Target 70B Model: Validates All 5 Tokens in ONE 20ms Pass]
       ParallelTarget --> Accept["Accept Tokens 1, 2, 3, 4 (Zero Loss!)"]
     end
@@ -100,7 +100,7 @@ Rather than predicting a single linear chain of tokens, Medusa heads generate to
 
 ```mermaid
 graph TD
-  subgraph Medusa Candidate Tree (Evaluated in 1 Forward Pass)
+  subgraph SG4_MedusaCandidateTree ["Medusa Candidate Tree (Evaluated in 1 Forward Pass)"]
     Root[Current Token] --> A["w1 (p=0.8)"]
     Root --> B["w1' (p=0.2)"]
     

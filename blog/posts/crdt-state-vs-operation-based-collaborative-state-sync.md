@@ -18,16 +18,16 @@ How State-Based CRDTs (CvRDT) use mathematical join semi-lattices to achieve det
 
 ```mermaid
 graph TD
-  subgraph Peer-to-Peer Concurrent Edits
+  subgraph SG1_PeerToPeer ["Peer-to-Peer Concurrent Edits"]
     PeerA[Client A: Increments Counter +5] --> StateA["Local State A: {P: [5, 0], N: [0, 0]}"]
     PeerB[Client B: Decrements Counter -2] --> StateB["Local State B: {P: [0, 0], N: [0, 2]}"]
   end
   
-  subgraph Network Sync & Semi-Lattice Join Merge (⊔)
+  subgraph SG2_NetworkSyncSemi ["Network Sync & Semi-Lattice Join Merge (⊔)"]
     StateA & StateB -->|Transmit Full State over Network| MergeEngine["CvRDT Monotonic Merge Function (⊔)"]
   end
   
-  subgraph Deterministic Convergence
+  subgraph SG3_DeterministicConvergence ["Deterministic Convergence"]
     MergeEngine -->|Max Vector Compute| ConvergedState["Merged State: {P: [5, 0], N: [0, 2]} -> Final Value = +3"]
     ConvergedState -->|Zero Central Server!| PeerA & PeerB
   end

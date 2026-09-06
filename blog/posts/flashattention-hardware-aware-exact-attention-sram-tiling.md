@@ -22,13 +22,13 @@ How FlashAttention loads blocks into high-speed GPU SRAM to avoid HBM memory ban
 
 ```mermaid
 graph TD
-  subgraph Slow GPU Memory: High Bandwidth Memory (HBM ~2 TB/sec)
+  subgraph SG1_SlowGpuMemory ["Slow GPU Memory: High Bandwidth Memory (HBM ~2 TB/sec)"]
     Q_HBM[Q Matrix: N x d]
     K_HBM[K Matrix: N x d]
     V_HBM[V Matrix: N x d]
   end
   
-  subgraph Fast On-Chip GPU Cache: L1 SRAM (~19 TB/sec)
+  subgraph SG2_FastOnChip ["Fast On-Chip GPU Cache: L1 SRAM (~19 TB/sec)"]
     Q_HBM -->|1. Stream Tile Block Br x d| Q_SRAM[Q Tile Block in SRAM]
     K_HBM -->|2. Stream Tile Block Bc x d| K_SRAM[K Tile Block in SRAM]
     V_HBM -->|3. Stream Tile Block Bc x d| V_SRAM[V Tile Block in SRAM]

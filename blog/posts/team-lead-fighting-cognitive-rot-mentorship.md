@@ -18,13 +18,13 @@ In the era of AI copilot autocompletion, this friction is eliminated. A junior d
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Passive Loop [1. The Copy-Paste Trap]
+    subgraph SG1_PassiveLoop1 ["Passive Loop [1. The Copy-Paste Trap]"]
         C1[Prompt Generator] -->|Autocomplete| C2[Accept Code Suggestion]
         C2 -->|No verification| C3[Merge to Staging]
         C3 --> note1[Result: Zero learning, high technical debt]
     end
 
-    subgraph Active Loop [2. The Critical Audit Cycle]
+    subgraph SG2_ActiveLoop2 ["Active Loop [2. The Critical Audit Cycle]"]
         A1[AI Suggests Code] -->|TL Policy| A2[Reverse Review: Explain logic]
         A2 -->|Verify constraints| A3[Test & Execute AST audit]
         A3 -->|Refactor manually| A4[Commit with confidence]

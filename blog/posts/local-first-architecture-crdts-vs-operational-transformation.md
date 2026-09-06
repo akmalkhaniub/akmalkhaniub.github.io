@@ -13,14 +13,14 @@ By keeping data stored locally on device and synchronizing changes asynchronousl
 
 ```mermaid
 graph TD
-  subgraph Centralized Cloud vs Local-First CRDTs
-    subgraph 1. Centralized Cloud / Operational Transformation (OT)
+  subgraph SG1_CentralizedCloudVs ["Centralized Cloud vs Local-First CRDTs"]
+    subgraph SG2_1CentralizedCloud ["1. Centralized Cloud / Operational Transformation (OT)"]
       ClientA[Client A] -->|100ms RTT| CentralServer[(Centralized Server / DB Lock)]
       ClientB[Client B] -->|100ms RTT| CentralServer
       Note1[Offline = Broken App]
     end
 
-    subgraph 2. Local-First CRDTs (Peer-to-Peer Convergence)
+    subgraph SG3_2LocalFirst ["2. Local-First CRDTs (Peer-to-Peer Convergence)"]
       NodeA[Client A: Local SQLite / IndexedDB (0ms)] <-->|Async WebRTC / WebSocket Sync| NodeB[Client B: Local SQLite / IndexedDB (0ms)]
       NodeA --> MathSync["Join-Semilattice Merge (Commutative, Associative, Idempotent)"]
       NodeB --> MathSync
@@ -75,7 +75,7 @@ A data structure is a valid State-Based CRDT (CvRDT) if its merge operator ($\sq
 
 ```mermaid
 graph TD
-  subgraph Mathematical Join-Semilattice Convergence
+  subgraph SG4_MathematicalJoinSemilattice ["Mathematical Join-Semilattice Convergence"]
     StateA["Peer A State: {v1, v2}"]
     StateB["Peer B State: {v1, v3}"]
     

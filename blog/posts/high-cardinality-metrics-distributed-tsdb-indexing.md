@@ -21,11 +21,11 @@ How Time Series Databases compress metrics and index label combinations:
 graph TD
   MetricStream["Metric Stream: http_requests_total{service='payment', status='500'}"] --> LabelIdx[TSDB Inverted Label Index]
   
-  subgraph Inverted Index Label Lookup
+  subgraph SG1_InvertedIndexLabel ["Inverted Index Label Lookup"]
     LabelIdx -->|Map 'service=payment'| SeriesList["Series ID Set: [Series #101, Series #102]"]
   end
   
-  subgraph Time Series Chunk Compressor (2-Hour Head Block)
+  subgraph SG2_TimeSeriesChunk ["Time Series Chunk Compressor (2-Hour Head Block)"]
     SeriesList --> HeadChunk[2-Hour Head Chunk Memory Buffer]
     
     HeadChunk -->|1. Double-Delta Timestamp Encoding| Timestamps[Timestamps: 1-bit / 7-bit deltas]

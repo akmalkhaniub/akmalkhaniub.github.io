@@ -122,15 +122,15 @@
 <h2 id="distributed-api-gateway-token-bucket-rate-limiter">Distributed API Gateway &amp; Token Bucket Rate Limiter</h2>
 <p>How edge API Gateways perform distributed rate limiting using Redis Lua scripts and route requests to backend microservices:</p>
 <div class="mermaid">graph TD
-  subgraph Public Internet Clients
+  subgraph SG1_PublicInternetClients [&quot;Public Internet Clients&quot;]
     ClientA[Mobile App / Web Client] --&gt;|1. HTTP Request: GET /api/v1/orders| Gateway[Distributed API Gateway Node]
   end
   
-  subgraph Edge API Gateway Processing
+  subgraph SG2_EdgeApiGateway [&quot;Edge API Gateway Processing&quot;]
     Gateway --&gt;|2. Validate JWT Token| Auth[JWT Auth &amp; Header Injection]
     Auth --&gt;|3. Distributed Rate Limit Check| Redis[Central Redis Cluster]
     
-    subgraph Redis Atomic Lua Script (Token Bucket)
+    subgraph SG3_RedisAtomicLua [&quot;Redis Atomic Lua Script (Token Bucket)&quot;]
       Redis --&gt;|Execute EVAL Lua Script| Lua[&quot;Redis Lua: Check &amp; Consume Token (Tokens &gt; 0?)&quot;]
     end
     
@@ -138,7 +138,7 @@
     Lua --&gt;|Exceeded: Return 0| RateLimitExceeded[🚨 Return HTTP 429 Too Many Requests]
   end
   
-  subgraph Backend Microservice Reverse Proxying
+  subgraph SG4_BackendMicroserviceReverse [&quot;Backend Microservice Reverse Proxying&quot;]
     Gateway --&gt;|4. Dynamic Reverse Proxy Route| OrderService[Order Microservice Cluster]
   end</div>
 <h3 id="core-api-gateway-components">Core API Gateway Components</h3>

@@ -17,12 +17,12 @@ Why did Next.js make caching the default in the first place? Why did it fail so 
 
 ```mermaid
 graph TD
-  subgraph The 4-Layer Caching Architecture of Next.js
-    Client[Browser Client] --> L1[1. Router Cache: In-Memory Client Cache]
-    L1 --> L2[2. Full Route Cache: Static HTML & RSC Payload on Server]
-    L2 --> L3[3. Request Memoization: Deduplication within Single Render Pass]
-    L3 --> L4[4. Data Cache: Persistent Cross-Request Key-Value Store]
-    L4 --> Database[(Primary Database / Upstream API)]
+  subgraph CachingArch ["The 4-Layer Caching Architecture of Next.js"]
+    Client["Browser Client"] --> L1["1. Router Cache: In-Memory Client Cache"]
+    L1 --> L2["2. Full Route Cache: Static HTML and RSC Payload on Server"]
+    L2 --> L3["3. Request Memoization: Deduplication within Single Render Pass"]
+    L3 --> L4["4. Data Cache: Persistent Cross-Request Key-Value Store"]
+    L4 --> Database[("Primary Database or Upstream API")]
   end
 ```
 *Figure 1: The four-tier caching topology of Next.js 14 vs Next.js 15, illustrating the inversion from aggressive build-time caching to dynamic-by-default execution. Source: Next.js Architectural RFCs [1, 2].*

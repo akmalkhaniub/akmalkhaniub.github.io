@@ -20,7 +20,7 @@ How traditional Sidecar proxies compare to eBPF-accelerated kernel socket redire
 
 ```mermaid
 graph TD
-  subgraph Traditional Sidecar Service Mesh (iptables + Envoy)
+  subgraph SG1_TraditionalSidecarService ["Traditional Sidecar Service Mesh (iptables + Envoy)"]
     PodA[App Container A] -->|1. Loopback Loop| IPT1[iptables PREROUTING]
     IPT1 -->|2. TCP Context Switch| EnvoyA[Envoy Sidecar Proxy A]
     EnvoyA -->|3. Wire Encrypted mTLS| Network[Physical Network / veth]
@@ -28,10 +28,10 @@ graph TD
     EnvoyB -->|5. Loopback Loop| PodB[App Container B]
   end
   
-  subgraph Next-Gen Sidecar-Less Service Mesh (eBPF sockmap Bypass)
+  subgraph SG2_NextGenSidecar ["Next-Gen Sidecar-Less Service Mesh (eBPF sockmap Bypass)"]
     PodA2[App Container A] <-->|eBPF sk_msg Kernel Sockmap: Direct Socket-to-Socket Bypass!| PodB2[App Container B]
     
-    subgraph Linux Kernel Network Space (Zero iptables / Zero User-Space Context Switches)
+    subgraph SG3_LinuxKernelNetwork ["Linux Kernel Network Space (Zero iptables / Zero User-Space Context Switches)"]
       Sockmap[eBPF BPF_MAP_TYPE_SOCKMAP] -->|Short-Circuits TCP Socket Buffers| KernelPass[🎉 80% Lower Latency Direct Memory Copy!]
     end
   end

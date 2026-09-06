@@ -22,18 +22,18 @@ How Aspect interceptors wrap business domain methods without altering core busin
 graph TD
   A[Client API Request] --> B[Middleware / Aspect Interceptor Stack]
   
-  subgraph Cross-Cutting Aspect Interceptors
+  subgraph SG1_CrossCuttingAspect ["Cross-Cutting Aspect Interceptors"]
     B -->|1. @before: Validate Token & Schema| C[Security & Validation Aspect]
     C -->|2. @around: Start Timer & Trace| D[Telemetry & Profiling Aspect]
     D -->|3. @around: Open DB Transaction| E[Transaction Management Aspect]
   end
   
-  subgraph Clean Core Business Domain
+  subgraph SG2_CleanCoreBusiness ["Clean Core Business Domain"]
     E -->|4. Invoke Join Point| F[Business Logic: ProcessPayment]
     F -->|Return Result| E
   end
   
-  subgraph Aspect Post-Processing
+  subgraph SG3_AspectPostProcessing ["Aspect Post-Processing"]
     E -->|5. Commit Transaction| D
     D -->|6. Calculate Latency & Record Metrics| C
     C -->|7. Format Clean JSON Response| G[Client Response]

@@ -20,18 +20,18 @@ The read path hierarchy and cross-node L1 invalidation bus:
 graph TD
   A[Client Request] --> B[L1 In-Memory Process Cache: Sub-microsecond RAM]
   
-  subgraph Local Microservice Instance 1
+  subgraph SG1_LocalMicroserviceInstance ["Local Microservice Instance 1"]
     B -->|1. L1 Hit| C[Return Instant Result: < 0.01ms]
     B -->|2. L1 Miss| D[L2 Distributed Cache: Redis Cluster]
   end
   
-  subgraph Distributed Cache & Storage
+  subgraph SG2_DistributedCacheStorage ["Distributed Cache & Storage"]
     D -->|3. L2 Hit| E[Populate L1 & Return Result: 1-2ms]
     D -->|4. L2 Miss| F[(Primary Database Storage)]
     F -->|5. DB Result| G[Populate L2 & L1]
   end
   
-  subgraph Cross-Node L1 Invalidation
+  subgraph SG3_CrossNodeL1 ["Cross-Node L1 Invalidation"]
     H[Data Updated in Node 2] -->|6. Publish Event| I[Redis Pub/Sub Channel]
     I -->|7. Broadcast Invalidation| B
   end

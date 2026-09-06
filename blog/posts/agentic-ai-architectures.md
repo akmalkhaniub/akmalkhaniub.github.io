@@ -22,12 +22,12 @@ Before coding, it is critical to distinguish between **Workflows** and **Agents*
 
 ```mermaid
 graph LR
-    subgraph Workflows [Workflows: High Predictability / Low Autonomy]
+    subgraph SG1_WorkflowsWorkflowsHigh ["Workflows [Workflows: High Predictability / Low Autonomy]"]
         Chaining[Prompt Chaining] --> Routing[Routing]
         Routing --> Parallel[Parallelization]
         Parallel --> Orch[Orchestrator-Workers]
     end
-    subgraph Autonomous [Agents: High Autonomy / Low Predictability]
+    subgraph SG2_AutonomousAgentsHigh ["Autonomous [Agents: High Autonomy / Low Predictability]"]
         Eval[Evaluator-Optimizer] --> ReAct[ReAct Loop]
         ReAct --> Swarms[Multi-Agent Swarms]
     end
@@ -162,14 +162,14 @@ For complex environments, multiple independent agents coordinate their work. Two
 
 ```mermaid
 graph TD
-    subgraph Supervisor [Hierarchical Supervisor]
+    subgraph SG3_SupervisorHierarchicalSupervisor ["Supervisor [Hierarchical Supervisor]"]
         S[Supervisor LLM] -->|Delegate| Worker1[Researcher Agent]
         S -->|Delegate| Worker2[Writer Agent]
         Worker1 --> S
         Worker2 --> S
       end
       
-      subgraph Debate [Colleague Debate Swarm]
+      subgraph SG4_DebateColleagueDebate ["Debate [Colleague Debate Swarm]"]
         D1[Proposer Agent] <-->|Debate Arguments| D2[Critic Agent]
         D2 -->|Referees Consensus| Ref[Referee LLM]
       end

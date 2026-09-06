@@ -18,13 +18,13 @@ How the ARIES recovery protocol restores database state following a crash:
 
 ```mermaid
 graph TD
-  subgraph Pre-Crash Database Execution
+  subgraph SG1_PreCrashDatabase ["Pre-Crash Database Execution"]
     Tx[Transaction Mutation] -->|1. Append WAL Record| WALBuffer[In-Memory WAL Buffer]
     WALBuffer -->|2. fsync() Group Commit| WALDisk[Append-Only WAL Disk File]
     WALDisk -->|3. Flush Dirty Page to Disk| DataPages[Database Data Pages]
   end
   
-  subgraph Unexpected Database Crash & Restart
+  subgraph SG2_UnexpectedDatabaseCrash ["Unexpected Database Crash & Restart"]
     WALDisk -->|4. Read Last Checkpoint LSN| Analysis[Phase 1: Analysis Phase]
     Analysis -->|Rebuild ATT & DPT Tables| Redo[Phase 2: Redo Phase - Repeat History]
     

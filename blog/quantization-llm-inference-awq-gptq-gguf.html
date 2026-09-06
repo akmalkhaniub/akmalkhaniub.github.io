@@ -123,17 +123,17 @@
 <h2 id="llm-quantization-awq-salient-weight-architecture">LLM Quantization &amp; AWQ Salient Weight Architecture</h2>
 <p>How AWQ identifies salient weights based on activation magnitudes to preserve accuracy at 4-bit precision:</p>
 <div class="mermaid">graph TD
-  subgraph Unquantized Model Weights (FP16: 140 GB VRAM)
+  subgraph SG1_UnquantizedModelWeights [&quot;Unquantized Model Weights (FP16: 140 GB VRAM)&quot;]
     Weights[FP16 Model Weights W: 70B Params] --&gt; ActMonitor[Activation Magnitude Monitor]
   end
   
-  subgraph AWQ (Activation-aware Weight Quantization) Pipeline
+  subgraph SG2_AwqActivationAware [&quot;AWQ (Activation-aware Weight Quantization) Pipeline&quot;]
     ActMonitor --&gt;|1. Compute Activation Magnitudes |X|| SalientCheck{Identify Salient Weights}
     SalientCheck --&gt;|2. Top 1% High-Activation Weights| Protect[Apply Scale Factor S &gt; 1: Protect Precision]
     SalientCheck --&gt;|3. Remaining 99% Non-Critical Weights| Uniform4Bit[Quantize to INT4 (Scale S &amp; Zero-Point Z)]
   end
   
-  subgraph Compressed Model Representation (INT4: 35 GB VRAM)
+  subgraph SG3_CompressedModelRepresentation [&quot;Compressed Model Representation (INT4: 35 GB VRAM)&quot;]
     Protect &amp; Uniform4Bit --&gt; QuantizedModel[(Quantized 4-Bit Model: AWQ / GPTQ / GGUF)]
     QuantizedModel --&gt;|4. High-Speed Inference| ConsumerGPU[Single GPU / Desktop CPU]
   end</div>

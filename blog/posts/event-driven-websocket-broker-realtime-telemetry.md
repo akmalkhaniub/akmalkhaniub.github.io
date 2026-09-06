@@ -18,7 +18,7 @@ In legacy status tracking configurations:
 flowchart TD
     Agent[Agent Execution Worker] -->|Emits log trace event| Gateway[WebSocket Broker Gateway]
     
-    subgraph Client Subscription Hub
+    subgraph SG1_ClientSubscriptionHub ["Client Subscription Hub"]
         Gateway -->|Multiplex payload| Client1[UI Dashboard Client 1]
         Gateway -->|Multiplex payload| Client2[UI Dashboard Client 2]
     end

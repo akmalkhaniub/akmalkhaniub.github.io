@@ -20,7 +20,7 @@ How `jemalloc` and `tcmalloc` use Lock-Free Thread-Local Caches (`tcache`) and P
 
 ```mermaid
 graph TD
-  subgraph Multi-Threaded Allocation Flow
+  subgraph SG1_MultiThreadedAllocation ["Multi-Threaded Allocation Flow"]
     Thread1[Worker Thread 1: malloc 32 Bytes] -->|1. O(1) Lock-Free Path| TCache1[Thread 1 Local Cache: tcache]
     TCache1 -->|Fast-Path Success < 5ns| ReturnPtr1[Return Memory Pointer]
     
@@ -28,7 +28,7 @@ graph TD
     Arena1 -->|Refill tcache Batch| TCache2[Thread 2 Local Cache: tcache]
   end
   
-  subgraph Slab & Bin Size Class Management
+  subgraph SG2_SlabBinSize ["Slab & Bin Size Class Management"]
     Arena1 --> SmallBins["Small Size Classes (8B, 16B, 32B... Slab Pages)"]
     Arena1 --> LargeExtents["Large Extents (4 KB - 4 MB Red-Black Tree Pages)"]
     Arena1 --> HugeExtents["Huge Allocations (> 4 MB Direct mmap)"]

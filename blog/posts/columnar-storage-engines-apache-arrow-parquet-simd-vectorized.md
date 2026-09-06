@@ -18,19 +18,19 @@ Comparing memory layout topologies for analytical queries:
 
 ```mermaid
 graph TD
-  subgraph Row-Oriented Memory Layout (OLTP: Postgres/MySQL)
+  subgraph SG1_RowOrientedMemory ["Row-Oriented Memory Layout (OLTP: Postgres/MySQL)"]
     R1[Row 1: ID, Age, City, Salary] --> R2[Row 2: ID, Age, City, Salary]
     R2 --> R3[Row 3: ID, Age, City, Salary]
   end
   
-  subgraph Columnar Memory Layout (OLAP: Arrow/Parquet)
+  subgraph SG2_ColumnarMemoryLayout ["Columnar Memory Layout (OLAP: Arrow/Parquet)"]
     C1[IDs: ID1, ID2, ID3...]
     C2[Ages: Age1, Age2, Age3...]
     C3[Cities: City1, City2, City3...]
     C4[Salaries: Sal1, Sal2, Sal3...]
   end
   
-  subgraph SIMD Vectorized CPU Register
+  subgraph SG3_SimdVectorizedCpu ["SIMD Vectorized CPU Register"]
     C4 -->|Contiguous Memory Slice| V[SIMD Register: Load 8 Float64 Values]
     V -->|Single AVX-512 FMA Instruction| CPU[8 Parallel Additions per CPU Cycle]
   end

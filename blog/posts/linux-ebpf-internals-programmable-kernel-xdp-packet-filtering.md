@@ -13,14 +13,14 @@ Running sandboxed bytecode verified for mathematical safety directly inside kern
 
 ```mermaid
 graph TD
-  subgraph Linux Kernel eBPF Architecture
+  subgraph SG1_LinuxKernelEbpf ["Linux Kernel eBPF Architecture"]
     UserProg[User Space Program: Go / C / Rust Loader] --> BPFBytecode[Compiled eBPF Bytecode]
     
-    subgraph Kernel Space (Ring 0)
+    subgraph SG2_KernelSpaceRing ["Kernel Space (Ring 0)"]
       BPFBytecode --> Verifier["1. In-Kernel Verifier (Mathematical Safety Proof)"]
       Verifier -->|Verified Safe| JIT["2. JIT Compiler (Native x86_64 Machine Code)"]
       
-      subgraph Kernel Execution Hooks
+      subgraph SG3_KernelExecutionHooks ["Kernel Execution Hooks"]
         JIT --> XDP["Hook: XDP (NIC Driver Layer - 10M pkts/sec)"]
         JIT --> Kprobe["Hook: kprobes / tracepoints (Syscall Interception)"]
         JIT --> TC["Hook: Traffic Control / Sockets"]

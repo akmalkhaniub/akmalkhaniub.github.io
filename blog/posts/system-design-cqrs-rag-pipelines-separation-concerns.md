@@ -14,16 +14,16 @@ In a RAG CQRS model, document ingestion (Command) and user querying (Query) are 
 
 ```mermaid
 graph TD
-  subgraph Ingestion Pipeline Command
+  subgraph SG1_IngestionPipelineCommand ["Ingestion Pipeline Command"]
     A[New PDF Upload] --> B[Asynchronous Ingestion Worker]
     B -->|CPU Heavy: OCR, Chunking| C[Generate Embeddings]
     C -->|Bulk Insert| D[(Write Database: MongoDB / PostgreSQL)]
   end
-  subgraph Synchronization Hook
+  subgraph SG2_SynchronizationHook ["Synchronization Hook"]
     D -->|Change Data Capture CDC / Event| E[Message Broker: Kafka / RabbitMQ]
     E -->|Replicate quantized vectors| F[(Read Database: Qdrant Replicas)]
   end
-  subgraph Query Pipeline Read
+  subgraph SG3_QueryPipelineRead ["Query Pipeline Read"]
     G[User Search Query] --> H[Low-Latency Search Service]
     H -->|Fast read-only HNSW lookup| F
     F -->|Return chunks| H

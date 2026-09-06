@@ -18,7 +18,7 @@ In single-file AI editing configurations:
 flowchart TD
     Target[Core File: auth_service.py - Refactored] --> Impact{Dependency Graph Lookup}
     
-    subgraph Directed Dependency Graph
+    subgraph SG1_DirectedDependencyGraph ["Directed Dependency Graph"]
         Impact -->|Imports auth_service| Caller1[File: api_router.py]
         Impact -->|Imports auth_service| Caller2[File: test_auth.py]
         Caller1 -->|Imports api_router| Server[File: main.py]

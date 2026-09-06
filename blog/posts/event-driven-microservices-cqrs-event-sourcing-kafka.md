@@ -18,12 +18,12 @@ The flow of write commands, immutable event streams, and projected read models:
 graph TD
   A[Client Write Request / Command] --> B[Command Service]
   
-  subgraph Write Side: Event Sourcing Log
+  subgraph SG1_WriteSideEvent ["Write Side: Event Sourcing Log"]
     B -->|Validate & Generate Domain Event| C[Kafka Immutable Event Topic]
     C -->|Append Event| D[(Kafka Distributed Commit Log)]
   end
   
-  subgraph Read Side: Projections
+  subgraph SG2_ReadSideProjections ["Read Side: Projections"]
     D -->|Consume Event Stream| E[Projection Consumer Service]
     E -->|Update Specialized Read Model| F[(Read Database: Redis / Elasticsearch)]
   end

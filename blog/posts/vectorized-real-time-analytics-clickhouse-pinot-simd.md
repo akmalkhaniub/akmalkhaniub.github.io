@@ -18,15 +18,15 @@ How ClickHouse and Apache Pinot prune data segments and utilize CPU SIMD vector 
 
 ```mermaid
 graph TD
-  subgraph User SQL Query Execution
+  subgraph SG1_UserSqlQuery ["User SQL Query Execution"]
     Query["SELECT country, SUM(revenue) FROM sales WHERE timestamp > T1"] --> SparseIndex["1. Sparse Index Pruning (primary.idx / min-max)"]
   end
   
-  subgraph Columnar Segment Data Selection
+  subgraph SG2_ColumnarSegmentData ["Columnar Segment Data Selection"]
     SparseIndex -->|Skip 99% Unmatched Granules| SelectedColumns["2. Read Contiguous Memory Arrays: [country], [revenue]"]
   end
   
-  subgraph Hardware SIMD Vector Execution Engine
+  subgraph SG3_HardwareSimdVector ["Hardware SIMD Vector Execution Engine"]
     SelectedColumns -->|Load 4096-Element Vector| SIMDRegisters["3. CPU AVX-512 SIMD Vector Registers"]
     SIMDRegisters -->|Single CPU Cycle Execution| SIMDAdd["4. Hardware Parallel Vector Add (8 x 64-bit Ints per Clock Cycle!)"]
     SIMDAdd --> AggregateResult["🎉 Sub-100ms Query Aggregation Result"]

@@ -20,19 +20,19 @@ How vLLM maps logical sequence tokens to non-contiguous physical GPU VRAM memory
 
 ```mermaid
 graph TD
-  subgraph Client Requests & Logical Token Streams
+  subgraph SG1_ClientRequestsLogical ["Client Requests & Logical Token Streams"]
     Req1["Request 1: Token Stream (Logical Tokens 0..31)"]
     Req2["Request 2: Token Stream (Logical Tokens 0..15)"]
   end
   
-  subgraph PagedAttention Block Table Mapper
+  subgraph SG2_PagedattentionBlockTable ["PagedAttention Block Table Mapper"]
     Req1 -->|Logical Block 0 (Tokens 0..15)| BlockTable1[Block Table: Logical 0 -> Physical Block #7]
     Req1 -->|Logical Block 1 (Tokens 16..31)| BlockTable1_2[Block Table: Logical 1 -> Physical Block #2]
     
     Req2 -->|Logical Block 0 (Tokens 0..15)| BlockTable2[Block Table: Logical 0 -> Physical Block #9]
   end
   
-  subgraph Physical GPU VRAM Memory Pool (Non-Contiguous Pages)
+  subgraph SG3_PhysicalGpuVram ["Physical GPU VRAM Memory Pool (Non-Contiguous Pages)"]
     BlockTable1 --> PhysBlock7[Physical GPU Block #7 (16 Key/Value Vectors)]
     BlockTable1_2 --> PhysBlock2[Physical GPU Block #2 (16 Key/Value Vectors)]
     BlockTable2 --> PhysBlock9[Physical GPU Block #9 (16 Key/Value Vectors)]

@@ -18,14 +18,14 @@ How an in-cluster GitOps Agent pulls Git commit manifests and heals live cluster
 graph TD
   Developer[Developer Git Commit] -->|1. git push main| GitRepo[(Git Repository: Single Source of Truth)]
   
-  subgraph In-Cluster GitOps Agent (ArgoCD / Flux)
+  subgraph SG1_InClusterGitops ["In-Cluster GitOps Agent (ArgoCD / Flux)"]
     GitRepo -->|2. Pull Latest Git Commit SHA| Agent[GitOps Sync Agent]
     ClusterState[Live Kubernetes Cluster API] -->|3. Read Actual Live State| Agent
     
     Agent -->|4. Compare Git Manifest vs Live State| DiffEngine{Drift Detected?}
   end
   
-  subgraph Automated Self-Healing Remediation
+  subgraph SG2_AutomatedSelfHealing ["Automated Self-Healing Remediation"]
     DiffEngine -->|Yes: Out of Sync / Drifted| Healer[Automated Self-Healing Reconciler]
     DiffEngine -->|No: Synced| Sleep[Sleep & Wait for Next Poll / Webhook]
     

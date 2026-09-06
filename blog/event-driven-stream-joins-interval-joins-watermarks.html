@@ -123,20 +123,20 @@
 <h2 id="stream-stream-interval-join-watermark-architecture">Stream-Stream Interval Join &amp; Watermark Architecture</h2>
 <p>How Interval Joins restrict state retention to relative time windows $[t - 5\text{min}, t + 10\text{min}]$:</p>
 <div class="mermaid">graph TD
-  subgraph Unbounded Input Stream A (AdClick Stream)
+  subgraph SG1_UnboundedInputStream [&quot;Unbounded Input Stream A (AdClick Stream)&quot;]
     ClickStream[AdClick Event: click_id=101, timestamp=10:00] --&gt;|KeyBy click_id| JoinOp[Stateful Stream Interval Join Operator]
   end
   
-  subgraph Unbounded Input Stream B (Purchase Stream)
+  subgraph SG2_UnboundedInputStream [&quot;Unbounded Input Stream B (Purchase Stream)&quot;]
     PurchaseStream[Purchase Event: click_id=101, timestamp=10:04] --&gt;|KeyBy click_id| JoinOp
   end
   
-  subgraph Interval Join State Retention Window [-1min, +10min]
+  subgraph SG3_IntervalJoinState [&quot;Interval Join State Retention Window [-1min, +10min]&quot;]
     JoinOp &lt;--&gt;|Check State: 10:00 - 1min &lt;= 10:04 &lt;= 10:00 + 10min| StateA[(Stream A State Buffer)]
     JoinOp &lt;--&gt;|Match Found!| StateB[(Stream B State Buffer)]
   end
   
-  subgraph Watermark State Purging Engine
+  subgraph SG4_WatermarkStatePurging [&quot;Watermark State Purging Engine&quot;]
     Watermark[Watermark Advances to 10:15] --&gt;|Purge Old Events &lt;= 10:05| EvictState[🗑️ Purge Expired Stream States from RocksDB]
     JoinOp --&gt;|Emit Joined Event| Output[Joined Stream: AdClick + Purchase Matched Payload!]
   end</div>

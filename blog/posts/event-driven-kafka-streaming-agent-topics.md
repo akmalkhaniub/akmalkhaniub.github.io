@@ -15,14 +15,14 @@ Rather than invoking downstream services directly, agents write status and comma
 
 ```mermaid
 graph LR
-  subgraph Producer Agent
+  subgraph SG1_ProducerAgent ["Producer Agent"]
     A[Planner Agent] -->|Emit TaskApprovedEvent| K[Kafka Broker]
   end
-  subgraph Kafka Partition Routing
+  subgraph SG2_KafkaPartitionRouting ["Kafka Partition Routing"]
     K -->|Partition by trajectory_id| P1[Partition 0: Trajectory A]
     K -->|Partition by trajectory_id| P2[Partition 1: Trajectory B]
   end
-  subgraph Consumer Swarm
+  subgraph SG3_ConsumerSwarm ["Consumer Swarm"]
     P1 --> W1[Worker Container 1]
     P2 --> W2[Worker Container 2]
   end

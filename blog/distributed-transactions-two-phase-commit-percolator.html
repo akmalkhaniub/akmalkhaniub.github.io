@@ -126,17 +126,17 @@
   Client[Transaction Client] --&gt;|1. Prewrite Phase: Write Data + Secondary Locks| Shard2[Shard 2: Key 'account_B']
   Client --&gt;|1. Prewrite Phase: Write Data + Primary Lock| Shard1[Shard 1: Key 'account_A' (Primary Lock Target)]
   
-  subgraph Prewrite Phase (Acquire Locks)
+  subgraph SG1_PrewritePhaseAcquire [&quot;Prewrite Phase (Acquire Locks)&quot;]
     Shard1 --&gt;|Lock Status| LockA[Primary Lock Set on account_A]
     Shard2 --&gt;|Lock Status| LockB[Secondary Lock Set on account_B -&gt; Points to Shard1 account_A!]
   end
   
-  subgraph Commit Phase (Single Point of Truth)
+  subgraph SG2_CommitPhaseSingle [&quot;Commit Phase (Single Point of Truth)&quot;]
     Client --&gt;|2. Commit Phase: Commit Primary Lock ONLY| Shard1
     Shard1 --&gt;|3. Primary Lock Committed!| TxSuccess[🎉 TRANSACTION IS IRREVOCABLY COMMITTED!]
   end
   
-  subgraph Background Async Lock Resolution
+  subgraph SG3_BackgroundAsyncLock [&quot;Background Async Lock Resolution&quot;]
     TxSuccess --&gt;|4. Async Background Rollout| Shard2
     Shard2 --&gt;|5. Convert Secondary Lock to Value| Complete[Complete Transaction on Shard 2]
   end</div>

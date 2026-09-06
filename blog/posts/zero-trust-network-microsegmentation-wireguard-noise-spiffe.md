@@ -18,17 +18,17 @@ How WireGuard Noise handshakes and SPIFFE/SPIRE workload identities enforce micr
 
 ```mermaid
 graph TD
-  subgraph Kubernetes Pod A (Client Workload)
+  subgraph SG1_KubernetesPodA ["Kubernetes Pod A (Client Workload)"]
     WorkloadA[Workload A Container] -->|1. Request SVID via Workload API| SPIRE_Agent1[SPIRE Agent Pod Daemon]
   end
   
-  subgraph SPIFFE/SPIRE Cryptographic Identity Engine
+  subgraph SG2_SpiffeSpireCryptographic ["SPIFFE/SPIRE Cryptographic Identity Engine"]
     SPIRE_Agent1 -->|2. Container Attestation: Cgroup/Namespace| SPIRE_Server[SPIRE Server CA]
     SPIRE_Server -->|3. Issue Short-Lived X.509 SVID| SPIRE_Agent1
     SPIRE_Agent1 -->|4. Mount SPIFFE SVID: spiffe://domain/ns/prod/sa/payment| WorkloadA
   end
   
-  subgraph WireGuard Kernel-Space Encrypted Tunnel (Noise_IK Protocol)
+  subgraph SG3_WireguardKernelSpace ["WireGuard Kernel-Space Encrypted Tunnel (Noise_IK Protocol)"]
     WorkloadA -->|5. Outbound Network Packet| WG0[WireGuard Kernel Interface wg0]
     WG0 -->|6. Noise IK Handshake: Curve25519 + ChaCha20-Poly1305| WG1[WireGuard Kernel Interface wg1]
     WG1 -->|7. Identity-Aware Rule: Is SPIFFE ID Authorized?| WorkloadB[Workload B Container: Payment DB]

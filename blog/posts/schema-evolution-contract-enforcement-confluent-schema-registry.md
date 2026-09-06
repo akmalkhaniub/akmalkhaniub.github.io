@@ -19,7 +19,7 @@ graph TD
   A[Producer Microservice] -->|1. Register / Lookup Schema| B[Confluent Schema Registry]
   B -->|2. Return Schema ID: 402| A
   
-  subgraph Binary Wire Framing Format
+  subgraph SG1_BinaryWireFraming ["Binary Wire Framing Format"]
     A -->|3. Construct Wire Bytes| C[Magic Byte: 0x00]
     C --> D[4-Byte Schema ID: 0x00000192]
     D --> E[Avro / Protobuf Binary Payload Bytes]

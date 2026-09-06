@@ -44,7 +44,7 @@ When we apply SRP to agentic systems, we move from a single overloaded chatbot t
 
 ```mermaid
 graph TD
-    subgraph SingleAgent [The Overloaded Agent Model]
+    subgraph SG1_SingleagentTheOverloaded ["SingleAgent [The Overloaded Agent Model]"]
         U1[User Query] --> Agent[Overloaded AI Agent]
         Agent -->|Too many instructions| Tool1[Search Tool]
         Agent -->|Cognitive overload| Tool2[DB Tool]
@@ -52,7 +52,7 @@ graph TD
         Agent -->|Hallucinations| Out1[Unpredictable Output]
     end
 
-    subgraph MultiAgent [The Multi-Agent Team Model]
+    subgraph SG2_MultiagentTheMulti ["MultiAgent [The Multi-Agent Team Model]"]
         U2[User Query] --> Supervisor[Supervisor Agent]
         Supervisor -->|Delegate Research| Researcher[Research Specialist]
         Supervisor -->|Delegate Coding| Coder[Code Specialist]

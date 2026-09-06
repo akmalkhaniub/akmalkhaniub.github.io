@@ -14,11 +14,11 @@ This article details how modern distributed vector databases achieve sub-$10\tex
 
 ```mermaid
 graph TD
-  subgraph Billion-Scale Vector Search Pipeline
+  subgraph SG1_BillionScaleVector ["Billion-Scale Vector Search Pipeline"]
     Query[Query Vector: 1536-dim float32] --> Coordinator[Distributed Query Coordinator]
     Coordinator --> Shards[Parallel Query Shard Nodes]
     
-    subgraph Quantization & Traversal Engine
+    subgraph SG2_QuantizationTraversalEngine ["Quantization & Traversal Engine"]
       Shards --> ADC["1. Asymmetric Distance Computation (Precomputed Lookup Tables)"]
       Shards --> DiskANN["2. DiskANN / Vamana Graph Traversal (NVMe SSD Block Reads)"]
       Shards --> Rerank["3. Top-K Full Precision Re-Ranking (Float32 Vector Cache)"]
@@ -70,11 +70,11 @@ To completely overcome the RAM ceiling, **DiskANN** (Microsoft Research, Subrama
 
 ```mermaid
 graph LR
-  subgraph In-Memory Cache (~10% RAM)
+  subgraph SG3_InMemoryCache ["In-Memory Cache (~10% RAM)"]
     Mem[Compressed PQ Vectors + Fast Entry Point Index]
   end
   
-  subgraph NVMe SSD Disk Layout (90% Cold)
+  subgraph SG4_NvmeSsdDisk ["NVMe SSD Disk Layout (90% Cold)"]
     SSD[Vamana Graph Nodes + Full Precision 1536-dim Vectors]
   end
   
@@ -97,17 +97,17 @@ At enterprise scale, vector databases decouple stateful storage from stateless c
 
 ```mermaid
 graph TD
-  subgraph Client Ingestion & Query Layer
+  subgraph SG5_ClientIngestionQuery ["Client Ingestion & Query Layer"]
     Client[Client App] --> Proxy[Stateless Query / Ingest Proxy]
   end
   
-  subgraph Storage & Consensus Brokers
+  subgraph SG6_StorageConsensusBrokers ["Storage & Consensus Brokers"]
     Proxy -->|1. Append Insert WAL| LogBroker[Apache Kafka / Pulsar WAL Broker]
     Proxy -->|2. Parallel Scatter Search| QueryNode1[Query Worker Node 1]
     Proxy -->|2. Parallel Scatter Search| QueryNode2[Query Worker Node 2]
   end
   
-  subgraph Background Processing & Object Store
+  subgraph SG7_BackgroundProcessingObject ["Background Processing & Object Store"]
     LogBroker --> DataNode[Data Node: Segment Flusher]
     DataNode --> S3[(Cloud Object Storage: AWS S3 / MinIO)]
     S3 --> IndexNode[Indexer Node: Builds DiskANN / HNSW SSTs]

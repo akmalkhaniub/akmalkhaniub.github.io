@@ -20,20 +20,20 @@ How Automatic Reference Counting operates, how strong reference cycles leak memo
 
 ```mermaid
 graph TD
-  subgraph Automatic Reference Counting (Deterministic Deallocation)
+  subgraph SG1_AutomaticReferenceCounting ["Automatic Reference Counting (Deterministic Deallocation)"]
     Assign[Object Pointer Assigned] -->|1. Compiler injects swift_retain()| Inc[Increment Strong Ref Count]
     ScopeExit[Pointer Leaves Scope] -->|2. Compiler injects swift_release()| Dec[Decrement Strong Ref Count]
     Dec -->|3. Is Ref Count == 0?| FreeCheck{Ref Count == 0?}
     FreeCheck -->|Yes| InstantFree["🎉 Immediate Destructor & Memory Free! (0ms Latency!)"]
   end
   
-  subgraph Strong Reference Cycle (Circular Memory Leak)
+  subgraph SG2_StrongReferenceCycle ["Strong Reference Cycle (Circular Memory Leak)"]
     NodeA[Object A (Strong Count: 1)] -->|Strong Pointer| NodeB[Object B (Strong Count: 1)]
     NodeB -->|Strong Pointer| NodeA
     ScopeDrop[Parent Scope Dropped] -->|Count Drops to 1 -> NEVER REACHES 0!| LeakedMemory[🚨 Memory Leak! Objects A & B Unreachable but Unfreed!]
   end
   
-  subgraph Solution: Swift Weak Side-Tables & Cycle Collectors
+  subgraph SG3_SolutionSwiftWeak ["Solution: Swift Weak Side-Tables & Cycle Collectors"]
     NodeB -.->|weak Pointer| SideTable[Swift HeapObject Side-Table Entry]
     SideTable -->|Zeroes Pointer to nil on Deallocation| SafeWeak["✨ Safe Nil Zeroing! No Memory Leak!"]
   end

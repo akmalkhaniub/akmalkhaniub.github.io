@@ -13,7 +13,7 @@ This deep-dive architectural analysis explores the internal mechanics of B+Trees
 
 ```mermaid
 graph TD
-  subgraph Storage Engine Trade-Off (The RUM Conjecture)
+  subgraph SG1_StorageEngineTrade ["Storage Engine Trade-Off (The RUM Conjecture)"]
     BTree["B+Tree (WiredTiger / InnoDB)"] -->|Pros| LowRAF["Lowest Read Amplification (Point & Range Lookups)"]
     BTree -->|Cons| HighWAF["High Write Amplification (Random Page Writes & Doublewrite)"]
     
@@ -57,7 +57,7 @@ Log-Structured Merge-Trees (invented by Patrick O’Neil in 1996 and popularized
 
 ```mermaid
 graph TD
-  subgraph LSM-Tree Write Path (RocksDB)
+  subgraph SG2_LsmTreeWrite ["LSM-Tree Write Path (RocksDB)"]
     Write[Client Put Request: key, value] --> WAL[1. Write-Ahead Log WAL (Disk Append)]
     Write --> MemTable[2. MemTable (In-Memory Concurrent SkipList)]
     

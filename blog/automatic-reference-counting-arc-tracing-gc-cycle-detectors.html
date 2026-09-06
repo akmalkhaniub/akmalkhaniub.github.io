@@ -123,20 +123,20 @@
 <h2 id="arc-architecture-reference-cycle-detection">ARC Architecture &amp; Reference Cycle Detection</h2>
 <p>How Automatic Reference Counting operates, how strong reference cycles leak memory, and how Swift weak side-tables prevent use-after-free crashes:</p>
 <div class="mermaid">graph TD
-  subgraph Automatic Reference Counting (Deterministic Deallocation)
+  subgraph SG1_AutomaticReferenceCounting [&quot;Automatic Reference Counting (Deterministic Deallocation)&quot;]
     Assign[Object Pointer Assigned] --&gt;|1. Compiler injects swift_retain()| Inc[Increment Strong Ref Count]
     ScopeExit[Pointer Leaves Scope] --&gt;|2. Compiler injects swift_release()| Dec[Decrement Strong Ref Count]
     Dec --&gt;|3. Is Ref Count == 0?| FreeCheck{Ref Count == 0?}
     FreeCheck --&gt;|Yes| InstantFree[&quot;🎉 Immediate Destructor &amp; Memory Free! (0ms Latency!)&quot;]
   end
   
-  subgraph Strong Reference Cycle (Circular Memory Leak)
+  subgraph SG2_StrongReferenceCycle [&quot;Strong Reference Cycle (Circular Memory Leak)&quot;]
     NodeA[Object A (Strong Count: 1)] --&gt;|Strong Pointer| NodeB[Object B (Strong Count: 1)]
     NodeB --&gt;|Strong Pointer| NodeA
     ScopeDrop[Parent Scope Dropped] --&gt;|Count Drops to 1 -&gt; NEVER REACHES 0!| LeakedMemory[🚨 Memory Leak! Objects A &amp; B Unreachable but Unfreed!]
   end
   
-  subgraph Solution: Swift Weak Side-Tables &amp; Cycle Collectors
+  subgraph SG3_SolutionSwiftWeak [&quot;Solution: Swift Weak Side-Tables &amp; Cycle Collectors&quot;]
     NodeB -.-&gt;|weak Pointer| SideTable[Swift HeapObject Side-Table Entry]
     SideTable --&gt;|Zeroes Pointer to nil on Deallocation| SafeWeak[&quot;✨ Safe Nil Zeroing! No Memory Leak!&quot;]
   end</div>

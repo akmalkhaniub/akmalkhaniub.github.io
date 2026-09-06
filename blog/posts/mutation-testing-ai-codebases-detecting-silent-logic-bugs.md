@@ -20,13 +20,13 @@ The mutation engine acts as an automated adversary that attempts to break produc
 graph TD
   A[Original Production Source Code AST] --> B[AST Mutation Generator Engine]
   
-  subgraph Synthetic Mutation Injection
+  subgraph SG1_SyntheticMutationInjection ["Synthetic Mutation Injection"]
     B -->|Mutant 1: Swap > to <=| C[Mutated AST #1]
     B -->|Mutant 2: Flip True to False| D[Mutated AST #2]
     B -->|Mutant 3: Delete Log/Update Call| E[Mutated AST #3]
   end
   
-  subgraph Test Suite Execution
+  subgraph SG2_TestSuiteExecution ["Test Suite Execution"]
     C --> F[Execute Unit Test Runner]
     D --> G[Execute Unit Test Runner]
     E --> H[Execute Unit Test Runner]

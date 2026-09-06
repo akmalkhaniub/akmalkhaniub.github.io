@@ -18,12 +18,12 @@ How Client Batching, Zstd Compression, and Linux `io_uring` Ring Buffers elimina
 
 ```mermaid
 graph TD
-  subgraph Client-Side Record Batching & Compression
+  subgraph SG1_ClientSideRecord ["Client-Side Record Batching & Compression"]
     Records[Client Records: 1000s of 100B Messages] -->|Accumulate linger.ms| Batcher[Batching Buffer Engine: batch.size = 64KB]
     Batcher --> Zstd[Zstd Dictionary Compression: 5x Ratio]
   end
   
-  subgraph Linux io_uring Asynchronous Ring Buffer Architecture
+  subgraph SG2_LinuxIoUring ["Linux io_uring Asynchronous Ring Buffer Architecture"]
     Zstd -->|1. Push SQE Entry (Zero Syscall!)| SQ[Submission Queue Ring Buffer: SQ]
     SQ -->|2. Kernel Worker Polling| KernelIO[Linux Kernel Storage Driver / NVMe]
     KernelIO -->|3. Complete I/O Async| CQ[Completion Queue Ring Buffer: CQ]

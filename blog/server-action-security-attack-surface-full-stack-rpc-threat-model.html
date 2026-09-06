@@ -136,19 +136,19 @@ async function updateProfile(formData: FormData) {
 <p>By allowing developers to write server functions directly inline inside UI component files, full-stack frameworks have obscured the reality that <strong>every single Server Action is an unauthenticated, publicly addressable HTTP POST endpoint exposed to anyone with a terminal and cURL</strong>.</p>
 <p>Here is the threat model of Server Actions, and the architectural patterns required to secure them in production.</p>
 <div class="mermaid">graph TD
-  subgraph The Disappearing Security Perimeter
-    subgraph Traditional API Architecture (Explicit Perimeter)
-      Client1[Browser Client] --&gt; Gateway[API Gateway / Router]
-      Gateway --&gt; AuthMW[Authentication Middleware]
-      AuthMW --&gt; RBAC[Role-Based Authorization]
-      RBAC --&gt; Validator[Schema Validation: Zod / Joi]
-      Validator --&gt; Handler[Protected Internal Service]
+  subgraph SecurityPerimeter [&quot;The Disappearing Security Perimeter&quot;]
+    subgraph TradArch [&quot;Traditional API Architecture: Explicit Perimeter&quot;]
+      Client1[&quot;Browser Client&quot;] --&gt; Gateway[&quot;API Gateway / Router&quot;]
+      Gateway --&gt; AuthMW[&quot;Authentication Middleware&quot;]
+      AuthMW --&gt; RBAC[&quot;Role-Based Authorization&quot;]
+      RBAC --&gt; Validator[&quot;Schema Validation: Zod / Joi&quot;]
+      Validator --&gt; Handler[&quot;Protected Internal Service&quot;]
     end
 
-    subgraph Server Action Architecture (Implicit Endpoint)
-      Client2[Browser Client / Malicious Attacker] --&gt;|cURL POST /?_rsc=action_id| PublicAction[&quot;'use server' Action Handler&quot;]
-      PublicAction -.-&gt;|Missing Auth Check?| DB[(Direct Database Mutation!)]
-      PublicAction -.-&gt;|Captures Closed Scope?| SecretLeak[Leaked Environment Pointers]
+    subgraph ActionArch [&quot;Server Action Architecture: Implicit Endpoint&quot;]
+      Client2[&quot;Browser Client or Malicious Attacker&quot;] --&gt;|cURL POST with action ID| PublicAction[&quot;Server Action Handler Function&quot;]
+      PublicAction -.-&gt;|Missing Auth Check?| DB[(&quot;Direct Database Mutation&quot;)]
+      PublicAction -.-&gt;|Captures Closed Scope?| SecretLeak[&quot;Leaked Environment Pointers&quot;]
     end
   end</div>
 <p><em>Figure 1: Server Action RPC invocation lifecycle, cryptographic action ID hash verification, and closed-over scope boundaries. Source: OWASP Full-Stack Security Taskforce &amp; React Documentation <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-4" class="citation-link" data-ref="4" title="Reference [4]">[4]</a></sup>.</em></p>

@@ -129,7 +129,7 @@
 <p>If ten users simultaneously visit a page containing a CPU-intensive Server Component, the Node.js event loop freezes. Inbound HTTP requests queue up in OS socket buffers. Health-check pings fail. Kubernetes thinks your pod is dead and kills it.</p>
 <p>This is <strong>The Node.js Event Loop Trap in Server Components</strong>. Here is the systems engineering analysis of CPU starvation in modern full-stack React, and how to protect multi-tenant servers from collapse.</p>
 <div class="mermaid">graph TD
-  subgraph Node.js Single-Threaded Event Loop Saturation
+  subgraph SG1_NodeJsSingle [&quot;Node.js Single-Threaded Event Loop Saturation&quot;]
     Client1[User 1: GET /analytics] --&gt; Ingress[Single-Threaded Node.js Event Loop]
     Client2[User 2: GET /healthz] --&gt; Ingress
     Client3[User 3: GET /checkout] --&gt; Ingress
@@ -188,12 +188,12 @@ export default async function ReportPage({ params }) {
 <h2 id="3-the-systems-solution-offloading-cpu-bounds-from-the-event-loop">3. The Systems Solution: Offloading CPU Bounds from the Event Loop</h2>
 <p>To run React Server Components safely at scale, systems architects must establish a strict boundary: <strong>the main Node.js event loop must only route I/O; heavy computation must be isolated</strong>.</p>
 <div class="mermaid">graph LR
-  MainThread[Node.js Main Event Loop] --&gt;|Dispatches CPU Work| WorkerPool[Node.js worker_threads / Piscina Pool]
-  WorkerPool --&gt; Thread1[Worker Core 1]
-  WorkerPool --&gt; Thread2[Worker Core 2]
-  WorkerPool --&gt; Thread3[Worker Core 3]
+  MainThread[&quot;Node.js Main Event Loop&quot;] --&gt;|Dispatches CPU Work| WorkerPool[&quot;Node.js worker_threads or Piscina Pool&quot;]
+  WorkerPool --&gt; Thread1[&quot;Worker Core 1&quot;]
+  WorkerPool --&gt; Thread2[&quot;Worker Core 2&quot;]
+  WorkerPool --&gt; Thread3[&quot;Worker Core 3&quot;]
   
-  MainThread --&gt;|Instant Non-Blocking Response| HealthCheck[Responds to K8s /healthz in &lt; 2ms]</div>
+  MainThread --&gt;|Instant Non-Blocking Response| HealthCheck[&quot;Responds to K8s health check in under 2ms&quot;]</div>
 <h3 id="pattern-1-worker-thread-offloading-workerthreads">Pattern 1: Worker Thread Offloading (<code>worker_threads</code>)</h3>
 <p>For complex data transformations, aggregations, or markdown/syntax parsing occurring within Server Components, delegate work to a worker thread pool using libraries like <code>piscina</code>:</p>
 <pre><code class="language-typescript">// lib/worker-pool.ts

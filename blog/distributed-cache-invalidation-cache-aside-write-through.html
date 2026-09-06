@@ -124,20 +124,20 @@
 <h2 id="distributed-cache-architecture-update-strategies">Distributed Cache Architecture &amp; Update Strategies</h2>
 <p>How Cache-Aside (Lazy Loading) and Write-Behind (Async Batching) handle database synchronization:</p>
 <div class="mermaid">graph TD
-  subgraph Cache-Aside Read Flow
+  subgraph SG1_CacheAsideRead [&quot;Cache-Aside Read Flow&quot;]
     ClientR[Client Read] --&gt;|1. Check Cache| RedisR[In-Memory Cache Redis]
     RedisR --&gt;|2a. Cache Hit| ReturnData[Return Data &lt; 1ms]
     RedisR --&gt;|2b. Cache Miss| DBR[Backend Database]
     DBR --&gt;|3. Populate Cache| RedisR
   end
   
-  subgraph Write-Behind Async Batching Flow
+  subgraph SG2_WriteBehindAsync [&quot;Write-Behind Async Batching Flow&quot;]
     ClientW[Client Write] --&gt;|1. Write to In-Memory Ring Buffer| CacheQueue[Cache Layer Async Write Queue]
     CacheQueue --&gt;|2. Instant Ack &lt; 100us| ClientW
     CacheQueue --&gt;|3. Background Worker Batch Flush| DBW[Persistent Database]
   end
   
-  subgraph XFetch Probabilistic Early Expiration
+  subgraph SG3_XfetchProbabilisticEarly [&quot;XFetch Probabilistic Early Expiration&quot;]
     RedisR --&gt;|Check ttl - delta * beta * log(rnd)| XFetchCheck{Is Early Recompute Triggered?}
     XFetchCheck --&gt;|Yes: Pre-empt Expiration| AsyncRefresh[Asynchronously Refresh Cache BEFORE Expiration!]
   end</div>

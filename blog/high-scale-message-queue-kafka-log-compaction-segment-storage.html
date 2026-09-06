@@ -123,17 +123,17 @@
 <h2 id="apache-kafka-log-segment-compaction-architecture">Apache Kafka Log Segment &amp; Compaction Architecture</h2>
 <p>How Kafka structures partition log segments and executes background key-based compaction:</p>
 <div class="mermaid">graph TD
-  subgraph Kafka Partition Commit Log Directory on Disk
+  subgraph SG1_KafkaPartitionCommit [&quot;Kafka Partition Commit Log Directory on Disk&quot;]
     Seg1[Segment File 000.log: Appended Messages] --- Idx1[Sparse Index File 000.index: Offset -&gt; Bytes]
     Seg2[Segment File 005.log: Active Segment] --- Idx2[Sparse Index File 005.index]
   end
   
-  subgraph Key-Based Log Compaction (Cleaner Thread)
+  subgraph SG2_KeyBasedLog [&quot;Key-Based Log Compaction (Cleaner Thread)&quot;]
     Seg1 --&gt;|1. Scan Key History| Cleaner[Cleaner Thread: Deduplicate Keys]
     Cleaner --&gt;|2. Retain Latest Record per Key| CompactedSeg[Compacted Segment File: Retains Key='user_42' Latest State]
   end
   
-  subgraph High-Performance Zero-Copy Egress
+  subgraph SG3_HighPerformanceZero [&quot;High-Performance Zero-Copy Egress&quot;]
     Seg2 --&gt;|3. OS Page Cache| PageCache[Linux OS Kernel Page Cache]
     PageCache --&gt;|4. sendfile() DMA Transfer| Socket[NIC Network Socket -&gt; Consumer]
   end</div>

@@ -15,13 +15,13 @@ The current ecosystem is split into three paradigms based on the balance between
 
 ```mermaid
 graph LR
-    subgraph Declarative [High Autonomy / Declarative Crews]
+    subgraph SG1_DeclarativeHighAutonomy ["Declarative [High Autonomy / Declarative Crews]"]
         CrewAI[CrewAI] --> AutoGen[Microsoft AutoGen]
     end
-    subgraph Imperative [High Control / State Graphs]
+    subgraph SG2_ImperativeHighControl ["Imperative [High Control / State Graphs]"]
         LangGraph[LangGraph] --> PydanticAI[PydanticAI]
     end
-    subgraph Native [Provider Native / Serverless]
+    subgraph SG3_NativeProviderNative ["Native [Provider Native / Serverless]"]
         OpenAI[OpenAI Agents SDK] --> Vertex[Google ADK]
     end
     Declarative ===> Imperative

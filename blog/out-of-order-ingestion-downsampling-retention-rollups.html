@@ -123,7 +123,7 @@
 <h2 id="out-of-order-ingestion-downsampling-architecture">Out-of-Order Ingestion &amp; Downsampling Architecture</h2>
 <p>How time-series databases handle late-arriving metrics and execute automated multi-tier downsampling rollups:</p>
 <div class="mermaid">graph TD
-  subgraph Out-of-Order (OOO) Ingestion Pipeline
+  subgraph SG1_OutOfOrder [&quot;Out-of-Order (OOO) Ingestion Pipeline&quot;]
     MetricStream[Incoming Metric Stream] --&gt; CheckTime{&quot;Timestamp &gt; Last Sample?&quot;}
     CheckTime --&gt;|Yes: In-Order| NormalHead[Standard Gorilla RAM Chunk]
     CheckTime --&gt;|No: Late-Arriving OOO!| OOOBuffer[&quot;⚠️ Out-of-Order (OOO) Skip-List RAM Buffer&quot;]
@@ -131,7 +131,7 @@
     NormalHead &amp; OOOBuffer --&gt;|Background Merge| CompactedChunk[Compacted Immutable Block Segment]
   end
   
-  subgraph Automated Downsampling &amp; Retention Tiering
+  subgraph SG2_AutomatedDownsamplingRetention [&quot;Automated Downsampling &amp; Retention Tiering&quot;]
     CompactedChunk --&gt; RawTier[&quot;Raw Resolution (1s / 10s Scrape) - Retained 14 Days&quot;]
     RawTier --&gt;|Thanos Downsampler| Tier5m[&quot;5-Minute Rollup (min, max, sum, count) - Retained 90 Days&quot;]
     Tier5m --&gt;|Thanos Downsampler| Tier1h[&quot;1-Hour Rollup (Long-Term Archive) - Retained 2 Years&quot;]

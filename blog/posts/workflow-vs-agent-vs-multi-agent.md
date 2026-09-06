@@ -17,21 +17,21 @@ To build reliable systems, we must choose the right architectural pattern based 
 
 ```mermaid
 graph TD
-    subgraph Workflow [1. Deterministic / LLM Workflow]
+    subgraph SG1_Workflow1Deterministic ["Workflow [1. Deterministic / LLM Workflow]"]
         W_Start[Input] --> W_Step1[Step A: Prompt]
         W_Step1 --> W_Step2[Step B: Code Logic]
         W_Step2 --> W_Step3[Step C: Prompt]
         W_Step3 --> W_Out[Predictable Output]
     end
 
-    subgraph Agent [2. Single Agent Loop]
+    subgraph SG2_Agent2Single ["Agent [2. Single Agent Loop]"]
         A_Start[Input] --> A_Loop{ReAct Loop}
         A_Loop -->|Decide Tool| A_Tool[Call API / Tool]
         A_Tool -->|Observe Result| A_Loop
         A_Loop -->|Task Finished| A_Out[Output]
     end
 
-    subgraph MAS [3. Multi-Agent System]
+    subgraph SG3_Mas3Multi ["MAS [3. Multi-Agent System]"]
         M_Start[Input] --> M_Orch[Orchestrator Agent]
         M_Orch -->|Delegates| M_W1[Worker Agent A]
         M_Orch -->|Delegates| M_W2[Worker Agent B]

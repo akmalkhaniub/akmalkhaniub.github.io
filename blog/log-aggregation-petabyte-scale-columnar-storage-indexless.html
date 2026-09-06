@@ -128,16 +128,16 @@
 <div class="mermaid">graph TD
   LogStream[&quot;Log Stream: 2026-08-18 10:00:00 [ERROR] Connection Timeout&quot;] --&gt; Ingestor[Log Ingestor Daemon]
   
-  subgraph Metadata Indexing Only (Loki Model)
+  subgraph SG1_MetadataIndexingOnly [&quot;Metadata Indexing Only (Loki Model)&quot;]
     Ingestor --&gt;|1. Extract High-Level Labels| LabelIndex[&quot;Stream Label Index: {app='payment', env='prod'}&quot;]
   end
   
-  subgraph Compressed Chunk Storage (No Inverted Token Index!)
+  subgraph SG2_CompressedChunkStorage [&quot;Compressed Chunk Storage (No Inverted Token Index!)&quot;]
     Ingestor --&gt;|2. Append to Stream Chunk Buffer| Chunk[2MB Compressed Log Chunk Block]
     Chunk --&gt;|3. Flush to Object Storage| S3[(Cloud Object Storage: S3 / GCS)]
   end
   
-  subgraph Parallelized MapReduce Query Scanner (LogQL)
+  subgraph SG3_ParallelizedMapreduceQuery [&quot;Parallelized MapReduce Query Scanner (LogQL)&quot;]
     Query[&quot;User Query: {app='payment'} |= 'Connection Timeout'&quot;] --&gt; Querier[Distributed Query Engine]
     LabelIndex --&gt;|4. Lookup Chunks for Stream| Querier
     

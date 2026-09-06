@@ -18,12 +18,12 @@ How a Supervisor Agent coordinates specialized Sub-Agents executing ReAct reason
 graph TD
   UserTask["User Request: 'Refactor database sharding & run tests'"] --> Supervisor[Parent Supervisor Agent]
   
-  subgraph Multi-Agent Delegation Bus
+  subgraph SG1_MultiAgentDelegation ["Multi-Agent Delegation Bus"]
     Supervisor -->|1. Delegate Research Task| ResearchAgent[Research Sub-Agent]
     Supervisor -->|2. Delegate Code Edit Task| CoderAgent[Coder Sub-Agent]
   end
   
-  subgraph ReAct (Reason + Act) Execution Loop
+  subgraph SG2_ReactReasonAct ["ReAct (Reason + Act) Execution Loop"]
     CoderAgent -->|3. Thought: Analyze code bug| Thought[1. Thought Step]
     Thought -->|4. Action: Call tool run_command| Action[2. Action Step: Tool Invocation]
     Action -->|5. Execute Tool in Sandbox| ToolRunner[Sandbox Tool Dispatcher]

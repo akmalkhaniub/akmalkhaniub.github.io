@@ -20,17 +20,17 @@ How a Custom Controller watches CRD events and drives cluster convergence:
 graph TD
   User[Platform Engineer] -->|1. kubectl apply -f db.yaml| API[Kubernetes API Server]
   
-  subgraph Custom Resource Definition CRD
+  subgraph SG1_CustomResourceDefinition ["Custom Resource Definition CRD"]
     API -->|2. Persist Spec| ETCD[(etcd State Store)]
   end
   
-  subgraph Custom Operator Controller
+  subgraph SG2_CustomOperatorController ["Custom Operator Controller"]
     API -->|3. Watch Event Notification| Informer[Informer / Watch Cache]
     Informer -->|4. Push Key to WorkQueue| Queue[WorkQueue]
     Queue -->|5. Pop Key| Reconciler[Reconciler Loop]
   end
   
-  subgraph Automated Reconciliation Logic
+  subgraph SG3_AutomatedReconciliationLogic ["Automated Reconciliation Logic"]
     Reconciler -->|6. Query Actual Cluster State| Pods[Live Kubernetes Pods & StatefulSets]
     Reconciler -->|7. Calculate Delta: Desired vs Actual| Engine{State Delta?}
     Engine -->|Out of Sync| Action[Create / Update / Delete Pods]

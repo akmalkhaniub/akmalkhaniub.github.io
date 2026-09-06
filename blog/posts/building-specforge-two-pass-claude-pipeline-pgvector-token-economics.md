@@ -18,19 +18,19 @@ How SpecForge ingests raw DOCX/PDF PRDs, performs two-pass hierarchical analysis
 
 ```mermaid
 graph TD
-  subgraph Ingestion & Document Chunking
+  subgraph SG1_IngestionDocumentChunking ["Ingestion & Document Chunking"]
     Doc[Raw PRD / BRD Document .docx/.pdf] --> Ingestion[mammoth / pdfplumber Ingest Engine]
     Ingestion --> Chunks[Hierarchical Markdown Chunking]
   end
   
-  subgraph Two-Pass Claude 3.5 Extraction Engine
+  subgraph SG2_TwoPassClaude ["Two-Pass Claude 3.5 Extraction Engine"]
     Chunks --> Pass1["Pass 1: Macro Domain & Epic Discovery (Claude 3.5 Sonnet)"]
     Pass1 --> Epics["Structured Epic Hierarchy (JSON Schema)"]
     Epics --> Pass2["Pass 2: Granular User Story & Gherkin Synthesis (Parallel Tool Loops)"]
     Pass2 --> Stories["User Stories + Given-When-Then Acceptance Criteria"]
   end
   
-  subgraph Storage, Deduplication & Telemetry
+  subgraph SG3_StorageDeduplicationTelemetry ["Storage, Deduplication & Telemetry"]
     Stories --> Embedder["Embedding Generation (text-embedding-3)"]
     Embedder --> PGVector["PostgreSQL pgvector (Cosine Sim > 0.85 Check)"]
     PGVector -->|Duplicate Detected| Merge["Automated Merge Recommendation"]

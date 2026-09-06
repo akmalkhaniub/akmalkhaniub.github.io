@@ -39,7 +39,7 @@ The system normalizes incoming client requests at edge nodes, serving static cac
 graph TD
   A[Global Client Browsers] -->|Geo-Routed Request| B[Cloudflare Edge Node]
   
-  subgraph Cloudflare Worker Edge Middleware
+  subgraph SG1_CloudflareWorkerEdge ["Cloudflare Worker Edge Middleware"]
     B -->|Step 1: Sanitize Query String| C[URL Normalization Node]
     C -->|Step 2: Check Local Edge Cache| D{Cache Hit?}
   end

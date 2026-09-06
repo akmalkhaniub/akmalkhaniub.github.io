@@ -27,16 +27,16 @@ The answer has nothing to do with typing ergonomics. It has everything to do wit
 
 ```mermaid
 graph TD
-  subgraph The Synchronous vs Asynchronous Request Trap
-    subgraph Synchronous Access (Next.js 13/14)
-      Component1[Child Component reads cookies synchronously] --> GlobalBailout["Immediate Compiler Bailout: Mark ENTIRE Route Dynamic!"]
-      GlobalBailout --> NullifyPrerender[Static Shell Cannot Be Built Ahead of Time]
+  subgraph RequestTrap ["The Synchronous vs Asynchronous Request Trap"]
+    subgraph SyncAccess ["Synchronous Access: Next.js 13 and 14"]
+      Component1["Child Component reads cookies synchronously"] --> GlobalBailout["Immediate Compiler Bailout: Mark Entire Route Dynamic"]
+      GlobalBailout --> NullifyPrerender["Static Shell Cannot Be Built Ahead of Time"]
     end
 
-    subgraph Asynchronous Access (Next.js 15 + React 19)
-      Component2[Component passes Promise: params / cookies] --> DeferredRead[Render tree evaluates without waiting for runtime headers]
-      DeferredRead --> BuildStaticShell[Static Shell Pre-compiled Successfully]
-      DeferredRead --> MicrotaskAwait[Microtask resolves only when await is executed inside Suspense]
+    subgraph AsyncAccess ["Asynchronous Access: Next.js 15 and React 19"]
+      Component2["Component passes Promise: params and cookies"] --> DeferredRead["Render tree evaluates without waiting for runtime headers"]
+      DeferredRead --> BuildStaticShell["Static Shell Pre-compiled Successfully"]
+      DeferredRead --> MicrotaskAwait["Microtask resolves only when await is executed inside Suspense"]
     end
   end
 ```

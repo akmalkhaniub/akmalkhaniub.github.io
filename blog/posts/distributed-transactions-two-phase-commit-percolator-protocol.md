@@ -22,12 +22,12 @@ How Percolator uses a Timestamp Oracle (TSO) and Primary Lock pointers to execut
 graph TD
   Client[Transaction Client] -->|1. Get Start Timestamp T_start=100| TSO[Timestamp Oracle TSO]
   
-  subgraph Phase 1: Prewrite (Acquire Locks)
+  subgraph SG1_Phase1Prewrite ["Phase 1: Prewrite (Acquire Locks)"]
     Client -->|2a. Lock & Prewrite Primary Key A| ShardA[Shard A: Primary Lock Column -> Primary A]
     Client -->|2b. Lock & Prewrite Secondary Key B| ShardB[Shard B: Secondary Lock -> Pointer to Primary A]
   end
   
-  subgraph Phase 2: Commit (Get Commit Timestamp T_commit=105)
+  subgraph SG2_Phase2Commit ["Phase 2: Commit (Get Commit Timestamp T_commit=105)"]
     Client -->|3. Get Commit Timestamp T_commit=105| TSO
     Client -->|4. Commit Primary Key A: Remove Lock, Write Commit Data| ShardA
     

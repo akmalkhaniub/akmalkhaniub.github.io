@@ -19,7 +19,7 @@ graph TD
   C --> D[Cognitive Rot: Ignorance of Edge Cases & Locks]
   D -->|Production Outage Occurs| E[Diagnosis Paralysis & Delayed Incident Resolution]
   
-  subgraph Tech Lead Intervention Loop
+  subgraph SG1_TechLeadIntervention ["Tech Lead Intervention Loop"]
     C --> F[Reverse Spec Drills & Adversarial PR Audits]
     F --> G[Deep Systems Knowledge Preserved]
     G --> H[Fast Incident Recovery]

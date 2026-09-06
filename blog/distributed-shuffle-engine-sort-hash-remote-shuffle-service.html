@@ -123,17 +123,17 @@
 <h2 id="distributed-shuffle-architecture-hash-vs-sort-vs-remote-shuffle">Distributed Shuffle Architecture: Hash vs Sort vs Remote Shuffle</h2>
 <p>How distributed engines manage map-side shuffle output files and how Remote Shuffle Services eliminate executor disk dependencies:</p>
 <div class="mermaid">graph TD
-  subgraph Legacy Hash Shuffle (M Mappers x R Reducers File Explosion)
+  subgraph SG1_LegacyHashShuffle [&quot;Legacy Hash Shuffle (M Mappers x R Reducers File Explosion)&quot;]
     Map1[Map Task 1] --&gt; File1[Partition File 1] &amp; File2[Partition File 2] &amp; File3[Partition File R (M x R Files!)]
   end
   
-  subgraph Modern Sort Shuffle (Single Data File + Index File)
+  subgraph SG2_ModernSortShuffle [&quot;Modern Sort Shuffle (Single Data File + Index File)&quot;]
     MapSort[Map Task] --&gt;|Sort Records by Reducer ID| InMemBuffer[In-Memory Sorter Buffer]
     InMemBuffer --&gt; SingleDataFile[&quot;📄 Single Data File: [Part 0 Data | Part 1 Data | Part 2 Data]&quot;]
     InMemBuffer --&gt; IndexFile[&quot;📑 Index File: [Part 0: Offset 0..1024 | Part 1: Offset 1024..4096]&quot;]
   end
   
-  subgraph Disaggregated Remote Shuffle Service (RSS: Apache Uniffle / Celeborn)
+  subgraph SG3_DisaggregatedRemoteShuffle [&quot;Disaggregated Remote Shuffle Service (RSS: Apache Uniffle / Celeborn)&quot;]
     Executor[Spark Executor (Diskless Cloud Instance)] --&gt;|Push Shuffle Data via Netty| RSSCluster[Remote Shuffle Cluster / Cloud Storage (Zero Local Disk Storage!)]
   end</div>
 <h3 id="core-distributed-shuffle-mechanics">Core Distributed Shuffle Mechanics</h3>

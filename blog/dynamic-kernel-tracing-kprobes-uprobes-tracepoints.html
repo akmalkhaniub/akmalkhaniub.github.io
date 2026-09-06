@@ -122,18 +122,18 @@
 <h2 id="linux-tracing-subsystems-ebpf-event-pipeline">Linux Tracing Subsystems &amp; eBPF Event Pipeline</h2>
 <p>How Kprobes, Uprobes, and Tracepoints capture telemetry events inside the kernel:</p>
 <div class="mermaid">graph TD
-  subgraph User-Space Application (e.g. OpenSSL / MySQL)
+  subgraph SG1_UserSpaceApplication [&quot;User-Space Application (e.g. OpenSSL / MySQL)&quot;]
     UserApp[User-Space Binary /lib/libssl.so] --&gt;|1. Call SSL_write()| UprobeHook{Uprobe / Uretprobe Hook}
   end
   
-  subgraph Linux Kernel Space
+  subgraph SG2_LinuxKernelSpace [&quot;Linux Kernel Space&quot;]
     Syscall[Syscall: sys_enter_openat] --&gt;|2. Trigger Static Tracepoint| TracepointHook{Kernel Tracepoint Hook}
     KernelFunc[Kernel Function: tcp_v4_connect] --&gt;|3. INT3 Breakpoint Trap| KprobeHook{Kprobe / Kretprobe Hook}
     
     UprobeHook &amp; TracepointHook &amp; KprobeHook --&gt;|4. Fire Event| eBPFProg[eBPF Tracing Program]
   end
   
-  subgraph Telemetry Aggregation &amp; Ring Buffers
+  subgraph SG3_TelemetryAggregationRing [&quot;Telemetry Aggregation &amp; Ring Buffers&quot;]
     eBPFProg --&gt;|5. Push Struct Event| BPF_RingBuf[BPF Ring Buffer: BPF_MAP_TYPE_RINGBUF]
     BPF_RingBuf --&gt;|6. Zero-Copy Poll| BPFTraceDaemon[User-Space Observability Daemon / bpftrace]
   end</div>

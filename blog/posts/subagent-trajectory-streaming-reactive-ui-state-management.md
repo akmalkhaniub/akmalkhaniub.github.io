@@ -18,7 +18,7 @@ The frontend architecture decouples high-frequency WebSocket/SSE events from Rea
 graph TD
   A[Agent Server SSE / WS Stream] -->|High-Frequency Events| B[Event Sequence Buffer & Deduplicator]
   
-  subgraph Client-Side Reactive State Engine
+  subgraph SG1_ClientSideReactive ["Client-Side Reactive State Engine"]
     B -->|Check Last-Event-ID| C{Duplicate or Missed Event?}
     C -->|Missed Sequence| D[Trigger Catch-Up Fetch]
     C -->|Valid Event| E[Zustand / Redux Trajectory Slice]

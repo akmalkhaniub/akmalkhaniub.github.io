@@ -15,20 +15,20 @@ Here is how React 19 re-architects client browser memory and the document asset 
 
 ```mermaid
 graph TD
-  subgraph React 19 Viewport & Asset Lifecycle Architecture
-    subgraph Resource Loading (Float)
-      ComponentA[Lazy-Loaded Component] --> DeclareStyle["<link rel='stylesheet' precedence='high' />"]
-      DeclareStyle --> Dispatcher[React Resource Dispatcher]
-      Dispatcher --> HoistHead[Hoist directly to document.head]
-      Dispatcher --> SuspendRender[Suspend component render until stylesheet is active]
-      SuspendRender --> Paint[Paint with ZERO FOUC or layout shift]
+  subgraph ViewportArch ["React 19 Viewport and Asset Lifecycle Architecture"]
+    subgraph FloatLoading ["Resource Loading: Float"]
+      ComponentA["Lazy-Loaded Component"] --> DeclareStyle["Stylesheet link element with precedence high"]
+      DeclareStyle --> Dispatcher["React Resource Dispatcher"]
+      Dispatcher --> HoistHead["Hoist directly to document.head"]
+      Dispatcher --> SuspendRender["Suspend component render until stylesheet is active"]
+      SuspendRender --> Paint["Paint with ZERO FOUC or layout shift"]
     end
 
-    subgraph Virtual Memory Management (<Activity>)
-      ActiveTab[Tab 1: Active Workspace] --> RenderActive[Rendered in Active DOM tree]
-      InactiveTab[Tab 2: Inactive Form] --> ActivityWrapper["<Activity mode='hidden'>"]
-      ActivityWrapper --> DetachedFiber[Fiber state & DOM nodes preserved in RAM]
-      ActivityWrapper --> DeferCPU[Background CPU priority lowered to Idle]
+    subgraph ActivityManagement ["Virtual Memory Management: Activity"]
+      ActiveTab["Tab 1: Active Workspace"] --> RenderActive["Rendered in Active DOM tree"]
+      InactiveTab["Tab 2: Inactive Form"] --> ActivityWrapper["Activity component mode hidden"]
+      ActivityWrapper --> DetachedFiber["Fiber state and DOM nodes preserved in RAM"]
+      ActivityWrapper --> DeferCPU["Background CPU priority lowered to Idle"]
     end
   end
 ```

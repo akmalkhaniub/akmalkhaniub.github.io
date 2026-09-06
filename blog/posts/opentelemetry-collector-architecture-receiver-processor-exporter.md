@@ -18,13 +18,13 @@ How the OTel Collector ingests, transforms, batches, and exports telemetry strea
 
 ```mermaid
 graph TD
-  subgraph Ingestion Layer: Receivers
+  subgraph SG1_IngestionLayerReceivers ["Ingestion Layer: Receivers"]
     AppTraces[App Traces: OTLP / gRPC] --> Receiver1[OTLP gRPC Receiver]
     AppLogs[App Logs: FluentBit / HTTP] --> Receiver2[OTLP HTTP Receiver]
     PromMetrics[Prometheus Scrape Targets] --> Receiver3[Prometheus Receiver]
   end
   
-  subgraph Transformation Layer: Pipelines & Processors
+  subgraph SG2_TransformationLayerPipelines ["Transformation Layer: Pipelines & Processors"]
     Receiver1 & Receiver2 & Receiver3 --> InternalOTLP[Internal OTLP Data Model]
     
     InternalOTLP --> Proc1[Memory Limiter Processor: Backpressure Guard]
@@ -32,7 +32,7 @@ graph TD
     Proc2 --> Proc3[Batch Processor: Queue & Flush Buffers]
   end
   
-  subgraph Exportation Layer: Exporters
+  subgraph SG3_ExportationLayerExporters ["Exportation Layer: Exporters"]
     Proc3 --> Exp1[OTLP gRPC Exporter -> Jaeger / Tempo]
     Proc3 --> Exp2[Prometheus Exporter -> Thanos / M3DB]
     Proc3 --> Exp3[Kafka Exporter -> Long-Term Archive]

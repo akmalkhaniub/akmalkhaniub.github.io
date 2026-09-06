@@ -127,20 +127,20 @@
 <p>React core absorbed the document lifecycle: introducing <strong>Native Resource Loading (Float)</strong> for automatic asset preloading and stylesheet precedence hoisting, alongside <strong><code>&lt;Activity&gt;</code></strong> (formerly <code>&lt;Offscreen&gt;</code>)—a virtual memory manager for inactive component trees.</p>
 <p>Here is how React 19 re-architects client browser memory and the document asset pipeline.</p>
 <div class="mermaid">graph TD
-  subgraph React 19 Viewport &amp; Asset Lifecycle Architecture
-    subgraph Resource Loading (Float)
-      ComponentA[Lazy-Loaded Component] --&gt; DeclareStyle[&quot;&lt;link rel='stylesheet' precedence='high' /&gt;&quot;]
-      DeclareStyle --&gt; Dispatcher[React Resource Dispatcher]
-      Dispatcher --&gt; HoistHead[Hoist directly to document.head]
-      Dispatcher --&gt; SuspendRender[Suspend component render until stylesheet is active]
-      SuspendRender --&gt; Paint[Paint with ZERO FOUC or layout shift]
+  subgraph ViewportArch [&quot;React 19 Viewport and Asset Lifecycle Architecture&quot;]
+    subgraph FloatLoading [&quot;Resource Loading: Float&quot;]
+      ComponentA[&quot;Lazy-Loaded Component&quot;] --&gt; DeclareStyle[&quot;Stylesheet link element with precedence high&quot;]
+      DeclareStyle --&gt; Dispatcher[&quot;React Resource Dispatcher&quot;]
+      Dispatcher --&gt; HoistHead[&quot;Hoist directly to document.head&quot;]
+      Dispatcher --&gt; SuspendRender[&quot;Suspend component render until stylesheet is active&quot;]
+      SuspendRender --&gt; Paint[&quot;Paint with ZERO FOUC or layout shift&quot;]
     end
 
-    subgraph Virtual Memory Management (&lt;Activity&gt;)
-      ActiveTab[Tab 1: Active Workspace] --&gt; RenderActive[Rendered in Active DOM tree]
-      InactiveTab[Tab 2: Inactive Form] --&gt; ActivityWrapper[&quot;&lt;Activity mode='hidden'&gt;&quot;]
-      ActivityWrapper --&gt; DetachedFiber[Fiber state &amp; DOM nodes preserved in RAM]
-      ActivityWrapper --&gt; DeferCPU[Background CPU priority lowered to Idle]
+    subgraph ActivityManagement [&quot;Virtual Memory Management: Activity&quot;]
+      ActiveTab[&quot;Tab 1: Active Workspace&quot;] --&gt; RenderActive[&quot;Rendered in Active DOM tree&quot;]
+      InactiveTab[&quot;Tab 2: Inactive Form&quot;] --&gt; ActivityWrapper[&quot;Activity component mode hidden&quot;]
+      ActivityWrapper --&gt; DetachedFiber[&quot;Fiber state and DOM nodes preserved in RAM&quot;]
+      ActivityWrapper --&gt; DeferCPU[&quot;Background CPU priority lowered to Idle&quot;]
     end
   end</div>
 <p><em>Figure 1: React 19 native resource hoisting and <code>&lt;Activity&gt;</code> virtual memory paging architecture. Stylesheets lift directly to <code>&lt;head&gt;</code> while hidden tabs maintain state without DOM footprint. Source: React 19 Architecture RFCs <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a></sup>.</em></p>

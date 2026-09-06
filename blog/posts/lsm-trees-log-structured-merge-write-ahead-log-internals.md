@@ -21,18 +21,18 @@ graph TD
   WriteReq[Client Write: SET key=val] -->|1. Sequential Disk Append| WAL[(Write-Ahead Log WAL)]
   WriteReq -->|2. In-Memory Write| MemTable[MemTable: In-Memory SkipList]
   
-  subgraph Memory Space
+  subgraph SG1_MemorySpace ["Memory Space"]
     MemTable -->|3. MemTable Full Threshold Reached| ImmutableMemTable[Immutable MemTable]
   end
   
-  subgraph Disk Storage Layers
+  subgraph SG2_DiskStorageLayers ["Disk Storage Layers"]
     ImmutableMemTable -->|4. Background Flush| SST_L0[Level 0 SSTables: Overlapping Key Ranges]
     
     SST_L0 -->|5. Leveled Compaction Merge| SST_L1[Level 1 SSTables: Sorted Non-Overlapping Files]
     SST_L1 -->|6. Leveled Compaction Merge| SST_L2[Level 2 SSTables: Larger Partition Ranges]
   end
   
-  subgraph Read Acceleration
+  subgraph SG3_ReadAcceleration ["Read Acceleration"]
     BloomFilter[Bloom Filters] -.->|Check Key Existence| SST_L0
   end
 ```

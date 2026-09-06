@@ -10,16 +10,16 @@ Solving rate limiting at one million requests per second requires **Hierarchical
 
 ```mermaid
 graph TD
-  subgraph Hierarchical Adaptive Rate Limiting at Scale
+  subgraph SG1_HierarchicalAdaptiveRate ["Hierarchical Adaptive Rate Limiting at Scale"]
     Traffic[1,000,000 Inbound RPS] --> Proxy1[Edge Proxy Node A]
     Traffic --> Proxy2[Edge Proxy Node B]
     
-    subgraph Tier 1: Local In-Memory Fast Path
+    subgraph SG2_Tier1Local ["Tier 1: Local In-Memory Fast Path"]
       Proxy1 --> Bucket1["Local Memory Token Bucket (Zero Network Latency)"]
       Proxy2 --> Bucket2["Local Memory Token Bucket (Zero Network Latency)"]
     end
     
-    subgraph Tier 2: Asynchronous Global Reconciliation
+    subgraph SG3_Tier2Asynchronous ["Tier 2: Asynchronous Global Reconciliation"]
       Bucket1 & Bucket2 -.->|Async Delta Sync every 50ms| RedisCluster[(Central Redis Cluster: Atomic Lua Script)]
     end
     
@@ -128,12 +128,12 @@ $$\text{Sleep Time} = \text{random}\Big(0, \; \min(\text{MaxSleep}, \; \text{Bas
 
 ```mermaid
 graph TD
-  subgraph Regular Exponential Backoff vs Full Jitter Backoff
-    subgraph 1. Regular Exponential Backoff (Thundering Herd)
+  subgraph SG4_RegularExponentialBackoff ["Regular Exponential Backoff vs Full Jitter Backoff"]
+    subgraph SG5_1RegularExponential ["1. Regular Exponential Backoff (Thundering Herd)"]
       F1[10,000 Concurrent 429 Failures] -->|All Sleep Exactly 4.0s| Spike["Spike: 10,000 Retries at t=4.0s (System Meltdown)"]
     end
 
-    subgraph 2. Full Jitter Exponential Backoff (Decorrelated)
+    subgraph SG6_2FullJitter ["2. Full Jitter Exponential Backoff (Decorrelated)"]
       F2[10,000 Concurrent 429 Failures] -->|Sleep Uniform Random 0..4.0s| Smooth["Smooth: Retries distributed evenly across 4000ms"]
     end
   end

@@ -12,7 +12,7 @@ However, each database engine chose a fundamentally different architectural stra
 
 ```mermaid
 graph TD
-  subgraph MVCC Architectural Strategies
+  subgraph SG1_MvccArchitecturalStrategies ["MVCC Architectural Strategies"]
     Postgres["1. PostgreSQL: Append-Only Heap Versioning\n• Updates insert new tuple in heap with (xmin, xmax)\n• Requires HOT & Autovacuum cleanup"]
     MySQL["2. MySQL InnoDB: In-Place Heap + Undo Logs\n• Updates modify heap page in-place\n• Prior versions stored in rollback Undo Segment chain"]
     Cockroach["3. CockroachDB: Distributed Timestamped Keys\n• Keys stored as Key@Timestamp in LSM-Tree (Pebble)\n• Hybrid Logical Clocks (HLC) snapshot isolation"]
@@ -72,7 +72,7 @@ Unlike Postgres, MySQL InnoDB updates the row **in-place** inside the clustered 
 
 ```mermaid
 graph LR
-  subgraph MySQL InnoDB Undo Log Chain
+  subgraph SG2_MysqlInnodbUndo ["MySQL InnoDB Undo Log Chain"]
     ClusteredPage["B+Tree Clustered Index Page: { id: 1, balance: 450, roll_ptr: 0x89a }"]
     Undo1["Undo Log Record (0x89a): { balance: 500, roll_ptr: 0x890 }"]
     Undo2["Undo Log Record (0x890): { balance: 600, roll_ptr: null }"]

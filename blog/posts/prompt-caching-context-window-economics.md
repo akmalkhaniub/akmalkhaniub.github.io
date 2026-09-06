@@ -23,7 +23,7 @@ Every LLM API invocation is billed on token counts — both input and output. Fo
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 graph LR
-    subgraph Per Request Token Breakdown
+    subgraph SG1_PerRequestToken ["Per Request Token Breakdown"]
         A[System Prompt<br/>~4000 tokens] --> T[Total Input]
         B[RAG Context<br/>~5000 tokens] --> T
         C[Chat History<br/>~3000 tokens] --> T

@@ -21,7 +21,7 @@ How keys map to physical cache nodes along a continuous $2^{32}-1$ hash space ri
 
 ```mermaid
 graph TD
-  subgraph Continuous Hash Ring Space (0 to 2^32 - 1)
+  subgraph SG1_ContinuousHashRing ["Continuous Hash Ring Space (0 to 2^32 - 1)"]
     R1["Virtual Node: Node_A_v1 (Hash: 0x1A00)"] --> R2["Key: user:101 (Hash: 0x2C10)"]
     R2 -->|Clockwise Lookup| R3["Virtual Node: Node_B_v1 (Hash: 0x3F00)"]
     R3 --> R4["Key: product:402 (Hash: 0x5E20)"]
@@ -29,7 +29,7 @@ graph TD
     R5 --> R6["Virtual Node: Node_A_v2 (Hash: 0x9B40)"]
   end
   
-  subgraph Physical Cache Servers
+  subgraph SG2_PhysicalCacheServers ["Physical Cache Servers"]
     R1 -.-> ServerA[Physical Server A]
     R6 -.-> ServerA
     R3 -.-> ServerB[Physical Server B]

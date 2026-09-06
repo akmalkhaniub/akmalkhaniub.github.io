@@ -18,14 +18,14 @@ The forensic logging pipeline captures immutable telemetry at every step of the 
 graph TD
   A[User / System Incident Trigger] --> B[Agent Worker Execution Loop]
   
-  subgraph Immutable Trajectory Audit Logging (JSONL / BigQuery)
+  subgraph SG1_ImmutableTrajectoryAudit ["Immutable Trajectory Audit Logging (JSONL / BigQuery)"]
     B -->|Step 1: System Prompt & User Context| C[(Trajectory Log Store)]
     B -->|Step 2: Retrieved Context & Vector Scores| C
     B -->|Step 3: Raw LLM Output & Tool Invocation| C
     B -->|Step 4: Tool Execution Result & Status| C
   end
   
-  subgraph Post-Incident Forensic Reconstruction
+  subgraph SG2_PostIncidentForensic ["Post-Incident Forensic Reconstruction"]
     D[Security Incident Alert] --> E[Forensic Trajectory Parser]
     C --> E
     E --> F[Identify Injection Entry Step]

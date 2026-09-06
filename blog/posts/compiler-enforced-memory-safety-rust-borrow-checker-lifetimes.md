@@ -20,13 +20,13 @@ How the Rust Borrow Checker evaluates Ownership, Immutable/Mutable References, a
 
 ```mermaid
 graph TD
-  subgraph Rust Memory Ownership & Reference Rules
+  subgraph SG1_RustMemoryOwnership ["Rust Memory Ownership & Reference Rules"]
     Owner[Resource Owner: Variable X] -->|1. Transfer Ownership| Move["Move Semantics: Value Ownership Transferred (Prev Var Invalidated!)"]
     Owner -->|2. Borrow Immutable (&T)| MultiRead["Read-Only Sharing: Unlimited &T References Allowed"]
     Owner -->|3. Borrow Mutable (&mut T)| ExclusiveWrite["Exclusive Access: Exactly ONE &mut T Allowed (No &T Allowed!)"]
   end
   
-  subgraph Compiler Borrow Checker Static Analysis (NLL)
+  subgraph SG2_CompilerBorrowChecker ["Compiler Borrow Checker Static Analysis (NLL)"]
     MultiRead & ExclusiveWrite -->|Inspect Control Flow Graph| LifetimeCheck{Does Reference Outlive Owner Scope?}
     LifetimeCheck -->|Yes: Dangling Pointer!| CompileError["❌ Compile Error: Borrowed value does not live long enough!"]
     LifetimeCheck -->|No: Safe Access| ZeroCost["🎉 Zero-Cost Abstraction: Safe Compiled Machine Code!"]

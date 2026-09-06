@@ -18,7 +18,7 @@ In standard compression workflows:
 flowchart TD
     Weight[High-Precision Weights: FP32] --> FakeQuant{Fake Quantization Gate}
     
-    subgraph Quantization Simulation
+    subgraph SG1_QuantizationSimulation ["Quantization Simulation"]
         FakeQuant --> Scale[Scale to target bit bounds: e.g. -8 to +7]
         Scale --> Round[Round floats to nearest integers]
         Round --> DeScale[De-scale back to floating range]

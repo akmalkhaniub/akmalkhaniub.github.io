@@ -20,7 +20,7 @@ How Apache Spark translates SQL/DataFrame ASTs through Catalyst logical transfor
 
 ```mermaid
 graph TD
-  subgraph Catalyst Query Compilation Pipeline
+  subgraph SG1_CatalystQueryCompilation ["Catalyst Query Compilation Pipeline"]
     SQL[SQL / DataFrame Query] --> Unresolved[1. Unresolved Logical Plan AST]
     Catalog[Spark Catalog Schema] --> Analysis[2. Analysis Phase: Resolve Columns & Types]
     Unresolved --> Analysis
@@ -29,7 +29,7 @@ graph TD
     LogOpt --> Physical[4. Physical Planning & Cost-Based Optimizer: Selection of Joins]
   end
   
-  subgraph Project Tungsten Execution Engine
+  subgraph SG2_ProjectTungstenExecution ["Project Tungsten Execution Engine"]
     Physical --> Codegen["⚡ Whole-Stage Code Generation (JIT Java Loop)"]
     Codegen --> OffHeap["Binary Off-Heap Memory (Unsafe Memory Registers)"]
   end

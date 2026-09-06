@@ -126,14 +126,14 @@
 <h2 id="blob-engine-architecture-inode-bottleneck-vs-volume-files">Blob Engine Architecture: Inode Bottleneck vs Volume Files</h2>
 <p>How Facebook Haystack and Bitcask replace POSIX directory trees with single-seek Append-Only Volume Files:</p>
 <div class="mermaid">graph TD
-  subgraph Traditional POSIX Filesystem Bottleneck (ext4 / XFS)
+  subgraph SG1_TraditionalPosixFilesystem [&quot;Traditional POSIX Filesystem Bottleneck (ext4 / XFS)&quot;]
     ReadReq[Read /photos/user101/avatar.jpg] --&gt; Seek1[Seek 1: Directory Inode]
     Seek1 --&gt; Seek2[Seek 2: Directory Data Block]
     Seek2 --&gt; Seek3[Seek 3: File Inode Block]
     Seek3 --&gt; Seek4[Seek 4: Read File Data Blocks (4 Disk Seeks!)]
   end
   
-  subgraph High-Density Blob Storage (Haystack / Bitcask)
+  subgraph SG2_HighDensityBlob [&quot;High-Density Blob Storage (Haystack / Bitcask)&quot;]
     BlobReq[Read Photo ID 1042] --&gt;|1. O(1) RAM Lookup| KeyDir[&quot;In-Memory KeyDir: File #3 | Offset: 0x0F40 | Size: 16 KB&quot;]
     KeyDir --&gt;|2. Issue pread() at Exact Offset| SingleSeek[&quot;🎯 Single Disk Seek on Volume File #3 (1 Seek!)&quot;]
   end</div>

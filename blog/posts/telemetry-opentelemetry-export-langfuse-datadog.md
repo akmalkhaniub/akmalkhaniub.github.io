@@ -18,7 +18,7 @@ When managing distributed agent operations:
 flowchart TD
     Agent[Agent Swarm Node] -->|Execute Tool / LLM Call| Interceptor[OTel Span Interceptor]
     
-    subgraph Asynchronous Export Pipeline
+    subgraph SG1_AsynchronousExportPipeline ["Asynchronous Export Pipeline"]
         Interceptor -->|Queue Span metrics| Buffer[Memory Buffer Queue]
         Buffer -->|Batch Export via OTLP| Exporter[OpenTelemetry Collector Daemon]
     end

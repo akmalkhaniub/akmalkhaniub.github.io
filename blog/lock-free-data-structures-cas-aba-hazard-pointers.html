@@ -126,20 +126,20 @@
 <h2 id="lock-free-concurrency-the-aba-problem">Lock-Free Concurrency &amp; The ABA Problem</h2>
 <p>How atomic Compare-And-Swap (CAS) instructions operate, the ABA problem vulnerability, and Hazard Pointer memory safety:</p>
 <div class="mermaid">graph TD
-  subgraph Compare-And-Swap (CAS) Loop
+  subgraph SG1_CompareAndSwap [&quot;Compare-And-Swap (CAS) Loop&quot;]
     ReadVal[1. Read Current Head Pointer A] --&gt; PrepareNew[2. Construct New Node B -&gt; next = A]
     PrepareNew --&gt; CASCheck{&quot;3. Execute Hardware CAS (Head, Expected=A, New=B)&quot;}
     CASCheck --&gt;|Success: Head updated to B| Done[🎉 Operation Complete!]
     CASCheck --&gt;|Failure: Contention detected!| ReadVal
   end
   
-  subgraph The ABA Problem Vulnerability
+  subgraph SG2_TheAbaProblem [&quot;The ABA Problem Vulnerability&quot;]
     T1[Thread 1 reads Head A] -.-&gt;|Thread 1 Suspended| T2[Thread 2 Pops A, Pops B, Pushes A back!]
     T2 -.-&gt; T1Resume[Thread 1 Resumes: CAS sees Head is STILL A!]
     T1Resume --&gt;|CAS Succeeds Unsafely!| CorruptedStack[🚨 STACK CORRUPTION! Node B was freed!]
   end
   
-  subgraph Mitigation: Tagged Pointers &amp; Hazard Pointers
+  subgraph SG3_MitigationTaggedPointers [&quot;Mitigation: Tagged Pointers &amp; Hazard Pointers&quot;]
     CorruptedStack -.-&gt; Tagged[Tagged Pointer: Combine Pointer + Version Count]
     CorruptedStack -.-&gt; Hazard[Hazard Pointers: Defer Free until HP Array clear]
   end</div>

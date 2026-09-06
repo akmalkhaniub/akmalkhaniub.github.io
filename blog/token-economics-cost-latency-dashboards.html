@@ -130,17 +130,17 @@
 <h2 id="telemetry-and-cost-routing-pipeline">Telemetry and Cost-Routing Pipeline</h2>
 <p>To audit and optimize costs, every single model call must pass through a wrapper that logs token metrics and latency data into an analytical database before resolving back to the agent application.</p>
 <div class="mermaid">graph TD
-    subgraph ClientApp [Agent Application Layer]
+    subgraph SG1_ClientappAgentApplication [&quot;ClientApp [Agent Application Layer]&quot;]
         Agent[Agent Orchestrator] --&gt;|1. Generate Request| MW[Telemetry Middleware]
     end
 
-    subgraph Gateway [Inference &amp; Telemetry Gateway]
+    subgraph SG2_GatewayInferenceTelemetry [&quot;Gateway [Inference &amp; Telemetry Gateway]&quot;]
         MW --&gt;|2. Route to LLM API| LLM[LLM API: Claude / GPT-4o]
         LLM --&gt;|3. Return Completion + Usage Metrics| MW
         MW --&gt;|4. Log usage as async job| DB[(PostgreSQL Telemetry DB)]
     end
 
-    subgraph Monitor [Observability Layer]
+    subgraph SG3_MonitorObservabilityLayer [&quot;Monitor [Observability Layer]&quot;]
         Dash[Grafana / Cost Dashboard] --&gt;|5. Query aggregate analytics| DB
     end
 

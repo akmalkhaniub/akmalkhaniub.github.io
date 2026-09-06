@@ -12,14 +12,14 @@ Building economically sustainable AI agents requires applying **Token Economics 
 
 ```mermaid
 graph TD
-  subgraph Production Token Economics Architecture
+  subgraph SG1_ProductionTokenEconomics ["Production Token Economics Architecture"]
     Task[Incoming Agent Task] --> Classifier[Tier 1: Intent & Complexity Classifier (8B / Flash Model: $0.05/M)]
     
     Classifier -->|Simple Task: Linting / Formatting| WorkerLow[Fast Edge Model: Llama-3-8B / Gemini Flash]
     Classifier -->|Moderate Task: Single File Refactor| WorkerMid[Mid-Tier Model: Claude 3.5 Haiku / GPT-4o-mini]
     Classifier -->|Complex Task: Multi-File Architecture| WorkerHigh[Frontier Reasoning: Claude 3.5 Sonnet / GPT-4o]
     
-    subgraph Optimization Engine (80-90% Cost Reduction)
+    subgraph SG2_OptimizationEngine80 ["Optimization Engine (80-90% Cost Reduction)"]
       WorkerHigh --> CacheEngine["1. Prompt Prefix Caching (90% Cache Read Discount)"]
       WorkerHigh --> Distillation["2. Context Distillation Daemon (Compresses 30 Turns -> 200 Words)"]
     end
@@ -67,7 +67,7 @@ Modern inference APIs (**Anthropic Claude**, **Google Gemini**, **DeepSeek**) im
 
 ```mermaid
 graph TD
-  subgraph Prompt Buffer Memory Geometry (Prefix Invariance Law)
+  subgraph SG3_PromptBufferMemory ["Prompt Buffer Memory Geometry (Prefix Invariance Law)"]
     P1["1. System Persona (Static: 2,000 tokens) [CACHE HIT: $0.30/M]"]
     P2["2. Repository AST & Schemas (Static: 45,000 tokens) [CACHE HIT: $0.30/M]"]
     P3["3. Modular Agent Skills & Tools (Static: 15,000 tokens) [CACHE HIT: $0.30/M]"]

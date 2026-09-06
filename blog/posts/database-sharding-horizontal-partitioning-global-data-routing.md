@@ -18,18 +18,18 @@ How the Global Data Router intercepts application queries and routes transaction
 graph TD
   A[Client API Request] --> B[Global Data Router]
   
-  subgraph Global Data Router & Shard Directory
+  subgraph SG1_GlobalDataRouter ["Global Data Router & Shard Directory"]
     B -->|1. Inspect Shard Key: user_id| C{Routing Engine}
     C -->|2. Hash Shard Key: MurmurHash3| D[Shard Directory / Hash Ring]
   end
   
-  subgraph Distributed Shard Cluster
+  subgraph SG2_DistributedShardCluster ["Distributed Shard Cluster"]
     D -->|Route Single-Shard Query| E[(Shard Node 1: Users 0 - 2M)]
     D -->|Route Single-Shard Query| F[(Shard Node 2: Users 2M - 4M)]
     D -->|Route Single-Shard Query| G[(Shard Node 3: Users 4M - 6M)]
   end
   
-  subgraph Scatter-Gather Cross-Shard Engine
+  subgraph SG3_ScatterGatherCross ["Scatter-Gather Cross-Shard Engine"]
     B -->|3. Cross-Shard Query: List High-Spenders| H[Scatter-Gather Worker Pool]
     H -->|Parallel Execution| E
     H -->|Parallel Execution| F

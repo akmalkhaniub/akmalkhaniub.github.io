@@ -18,12 +18,12 @@ To make long-context agents economically viable, modern inference engines deploy
 
 ```mermaid
 graph TD
-  subgraph Uncompressed KV-Cache vs StreamingLLM & H2O Compression
-    subgraph 1. Uncompressed 1M Context (164GB VRAM - OOM Crash)
+  subgraph SG1_UncompressedKvCache ["Uncompressed KV-Cache vs StreamingLLM & H2O Compression"]
+    subgraph SG2_1Uncompressed1m ["1. Uncompressed 1M Context (164GB VRAM - OOM Crash)"]
       FullKV["Linear KV-Cache: 1,000,000 Tokens (164 GB GPU VRAM)"]
     end
 
-    subgraph 2. Compressed StreamingLLM & H2O KV-Cache (16GB VRAM - 90% Savings)
+    subgraph SG3_2CompressedStreamingllm ["2. Compressed StreamingLLM & H2O KV-Cache (16GB VRAM - 90% Savings)"]
       Sink["1. Initial 4 Attention Sink Tokens (Fixed Anchor)"]
       H2O["2. Heavy-Hitter Important Tokens (Top 10% Attention Weights)"]
       Local["3. Rolling Local Window (Latest 2,048 Tokens)"]
@@ -69,7 +69,7 @@ In 2023, researchers at MIT and Meta (Xiao et al.) discovered the **Attention Si
 
 ```mermaid
 graph LR
-  subgraph StreamingLLM KV-Cache Eviction Policy
+  subgraph SG4_StreamingllmKvCache ["StreamingLLM KV-Cache Eviction Policy"]
     T0["Token 0: <s> (Sink Token: 40% Attention)"]
     T1["Token 1: System (Sink Token: 15% Attention)"]
     T2["Token 2: You (Sink Token: 10% Attention)"]

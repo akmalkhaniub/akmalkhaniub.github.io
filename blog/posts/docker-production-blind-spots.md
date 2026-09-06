@@ -11,14 +11,14 @@
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart LR
-    subgraph Tutorial Dockerfile
+    subgraph SG1_TutorialDockerfile ["Tutorial Dockerfile"]
         T1[FROM python:3.11]
         T2[COPY . .]
         T3[RUN pip install -r requirements.txt]
         T4[CMD python app.py]
     end
 
-    subgraph Production Reality
+    subgraph SG2_ProductionReality ["Production Reality"]
         P1[💥 PID 1 ignores SIGTERM]
         P2[💥 node_modules copied into image]
         P3[💥 pip cache busted on every build]

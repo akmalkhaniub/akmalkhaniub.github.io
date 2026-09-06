@@ -34,7 +34,7 @@ graph TD
     ModeCheck -->|No: System 1| DirectGen[Direct Token Generation]
     ModeCheck -->|Yes: System 2| InitPlan[Initialize Step-by-Step Plan]
     
-    subgraph ThinkingLoop [Inference-Time Search]
+    subgraph SG1_ThinkingloopInferenceTime ["ThinkingLoop [Inference-Time Search]"]
         InitPlan --> RunStep[Generate Thinking Tokens / Step N]
         RunStep --> EvalStep{Self-Correct / Grade Step?}
         EvalStep -->|Contradiction Found| Backtrack[Backtrack and Rewrite Step]

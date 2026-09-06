@@ -20,7 +20,7 @@ How ARM PAC signs 64-bit virtual pointers and catches pointer tampering before e
 
 ```mermaid
 graph TD
-  subgraph Function Entry (Prologue: PACIA Instruction)
+  subgraph SG1_FunctionEntryPrologue ["Function Entry (Prologue: PACIA Instruction)"]
     RawPtr[Unsigned 64-Bit Pointer: 0x00007FFFF7A05000] -->|1. Extract Unused Upper Bits 63..48| UnusedBits[Upper Bits Field]
     SecretKey[Secret Hardware Key: APIAKey] & Modifier[Context Modifier: SP] --> QARMA[QARMA Cryptographic Hash Engine]
     
@@ -28,11 +28,11 @@ graph TD
     SignPtr -->|3. Push to Stack| Stack[Stack Frame Memory]
   end
   
-  subgraph Attacker Exploitation Attempt (ROP Attack)
+  subgraph SG2_AttackerExploitationAttempt ["Attacker Exploitation Attempt (ROP Attack)"]
     Stack -->|4. Buffer Overflow Mutates Pointer Bytes| CorruptPtr["Tampered Pointer: 0x4F8A7FFFF7B09999"]
   end
   
-  subgraph Function Exit (Epilogue: AUTIA Instruction)
+  subgraph SG3_FunctionExitEpilogue ["Function Exit (Epilogue: AUTIA Instruction)"]
     CorruptPtr -->|5. Verify Signature via AUTIA| PACCheck{Does Embedded PAC Match Recomputed QARMA Hash?}
     PACCheck -->|Match: Valid Pointer| Exec[Execute RET Instruction]
     PACCheck -->|Mismatch: Tampered!| Trap[🚨 HARDWARE CPU FAULT TRAP! SIGSEGV]

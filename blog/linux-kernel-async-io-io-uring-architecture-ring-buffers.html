@@ -122,17 +122,17 @@
 <h2 id="iouring-shared-ring-buffer-architecture"><code>io_uring</code> Shared Ring Buffer Architecture</h2>
 <p>How user space and kernel space communicate asynchronously via shared memory ring buffers without syscalls:</p>
 <div class="mermaid">graph TD
-  subgraph User Space Memory
+  subgraph SG1_UserSpaceMemory [&quot;User Space Memory&quot;]
     App[User Application] --&gt;|1. Write SQE Entries| SQ[Submission Queue Ring SQ]
     CQ[Completion Queue Ring CQ] --&gt;|4. Read CQE Results| App
   end
   
-  subgraph Lockless Shared Ring Buffers
+  subgraph SG2_LocklessSharedRing [&quot;Lockless Shared Ring Buffers&quot;]
     SQ -.-&gt;|Shared MMap Memory Region| SQ_K[Kernel Submission Queue]
     CQ_K[Kernel Completion Queue] -.-&gt;|Shared MMap Memory Region| CQ
   end
   
-  subgraph Linux Kernel Space
+  subgraph SG3_LinuxKernelSpace [&quot;Linux Kernel Space&quot;]
     SQ_K --&gt;|2. SQPOLL Kernel Thread Reads SQEs| KernelThread[Kernel Async I/O Thread]
     KernelThread --&gt;|3. Perform Async Storage/Socket I/O| NVMe[NVMe Storage / NIC Network Hardware]
     NVMe --&gt;|Completion Event| KernelThread

@@ -20,11 +20,11 @@ How Flink injects Stream Barriers into continuous data streams to capture consis
 
 ```mermaid
 graph TD
-  subgraph Unbounded Data Stream Ingestion
+  subgraph SG1_UnboundedDataStream ["Unbounded Data Stream Ingestion"]
     Source[Kafka Source Partition] -->|Inject Checkpointing Stream Barrier B1| BarrierStream[Data Stream: e1, e2, B1, e3, e4]
   end
   
-  subgraph Parallel Flink Task Managers (Stateful Operators)
+  subgraph SG2_ParallelFlinkTask ["Parallel Flink Task Managers (Stateful Operators)"]
     BarrierStream --> Task1[Task Operator 1: KeyBy Fraud Aggregator]
     BarrierStream --> Task2[Task Operator 2: KeyBy Fraud Aggregator]
     
@@ -32,7 +32,7 @@ graph TD
     Task2 <-->|Read/Write Local State < 1ms| Rocks2[(Embedded RocksDB State)]
   end
   
-  subgraph Asynchronous Barrier Snapshotting (Chandy-Lamport)
+  subgraph SG3_AsynchronousBarrierSnapshotting ["Asynchronous Barrier Snapshotting (Chandy-Lamport)"]
     Task1 -->|1. Barrier B1 Received: Align Inputs| Snapshot1[Asynchronously Copy RocksDB State to S3/HDFS]
     Task2 -->|1. Barrier B1 Received: Align Inputs| Snapshot2[Asynchronously Copy RocksDB State to S3/HDFS]
     

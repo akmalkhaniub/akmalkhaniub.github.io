@@ -18,11 +18,11 @@ How a WebAssembly engine parses binary bytecode, manages linear memory, and comp
 graph TD
   Source[Source Code: C / Rust / Go] -->|1. LLVM Compiler Target WASM| WasmBytecode[WebAssembly .wasm Bytecode File]
   
-  subgraph WebAssembly Engine (Wasmtime / Wasmer / V8)
+  subgraph SG1_WebassemblyEngineWasmtime ["WebAssembly Engine (Wasmtime / Wasmer / V8)"]
     WasmBytecode -->|2. Validate Bytecode Sections| Decoder[Binary Parser & Type Validator]
     Decoder -->|3. Cranelift / JIT Compiler| JIT[Host Machine Code: x86_64 / ARM64]
     
-    subgraph Sandboxed Execution Environment
+    subgraph SG2_SandboxedExecutionEnvironment ["Sandboxed Execution Environment"]
       JIT -->|4. Execute Stack Instructions| StackVM[Stack-Based Virtual Machine]
       StackVM <--->|5. Bounds-Checked Direct Access| LinearMem[Linear Memory: Contiguous Byte Array]
     end

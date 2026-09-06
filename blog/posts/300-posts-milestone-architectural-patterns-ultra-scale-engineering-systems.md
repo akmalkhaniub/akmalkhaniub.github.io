@@ -18,20 +18,20 @@ How modern distributed software stacks combine consensus, storage, networking, e
 graph TD
   User[Global User Base] -->|1. Anycast BGP / Geo-DNS Routing| Edge[Edge Network: Wasm SFI + CRDT KV]
   
-  subgraph Edge Compute & Security Layer
+  subgraph SG1_EdgeComputeSecurity ["Edge Compute & Security Layer"]
     Edge -->|2. Wasm Micro-Tenancy / V8 Snapshots| API[API Gateway & OTel Collector]
   end
   
-  subgraph High-Performance Networking Layer
+  subgraph SG2_HighPerformanceNetworking ["High-Performance Networking Layer"]
     API -->|3. io_uring / Zero-Copy / gRPC HTTP2| Services[Microservice Mesh]
   end
   
-  subgraph Storage & Vector Search Engines
+  subgraph SG3_StorageVectorSearch ["Storage & Vector Search Engines"]
     Services -->|4. Multi-Raft Partitioning| DistributedDB[(Multi-Raft LSM Storage: RocksDB)]
     Services -->|5. HNSW + PQ Quantization| VectorDB[(Vector DB: HNSW + BM25 Hybrid)]
   end
   
-  subgraph Autonomous AI & Observability Control Plane
+  subgraph SG4_AutonomousAiObservability ["Autonomous AI & Observability Control Plane"]
     Services -.->|6. Traces & Metrics| Observability[(OTel TSDB & Indexless Logs)]
     Services <--->|7. ReAct Reasoning Loops| Agents[Autonomous Multi-Agent Supervisor]
   end

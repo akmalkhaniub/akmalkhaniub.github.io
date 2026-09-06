@@ -26,7 +26,7 @@ graph TD
     Orch -->|2. Create Plan & Verification Contract| Worker[Worker Agent]
     Worker -->|3. Produce Execution / Code| Val[Validator Agent]
     
-    subgraph Validation Gate [Validation Gate]
+    subgraph SG1_ValidationGateValidation ["Validation Gate [Validation Gate]"]
         Val -->|4. Run Verification Suite| VerifyCheck{Passes Contract?}
     end
     

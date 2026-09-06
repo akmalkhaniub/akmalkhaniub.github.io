@@ -121,16 +121,16 @@
 <p>Now consider the opposite extreme: enforce rate limits entirely in local proxy memory. If you have one hundred proxy pods behind an anycast load balancer, each pod tracks its own local counter. But load balancers do not distribute requests with mathematical symmetry. A distributed botnet spraying credential-stuffing attacks across your cluster can easily send eighty percent of its traffic through five specific proxies, completely bypassing tenant quotas while each individual pod remains below its local threshold.</p>
 <p>Solving rate limiting at one million requests per second requires <strong>Hierarchical Adaptive Rate Limiting</strong>: decoupling local microsecond validation from asynchronous global quota reconciliation.</p>
 <div class="mermaid">graph TD
-  subgraph Hierarchical Adaptive Rate Limiting at Scale
+  subgraph SG1_HierarchicalAdaptiveRate [&quot;Hierarchical Adaptive Rate Limiting at Scale&quot;]
     Traffic[1,000,000 Inbound RPS] --&gt; Proxy1[Edge Proxy Node A]
     Traffic --&gt; Proxy2[Edge Proxy Node B]
     
-    subgraph Tier 1: Local In-Memory Fast Path
+    subgraph SG2_Tier1Local [&quot;Tier 1: Local In-Memory Fast Path&quot;]
       Proxy1 --&gt; Bucket1[&quot;Local Memory Token Bucket (Zero Network Latency)&quot;]
       Proxy2 --&gt; Bucket2[&quot;Local Memory Token Bucket (Zero Network Latency)&quot;]
     end
     
-    subgraph Tier 2: Asynchronous Global Reconciliation
+    subgraph SG3_Tier2Asynchronous [&quot;Tier 2: Asynchronous Global Reconciliation&quot;]
       Bucket1 &amp; Bucket2 -.-&gt;|Async Delta Sync every 50ms| RedisCluster[(Central Redis Cluster: Atomic Lua Script)]
     end
     
@@ -239,12 +239,12 @@ end</code></pre>
 <p>Production systems enforce <strong>AWS Full Jitter Backoff</strong>, which decorrelates retry spikes by drawing sleep durations from a uniform distribution:</p>
 <p>$$\text{Sleep Time} = \text{random}\Big(0, ; \min(\text{MaxSleep}, ; \text{BaseSleep} \times 2^{\text{attempt}})\Big)$$</p>
 <div class="mermaid">graph TD
-  subgraph Regular Exponential Backoff vs Full Jitter Backoff
-    subgraph 1. Regular Exponential Backoff (Thundering Herd)
+  subgraph SG4_RegularExponentialBackoff [&quot;Regular Exponential Backoff vs Full Jitter Backoff&quot;]
+    subgraph SG5_1RegularExponential [&quot;1. Regular Exponential Backoff (Thundering Herd)&quot;]
       F1[10,000 Concurrent 429 Failures] --&gt;|All Sleep Exactly 4.0s| Spike[&quot;Spike: 10,000 Retries at t=4.0s (System Meltdown)&quot;]
     end
 
-    subgraph 2. Full Jitter Exponential Backoff (Decorrelated)
+    subgraph SG6_2FullJitter [&quot;2. Full Jitter Exponential Backoff (Decorrelated)&quot;]
       F2[10,000 Concurrent 429 Failures] --&gt;|Sleep Uniform Random 0..4.0s| Smooth[&quot;Smooth: Retries distributed evenly across 4000ms&quot;]
     end
   end</div>

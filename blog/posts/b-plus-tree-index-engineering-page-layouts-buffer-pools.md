@@ -16,12 +16,12 @@ The binary memory layout of an 8KB/16KB slotted page and leaf node linkage:
 
 ```mermaid
 graph TD
-  subgraph Slotted Page Binary Layout (8KB / 16KB Page)
+  subgraph SG1_SlottedPageBinary ["Slotted Page Binary Layout (8KB / 16KB Page)"]
     A[Page Header: LSN, Slot Count, Free Space Offset] --> B[Slot Array: Offset & Length Pointers]
     B -->|Unused Free Space Window| C[Tuple Data Storage: Grows Bottom-Up]
   end
   
-  subgraph B+ Tree Index Hierarchy
+  subgraph SG2_BTreeIndex ["B+ Tree Index Hierarchy"]
     D[Root Node: Internal Routing Keys] --> E[Child Node 1: Internal]
     D --> F[Child Node 2: Internal]
     

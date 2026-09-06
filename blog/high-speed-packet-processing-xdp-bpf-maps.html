@@ -125,20 +125,20 @@
 <div class="mermaid">graph TD
   Wire[Incoming Network Packet: 100GbE NIC] --&gt; RXRing[NIC Driver RX Ring Buffer]
   
-  subgraph XDP (eXpress Data Path) Ingress Layer
+  subgraph SG1_XdpExpressData [&quot;XDP (eXpress Data Path) Ingress Layer&quot;]
     RXRing --&gt;|1. Direct Frame Intercept| XDPProg[XDP eBPF Program]
     XDPProg &lt;--&gt;|2. Lookup/Update IP Blacklist State| BPFMap[(BPF Hash Map: BPF_MAP_TYPE_HASH)]
     
     XDPProg --&gt; Action{Evaluate XDP Action Code}
   end
   
-  subgraph XDP Fast-Path Action Decisions
+  subgraph SG2_XdpFastPath [&quot;XDP Fast-Path Action Decisions&quot;]
     Action --&gt;|XDP_DROP: DDoS Attack Identified!| Drop[3a. Drop Packet Instantly! 0 sk_buff Allocations]
     Action --&gt;|XDP_TX: Hairpin LB| Bounce[3b. Re-transmit out same NIC]
     Action --&gt;|XDP_REDIRECT: AF_XDP| FastUser[3c. Bypass Kernel to User-Space AF_XDP]
   end
   
-  subgraph Standard Linux Network Stack
+  subgraph SG3_StandardLinuxNetwork [&quot;Standard Linux Network Stack&quot;]
     Action --&gt;|XDP_PASS: Legitimate Packet| SKBAlloc[3d. Allocate sk_buff Memory Structure]
     SKBAlloc --&gt; NetStack[Linux TCP/IP Stack -&gt; User Socket]
   end</div>

@@ -20,7 +20,7 @@ Comparing OS process boundaries against single-process WebAssembly Software Faul
 
 ```mermaid
 graph TD
-  subgraph Linux Container Architecture (OS-Level Isolation)
+  subgraph SG1_LinuxContainerArchitecture ["Linux Container Architecture (OS-Level Isolation)"]
     HostOS[Linux Host Kernel & cgroups] --> Container1[Container 1: Guest OS / Namespaces (50MB RAM)]
     HostOS --> Container2[Container 2: Guest OS / Namespaces (50MB RAM)]
     
@@ -28,7 +28,7 @@ graph TD
     Container2 --> App2[Tenant Application 2]
   end
   
-  subgraph Wasm Software Fault Isolation SFI Architecture (Single Process)
+  subgraph SG2_WasmSoftwareFault ["Wasm Software Fault Isolation SFI Architecture (Single Process)"]
     HostProcess[Single Host Process Runtime: Wasmtime / V8] --> Sandbox1[Wasm Sandbox 1: Linear Memory Buffer 1 (1MB RAM)]
     HostProcess --> Sandbox2[Wasm Sandbox 2: Linear Memory Buffer 2 (1MB RAM)]
     

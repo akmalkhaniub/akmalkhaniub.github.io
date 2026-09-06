@@ -17,7 +17,7 @@ Vector embeddings capture semantic similarity (e.g. mapping "charge customer" to
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Combined Code Index
+    subgraph SG1_CombinedCodeIndex ["Combined Code Index"]
         direction TB
         FileA[File A: users.py] -->|Imports| FileB[File B: database.py]
         FileC[File C: auth.py] -->|Imports| FileB

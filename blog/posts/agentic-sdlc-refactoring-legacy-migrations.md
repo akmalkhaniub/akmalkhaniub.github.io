@@ -32,7 +32,7 @@ flowchart TD
     Scan[Orchestrator Scans Codebase] --> Graph[Build File Dependency Graph]
     Graph --> Dispatch[Dispatch Tasks to Workers]
     
-    subgraph Workers [Parallel Worker Processing]
+    subgraph SG1_WorkersParallelWorker ["Workers [Parallel Worker Processing]"]
         W1[Refactor Agent: File A] --> L1[Lint & Compiler Check]
         W2[Refactor Agent: File B] --> L2[Lint & Compiler Check]
     end

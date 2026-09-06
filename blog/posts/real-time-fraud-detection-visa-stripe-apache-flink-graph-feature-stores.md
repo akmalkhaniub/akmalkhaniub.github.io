@@ -12,17 +12,17 @@ This deep-dive architectural guide explores the high-throughput, low-latency str
 
 ```mermaid
 graph TD
-  subgraph Real-Time Fraud Decisioning Pipeline (<= 10ms SLA)
+  subgraph SG1_RealTimeFraud ["Real-Time Fraud Decisioning Pipeline (<= 10ms SLA)"]
     TxEvent[Transaction Ingestion Event: 50k tx/sec] --> Kafka[Apache Kafka Stream]
     
-    subgraph Parallel Stateful Feature Computation (2-4ms)
+    subgraph SG2_ParallelStatefulFeature ["Parallel Stateful Feature Computation (2-4ms)"]
       Kafka --> Flink["1. Apache Flink: Stateful Sliding Velocity Windows (RocksDB Backend)"]
       Kafka --> GraphStore["2. In-Memory Graph Feature Store (Device & IP Ring Detection)"]
     end
     
     Flink & GraphStore --> FeatureAggregator[Real-Time Feature Vector Assembly]
     
-    subgraph Low-Latency Decision Core (3-5ms)
+    subgraph SG3_LowLatencyDecision ["Low-Latency Decision Core (3-5ms)"]
       FeatureAggregator --> DeterministicRules["3. Deterministic Hard Rules Engine (OFAC, Impossible Velocity)"]
       FeatureAggregator --> MLInference["4. Sub-Millisecond ML Ensemble (Treelite / ONNX Engine)"]
     end
@@ -91,7 +91,7 @@ Organized fraud syndicates use automated bot farms to cycle through thousands of
 
 ```mermaid
 graph LR
-  subgraph Real-Time Bipartite Fraud Graph
+  subgraph SG4_RealTimeBipartite ["Real-Time Bipartite Fraud Graph"]
     Card1[(Card #101)] --- Device1[Device Fingerprint A]
     Card2[(Card #102)] --- Device1
     Card3[(Card #103)] --- Device1

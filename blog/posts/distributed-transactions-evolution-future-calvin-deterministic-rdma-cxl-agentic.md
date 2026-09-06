@@ -10,7 +10,7 @@ This article examines the cutting-edge architectural frontiers that define the f
 
 ```mermaid
 graph TD
-  subgraph The Future Frontier (2026 & Beyond)
+  subgraph SG1_TheFutureFrontier ["The Future Frontier (2026 & Beyond)"]
     F1[1. Deterministic Scheduling] --> Calvin["Calvin / FaunaDB: Pre-Sequencing Log (Zero 2PC Aborts)"]
     F2[2. Hardware Acceleration] --> RDMA["RDMA & CXL 3.0: Pooled Memory (1µs Atomic Commits)"]
     F3[3. Autonomous Agentic Sagas] --> Agents["Multi-Agent Swarm DAGs: Dynamic Semantic Compensation"]
@@ -96,7 +96,7 @@ Unlike database rows that can simply be rolled back with `pg_wal`, real-world ag
 
 ```mermaid
 graph TD
-  subgraph Autonomous Agentic Transaction Swarm
+  subgraph SG2_AutonomousAgenticTransaction ["Autonomous Agentic Transaction Swarm"]
     Mission[User Business Mission] --> AgentCoordinator[Agent Transaction Supervisor]
     AgentCoordinator --> TaskA[1. Provision AWS GPU Cluster]
     AgentCoordinator --> TaskB[2. Charge Corporate Credit Card]

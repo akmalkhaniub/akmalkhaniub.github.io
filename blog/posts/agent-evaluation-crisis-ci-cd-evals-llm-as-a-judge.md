@@ -13,7 +13,7 @@ Solving the **Agent Evaluation Crisis** requires establishing a modern **Three-T
 
 ```mermaid
 graph TD
-  subgraph The 3-Tier Agent Evaluation Pyramid
+  subgraph SG1_The3Tier ["The 3-Tier Agent Evaluation Pyramid"]
     Tier1["Tier 1: Deterministic Symbolic Invariants (AST Parsing, Type Checks, Linters, 10ms)"]
     Tier2["Tier 2: Trajectory Assertion Graphs (Tool Call Sequence DAG Validation, 50ms)"]
     Tier3["Tier 3: Calibrated LLM-as-a-Judge (Multi-Point Rubrics & Semantic Scoring, 1-2s)"]
@@ -68,12 +68,12 @@ A **Trajectory Assertion Graph** validates that the agent invoked tools in a log
 
 ```mermaid
 graph LR
-  subgraph Valid Trajectory DAG
+  subgraph SG2_ValidTrajectoryDag ["Valid Trajectory DAG"]
     T1[1. view_file: Inspect Codebase] --> T2[2. replace_file_content: Apply Patch]
     T2 --> T3[3. run_test: Verify Execution]
   end
   
-  subgraph Invalid Anti-Pattern (Flagged by Eval)
+  subgraph SG3_InvalidAntiPattern ["Invalid Anti-Pattern (Flagged by Eval)"]
     A1[1. replace_file_content: Blindly Guess] --> A2[2. git_commit: Commit without Testing!]
   end
 ```

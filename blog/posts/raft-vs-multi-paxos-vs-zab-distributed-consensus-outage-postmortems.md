@@ -13,7 +13,7 @@ This guide provides a rigorous architectural breakdown of **Raft vs Multi-Paxos 
 
 ```mermaid
 graph TD
-  subgraph Distributed Consensus Evolution
+  subgraph SG1_DistributedConsensusEvolution ["Distributed Consensus Evolution"]
     Paxos["Multi-Paxos (1998)\n• Weak Leader / Symmetric\n• Log Holes Permitted\n• Powering: Google Spanner / Chubby"]
     Zab["Zab (2010)\n• Epoch-Based (zxid)\n• Strict FIFO TCP Pipelines\n• Powering: Apache ZooKeeper"]
     Raft["Raft (2014)\n• Strong Leader / No Holes\n• Term-Based Quorum\n• Powering: etcd, CockroachDB, KRaft"]

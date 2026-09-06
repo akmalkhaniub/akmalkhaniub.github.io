@@ -124,7 +124,7 @@
   A[Client Web Request] --&gt;|1. Enqueue Task Payload| B[Message Broker: Redis / RabbitMQ Queue]
   A --&gt;|2. Instant 202 Accepted Response| Client[Client HTTP Response]
   
-  subgraph Distributed Worker Cluster
+  subgraph SG1_DistributedWorkerCluster [&quot;Distributed Worker Cluster&quot;]
     B --&gt;|3. Pop Task| C[Worker Thread Pool]
     C --&gt;|4. Execute Task| D{Execution Status}
   end
@@ -132,12 +132,12 @@
   D --&gt;|Success| E[Save Result to Backend Store]
   D --&gt;|Transient Failure| F{Attempt &lt; Max Retries?}
   
-  subgraph Exponential Backoff Retry Pipeline
+  subgraph SG2_ExponentialBackoffRetry [&quot;Exponential Backoff Retry Pipeline&quot;]
     F --&gt;|Yes| G[Calculate Exponential Backoff + Jitter]
     G --&gt;|Re-enqueue with Delay| B
   end
   
-  subgraph Dead-Letter Queue DLQ Isolation
+  subgraph SG3_DeadLetterQueue [&quot;Dead-Letter Queue DLQ Isolation&quot;]
     F --&gt;|No: Max Retries Exceeded| H[Route Task to Dead-Letter Queue DLQ]
     H --&gt; I[(DLQ Storage: For Ops Inspection)]
   end</div>

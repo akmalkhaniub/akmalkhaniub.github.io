@@ -42,13 +42,13 @@ graph TD
   A[Shopper Session HTTP Event] --> B[GCP Cloud API Gateway]
   B --> C[Cloud Run: Recommendation Swarm Dispatcher]
   
-  subgraph Autonomous Multi-Agent Swarm
+  subgraph SG1_AutonomousMultiAgent ["Autonomous Multi-Agent Swarm"]
     C --> D[Worker Agent A: Personalization & Vector RAG]
     C --> E[Worker Agent B: Dynamic Pricing Engine]
     C --> F[Worker Agent C: Real-Time Inventory Lock]
   end
   
-  subgraph Distributed State & Data Tier
+  subgraph SG2_DistributedStateData ["Distributed State & Data Tier"]
     D --> G[(Cloud Bigtable: User Behavioral Graph)]
     E --> H[(AlloyDB AI: Merchant Pricing Rules)]
     F --> I[(Redis Cluster: Distributed Inventory Locks)]

@@ -12,7 +12,7 @@ This guide outlines the **5-Level Agentic Complexity Spectrum**, provides a rigo
 
 ```mermaid
 graph LR
-  subgraph The 5-Level Agentic Complexity Spectrum
+  subgraph SG1_The5Level ["The 5-Level Agentic Complexity Spectrum"]
     L1["Level 1: Zero-Shot Prompt\n• Latency: 400ms\n• Cost: $0.001\n• Reliability: 99%"] --> L2["Level 2: Chain-of-Thought (CoT)\n• Latency: 1.2s\n• Cost: $0.005\n• Reliability: 95%"]
     L2 --> L3["Level 3: ReAct (Tool Loop)\n• Latency: 4.5s\n• Cost: $0.04\n• Reliability: 88%"]
     L3 --> L4["Level 4: Plan-and-Solve\n• Latency: 15s\n• Cost: $0.20\n• Reliability: 92%"]

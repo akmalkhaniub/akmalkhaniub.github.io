@@ -16,7 +16,7 @@ In a decentralized swarm, agent nodes must transfer execution control and contex
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Blackboard Architecture
+    subgraph SG1_BlackboardArchitecture ["Blackboard Architecture"]
         DB[(Shared Blackboard DB)]
         Coord[Coordinator Agent] -->|Reads & Schedules Tasks| DB
         W1[Worker Agent: Researcher] <-->|Fetch task & Write findings| DB

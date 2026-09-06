@@ -16,11 +16,11 @@ In the post-junior era, developer growth shifts from *syntax mastery* to *system
 
 ```mermaid
 graph TD
-  subgraph Legacy Engineering Ladder
+  subgraph SG1_LegacyEngineeringLadder ["Legacy Engineering Ladder"]
     L1[Junior: Syntax & Boilerplate] --> L2[Mid: Feature Implementation]
     L2 --> L3[Senior: System Design & Architecture]
   end
-  subgraph Modern AI-First Engineering Ladder
+  subgraph SG2_ModernAiFirst ["Modern AI-First Engineering Ladder"]
     M1[Level 1: Agent Operator & Spec Author] --> M2[Level 2: Verification & Drift Governor]
     M2 --> M3[Level 3: System Architect & Infrastructure Lead]
   end

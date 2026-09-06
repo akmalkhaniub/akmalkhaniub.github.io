@@ -14,14 +14,14 @@ HNSW organizes vectors into a multi-layered graph, mimicking a skip list:
 
 ```mermaid
 graph TD
-  subgraph Layer 2 (Express Layer)
+  subgraph SG1_Layer2Express ["Layer 2 (Express Layer)"]
     L2_A[Vector Entry] --> L2_B[Far Destination]
   end
-  subgraph Layer 1 (Local Area Layer)
+  subgraph SG2_Layer1Local ["Layer 1 (Local Area Layer)"]
     L1_A[Vector Entry] --> L1_B[Mid Destination 1]
     L1_B --> L1_C[Mid Destination 2]
   end
-  subgraph Layer 0 (Base Layer - All Vectors)
+  subgraph SG3_Layer0Base ["Layer 0 (Base Layer - All Vectors)"]
     L0_A[Vector Entry] --> L0_B[Node A]
     L0_B --> L0_C[Node B]
     L0_C --> L0_D[Node C]

@@ -18,7 +18,7 @@ How a Term Dictionary maps tokens to sorted Postings Lists with Skip Pointers fo
 
 ```mermaid
 graph TD
-  subgraph Tokenization & Term Dictionary
+  subgraph SG1_TokenizationTermDictionary ["Tokenization & Term Dictionary"]
     Query["Search Query: 'distributed AND consensus'"] -->|Tokenize| T1["Term 1: 'distributed'"]
     Query -->|Tokenize| T2["Term 2: 'consensus'"]
     
@@ -26,7 +26,7 @@ graph TD
     T2 -->|FST Lookup| Dict2[Term Dictionary: 'consensus']
   end
   
-  subgraph Postings List with Skip Pointers (Interval = 3)
+  subgraph SG2_PostingsListWith ["Postings List with Skip Pointers (Interval = 3)"]
     Dict1 --> P1_0["[Doc 4]"]
     P1_0 --> P1_1["[Doc 12]"]
     P1_1 --> P1_2["[Doc 18]"]
@@ -37,7 +37,7 @@ graph TD
     P1_2 -.->|Skip Pointer +3| P1_5
   end
   
-  subgraph Skip Pointer List Intersector
+  subgraph SG3_SkipPointerList ["Skip Pointer List Intersector"]
     P1_5 -->|Intersects with 'consensus' Postings| Match["Matching Documents: [Doc 18, Doc 120]"]
   end
 ```

@@ -45,7 +45,7 @@ graph TD
   B --> C[Cloud Dataflow De-identification Pipeline]
   C --> D[(AlloyDB AI: Encrypted Medical Vector Store)]
   
-  subgraph HIPAA Secure GCP VPC Perimeter
+  subgraph SG1_HipaaSecureGcp ["HIPAA Secure GCP VPC Perimeter"]
     E[Clinician Diagnostic Query] --> F[Cloud Run: Authenticated Clinical Agent Worker]
     F -->|Row-Level Security RLS| D
     F -->|Hybrid Search| G[Vertex AI Search: Medical Knowledgebase]

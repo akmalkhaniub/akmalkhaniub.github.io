@@ -124,7 +124,7 @@
 <p>Network latency, partial failures, asynchronous race conditions, and uncontrolled auto-scaling can turn minor transient glitches into cascading global outages.</p>
 <p>This deep-dive architectural guide dissects the <strong>7 most lethal microservices gotchas</strong>, analyzes the underlying distributed systems mechanics that cause them, and provides production-tested solutions backed by real-world engineering case studies.</p>
 <div class="mermaid">graph TD
-  subgraph Production Microservice Outage Antipatterns
+  subgraph SG1_ProductionMicroserviceOutage [&quot;Production Microservice Outage Antipatterns&quot;]
     G1[&quot;1. Cascading Retry Storms &amp; 9x Amplification (AWS)&quot;]
     G2[&quot;2. The Distributed Dual-Write Trap (Shopify / Stripe)&quot;]
     G3[&quot;3. Synchronous Deep Call Chains: 0.995^6 = 97% SLA (Segment)&quot;]
@@ -190,7 +190,7 @@ async function capturePayment(orderId: string, amount: number) {
 <li><strong>Failure Mode B</strong>: Reversing the order (<code>kafka.send()</code> first, <code>db.commit()</code> second). Kafka publishes the event, but the database transaction aborts due to a constraint violation. Result: <strong>Warehouse ships items for an order that was never paid for.</strong></li>
 </ul>
 <div class="mermaid">graph LR
-  subgraph The Dual-Write Vulnerability
+  subgraph SG2_TheDualWrite [&quot;The Dual-Write Vulnerability&quot;]
     App[Application Pod] --&gt;|1. Commit DB| DB[(PostgreSQL)]
     App --&gt;|💥 Crash / Network Drop| Kafka[Apache Kafka]
     DB -.-&gt;|State: PAID| Desync[Data Divergence &amp; Lost Revenue]
@@ -231,7 +231,7 @@ COMMIT;</code></pre>
 <li>When a celebrity user with 100M followers posts, the single database node holding that partition receives <strong>1,000,000x the write and read throughput</strong>, maxing out CPU and I/O while the other 127 shards sit at $2%$ utilization.</li>
 </ul>
 <div class="mermaid">graph TD
-  subgraph The Hot Shard Problem
+  subgraph SG3_TheHotShard [&quot;The Hot Shard Problem&quot;]
     Users[100M Active Followers] --&gt;|Simultaneous Timeline Reads| Shard1[(Shard 1: Celebrity User)]
     Users -.-&gt;|Idle| Shard2[(Shard 2: Regular Users)]
     Users -.-&gt;|Idle| Shard3[(Shard 3: Regular Users)]

@@ -16,14 +16,14 @@ Traditional HTTP request-response cycles are built for static content:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Server-Sent Events SSE
+    subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
         Client1[Client] -->|HTTP GET Request| Server1[FastAPI Server]
         Server1 -->|Keep-Alive Stream Header| Client1
         Server1 -->|Stream Token Chunk 1| Client1
         Server1 -->|Stream Token Chunk 2| Client1
     end
     
-    subgraph WebSockets WS
+    subgraph SG2_WebsocketsWs ["WebSockets WS"]
         Client2[Client] -->|Upgrade Request| Server2[FastAPI Server]
         Server2 -->|Establish Bi-directional socket| Client2
         Server2 <-->|Send / Receive frames concurrently| Client2

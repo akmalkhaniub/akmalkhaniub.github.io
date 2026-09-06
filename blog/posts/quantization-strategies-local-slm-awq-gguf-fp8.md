@@ -18,12 +18,12 @@ Choosing the optimal quantization scheme depends on your deployment target and h
 graph TD
   A[Target Model & Hardware Deployment] --> B{Hardware Infrastructure?}
   
-  subgraph GPU Server Inference vLLM / TensorRT-LLM
+  subgraph SG1_GpuServerInference ["GPU Server Inference vLLM / TensorRT-LLM"]
     B -->|NVIDIA Hopper / Ada H100, L40S| C[FP8 E4M3 Precision]
     B -->|NVIDIA Ampere / Turing A10G, T4| D[AWQ 4-Bit Weight Quantization]
   end
   
-  subgraph CPU & Edge / Apple Silicon
+  subgraph SG2_CpuEdgeApple ["CPU & Edge / Apple Silicon"]
     B -->|Apple Metal / CPU Offloading| E[GGUF Q4_K_M / Q5_K_M]
   end
   

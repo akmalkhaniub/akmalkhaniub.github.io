@@ -18,14 +18,14 @@ How Raft nodes transition between Follower, Candidate, and Leader roles while re
 
 ```mermaid
 graph TD
-  subgraph Raft Node State Machine
+  subgraph SG1_RaftNodeState ["Raft Node State Machine"]
     Follower[Follower State] -->|1. Election Timeout Elapses| Candidate[Candidate State]
     Candidate -->|2. Wins Majority Quorum Votes| Leader[Leader State]
     Candidate -->|3. Discovers Higher Term / New Leader| Follower
     Leader -->|4. Discovers Higher Term Peer| Follower
   end
   
-  subgraph Log Replication Pipeline (Term T)
+  subgraph SG2_LogReplicationPipeline ["Log Replication Pipeline (Term T)"]
     Leader -->|5. AppendEntries RPC: Entry + prevLogIndex| F1[Follower Node 1]
     Leader -->|5. AppendEntries RPC: Entry + prevLogIndex| F2[Follower Node 2]
     

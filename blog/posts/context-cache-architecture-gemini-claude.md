@@ -15,14 +15,14 @@ Reading this context on every single turn of a multi-turn conversation is both s
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Naive [1. Naive Prompt Layout Cache Invalidation]
+    subgraph SG1_Naive1Naive ["Naive [1. Naive Prompt Layout Cache Invalidation]"]
         direction TB
         N1[Dynamic User Query] --> N2[Static Codebase Context]
         N2 --> N3[System Instructions]
         note1[Result: EVERY query invalidates the entire cache prefix]
     end
 
-    subgraph Optimized [2. Optimized Layout Cache Matching]
+    subgraph SG2_Optimized2Optimized ["Optimized [2. Optimized Layout Cache Matching]"]
         direction TB
         O1[System Instructions - Cache Hit] --> O2[Static Codebase Context - Cache Hit]
         O2 --> O3[Semi-Static Session State - Cache Hit]

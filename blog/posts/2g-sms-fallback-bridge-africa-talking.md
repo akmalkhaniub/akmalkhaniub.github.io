@@ -17,15 +17,15 @@ The SMS bridge translates incoming cellular text messages into standard HTTP req
 
 ```mermaid
 graph TD
-    subgraph Village [Village Level / 2G Network]
+    subgraph SG1_VillageVillageLevel ["Village [Village Level / 2G Network]"]
         Patient[Patient Feature Phone] -->|1. SMS Text: 'Status 129'| Telco((Cellular Telco tower))
     end
     
-    subgraph Gateway [Cloud Gateway]
+    subgraph SG2_GatewayCloudGateway ["Gateway [Cloud Gateway]"]
         Telco -->|2. Webhook payload| AT[Africa's Talking API Gateway]
     end
     
-    subgraph Clinic [Local Clinic / Offline Server]
+    subgraph SG3_ClinicLocalClinic ["Clinic [Local Clinic / Offline Server]"]
         AT -->|3. HTTP Post: Ngrok tunnel| Express[Express Server Gateway]
         Express -->|4. Parse Message & Query| LLM[Ollama Local LLM]
         LLM -->|5. SOAP Status / Summary| Express

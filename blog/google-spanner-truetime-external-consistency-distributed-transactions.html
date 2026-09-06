@@ -123,15 +123,15 @@
 <h2 id="google-spanner-truetime-commit-wait-architecture">Google Spanner &amp; TrueTime Commit Wait Architecture</h2>
 <p>How Google TrueTime bounds clock uncertainty $\epsilon$ and uses the Commit Wait Rule to guarantee global External Consistency:</p>
 <div class="mermaid">graph TD
-  subgraph Google Datacenter Hardware Infrastructure
+  subgraph SG1_GoogleDatacenterHardware [&quot;Google Datacenter Hardware Infrastructure&quot;]
     GPS[Datacenter GPS Receivers] &amp; Atomic[Rubidium Atomic Clocks] --&gt; TrueTimeEngine[TrueTime Master Daemon]
   end
   
-  subgraph TrueTime API &amp; Interval Bounds: TT.now() = [t_earliest, t_latest]
+  subgraph SG2_TruetimeApiInterval [&quot;TrueTime API &amp; Interval Bounds: TT.now() = [t_earliest, t_latest]&quot;]
     TrueTimeEngine --&gt;|Call TT.now()| TT[&quot;TrueTime Window: [t_earliest ... t_latest] (Uncertainty ε = 2ms)&quot;]
   end
   
-  subgraph Commit Wait Rule Execution (External Consistency)
+  subgraph SG3_CommitWaitRule [&quot;Commit Wait Rule Execution (External Consistency)&quot;]
     TT --&gt;|Assign Commit Timestamp| Ts1[&quot;Assign Commit Timestamp t_s1 = t_latest&quot;]
     Ts1 --&gt; WaitCheck{&quot;Has Real Time Passed t_s1? (TT.now().earliest &gt; t_s1)&quot;}
     WaitCheck --&gt;|No: Wait 2 * ε| Sleep[&quot;⏳ Commit Wait Sleep (e.g. 4ms)&quot;]

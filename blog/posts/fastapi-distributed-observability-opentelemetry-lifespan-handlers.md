@@ -18,7 +18,7 @@ The execution lifecycle of a FastAPI service managed by async lifespan generator
 graph TD
   A[ASGI Server Launch] --> B[FastAPI Lifespan Startup Phase]
   
-  subgraph Lifespan State Initialization
+  subgraph SG1_LifespanStateInitialization ["Lifespan State Initialization"]
     B -->|Establish Pool| C[Asyncpg Database Connection Pool]
     B -->|Initialize Tracer| D[OpenTelemetry OTLP Exporter]
   end
@@ -26,7 +26,7 @@ graph TD
   C --> E[Yield App Execution State]
   D --> E
   
-  subgraph Active Request Processing
+  subgraph SG2_ActiveRequestProcessing ["Active Request Processing"]
     E -->|Incoming Request + traceparent| F[OpenTelemetry ASGI Middleware]
     F -->|Extract Context & Start Span| G[Route Handler Processing]
     G -->|Query with Pool Connection| C

@@ -18,7 +18,7 @@ The guardrail scanner buffers token streams, runs parallel classification, and c
 graph TD
   A[LLM Inference Engine Stream] -->|Yield Raw Token Chunks| B[Sliding-Window Token Buffer]
   
-  subgraph Real-Time Guardrail Gate
+  subgraph SG1_RealTimeGuardrail ["Real-Time Guardrail Gate"]
     B -->|Assemble Text Segment| C[Local Classifier Engine: ONNX / DeBERTa]
     C -->|Calculate Probability Scores| D{Toxicity > Threshold?}
   end

@@ -20,13 +20,13 @@ How Incremental Cooperative Sticky Rebalancing eliminates Stop-the-World process
 
 ```mermaid
 graph TD
-  subgraph Legacy Eager Rebalance Protocol (Stop-the-World STW Pause!)
+  subgraph SG1_LegacyEagerRebalance ["Legacy Eager Rebalance Protocol (Stop-the-World STW Pause!)"]
     Event1[Consumer 3 Joins Group] --> RevokeAll["🔴 Stop-The-World: ALL Consumers Revoke ALL Partitions!"]
     RevokeAll --> JoinGroup[All Consumers send JoinGroup + SyncGroup]
     JoinGroup --> ReassignAll["Assign Partitions from Scratch (Processing Stalled 30s!)"]
   end
   
-  subgraph Incremental Cooperative Sticky Rebalance (Zero Downtime!)
+  subgraph SG2_IncrementalCooperativeSticky ["Incremental Cooperative Sticky Rebalance (Zero Downtime!)"]
     Event2[Consumer 3 Joins Group] --> Phase1["1. Round 1: Revoke ONLY Partitions to be Moved (P3 & P4)"]
     Phase1 --> ActiveProceed["⚡ Unaffected Partitions (P0, P1, P2) Continue Processing!"]
     Phase1 --> Phase2["2. Round 2: Assign P3 & P4 to Consumer 3 (Zero STW Pause!)"]

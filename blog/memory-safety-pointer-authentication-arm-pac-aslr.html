@@ -123,7 +123,7 @@
 <h2 id="arm-pointer-authentication-pac-rop-prevention-architecture">ARM Pointer Authentication (PAC) &amp; ROP Prevention Architecture</h2>
 <p>How ARM PAC signs 64-bit virtual pointers and catches pointer tampering before execution:</p>
 <div class="mermaid">graph TD
-  subgraph Function Entry (Prologue: PACIA Instruction)
+  subgraph SG1_FunctionEntryPrologue [&quot;Function Entry (Prologue: PACIA Instruction)&quot;]
     RawPtr[Unsigned 64-Bit Pointer: 0x00007FFFF7A05000] --&gt;|1. Extract Unused Upper Bits 63..48| UnusedBits[Upper Bits Field]
     SecretKey[Secret Hardware Key: APIAKey] &amp; Modifier[Context Modifier: SP] --&gt; QARMA[QARMA Cryptographic Hash Engine]
     
@@ -131,11 +131,11 @@
     SignPtr --&gt;|3. Push to Stack| Stack[Stack Frame Memory]
   end
   
-  subgraph Attacker Exploitation Attempt (ROP Attack)
+  subgraph SG2_AttackerExploitationAttempt [&quot;Attacker Exploitation Attempt (ROP Attack)&quot;]
     Stack --&gt;|4. Buffer Overflow Mutates Pointer Bytes| CorruptPtr[&quot;Tampered Pointer: 0x4F8A7FFFF7B09999&quot;]
   end
   
-  subgraph Function Exit (Epilogue: AUTIA Instruction)
+  subgraph SG3_FunctionExitEpilogue [&quot;Function Exit (Epilogue: AUTIA Instruction)&quot;]
     CorruptPtr --&gt;|5. Verify Signature via AUTIA| PACCheck{Does Embedded PAC Match Recomputed QARMA Hash?}
     PACCheck --&gt;|Match: Valid Pointer| Exec[Execute RET Instruction]
     PACCheck --&gt;|Mismatch: Tampered!| Trap[🚨 HARDWARE CPU FAULT TRAP! SIGSEGV]

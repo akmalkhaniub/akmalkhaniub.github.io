@@ -9,7 +9,7 @@ This article examines how Google, Uber, Netflix, and modern e-commerce engineeri
 
 ```mermaid
 graph TD
-  subgraph The Modern Distributed Transaction Landscape (2010s - 2020s)
+  subgraph SG1_TheModernDistributed ["The Modern Distributed Transaction Landscape (2010s - 2020s)"]
     Direction[Two Modern Paradigms] --> NewSQL[Planetary NewSQL DBs]
     Direction --> MicroSagas[Event-Driven Microservice Sagas]
     
@@ -132,17 +132,17 @@ To eliminate the dual-write bug (writing to a database and publishing to Apache 
 
 ```mermaid
 graph LR
-  subgraph Local Atomic DB Transaction
+  subgraph SG2_LocalAtomicDb ["Local Atomic DB Transaction"]
     Service[Subscription Service] -->|1. Update Account & Insert Outbox| DB[(PostgreSQL Database)]
     DB --> Tables[Subscription Table + Outbox Table]
   end
   
-  subgraph Change Data Capture CDC
+  subgraph SG3_ChangeDataCapture ["Change Data Capture CDC"]
     DB -->|2. Read WAL Log| Debezium[Debezium CDC Connector]
     Debezium -->|3. At-Least-Once Delivery| Kafka[Apache Kafka Cluster]
   end
   
-  subgraph Consumers & Idempotency
+  subgraph SG4_ConsumersIdempotency ["Consumers & Idempotency"]
     Kafka -->|4. Consume Event| BillingWorker[Billing Worker]
     BillingWorker -->|5. Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
   end

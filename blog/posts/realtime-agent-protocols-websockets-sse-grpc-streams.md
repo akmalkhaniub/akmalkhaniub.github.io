@@ -18,17 +18,17 @@ Selecting the right streaming protocol depends on the directional requirements a
 graph TD
   A[Agent Server Event Core] --> B{Client & Topology Type?}
   
-  subgraph Server-Sent Events SSE
+  subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
     B -->|Browser UI Stream: Read-Only| C[HTTP/2 SSE Endpoint]
     C -->|Unidirectional Token Stream| D[Web Dashboard / Frontend UI]
   end
   
-  subgraph Full-Duplex WebSockets
+  subgraph SG2_FullDuplexWebsockets ["Full-Duplex WebSockets"]
     B -->|Interactive Human-in-the-Loop| E[WebSocket Endpoint]
     E <-->|Bidirectional Messaging & Approvals| F[Interactive Client Session]
   end
   
-  subgraph gRPC Binary Streaming
+  subgraph SG3_GrpcBinaryStreaming ["gRPC Binary Streaming"]
     B -->|Worker Swarm Inter-Agent IPC| G[gRPC HTTP/2 Protobuf Stream]
     G <-->|Low Latency Binary Protocol| H[Microservice Worker Nodes]
   end

@@ -18,7 +18,7 @@ In traditional batch voice agent architectures:
 flowchart TD
     UserMic[User Microphone Input Stream] -->|Stream 100ms PCM Chunks| Gateway[Audio WebSocket Gateway]
     
-    subgraph Streaming STT Engine
+    subgraph SG1_StreamingSttEngine ["Streaming STT Engine"]
         Gateway -->|Buffer byte frames| Queue[Async Frame Buffer]
         Queue -->|Stream frames| STT[Whisper / Deepgram Engine]
     end

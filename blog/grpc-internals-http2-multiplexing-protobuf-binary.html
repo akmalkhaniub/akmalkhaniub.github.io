@@ -126,19 +126,19 @@
 <h2 id="grpc-architecture-http2-multiplexing">gRPC Architecture &amp; HTTP/2 Multiplexing</h2>
 <p>How gRPC multiplexes multiple concurrent streams over a single TCP connection using Protobuf binary frames:</p>
 <div class="mermaid">graph TD
-  subgraph Client Service (gRPC Stub)
+  subgraph SG1_ClientServiceGrpc [&quot;Client Service (gRPC Stub)&quot;]
     Client[Client App] --&gt;|1. Call Unary / Streaming RPC| Stub[Protobuf Generated Stub]
     Stub --&gt;|2. Encode to Binary Payload: Varint + Field Tags| Encoder[Protobuf Binary Encoder]
   end
   
-  subgraph HTTP/2 Transport Layer (Single Persistent TCP Connection)
+  subgraph SG2_Http2Transport [&quot;HTTP/2 Transport Layer (Single Persistent TCP Connection)&quot;]
     Encoder --&gt;|3. Wrap in HTTP/2 DATA Frame| Stream1[Stream ID 1: HEADERS + DATA (RPC Call A)]
     Encoder --&gt;|3. Wrap in HTTP/2 DATA Frame| Stream3[Stream ID 3: HEADERS + DATA (RPC Call B)]
     
     Stream1 &amp; Stream3 --&gt; TCP[Single TCP Connection Socket]
   end
   
-  subgraph Server Service (gRPC Handler)
+  subgraph SG3_ServerServiceGrpc [&quot;Server Service (gRPC Handler)&quot;]
     TCP --&gt;|4. HTTP/2 Frame Demultiplexing| Server[Server gRPC Daemon]
     Server --&gt;|5. Decode Protobuf Payload| Handler[Execute Microservice Logic]
   end</div>

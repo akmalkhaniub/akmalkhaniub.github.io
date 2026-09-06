@@ -22,17 +22,17 @@ How Apache Iceberg organizes table metadata into an immutable tree hierarchy to 
 
 ```mermaid
 graph TD
-  subgraph Iceberg Catalog Pointer Layer
+  subgraph SG1_IcebergCatalogPointer ["Iceberg Catalog Pointer Layer"]
     Catalog[Iceberg Catalog / Metastore] -->|Atomic Pointer Swap: v2.metadata.json| MetaJSON["1. Table Metadata JSON (v2.metadata.json)"]
   end
   
-  subgraph Snapshot Metadata Hierarchy
+  subgraph SG2_SnapshotMetadataHierarchy ["Snapshot Metadata Hierarchy"]
     MetaJSON -->|Points to Snapshot ID 1002| ManifestList["2. Manifest List (snap-1002.avro)"]
     ManifestList -->|Contains Min/Max Bounds| Manifest1["3. Manifest File A (manifest-a.avro)"]
     ManifestList --> Manifest2["3. Manifest File B (manifest-b.avro)"]
   end
   
-  subgraph Physical Data Storage Layer
+  subgraph SG3_PhysicalDataStorage ["Physical Data Storage Layer"]
     Manifest1 --> Data1["4. Data File (part-001.parquet)"]
     Manifest1 --> Data2["4. Data File (part-002.parquet)"]
     Manifest2 --> Data3["4. Data File (part-003.parquet)"]

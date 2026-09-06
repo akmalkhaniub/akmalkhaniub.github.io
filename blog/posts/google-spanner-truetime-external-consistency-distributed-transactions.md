@@ -20,15 +20,15 @@ How Google TrueTime bounds clock uncertainty $\epsilon$ and uses the Commit Wait
 
 ```mermaid
 graph TD
-  subgraph Google Datacenter Hardware Infrastructure
+  subgraph SG1_GoogleDatacenterHardware ["Google Datacenter Hardware Infrastructure"]
     GPS[Datacenter GPS Receivers] & Atomic[Rubidium Atomic Clocks] --> TrueTimeEngine[TrueTime Master Daemon]
   end
   
-  subgraph TrueTime API & Interval Bounds: TT.now() = [t_earliest, t_latest]
+  subgraph SG2_TruetimeApiInterval ["TrueTime API & Interval Bounds: TT.now() = [t_earliest, t_latest]"]
     TrueTimeEngine -->|Call TT.now()| TT["TrueTime Window: [t_earliest ... t_latest] (Uncertainty ε = 2ms)"]
   end
   
-  subgraph Commit Wait Rule Execution (External Consistency)
+  subgraph SG3_CommitWaitRule ["Commit Wait Rule Execution (External Consistency)"]
     TT -->|Assign Commit Timestamp| Ts1["Assign Commit Timestamp t_s1 = t_latest"]
     Ts1 --> WaitCheck{"Has Real Time Passed t_s1? (TT.now().earliest > t_s1)"}
     WaitCheck -->|No: Wait 2 * ε| Sleep["⏳ Commit Wait Sleep (e.g. 4ms)"]

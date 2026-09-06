@@ -20,7 +20,7 @@ How time-series databases handle late-arriving metrics and execute automated mul
 
 ```mermaid
 graph TD
-  subgraph Out-of-Order (OOO) Ingestion Pipeline
+  subgraph SG1_OutOfOrder ["Out-of-Order (OOO) Ingestion Pipeline"]
     MetricStream[Incoming Metric Stream] --> CheckTime{"Timestamp > Last Sample?"}
     CheckTime -->|Yes: In-Order| NormalHead[Standard Gorilla RAM Chunk]
     CheckTime -->|No: Late-Arriving OOO!| OOOBuffer["⚠️ Out-of-Order (OOO) Skip-List RAM Buffer"]
@@ -28,7 +28,7 @@ graph TD
     NormalHead & OOOBuffer -->|Background Merge| CompactedChunk[Compacted Immutable Block Segment]
   end
   
-  subgraph Automated Downsampling & Retention Tiering
+  subgraph SG2_AutomatedDownsamplingRetention ["Automated Downsampling & Retention Tiering"]
     CompactedChunk --> RawTier["Raw Resolution (1s / 10s Scrape) - Retained 14 Days"]
     RawTier -->|Thanos Downsampler| Tier5m["5-Minute Rollup (min, max, sum, count) - Retained 90 Days"]
     Tier5m -->|Thanos Downsampler| Tier1h["1-Hour Rollup (Long-Term Archive) - Retained 2 Years"]

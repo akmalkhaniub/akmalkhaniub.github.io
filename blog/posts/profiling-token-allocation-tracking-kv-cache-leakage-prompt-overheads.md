@@ -18,7 +18,7 @@ Managing active context requires balancing model memory footprint against prompt
 graph TD
   A[Incoming Chat Request] --> B[Token Profiler Ingestion]
   
-  subgraph Prompt Caching Engine
+  subgraph SG1_PromptCachingEngine ["Prompt Caching Engine"]
     B -->|Check Cache Table| C{Cache Hit?}
     C -->|Yes: 0ms Overhead| D[Read Pre-Calculated KV-Cache Spans]
     C -->|No: Full Latency| E[Compute KV-Cache for New Prompt Chunks]
@@ -27,7 +27,7 @@ graph TD
   D --> F[LLM Generation Execution]
   E --> F
   
-  subgraph Memory Allocation Audit
+  subgraph SG2_MemoryAllocationAudit ["Memory Allocation Audit"]
     F --> G[Measure Active Session Memory]
     G -->|Detect Stale Idle Sessions| H[Purge Expired KV-Cache Leaks]
   end

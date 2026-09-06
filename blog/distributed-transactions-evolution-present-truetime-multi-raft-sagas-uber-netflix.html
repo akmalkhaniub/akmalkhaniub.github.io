@@ -123,7 +123,7 @@
 </ol>
 <p>This article examines how Google, Uber, Netflix, and modern e-commerce engineering teams solved distributed consistency at planetary scale.</p>
 <div class="mermaid">graph TD
-  subgraph The Modern Distributed Transaction Landscape (2010s - 2020s)
+  subgraph SG1_TheModernDistributed [&quot;The Modern Distributed Transaction Landscape (2010s - 2020s)&quot;]
     Direction[Two Modern Paradigms] --&gt; NewSQL[Planetary NewSQL DBs]
     Direction --&gt; MicroSagas[Event-Driven Microservice Sagas]
     
@@ -217,17 +217,17 @@
 <p>At <strong>Netflix</strong>, subscription renewals, video transcoding pipelines, and digital rights management (DRM) licensing are orchestrated by <strong>Netflix Conductor</strong>.</p>
 <p>To eliminate the dual-write bug (writing to a database and publishing to Apache Kafka without 2PC), Netflix and large e-commerce platforms employ the <strong>Transactional Outbox Pattern</strong>:</p>
 <div class="mermaid">graph LR
-  subgraph Local Atomic DB Transaction
+  subgraph SG2_LocalAtomicDb [&quot;Local Atomic DB Transaction&quot;]
     Service[Subscription Service] --&gt;|1. Update Account &amp; Insert Outbox| DB[(PostgreSQL Database)]
     DB --&gt; Tables[Subscription Table + Outbox Table]
   end
   
-  subgraph Change Data Capture CDC
+  subgraph SG3_ChangeDataCapture [&quot;Change Data Capture CDC&quot;]
     DB --&gt;|2. Read WAL Log| Debezium[Debezium CDC Connector]
     Debezium --&gt;|3. At-Least-Once Delivery| Kafka[Apache Kafka Cluster]
   end
   
-  subgraph Consumers &amp; Idempotency
+  subgraph SG4_ConsumersIdempotency [&quot;Consumers &amp; Idempotency&quot;]
     Kafka --&gt;|4. Consume Event| BillingWorker[Billing Worker]
     BillingWorker --&gt;|5. Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
   end</div>

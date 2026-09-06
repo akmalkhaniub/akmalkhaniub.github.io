@@ -14,15 +14,15 @@ To trace how state mutations propagate through these two disparate runtimes, exa
 
 ```mermaid
 graph TD
-  subgraph Top-Down Compiler Memoization (React 19 + Compiler)
-    StateChange1["State Mutation: setCount(c + 1)"] --> ReRenderTree["Re-evaluate Component Function Scope"]
-    ReRenderTree --> CacheCheck{"HIR Memo Cache Hit: $[i] === dep?"}
+  subgraph CompilerMemo ["Top-Down Compiler Memoization: React 19 and Compiler"]
+    StateChange1["State Mutation: setCount"] --> ReRenderTree["Re-evaluate Component Function Scope"]
+    ReRenderTree --> CacheCheck{"HIR Memo Cache Hit: slot equals dep?"}
     CacheCheck -->|Cache Hit: 0 Allocations| SkipVDOM["Bypass Subtree VDOM Allocation"]
-    CacheCheck -->|Cache Miss: Value Mutated| UpdateVDOM["Reconcile Fiber Subtree & Emit DOM Patch"]
+    CacheCheck -->|Cache Miss: Value Mutated| UpdateVDOM["Reconcile Fiber Subtree and Emit DOM Patch"]
   end
 
-  subgraph Fine-Grained Reactive Graphs (SolidJS / Svelte 5 / Signals)
-    StateChange2["Signal Mutation: count.set(c + 1)"] --> DirectGraph["Traverse Directed Reactive Dependency Graph"]
+  subgraph ReactiveGraphs ["Fine-Grained Reactive Graphs: SolidJS, Svelte 5, Signals"]
+    StateChange2["Signal Mutation: count.set"] --> DirectGraph["Traverse Directed Reactive Dependency Graph"]
     DirectGraph --> ZeroVDOM["0 Component Function Re-executions"]
     ZeroVDOM --> SurgicalDOM["Direct In-Place Mutation of Bound Text Node"]
   end
@@ -74,11 +74,11 @@ As illustrated in Figure 2 below, the compiler lowers raw Babel AST into an inte
 
 ```mermaid
 graph LR
-  RawCode["Raw JSX / TSX Source"] --> BabelAST["Babel AST Parser"]
-  BabelAST --> HIRLowering["HIR Lowering (SSA Form)"]
+  RawCode["Raw JSX or TSX Source"] --> BabelAST["Babel AST Parser"]
+  BabelAST --> HIRLowering["HIR Lowering to SSA Form"]
   HIRLowering --> CFG["Control Flow Graph Analysis"]
   CFG --> ReactiveInference["Reactive Scope Inference"]
-  ReactiveInference --> MemoCodegen["Codegen: Array-Indexed Cache ($[i])"]
+  ReactiveInference --> MemoCodegen["Codegen: Array-Indexed Memo Cache Slots"]
 ```
 *Figure 2: The five-stage compilation pipeline of the React Compiler. Source: Architecture of babel-plugin-react-compiler, adapted from Savona et al. [1].*
 

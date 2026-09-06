@@ -12,15 +12,15 @@ Integrating traditional relational filtering (metadata) with Approximate Nearest
 
 ```mermaid
 graph TD
-  subgraph Post-Filtering
+  subgraph SG1_PostFiltering ["Post-Filtering"]
     A[HNSW Vector Search] -->|Get top 100| B[Filter out non-matching metadata]
     B -->|Problem: Result set collapses| C[Return remaining 2-3 items]
   end
-  subgraph Pre-Filtering
+  subgraph SG2_PreFiltering ["Pre-Filtering"]
     D[Relational Metadata Scan] -->|Isolate IDs| E[Flat Vector Search on subset]
     E -->|Problem: Slow for large subsets| F[Return top 10 items]
   end
-  subgraph In-Graph Filtering Single-Stage
+  subgraph SG3_InGraphFiltering ["In-Graph Filtering Single-Stage"]
     G[HNSW Graph Traversal] -->|Evaluate metadata on graph hops| H[Only route through matching nodes]
     H -->|Optimal: Fast & complete| I[Return top 10 matching items]
   end

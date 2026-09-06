@@ -18,7 +18,7 @@ The execution flow during database reboot after an unexpected crash:
 graph TD
   A[Database Crash Event / System Reboot] --> B[Phase 1: Analysis Phase]
   
-  subgraph Recovery Execution Pipeline
+  subgraph SG1_RecoveryExecutionPipeline ["Recovery Execution Pipeline"]
     B -->|Read Log from Checkpoint| B1[Reconstruct Active Transaction Table ATT & Dirty Page Table DPT]
     B1 --> C[Phase 2: Redo Phase - Repeating History]
     C -->|Replay all Logged Actions from Smallest recLSN| C1[Bring Database Storage to Crash-Time State]

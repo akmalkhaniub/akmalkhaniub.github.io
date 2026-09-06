@@ -10,7 +10,7 @@ This deep-dive architectural guide dissects the **7 most lethal microservices go
 
 ```mermaid
 graph TD
-  subgraph Production Microservice Outage Antipatterns
+  subgraph SG1_ProductionMicroserviceOutage ["Production Microservice Outage Antipatterns"]
     G1["1. Cascading Retry Storms & 9x Amplification (AWS)"]
     G2["2. The Distributed Dual-Write Trap (Shopify / Stripe)"]
     G3["3. Synchronous Deep Call Chains: 0.995^6 = 97% SLA (Segment)"]
@@ -92,7 +92,7 @@ Distributed computing guarantees that one of these two network operations will e
 
 ```mermaid
 graph LR
-  subgraph The Dual-Write Vulnerability
+  subgraph SG2_TheDualWrite ["The Dual-Write Vulnerability"]
     App[Application Pod] -->|1. Commit DB| DB[(PostgreSQL)]
     App -->|💥 Crash / Network Drop| Kafka[Apache Kafka]
     DB -.->|State: PAID| Desync[Data Divergence & Lost Revenue]
@@ -152,7 +152,7 @@ In real-world social and communication graphs:
 
 ```mermaid
 graph TD
-  subgraph The Hot Shard Problem
+  subgraph SG3_TheHotShard ["The Hot Shard Problem"]
     Users[100M Active Followers] -->|Simultaneous Timeline Reads| Shard1[(Shard 1: Celebrity User)]
     Users -.->|Idle| Shard2[(Shard 2: Regular Users)]
     Users -.->|Idle| Shard3[(Shard 3: Regular Users)]

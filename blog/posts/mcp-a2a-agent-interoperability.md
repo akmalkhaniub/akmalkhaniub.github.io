@@ -17,16 +17,16 @@ Before MCP, model integration was an N-to-M complexity problem. Every model clie
 
 ```mermaid
 graph TD
-    subgraph Clients [Clients / LLM orchestrators]
+    subgraph SG1_ClientsClientsLlm ["Clients [Clients / LLM orchestrators]"]
         Claude[Claude Desktop / Agent]
         CustomAgent[Custom LangGraph Agent]
     end
     
-    subgraph Protocol [MCP Layer]
+    subgraph SG2_ProtocolMcpLayer ["Protocol [MCP Layer]"]
         MCP_Gate[MCP Router Gateway]
     end
     
-    subgraph Servers [MCP Servers / Tools]
+    subgraph SG3_ServersMcpServers ["Servers [MCP Servers / Tools]"]
         Git[GitHub MCP Server]
         DB[Database DBOps Server]
         DevOps[Docker/DevOps Server]

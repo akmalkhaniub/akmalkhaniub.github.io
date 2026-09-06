@@ -18,14 +18,14 @@ This configuration overhead often led to dependency clashes, long dev-startup la
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Legacy Node.js project (6+ Dependencies)
+    subgraph SG1_LegacyNodeJs ["Legacy Node.js project (6+ Dependencies)"]
         SourceOld[index.ts] --> tsnode[ts-node / tsx]
         tsnode --> dotenv[dotenv package]
         tsnode --> jest[Jest Test Runner]
         tsnode --> NodeRuntimeOld[Node.js Engine]
     end
 
-    subgraph Modern Node.js project (Zero Dependencies)
+    subgraph SG2_ModernNodeJs ["Modern Node.js project (Zero Dependencies)"]
         SourceNew[index.ts] -->|--experimental-strip-types| NodeRuntimeNew[Node.js Engine]
         NodeRuntimeNew -->|--env-file| EnvLoader[Built-in Env Loader]
         NodeRuntimeNew -->|node:test| TestRunner[Built-in Test Runner]

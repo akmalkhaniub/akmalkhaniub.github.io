@@ -18,7 +18,7 @@ The security architecture enforces deterministic checks at both entry and exit p
 graph TD
   A[Raw User / Environment Input] --> B[Pre-Execution Guardrails Layer]
   
-  subgraph Pre-Execution Input Filtering
+  subgraph SG1_PreExecutionInput ["Pre-Execution Input Filtering"]
     B --> C[PII / Secret Masker]
     B --> D[AST Syntax Validator]
     B --> E[Length & Token Boundary Caps]
@@ -27,7 +27,7 @@ graph TD
   E -->|Sanitized Input| F[LLM Model / Agent Worker Core]
   F -->|Raw Generated Output| G[Post-Execution Sanitizer Layer]
   
-  subgraph Post-Execution Output Validation
+  subgraph SG2_PostExecutionOutput ["Post-Execution Output Validation"]
     G --> H[Pydantic Schema Validation]
     G --> I[Regex Command & SQL Injection Filter]
     G --> J[LLM Safety Classifier Check]

@@ -128,17 +128,17 @@
 <p>But in production systems engineering, abstractions are leaks waiting to spring. When does the Flight protocol outperform JSON? When does it secretly bloat your wire payload by 400%? And what happens when an engineer accidentally serializes an entire database ORM model across the server-client boundary?</p>
 <p>Here is the complete wire-level breakdown of the React Flight protocol.</p>
 <div class="mermaid">graph TD
-  subgraph React Server Component Serialization Pipeline
-    ServerTree[Server Component Tree] --&gt; FiberPass[Server Fiber Reconciliation]
-    FiberPass --&gt; FlightEmitter[React Flight Streaming Emitter]
+  subgraph FlightPipeline [&quot;React Server Component Serialization Pipeline&quot;]
+    ServerTree[&quot;Server Component Tree&quot;] --&gt; FiberPass[&quot;Server Fiber Reconciliation&quot;]
+    FiberPass --&gt; FlightEmitter[&quot;React Flight Streaming Emitter&quot;]
     
-    FlightEmitter --&gt;|Emit Module References: Line 1:I| Wire[HTTP Stream: text/x-component]
+    FlightEmitter --&gt;|Emit Module References: Line 1:I| Wire[&quot;HTTP Stream: text/x-component&quot;]
     FlightEmitter --&gt;|Emit VDOM JSON Nodes: Line 0:...| Wire
     FlightEmitter --&gt;|Emit Suspense Promises: Line 2:...| Wire
     
-    Wire --&gt; ClientParser[Browser Flight Chunk Parser]
-    ClientParser --&gt; ChunkResolver[Resolve Client Components &amp; Fiber Nodes]
-    ChunkResolver --&gt; DOMReconciliation[Merge into Active Client DOM Tree]
+    Wire --&gt; ClientParser[&quot;Browser Flight Chunk Parser&quot;]
+    ClientParser --&gt; ChunkResolver[&quot;Resolve Client Components and Fiber Nodes&quot;]
+    ChunkResolver --&gt; DOMReconciliation[&quot;Merge into Active Client DOM Tree&quot;]
   end</div>
 <p><em>Figure 1: The React Server Component serialization pipeline and Flight streaming lifecycle across network boundaries. Modules with <code>&#39;use client&#39;</code> are emitted as manifest references (<code>1:I</code>), while pure server components are lowered to line-delimited Virtual DOM descriptors (<code>0:...</code>). Source: React Core Team Flight Architecture Specification <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup>.</em></p>
 <hr>

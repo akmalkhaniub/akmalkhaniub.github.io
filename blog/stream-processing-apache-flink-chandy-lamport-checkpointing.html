@@ -123,11 +123,11 @@
 <h2 id="stateful-stream-processing-chandy-lamport-snapshot-architecture">Stateful Stream Processing &amp; Chandy-Lamport Snapshot Architecture</h2>
 <p>How Flink injects Stream Barriers into continuous data streams to capture consistent global snapshots:</p>
 <div class="mermaid">graph TD
-  subgraph Unbounded Data Stream Ingestion
+  subgraph SG1_UnboundedDataStream [&quot;Unbounded Data Stream Ingestion&quot;]
     Source[Kafka Source Partition] --&gt;|Inject Checkpointing Stream Barrier B1| BarrierStream[Data Stream: e1, e2, B1, e3, e4]
   end
   
-  subgraph Parallel Flink Task Managers (Stateful Operators)
+  subgraph SG2_ParallelFlinkTask [&quot;Parallel Flink Task Managers (Stateful Operators)&quot;]
     BarrierStream --&gt; Task1[Task Operator 1: KeyBy Fraud Aggregator]
     BarrierStream --&gt; Task2[Task Operator 2: KeyBy Fraud Aggregator]
     
@@ -135,7 +135,7 @@
     Task2 &lt;--&gt;|Read/Write Local State &lt; 1ms| Rocks2[(Embedded RocksDB State)]
   end
   
-  subgraph Asynchronous Barrier Snapshotting (Chandy-Lamport)
+  subgraph SG3_AsynchronousBarrierSnapshotting [&quot;Asynchronous Barrier Snapshotting (Chandy-Lamport)&quot;]
     Task1 --&gt;|1. Barrier B1 Received: Align Inputs| Snapshot1[Asynchronously Copy RocksDB State to S3/HDFS]
     Task2 --&gt;|1. Barrier B1 Received: Align Inputs| Snapshot2[Asynchronously Copy RocksDB State to S3/HDFS]
     

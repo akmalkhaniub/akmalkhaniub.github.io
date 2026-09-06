@@ -120,14 +120,14 @@
 <p>Because the arithmetic intensity is extremely low during single-batch generation, <strong>GPU Tensor Cores sit idle for $&gt; 90%$ of clock cycles</strong>, purely waiting for memory bus transfers.</p>
 <p>To break through this hardware memory wall, modern inference engines leverage <strong>Speculative Decoding</strong> and <strong>Medusa Multi-Head Tree Attention</strong>: techniques that accelerate generation by <strong>$2.5\times \text{ to } 3.2\times$</strong> while guaranteeing <strong>zero degradation in output accuracy or mathematical distribution</strong>.</p>
 <div class="mermaid">graph TD
-  subgraph Standard Autoregressive vs Speculative Decoding
-    subgraph 1. Standard Autoregressive (Memory Bound: 1 Token Per Pass)
+  subgraph SG1_StandardAutoregressiveVs [&quot;Standard Autoregressive vs Speculative Decoding&quot;]
+    subgraph SG2_1StandardAutoregressive [&quot;1. Standard Autoregressive (Memory Bound: 1 Token Per Pass)&quot;]
       P1[Load 140GB Weights] --&gt; T1[Generate Token 1]
       T1 --&gt; P2[Load 140GB Weights] --&gt; T2[Generate Token 2]
       T2 --&gt; P3[Load 140GB Weights] --&gt; T3[Generate Token 3]
     end
 
-    subgraph 2. Speculative Decoding (Compute Bound: 3-5 Tokens Per Pass)
+    subgraph SG3_2SpeculativeDecoding [&quot;2. Speculative Decoding (Compute Bound: 3-5 Tokens Per Pass)&quot;]
       Draft[Fast Draft Model: Proposes 5 Tokens in 5ms] --&gt; ParallelTarget[Target 70B Model: Validates All 5 Tokens in ONE 20ms Pass]
       ParallelTarget --&gt; Accept[&quot;Accept Tokens 1, 2, 3, 4 (Zero Loss!)&quot;]
     end
@@ -186,7 +186,7 @@ $$P_{\text{residual}}(x) = \text{normalize}\left(\max\left(0, P_{\text{target}}(
 <h3 id="tree-structured-attention-verification">Tree-Structured Attention Verification</h3>
 <p>Rather than predicting a single linear chain of tokens, Medusa heads generate top-$k$ candidates for each position, forming a <strong>Candidate Prefix Tree</strong>.</p>
 <div class="mermaid">graph TD
-  subgraph Medusa Candidate Tree (Evaluated in 1 Forward Pass)
+  subgraph SG4_MedusaCandidateTree [&quot;Medusa Candidate Tree (Evaluated in 1 Forward Pass)&quot;]
     Root[Current Token] --&gt; A[&quot;w1 (p=0.8)&quot;]
     Root --&gt; B[&quot;w1' (p=0.2)&quot;]
     

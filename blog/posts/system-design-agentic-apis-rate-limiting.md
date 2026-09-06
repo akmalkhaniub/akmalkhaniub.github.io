@@ -17,12 +17,12 @@ When an AI agent executes a multi-step task, it consumes APIs not as a static in
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Traditional [1. Deterministic Traffic]
+    subgraph SG1_Traditional1Deterministic ["Traditional [1. Deterministic Traffic]"]
         User[Human Browser] -->|Single GET| Gate[API Gateway]
         Gate -->|Sync Process| DB[(Database)]
     end
 
-    subgraph Agentic [2. Recursive Swarm Traffic]
+    subgraph SG2_Agentic2Recursive ["Agentic [2. Recursive Swarm Traffic]"]
         Agent[Orchestrator Agent] -->|Recursive Handoffs| A1[Agent Worker A]
         Agent -->|Parallel Spawns| A2[Agent Worker B]
         A1 -->|Recursive Retries & Tool Calls| ToolGate[Agent-Facing Gateway]

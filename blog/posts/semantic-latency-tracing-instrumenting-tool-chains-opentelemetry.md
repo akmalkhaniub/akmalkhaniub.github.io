@@ -18,11 +18,11 @@ Semantic tracing wraps every model call and tool invocation inside nested tracer
 
 ```mermaid
 graph TD
-  subgraph Trace ID: 77d43bf0-4278
+  subgraph SG1_TraceId77d43bf0 ["Trace ID: 77d43bf0-4278"]
     A[Root Span: /agent/execute_task] --> B[Sub-Span 1: model/generate_plan]
     A --> C[Sub-Span 2: tool/db_query]
     
-    subgraph Nested Tool Execution Spans
+    subgraph SG2_NestedToolExecution ["Nested Tool Execution Spans"]
       C --> D[Child Span: postgres/search_ledger]
     end
     

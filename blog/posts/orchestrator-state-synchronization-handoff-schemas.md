@@ -14,13 +14,13 @@ Instead of passing massive state payloads back and forth between agents, multi-a
 
 ```mermaid
 graph TD
-  subgraph Orchestrator Agent
+  subgraph SG1_OrchestratorAgent ["Orchestrator Agent"]
     A[Task Router Node] -->|Generate Typed Handoff Payload| B[Handoff Schema Validation]
   end
-  subgraph Shared Blackboard State Store
+  subgraph SG2_SharedBlackboardState ["Shared Blackboard State Store"]
     C[(Central Memory: Redis / PostgreSQL)]
   end
-  subgraph Worker Agent Pool
+  subgraph SG3_WorkerAgentPool ["Worker Agent Pool"]
     B -->|Dispatch Handoff Token| D[Worker Agent 1: Code Generator]
     D -->|Acquire Lock & Read Blackboard| C
     D -->|Write Output Artifact & Release Lock| C

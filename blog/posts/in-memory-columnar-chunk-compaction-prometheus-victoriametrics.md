@@ -18,18 +18,18 @@ How time-series databases handle real-time RAM ingestion, 2-hour block cutting, 
 
 ```mermaid
 graph TD
-  subgraph In-Memory Real-Time Tier (0 - 2 Hours)
+  subgraph SG1_InMemoryReal ["In-Memory Real-Time Tier (0 - 2 Hours)"]
     Metric[Incoming Metric Write] --> WAL["1. Write-Ahead Log (WAL) on NVMe SSD"]
     Metric --> HeadBlock["2. In-Memory Head Block (RAM Gorilla Chunks)"]
   end
   
-  subgraph Immutable Block Creation (Every 2 Hours)
+  subgraph SG2_ImmutableBlockCreation ["Immutable Block Creation (Every 2 Hours)"]
     HeadBlock -->|Cut 2-Hour Chunk| BlockDir["3. Immutable Disk Block (01H8...)"]
     BlockDir --> Chunks["chunks/ (Gorilla Compressed Data)"]
     BlockDir --> InvertedIndex["index (Postings List Symbol Map)"]
   end
   
-  subgraph Background Multi-Block Compaction Tier
+  subgraph SG3_BackgroundMultiBlock ["Background Multi-Block Compaction Tier"]
     BlockDir --> Compactor["4. Background Compactor Thread"]
     Compactor --> Block6h["Compacted 6-Hour Block Segment"]
     Block6h --> Block24h["Compacted 24-Hour Block Segment"]

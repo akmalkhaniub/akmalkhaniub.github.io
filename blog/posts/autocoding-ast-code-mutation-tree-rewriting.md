@@ -18,7 +18,7 @@ In basic AI coding agent setups:
 flowchart TD
     Source[Raw Python Source File] --> AST[AST Parser: Build Syntax Tree Node]
     
-    subgraph Tree Transformer
+    subgraph SG1_TreeTransformer ["Tree Transformer"]
         AST --> Walk[Node Visitor: Locate Target Function Node]
         Walk --> Mutate[Mutate AST Node Properties & Add Parameters]
     end

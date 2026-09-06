@@ -126,16 +126,16 @@
 <h2 id="decoupled-object-storage-architecture-lsm-metadata-index">Decoupled Object Storage Architecture &amp; LSM Metadata Index</h2>
 <p>How frontend S3 API gateways route requests to decoupled LSM Metadata Catalogs and Data Storage Nodes:</p>
 <div class="mermaid">graph TD
-  subgraph Client S3 API Request
+  subgraph SG1_ClientS3Api [&quot;Client S3 API Request&quot;]
     Client[Client S3 Request] --&gt; S3Proxy[Frontend S3 API Gateway]
   end
   
-  subgraph Decoupled Metadata Catalog Layer (FoundationDB / RocksDB)
+  subgraph SG2_DecoupledMetadataCatalog [&quot;Decoupled Metadata Catalog Layer (FoundationDB / RocksDB)&quot;]
     S3Proxy --&gt;|1. Lookup Metadata: GET /bucket/photos/img.png| MetaCatalog[LSM Metadata Index Shards]
     MetaCatalog --&gt;|2. Return Blob Data Location + ETag| S3Proxy
   end
   
-  subgraph Unstructured Data Payload Storage Layer
+  subgraph SG3_UnstructuredDataPayload [&quot;Unstructured Data Payload Storage Layer&quot;]
     S3Proxy --&gt;|3. Read Raw Binary Payload Bytes| DataNode1[Data Storage Node 1: Block Offset 0x4F00]
     S3Proxy --&gt;|3. Read Raw Binary Payload Bytes| DataNode2[Data Storage Node 2: Block Offset 0x9A00]
   end</div>

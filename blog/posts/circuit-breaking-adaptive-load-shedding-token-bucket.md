@@ -20,7 +20,7 @@ How Circuit Breaker state transitions protect downstream microservices and how G
 
 ```mermaid
 graph TD
-  subgraph Circuit Breaker State Machine (Resilience4j)
+  subgraph SG1_CircuitBreakerState ["Circuit Breaker State Machine (Resilience4j)"]
     Closed["🟢 CLOSED State: Normal Operation (Sliding Ring Buffer tracks error %)"]
     Open["🔴 OPEN State: Short-Circuit Active! Reject 100% of requests immediately"]
     HalfOpen["🟡 HALF-OPEN State: Probe Probe Requests allowed to test health"]
@@ -31,7 +31,7 @@ graph TD
     HalfOpen -->|4. Probe Request Fails| Open
   end
   
-  subgraph Google SRE Client-Side Adaptive Throttling
+  subgraph SG2_GoogleSreClient ["Google SRE Client-Side Adaptive Throttling"]
     Req[Client Request] --> ProbCheck{"Is Reject Prob P > 0?"}
     ProbCheck -->|P = Max(0, (Requests - K * Accepts)/(Requests + 1))| Evaluate
     Evaluate -->|Pass| Downstream[Call Server Microservice]

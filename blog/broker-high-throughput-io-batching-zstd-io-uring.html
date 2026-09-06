@@ -122,12 +122,12 @@
 <h2 id="high-throughput-io-architecture-batching-iouring">High-Throughput I/O Architecture: Batching &amp; io_uring</h2>
 <p>How Client Batching, Zstd Compression, and Linux <code>io_uring</code> Ring Buffers eliminate syscall overhead:</p>
 <div class="mermaid">graph TD
-  subgraph Client-Side Record Batching &amp; Compression
+  subgraph SG1_ClientSideRecord [&quot;Client-Side Record Batching &amp; Compression&quot;]
     Records[Client Records: 1000s of 100B Messages] --&gt;|Accumulate linger.ms| Batcher[Batching Buffer Engine: batch.size = 64KB]
     Batcher --&gt; Zstd[Zstd Dictionary Compression: 5x Ratio]
   end
   
-  subgraph Linux io_uring Asynchronous Ring Buffer Architecture
+  subgraph SG2_LinuxIoUring [&quot;Linux io_uring Asynchronous Ring Buffer Architecture&quot;]
     Zstd --&gt;|1. Push SQE Entry (Zero Syscall!)| SQ[Submission Queue Ring Buffer: SQ]
     SQ --&gt;|2. Kernel Worker Polling| KernelIO[Linux Kernel Storage Driver / NVMe]
     KernelIO --&gt;|3. Complete I/O Async| CQ[Completion Queue Ring Buffer: CQ]

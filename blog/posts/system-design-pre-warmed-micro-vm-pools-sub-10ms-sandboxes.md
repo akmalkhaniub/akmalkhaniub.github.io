@@ -18,7 +18,7 @@ In traditional cold-start container architectures:
 flowchart TD
     Agent[Code Agent Worker] -->|Request Sandbox: <10ms| PoolMgr[Pre-Warmed Pool Manager]
     
-    subgraph Pre-Warmed Sandbox Ring Buffer
+    subgraph SG1_PreWarmedSandbox ["Pre-Warmed Sandbox Ring Buffer"]
         PoolMgr -->|Pop Active Warm Instance| Instance1[Warm Sandbox Instance 1 (IDLE)]
         PoolMgr -->|Background Replenish| PoolWorker[Pool Replenisher Task]
         PoolWorker -->|Boot fresh instance| Instance2[Warm Sandbox Instance 2 (READY)]

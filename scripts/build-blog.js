@@ -368,9 +368,9 @@ for (const post of posts) {
   currentHeadings = [];
   let bodyHtml = marked.parse(cleanMd);
 
-  // 1. Transform scholarly citations like [1] or [1, 2] in text, masking code blocks first
+  // 1. Transform scholarly citations like [1] or [1, 2] in text, masking code blocks & mermaid diagrams first
   const codeBlocks = [];
-  bodyHtml = bodyHtml.replace(/<pre[\s\S]*?<\/pre>|<code[\s\S]*?<\/code>/gi, (match) => {
+  bodyHtml = bodyHtml.replace(/<pre[\s\S]*?<\/pre>|<code[\s\S]*?<\/code>|<div class="mermaid"[\s\S]*?<\/div>/gi, (match) => {
     const placeholder = `__CODE_TOKEN_${codeBlocks.length}__`;
     codeBlocks.push(match);
     return placeholder;

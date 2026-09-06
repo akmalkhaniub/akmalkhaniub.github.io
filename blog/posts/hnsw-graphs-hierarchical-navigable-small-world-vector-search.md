@@ -20,16 +20,16 @@ How multi-layer HNSW graphs enable logarithmic $O(\log N)$ vector search:
 graph TD
   Query["Query Vector (1536-dim)"] -->|1. Enter Top Layer| Entry[Global Entry Point: Layer 2]
   
-  subgraph Layer 2: Sparse Long-Range Highway
+  subgraph SG1_Layer2Sparse ["Layer 2: Sparse Long-Range Highway"]
     Entry -->|2. Long-Range Greedy Hop| NodeA[Sparse Graph Node A]
   end
   
-  subgraph Layer 1: Medium Density Intermediary
+  subgraph SG2_Layer1Medium ["Layer 1: Medium Density Intermediary"]
     NodeA -->|3. Step Down Layer| NodeB[Medium Graph Node B]
     NodeB -->|4. Medium Hop| NodeC[Medium Graph Node C]
   end
   
-  subgraph Layer 0: Dense Local Neighborhood
+  subgraph SG3_Layer0Dense ["Layer 0: Dense Local Neighborhood"]
     NodeC -->|5. Step Down to Base Layer| NodeD[Dense Base Graph Node D]
     NodeD -->|6. Local Neighborhood Refinement| TopK["Top-K Nearest Neighbors: [Doc 88, Doc 412]"]
   end

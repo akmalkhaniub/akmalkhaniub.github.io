@@ -18,13 +18,13 @@ The query coordinator broadcasts queries to shards and resolves local lists into
 graph TD
   A[Client Query Vector] --> B[Distributed Coordinator Node]
   
-  subgraph Cluster Scatter Phase
+  subgraph SG1_ClusterScatterPhase ["Cluster Scatter Phase"]
     B -->|Broadcast Query| C[Shard Node 1: Local HNSW Index]
     B -->|Broadcast Query| D[Shard Node 2: Local HNSW Index]
     B -->|Broadcast Query| E[Shard Node 3: Local HNSW Index]
   end
   
-  subgraph Local Search Runs
+  subgraph SG2_LocalSearchRuns ["Local Search Runs"]
     C -->|Return Local Top-K| F[Candidate List A]
     D -->|Return Local Top-K| G[Candidate List B]
     E -->|Return Local Top-K| H[Candidate List C]

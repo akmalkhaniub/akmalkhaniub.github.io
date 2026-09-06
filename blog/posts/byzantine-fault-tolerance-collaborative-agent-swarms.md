@@ -21,7 +21,7 @@ The three-phase voting pipeline used to validate proposed agent execution states
 graph TD
   A[Client Request / Primary Agent Proposal] --> B[Phase 1: Pre-Prepare]
   
-  subgraph PBFT Three-Phase Consensus Protocol
+  subgraph SG1_PbftThreePhase ["PBFT Three-Phase Consensus Protocol"]
     B -->|Broadcast Proposal Digest| C[Phase 2: Prepare]
     C -->|Collect 2f + 1 Prepare Votes| D{Prepare Quorum Met?}
     

@@ -124,17 +124,17 @@
 <div class="mermaid">graph TD
   SQLText[&quot;SQL: SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id&quot;] --&gt; AST[SQL Parser &amp; Logical Planner]
   
-  subgraph Cost-Based Optimizer (CBO)
+  subgraph SG1_CostBasedOptimizer [&quot;Cost-Based Optimizer (CBO)&quot;]
     AST --&gt;|1. Generate Logical Plan| CBO{Cost-Based Optimizer}
     CBO --&gt;|2. Estimate Cost: CPU + Memory + Network Shuffling| PlanEval[Evaluate Broadcast Join vs Distributed Hash Join]
   end
   
-  subgraph Distributed Physical Execution Plan (Volcano Iterator)
+  subgraph SG2_DistributedPhysicalExecution [&quot;Distributed Physical Execution Plan (Volcano Iterator)&quot;]
     PlanEval --&gt;|3. Selected Min-Cost Plan| RootGather[Root Node: Gather Exchange Operator]
     
     RootGather --&gt;|4. Pull next() Tuples| HashJoin[Physical Hash Join Operator]
     
-    subgraph Distributed Shard Execution Nodes
+    subgraph SG3_DistributedShardExecution [&quot;Distributed Shard Execution Nodes&quot;]
       HashJoin --&gt;|5. Push Hash-Repartition Exchange| Node1[Node 1: Scan users Table - Range A-M]
       HashJoin --&gt;|5. Push Hash-Repartition Exchange| Node2[Node 2: Scan orders Table - Shard 10]
     end

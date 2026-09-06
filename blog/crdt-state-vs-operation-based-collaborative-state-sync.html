@@ -122,17 +122,17 @@
 <h2 id="crdt-architecture-bounded-semi-lattice-merging">CRDT Architecture &amp; Bounded Semi-Lattice Merging</h2>
 <p>How State-Based CRDTs (CvRDT) use mathematical join semi-lattices to achieve deterministic convergence:</p>
 <div class="mermaid">graph TD
-  subgraph Peer-to-Peer Concurrent Edits
-    PeerA[Client A: Increments Counter +5] --&gt; StateA[&quot;Local State A: {P: <sup class="citation-ref"><a href="#ref-5" class="citation-link" data-ref="5" title="Reference [5]">[5]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>, N: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>}&quot;]
-    PeerB[Client B: Decrements Counter -2] --&gt; StateB[&quot;Local State B: {P: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>, N: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup>}&quot;]
+  subgraph SG1_PeerToPeer [&quot;Peer-to-Peer Concurrent Edits&quot;]
+    PeerA[Client A: Increments Counter +5] --&gt; StateA[&quot;Local State A: {P: [5, 0], N: [0, 0]}&quot;]
+    PeerB[Client B: Decrements Counter -2] --&gt; StateB[&quot;Local State B: {P: [0, 0], N: [0, 2]}&quot;]
   end
   
-  subgraph Network Sync &amp; Semi-Lattice Join Merge (⊔)
+  subgraph SG2_NetworkSyncSemi [&quot;Network Sync &amp; Semi-Lattice Join Merge (⊔)&quot;]
     StateA &amp; StateB --&gt;|Transmit Full State over Network| MergeEngine[&quot;CvRDT Monotonic Merge Function (⊔)&quot;]
   end
   
-  subgraph Deterministic Convergence
-    MergeEngine --&gt;|Max Vector Compute| ConvergedState[&quot;Merged State: {P: <sup class="citation-ref"><a href="#ref-5" class="citation-link" data-ref="5" title="Reference [5]">[5]</a> <a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a></sup>, N: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup>} -&gt; Final Value = +3&quot;]
+  subgraph SG3_DeterministicConvergence [&quot;Deterministic Convergence&quot;]
+    MergeEngine --&gt;|Max Vector Compute| ConvergedState[&quot;Merged State: {P: [5, 0], N: [0, 2]} -&gt; Final Value = +3&quot;]
     ConvergedState --&gt;|Zero Central Server!| PeerA &amp; PeerB
   end</div>
 <h3 id="core-crdt-mathematical-mechanics">Core CRDT Mathematical Mechanics</h3>

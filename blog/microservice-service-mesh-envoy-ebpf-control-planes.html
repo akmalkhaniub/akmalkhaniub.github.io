@@ -123,7 +123,7 @@
 <h2 id="service-mesh-architecture-ebpf-socket-redirection">Service Mesh Architecture &amp; eBPF Socket Redirection</h2>
 <p>How traditional Sidecar proxies compare to eBPF-accelerated kernel socket redirection:</p>
 <div class="mermaid">graph TD
-  subgraph Traditional Sidecar Service Mesh (iptables + Envoy)
+  subgraph SG1_TraditionalSidecarService [&quot;Traditional Sidecar Service Mesh (iptables + Envoy)&quot;]
     PodA[App Container A] --&gt;|1. Loopback Loop| IPT1[iptables PREROUTING]
     IPT1 --&gt;|2. TCP Context Switch| EnvoyA[Envoy Sidecar Proxy A]
     EnvoyA --&gt;|3. Wire Encrypted mTLS| Network[Physical Network / veth]
@@ -131,10 +131,10 @@
     EnvoyB --&gt;|5. Loopback Loop| PodB[App Container B]
   end
   
-  subgraph Next-Gen Sidecar-Less Service Mesh (eBPF sockmap Bypass)
+  subgraph SG2_NextGenSidecar [&quot;Next-Gen Sidecar-Less Service Mesh (eBPF sockmap Bypass)&quot;]
     PodA2[App Container A] &lt;--&gt;|eBPF sk_msg Kernel Sockmap: Direct Socket-to-Socket Bypass!| PodB2[App Container B]
     
-    subgraph Linux Kernel Network Space (Zero iptables / Zero User-Space Context Switches)
+    subgraph SG3_LinuxKernelNetwork [&quot;Linux Kernel Network Space (Zero iptables / Zero User-Space Context Switches)&quot;]
       Sockmap[eBPF BPF_MAP_TYPE_SOCKMAP] --&gt;|Short-Circuits TCP Socket Buffers| KernelPass[🎉 80% Lower Latency Direct Memory Copy!]
     end
   end</div>

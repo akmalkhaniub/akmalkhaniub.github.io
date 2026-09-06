@@ -18,7 +18,7 @@ How Linux Cgroups v2 enforces multi-tiered memory boundaries and triggers group-
 
 ```mermaid
 graph TD
-  subgraph Linux Cgroups v2 Memory Boundary Controls
+  subgraph SG1_LinuxCgroupsV2 ["Linux Cgroups v2 Memory Boundary Controls"]
     Alloc[Process Memory Allocation] --> MinCheck{"Below memory.min? ($0-100 MB)"}
     MinCheck -->|Yes: Never Reclaimed| SafeRAM[Protected In-RAM Page]
     
@@ -29,7 +29,7 @@ graph TD
     MaxCheck -->|Yes: Direct Reclaim Fails| OOM["💥 OOM Killer Triggered!"]
   end
   
-  subgraph Group-Level OOM Killer Execution (memory.oom.group = 1)
+  subgraph SG2_GroupLevelOom ["Group-Level OOM Killer Execution (memory.oom.group = 1)"]
     OOM --> Badness[Compute oom_score = RAM% + oom_score_adj]
     Badness --> KillTree["🗡️ Atomic Eviction: Terminate Entire Container Cgroup Process Tree!"]
   end

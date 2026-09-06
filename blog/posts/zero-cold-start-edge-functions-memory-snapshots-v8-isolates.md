@@ -18,13 +18,13 @@ How edge platforms serialize V8 Isolate heaps and restore pre-warmed snapshots i
 
 ```mermaid
 graph TD
-  subgraph Deployment Time: Build & Pre-warming Phase
+  subgraph SG1_DeploymentTimeBuild ["Deployment Time: Build & Pre-warming Phase"]
     Code[Edge Function Source + Dependencies] -->|1. Parse & Execute Init Code| Prewarmer[V8 Isolate Engine]
     Prewarmer -->|2. Allocate Heap & Objects| Heap[Pre-Warmed V8 Heap State]
     Heap -->|3. Serialize RAM Heap to Disk| SnapshotFile[(Binary Snapshot File: function.snap)]
   end
   
-  subgraph Request Time: Microsecond Restore Phase (sub-5ms)
+  subgraph SG2_RequestTimeMicrosecond ["Request Time: Microsecond Restore Phase (sub-5ms)"]
     Request[Incoming Edge HTTP Request] -->|4. mmap(MAP_PRIVATE)| SnapEngine[Snapshot Restore Controller]
     SnapshotFile -.->|5. Copy-On-Write Memory Mapping| SnapEngine
     

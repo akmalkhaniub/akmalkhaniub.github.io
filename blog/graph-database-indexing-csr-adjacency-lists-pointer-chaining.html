@@ -123,19 +123,19 @@
 <h2 id="graph-storage-architecture-relational-joins-vs-index-free-csr">Graph Storage Architecture: Relational JOINs vs Index-Free CSR</h2>
 <p>How native graph databases bypass B-Tree index lookups using Index-Free Adjacency and Compressed Sparse Row (CSR) contiguous arrays:</p>
 <div class="mermaid">graph TD
-  subgraph Relational B-Tree JOIN Bottleneck (O(log N) per hop)
+  subgraph SG1_RelationalBTree [&quot;Relational B-Tree JOIN Bottleneck (O(log N) per hop)&quot;]
     R1[Node A: Foreign Key = 42] --&gt;|1. B-Tree Index Lookup| Index1[Index Lookup O(log N)]
     Index1 --&gt; R2[Relationship Record]
     R2 --&gt;|2. B-Tree Index Lookup| Index2[Index Lookup O(log N)]
     Index2 --&gt; R3[Node B (High Latency!)]
   end
   
-  subgraph Native Index-Free Adjacency &amp; CSR Layout (O(1) Traversal)
+  subgraph SG2_NativeIndexFree [&quot;Native Index-Free Adjacency &amp; CSR Layout (O(1) Traversal)&quot;]
     NodeA[Node A Record] --&gt;|1. Direct C++ Pointer Dereference| Rel1[&quot;Relationship Record (Next: 0x4F00)&quot;]
     Rel1 --&gt;|2. Direct Pointer Dereference| NodeB[&quot;🎯 Node B Record (O(1) Constant Time!)&quot;]
     
-    subgraph Compressed Sparse Row (CSR) Contiguous Memory Arrays
-      Offsets[&quot;Offsets Array: <sup class="citation-ref"><a href="#ref-0" class="citation-link" data-ref="0" title="Reference [0]">[0]</a> <a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a> <a href="#ref-7" class="citation-link" data-ref="7" title="Reference [7]">[7]</a> <a href="#ref-10" class="citation-link" data-ref="10" title="Reference [10]">[10]</a></sup> (Index for Node i)&quot;] --&gt;|Slice offsets[A]..offsets[A+1]| Neighbors[&quot;Edge Targets Array: [NodeB, NodeC, NodeD, NodeE...] (Single L1 CPU Cache Line!)&quot;]
+    subgraph SG3_CompressedSparseRow [&quot;Compressed Sparse Row (CSR) Contiguous Memory Arrays&quot;]
+      Offsets[&quot;Offsets Array: [0, 3, 7, 10] (Index for Node i)&quot;] --&gt;|Slice offsets[A]..offsets[A+1]| Neighbors[&quot;Edge Targets Array: [NodeB, NodeC, NodeD, NodeE...] (Single L1 CPU Cache Line!)&quot;]
     end
   end</div>
 <h3 id="core-graph-database-indexing-mechanics">Core Graph Database Indexing Mechanics</h3>

@@ -18,14 +18,14 @@ Backpressure acts as a reactive brake pedal, slowing down upstream event produce
 graph TD
   A[Fast Producer: Agent Orchestration Engine] --> B[Task Event Dispatch Queue]
   
-  subgraph Backpressure Flow Control Gateway
+  subgraph SG1_BackpressureFlowControl ["Backpressure Flow Control Gateway"]
     B --> C{Queue Depth Check}
     C -->|Queue > 80% High Watermark| D[PAUSE / THROTTLE Producer Signal]
     C -->|Queue < 20% Low Watermark| E[RESUME Producer Signal]
     D -->|Pause Emission| A
   end
   
-  subgraph Connection Pool Manager
+  subgraph SG2_ConnectionPoolManager ["Connection Pool Manager"]
     B -->|Flow-Controlled Emission| F[Connection Pool: WebSockets / gRPC]
     F -->|Bounded Worker Channels| G[Slow Consumer: UI / DB Logger]
   end

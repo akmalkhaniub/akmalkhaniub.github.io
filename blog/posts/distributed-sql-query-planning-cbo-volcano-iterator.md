@@ -20,17 +20,17 @@ How SQL queries are transformed from declarative text to a distributed Volcano e
 graph TD
   SQLText["SQL: SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id"] --> AST[SQL Parser & Logical Planner]
   
-  subgraph Cost-Based Optimizer (CBO)
+  subgraph SG1_CostBasedOptimizer ["Cost-Based Optimizer (CBO)"]
     AST -->|1. Generate Logical Plan| CBO{Cost-Based Optimizer}
     CBO -->|2. Estimate Cost: CPU + Memory + Network Shuffling| PlanEval[Evaluate Broadcast Join vs Distributed Hash Join]
   end
   
-  subgraph Distributed Physical Execution Plan (Volcano Iterator)
+  subgraph SG2_DistributedPhysicalExecution ["Distributed Physical Execution Plan (Volcano Iterator)"]
     PlanEval -->|3. Selected Min-Cost Plan| RootGather[Root Node: Gather Exchange Operator]
     
     RootGather -->|4. Pull next() Tuples| HashJoin[Physical Hash Join Operator]
     
-    subgraph Distributed Shard Execution Nodes
+    subgraph SG3_DistributedShardExecution ["Distributed Shard Execution Nodes"]
       HashJoin -->|5. Push Hash-Repartition Exchange| Node1[Node 1: Scan users Table - Range A-M]
       HashJoin -->|5. Push Hash-Repartition Exchange| Node2[Node 2: Scan orders Table - Shard 10]
     end

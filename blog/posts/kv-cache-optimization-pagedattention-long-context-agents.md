@@ -18,19 +18,19 @@ PagedAttention adapts classic Operating System virtual memory paging to GPU VRAM
 
 ```mermaid
 graph TD
-  subgraph Virtual Context Pages (Logical Sequence)
+  subgraph SG1_VirtualContextPages ["Virtual Context Pages (Logical Sequence)"]
     A[Logical Block 0: Tokens 0..15]
     B[Logical Block 1: Tokens 16..31]
     C[Logical Block 2: Tokens 32..47]
   end
   
-  subgraph Block Table Page Map
+  subgraph SG2_BlockTablePage ["Block Table Page Map"]
     D[Logical 0 ➔ Physical Block #7]
     E[Logical 1 ➔ Physical Block #3]
     F[Logical 2 ➔ Physical Block #12]
   end
   
-  subgraph Non-Contiguous Physical GPU VRAM Blocks
+  subgraph SG3_NonContiguousPhysical ["Non-Contiguous Physical GPU VRAM Blocks"]
     G[Physical Block #3: VRAM Addr 0x3A00]
     H[Physical Block #7: VRAM Addr 0x1F00]
     I[Physical Block #12: VRAM Addr 0x8C00]

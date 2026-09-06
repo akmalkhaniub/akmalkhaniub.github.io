@@ -23,12 +23,12 @@ graph TD
   
   EmbeddingModel -->|Dense Vector| DenseEngine[Dense Vector HNSW Search Engine]
   
-  subgraph Parallel Retrieval Pipelines
+  subgraph SG1_ParallelRetrievalPipelines ["Parallel Retrieval Pipelines"]
     SparseEngine -->|Top-K Ranked Documents| SparseList["BM25 Ranked List: [Doc 12 (Rank 1), Doc 4 (Rank 2)]"]
     DenseEngine -->|Top-K Ranked Documents| DenseList["Dense Vector List: [Doc 88 (Rank 1), Doc 12 (Rank 2)]"]
   end
   
-  subgraph Reciprocal Rank Fusion RRF Engine
+  subgraph SG2_ReciprocalRankFusion ["Reciprocal Rank Fusion RRF Engine"]
     SparseList --> RRF[Reciprocal Rank Fusion Engine: Score = 1 / (60 + Rank)]
     DenseList --> RRF
   end

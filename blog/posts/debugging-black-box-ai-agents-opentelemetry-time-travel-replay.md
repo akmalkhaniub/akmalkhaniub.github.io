@@ -13,11 +13,11 @@ By combining **OpenTelemetry distributed tracing**, **Context Window Flame Graph
 
 ```mermaid
 graph TD
-  subgraph Production Agent Observability Pipeline
+  subgraph SG1_ProductionAgentObservability ["Production Agent Observability Pipeline"]
     AgentCore[Agent Execution Core] --> OTel[OpenTelemetry Span Collector]
     AgentCore --> Recorder[Deterministic Trajectory Recorder]
     
-    subgraph Observability Backends
+    subgraph SG2_ObservabilityBackends ["Observability Backends"]
       OTel --> Traces["1. Distributed Traces (Jaeger / Datadog / Langfuse)"]
       OTel --> FlameGraphs["2. Context Window Flame Graphs (Token Bloat Profiling)"]
       Recorder --> ReplayBuffer["3. Time-Travel Replay Buffer (Offline Deterministic Stepping)"]

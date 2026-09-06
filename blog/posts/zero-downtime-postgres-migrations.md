@@ -13,14 +13,14 @@ Every operation in PostgreSQL acquires a lock. The danger lies in **Exclusive Lo
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph ❌ Naive Block Way (Exclusive Lock)
+    subgraph SG1_NaiveBlockWay ["❌ Naive Block Way (Exclusive Lock)"]
         Migration[ALTER TABLE ADD COLUMN DEFAULT] -->|Acquires AccessExclusiveLock| Table[Users Table]
         Reads[Incoming SELECTs] -->|Blocked| Table
         Writes[Incoming INSERTs] -->|Blocked| Table
         Table -->|Queue fills up, connections timeout| Crash[Server Outage]
     end
 
-    subgraph ✅ Safe Way (Incremental Locks)
+    subgraph SG2_SafeWayIncremental ["✅ Safe Way (Incremental Locks)"]
         Step1[1. ALTER TABLE ADD COLUMN without default] -->|Short AccessExclusiveLock| Table2[Users Table]
         Step2[2. SET DEFAULT value] -->|Quick Lock metadata update| Table2
         Step3[3. Backfill data in small batches] -->|Low-level RowShareLock| Table2

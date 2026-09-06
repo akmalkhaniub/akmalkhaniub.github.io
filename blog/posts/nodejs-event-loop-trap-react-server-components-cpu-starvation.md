@@ -19,7 +19,7 @@ This is **The Node.js Event Loop Trap in Server Components**. Here is the system
 
 ```mermaid
 graph TD
-  subgraph Node.js Single-Threaded Event Loop Saturation
+  subgraph SG1_NodeJsSingle ["Node.js Single-Threaded Event Loop Saturation"]
     Client1[User 1: GET /analytics] --> Ingress[Single-Threaded Node.js Event Loop]
     Client2[User 2: GET /healthz] --> Ingress
     Client3[User 3: GET /checkout] --> Ingress
@@ -94,12 +94,12 @@ To run React Server Components safely at scale, systems architects must establis
 
 ```mermaid
 graph LR
-  MainThread[Node.js Main Event Loop] -->|Dispatches CPU Work| WorkerPool[Node.js worker_threads / Piscina Pool]
-  WorkerPool --> Thread1[Worker Core 1]
-  WorkerPool --> Thread2[Worker Core 2]
-  WorkerPool --> Thread3[Worker Core 3]
+  MainThread["Node.js Main Event Loop"] -->|Dispatches CPU Work| WorkerPool["Node.js worker_threads or Piscina Pool"]
+  WorkerPool --> Thread1["Worker Core 1"]
+  WorkerPool --> Thread2["Worker Core 2"]
+  WorkerPool --> Thread3["Worker Core 3"]
   
-  MainThread -->|Instant Non-Blocking Response| HealthCheck[Responds to K8s /healthz in < 2ms]
+  MainThread -->|Instant Non-Blocking Response| HealthCheck["Responds to K8s health check in under 2ms"]
 ```
 
 ### Pattern 1: Worker Thread Offloading (`worker_threads`)

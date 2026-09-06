@@ -20,13 +20,13 @@ To solve this, we rely on the **Saga Pattern**, a design pattern that structures
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Saga Executions
+    subgraph SG1_SagaExecutions ["Saga Executions"]
         direction TB
         Step1[1. Book Flight] -->|Success| Step2[2. Book Hotel]
         Step2 -->|Success| Step3[3. Charge Wallet - FAILS!]
     end
 
-    subgraph Compensating Rollbacks
+    subgraph SG2_CompensatingRollbacks ["Compensating Rollbacks"]
         direction TB
         Comp1[Compensate 2: Cancel Hotel] --> Comp2[Compensate 1: Cancel Flight]
     end

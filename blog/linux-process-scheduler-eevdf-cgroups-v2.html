@@ -122,12 +122,12 @@
 <h2 id="eevdf-scheduling-cgroups-v2-architecture">EEVDF Scheduling &amp; Cgroups v2 Architecture</h2>
 <p>How the EEVDF scheduler selects tasks based on Lag Eligibility and Virtual Deadlines:</p>
 <div class="mermaid">graph TD
-  subgraph Kubernetes Container Pods (Cgroups v2 Limits)
+  subgraph SG1_KubernetesContainerPods [&quot;Kubernetes Container Pods (Cgroups v2 Limits)&quot;]
     PodA[Container A: cpu.max = 200ms/100ms] --&gt; RunQueue[Linux CPU RunQueue (Red-Black Tree)]
     PodB[Container B: Latency-Sensitive API] --&gt; RunQueue
   end
   
-  subgraph EEVDF Scheduler Selection Engine (Kernel 6.6+)
+  subgraph SG2_EevdfSchedulerSelection [&quot;EEVDF Scheduler Selection Engine (Kernel 6.6+)&quot;]
     RunQueue --&gt;|1. Calculate Virtual Time V &amp; Lag| LagCheck{Is Task Lag &gt;= 0? Eligible Check}
     
     LagCheck --&gt;|No: Lag &lt; 0 Over-allocated| Ineligible[Task Ineligible: Wait for V to advance]
@@ -136,7 +136,7 @@
     EligibleSet --&gt;|2. Sort by Virtual Deadline: V_i = vruntime + q / weight| EarliestDeadline[Pick Task with Earliest Virtual Deadline!]
   end
   
-  subgraph CPU Execution Context
+  subgraph SG3_CpuExecutionContext [&quot;CPU Execution Context&quot;]
     EarliestDeadline --&gt;|3. Dispatch Time Slice q| CPUCore[Physical CPU Core Execution]
   end</div>
 <h3 id="core-eevdf-cgroups-v2-principles">Core EEVDF &amp; Cgroups v2 Principles</h3>

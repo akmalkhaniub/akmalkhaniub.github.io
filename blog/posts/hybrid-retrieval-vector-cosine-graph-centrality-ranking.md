@@ -20,7 +20,7 @@ The hybrid retrieval engine merges vector similarity ranks with graph centrality
 graph TD
   A[User / Agent Query] --> B[Initial Retriever Phase]
   
-  subgraph Dual Ranking Engine
+  subgraph SG1_DualRankingEngine ["Dual Ranking Engine"]
     B -->|Dense Embedding Match| C[Rank List A: Vector Cosine Similarity]
     B -->|Graph Topology Analysis| D[Rank List B: PageRank & Closeness Centrality]
   end

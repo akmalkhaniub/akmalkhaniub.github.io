@@ -20,15 +20,15 @@ How Intel AES-NI hardware assembly instructions execute AES rounds in 1 clock cy
 
 ```mermaid
 graph TD
-  subgraph Software S-Box Lookup (Vulnerable to Cache Side-Channels)
+  subgraph SG1_SoftwareSBox ["Software S-Box Lookup (Vulnerable to Cache Side-Channels)"]
     SoftwareKey[Secret Key Byte] --> SBoxTable[RAM S-Box Array Lookup: table[key]]
     SBoxTable -->|Cache Miss vs Cache Hit Latency Differences| SideChannel[🚨 CACHE TIMING ATTACK LEAKS KEY!]
   end
   
-  subgraph Intel AES-NI Hardware Execution Pipeline (1 CPU Cycle)
+  subgraph SG2_IntelAesNi ["Intel AES-NI Hardware Execution Pipeline (1 CPU Cycle)"]
     InputBlock[128-Bit Data Block] --> AESENC[AESENC Assembly Instruction]
     
-    subgraph Hardware Transistor Logic Inside CPU Die
+    subgraph SG3_HardwareTransistorLogic ["Hardware Transistor Logic Inside CPU Die"]
       AESENC -->|1. SubBytes| HardwareLogic[Hardware Silicon S-Box Logic]
       HardwareLogic -->|2. ShiftRows| Shift[ShiftRows Pipeline]
       Shift -->|3. MixColumns| Mix[MixColumns Pipeline]

@@ -20,7 +20,7 @@ The router gateway sits between orchestrator swarms and execution model targets:
 graph TD
   A[Subagent Task Request] --> B[Dynamic Model Router Gateway]
   
-  subgraph Complexity & Fallback Router
+  subgraph SG1_ComplexityFallbackRouter ["Complexity & Fallback Router"]
     B --> C{Task Complexity Classifier}
     C -->|Score < 0.4: Simple JSON / Tool Call| D[Tier 1: Fast Local 4-Bit SLM]
     C -->|Score 0.4 - 0.75: Code / Functioning| E[Tier 2: Local 14B AWQ Model]

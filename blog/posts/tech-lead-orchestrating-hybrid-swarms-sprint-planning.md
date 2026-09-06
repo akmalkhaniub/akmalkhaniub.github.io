@@ -14,18 +14,18 @@ In a hybrid team model, task allocation is driven by **Task Complexity & Determi
 
 ```mermaid
 graph TD
-  subgraph Backlog Refinement
+  subgraph SG1_BacklogRefinement ["Backlog Refinement"]
     A[Sprint Backlog] --> B{Tech Lead Task Classifier}
   end
-  subgraph Human Allocation
+  subgraph SG2_HumanAllocation ["Human Allocation"]
     B -->|High Empathy / Novel Architecture| C[Human Engineers]
     C --> D[System Design & Code Review]
   end
-  subgraph Autonomous Agent Swarm Allocation
+  subgraph SG3_AutonomousAgentSwarm ["Autonomous Agent Swarm Allocation"]
     B -->|Deterministic / Repetitive| E[Subagent Worker Pool]
     E -->|Parallel Execution| F[Test Expansion & Migration Scripts]
   end
-  subgraph Verification Loop
+  subgraph SG4_VerificationLoop ["Verification Loop"]
     D --> G[Continuous Integration & Verification Gate]
     F --> G
     G --> H[Production Merge]

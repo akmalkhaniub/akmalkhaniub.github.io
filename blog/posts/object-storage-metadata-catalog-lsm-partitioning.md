@@ -20,16 +20,16 @@ How frontend S3 API gateways route requests to decoupled LSM Metadata Catalogs a
 
 ```mermaid
 graph TD
-  subgraph Client S3 API Request
+  subgraph SG1_ClientS3Api ["Client S3 API Request"]
     Client[Client S3 Request] --> S3Proxy[Frontend S3 API Gateway]
   end
   
-  subgraph Decoupled Metadata Catalog Layer (FoundationDB / RocksDB)
+  subgraph SG2_DecoupledMetadataCatalog ["Decoupled Metadata Catalog Layer (FoundationDB / RocksDB)"]
     S3Proxy -->|1. Lookup Metadata: GET /bucket/photos/img.png| MetaCatalog[LSM Metadata Index Shards]
     MetaCatalog -->|2. Return Blob Data Location + ETag| S3Proxy
   end
   
-  subgraph Unstructured Data Payload Storage Layer
+  subgraph SG3_UnstructuredDataPayload ["Unstructured Data Payload Storage Layer"]
     S3Proxy -->|3. Read Raw Binary Payload Bytes| DataNode1[Data Storage Node 1: Block Offset 0x4F00]
     S3Proxy -->|3. Read Raw Binary Payload Bytes| DataNode2[Data Storage Node 2: Block Offset 0x9A00]
   end

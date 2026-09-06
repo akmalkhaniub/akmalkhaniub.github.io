@@ -21,15 +21,15 @@ sequenceDiagram
   participant Origin as Origin Compute / Database
 
   Browser->>Edge: GET /products/keyboard-pro
-  Note over Edge: TTFB < 20ms!
+  Note over Edge: TTFB under 20ms
   Edge-->>Browser: Flush Static Shell HTML + Initial Loading Skeletons
   Note over Browser: User sees full layout instantly (0ms blank screen)
 
   Edge->>Origin: Background Trigger: Execute Dynamic Suspense Holes
-  Note over Origin: Querying user cart & personalized pricing...
+  Note over Origin: Querying user cart and personalized pricing
   Origin-->>Edge: Stream Flight Chunks for dynamic holes
   Edge-->>Browser: Stream Chunks over same open HTTP connection
-  Note over Browser: React Suspense resolves dynamic holes without layout shift!
+  Note over Browser: React Suspense resolves dynamic holes without layout shift
 ```
 *Figure 1: Timeline and network packet topology of a Partial Prerendered (PPR) HTTP stream. The static shell is flushed from edge storage in 15ms, while dynamic suspense holes resolve across the persistent connection. Source: Vercel Research [1, 2].*
 

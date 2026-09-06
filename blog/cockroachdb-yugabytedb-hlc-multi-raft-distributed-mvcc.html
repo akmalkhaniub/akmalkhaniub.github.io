@@ -122,17 +122,17 @@
 <h2 id="distributed-sql-architecture-hlc-multi-raft-mechanics">Distributed SQL Architecture &amp; HLC Multi-Raft Mechanics</h2>
 <p>How CockroachDB and YugabyteDB combine Hybrid Logical Clocks and Multi-Raft consensus to execute distributed ACID transactions:</p>
 <div class="mermaid">graph TD
-  subgraph Hybrid Logical Clock (HLC) Time Engine
+  subgraph SG1_HybridLogicalClock [&quot;Hybrid Logical Clock (HLC) Time Engine&quot;]
     PhysicalClock[Physical Server Clock pt] &amp; RemoteHLC[Incoming Message HLC: l_m, c_m] --&gt; HLCUpdate[HLC Update Math: l_next = max(l_curr, pt, l_m)]
     HLCUpdate --&gt; HLCTuple[&quot;HLC Timestamp Tuple: (l_next, c_next)&quot;]
   end
   
-  subgraph Multi-Raft Range Partitioning (64 MB Splits)
+  subgraph SG2_MultiRaftRange [&quot;Multi-Raft Range Partitioning (64 MB Splits)&quot;]
     HLCTuple --&gt; Range1[&quot;Range 1 (Keys A - M): Raft Group #101&quot;]
     HLCTuple --&gt; Range2[&quot;Range 2 (Keys N - Z): Raft Group #102&quot;]
   end
   
-  subgraph Distributed MVCC &amp; Write Intent Resolution
+  subgraph SG3_DistributedMvccWrite [&quot;Distributed MVCC &amp; Write Intent Resolution&quot;]
     Range1 --&gt; WriteIntent[&quot;Write Intent Record: key@HLC -&gt; [Val, Pointer to Txn Record]&quot;]
     WriteIntent --&gt; TxnState{Is Txn Record Status = COMMITTED?}
     TxnState --&gt;|Yes| MVCCRead[&quot;🎉 Instant MVCC Read: Return Value at HLC Timestamp!&quot;]

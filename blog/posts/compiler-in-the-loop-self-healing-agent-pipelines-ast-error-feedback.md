@@ -12,10 +12,10 @@ By pairing probabilistic LLMs with **Language Server Protocol (LSP)** diagnostic
 
 ```mermaid
 graph TD
-  subgraph Compiler-in-the-Loop Self-Healing Pipeline
+  subgraph SG1_CompilerInThe ["Compiler-in-the-Loop Self-Healing Pipeline"]
     Coder[Probabilistic LLM Coder] --> RawCode[Synthesized Code Buffer]
     
-    subgraph Multi-Tier Deterministic Verification
+    subgraph SG2_MultiTierDeterministic ["Multi-Tier Deterministic Verification"]
       RawCode --> Tier1["Tier 1: AST Syntax Tree Validation (< 10ms)"]
       Tier1 -->|AST Clean| Tier2["Tier 2: Static Type Check & Linters (pyright / tsc, 150ms)"]
       Tier2 -->|Types Clean| Tier3["Tier 3: Sandboxed Unit Test Harness (pytest, 500ms)"]

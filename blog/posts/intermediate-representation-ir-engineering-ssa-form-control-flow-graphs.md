@@ -21,14 +21,14 @@ graph TD
   Source[Source Code: C++ / Rust] --> Frontend[Compiler Frontend: AST Parser]
   Frontend -->|1. Lower to IR| BB1[Basic Block 1: Init x = 10, y = 20]
   
-  subgraph Control Flow Graph (CFG) in SSA Form
+  subgraph SG1_ControlFlowGraph ["Control Flow Graph (CFG) in SSA Form"]
     BB1 -->|2. Conditional Branch: if (x > 5)| BB2[Basic Block 2: Then Branch -> a_1 = x + y]
     BB1 -->|2. Conditional Branch: else| BB3[Basic Block 3: Else Branch -> a_2 = y * 2]
     
     BB2 & BB3 -->|3. Merge Join Point| BB4[Basic Block 4: Phi Node -> a_3 = Phi(a_1, a_2)]
   end
   
-  subgraph Optimization Passes
+  subgraph SG2_OptimizationPasses ["Optimization Passes"]
     BB4 --> Pass1[Constant Folding Pass: 10 + 20 -> 30]
     Pass1 --> Pass2[Dead Code Elimination: Remove unused vars]
   end

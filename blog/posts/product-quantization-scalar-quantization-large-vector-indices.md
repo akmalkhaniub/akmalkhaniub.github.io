@@ -18,7 +18,7 @@ Product Quantization splits vectors into sub-spaces and encodes them using codeb
 graph TD
   A[Raw Vector: 1024-dim FP32 - 4096 Bytes] --> B[Split into 8 Sub-Vectors of 128-dim]
   
-  subgraph Product Quantization Encoding
+  subgraph SG1_ProductQuantizationEncoding ["Product Quantization Encoding"]
     B --> C[Sub-Vector 1]
     B --> D[Sub-Vector 8]
     

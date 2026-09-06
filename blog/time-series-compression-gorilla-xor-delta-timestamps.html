@@ -123,18 +123,18 @@
 <h2 id="gorilla-time-series-compression-architecture">Gorilla Time-Series Compression Architecture</h2>
 <p>How Gorilla combines Delta-of-Delta Timestamp Encoding and Floating-Point XOR Bit-Packing to achieve $12\times$ compression:</p>
 <div class="mermaid">graph TD
-  subgraph Raw Metric Ingestion Stream
+  subgraph SG1_RawMetricIngestion [&quot;Raw Metric Ingestion Stream&quot;]
     Raw[Raw Data Points: timestamp t_n, float v_n] --&gt; Split[Split Channel Pipeline]
   end
   
-  subgraph Channel 1: Delta-of-Delta Timestamp Encoding
+  subgraph SG2_Channel1Delta [&quot;Channel 1: Delta-of-Delta Timestamp Encoding&quot;]
     Split --&gt;|Timestamp Stream t_n| Timedelta[&quot;Compute D_n = t_n - t_{n-1}&quot;]
     Timedelta --&gt; DeltaDelta[&quot;Compute D_D = D_n - D_{n-1}&quot;]
     DeltaDelta --&gt;|D_D = 0| BitZero[&quot;Emit '0' Bit (Same Interval!)&quot;]
     DeltaDelta --&gt;|D_D != 0| BitPacked[&quot;Variable Bit-Length Allocation (1 to 32 bits)&quot;]
   end
   
-  subgraph Channel 2: IEEE 754 Float XOR Compression
+  subgraph SG3_Channel2Ieee [&quot;Channel 2: IEEE 754 Float XOR Compression&quot;]
     Split --&gt;|Value Stream v_n| XORVal[&quot;Compute Bitwise XOR = v_n ^ v_{n-1}&quot;]
     XORVal --&gt;|XOR = 0| ValueZero[&quot;Emit '0' Bit (Identical Value!)&quot;]
     XORVal --&gt;|XOR != 0| BitXOR[&quot;Emit '1' + Leading/Trailing Zero Bit Payload&quot;]

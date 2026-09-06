@@ -24,13 +24,13 @@ graph TD
     B --> B3[Native Async Concurrency]
   end
   
-  subgraph Trade-offs
+  subgraph SG1_TradeOffs ["Trade-offs"]
     C --> C1[Unopinionated Structure: No Default ORM]
     C --> C2[Dependency Injection Scope Complexity]
     C --> C3[Silent Event-Loop Blocking Risks]
   end
   
-  subgraph Failure Modes
+  subgraph SG2_FailureModes ["Failure Modes"]
     D --> D1[Un-awaited Coroutine Leaks]
     D --> D2[Global Worker State Contention]
     D --> D3[Database Connection Pool Exhaustion]

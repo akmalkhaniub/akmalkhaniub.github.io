@@ -20,16 +20,16 @@ How Speculative Decoding generates $K+1$ tokens in a single target model forward
 graph TD
   Prompt[User Input Prompt] --> DraftModel[Fast Draft Model: Llama-3-8B]
   
-  subgraph Phase 1: Rapid Speculative Generation (K=4 Tokens)
+  subgraph SG1_Phase1Rapid ["Phase 1: Rapid Speculative Generation (K=4 Tokens)"]
     DraftModel -->|1. Generate 4 Candidate Tokens| CandTokens["Candidate Sequence: [the, capital, of, France]"]
   end
   
-  subgraph Phase 2: Target Model Parallel Verification (Single Forward Pass)
+  subgraph SG2_Phase2Target ["Phase 2: Target Model Parallel Verification (Single Forward Pass)"]
     CandTokens -->|2. Parallel Forward Pass on All 4 Tokens| TargetModel[Large Target Model: Llama-3-70B]
     TargetModel -->|3. Evaluate Token Probability Ratios P_target / P_draft| Sampler{Modified Rejection Sampler}
   end
   
-  subgraph Phase 3: Token Acceptance & Output
+  subgraph SG3_Phase3Token ["Phase 3: Token Acceptance & Output"]
     Sampler -->|4. Accept First 3 Tokens + Sample 4th Token| Accepted["Accepted Tokens: ['the', 'capital', 'of', 'France']"]
     Accepted -->|5. Output 4 Tokens in 1 Step (2x - 3x Speedup!)| UserResponse[User Output Stream]
   end

@@ -18,22 +18,22 @@ How Asynchronous, Semi-Synchronous, and Raft Majority Quorum replication models 
 
 ```mermaid
 graph TD
-  subgraph Client Write Request
+  subgraph SG1_ClientWriteRequest ["Client Write Request"]
     Client[Client Tx Write Request] --> Primary[Primary Database Node]
   end
   
-  subgraph Asynchronous Replication (Zero Latency Penalty)
+  subgraph SG2_AsynchronousReplicationZero ["Asynchronous Replication (Zero Latency Penalty)"]
     Primary -->|1. Commit Locally & Return Ack < 1ms| Client
     Primary -.->|2. Async WAL Stream| Replica1[Replica Node 1 (Replication Lag)]
   end
   
-  subgraph Semi-Synchronous Replication (1 Slave Ack)
+  subgraph SG3_SemiSynchronousReplication ["Semi-Synchronous Replication (1 Slave Ack)"]
     Primary -->|1. Stream Binlog| RelayLog[Replica 1 Relay Log]
     RelayLog -->|2. Ack Received| Primary
     Primary -->|3. Return Ack to Client| Client
   end
   
-  subgraph Raft Consensus Majority Quorum (CockroachDB / TiKV)
+  subgraph SG4_RaftConsensusMajority ["Raft Consensus Majority Quorum (CockroachDB / TiKV)"]
     Primary -->|1. Broadcast AppendEntries| NodeB[Raft Node B] & NodeC[Raft Node C]
     NodeB -->|2. Majority Ack (2 of 3 Nodes)| Primary
     Primary -->|3. Commit Majority Entry!| Client

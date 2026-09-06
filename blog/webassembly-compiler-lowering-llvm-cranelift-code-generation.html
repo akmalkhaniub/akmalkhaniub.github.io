@@ -122,17 +122,17 @@
 <h2 id="wasm-bytecode-stack-to-register-lowering-pipeline-architecture">Wasm Bytecode Stack to Register Lowering Pipeline Architecture</h2>
 <p>How Cranelift lowers stack-based Wasm bytecode into SSA register machine code and native assembly:</p>
 <div class="mermaid">graph TD
-  subgraph WebAssembly Bytecode (Stack Machine Model)
+  subgraph SG1_WebassemblyBytecodeStack [&quot;WebAssembly Bytecode (Stack Machine Model)&quot;]
     WasmBytecode[&quot;Wasm Bytecode Stream: i32.const 10, i32.const 20, i32.add&quot;]
   end
   
-  subgraph Wasm Compiler Lowering Engine (Cranelift CLIF)
+  subgraph SG2_WasmCompilerLowering [&quot;Wasm Compiler Lowering Engine (Cranelift CLIF)&quot;]
     WasmBytecode --&gt;|1. Symbolic Stack Translation| StackMapper[Symbolic Operand Stack]
     StackMapper --&gt;|2. Push v0, Push v1| SSABlocks[SSA Register Allocator: v0=10, v1=20]
     SSABlocks --&gt;|3. Lower to CLIF IR| CLIF[Cranelift IR: v2 = iadd v0, v1]
   end
   
-  subgraph Security Guard Injection &amp; Code Generation
+  subgraph SG3_SecurityGuardInjection [&quot;Security Guard Injection &amp; Code Generation&quot;]
     CLIF --&gt;|4. Inject Memory Bounds Check| BoundsCheck[Check: v_addr + size &lt;= linear_memory_bound]
     BoundsCheck --&gt;|5. Backend Register Allocation| NativeASM[&quot;Native Assembly: MOV EAX, 10; ADD EAX, 20&quot;]
   end</div>

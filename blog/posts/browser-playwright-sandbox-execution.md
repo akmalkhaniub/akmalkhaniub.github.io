@@ -18,7 +18,7 @@ Web browsers are powerful runtime environments:
 flowchart TD
     Agent[Agent Code Worker] -->|Request Web Page| Wrapper[Playwright Sandbox Wrapper]
     
-    subgraph Isolated Docker Container
+    subgraph SG1_IsolatedDockerContainer ["Isolated Docker Container"]
         Wrapper -->|Spawn Headless Chromium| Browser[Chromium Instance]
         Browser -->|Outbound Network Request| Proxy{Egress Network Proxy}
     end

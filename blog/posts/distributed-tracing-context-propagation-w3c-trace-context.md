@@ -20,13 +20,13 @@ How W3C `traceparent` headers propagate context across microservice RPC boundari
 graph TD
   Client[Client Browser / Mobile App] -->|1. HTTP Request| Gateway[API Gateway Service]
   
-  subgraph Trace Context Propagation (TraceID: 4bf92f35...)
+  subgraph SG1_TraceContextPropagation ["Trace Context Propagation (TraceID: 4bf92f35...)"]
     Gateway -->|2. Inject traceparent: 00-4bf92f35...-spanA-01| AuthSvc[Auth Microservice]
     AuthSvc -->|3. Inject traceparent: 00-4bf92f35...-spanB-01| PaymentSvc[Payment Microservice]
     PaymentSvc -->|4. Inject traceparent: 00-4bf92f35...-spanC-01| DB[(PostgreSQL Database)]
   end
   
-  subgraph OTel Collector Tail-Based Sampling Pipeline
+  subgraph SG2_OtelCollectorTail ["OTel Collector Tail-Based Sampling Pipeline"]
     Gateway & AuthSvc & PaymentSvc -->|5. Push Spans to Collector| OTelCollector[OTel Collector Buffer]
     OTelCollector -->|6. Inspect Full Trace DAG: Error Detected!| TraceStorage[(Distributed Tracing Engine: Tempo / Jaeger)]
   end

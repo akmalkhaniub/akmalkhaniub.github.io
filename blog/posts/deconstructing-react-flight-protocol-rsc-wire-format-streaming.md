@@ -21,17 +21,17 @@ Here is the complete wire-level breakdown of the React Flight protocol.
 
 ```mermaid
 graph TD
-  subgraph React Server Component Serialization Pipeline
-    ServerTree[Server Component Tree] --> FiberPass[Server Fiber Reconciliation]
-    FiberPass --> FlightEmitter[React Flight Streaming Emitter]
+  subgraph FlightPipeline ["React Server Component Serialization Pipeline"]
+    ServerTree["Server Component Tree"] --> FiberPass["Server Fiber Reconciliation"]
+    FiberPass --> FlightEmitter["React Flight Streaming Emitter"]
     
-    FlightEmitter -->|Emit Module References: Line 1:I| Wire[HTTP Stream: text/x-component]
+    FlightEmitter -->|Emit Module References: Line 1:I| Wire["HTTP Stream: text/x-component"]
     FlightEmitter -->|Emit VDOM JSON Nodes: Line 0:...| Wire
     FlightEmitter -->|Emit Suspense Promises: Line 2:...| Wire
     
-    Wire --> ClientParser[Browser Flight Chunk Parser]
-    ClientParser --> ChunkResolver[Resolve Client Components & Fiber Nodes]
-    ChunkResolver --> DOMReconciliation[Merge into Active Client DOM Tree]
+    Wire --> ClientParser["Browser Flight Chunk Parser"]
+    ClientParser --> ChunkResolver["Resolve Client Components and Fiber Nodes"]
+    ChunkResolver --> DOMReconciliation["Merge into Active Client DOM Tree"]
   end
 ```
 *Figure 1: The React Server Component serialization pipeline and Flight streaming lifecycle across network boundaries. Modules with `'use client'` are emitted as manifest references (`1:I`), while pure server components are lowered to line-delimited Virtual DOM descriptors (`0:...`). Source: React Core Team Flight Architecture Specification [1, 2].*

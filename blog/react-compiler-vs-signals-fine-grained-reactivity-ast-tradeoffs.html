@@ -124,15 +124,15 @@
 <p>Why did React refuse the signals train? Why bet the future of the world&#39;s most dominant UI library on compiler static analysis? And what are the physical runtime trade-offs between compile-time dependency analysis and runtime reactive subscriber graphs?</p>
 <p>To trace how state mutations propagate through these two disparate runtimes, examine the data-flow topology illustrated in Figure 1 below.</p>
 <div class="mermaid">graph TD
-  subgraph Top-Down Compiler Memoization (React 19 + Compiler)
-    StateChange1[&quot;State Mutation: setCount(c + 1)&quot;] --&gt; ReRenderTree[&quot;Re-evaluate Component Function Scope&quot;]
-    ReRenderTree --&gt; CacheCheck{&quot;HIR Memo Cache Hit: $[i] === dep?&quot;}
+  subgraph CompilerMemo [&quot;Top-Down Compiler Memoization: React 19 and Compiler&quot;]
+    StateChange1[&quot;State Mutation: setCount&quot;] --&gt; ReRenderTree[&quot;Re-evaluate Component Function Scope&quot;]
+    ReRenderTree --&gt; CacheCheck{&quot;HIR Memo Cache Hit: slot equals dep?&quot;}
     CacheCheck --&gt;|Cache Hit: 0 Allocations| SkipVDOM[&quot;Bypass Subtree VDOM Allocation&quot;]
-    CacheCheck --&gt;|Cache Miss: Value Mutated| UpdateVDOM[&quot;Reconcile Fiber Subtree &amp; Emit DOM Patch&quot;]
+    CacheCheck --&gt;|Cache Miss: Value Mutated| UpdateVDOM[&quot;Reconcile Fiber Subtree and Emit DOM Patch&quot;]
   end
 
-  subgraph Fine-Grained Reactive Graphs (SolidJS / Svelte 5 / Signals)
-    StateChange2[&quot;Signal Mutation: count.set(c + 1)&quot;] --&gt; DirectGraph[&quot;Traverse Directed Reactive Dependency Graph&quot;]
+  subgraph ReactiveGraphs [&quot;Fine-Grained Reactive Graphs: SolidJS, Svelte 5, Signals&quot;]
+    StateChange2[&quot;Signal Mutation: count.set&quot;] --&gt; DirectGraph[&quot;Traverse Directed Reactive Dependency Graph&quot;]
     DirectGraph --&gt; ZeroVDOM[&quot;0 Component Function Re-executions&quot;]
     ZeroVDOM --&gt; SurgicalDOM[&quot;Direct In-Place Mutation of Bound Text Node&quot;]
   end</div>
@@ -167,11 +167,11 @@
 <p>Building a compiler that could automatically insert memoization without changing the semantic behavior of existing code required porting advanced compiler architecture—specifically <strong>Static Single Assignment (SSA) form</strong> pioneered by Cytron, Ferrante, Rosen, Wegman, and Zadeck <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup>—into the Babel AST pipeline.</p>
 <p>As illustrated in Figure 2 below, the compiler lowers raw Babel AST into an intermediate representation where every variable is assigned exactly once, allowing rigorous data-flow and lifetime analysis.</p>
 <div class="mermaid">graph LR
-  RawCode[&quot;Raw JSX / TSX Source&quot;] --&gt; BabelAST[&quot;Babel AST Parser&quot;]
-  BabelAST --&gt; HIRLowering[&quot;HIR Lowering (SSA Form)&quot;]
+  RawCode[&quot;Raw JSX or TSX Source&quot;] --&gt; BabelAST[&quot;Babel AST Parser&quot;]
+  BabelAST --&gt; HIRLowering[&quot;HIR Lowering to SSA Form&quot;]
   HIRLowering --&gt; CFG[&quot;Control Flow Graph Analysis&quot;]
   CFG --&gt; ReactiveInference[&quot;Reactive Scope Inference&quot;]
-  ReactiveInference --&gt; MemoCodegen[&quot;Codegen: Array-Indexed Cache ($[i])&quot;]</div>
+  ReactiveInference --&gt; MemoCodegen[&quot;Codegen: Array-Indexed Memo Cache Slots&quot;]</div>
 <p><em>Figure 2: The five-stage compilation pipeline of the React Compiler. Source: Architecture of babel-plugin-react-compiler, adapted from Savona et al. <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</em></p>
 <p>In the pipeline depicted in Figure 2, the compiler translates JavaScript into a High-Level Intermediate Representation (HIR). In this form, it constructs a formal Control Flow Graph (CFG) that tracks every variable from its declaration to its destruction. </p>
 <p>By calculating the precise &quot;liveness&quot; of every value, the compiler can mathematically prove whether an object might be mutated downstream. If a value is guaranteed immutable across a render pass, the compiler groups it into a <strong>Reactive Scope</strong>—an automated memoization block that caches both the computation and the resulting JSX elements.</p>

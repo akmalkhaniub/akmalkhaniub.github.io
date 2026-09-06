@@ -16,18 +16,18 @@ The operational telemetry loop buffers requests, monitors token expenditure, and
 graph TD
   A[Agent Tool Execution Dispatch] --> B[GCP Cloud Tasks Queue]
   
-  subgraph Rate Limiting & Resiliency
+  subgraph SG1_RateLimitingResiliency ["Rate Limiting & Resiliency"]
     B -->|Rate-Limited Dispatch: 10 QPS| C[Worker Agent Container]
     B -->|Automatic Exponential Backoff| B
   end
   
-  subgraph Model Token FinOps Engine
+  subgraph SG2_ModelTokenFinops ["Model Token FinOps Engine"]
     C -->|Vertex AI Model Request| D[Vertex AI Gemini API]
     D -->|Export Usage Metrics| E[GCP Billing Export to BigQuery]
     E --> F[BigQuery Token Cost Analytics Dashboard]
   end
   
-  subgraph Service Level Objective (SLO) Monitoring
+  subgraph SG3_ServiceLevelObjective ["Service Level Objective (SLO) Monitoring"]
     C -->|Emit Completion Metrics| G[Cloud Monitoring Metrics]
     G --> H{SLO Check: Success Rate > 98%?}
     H -->|SLO Violated| I[Cloud Monitoring Alert Notification]

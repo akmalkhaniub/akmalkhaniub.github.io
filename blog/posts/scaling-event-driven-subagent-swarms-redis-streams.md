@@ -18,7 +18,7 @@ The architecture decouples task dispatchers, subagent worker pools, and result a
 graph TD
   A[Orchestrator Task Dispatcher] -->|XADD agent:tasks:stream| B[(Redis Stream: agent:tasks:stream)]
   
-  subgraph Distributed Consumer Group: swarm_workers
+  subgraph SG1_DistributedConsumerGroup ["Distributed Consumer Group: swarm_workers"]
     B -->|XREADGROUP Consumer 1| C[Worker Container A]
     B -->|XREADGROUP Consumer 2| D[Worker Container B]
     B -->|XREADGROUP Consumer 3| E[Worker Container C]
@@ -27,7 +27,7 @@ graph TD
   C -->|Task Complete: XACK| B
   D -->|Task Complete: XACK| B
   
-  subgraph Orphan Recovery Engine
+  subgraph SG2_OrphanRecoveryEngine ["Orphan Recovery Engine"]
     E -.->|Container Crashes Mid-Task| F[Pending Entries List PEL Timeout]
     F -->|XCLAIM Claim Orphaned Task| C
   end

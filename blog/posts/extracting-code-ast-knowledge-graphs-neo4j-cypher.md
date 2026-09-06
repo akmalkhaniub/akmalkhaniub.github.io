@@ -16,13 +16,13 @@ The code parser translates Abstract Syntax Tree components directly into nodes a
 
 ```mermaid
 graph TD
-  subgraph Codebase Source Files
+  subgraph SG1_CodebaseSourceFiles ["Codebase Source Files"]
     A[Module: billing.py]
     B[Class: UserBilling]
     C[Method: process_payment]
   end
   
-  subgraph Neo4j Property Graph representation
+  subgraph SG2_Neo4jPropertyGraph ["Neo4j Property Graph representation"]
     D["Node (:Module {name: 'billing.py'})"]
     E["Node (:Class {name: 'UserBilling'})"]
     F["Node (:Method {name: 'process_payment'})"]

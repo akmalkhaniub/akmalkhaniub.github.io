@@ -18,17 +18,17 @@ How user space and kernel space communicate asynchronously via shared memory rin
 
 ```mermaid
 graph TD
-  subgraph User Space Memory
+  subgraph SG1_UserSpaceMemory ["User Space Memory"]
     App[User Application] -->|1. Write SQE Entries| SQ[Submission Queue Ring SQ]
     CQ[Completion Queue Ring CQ] -->|4. Read CQE Results| App
   end
   
-  subgraph Lockless Shared Ring Buffers
+  subgraph SG2_LocklessSharedRing ["Lockless Shared Ring Buffers"]
     SQ -.->|Shared MMap Memory Region| SQ_K[Kernel Submission Queue]
     CQ_K[Kernel Completion Queue] -.->|Shared MMap Memory Region| CQ
   end
   
-  subgraph Linux Kernel Space
+  subgraph SG3_LinuxKernelSpace ["Linux Kernel Space"]
     SQ_K -->|2. SQPOLL Kernel Thread Reads SQEs| KernelThread[Kernel Async I/O Thread]
     KernelThread -->|3. Perform Async Storage/Socket I/O| NVMe[NVMe Storage / NIC Network Hardware]
     NVMe -->|Completion Event| KernelThread

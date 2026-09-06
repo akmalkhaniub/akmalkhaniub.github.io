@@ -14,12 +14,12 @@ Measuring developer productivity by lines of code in an AI-driven environment is
 
 ```mermaid
 graph TD
-  subgraph Flawed Vanity Metrics (Focus on Output Volume)
+  subgraph SG1_FlawedVanityMetrics ["Flawed Vanity Metrics (Focus on Output Volume)"]
     A[Lines of Code Generated] --> B[High PR Count]
     B --> C[False Sense of Velocity]
     C -->|Hidden Risk| D[Bloated Technical Debt & Review Fatigue]
   end
-  subgraph True DORA Outcome Metrics (Focus on System Value)
+  subgraph SG2_TrueDoraOutcome ["True DORA Outcome Metrics (Focus on System Value)"]
     E[Deployment Frequency] --> F[Lead Time for Changes]
     F --> G[Change Failure Rate]
     G --> H[Mean Time to Recovery MTTR]

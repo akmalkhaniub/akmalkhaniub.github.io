@@ -13,11 +13,11 @@ This architectural guide examines the internal mechanics of zero-allocation Limi
 
 ```mermaid
 graph TD
-  subgraph Ultra-Low Latency Limit Order Book Pipeline
+  subgraph SG1_UltraLowLatency ["Ultra-Low Latency Limit Order Book Pipeline"]
     NIC["Kernel-Bypass NIC (Solarflare / DPDK)"] --> RingBuffer["1. Lock-Free SPSC Ring Buffer (LMAX Disruptor Pattern)"]
     RingBuffer --> Matcher["2. Core Matching Engine (Pinned to Isolated CPU Core)"]
     
-    subgraph In-Cache LOB Structures
+    subgraph SG2_InCacheLob ["In-Cache LOB Structures"]
       Matcher <--> Bids["Bid Ladder: Price-Time FIFO (Dense Cache-Aligned Buckets)"]
       Matcher <--> Asks["Ask Ladder: Price-Time FIFO (Dense Cache-Aligned Buckets)"]
     end
@@ -70,7 +70,7 @@ If prices are identical, orders are matched strictly in chronological arrival or
 
 ```mermaid
 graph LR
-  subgraph Limit Order Book Structure (Bids vs Asks)
+  subgraph SG3_LimitOrderBook ["Limit Order Book Structure (Bids vs Asks)"]
     Bids["BIDS (Descending)\n$100.50 (Qty: 500) -> [Ord1] <-> [Ord2]\n$100.40 (Qty: 1200) -> [Ord3]\n$100.30 (Qty: 800) -> [Ord4]"]
     Spread["=== SPREAD: $0.10 ==="]
     Asks["ASKS (Ascending)\n$100.60 (Qty: 300) -> [Ord5] <-> [Ord6]\n$100.70 (Qty: 1500) -> [Ord7]\n$100.80 (Qty: 2000) -> [Ord8]"]
@@ -93,7 +93,7 @@ To pass market orders from the network thread to the matching core without threa
 
 ```mermaid
 graph TD
-  subgraph Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)
+  subgraph SG4_LockFreeCircular ["Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)"]
     Head["Producer Head Sequence (Padded 64B)"] -->|Writes Next Event| Slot["Slot [head & (Size - 1)]"]
     Slot --> Tail["Consumer Tail Sequence (Padded 64B)"]
   end

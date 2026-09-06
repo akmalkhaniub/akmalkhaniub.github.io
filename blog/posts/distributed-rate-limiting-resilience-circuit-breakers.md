@@ -16,18 +16,18 @@ The operational state transitions of a resilience Circuit Breaker:
 
 ```mermaid
 graph TD
-  subgraph CLOSED State: Normal Operation
+  subgraph SG1_ClosedStateNormal ["CLOSED State: Normal Operation"]
     A[CLOSED State] -->|Pass Requests| B[Downstream Service]
     B -->|Success| A
     B -->|Failure Threshold Exceeded: >50%| C[OPEN State]
   end
   
-  subgraph OPEN State: Short-Circuit & Fail Fast
+  subgraph SG2_OpenStateShort ["OPEN State: Short-Circuit & Fail Fast"]
     C -->|Short-Circuit All Requests| D[Instant Fallback Response]
     C -->|Sleep Window Expires| E[HALF-OPEN State]
   end
   
-  subgraph HALF-OPEN State: Probe Recovery
+  subgraph SG3_HalfOpenState ["HALF-OPEN State: Probe Recovery"]
     E -->|Send Trial Probe Requests| F{Probes Succeed?}
     F -->|Yes: Service Recovered| A
     F -->|No: Service Still Failing| C

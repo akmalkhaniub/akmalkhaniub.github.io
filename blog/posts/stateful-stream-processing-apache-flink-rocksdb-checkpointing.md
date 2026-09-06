@@ -16,17 +16,17 @@ How Flink streams inject checkpoint barriers to capture consistent distributed s
 
 ```mermaid
 graph LR
-  subgraph Event Stream Input
+  subgraph SG1_EventStreamInput ["Event Stream Input"]
     S1[Event Record e1] --> B1[Checkpoint Barrier n]
     B1 --> S2[Event Record e2]
   end
   
-  subgraph Stateful Flink Operator Node
+  subgraph SG2_StatefulFlinkOperator ["Stateful Flink Operator Node"]
     S1 -->|Update State| R[(RocksDB Local SSD State Backend)]
     B1 -->|Trigger Local State Snapshot| ABS[Asynchronous Barrier Snapshot]
   end
   
-  subgraph Durable Remote Storage
+  subgraph SG3_DurableRemoteStorage ["Durable Remote Storage"]
     ABS -->|Incremental SSTable Upload| S3[(Durable Storage: S3 / HDFS)]
   end
   

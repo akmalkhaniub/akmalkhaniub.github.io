@@ -16,17 +16,17 @@ The platform enforces perimeter isolation, credential rotation, and granular too
 
 ```mermaid
 graph TD
-  subgraph GCP VPC Service Control Perimeter
+  subgraph SG1_GcpVpcService ["GCP VPC Service Control Perimeter"]
     A[Cloud Run Agent Worker] --> B[GCP Secret Manager]
     A --> C[Vertex AI Foundation Models]
     A --> D[AlloyDB Relational Database]
   end
   
-  subgraph Data Exfiltration Defense
+  subgraph SG2_DataExfiltrationDefense ["Data Exfiltration Defense"]
     A -.->|Blocked External Egress Request| E[VPC-SC Perimeter Drop Rule]
   end
   
-  subgraph Enterprise Telemetry & Audit Trail
+  subgraph SG3_EnterpriseTelemetryAudit ["Enterprise Telemetry & Audit Trail"]
     A -->|Structured Tool Call Log| F[Cloud Audit Logs]
     A -->|Distributed Trace ID| G[Cloud Trace & Cloud Logging]
   end

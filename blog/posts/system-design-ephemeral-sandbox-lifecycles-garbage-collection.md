@@ -18,7 +18,7 @@ In basic container reuse models:
 flowchart TD
     Task[Agent Execution Task Completed] --> Lifecycle[Sandbox Lifecycle Controller]
     
-    subgraph Garbage Collection Pipeline
+    subgraph SG1_GarbageCollectionPipeline ["Garbage Collection Pipeline"]
         Lifecycle --> Destroy[Issue Hard Teardown Signal: SIGKILL]
         Destroy --> PurgeVolume[Purge Ephemeral Disk Volume]
         PurgeVolume --> GC[Garbage Collector: Free Host RAM & CPU]

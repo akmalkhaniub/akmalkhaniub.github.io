@@ -20,11 +20,11 @@ How Segmented LRU (SLRU) isolates cold single-access scan items from hot protect
 
 ```mermaid
 graph TD
-  subgraph Client Read Request
+  subgraph SG1_ClientReadRequest ["Client Read Request"]
     Req[Incoming Key Read Request] --> Check{Key in Cache?}
   end
   
-  subgraph Segmented LRU (SLRU) State Machine
+  subgraph SG2_SegmentedLruSlru ["Segmented LRU (SLRU) State Machine"]
     Check -->|Miss: First Access| Prob[Probationary Segment LRU - 20% Capacity]
     
     Prob -->|Hit: Second Access!| Promoted[PROMOTED to Protected Segment!]

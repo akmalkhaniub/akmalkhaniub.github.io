@@ -121,18 +121,18 @@
 <h2 id="circuit-breaker-finite-state-machine-architecture">Circuit Breaker Finite State Machine Architecture</h2>
 <p>The operational state transitions of a resilience Circuit Breaker:</p>
 <div class="mermaid">graph TD
-  subgraph CLOSED State: Normal Operation
+  subgraph SG1_ClosedStateNormal [&quot;CLOSED State: Normal Operation&quot;]
     A[CLOSED State] --&gt;|Pass Requests| B[Downstream Service]
     B --&gt;|Success| A
     B --&gt;|Failure Threshold Exceeded: &gt;50%| C[OPEN State]
   end
   
-  subgraph OPEN State: Short-Circuit &amp; Fail Fast
+  subgraph SG2_OpenStateShort [&quot;OPEN State: Short-Circuit &amp; Fail Fast&quot;]
     C --&gt;|Short-Circuit All Requests| D[Instant Fallback Response]
     C --&gt;|Sleep Window Expires| E[HALF-OPEN State]
   end
   
-  subgraph HALF-OPEN State: Probe Recovery
+  subgraph SG3_HalfOpenState [&quot;HALF-OPEN State: Probe Recovery&quot;]
     E --&gt;|Send Trial Probe Requests| F{Probes Succeed?}
     F --&gt;|Yes: Service Recovered| A
     F --&gt;|No: Service Still Failing| C

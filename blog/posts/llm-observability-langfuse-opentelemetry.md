@@ -23,13 +23,13 @@ LLM Observability adds a **semantic layer** on top of infrastructure metrics: tr
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 graph TB
-    subgraph Layer 3 — Evaluation
+    subgraph SG1_Layer3Evaluation ["Layer 3 — Evaluation"]
         E1[Faithfulness Score]
         E2[Answer Relevance]
         E3[Hallucination Detector]
     end
 
-    subgraph Layer 2 — LLM Traces
+    subgraph SG2_Layer2Llm ["Layer 2 — LLM Traces"]
         T1[Span: System Prompt]
         T2[Span: RAG Retrieval]
         T3[Span: LLM Generation]
@@ -37,7 +37,7 @@ graph TB
         T5[Span: Final Output]
     end
 
-    subgraph Layer 1 — Infrastructure
+    subgraph SG3_Layer1Infrastructure ["Layer 1 — Infrastructure"]
         I1[Request Latency P50/P99]
         I2[Token Usage per Model]
         I3[API Error Rates]

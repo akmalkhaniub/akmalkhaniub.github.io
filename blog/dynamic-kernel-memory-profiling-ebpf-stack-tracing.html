@@ -123,19 +123,19 @@
 <h2 id="ebpf-memory-profiling-architecture-probe-hooks">eBPF Memory Profiling Architecture &amp; Probe Hooks</h2>
 <p>How eBPF attaches kprobes and uprobes to record heap allocations and generate memory leak stack traces:</p>
 <div class="mermaid">graph TD
-  subgraph Production Userspace &amp; Kernel Space
+  subgraph SG1_ProductionUserspaceKernel [&quot;Production Userspace &amp; Kernel Space&quot;]
     App[User Application / Kernel Module] --&gt;|1. Memory Alloc: malloc(size)| AllocHook[&quot;uprobe:libc.so:malloc / kprobe:kmalloc&quot;]
     App --&gt;|2. Memory Free: free(ptr)| FreeHook[&quot;uprobe:libc.so:free / kprobe:kfree&quot;]
   end
   
-  subgraph eBPF In-Kernel Tracing Map Pipeline
+  subgraph SG2_EbpfInKernel [&quot;eBPF In-Kernel Tracing Map Pipeline&quot;]
     AllocHook --&gt;|3. Record Pointer + Call Stack ID| AllocMap[&quot;eBPF Hash Map: { ptr -&gt; alloc_info_t }&quot;]
     AllocHook --&gt;|4. Capture Stack Unwind| StackMap[&quot;eBPF Stack Trace Map: { stack_id -&gt; [IP1, IP2, IP3] }&quot;]
     
     FreeHook --&gt;|5. Delete Pointer Entry| AllocMap
   end
   
-  subgraph Memory Leak Detection &amp; Flamegraphs
+  subgraph SG3_MemoryLeakDetection [&quot;Memory Leak Detection &amp; Flamegraphs&quot;]
     AllocMap --&gt;|6. Scan Remaining Entries (Un-freed!)| LeakDetector[BCC memleak Engine]
     LeakDetector --&gt; Flamegraph[&quot;🔥 Memory Leak Flamegraph Output&quot;]
   end</div>

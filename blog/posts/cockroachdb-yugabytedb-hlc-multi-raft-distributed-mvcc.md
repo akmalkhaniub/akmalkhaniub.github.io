@@ -18,17 +18,17 @@ How CockroachDB and YugabyteDB combine Hybrid Logical Clocks and Multi-Raft cons
 
 ```mermaid
 graph TD
-  subgraph Hybrid Logical Clock (HLC) Time Engine
+  subgraph SG1_HybridLogicalClock ["Hybrid Logical Clock (HLC) Time Engine"]
     PhysicalClock[Physical Server Clock pt] & RemoteHLC[Incoming Message HLC: l_m, c_m] --> HLCUpdate[HLC Update Math: l_next = max(l_curr, pt, l_m)]
     HLCUpdate --> HLCTuple["HLC Timestamp Tuple: (l_next, c_next)"]
   end
   
-  subgraph Multi-Raft Range Partitioning (64 MB Splits)
+  subgraph SG2_MultiRaftRange ["Multi-Raft Range Partitioning (64 MB Splits)"]
     HLCTuple --> Range1["Range 1 (Keys A - M): Raft Group #101"]
     HLCTuple --> Range2["Range 2 (Keys N - Z): Raft Group #102"]
   end
   
-  subgraph Distributed MVCC & Write Intent Resolution
+  subgraph SG3_DistributedMvccWrite ["Distributed MVCC & Write Intent Resolution"]
     Range1 --> WriteIntent["Write Intent Record: key@HLC -> [Val, Pointer to Txn Record]"]
     WriteIntent --> TxnState{Is Txn Record Status = COMMITTED?}
     TxnState -->|Yes| MVCCRead["🎉 Instant MVCC Read: Return Value at HLC Timestamp!"]

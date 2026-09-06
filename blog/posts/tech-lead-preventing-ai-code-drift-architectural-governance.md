@@ -12,16 +12,16 @@ Over time, this local optimization causes architectural degradation. This articl
 
 ```mermaid
 graph TD
-  subgraph Local Agent Optimization (High Velocity)
+  subgraph SG1_LocalAgentOptimization ["Local Agent Optimization (High Velocity)"]
     A[Task: Parse User Date] --> B[AI Agent creates custom_date_parser.py]
     C[Task: Format Billing Date] --> D[AI Agent creates format_utils.py]
   end
-  subgraph Global Architectural Entropy (Code Drift)
+  subgraph SG2_GlobalArchitecturalEntropy ["Global Architectural Entropy (Code Drift)"]
     B --> E[Duplicate Helper Bloat]
     D --> E
     E --> F[Inconsistent Timezone Logic & Security Vulnerabilities]
   end
-  subgraph Tech Lead Architectural Governance
+  subgraph SG3_TechLeadArchitectural ["Tech Lead Architectural Governance"]
     G[AST Governance Linter] -->|Scans Codebase| H[Enforce Shared Standard Library]
     H -->|Blocks PR| I[Clean Architectural Alignment]
   end

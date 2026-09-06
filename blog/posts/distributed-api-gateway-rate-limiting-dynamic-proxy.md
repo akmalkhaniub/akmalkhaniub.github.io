@@ -18,15 +18,15 @@ How edge API Gateways perform distributed rate limiting using Redis Lua scripts 
 
 ```mermaid
 graph TD
-  subgraph Public Internet Clients
+  subgraph SG1_PublicInternetClients ["Public Internet Clients"]
     ClientA[Mobile App / Web Client] -->|1. HTTP Request: GET /api/v1/orders| Gateway[Distributed API Gateway Node]
   end
   
-  subgraph Edge API Gateway Processing
+  subgraph SG2_EdgeApiGateway ["Edge API Gateway Processing"]
     Gateway -->|2. Validate JWT Token| Auth[JWT Auth & Header Injection]
     Auth -->|3. Distributed Rate Limit Check| Redis[Central Redis Cluster]
     
-    subgraph Redis Atomic Lua Script (Token Bucket)
+    subgraph SG3_RedisAtomicLua ["Redis Atomic Lua Script (Token Bucket)"]
       Redis -->|Execute EVAL Lua Script| Lua["Redis Lua: Check & Consume Token (Tokens > 0?)"]
     end
     
@@ -34,7 +34,7 @@ graph TD
     Lua -->|Exceeded: Return 0| RateLimitExceeded[🚨 Return HTTP 429 Too Many Requests]
   end
   
-  subgraph Backend Microservice Reverse Proxying
+  subgraph SG4_BackendMicroserviceReverse ["Backend Microservice Reverse Proxying"]
     Gateway -->|4. Dynamic Reverse Proxy Route| OrderService[Order Microservice Cluster]
   end
 ```

@@ -22,12 +22,12 @@ How 4-Level Page Table Translation works and how HugePages reduce TLB cache miss
 graph TD
   VirtualAddr[Virtual Memory Address: 0x7FFF80001000] --> MMU[CPU Memory Management Unit]
   
-  subgraph CPU Cache Hardware
+  subgraph SG1_CpuCacheHardware ["CPU Cache Hardware"]
     MMU -->|1. Check TLB Hardware Cache| TLB{TLB Cache Hit?}
     TLB -->|Hit (sub-1ns)| PhysicalRAM[Physical RAM Address]
   end
   
-  subgraph 4-Level Page Table Walk (TLB Miss Penalty ~10-20ns)
+  subgraph SG2_4LevelPage ["4-Level Page Table Walk (TLB Miss Penalty ~10-20ns)"]
     TLB -.->|Miss: Traverse Page Hierarchy| PGD[1. Page Global Directory: PGD]
     PGD --> PUD[2. Page Upper Directory: PUD]
     PUD --> PMD[3. Page Middle Directory: PMD]
@@ -35,7 +35,7 @@ graph TD
     PTE --> PhysicalRAM
   end
   
-  subgraph HugePages Optimization (2MB Pages)
+  subgraph SG3_HugepagesOptimization2mb ["HugePages Optimization (2MB Pages)"]
     PMD -.->|HugePage Bit Set| HugePageRAM[Physical 2MB HugePage Frame]
     HugePageRAM -->|Reduces TLB Entries by 512x!| PhysicalRAM
   end

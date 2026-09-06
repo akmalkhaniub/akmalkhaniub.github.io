@@ -16,7 +16,7 @@ How concurrent garbage collectors track live objects while mutator threads mutat
 
 ```mermaid
 graph TD
-  subgraph Tri-Color GC Graph Marking States
+  subgraph SG1_TriColorGc ["Tri-Color GC Graph Marking States"]
     Root[Root Pointers: Stack / Globals] -->|1. Mark Roots Grey| GreySet[Grey Set: Objects Scanned, Children Unscanned]
     
     GreySet -->|2. Scan Children & Move to Black| BlackSet[Black Set: Live Objects & Children Fully Scanned]
@@ -24,7 +24,7 @@ graph TD
     WhiteSet[White Set: Unvisited Objects / Garbage Candidates] -.->|3. Unreachable at End of Phase| Sweep[Sweep / Reclaim Physical Memory]
   end
   
-  subgraph Concurrent Mutator Write Barrier Interception
+  subgraph SG2_ConcurrentMutatorWrite ["Concurrent Mutator Write Barrier Interception"]
     Mutator[Mutator Thread: Mutates Reference] -->|4. Writes Black -> White Pointer| WriteBarrier[Write Barrier: Catch Mutation]
     WriteBarrier -->|5. Shade White Object Grey| GreySet
   end

@@ -17,7 +17,7 @@ Today, software engineering with generative AI is undergoing its own **Assembly 
 
 ```mermaid
 graph TD
-  subgraph Craft Artisan AI vs The Industrial Assembly Line
+  subgraph SG1_CraftArtisanAi ["Craft Artisan AI vs The Industrial Assembly Line"]
     A1913["1913: Single Craft Artisan (Hand-filing every part, 12.5 hours)"] <---> A2026["2026: Lone Polymath Agent (1 Prompt trying to do Planner + Coder + SecOps)"]
     F1913["1913: 84 Discrete Assembly Stations on a Conveyor Belt"] <---> F2026["2026: Multi-Agent Pipeline (Planner -> Coder -> Auditor -> QA -> Release)"]
     T1913["1913: Standardized Interchangeable Parts & Tolerances"] <---> T2026["2026: Standardized OpenAPI Schemas & AST Quality Gates"]

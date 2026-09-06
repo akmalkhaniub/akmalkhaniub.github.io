@@ -19,7 +19,7 @@ flowchart TD
     Agent1[Worker Agent Node 1] -->|Request Lock: resource_db| LockMgr[Distributed Lock Manager]
     Agent2[Worker Agent Node 2] -->|Request Lock: resource_db| LockMgr
     
-    subgraph Lock Arbitrator
+    subgraph SG1_LockArbitrator ["Lock Arbitrator"]
         LockMgr -->|Grant Lease + Token 101| Lease1[Lock Granted: Agent 1]
         LockMgr -->|Reject: Resource Locked| Lockout[Agent 2 Blocked]
     end

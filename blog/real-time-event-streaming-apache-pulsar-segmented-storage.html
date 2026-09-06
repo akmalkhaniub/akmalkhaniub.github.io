@@ -124,22 +124,22 @@
 <h2 id="apache-pulsar-decoupled-segmented-architecture">Apache Pulsar Decoupled Segmented Architecture</h2>
 <p>How Pulsar separates stateless serve brokers from Apache BookKeeper ledger segments and S3 Tiered Storage:</p>
 <div class="mermaid">graph TD
-  subgraph Client Producers &amp; Consumers
+  subgraph SG1_ClientProducersConsumers [&quot;Client Producers &amp; Consumers&quot;]
     Prod[Event Producer] --&gt;|Publish Event| Broker1[Stateless Pulsar Broker 1]
     Cons[Event Consumer] &lt;--|Subscribe / Read| Broker2[Stateless Pulsar Broker 2]
   end
   
-  subgraph Stateless Broker Layer (Zero Local Disk Storage)
+  subgraph SG2_StatelessBrokerLayer [&quot;Stateless Broker Layer (Zero Local Disk Storage)&quot;]
     Broker1 -.-&gt;|Serves Pub/Sub Traffic| Broker2
   end
   
-  subgraph Segment-Centric Storage Layer (Apache BookKeeper)
+  subgraph SG3_SegmentCentricStorage [&quot;Segment-Centric Storage Layer (Apache BookKeeper)&quot;]
     Broker1 --&gt;|1. Quorum Write (Ensemble=3, Write=3, Ack=2)| Seg1[Ledger Segment 1: Bookie Node A]
     Broker1 --&gt;|1. Quorum Write| Seg2[Ledger Segment 1: Bookie Node B]
     Broker1 --&gt;|1. Quorum Write| Seg3[Ledger Segment 1: Bookie Node C]
   end
   
-  subgraph Cloud Object Tiered Storage (Infinite Retention)
+  subgraph SG4_CloudObjectTiered [&quot;Cloud Object Tiered Storage (Infinite Retention)&quot;]
     Seg1 --&gt;|2. Offload Sealed Cold Ledger Segments| S3[Cloud Object Storage: AWS S3 / GCS]
     Broker2 --&gt;|3. Transparent Historical Read| S3
   end</div>

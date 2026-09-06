@@ -20,7 +20,7 @@ How 2D Vertex-Cut partitions high-degree supernodes across worker nodes and how 
 
 ```mermaid
 graph TD
-  subgraph 2D Vertex-Cut Partitioning (PowerGraph / GraphX)
+  subgraph SG1_2dVertexCut ["2D Vertex-Cut Partitioning (PowerGraph / GraphX)"]
     Supernode["High-Degree Supernode V (Millions of Edges)"] -->|Split across Cluster Nodes| MasterV["Master Vertex V (Worker Node 1)"]
     Supernode --> Mirror1["Mirror Vertex V1 (Worker Node 2)"]
     Supernode --> Mirror2["Mirror Vertex V2 (Worker Node 3)"]
@@ -28,7 +28,7 @@ graph TD
     Mirror1 & Mirror2 -->|Sync Local Edge Aggregations| MasterV
   end
   
-  subgraph Pregel Bulk Synchronous Parallel (BSP) Execution
+  subgraph SG2_PregelBulkSynchronous ["Pregel Bulk Synchronous Parallel (BSP) Execution"]
     Superstep1[Superstep N: Receive Messages & compute()] --> SyncBarrier[Global Barrier Synchronization]
     SyncBarrier --> Superstep2[Superstep N+1: Send Outgoing Messages]
     Superstep2 --> HaltCheck{All Vertices Voted to Halt?}

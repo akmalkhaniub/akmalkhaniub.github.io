@@ -37,7 +37,7 @@ graph TD
     AgentPrompt -->|3. Call Code Exec Tool| CodeCheck{Contains System Injection?}
     CodeCheck -->|Always| DockerLaunch[Spawn Ephemeral Docker Container]
     
-    subgraph ContainerSandbox [Isolated Environment]
+    subgraph SG1_ContainersandboxIsolatedEnvironment ["ContainerSandbox [Isolated Environment]"]
         DockerLaunch -->|Mount Temp Volume| RunScript[Execute Code / RAM & CPU Limited]
         RunScript -->|Harvest Output| OutputCheck[Parse and Truncate Result]
     end

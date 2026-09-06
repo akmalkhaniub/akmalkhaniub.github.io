@@ -29,7 +29,7 @@ graph TD
     B -->|2. Generate Job UUID & Push Job| C[Redis database]
     B -->|3. Return 202 Accepted + Job UUID| A
     
-    subgraph BullMQ Task Cluster
+    subgraph SG1_BullmqTaskCluster ["BullMQ Task Cluster"]
         D[BullMQ Worker Pool] -->|4. Pull Job from Queue| C
         D -->|5. Execute Step 1: LLM Call| E[Frontier API: Claude]
         D -->|6. Execute Step 2: Tool Run| F[Sandbox Container]

@@ -126,20 +126,20 @@
 <h2 id="leveled-compaction-n-way-merge-architecture">Leveled Compaction &amp; N-Way Merge Architecture</h2>
 <p>How Leveled Compaction (LCS) organizes SSTables into non-overlapping exponential levels:</p>
 <div class="mermaid">graph TD
-  subgraph Level 0 (Overlapping Key Ranges from Flushes)
+  subgraph SG1_Level0Overlapping [&quot;Level 0 (Overlapping Key Ranges from Flushes)&quot;]
     L0_1[SST File 1: Keys 'a'..'z'] --- L0_2[SST File 2: Keys 'c'..'m']
   end
   
-  subgraph Level 1 (Max 10MB, Strict Non-Overlapping Ranges)
+  subgraph SG2_Level1Max [&quot;Level 1 (Max 10MB, Strict Non-Overlapping Ranges)&quot;]
     L1_1[SST File 3: Keys 'a'..'g'] --- L1_2[SST File 4: Keys 'h'..'p'] --- L1_3[SST File 5: Keys 'q'..'z']
   end
   
-  subgraph Compaction Priority Queue Engine
+  subgraph SG3_CompactionPriorityQueue [&quot;Compaction Priority Queue Engine&quot;]
     L0_1 &amp; L0_2 --&gt;|1. N-Way Merge-Sort Stream| PriorityQueue[Heap Priority Queue: Stream K-V Pairs]
     PriorityQueue --&gt;|2. Purge Obsolete Keys &amp; Tombstones| L1_1 &amp; L1_2 &amp; L1_3
   end
   
-  subgraph Level 2 (Max 100MB, Non-Overlapping Ranges)
+  subgraph SG4_Level2Max [&quot;Level 2 (Max 100MB, Non-Overlapping Ranges)&quot;]
     L1_3 --&gt;|3. Level 1 Overflow (&gt;10MB)| L2_1[SST File 6: Keys 'a'..'m']
   end</div>
 <h3 id="core-compaction-strategies">Core Compaction Strategies</h3>

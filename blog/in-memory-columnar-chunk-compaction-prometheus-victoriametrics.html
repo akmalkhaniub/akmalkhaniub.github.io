@@ -122,18 +122,18 @@
 <h2 id="tsdb-architecture-block-compaction-pipeline">TSDB Architecture &amp; Block Compaction Pipeline</h2>
 <p>How time-series databases handle real-time RAM ingestion, 2-hour block cutting, and multi-tier background compaction:</p>
 <div class="mermaid">graph TD
-  subgraph In-Memory Real-Time Tier (0 - 2 Hours)
+  subgraph SG1_InMemoryReal [&quot;In-Memory Real-Time Tier (0 - 2 Hours)&quot;]
     Metric[Incoming Metric Write] --&gt; WAL[&quot;1. Write-Ahead Log (WAL) on NVMe SSD&quot;]
     Metric --&gt; HeadBlock[&quot;2. In-Memory Head Block (RAM Gorilla Chunks)&quot;]
   end
   
-  subgraph Immutable Block Creation (Every 2 Hours)
+  subgraph SG2_ImmutableBlockCreation [&quot;Immutable Block Creation (Every 2 Hours)&quot;]
     HeadBlock --&gt;|Cut 2-Hour Chunk| BlockDir[&quot;3. Immutable Disk Block (01H8...)&quot;]
     BlockDir --&gt; Chunks[&quot;chunks/ (Gorilla Compressed Data)&quot;]
     BlockDir --&gt; InvertedIndex[&quot;index (Postings List Symbol Map)&quot;]
   end
   
-  subgraph Background Multi-Block Compaction Tier
+  subgraph SG3_BackgroundMultiBlock [&quot;Background Multi-Block Compaction Tier&quot;]
     BlockDir --&gt; Compactor[&quot;4. Background Compactor Thread&quot;]
     Compactor --&gt; Block6h[&quot;Compacted 6-Hour Block Segment&quot;]
     Block6h --&gt; Block24h[&quot;Compacted 24-Hour Block Segment&quot;]

@@ -16,7 +16,7 @@ The red-teaming pipeline operates as an automated adversary inside CI/CD test ru
 graph TD
   A[CI/CD Build Event / PR Submission] --> B[Automated Red Teaming Engine]
   
-  subgraph Adversarial Mutation & Attack Generators
+  subgraph SG1_AdversarialMutationAttack ["Adversarial Mutation & Attack Generators"]
     B --> C[Attack Category 1: System Prompt Leak Attacks]
     B --> D[Attack Category 2: Tool Parameter Fuzzing]
     B --> E[Attack Category 3: Jailbreak & Safety Override Payloads]

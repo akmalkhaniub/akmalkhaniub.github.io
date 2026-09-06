@@ -16,7 +16,7 @@ When calling a tool locally, serialization and network round-trips add overhead:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph RAM [Physical RAM Coordinate Space]
+    subgraph SG1_RamPhysicalRam ["RAM [Physical RAM Coordinate Space]"]
         SharedBlock[Shared Memory Block / mmap file]
     end
 

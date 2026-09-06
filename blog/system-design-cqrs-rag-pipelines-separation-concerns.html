@@ -122,16 +122,16 @@
 <h2 id="the-rag-cqrs-architecture">The RAG CQRS Architecture</h2>
 <p>In a RAG CQRS model, document ingestion (Command) and user querying (Query) are decoupled into isolated pipelines with dedicated databases:</p>
 <div class="mermaid">graph TD
-  subgraph Ingestion Pipeline Command
+  subgraph SG1_IngestionPipelineCommand [&quot;Ingestion Pipeline Command&quot;]
     A[New PDF Upload] --&gt; B[Asynchronous Ingestion Worker]
     B --&gt;|CPU Heavy: OCR, Chunking| C[Generate Embeddings]
     C --&gt;|Bulk Insert| D[(Write Database: MongoDB / PostgreSQL)]
   end
-  subgraph Synchronization Hook
+  subgraph SG2_SynchronizationHook [&quot;Synchronization Hook&quot;]
     D --&gt;|Change Data Capture CDC / Event| E[Message Broker: Kafka / RabbitMQ]
     E --&gt;|Replicate quantized vectors| F[(Read Database: Qdrant Replicas)]
   end
-  subgraph Query Pipeline Read
+  subgraph SG3_QueryPipelineRead [&quot;Query Pipeline Read&quot;]
     G[User Search Query] --&gt; H[Low-Latency Search Service]
     H --&gt;|Fast read-only HNSW lookup| F
     F --&gt;|Return chunks| H

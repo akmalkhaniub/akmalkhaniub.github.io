@@ -19,15 +19,15 @@ This is **The Self-Hosting Gauntlet**. Here is the architectural guide to taming
 
 ```mermaid
 graph TD
-  subgraph Self-Hosted Next.js Architecture on Kubernetes
-    Ingress[Cloudflare / AWS ALB] --> Pod1[Next.js Pod 1: Standalone Node]
-    Ingress --> Pod2[Next.js Pod 2: Standalone Node]
-    Ingress --> Pod3[Next.js Pod 3: Standalone Node]
+  subgraph K8sArch ["Self-Hosted Next.js Architecture on Kubernetes"]
+    Ingress["Cloudflare or AWS ALB"] --> Pod1["Next.js Pod 1: Standalone Node"]
+    Ingress --> Pod2["Next.js Pod 2: Standalone Node"]
+    Ingress --> Pod3["Next.js Pod 3: Standalone Node"]
 
-    subgraph Shared Distributed State Tier
-      Pod1 & Pod2 & Pod3 <-->|Shared Data Cache & Tags| RedisCluster[(Central Redis Cache)]
-      Pod1 & Pod2 & Pod3 <-->|Shared HTML / Static ISR Files| S3Storage[(AWS S3 / MinIO Storage)]
-      Pod1 & Pod2 & Pod3 <-->|Synchronized Action Cipher Keys| EnvSecrets[Kubernetes Secret: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY]
+    subgraph SharedTier ["Shared Distributed State Tier"]
+      Pod1 & Pod2 & Pod3 <-->|Shared Data Cache and Tags| RedisCluster[("Central Redis Cache")]
+      Pod1 & Pod2 & Pod3 <-->|Shared HTML and Static ISR Files| S3Storage[("AWS S3 or MinIO Storage")]
+      Pod1 & Pod2 & Pod3 <-->|Synchronized Action Cipher Keys| EnvSecrets["Kubernetes Secret: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY"]
     end
   end
 ```

@@ -19,22 +19,22 @@ graph TD
   Client1[User in Tokyo] -->|1. DNS Lookup / Anycast BGP| Router[Global Traffic Router / Edge CDN]
   Client2[User in Frankfurt] --> Router
   
-  subgraph Edge Routing Layer
+  subgraph SG1_EdgeRoutingLayer ["Edge Routing Layer"]
     Router -->|2. Route to Lowest Latency Region| RegionAP[AP-East Region: Tokyo]
     Router -->|3. Route to Lowest Latency Region| RegionEU[EU-Central Region: Frankfurt]
   end
   
-  subgraph Active Datacenter Region: AP-East
+  subgraph SG2_ActiveDatacenterRegion ["Active Datacenter Region: AP-East"]
     RegionAP --> AppAP[App Service AP]
     AppAP --> DBAP[(Local Shard DB AP)]
   end
   
-  subgraph Active Datacenter Region: EU-Central
+  subgraph SG3_ActiveDatacenterRegion ["Active Datacenter Region: EU-Central"]
     RegionEU --> AppEU[App Service EU]
     AppEU --> DBEU[(Local Shard DB EU)]
   end
   
-  subgraph Cross-Region Replication Bus
+  subgraph SG4_CrossRegionReplication ["Cross-Region Replication Bus"]
     DBAP <-->|4. Asynchronous Multi-Master Sync| DBEU
   end
   

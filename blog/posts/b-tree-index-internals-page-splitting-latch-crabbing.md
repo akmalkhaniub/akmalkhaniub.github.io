@@ -18,13 +18,13 @@ How Slotted-Page layouts organize tuples inside $8\text{ KB}$ disk blocks and ho
 
 ```mermaid
 graph TD
-  subgraph Slotted-Page Disk Block Layout (8 KB Fixed Size)
+  subgraph SG1_SlottedPageDisk ["Slotted-Page Disk Block Layout (8 KB Fixed Size)"]
     Header[Page Header: LSN, Slot Count, Free Space Pointer] --> SlotArray[Slot Array: Slot 0 Offset, Slot 1 Offset...]
     SlotArray --> FreeSpace[<-- Free Space Gap -->]
     FreeSpace --> TupleData[Tuple 1 Data | Tuple 0 Data (Grows Backwards)]
   end
   
-  subgraph Latch Crabbing Concurrency Protocol (Lock Coupling)
+  subgraph SG2_LatchCrabbingConcurrency ["Latch Crabbing Concurrency Protocol (Lock Coupling)"]
     ReadOp[Read Request: Key = 42] -->|1. Acquire Read Latch| Root[Root Node Page 0]
     Root -->|2. Read Child Page P1 Pointer| Child[Internal Node Page P1]
     Child -->|3. Acquire Read Latch on P1 FIRST| ChildLatch[Child Latch Held]

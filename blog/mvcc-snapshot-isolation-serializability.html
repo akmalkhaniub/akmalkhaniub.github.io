@@ -123,16 +123,16 @@
 <h2 id="mvcc-tuple-versioning-read-snapshot-architecture">MVCC Tuple Versioning &amp; Read Snapshot Architecture</h2>
 <p>How MVCC maintains tuple version chains to provide consistent Read Snapshots without locking:</p>
 <div class="mermaid">graph TD
-  subgraph Tuple Version Chain in Storage (Row: 'account_101')
+  subgraph SG1_TupleVersionChain [&quot;Tuple Version Chain in Storage (Row: 'account_101')&quot;]
     V1[&quot;Version 1: Balance=$100 (xmin: 100, xmax: 105)&quot;] --&gt; V2[&quot;Version 2: Balance=$150 (xmin: 105, xmax: inf)&quot;]
   end
   
-  subgraph Concurrent Transaction Read Snapshots
+  subgraph SG2_ConcurrentTransactionRead [&quot;Concurrent Transaction Read Snapshots&quot;]
     TxA[&quot;Tx A (Start TxID: 102) Read Query&quot;] --&gt;|Visits Chain: Sees xmin 100 &lt;= 102 &lt; xmax 105| V1
     TxB[&quot;Tx B (Start TxID: 110) Read Query&quot;] --&gt;|Visits Chain: Sees xmin 105 &lt;= 110 &lt; inf| V2
   end
   
-  subgraph Snapshot Isolation Visibility Check
+  subgraph SG3_SnapshotIsolationVisibility [&quot;Snapshot Isolation Visibility Check&quot;]
     TxA -.-&gt;|Reads Immutable Historical Snapshot| ReadA[Balance = $100 (Zero Locking!)]
     TxB -.-&gt;|Reads Latest Committed Snapshot| ReadB[Balance = $150]
   end</div>

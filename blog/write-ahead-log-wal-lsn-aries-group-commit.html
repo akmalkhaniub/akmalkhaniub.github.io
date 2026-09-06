@@ -122,13 +122,13 @@
 <h2 id="wal-aries-crash-recovery-architecture">WAL &amp; ARIES Crash Recovery Architecture</h2>
 <p>How the ARIES recovery protocol restores database state following a crash:</p>
 <div class="mermaid">graph TD
-  subgraph Pre-Crash Database Execution
+  subgraph SG1_PreCrashDatabase [&quot;Pre-Crash Database Execution&quot;]
     Tx[Transaction Mutation] --&gt;|1. Append WAL Record| WALBuffer[In-Memory WAL Buffer]
     WALBuffer --&gt;|2. fsync() Group Commit| WALDisk[Append-Only WAL Disk File]
     WALDisk --&gt;|3. Flush Dirty Page to Disk| DataPages[Database Data Pages]
   end
   
-  subgraph Unexpected Database Crash &amp; Restart
+  subgraph SG2_UnexpectedDatabaseCrash [&quot;Unexpected Database Crash &amp; Restart&quot;]
     WALDisk --&gt;|4. Read Last Checkpoint LSN| Analysis[Phase 1: Analysis Phase]
     Analysis --&gt;|Rebuild ATT &amp; DPT Tables| Redo[Phase 2: Redo Phase - Repeat History]
     

@@ -20,7 +20,7 @@ How Hash Rings with Virtual Nodes and Google Jump Consistent Hash route keys to 
 
 ```mermaid
 graph TD
-  subgraph Ring-Based Consistent Hashing (2^32 Hash Space)
+  subgraph SG1_RingBasedConsistent ["Ring-Based Consistent Hashing (2^32 Hash Space)"]
     Ring[Hash Ring: 0 .. 2^32-1] --> NodeA_v1[Node A - Vnode 1: Hash 1000]
     Ring --> NodeB_v1[Node B - Vnode 1: Hash 5000]
     Ring --> NodeA_v2[Node A - Vnode 2: Hash 9000]
@@ -28,7 +28,7 @@ graph TD
     KeyHash["Key 'user_101' Hash = 4200"] -->|Walk Clockwise on Ring| NodeB_v1
   end
   
-  subgraph Google Jump Consistent Hash (Zero Memory Storage)
+  subgraph SG2_GoogleJumpConsistent ["Google Jump Consistent Hash (Zero Memory Storage)"]
     KeyID[64-Bit Key Hash] --> JumpAlgo[Jump Hash Loop: b = -1, j = 0]
     JumpAlgo -->|Pseudo-Random Probability Jumps| BucketResult[Calculated Target Bucket Index in O(ln N) Time!]
   end

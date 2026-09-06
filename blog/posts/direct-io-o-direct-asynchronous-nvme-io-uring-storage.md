@@ -19,17 +19,17 @@ How `io_uring` uses kernel-shared Submission (SQ) and Completion (CQ) ring buffe
 
 ```mermaid
 graph TD
-  subgraph User-Space Database Storage Engine
+  subgraph SG1_UserSpaceDatabase ["User-Space Database Storage Engine"]
     AppMem[Page-Aligned Memory Buffer: O_DIRECT DMA Target]
     SQE_Prep[1. Prepare Submission Queue Entry: IORING_OP_READV]
   end
   
-  subgraph Kernel Shared Memory (mmap Ring Buffers)
+  subgraph SG2_KernelSharedMemory ["Kernel Shared Memory (mmap Ring Buffers)"]
     SQE_Prep -->|2. Push SQE to Tail| SQ[Submission Queue Ring Buffer: SQ Ring]
     CQ[Completion Queue Ring Buffer: CQ Ring] -->|5. Pop CQE from Head| AppMem
   end
   
-  subgraph Linux Kernel io_uring & NVMe Subsystem
+  subgraph SG3_LinuxKernelIo ["Linux Kernel io_uring & NVMe Subsystem"]
     SQ -->|3. Kernel Worker or SQPoll Thread Fetches SQE| KernelDriver[Linux Block I/O Layer]
     KernelDriver -->|4. Zero-Copy DMA Direct to NVMe| NVMe[Physical NVMe SSD Controller]
     NVMe -->|Completion Notification| CQ

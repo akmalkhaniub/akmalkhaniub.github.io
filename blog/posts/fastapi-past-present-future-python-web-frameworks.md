@@ -16,17 +16,17 @@ The paradigm shift from synchronous WSGI to asynchronous type-driven ASGI:
 
 ```mermaid
 graph LR
-  subgraph Past: WSGI Era (Pre-2019)
+  subgraph SG1_PastWsgiEra ["Past: WSGI Era (Pre-2019)"]
     A[Flask / Django] -->|Thread-Per-Request| B[WSGI Server: Gunicorn / uWSGI]
     B -->|Manual Schema Validation| C[Marshmallow / Cerberus]
   end
   
-  subgraph Present: ASGI & Type Safety (2019-2026)
+  subgraph SG2_PresentAsgiType ["Present: ASGI & Type Safety (2019-2026)"]
     D[FastAPI + Starlette] -->|Async Event Loop| E[ASGI Server: Uvicorn / Granian]
     D -->|Rust-Backed Validation| F[Pydantic v2 Core]
   end
   
-  subgraph Future: Edge & Compiled Python (2026+)
+  subgraph SG3_FutureEdgeCompiled ["Future: Edge & Compiled Python (2026+)"]
     G[FastAPI Async Extensions] -->|Edge Runtime / Pyodide| H[WASM Serverless Nodes]
     G -->|Compile-Time Verification| I[Static Type Native Codegen]
   end

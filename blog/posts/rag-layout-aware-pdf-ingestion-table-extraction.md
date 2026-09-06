@@ -18,7 +18,7 @@ In typical document chunking setups:
 flowchart TD
     PDF[Raw PDF Document] --> Coordinates[Parse Bounding Boxes & Text Spans]
     
-    subgraph Layout Partitioning
+    subgraph SG1_LayoutPartitioning ["Layout Partitioning"]
         Coordinates -->|Read BBoxes| IdentifyHeader{Is Element Header?}
         Coordinates -->|Read BBoxes| IdentifyTable{Is Element Table Row?}
     end

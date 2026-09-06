@@ -20,7 +20,7 @@ How Lock-Free Queues use Compare-And-Swap (CAS) and Hazard Pointers to prevent m
 
 ```mermaid
 graph TD
-  subgraph Lock-Free CAS Retry Loop
+  subgraph SG1_LockFreeCas ["Lock-Free CAS Retry Loop"]
     ThreadA[Thread A: Enqueue / Dequeue] -->|1. Read Current Head Pointer A| ReadHead[Read Head -> Pointer A]
     ReadHead -->|2. Compute Next Pointer B| ComputeNext[Compute Next Node -> Pointer B]
     ComputeNext -->|3. Atomic CAS(Head, Expected A, New B)| CASAttempt{Hardware CAS Instruction}
@@ -29,7 +29,7 @@ graph TD
     CASAttempt -->|Failure: Interrupted by Thread B| ReadHead
   end
   
-  subgraph Hazard Pointer Memory Protection (Prevents ABA & Use-After-Free)
+  subgraph SG2_HazardPointerMemory ["Hazard Pointer Memory Protection (Prevents ABA & Use-After-Free)"]
     ThreadA -->|4. Publish Active Pointer to Hazard Array| HazardPointer[Hazard Pointer: 'Pointer A in Use!']
     HazardPointer -.->|5. Guard Node Memory| NodeA[Queue Node A Memory]
     

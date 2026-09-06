@@ -18,7 +18,7 @@ How a Declarative Reconciler evaluates Level-Triggered state diffs and drives in
 graph TD
   User[Declarative Spec: YAML / JSON] -->|1. Submit Desired State| Store[(State Store: Desired State)]
   
-  subgraph Level-Triggered Reconciliation Engine
+  subgraph SG1_LevelTriggeredReconciliation ["Level-Triggered Reconciliation Engine"]
     Store -->|2. Read Desired State| DiffEngine[Three-Way Diff Engine]
     Live[Cloud API: Actual Live State] -->|3. Query Actual State| DiffEngine
     Last[Last-Applied Configuration] -->|4. Read Last Applied| DiffEngine
@@ -26,7 +26,7 @@ graph TD
     DiffEngine -->|5. Compute Minimal Delta CRUD| ActionPlan{Delta Required?}
   end
   
-  subgraph Automated Infrastructure Provisioner
+  subgraph SG2_AutomatedInfrastructureProvisioner ["Automated Infrastructure Provisioner"]
     ActionPlan -->|Create Missing Resources| Provision[Cloud API: Create Resource]
     ActionPlan -->|Update Drifted Resources| Update[Cloud API: Update Resource]
     ActionPlan -->|Delete Orphaned Resources| Purge[Cloud API: Delete Resource]

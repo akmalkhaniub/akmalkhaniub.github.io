@@ -17,17 +17,17 @@ To audit and optimize costs, every single model call must pass through a wrapper
 
 ```mermaid
 graph TD
-    subgraph ClientApp [Agent Application Layer]
+    subgraph SG1_ClientappAgentApplication ["ClientApp [Agent Application Layer]"]
         Agent[Agent Orchestrator] -->|1. Generate Request| MW[Telemetry Middleware]
     end
 
-    subgraph Gateway [Inference & Telemetry Gateway]
+    subgraph SG2_GatewayInferenceTelemetry ["Gateway [Inference & Telemetry Gateway]"]
         MW -->|2. Route to LLM API| LLM[LLM API: Claude / GPT-4o]
         LLM -->|3. Return Completion + Usage Metrics| MW
         MW -->|4. Log usage as async job| DB[(PostgreSQL Telemetry DB)]
     end
 
-    subgraph Monitor [Observability Layer]
+    subgraph SG3_MonitorObservabilityLayer ["Monitor [Observability Layer]"]
         Dash[Grafana / Cost Dashboard] -->|5. Query aggregate analytics| DB
     end
 

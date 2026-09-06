@@ -18,18 +18,18 @@ How JIT engines profile hot loops, emit specialized machine code, and deoptimize
 
 ```mermaid
 graph TD
-  subgraph Phase 1: Baseline Execution & Profiling
+  subgraph SG1_Phase1Baseline ["Phase 1: Baseline Execution & Profiling"]
     Interpreter[Baseline Interpreter / Bytecode Loop] -->|1. Increment Loop Counter| Profiler{Hot Loop Threshold Exceeded? > 1000 iter}
     Profiler -->|No: Stay in Interpreter| Interpreter
   end
   
-  subgraph Phase 2: Speculative JIT Machine Code Emission
+  subgraph SG2_Phase2Speculative ["Phase 2: Speculative JIT Machine Code Emission"]
     Profiler -->|Yes: Hot Loop Identified!| TracingJIT[Tracing JIT Compiler]
     TracingJIT -->|2. Inspect Observed Types: e.g. a=INT32, b=INT32| TypeSpec[Speculative Type Specializer]
     TypeSpec -->|3. Emit Assembly: ADD EAX, EBX| MachineCode[Optimized Native Machine Code]
   end
   
-  subgraph Phase 3: High-Speed Execution & Deoptimization
+  subgraph SG3_Phase3High ["Phase 3: High-Speed Execution & Deoptimization"]
     MachineCode -->|4. Execute Native Loop (50x Faster!)| TypeGuard{Type Guard Check: Are inputs still INT32?}
     TypeGuard -->|Pass: Continue Fast Path| MachineCode
     TypeGuard -->|Fail: Input is String!| Deopt[🚨 DEOPTIMIZATION BAILOUT!]

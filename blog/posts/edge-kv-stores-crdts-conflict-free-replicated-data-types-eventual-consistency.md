@@ -18,15 +18,15 @@ How concurrent writes at global edge nodes merge deterministically via CRDTs:
 
 ```mermaid
 graph TD
-  subgraph Edge Node: Tokyo PoP (Asia)
+  subgraph SG1_EdgeNodeTokyo ["Edge Node: Tokyo PoP (Asia)"]
     ClientA[User A in Tokyo] -->|1. Write: SET key='theme', val='dark' @ T1| TokyoKV[Tokyo Edge KV Replica]
   end
   
-  subgraph Edge Node: London PoP (Europe)
+  subgraph SG2_EdgeNodeLondon ["Edge Node: London PoP (Europe)"]
     ClientB[User B in London] -->|2. Concurrent Write: SET key='theme', val='light' @ T2| LondonKV[London Edge KV Replica]
   end
   
-  subgraph Asynchronous Peer-to-Peer Synchronization
+  subgraph SG3_AsynchronousPeerTo ["Asynchronous Peer-to-Peer Synchronization"]
     TokyoKV -->|3. Async Gossip State Merge: LWW Join Semi-Lattice| SyncEngine{CRDT Merge Engine}
     LondonKV -->|3. Async Gossip State Merge: LWW Join Semi-Lattice| SyncEngine
   end

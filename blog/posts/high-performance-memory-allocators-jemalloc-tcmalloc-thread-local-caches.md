@@ -21,12 +21,12 @@ graph TD
   Thread1[Worker Thread 1] -->|1. Fast-Path: Small Alloc <= 32KB| TCache1[Thread-Local Cache: tcache]
   Thread2[Worker Thread 2] -->|1. Fast-Path: Small Alloc <= 32KB| TCache2[Thread-Local Cache: tcache]
   
-  subgraph Thread-Local Lock-Free Layer (sub-5ns)
+  subgraph SG1_ThreadLocalLock ["Thread-Local Lock-Free Layer (sub-5ns)"]
     TCache1 -->|2. Hit: Instant Lock-Free Allocation| Alloc1[Return RAM Pointer]
     TCache2 -->|2. Hit: Instant Lock-Free Allocation| Alloc2[Return RAM Pointer]
   end
   
-  subgraph Central Arena Layer (Slow-Path)
+  subgraph SG2_CentralArenaLayer ["Central Arena Layer (Slow-Path)"]
     TCache1 -.->|3. Cache Miss / Large Alloc| Arena1[Arena 0: Spinlock Protected]
     TCache2 -.->|3. Cache Miss / Large Alloc| Arena2[Arena 1: Spinlock Protected]
     

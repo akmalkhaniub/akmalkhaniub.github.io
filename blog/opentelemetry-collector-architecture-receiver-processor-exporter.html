@@ -122,13 +122,13 @@
 <h2 id="opentelemetry-collector-internal-pipeline-architecture">OpenTelemetry Collector Internal Pipeline Architecture</h2>
 <p>How the OTel Collector ingests, transforms, batches, and exports telemetry streams:</p>
 <div class="mermaid">graph TD
-  subgraph Ingestion Layer: Receivers
+  subgraph SG1_IngestionLayerReceivers [&quot;Ingestion Layer: Receivers&quot;]
     AppTraces[App Traces: OTLP / gRPC] --&gt; Receiver1[OTLP gRPC Receiver]
     AppLogs[App Logs: FluentBit / HTTP] --&gt; Receiver2[OTLP HTTP Receiver]
     PromMetrics[Prometheus Scrape Targets] --&gt; Receiver3[Prometheus Receiver]
   end
   
-  subgraph Transformation Layer: Pipelines &amp; Processors
+  subgraph SG2_TransformationLayerPipelines [&quot;Transformation Layer: Pipelines &amp; Processors&quot;]
     Receiver1 &amp; Receiver2 &amp; Receiver3 --&gt; InternalOTLP[Internal OTLP Data Model]
     
     InternalOTLP --&gt; Proc1[Memory Limiter Processor: Backpressure Guard]
@@ -136,7 +136,7 @@
     Proc2 --&gt; Proc3[Batch Processor: Queue &amp; Flush Buffers]
   end
   
-  subgraph Exportation Layer: Exporters
+  subgraph SG3_ExportationLayerExporters [&quot;Exportation Layer: Exporters&quot;]
     Proc3 --&gt; Exp1[OTLP gRPC Exporter -&gt; Jaeger / Tempo]
     Proc3 --&gt; Exp2[Prometheus Exporter -&gt; Thanos / M3DB]
     Proc3 --&gt; Exp3[Kafka Exporter -&gt; Long-Term Archive]

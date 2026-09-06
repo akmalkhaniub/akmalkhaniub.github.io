@@ -20,18 +20,18 @@ How Gorilla combines Delta-of-Delta Timestamp Encoding and Floating-Point XOR Bi
 
 ```mermaid
 graph TD
-  subgraph Raw Metric Ingestion Stream
+  subgraph SG1_RawMetricIngestion ["Raw Metric Ingestion Stream"]
     Raw[Raw Data Points: timestamp t_n, float v_n] --> Split[Split Channel Pipeline]
   end
   
-  subgraph Channel 1: Delta-of-Delta Timestamp Encoding
+  subgraph SG2_Channel1Delta ["Channel 1: Delta-of-Delta Timestamp Encoding"]
     Split -->|Timestamp Stream t_n| Timedelta["Compute D_n = t_n - t_{n-1}"]
     Timedelta --> DeltaDelta["Compute D_D = D_n - D_{n-1}"]
     DeltaDelta -->|D_D = 0| BitZero["Emit '0' Bit (Same Interval!)"]
     DeltaDelta -->|D_D != 0| BitPacked["Variable Bit-Length Allocation (1 to 32 bits)"]
   end
   
-  subgraph Channel 2: IEEE 754 Float XOR Compression
+  subgraph SG3_Channel2Ieee ["Channel 2: IEEE 754 Float XOR Compression"]
     Split -->|Value Stream v_n| XORVal["Compute Bitwise XOR = v_n ^ v_{n-1}"]
     XORVal -->|XOR = 0| ValueZero["Emit '0' Bit (Identical Value!)"]
     XORVal -->|XOR != 0| BitXOR["Emit '1' + Leading/Trailing Zero Bit Payload"]

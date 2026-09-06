@@ -18,7 +18,7 @@ The multi-stage security verification pipeline applied to every microservice req
 graph TD
   A[Incoming Microservice Request] --> B[Layer 1: Mutual TLS mTLS]
   
-  subgraph Zero-Trust Security Verification Pipeline
+  subgraph SG1_ZeroTrustSecurity ["Zero-Trust Security Verification Pipeline"]
     B -->|Verify Cryptographic SPIFFE Certificate| C[Layer 2: JWT Token Authentication]
     C -->|Validate Signature & Expiry| D[Layer 3: ABAC Policy Authorization Engine]
     D -->|Evaluate User Roles, IP, & Tenant Scope| E{Authorized?}

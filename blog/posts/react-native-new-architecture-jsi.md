@@ -18,12 +18,12 @@ This asynchronous nature meant:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph Old Architecture (Async JSON Bridge)
+    subgraph SG1_OldArchitectureAsync ["Old Architecture (Async JSON Bridge)"]
         JS_Old[JavaScript Engine] -->|1. Serialize JSON| Bridge[Async Bridge]
         Bridge -->|2. Deserialize JSON| Native_Old[Native UI Thread]
     end
 
-    subgraph New Architecture (Direct C++ JSI Bindings)
+    subgraph SG2_NewArchitectureDirect ["New Architecture (Direct C++ JSI Bindings)"]
         JS_New[JavaScript Engine] ===|Direct C++ Pointer Call| JSI[JSI Interface]
         JSI ===|Direct Memory Access| Native_New[Native UI Thread / Fabric]
     end

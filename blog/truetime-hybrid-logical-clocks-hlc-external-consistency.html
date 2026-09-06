@@ -122,13 +122,13 @@
 <h2 id="truetime-hybrid-logical-clock-architecture">TrueTime &amp; Hybrid Logical Clock Architecture</h2>
 <p>How TrueTime Commit Wait ($2\epsilon$) and Hybrid Logical Clocks (HLC) guarantee global transaction ordering:</p>
 <div class="mermaid">graph TD
-  subgraph Google Spanner TrueTime (Hardware Atomic Clocks)
+  subgraph SG1_GoogleSpannerTruetime [&quot;Google Spanner TrueTime (Hardware Atomic Clocks)&quot;]
     GPS[GPS Hardware Receivers] &amp; Atomic[Rubidium Atomic Clocks] --&gt; TrueTimeAPI[TrueTime.now API -&gt; Returns Interval: t_earliest .. t_latest]
     TrueTimeAPI --&gt;|Bounded Uncertainty: epsilon &lt;= 1ms| CommitWait[Spanner Commit Wait Protocol: Wait 2 * epsilon before releasing locks]
     CommitWait --&gt;|Guarantees Real-World Ordering| ExternalConsistency[🎉 External Consistency Achieved!]
   end
   
-  subgraph Hybrid Logical Clocks - HLC (Software Commodity NTP)
+  subgraph SG2_HybridLogicalClocks [&quot;Hybrid Logical Clocks - HLC (Software Commodity NTP)&quot;]
     NTP[Standard NTP Physical Time pt] --&gt; HLC[HLC State: tuple physical, logical]
     HLC --&gt;|Causal Event Message: msg_physical, msg_logical| UpdateHLC[Update HLC: Max physical, msg_physical, pt]
     UpdateHLC --&gt; CausalOrdering[Causal Consistency Preserved without Atomic Clocks!]

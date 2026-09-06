@@ -10,10 +10,10 @@ Kleppmann replied with a surgical mathematical critique that dismantled the prem
 
 ```mermaid
 graph TD
-  subgraph The Distributed Lock GC Pause Hazard (Split-Brain Corruption)
+  subgraph SG1_TheDistributedLock ["The Distributed Lock GC Pause Hazard (Split-Brain Corruption)"]
     ClientA["Client 1: Acquires Lock Lease (10s)"] --> GC["🚨 12-Second GC / VM Pause (Lock Expires!)"]
     
-    subgraph Central Lock Service (Redis / DLM)
+    subgraph SG2_CentralLockService ["Central Lock Service (Redis / DLM)"]
       Expire["Lease expires at t=10s"] --> GrantB["Grant Lock to Client 2 at t=11s"]
     end
     

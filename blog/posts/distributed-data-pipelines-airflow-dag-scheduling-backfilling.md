@@ -18,20 +18,20 @@ How the Airflow Scheduler parses DAG files, dispatches tasks to distributed work
 
 ```mermaid
 graph TD
-  subgraph Airflow Control Plane Architecture
+  subgraph SG1_AirflowControlPlane ["Airflow Control Plane Architecture"]
     Scheduler[Airflow Scheduler Daemon] -->|1. Parse DAG Python Files| DagBag[DagBag Dependency Graphs]
     Scheduler -->|2. Query & Update Task State| MetaDB[(Airflow Metadata Database)]
     Scheduler -->|3. Push QUEUED Tasks| Queue["Celery Redis Queue / Kubernetes Pod Creator"]
   end
   
-  subgraph Distributed Worker Execution
+  subgraph SG2_DistributedWorkerExecution ["Distributed Worker Execution"]
     Queue -->|4. Pull QUEUED Tasks| Worker1[Celery / K8s Worker Pod 1]
     Queue -->|4. Pull QUEUED Tasks| Worker2[Celery / K8s Worker Pod 2]
     
     Worker1 -->|5. Update State -> SUCCESS| MetaDB
   end
   
-  subgraph Dynamic Task Mapping (expand())
+  subgraph SG3_DynamicTaskMapping ["Dynamic Task Mapping (expand())"]
     UpstreamTask[Upstream Task: Return ['file_1.parquet', 'file_2.parquet']] -->|Runtime Expansion| ExpandedTask1[Mapped Task 1: Process file_1] & ExpandedTask2[Mapped Task 2: Process file_2]
   end
 ```

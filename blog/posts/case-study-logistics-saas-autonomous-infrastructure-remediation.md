@@ -42,7 +42,7 @@ graph TD
   A[Cloud Monitoring / Alertmanager Incident Trigger] --> B[GCP Cloud Pub/Sub: Incident Event]
   B --> C[Cloud Run: Incident Command Agent]
   
-  subgraph Autonomous Triage & Diagnostics
+  subgraph SG1_AutonomousTriageDiagnostics ["Autonomous Triage & Diagnostics"]
     C --> D[Cloud Audit Logs & Cloud Trace Inspection]
     C --> E[AlloyDB AI: Historical Incident Vector Memory]
     C --> F[Vertex AI: Gemini 1.5 Pro Diagnostics Engine]

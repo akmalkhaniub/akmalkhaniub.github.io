@@ -15,14 +15,14 @@ We organize agent networks using two primary topologies:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph A [1. Hierarchical Supervisor]
+    subgraph SG1_A1Hierarchical ["A [1. Hierarchical Supervisor]"]
         Sup[Supervisor Agent] -->|Assigns task| W1[Worker A: Researcher]
         W1 -->|Returns result| Sup
         Sup -->|Assigns task| W2[Worker B: Writer]
         W2 -->|Returns result| Sup
     end
 
-    subgraph B [2. Decentralized Swarm]
+    subgraph SG2_B2Decentralized ["B [2. Decentralized Swarm]"]
         S1[Agent A: Researcher] -->|Transition state| S2[Agent B: Writer]
         S2 -->|Transition state| S3[Agent C: Validator]
         S3 -->|Feedback loops| S1

@@ -18,13 +18,13 @@ The lifecycle states and transition pathways of a Raft cluster node:
 graph TD
   A[Follower Node] -->|Election Timeout Expires| B[Candidate Node]
   
-  subgraph Leader Election Phase
+  subgraph SG1_LeaderElectionPhase ["Leader Election Phase"]
     B -->|Receives Majority Votes| C[Leader Node]
     B -->|Discovers Higher Term / Leader| A
     B -->|Split Vote Timeout| B
   end
   
-  subgraph Log Replication Phase
+  subgraph SG2_LogReplicationPhase ["Log Replication Phase"]
     C -->|Broadcast Heartbeats & Log Entries| A
     A -->|Acknowledge AppendEntries| C
   end

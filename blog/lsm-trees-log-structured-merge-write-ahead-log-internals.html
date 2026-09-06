@@ -125,18 +125,18 @@
   WriteReq[Client Write: SET key=val] --&gt;|1. Sequential Disk Append| WAL[(Write-Ahead Log WAL)]
   WriteReq --&gt;|2. In-Memory Write| MemTable[MemTable: In-Memory SkipList]
   
-  subgraph Memory Space
+  subgraph SG1_MemorySpace [&quot;Memory Space&quot;]
     MemTable --&gt;|3. MemTable Full Threshold Reached| ImmutableMemTable[Immutable MemTable]
   end
   
-  subgraph Disk Storage Layers
+  subgraph SG2_DiskStorageLayers [&quot;Disk Storage Layers&quot;]
     ImmutableMemTable --&gt;|4. Background Flush| SST_L0[Level 0 SSTables: Overlapping Key Ranges]
     
     SST_L0 --&gt;|5. Leveled Compaction Merge| SST_L1[Level 1 SSTables: Sorted Non-Overlapping Files]
     SST_L1 --&gt;|6. Leveled Compaction Merge| SST_L2[Level 2 SSTables: Larger Partition Ranges]
   end
   
-  subgraph Read Acceleration
+  subgraph SG3_ReadAcceleration [&quot;Read Acceleration&quot;]
     BloomFilter[Bloom Filters] -.-&gt;|Check Key Existence| SST_L0
   end</div>
 <h3 id="core-lsm-tree-components">Core LSM-Tree Components</h3>

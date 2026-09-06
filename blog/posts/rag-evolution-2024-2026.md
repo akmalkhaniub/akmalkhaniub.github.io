@@ -23,13 +23,13 @@ The transition can be summarized as a shift from **passive, linear text matching
 
 ```mermaid
 graph TD
-    subgraph Year2024 [2024: Linear Naïve RAG]
+    subgraph SG1_Year20242024Linear ["Year2024 [2024: Linear Naïve RAG]"]
         Q1[User Query] -->|Cosine Similarity| V1[(Vector DB)]
         V1 -->|Top K Chunks| G1[LLM Generator]
         G1 -->|Response| U1[User]
     end
 
-    subgraph Year2026 [2026: Adaptive Agentic Ecosystem]
+    subgraph SG2_Year20262026Adaptive ["Year2026 [2026: Adaptive Agentic Ecosystem]"]
         Q2[User Query] -->|1. Route & Decompose| Route{Agent Router}
         Route -->|2a. Keywords| Lex[(Sparse Index)]
         Route -->|2b. Vectors| Vec[(pgvector HNSW)]

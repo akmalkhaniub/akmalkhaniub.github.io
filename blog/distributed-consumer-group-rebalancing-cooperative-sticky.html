@@ -123,13 +123,13 @@
 <h2 id="consumer-group-coordination-cooperative-sticky-rebalancing">Consumer Group Coordination &amp; Cooperative Sticky Rebalancing</h2>
 <p>How Incremental Cooperative Sticky Rebalancing eliminates Stop-the-World processing pauses during consumer pod auto-scaling:</p>
 <div class="mermaid">graph TD
-  subgraph Legacy Eager Rebalance Protocol (Stop-the-World STW Pause!)
+  subgraph SG1_LegacyEagerRebalance [&quot;Legacy Eager Rebalance Protocol (Stop-the-World STW Pause!)&quot;]
     Event1[Consumer 3 Joins Group] --&gt; RevokeAll[&quot;🔴 Stop-The-World: ALL Consumers Revoke ALL Partitions!&quot;]
     RevokeAll --&gt; JoinGroup[All Consumers send JoinGroup + SyncGroup]
     JoinGroup --&gt; ReassignAll[&quot;Assign Partitions from Scratch (Processing Stalled 30s!)&quot;]
   end
   
-  subgraph Incremental Cooperative Sticky Rebalance (Zero Downtime!)
+  subgraph SG2_IncrementalCooperativeSticky [&quot;Incremental Cooperative Sticky Rebalance (Zero Downtime!)&quot;]
     Event2[Consumer 3 Joins Group] --&gt; Phase1[&quot;1. Round 1: Revoke ONLY Partitions to be Moved (P3 &amp; P4)&quot;]
     Phase1 --&gt; ActiveProceed[&quot;⚡ Unaffected Partitions (P0, P1, P2) Continue Processing!&quot;]
     Phase1 --&gt; Phase2[&quot;2. Round 2: Assign P3 &amp; P4 to Consumer 3 (Zero STW Pause!)&quot;]

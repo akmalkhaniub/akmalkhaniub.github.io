@@ -14,8 +14,8 @@ To reason across interconnected domains, modern AI architectures must graduate f
 
 ```mermaid
 graph TD
-  subgraph Vector RAG vs Graph-RAG Architecture
-    subgraph 1. Flat Vector RAG (Isolated Chunks)
+  subgraph SG1_VectorRagVs ["Vector RAG vs Graph-RAG Architecture"]
+    subgraph SG2_1FlatVector ["1. Flat Vector RAG (Isolated Chunks)"]
       Q1["Holistic Query: 'Identify cross-service failure modes'"] --> VectorSearch[Top-K Cosine Similarity]
       VectorSearch --> ChunkA["Chunk 42 (Unlinked)"]
       VectorSearch --> ChunkB["Chunk 118 (Unlinked)"]
@@ -23,7 +23,7 @@ graph TD
       FailNote["Fails: Blind to transitive causal links"]
     end
 
-    subgraph 2. Graph-RAG (Connected Knowledge Graph)
+    subgraph SG3_2GraphRag ["2. Graph-RAG (Connected Knowledge Graph)"]
       Q2["Holistic Query: 'Identify cross-service failure modes'"] --> GraphEngine[Graph Retrieval Engine]
       GraphEngine --> Nodes["Entity Extraction: Services, Databases, Gateways"]
       Nodes --> Edges["Directed Edges: CALLS, DEPENDS_ON, WRITES_TO"]

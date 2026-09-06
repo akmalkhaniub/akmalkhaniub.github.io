@@ -123,19 +123,19 @@
 <h2 id="pagedattention-virtual-memory-continuous-batching-architecture">PagedAttention Virtual Memory &amp; Continuous Batching Architecture</h2>
 <p>How vLLM maps logical sequence tokens to non-contiguous physical GPU VRAM memory blocks:</p>
 <div class="mermaid">graph TD
-  subgraph Client Requests &amp; Logical Token Streams
+  subgraph SG1_ClientRequestsLogical [&quot;Client Requests &amp; Logical Token Streams&quot;]
     Req1[&quot;Request 1: Token Stream (Logical Tokens 0..31)&quot;]
     Req2[&quot;Request 2: Token Stream (Logical Tokens 0..15)&quot;]
   end
   
-  subgraph PagedAttention Block Table Mapper
+  subgraph SG2_PagedattentionBlockTable [&quot;PagedAttention Block Table Mapper&quot;]
     Req1 --&gt;|Logical Block 0 (Tokens 0..15)| BlockTable1[Block Table: Logical 0 -&gt; Physical Block #7]
     Req1 --&gt;|Logical Block 1 (Tokens 16..31)| BlockTable1_2[Block Table: Logical 1 -&gt; Physical Block #2]
     
     Req2 --&gt;|Logical Block 0 (Tokens 0..15)| BlockTable2[Block Table: Logical 0 -&gt; Physical Block #9]
   end
   
-  subgraph Physical GPU VRAM Memory Pool (Non-Contiguous Pages)
+  subgraph SG3_PhysicalGpuVram [&quot;Physical GPU VRAM Memory Pool (Non-Contiguous Pages)&quot;]
     BlockTable1 --&gt; PhysBlock7[Physical GPU Block #7 (16 Key/Value Vectors)]
     BlockTable1_2 --&gt; PhysBlock2[Physical GPU Block #2 (16 Key/Value Vectors)]
     BlockTable2 --&gt; PhysBlock9[Physical GPU Block #9 (16 Key/Value Vectors)]

@@ -12,10 +12,10 @@ By combining **Tree-sitter Abstract Syntax Tree (AST) parsing**, **SCIP/LSIF Sym
 
 ```mermaid
 graph TD
-  subgraph Enterprise Code Intelligence Indexing Pipeline
+  subgraph SG1_EnterpriseCodeIntelligence ["Enterprise Code Intelligence Indexing Pipeline"]
     Repo[10M Line Monorepo: 25,000 Source Files] --> TreeSitter["1. Tree-sitter AST Parser (Extracts Functions, Types, Classes)"]
     
-    subgraph Multi-Layer Semantic Graph
+    subgraph SG2_MultiLayerSemantic ["Multi-Layer Semantic Graph"]
       TreeSitter --> SymbolGraph["2. Symbol Reference Graph (SCIP: Defs & Usages)"]
       TreeSitter --> CallGraph["3. Hierarchical Call Graph (Caller -> Callee DAG)"]
       TreeSitter --> HybridSearch["4. Hybrid Retrieval Index (BM25 Exact + Dense Vector)"]
@@ -65,7 +65,7 @@ To understand how code executes, the indexer constructs two directed graphs:
 
 ```mermaid
 graph LR
-  subgraph Hierarchical Call Graph (Caller -> Callee)
+  subgraph SG3_HierarchicalCallGraph ["Hierarchical Call Graph (Caller -> Callee)"]
     A[OrderController.postCheckout] -->|Calls| B[BillingService.processCharge]
     B -->|Calls| C[StripeClient.createPaymentIntent]
     B -->|Reads| D[UserEntity.stripeCustomerId]

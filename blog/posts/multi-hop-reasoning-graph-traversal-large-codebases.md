@@ -21,7 +21,7 @@ graph LR
   C -->|CALLS| D[Method: execute_http_post]
   D -->|DEPENDS_ON| E[Library: requests]
   
-  subgraph Multi-Hop Traversal Path
+  subgraph SG1_MultiHopTraversal ["Multi-Hop Traversal Path"]
     A -->|1st Hop| B
     B -->|2nd Hop| C
     C -->|3rd Hop| D

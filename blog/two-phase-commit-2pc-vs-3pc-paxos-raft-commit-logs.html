@@ -124,7 +124,7 @@
 <h2 id="distributed-atomic-commit-architecture">Distributed Atomic Commit Architecture</h2>
 <p>How classic Two-Phase Commit (2PC) operates, its blocking flaw, and how Raft consensus groups make 2PC fault-tolerant:</p>
 <div class="mermaid">graph TD
-  subgraph Classic Two-Phase Commit (2PC) Protocol
+  subgraph SG1_ClassicTwoPhase [&quot;Classic Two-Phase Commit (2PC) Protocol&quot;]
     Coord[Transaction Coordinator] --&gt;|1. Phase 1: PREPARE| Cohort1[Database Shard 1]
     Coord --&gt;|1. Phase 1: PREPARE| Cohort2[Database Shard 2]
     
@@ -135,10 +135,10 @@
     Coord --&gt;|2. Phase 2: GLOBAL_COMMIT| Cohort2
   end
   
-  subgraph Coordinator Crash Flaw &amp; Raft Consensus Fix
+  subgraph SG2_CoordinatorCrashFlaw [&quot;Coordinator Crash Flaw &amp; Raft Consensus Fix&quot;]
     Coord -.-&gt;|💥 Crash Before Phase 2!| Blocked[&quot;🔒 Cohorts Blocked Holding Locks Indefinitely!&quot;]
     
-    subgraph Fault-Tolerant Consensus Transaction Log
+    subgraph SG3_FaultTolerantConsensus [&quot;Fault-Tolerant Consensus Transaction Log&quot;]
       RaftGroup[&quot;Leader + Follower Raft Group&quot;] --&gt;|Replicate Transaction Log| Storage[Persistent Shard Storage]
       RaftGroup -.-&gt;|Leader Dies -&gt; Auto Failover| NewLeader[New Raft Leader Resumes 2PC!]
     end

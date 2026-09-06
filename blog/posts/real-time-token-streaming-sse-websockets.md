@@ -25,7 +25,7 @@ When designing a token gateway, two protocols dominate: **Server-Sent Events (SS
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 graph TD
-    subgraph Server-Sent Events SSE
+    subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
         A[Client Browser] -->|HTTP GET Request / Keep-Alive| B[Hono API Gateway]
         B -->|Keep Connection Open| A
         B -->|Stream Data Chunk 1| A

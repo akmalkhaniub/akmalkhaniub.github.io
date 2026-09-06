@@ -123,7 +123,7 @@
 <h2 id="memory-allocator-architecture-thread-caches">Memory Allocator Architecture &amp; Thread Caches</h2>
 <p>How <code>jemalloc</code> and <code>tcmalloc</code> use Lock-Free Thread-Local Caches (<code>tcache</code>) and Per-CPU Arenas to bypass global allocation locks:</p>
 <div class="mermaid">graph TD
-  subgraph Multi-Threaded Allocation Flow
+  subgraph SG1_MultiThreadedAllocation [&quot;Multi-Threaded Allocation Flow&quot;]
     Thread1[Worker Thread 1: malloc 32 Bytes] --&gt;|1. O(1) Lock-Free Path| TCache1[Thread 1 Local Cache: tcache]
     TCache1 --&gt;|Fast-Path Success &lt; 5ns| ReturnPtr1[Return Memory Pointer]
     
@@ -131,7 +131,7 @@
     Arena1 --&gt;|Refill tcache Batch| TCache2[Thread 2 Local Cache: tcache]
   end
   
-  subgraph Slab &amp; Bin Size Class Management
+  subgraph SG2_SlabBinSize [&quot;Slab &amp; Bin Size Class Management&quot;]
     Arena1 --&gt; SmallBins[&quot;Small Size Classes (8B, 16B, 32B... Slab Pages)&quot;]
     Arena1 --&gt; LargeExtents[&quot;Large Extents (4 KB - 4 MB Red-Black Tree Pages)&quot;]
     Arena1 --&gt; HugeExtents[&quot;Huge Allocations (&gt; 4 MB Direct mmap)&quot;]

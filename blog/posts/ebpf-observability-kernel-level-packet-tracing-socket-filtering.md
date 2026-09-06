@@ -21,17 +21,17 @@ graph TD
   UserApp[User Space C / Python / Go Code] -->|1. Compile C to eBPF Bytecode| Bytecode[eBPF Bytecode File]
   Bytecode -->|2. bpf Syscall bpf_load| Verifier[In-Kernel Verifier]
   
-  subgraph Linux Kernel Space Safety & JIT
+  subgraph SG1_LinuxKernelSpace ["Linux Kernel Space Safety & JIT"]
     Verifier -->|3. Validate DAG & Memory Bounds| JIT[JIT Compiler: x86_64 / ARM64]
     JIT -->|4. Native Machine Code| Engine[eBPF Engine Execution Unit]
   end
   
-  subgraph Kernel Probe Hook Points
+  subgraph SG2_KernelProbeHook ["Kernel Probe Hook Points"]
     Engine -->|5a. Attach to kprobe: sys_enter_connect| Kprobe[Kernel Function Probes]
     Engine -->|5b. Attach to XDP / TC NIC Driver| XDP[eXpress Data Path XDP]
   end
   
-  subgraph Shared Kernel-User Data Transfer
+  subgraph SG3_SharedKernelUser ["Shared Kernel-User Data Transfer"]
     Engine -->|6. Atomic Updates| BPFMap[(eBPF Maps: Hash / Ring Buffer)]
     BPFMap -.->|7. Read Telemetry Metrics| UserApp
   end

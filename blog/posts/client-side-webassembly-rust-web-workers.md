@@ -17,12 +17,12 @@ To solve this, we offload intensive work using a two-pronged solution:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#b45309', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f59e0b', 'lineColor': '#b45309', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart LR
-    subgraph Browser Main Thread
+    subgraph SG1_BrowserMainThread ["Browser Main Thread"]
         UI[User Interaction] --> Paint[Paint & Layout Updates]
         Paint --> SmoothUI[60 FPS Smooth UI]
     end
 
-    subgraph Background Web Worker Thread
+    subgraph SG2_BackgroundWebWorker ["Background Web Worker Thread"]
         direction TB
         Listen[Listen for postMessage] --> RunWasm[Run Compiled Rust WASM]
         RunWasm --> HeavyCompute[Heavy Calculations]

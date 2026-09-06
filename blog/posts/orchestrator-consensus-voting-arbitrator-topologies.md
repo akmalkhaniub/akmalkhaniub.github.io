@@ -12,11 +12,11 @@ This article compares multi-agent delegation topologies and details how to build
 
 ```mermaid
 graph TD
-  subgraph Supervisor-Worker Topology
+  subgraph SG1_SupervisorWorkerTopology ["Supervisor-Worker Topology"]
     A[Orchestrator] --> B[Worker 1]
     A --> C[Worker 2]
   end
-  subgraph Debate & Consensus Topology
+  subgraph SG2_DebateConsensusTopology ["Debate & Consensus Topology"]
     D[Orchestrator Task Dispatcher] --> E[Worker Agent A: Model 1]
     D --> F[Worker Agent B: Model 2]
     D --> G[Worker Agent C: Model 3]

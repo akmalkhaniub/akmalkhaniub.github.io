@@ -18,18 +18,18 @@ Mathematical properties of State-Based CRDT merge operations ($\sqcup$):
 
 ```mermaid
 graph TD
-  subgraph Replica Agent 1
+  subgraph SG1_ReplicaAgent1 ["Replica Agent 1"]
     A1[State S1] -->|Local Edit| A2[State S1']
   end
   
-  subgraph Replica Agent 2
+  subgraph SG2_ReplicaAgent2 ["Replica Agent 2"]
     B1[State S2] -->|Local Edit| B2[State S2']
   end
   
   A2 -->|Broadcast State S1'| M[State Merge Engine: S1' ⊔ S2']
   B2 -->|Broadcast State S2'| M
   
-  subgraph Converged State
+  subgraph SG3_ConvergedState ["Converged State"]
     M --> C[Unified Replicated State: Mathematically Identical Across All Nodes]
   end
 ```

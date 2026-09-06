@@ -19,7 +19,7 @@ flowchart TD
     Agent[Agent Execution Worker] -->|Emits Step 3 first| Queue[Reconciliation Buffer Queue]
     Agent -->|Emits Step 2 second| Queue
     
-    subgraph Reconciliation Buffer
+    subgraph SG1_ReconciliationBuffer ["Reconciliation Buffer"]
         Queue -->|Read logical clock values| Sort{Identify Sequence Gap: Step 2 missing?}
         Sort -->|Yes: Step 3 waits| Buffer[Pending Buffer Array]
         Sort -->|No: Sequence intact| Flush[Flush to Dashboard Database]

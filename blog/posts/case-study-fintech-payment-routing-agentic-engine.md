@@ -44,7 +44,7 @@ graph TD
   B --> C[Eventarc Event Router]
   C --> D[Cloud Run Intelligent Router Worker]
   
-  subgraph Real-Time Intelligent Routing Engine
+  subgraph SG1_RealTimeIntelligent ["Real-Time Intelligent Routing Engine"]
     D --> E[AlloyDB AI: Merchant Routing Rules & History]
     D --> F[Vertex AI: Dynamic Fee & Approval Predictor]
   end

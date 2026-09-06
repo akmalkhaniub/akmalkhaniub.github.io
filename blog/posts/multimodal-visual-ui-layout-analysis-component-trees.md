@@ -18,7 +18,7 @@ In typical design-to-code pipelines:
 flowchart TD
     Image[UI Wireframe Screenshot Image] --> Vision[Vision Model Object Detector]
     
-    subgraph Bounding Box Parser
+    subgraph SG1_BoundingBoxParser ["Bounding Box Parser"]
         Vision --> BBoxes[Extract Element BBoxes: X, Y, Width, Height]
         BBoxes --> Hierarchy[Nest Child Nodes inside Parent Containers]
     end

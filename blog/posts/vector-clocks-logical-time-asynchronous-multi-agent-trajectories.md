@@ -16,16 +16,16 @@ Vector timestamp progression and concurrency detection across three agent nodes:
 
 ```mermaid
 graph TD
-  subgraph Agent A Pipeline
+  subgraph SG1_AgentAPipeline ["Agent A Pipeline"]
     A1["Event A1: [1, 0, 0]"] -->|Send Msg m1| A2["Event A2: [2, 0, 0]"]
   end
   
-  subgraph Agent B Pipeline
+  subgraph SG2_AgentBPipeline ["Agent B Pipeline"]
     B1["Event B1: [0, 1, 0]"] -->|Recv Msg m1| B2["Event B2: [2, 2, 0]"]
     B2 -->|Send Msg m2| B3["Event B3: [2, 3, 0]"]
   end
   
-  subgraph Agent C Pipeline
+  subgraph SG3_AgentCPipeline ["Agent C Pipeline"]
     C1["Event C1: [0, 0, 1]"]
     C1 -->|Recv Msg m2| C2["Event C2: [2, 3, 2]"]
   end

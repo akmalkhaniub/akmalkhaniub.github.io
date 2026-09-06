@@ -23,14 +23,14 @@ graph TD
   MemTable -->|Yes: Hit!| ReturnRAM[Return Value from RAM: < 100ns]
   MemTable -->|No: Miss!| BloomFilter{Check In-Memory Bloom Filter}
   
-  subgraph In-Memory Read Acceleration Layers
+  subgraph SG1_InMemoryRead ["In-Memory Read Acceleration Layers"]
     BloomFilter -->|Definitely NOT Present: False| SkipDisk[🚨 SKIP DISK READ! 0 Disk IOPS]
     BloomFilter -->|Might Be Present: True| BlockCache{Check LRU Block Cache}
     
     BlockCache -->|Cache Hit| ReturnCache[Return Block from Cache RAM: < 5us]
   end
   
-  subgraph SSTable Disk Read Layer
+  subgraph SG2_SstableDiskRead ["SSTable Disk Read Layer"]
     BlockCache -->|Cache Miss| IndexBlock[Read SSTable Footer Index Block]
     IndexBlock -->|Binary Search Offset| DataBlock[Seek Data Block on NVMe Disk: < 100us]
     DataBlock --> PopulateCache[Populate LRU Block Cache & Return Value]

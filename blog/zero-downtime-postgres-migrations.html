@@ -123,14 +123,14 @@ Running database migrations in a development environment is trivial. In a high-t
 <p>Every operation in PostgreSQL acquires a lock. The danger lies in <strong>Exclusive Locks</strong> (specifically <code>AccessExclusiveLock</code>), which block all other operations, including simple reads (<code>SELECT</code>) and writes (<code>INSERT</code>/<code>UPDATE</code>).</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph ❌ Naive Block Way (Exclusive Lock)
+    subgraph SG1_NaiveBlockWay [&quot;❌ Naive Block Way (Exclusive Lock)&quot;]
         Migration[ALTER TABLE ADD COLUMN DEFAULT] --&gt;|Acquires AccessExclusiveLock| Table[Users Table]
         Reads[Incoming SELECTs] --&gt;|Blocked| Table
         Writes[Incoming INSERTs] --&gt;|Blocked| Table
         Table --&gt;|Queue fills up, connections timeout| Crash[Server Outage]
     end
 
-    subgraph ✅ Safe Way (Incremental Locks)
+    subgraph SG2_SafeWayIncremental [&quot;✅ Safe Way (Incremental Locks)&quot;]
         Step1[1. ALTER TABLE ADD COLUMN without default] --&gt;|Short AccessExclusiveLock| Table2[Users Table]
         Step2[2. SET DEFAULT value] --&gt;|Quick Lock metadata update| Table2
         Step3[3. Backfill data in small batches] --&gt;|Low-level RowShareLock| Table2

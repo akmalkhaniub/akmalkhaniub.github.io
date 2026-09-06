@@ -19,15 +19,15 @@ How gRPC packages Protobuf payloads into 5-byte framed messages over HTTP/2 stre
 
 ```mermaid
 graph TD
-  subgraph User Application Layer
+  subgraph SG1_UserApplicationLayer ["User Application Layer"]
     Req[gRPC Service Request Struct] -->|1. Protobuf Binary Serialization| ProtoBytes[Protobuf Binary Bytes]
   end
   
-  subgraph gRPC 5-Byte Framing Layer
+  subgraph SG2_Grpc5Byte ["gRPC 5-Byte Framing Layer"]
     ProtoBytes -->|2. Prepend 1-byte Compression Flag + 4-byte Length| FramedMsg[gRPC Framed Message: 5-byte Prefix + Payload]
   end
   
-  subgraph HTTP/2 Transport Layer
+  subgraph SG3_Http2Transport ["HTTP/2 Transport Layer"]
     FramedMsg -->|3. Slice into HTTP/2 DATA Frames| H2_Stream[HTTP/2 Stream ID #3]
     H2_Headers[HTTP/2 HEADERS Frame: HPACK Compressed] --> H2_Stream
     

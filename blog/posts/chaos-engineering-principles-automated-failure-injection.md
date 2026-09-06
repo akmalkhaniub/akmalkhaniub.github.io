@@ -18,17 +18,17 @@ How automated Chaos Engineering frameworks run experiments while safeguarding pr
 
 ```mermaid
 graph TD
-  subgraph Pre-Experiment Baseline Phase
+  subgraph SG1_PreExperimentBaseline ["Pre-Experiment Baseline Phase"]
     SteadyState[1. Measure Steady-State Metrics: HTTP Success >= 99.9%, p99 <= 50ms] --> Hypothesis[2. Formulate Hypothesis: 'DB latency spike +100ms will not cause API 5xx']
   end
   
-  subgraph Chaos Injection Execution Loop (Blast Radius Containment)
+  subgraph SG2_ChaosInjectionExecution ["Chaos Injection Execution Loop (Blast Radius Containment)"]
     Hypothesis --> Injector[3. Inject Controlled Fault: Inject +150ms Network Delay via tc netem]
     
     Injector --> Monitor[4. Monitor Real-Time System Telemetry]
   end
   
-  subgraph Guardrail Verification & Emergency Abort
+  subgraph SG3_GuardrailVerificationEmergency ["Guardrail Verification & Emergency Abort"]
     Monitor --> GuardrailCheck{Is Steady-State Metric Preserved?}
     GuardrailCheck -->|Yes: System Resilient!| Pass[5. Record Chaos Experiment Success]
     GuardrailCheck -->|No: HTTP Errors Spike > 0.5%| EmergencyAbort[🚨 EMERGENCY ABORT TRIGGERED!]

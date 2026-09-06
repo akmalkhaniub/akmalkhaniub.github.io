@@ -12,11 +12,11 @@ The boundary is unidirectional: Server Components can import and render Client C
 
 ```mermaid
 graph TD
-    subgraph Server Thread
+    subgraph SG1_ServerThread ["Server Thread"]
         A[Layout.tsx - RSC] --> B[Page.tsx - RSC]
     end
 
-    subgraph Client Thread
+    subgraph SG2_ClientThread ["Client Thread"]
         C[Navbar.tsx - Client Component]
         D[InteractiveCard.tsx - Client Component]
     end

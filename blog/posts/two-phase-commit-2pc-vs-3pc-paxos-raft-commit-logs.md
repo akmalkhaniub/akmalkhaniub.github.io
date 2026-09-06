@@ -22,7 +22,7 @@ How classic Two-Phase Commit (2PC) operates, its blocking flaw, and how Raft con
 
 ```mermaid
 graph TD
-  subgraph Classic Two-Phase Commit (2PC) Protocol
+  subgraph SG1_ClassicTwoPhase ["Classic Two-Phase Commit (2PC) Protocol"]
     Coord[Transaction Coordinator] -->|1. Phase 1: PREPARE| Cohort1[Database Shard 1]
     Coord -->|1. Phase 1: PREPARE| Cohort2[Database Shard 2]
     
@@ -33,10 +33,10 @@ graph TD
     Coord -->|2. Phase 2: GLOBAL_COMMIT| Cohort2
   end
   
-  subgraph Coordinator Crash Flaw & Raft Consensus Fix
+  subgraph SG2_CoordinatorCrashFlaw ["Coordinator Crash Flaw & Raft Consensus Fix"]
     Coord -.->|💥 Crash Before Phase 2!| Blocked["🔒 Cohorts Blocked Holding Locks Indefinitely!"]
     
-    subgraph Fault-Tolerant Consensus Transaction Log
+    subgraph SG3_FaultTolerantConsensus ["Fault-Tolerant Consensus Transaction Log"]
       RaftGroup["Leader + Follower Raft Group"] -->|Replicate Transaction Log| Storage[Persistent Shard Storage]
       RaftGroup -.->|Leader Dies -> Auto Failover| NewLeader[New Raft Leader Resumes 2PC!]
     end

@@ -18,14 +18,14 @@ Separating non-blocking async network I/O from blocking CPU-bound computations:
 graph TD
   A[Incoming Client Requests] --> B[ASGI Server: Granian / Uvicorn]
   
-  subgraph Single Worker Event Loop Thread
+  subgraph SG1_SingleWorkerEvent ["Single Worker Event Loop Thread"]
     B -->|Async Network I/O| C[Async Route: async def get_data]
     C -->|Non-blocking DB query| D[(Async Database Driver: Asyncpg)]
     
     B -->|Blocking CPU Request| E[Sync Route: def compute_stats]
   end
   
-  subgraph Threadpool Worker Pool
+  subgraph SG2_ThreadpoolWorkerPool ["Threadpool Worker Pool"]
     E -->|Delegate Task| F[FastAPI Threadpool Worker]
     F -->|CPU Heavy Processing| G[Return Result to Event Loop]
   end

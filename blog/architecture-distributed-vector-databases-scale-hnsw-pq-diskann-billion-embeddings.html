@@ -122,11 +122,11 @@
 <p>If stored as an in-memory <strong>Hierarchical Navigable Small World (HNSW)</strong> graph, adjacency list pointer overhead inflates the RAM requirement to over <strong>$10\text{ to }12\text{ Terabytes}$</strong>, costing tens of thousands of dollars per month in memory-heavy cloud instances.</p>
 <p>This article details how modern distributed vector databases achieve sub-$10\text{ms}$ recall across 1 billion vectors using <strong>Product Quantization (PQ)</strong>, <strong>Asymmetric Distance Computation (ADC)</strong>, <strong>DiskANN SSD-optimized graph traversal</strong>, and <strong>disaggregated compute-storage architectures</strong>.</p>
 <div class="mermaid">graph TD
-  subgraph Billion-Scale Vector Search Pipeline
+  subgraph SG1_BillionScaleVector [&quot;Billion-Scale Vector Search Pipeline&quot;]
     Query[Query Vector: 1536-dim float32] --&gt; Coordinator[Distributed Query Coordinator]
     Coordinator --&gt; Shards[Parallel Query Shard Nodes]
     
-    subgraph Quantization &amp; Traversal Engine
+    subgraph SG2_QuantizationTraversalEngine [&quot;Quantization &amp; Traversal Engine&quot;]
       Shards --&gt; ADC[&quot;1. Asymmetric Distance Computation (Precomputed Lookup Tables)&quot;]
       Shards --&gt; DiskANN[&quot;2. DiskANN / Vamana Graph Traversal (NVMe SSD Block Reads)&quot;]
       Shards --&gt; Rerank[&quot;3. Top-K Full Precision Re-Ranking (Float32 Vector Cache)&quot;]
@@ -167,11 +167,11 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 <h2 id="2-diskann-the-vamana-graph-protocol">2. DiskANN &amp; The Vamana Graph Protocol</h2>
 <p>To completely overcome the RAM ceiling, <strong>DiskANN</strong> (Microsoft Research, Subramanya et al.) stores the graph structure and compressed vectors on fast <strong>NVMe SSDs</strong> rather than in RAM.</p>
 <div class="mermaid">graph LR
-  subgraph In-Memory Cache (~10% RAM)
+  subgraph SG3_InMemoryCache [&quot;In-Memory Cache (~10% RAM)&quot;]
     Mem[Compressed PQ Vectors + Fast Entry Point Index]
   end
   
-  subgraph NVMe SSD Disk Layout (90% Cold)
+  subgraph SG4_NvmeSsdDisk [&quot;NVMe SSD Disk Layout (90% Cold)&quot;]
     SSD[Vamana Graph Nodes + Full Precision 1536-dim Vectors]
   end
   
@@ -191,17 +191,17 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 <h2 id="3-distributed-cluster-topology-milvus-qdrant-at-scale">3. Distributed Cluster Topology: Milvus &amp; Qdrant at Scale</h2>
 <p>At enterprise scale, vector databases decouple stateful storage from stateless compute nodes:</p>
 <div class="mermaid">graph TD
-  subgraph Client Ingestion &amp; Query Layer
+  subgraph SG5_ClientIngestionQuery [&quot;Client Ingestion &amp; Query Layer&quot;]
     Client[Client App] --&gt; Proxy[Stateless Query / Ingest Proxy]
   end
   
-  subgraph Storage &amp; Consensus Brokers
+  subgraph SG6_StorageConsensusBrokers [&quot;Storage &amp; Consensus Brokers&quot;]
     Proxy --&gt;|1. Append Insert WAL| LogBroker[Apache Kafka / Pulsar WAL Broker]
     Proxy --&gt;|2. Parallel Scatter Search| QueryNode1[Query Worker Node 1]
     Proxy --&gt;|2. Parallel Scatter Search| QueryNode2[Query Worker Node 2]
   end
   
-  subgraph Background Processing &amp; Object Store
+  subgraph SG7_BackgroundProcessingObject [&quot;Background Processing &amp; Object Store&quot;]
     LogBroker --&gt; DataNode[Data Node: Segment Flusher]
     DataNode --&gt; S3[(Cloud Object Storage: AWS S3 / MinIO)]
     S3 --&gt; IndexNode[Indexer Node: Builds DiskANN / HNSW SSTs]

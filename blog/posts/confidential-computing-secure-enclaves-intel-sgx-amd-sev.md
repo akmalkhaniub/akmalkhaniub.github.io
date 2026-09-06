@@ -20,16 +20,16 @@ How Secure Enclaves isolate memory and provide cryptographic Remote Attestation 
 
 ```mermaid
 graph TD
-  subgraph Untrusted Cloud Infrastructure (Hypervisor / OS Kernel)
+  subgraph SG1_UntrustedCloudInfrastructure ["Untrusted Cloud Infrastructure (Hypervisor / OS Kernel)"]
     UntrustedOS[Untrusted Host OS / Hypervisor] -.->|Attempt Memory Peeking| Blocked[🚫 BLOCKED by Hardware Memory Encryption Engine!]
   end
   
-  subgraph Physical CPU Hardware (Intel SGX / AMD SEV)
+  subgraph SG2_PhysicalCpuHardware ["Physical CPU Hardware (Intel SGX / AMD SEV)"]
     MEE[Hardware Memory Encryption Engine: AES-XTS 128/256] <--> EPC[Enclave Page Cache EPC: Encrypted RAM]
     EPC <--> Enclave[Secure Enclave Execution Context: MRENCLAVE Binary Hash]
   end
   
-  subgraph Remote Hardware Attestation Verification
+  subgraph SG3_RemoteHardwareAttestation ["Remote Hardware Attestation Verification"]
     Enclave -->|1. Generate Enclave Report| CPU_Key[CPU Hardware Attestation Secret Key]
     CPU_Key -->|2. Cryptographically Sign Quote| AttestationQuote[Signed Hardware Attestation Quote]
     AttestationQuote -->|3. Transmit Quote over TLS| RemoteClient[Remote Client / Verifier]

@@ -22,16 +22,16 @@ How Loki-style indexless log engines partition streams and execute parallel quer
 graph TD
   LogStream["Log Stream: 2026-08-18 10:00:00 [ERROR] Connection Timeout"] --> Ingestor[Log Ingestor Daemon]
   
-  subgraph Metadata Indexing Only (Loki Model)
+  subgraph SG1_MetadataIndexingOnly ["Metadata Indexing Only (Loki Model)"]
     Ingestor -->|1. Extract High-Level Labels| LabelIndex["Stream Label Index: {app='payment', env='prod'}"]
   end
   
-  subgraph Compressed Chunk Storage (No Inverted Token Index!)
+  subgraph SG2_CompressedChunkStorage ["Compressed Chunk Storage (No Inverted Token Index!)"]
     Ingestor -->|2. Append to Stream Chunk Buffer| Chunk[2MB Compressed Log Chunk Block]
     Chunk -->|3. Flush to Object Storage| S3[(Cloud Object Storage: S3 / GCS)]
   end
   
-  subgraph Parallelized MapReduce Query Scanner (LogQL)
+  subgraph SG3_ParallelizedMapreduceQuery ["Parallelized MapReduce Query Scanner (LogQL)"]
     Query["User Query: {app='payment'} |= 'Connection Timeout'"] --> Querier[Distributed Query Engine]
     LabelIndex -->|4. Lookup Chunks for Stream| Querier
     

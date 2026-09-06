@@ -124,12 +124,12 @@
 <p>The KV-cache memory footprint <strong>vastly exceeds the size of the model weights themselves ($140\text{ GB}$)</strong>, limiting GPU concurrency to $1$ user per $$30,000$ Nvidia H100 GPU.</p>
 <p>To make long-context agents economically viable, modern inference engines deploy <strong>KV-Cache Compression</strong>: leveraging <strong>StreamingLLM Attention Sinks</strong>, <strong>SnapKV Positional Clustering</strong>, and <strong>H2O Heavy-Hitter Eviction</strong> to reduce VRAM consumption by <strong>$80%\text{ to }90%$</strong> with near-zero degradation in reasoning accuracy.</p>
 <div class="mermaid">graph TD
-  subgraph Uncompressed KV-Cache vs StreamingLLM &amp; H2O Compression
-    subgraph 1. Uncompressed 1M Context (164GB VRAM - OOM Crash)
+  subgraph SG1_UncompressedKvCache [&quot;Uncompressed KV-Cache vs StreamingLLM &amp; H2O Compression&quot;]
+    subgraph SG2_1Uncompressed1m [&quot;1. Uncompressed 1M Context (164GB VRAM - OOM Crash)&quot;]
       FullKV[&quot;Linear KV-Cache: 1,000,000 Tokens (164 GB GPU VRAM)&quot;]
     end
 
-    subgraph 2. Compressed StreamingLLM &amp; H2O KV-Cache (16GB VRAM - 90% Savings)
+    subgraph SG3_2CompressedStreamingllm [&quot;2. Compressed StreamingLLM &amp; H2O KV-Cache (16GB VRAM - 90% Savings)&quot;]
       Sink[&quot;1. Initial 4 Attention Sink Tokens (Fixed Anchor)&quot;]
       H2O[&quot;2. Heavy-Hitter Important Tokens (Top 10% Attention Weights)&quot;]
       Local[&quot;3. Rolling Local Window (Latest 2,048 Tokens)&quot;]
@@ -162,7 +162,7 @@
 <li>When sliding window attention evicted those initial tokens, the softmax denominator destabilized, destroying the model&#39;s internal attention distribution.</li>
 </ul>
 <div class="mermaid">graph LR
-  subgraph StreamingLLM KV-Cache Eviction Policy
+  subgraph SG4_StreamingllmKvCache [&quot;StreamingLLM KV-Cache Eviction Policy&quot;]
     T0[&quot;Token 0: &lt;s&gt; (Sink Token: 40% Attention)&quot;]
     T1[&quot;Token 1: System (Sink Token: 15% Attention)&quot;]
     T2[&quot;Token 2: You (Sink Token: 10% Attention)&quot;]

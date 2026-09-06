@@ -18,7 +18,7 @@ In single-region agent deployments:
 flowchart TD
     User[User Task Dispatch] -->|Route to primary| RegionA[Primary Cluster: us-east-1]
     
-    subgraph Active-Active Replication
+    subgraph SG1_ActiveActiveReplication ["Active-Active Replication"]
         RegionA -->|Execute Step & Emit Delta| LocalDB_A[(State DB: us-east-1)]
         RegionA -->|Async Stream Delta| SyncQueue[Cross-Region Sync Gateway]
         SyncQueue -->|Replicate State Delta| RegionB[Failover Cluster: eu-west-1]

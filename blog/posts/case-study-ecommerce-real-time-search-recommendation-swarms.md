@@ -39,7 +39,7 @@ The system coordinates standard lexical search queries and real-time recommendat
 graph TD
   A[User Search Query] --> B[Search Coordinator Gateway]
   
-  subgraph Lexical & Semantic Retrieval
+  subgraph SG1_LexicalSemanticRetrieval ["Lexical & Semantic Retrieval"]
     B -->|Parse Lexical Query| C[(Elasticsearch Catalog Index)]
     B -->|Generate Vector Embedding| D[(Vertex AI Vector Database)]
   end
@@ -47,7 +47,7 @@ graph TD
   C --> E[Hybrid Query Reranker]
   D --> E
   
-  subgraph Asynchronous Personalization Swarm
+  subgraph SG2_AsynchronousPersonalizationSwarm ["Asynchronous Personalization Swarm"]
     E -->|Enhance User Profile Context| F[Recommendation Model Router]
     F -->|Fetch Co-Purchase Features| G[(Redis Feature Store)]
   end

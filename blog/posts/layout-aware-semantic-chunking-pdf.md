@@ -17,12 +17,12 @@ flowchart TD
     PDF[Raw Enterprise PDF] --> Parser[Layout-Aware Parser: pdfplumber]
     Parser --> Extract[Extract Text Blocks, Font Sizes, and Tables]
     
-    subgraph Naive Way
+    subgraph SG1_NaiveWay ["Naive Way"]
         Extract --> Naive[Split by 1000 Characters]
         Naive --> SplitTable[❌ Table split in half, header separated from text]
     end
 
-    subgraph Semantic Way
+    subgraph SG2_SemanticWay ["Semantic Way"]
         Extract --> Detector{Structure Detector}
         Detector -->|Detect Font/Size changes| Headings[Group under Headings]
         Detector -->|Detect Table bounds| Tables[Keep Tables whole]

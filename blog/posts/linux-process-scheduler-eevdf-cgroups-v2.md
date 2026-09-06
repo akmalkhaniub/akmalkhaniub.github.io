@@ -18,12 +18,12 @@ How the EEVDF scheduler selects tasks based on Lag Eligibility and Virtual Deadl
 
 ```mermaid
 graph TD
-  subgraph Kubernetes Container Pods (Cgroups v2 Limits)
+  subgraph SG1_KubernetesContainerPods ["Kubernetes Container Pods (Cgroups v2 Limits)"]
     PodA[Container A: cpu.max = 200ms/100ms] --> RunQueue[Linux CPU RunQueue (Red-Black Tree)]
     PodB[Container B: Latency-Sensitive API] --> RunQueue
   end
   
-  subgraph EEVDF Scheduler Selection Engine (Kernel 6.6+)
+  subgraph SG2_EevdfSchedulerSelection ["EEVDF Scheduler Selection Engine (Kernel 6.6+)"]
     RunQueue -->|1. Calculate Virtual Time V & Lag| LagCheck{Is Task Lag >= 0? Eligible Check}
     
     LagCheck -->|No: Lag < 0 Over-allocated| Ineligible[Task Ineligible: Wait for V to advance]
@@ -32,7 +32,7 @@ graph TD
     EligibleSet -->|2. Sort by Virtual Deadline: V_i = vruntime + q / weight| EarliestDeadline[Pick Task with Earliest Virtual Deadline!]
   end
   
-  subgraph CPU Execution Context
+  subgraph SG3_CpuExecutionContext ["CPU Execution Context"]
     EarliestDeadline -->|3. Dispatch Time Slice q| CPUCore[Physical CPU Core Execution]
   end
 ```

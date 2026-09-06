@@ -20,19 +20,19 @@ How gRPC multiplexes multiple concurrent streams over a single TCP connection us
 
 ```mermaid
 graph TD
-  subgraph Client Service (gRPC Stub)
+  subgraph SG1_ClientServiceGrpc ["Client Service (gRPC Stub)"]
     Client[Client App] -->|1. Call Unary / Streaming RPC| Stub[Protobuf Generated Stub]
     Stub -->|2. Encode to Binary Payload: Varint + Field Tags| Encoder[Protobuf Binary Encoder]
   end
   
-  subgraph HTTP/2 Transport Layer (Single Persistent TCP Connection)
+  subgraph SG2_Http2Transport ["HTTP/2 Transport Layer (Single Persistent TCP Connection)"]
     Encoder -->|3. Wrap in HTTP/2 DATA Frame| Stream1[Stream ID 1: HEADERS + DATA (RPC Call A)]
     Encoder -->|3. Wrap in HTTP/2 DATA Frame| Stream3[Stream ID 3: HEADERS + DATA (RPC Call B)]
     
     Stream1 & Stream3 --> TCP[Single TCP Connection Socket]
   end
   
-  subgraph Server Service (gRPC Handler)
+  subgraph SG3_ServerServiceGrpc ["Server Service (gRPC Handler)"]
     TCP -->|4. HTTP/2 Frame Demultiplexing| Server[Server gRPC Daemon]
     Server -->|5. Decode Protobuf Payload| Handler[Execute Microservice Logic]
   end

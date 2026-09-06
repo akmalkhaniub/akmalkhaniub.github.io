@@ -20,13 +20,13 @@ How graph engines parse Cypher ASTs and use VF2 Subgraph Isomorphism backtrackin
 
 ```mermaid
 graph TD
-  subgraph Cypher AST Query Compilation
+  subgraph SG1_CypherAstQuery ["Cypher AST Query Compilation"]
     Cypher["Query: MATCH (a:User)-[:KNOWS]->(b:User) WHERE a.age > 25 RETURN b.name"] --> Lexer[Lexer & Parser]
     Lexer --> AST["1. Cypher AST: [MatchPatternNode | WhereFilterNode | ProjectionNode]"]
     AST --> Planner[Logical Query Planner]
   end
   
-  subgraph Subgraph Isomorphism (VF2 Backtracking Engine)
+  subgraph SG2_SubgraphIsomorphismVf2 ["Subgraph Isomorphism (VF2 Backtracking Engine)"]
     Planner -->|2. Expand Candidate State Space| VF2["VF2 State Space Search Tree"]
     VF2 -->|3. Evaluate Feasibility Rules| LabelCheck{Check Label & Direction match?}
     LabelCheck -->|Yes: Extend Mapping| ExtendState[Extend Target State Pair: (QueryNode_A -> RealNode_101)]

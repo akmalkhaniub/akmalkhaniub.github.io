@@ -20,7 +20,7 @@ How ZGC uses 64-bit Colored Pointers and JIT Load Barriers to achieve concurrent
 
 ```mermaid
 graph TD
-  subgraph ZGC 64-bit Colored Pointer Memory Layout
+  subgraph SG1_Zgc64Bit ["ZGC 64-bit Colored Pointer Memory Layout"]
     Ptr[64-bit Pointer] --> Final42[Bits 0..41: Object Virtual Address Space (Up to 16 TB)]
     Ptr --> ColorBits[Bits 42..45: Metadata Color Bits]
     
@@ -29,7 +29,7 @@ graph TD
     ColorBits --> Remapped["Bit 44: Remapped (Pointer Updated to New Address)"]
   end
   
-  subgraph JIT Load Barrier (Self-Healing Pointer Execution)
+  subgraph SG2_JitLoadBarrier ["JIT Load Barrier (Self-Healing Pointer Execution)"]
     Mutator[Application Thread: Dereference Pointer 'obj.field'] --> CheckRemapped{Is Pointer Bit 'Remapped' == 1?}
     CheckRemapped -->|Yes: Fast Path < 1ns| ReturnObj[Return Object Address]
     

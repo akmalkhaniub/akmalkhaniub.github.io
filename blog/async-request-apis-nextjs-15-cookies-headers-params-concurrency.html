@@ -130,16 +130,16 @@ export default function Page({ params }: { params: { id: string } }) {
 <p>So why did the React and Next.js engineering teams break backward compatibility across millions of production codebases to force developers to await request APIs?</p>
 <p>The answer has nothing to do with typing ergonomics. It has everything to do with <strong>V8 microtask scheduling, Concurrent Prerendering, and the physical limits of build-time static analysis</strong>.</p>
 <div class="mermaid">graph TD
-  subgraph The Synchronous vs Asynchronous Request Trap
-    subgraph Synchronous Access (Next.js 13/14)
-      Component1[Child Component reads cookies synchronously] --&gt; GlobalBailout[&quot;Immediate Compiler Bailout: Mark ENTIRE Route Dynamic!&quot;]
-      GlobalBailout --&gt; NullifyPrerender[Static Shell Cannot Be Built Ahead of Time]
+  subgraph RequestTrap [&quot;The Synchronous vs Asynchronous Request Trap&quot;]
+    subgraph SyncAccess [&quot;Synchronous Access: Next.js 13 and 14&quot;]
+      Component1[&quot;Child Component reads cookies synchronously&quot;] --&gt; GlobalBailout[&quot;Immediate Compiler Bailout: Mark Entire Route Dynamic&quot;]
+      GlobalBailout --&gt; NullifyPrerender[&quot;Static Shell Cannot Be Built Ahead of Time&quot;]
     end
 
-    subgraph Asynchronous Access (Next.js 15 + React 19)
-      Component2[Component passes Promise: params / cookies] --&gt; DeferredRead[Render tree evaluates without waiting for runtime headers]
-      DeferredRead --&gt; BuildStaticShell[Static Shell Pre-compiled Successfully]
-      DeferredRead --&gt; MicrotaskAwait[Microtask resolves only when await is executed inside Suspense]
+    subgraph AsyncAccess [&quot;Asynchronous Access: Next.js 15 and React 19&quot;]
+      Component2[&quot;Component passes Promise: params and cookies&quot;] --&gt; DeferredRead[&quot;Render tree evaluates without waiting for runtime headers&quot;]
+      DeferredRead --&gt; BuildStaticShell[&quot;Static Shell Pre-compiled Successfully&quot;]
+      DeferredRead --&gt; MicrotaskAwait[&quot;Microtask resolves only when await is executed inside Suspense&quot;]
     end
   end</div>
 <p><em>Figure 1: Concurrency comparison between synchronous parameter blocking and decoupled asynchronous request promise microtask scheduling. Source: ECMAScript &amp; Next.js Core Architecture <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a> <a href="#ref-4" class="citation-link" data-ref="4" title="Reference [4]">[4]</a></sup>.</em></p>

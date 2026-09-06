@@ -20,23 +20,23 @@ How CXL 3.0 and AutoNUMA tier hot and cold memory pages across hardware tiers:
 
 ```mermaid
 graph TD
-  subgraph CPU Execution Core
+  subgraph SG1_CpuExecutionCore ["CPU Execution Core"]
     CPUCore[Physical CPU Core / Execution Context]
   end
   
-  subgraph Tier 0: Local DDR5 DRAM (Fastest)
+  subgraph SG2_Tier0Local ["Tier 0: Local DDR5 DRAM (Fastest)"]
     DRAM[Tier 0: Local DDR5 RAM - 100ns Latency] <--> CPUCore
   end
   
-  subgraph Tier 1: CXL 3.0 Memory Expander (High Capacity)
+  subgraph SG3_Tier1Cxl ["Tier 1: CXL 3.0 Memory Expander (High Capacity)"]
     CXL[Tier 1: CXL Memory Pool - 180ns Latency] <-->|Cache-Coherent PCIe 6.0 Bus| CPUCore
   end
   
-  subgraph Tier 2: NVMe SSD Storage Engine (Massive Scale)
+  subgraph SG4_Tier2Nvme ["Tier 2: NVMe SSD Storage Engine (Massive Scale)"]
     NVMe[Tier 2: NVMe Flash Memory - 10us Latency]
   end
   
-  subgraph Linux AutoNUMA Kernel Tiering Engine
+  subgraph SG5_LinuxAutonumaKernel ["Linux AutoNUMA Kernel Tiering Engine"]
     DRAM -->|Cold Page Demotion: Un-accessed 100s| CXL
     CXL -->|Cold Page Demotion| NVMe
     NVMe -->|Hot Page Promotion: Access Spike| CXL

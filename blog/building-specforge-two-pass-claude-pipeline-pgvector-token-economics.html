@@ -122,19 +122,19 @@
 <h2 id="specforge-system-architecture-two-pass-pipeline">SpecForge System Architecture &amp; Two-Pass Pipeline</h2>
 <p>How SpecForge ingests raw DOCX/PDF PRDs, performs two-pass hierarchical analysis, and indexes user stories into PostgreSQL:</p>
 <div class="mermaid">graph TD
-  subgraph Ingestion &amp; Document Chunking
+  subgraph SG1_IngestionDocumentChunking [&quot;Ingestion &amp; Document Chunking&quot;]
     Doc[Raw PRD / BRD Document .docx/.pdf] --&gt; Ingestion[mammoth / pdfplumber Ingest Engine]
     Ingestion --&gt; Chunks[Hierarchical Markdown Chunking]
   end
   
-  subgraph Two-Pass Claude 3.5 Extraction Engine
+  subgraph SG2_TwoPassClaude [&quot;Two-Pass Claude 3.5 Extraction Engine&quot;]
     Chunks --&gt; Pass1[&quot;Pass 1: Macro Domain &amp; Epic Discovery (Claude 3.5 Sonnet)&quot;]
     Pass1 --&gt; Epics[&quot;Structured Epic Hierarchy (JSON Schema)&quot;]
     Epics --&gt; Pass2[&quot;Pass 2: Granular User Story &amp; Gherkin Synthesis (Parallel Tool Loops)&quot;]
     Pass2 --&gt; Stories[&quot;User Stories + Given-When-Then Acceptance Criteria&quot;]
   end
   
-  subgraph Storage, Deduplication &amp; Telemetry
+  subgraph SG3_StorageDeduplicationTelemetry [&quot;Storage, Deduplication &amp; Telemetry&quot;]
     Stories --&gt; Embedder[&quot;Embedding Generation (text-embedding-3)&quot;]
     Embedder --&gt; PGVector[&quot;PostgreSQL pgvector (Cosine Sim &gt; 0.85 Check)&quot;]
     PGVector --&gt;|Duplicate Detected| Merge[&quot;Automated Merge Recommendation&quot;]

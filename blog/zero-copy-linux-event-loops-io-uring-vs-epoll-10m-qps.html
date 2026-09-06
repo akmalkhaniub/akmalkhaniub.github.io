@@ -122,15 +122,15 @@
 <p>To service a single client request under <code>epoll</code>, an application still has to execute multiple synchronous system calls: <code>epoll_wait()</code> to learn that data is ready, <code>read()</code> to pull bytes across the kernel boundary, and <code>write()</code> to push the response back out. At line rate, the CPU ceases to be a computational engine; it becomes a traffic cop spending its life trapped in the toll booths of kernel context transitions.</p>
 <p>Enter <strong><code>io_uring</code></strong>. Introduced by Jens Axboe in Linux 5.1, <code>io_uring</code> re-architects Linux I/O from first principles by eliminating system calls entirely from the hot path.</p>
 <div class="mermaid">graph TD
-  subgraph epoll Readiness Model vs io_uring Zero-Copy Ring Geometry
-    subgraph 1. Traditional epoll (Syscall Heavy)
+  subgraph SG1_EpollReadinessModel [&quot;epoll Readiness Model vs io_uring Zero-Copy Ring Geometry&quot;]
+    subgraph SG2_1TraditionalEpoll [&quot;1. Traditional epoll (Syscall Heavy)&quot;]
       UserApp[User Application] --&gt;|1. epoll_wait syscall| Kernel1[Kernel: Check Readiness]
       Kernel1 --&gt;|2. Context Switch Wakeup| UserApp
       UserApp --&gt;|3. read/write syscall| Kernel2[Kernel: Copy Payload]
       Kernel2 --&gt;|4. Return Context Switch| UserApp
     end
 
-    subgraph 2. io_uring (Zero Syscall / Lock-Free Shared Rings)
+    subgraph SG3_2IoUring [&quot;2. io_uring (Zero Syscall / Lock-Free Shared Rings)&quot;]
       App[User Application] --&gt;|Push SQE: Non-blocking write| SQ[Shared Submission Queue Ring]
       SQ --&gt;|Kernel Polling Worker: SQPOLL| KernelAsync[Kernel Worker Thread (Ring 0)]
       KernelAsync --&gt;|Direct DMA Transfer| CQ[Shared Completion Queue Ring]

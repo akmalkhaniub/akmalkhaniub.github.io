@@ -19,11 +19,11 @@ graph TD
   A[Client Write Request] --> B[Sequential Append: WAL Log]
   B --> C[In-Memory Write Buffer: MemTable]
   
-  subgraph In-Memory Layer
+  subgraph SG1_InMemoryLayer ["In-Memory Layer"]
     C -->|MemTable Threshold Full| D[Immutable MemTable]
   end
   
-  subgraph Disk Layer: SSTables & Compaction
+  subgraph SG2_DiskLayerSstables ["Disk Layer: SSTables & Compaction"]
     D -->|Flush Sorted File| E[Level 0 SSTable]
     E -->|Background Leveled Compaction| F[Level 1 SSTables]
     F -->|Background Leveled Compaction| G[Level 2 SSTables]

@@ -122,18 +122,18 @@
 <h2 id="event-time-watermark-architecture">Event Time &amp; Watermark Architecture</h2>
 <p>How Watermarks track Event Time progress and trigger window computations despite out-of-order arrivals:</p>
 <div class="mermaid">graph TD
-  subgraph Real-World Out-of-Order Event Arrival (Event Time)
+  subgraph SG1_RealWorldOut [&quot;Real-World Out-of-Order Event Arrival (Event Time)&quot;]
     E1[&quot;Event 1 (t=10:00)&quot;] --&gt; Broker[Kafka Stream Topic]
     E3[&quot;Event 3 (t=10:04)&quot;] --&gt; Broker
     E2[&quot;Event 2 (t=10:02 - Out-of-Order!)&quot;] --&gt; Broker
   end
   
-  subgraph Watermark Generator (Bounded Out-of-Orderness: 2 mins)
+  subgraph SG2_WatermarkGeneratorBounded [&quot;Watermark Generator (Bounded Out-of-Orderness: 2 mins)&quot;]
     Broker --&gt;|Generate Watermark: W = Max(t) - 2 mins| WMEngine[Watermark Generator Node]
     WMEngine --&gt;|Emit WM: W(10:02)| StreamDAG[Stream Operator Window Processor]
   end
   
-  subgraph Window Evaluation &amp; Late Data Handling
+  subgraph SG3_WindowEvaluationLate [&quot;Window Evaluation &amp; Late Data Handling&quot;]
     StreamDAG --&gt;|Evaluate Window [10:00 .. 10:05]| WindowResult[Calculate 5-Min Aggregate]
     StreamDAG --&gt;|Check Late Event (t &lt; Current Watermark)| LateCheck{Is Event Timestamp &lt; W(10:02)?}
     

@@ -18,10 +18,10 @@ How the Chase-Lev Deque balances owner LIFO operations and thief FIFO stealing:
 
 ```mermaid
 graph TD
-  subgraph Worker Thread 0 (Busy Worker)
+  subgraph SG1_WorkerThread0 ["Worker Thread 0 (Busy Worker)"]
     Owner[Worker Thread 0 Owner] -->|1. Push / Pop Tasks at BOTTOM (LIFO Order - Cache Hot!)| Bottom[Bottom Pointer]
     
-    subgraph Chase-Lev Work-Stealing Deque (Worker 0)
+    subgraph SG2_ChaseLevWork ["Chase-Lev Work-Stealing Deque (Worker 0)"]
       Bottom -->|Local Tasks Array| TaskN[Task N]
       TaskN --> TaskN1[Task N-1]
       TaskN1 --> Task0[Task 0: Oldest Parent Task]
@@ -29,7 +29,7 @@ graph TD
     end
   end
   
-  subgraph Worker Thread 1 (Idle Thief)
+  subgraph SG3_WorkerThread1 ["Worker Thread 1 (Idle Thief)"]
     Thief[Idle Worker Thread 1] -->|2. Steal Task from TOP via CAS (FIFO Order)| Top
     Thief -->|3. Execute Steolen Task 0| Exec[Execute Async Task 0]
   end

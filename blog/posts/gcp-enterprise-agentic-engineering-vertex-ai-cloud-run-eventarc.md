@@ -20,7 +20,7 @@ graph TD
   B --> C[Eventarc Event Router]
   C --> D[Cloud Run Worker Pool: Containerized Agent]
   
-  subgraph Cloud Run Worker Environment
+  subgraph SG1_CloudRunWorker ["Cloud Run Worker Environment"]
     D --> E[IAM Service Account Authorization]
     E --> F[Vertex AI: Gemini 1.5 Pro / Flash Model API]
     D --> G[GCP Secret Manager: External API Keys]

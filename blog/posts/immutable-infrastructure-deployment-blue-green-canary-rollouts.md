@@ -18,12 +18,12 @@ Progressive traffic shifting and automated rollback monitoring across applicatio
 graph TD
   User[Client Production Traffic] --> Router[Ingress Load Balancer / Router]
   
-  subgraph Production Environments
+  subgraph SG1_ProductionEnvironments ["Production Environments"]
     Router -->|90% Traffic| Blue[Blue Version v1.4: Stable Live Cluster]
     Router -->|10% Traffic| Canary[Canary Version v1.5: New Release Cluster]
   end
   
-  subgraph Automated Canary Metric Monitor
+  subgraph SG2_AutomatedCanaryMetric ["Automated Canary Metric Monitor"]
     Canary -->|Emit HTTP Telemetry| Prometheus[(Prometheus / CloudWatch Metrics)]
     Prometheus -->|Poll Error Rate & Latency| Controller[Canary Rollout Controller]
     

@@ -20,18 +20,18 @@ How GraphRAG combines vector similarity search with explicit Knowledge Graph tra
 
 ```mermaid
 graph TD
-  subgraph User Query & Hybrid Search Trigger
+  subgraph SG1_UserQueryHybrid ["User Query & Hybrid Search Trigger"]
     Query[User Prompt: 'Which drugs interact with Gene X?'] --> VectorSearch[1. HNSW Vector Similarity Search]
     Query --> EntityExtract[2. Extract Seed Knowledge Graph Entity Node]
   end
   
-  subgraph Knowledge Graph & GNN Embedding Space (TransE: h + r ≈ t)
+  subgraph SG2_KnowledgeGraphGnn ["Knowledge Graph & GNN Embedding Space (TransE: h + r ≈ t)"]
     EntityExtract --> KGNode["Seed Entity Node: Gene X (Vector h)"]
     KGNode -->|3. Explicit Subgraph Hop: INHIBITS| TargetNode["Target Node: Drug Y (Vector t)"]
     VectorSearch -.->|4. Verify Vector Distance| TargetNode
   end
   
-  subgraph Grounded LLM Context Injection
+  subgraph SG3_GroundedLlmContext ["Grounded LLM Context Injection"]
     TargetNode --> StructuredContext["5. Factual Subgraph Context: (Gene X -[INHIBITS]-> Drug Y)"]
     StructuredContext --> LLM["🤖 LLM Generation (Zero Hallucination Grounded Response!)"]
   end

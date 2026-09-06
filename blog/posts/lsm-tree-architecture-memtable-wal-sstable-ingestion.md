@@ -20,15 +20,15 @@ How LSM-Tree storage engines handle writes, maintain ACID durability, and flush 
 graph TD
   WriteReq[Client Put / Delete Request] --> Engine{LSM Storage Engine}
   
-  subgraph ACID Durability Layer
+  subgraph SG1_AcidDurabilityLayer ["ACID Durability Layer"]
     Engine -->|1. Sequential Disk Append| WAL[Write-Ahead Log .wal File]
   end
   
-  subgraph In-Memory RAM Buffer Layer
+  subgraph SG2_InMemoryRam ["In-Memory RAM Buffer Layer"]
     Engine -->|2. Insert Sorted Mutation| MemTable[Active MemTable: In-Memory SkipList]
   end
   
-  subgraph Asynchronous Disk Flushing Layer
+  subgraph SG3_AsynchronousDiskFlushing ["Asynchronous Disk Flushing Layer"]
     MemTable -->|3. MemTable Full >= 64MB| ImmutableMem[Frozen Immutable MemTable]
     ImmutableMem -->|4. Sequential Flush to Disk| Level0SST[Level 0 SSTable .sst File on Disk]
   end

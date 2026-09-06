@@ -16,15 +16,15 @@ Tech Leads must translate internal engineering mechanics into strategic business
 
 ```mermaid
 graph LR
-  subgraph Technical Reality Engineering
+  subgraph SG1_TechnicalRealityEngineering ["Technical Reality Engineering"]
     A[AST Verification & Lint Gates]
     B[Model Token Compute Budgets]
     C[HNSW & Database Schema Controls]
   end
-  subgraph Alignment Translation
+  subgraph SG2_AlignmentTranslation ["Alignment Translation"]
     D[Tech Lead Translation Layer]
   end
-  subgraph Executive C-Suite Metrics
+  subgraph SG3_ExecutiveCSuite ["Executive C-Suite Metrics"]
     E[Product Brand & Reliability Protection]
     F[Predictable Cloud & AI R&D Margin]
     G[Accelerated Feature Time-to-Market]

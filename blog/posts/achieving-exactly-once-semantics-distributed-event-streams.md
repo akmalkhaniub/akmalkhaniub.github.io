@@ -18,13 +18,13 @@ The two-phase commit protocol coordinating atomic multi-partition writes:
 graph TD
   A[Transactional Producer] -->|1. InitTransactions| B[Kafka Transaction Coordinator]
   
-  subgraph Phase 1: Begin & Produce
+  subgraph SG1_Phase1Begin ["Phase 1: Begin & Produce"]
     A -->|2. AddPartitionsToTxn| B
     A -->|3. Produce Messages with PID + SeqNum| C[Kafka Topic Partition A]
     A -->|4. Send Consumer Offsets| D[Kafka Topic Partition B]
   end
   
-  subgraph Phase 2: Commit / Abort Protocol
+  subgraph SG2_Phase2Commit ["Phase 2: Commit / Abort Protocol"]
     A -->|5. EndTxn: COMMIT| B
     B -->|6. Write PREPARE_COMMIT Marker| E[__transaction_state Topic]
     B -->|7. Write Commit Control Markers| C

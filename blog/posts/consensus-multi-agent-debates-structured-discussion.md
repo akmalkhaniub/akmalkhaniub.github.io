@@ -18,7 +18,7 @@ In basic agent operations:
 flowchart TD
     Task[Task Input: Optimize database schema] --> Gen[Generator Agent: Proposes Index Setup]
     
-    subgraph Debate State Machine
+    subgraph SG1_DebateStateMachine ["Debate State Machine"]
         Gen -->|Round 1 Proposal| Critic[Critic Agent: Identifies Page-Split Risks]
         Critic -->|Round 1 Critique| Gen
         Gen -->|Round 2 Revised Proposal| Critic

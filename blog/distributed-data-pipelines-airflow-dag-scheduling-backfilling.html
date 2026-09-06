@@ -122,20 +122,20 @@
 <h2 id="airflow-architecture-dynamic-task-mapping">Airflow Architecture &amp; Dynamic Task Mapping</h2>
 <p>How the Airflow Scheduler parses DAG files, dispatches tasks to distributed worker queues, and dynamically expands parallel task instances:</p>
 <div class="mermaid">graph TD
-  subgraph Airflow Control Plane Architecture
+  subgraph SG1_AirflowControlPlane [&quot;Airflow Control Plane Architecture&quot;]
     Scheduler[Airflow Scheduler Daemon] --&gt;|1. Parse DAG Python Files| DagBag[DagBag Dependency Graphs]
     Scheduler --&gt;|2. Query &amp; Update Task State| MetaDB[(Airflow Metadata Database)]
     Scheduler --&gt;|3. Push QUEUED Tasks| Queue[&quot;Celery Redis Queue / Kubernetes Pod Creator&quot;]
   end
   
-  subgraph Distributed Worker Execution
+  subgraph SG2_DistributedWorkerExecution [&quot;Distributed Worker Execution&quot;]
     Queue --&gt;|4. Pull QUEUED Tasks| Worker1[Celery / K8s Worker Pod 1]
     Queue --&gt;|4. Pull QUEUED Tasks| Worker2[Celery / K8s Worker Pod 2]
     
     Worker1 --&gt;|5. Update State -&gt; SUCCESS| MetaDB
   end
   
-  subgraph Dynamic Task Mapping (expand())
+  subgraph SG3_DynamicTaskMapping [&quot;Dynamic Task Mapping (expand())&quot;]
     UpstreamTask[Upstream Task: Return ['file_1.parquet', 'file_2.parquet']] --&gt;|Runtime Expansion| ExpandedTask1[Mapped Task 1: Process file_1] &amp; ExpandedTask2[Mapped Task 2: Process file_2]
   end</div>
 <h3 id="core-airflow-orchestration-principles">Core Airflow Orchestration Principles</h3>

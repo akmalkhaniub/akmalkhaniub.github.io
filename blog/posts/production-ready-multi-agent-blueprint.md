@@ -30,7 +30,7 @@ graph TD
     Supervisor -->|Assign Draft| Writer[5. Writer Agent]
     Writer -->|Output: Draft Report| Critic[6. Critic Agent]
     
-    subgraph Review Gate [Review & Verification Loop]
+    subgraph SG1_ReviewGateReview ["Review Gate [Review & Verification Loop]"]
         Critic -->|Fails: Critique Loop| Writer
         Critic -->|Passes| Validator[7. Validator Agent]
     end

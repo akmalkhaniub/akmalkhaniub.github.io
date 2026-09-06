@@ -21,7 +21,7 @@ flowchart TD
     Edge -- /blog/* --> Blog[Blog App: Port 3001]
     Edge -- /dashboard/* --> Dashboard[Dashboard App: Port 3002]
     
-    subgraph Shared Assets & Data
+    subgraph SG1_SharedAssetsData ["Shared Assets & Data"]
         Landing -. Asset Prefix .-> S3[CDN/S3 Bucket]
         Blog -. Asset Prefix .-> S3
         Dashboard -. Asset Prefix .-> S3

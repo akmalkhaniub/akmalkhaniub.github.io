@@ -20,7 +20,7 @@ Agentic TDD replaces monolithic single-pass generation with an iterative, contra
 graph TD
   A[User Requirement / Feature Spec] --> B[Phase 1: Test Specification Agent]
   
-  subgraph Red-Green-Refactor Pipeline
+  subgraph SG1_RedGreenRefactor ["Red-Green-Refactor Pipeline"]
     B -->|Generate Unit Tests| C[Execute Test Runner Pytest]
     C -->|Tests FAIL Expected RED| D[Phase 2: Code Implementation Agent]
     C -->|Tests PASS Unexpectedly| E[Reject Invalid Test Suite]

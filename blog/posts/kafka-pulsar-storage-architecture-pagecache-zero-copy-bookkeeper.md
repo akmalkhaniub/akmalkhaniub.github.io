@@ -18,14 +18,14 @@ How Kafka's coupled PageCache Zero-Copy model compares to Apache Pulsar's disagg
 
 ```mermaid
 graph TD
-  subgraph Apache Kafka (Coupled Monolithic Storage & Zero-Copy)
+  subgraph SG1_ApacheKafkaCoupled ["Apache Kafka (Coupled Monolithic Storage & Zero-Copy)"]
     Producer1[Kafka Producer] --> Broker[Kafka Broker Node]
     Broker --> PageCache[Linux OS PageCache Memory]
     PageCache -->|sys_sendfile Zero-Copy DMA| NIC[Network Interface Card (Consumer)]
     Broker -.->|Sequential Append| LocalDisk[Local NVMe SSD Segment Logs]
   end
   
-  subgraph Apache Pulsar (Disaggregated Compute & Storage)
+  subgraph SG2_ApachePulsarDisaggregated ["Apache Pulsar (Disaggregated Compute & Storage)"]
     Producer2[Pulsar Producer] --> StatelessBroker[Stateless Pulsar Broker]
     StatelessBroker -->|Quorum Ledger Write| Bookie1[Apache BookKeeper Node 1]
     StatelessBroker -->|Quorum Ledger Write| Bookie2[Apache BookKeeper Node 2]

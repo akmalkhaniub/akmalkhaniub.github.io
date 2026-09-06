@@ -12,7 +12,7 @@ Here is the blueprint for transforming stochastic LLM chaos into predictable, pr
 
 ```mermaid
 graph TD
-  subgraph Deterministic Agent Engineering Pipeline
+  subgraph SG1_DeterministicAgentEngineering ["Deterministic Agent Engineering Pipeline"]
     Contract["1. Specification-First Contract (OpenAPI / Gherkin)"] --> Skills["2. Modular Agent Skills (SKILL.md & Scripts)"]
     Skills --> PlanGate["3. Two-Pass Planning Gate (plan.md Approval)"]
     PlanGate --> ScopedTools["4. Scoped Tool Sandboxes (Atomic Line Diffs)"]

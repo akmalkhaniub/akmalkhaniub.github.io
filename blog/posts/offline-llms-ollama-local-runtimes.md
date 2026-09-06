@@ -48,12 +48,12 @@ Deploying local models requires understanding the performance and resource trade
 
 ```mermaid
 graph TD
-    subgraph Cloud [Cloud APIs: Claude / GPT]
+    subgraph SG1_CloudCloudApis ["Cloud [Cloud APIs: Claude / GPT]"]
         C_Cap[High Parameters / 100B+] --> C_Lat[Sub-second Latency / 80+ tps]
         C_Lat --> C_Sec[Vulnerable to Network / HIPAA overhead]
     end
     
-    subgraph Local [Local Edge: Ollama / Gemma / Mistral]
+    subgraph SG2_LocalLocalEdge ["Local [Local Edge: Ollama / Gemma / Mistral]"]
         L_Cap[Small Parameters / 7B-9B] --> L_Lat[Hardware Dependent / 15-40 tps]
         L_Lat --> L_Sec[100% Offline / High Privacy]
     end

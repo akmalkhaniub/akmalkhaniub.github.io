@@ -14,14 +14,14 @@ The architectural evolution from pure Python loops to Rust-compiled validation g
 
 ```mermaid
 graph TD
-  subgraph Legacy Pydantic v1 (Pure Python)
+  subgraph SG1_LegacyPydanticV1 ["Legacy Pydantic v1 (Pure Python)"]
     A[Raw JSON Payload] --> B[CPython JSON Decoder]
     B --> C[Python Object Instantiation]
     C --> D[Pure Python Field Validation Loop]
     D --> E[Validated Model Instance]
   end
   
-  subgraph Modern Pydantic v2 (Rust Core)
+  subgraph SG2_ModernPydanticV2 ["Modern Pydantic v2 (Rust Core)"]
     F[Raw JSON Payload / Bytes] --> G[Rust pydantic-core Binary Engine]
     G -->|Direct C-API Memory Allocation| H[Compiled Schema Validation Graph]
     H --> I[Validated FastAPI Model Instance: 10x Speedup]

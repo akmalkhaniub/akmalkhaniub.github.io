@@ -18,7 +18,7 @@ In partitioned agent networks:
 flowchart TD
     State[Common State Base: Step 1] --> Partition{Network Partition Event}
     
-    subgraph Divergent Clusters
+    subgraph SG1_DivergentClusters ["Divergent Clusters"]
         Partition -->|Cluster A Branch| NodeA[Cluster A: Step 2A]
         Partition -->|Cluster B Branch| NodeB[Cluster B: Step 2B]
     end

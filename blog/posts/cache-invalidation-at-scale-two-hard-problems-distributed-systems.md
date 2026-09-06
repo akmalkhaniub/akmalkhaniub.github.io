@@ -18,17 +18,17 @@ How database transaction log streaming guarantees eventual consistency between p
 graph TD
   A[Client Write Request] --> B[Primary Database Write: PostgreSQL / MySQL]
   
-  subgraph Primary Storage Layer
+  subgraph SG1_PrimaryStorageLayer ["Primary Storage Layer"]
     B -->|Write Transaction| C[(Primary Database Storage)]
     B -->|Emit Transaction Log Entry| D[DB Write-Ahead Log WAL / Binlog]
   end
   
-  subgraph CDC Streaming Pipeline
+  subgraph SG2_CdcStreamingPipeline ["CDC Streaming Pipeline"]
     D -->|Capture Log Events| E[CDC Connector: Debezium / Kafka Connect]
     E -->|Publish Event to Partitioned Topic| F[Kafka Event Stream]
   end
   
-  subgraph Distributed Cache Invalidation
+  subgraph SG3_DistributedCacheInvalidation ["Distributed Cache Invalidation"]
     F -->|Consume Invalidation Message| G[Cache Invalidator Worker]
     G -->|Atomic DEL / EVAL| H[(Distributed Cache: Redis Cluster)]
   end

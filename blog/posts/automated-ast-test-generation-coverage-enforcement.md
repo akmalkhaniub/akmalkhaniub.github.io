@@ -20,7 +20,7 @@ The AST Test Synthesizer parses source code into structural nodes before prompti
 graph TD
   A[Target Source Code File] --> B[Python AST Parser ast.parse]
   
-  subgraph Structural AST Branch Extraction
+  subgraph SG1_StructuralAstBranch ["Structural AST Branch Extraction"]
     B --> C[Extract Function Definitions & Type Hints]
     B --> D[Locate Conditional Nodes: If / Except / Match]
     B --> E[Map Boundary Condition Values: None, 0, Negative, Max]

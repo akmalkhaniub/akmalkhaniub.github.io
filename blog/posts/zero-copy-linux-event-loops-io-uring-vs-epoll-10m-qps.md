@@ -12,15 +12,15 @@ Enter **`io_uring`**. Introduced by Jens Axboe in Linux 5.1, `io_uring` re-archi
 
 ```mermaid
 graph TD
-  subgraph epoll Readiness Model vs io_uring Zero-Copy Ring Geometry
-    subgraph 1. Traditional epoll (Syscall Heavy)
+  subgraph SG1_EpollReadinessModel ["epoll Readiness Model vs io_uring Zero-Copy Ring Geometry"]
+    subgraph SG2_1TraditionalEpoll ["1. Traditional epoll (Syscall Heavy)"]
       UserApp[User Application] -->|1. epoll_wait syscall| Kernel1[Kernel: Check Readiness]
       Kernel1 -->|2. Context Switch Wakeup| UserApp
       UserApp -->|3. read/write syscall| Kernel2[Kernel: Copy Payload]
       Kernel2 -->|4. Return Context Switch| UserApp
     end
 
-    subgraph 2. io_uring (Zero Syscall / Lock-Free Shared Rings)
+    subgraph SG3_2IoUring ["2. io_uring (Zero Syscall / Lock-Free Shared Rings)"]
       App[User Application] -->|Push SQE: Non-blocking write| SQ[Shared Submission Queue Ring]
       SQ -->|Kernel Polling Worker: SQPOLL| KernelAsync[Kernel Worker Thread (Ring 0)]
       KernelAsync -->|Direct DMA Transfer| CQ[Shared Completion Queue Ring]

@@ -20,12 +20,12 @@ How Apache Parquet organizes Row Groups, Column Chunks, and RLE Dictionary Encod
 
 ```mermaid
 graph TD
-  subgraph Row-Oriented vs Columnar Memory Layout
+  subgraph SG1_RowOrientedVs ["Row-Oriented vs Columnar Memory Layout"]
     RowLayout["Row-Oriented (PostgreSQL): [Row0: id, country, rev] [Row1: id, country, rev]"]
     ColLayout["Columnar (Parquet): [Country Col: US, US, CA...] [Revenue Col: 100, 200, 150...]"]
   end
   
-  subgraph Apache Parquet File Structure (128 MB Row Groups)
+  subgraph SG2_ApacheParquetFile ["Apache Parquet File Structure (128 MB Row Groups)"]
     ColLayout --> RowGroup1[Row Group 1: 1,000,000 Rows]
     RowGroup1 --> ColChunk1[Column Chunk: 'Country' Data]
     RowGroup1 --> ColChunk2[Column Chunk: 'Revenue' Data]
@@ -34,7 +34,7 @@ graph TD
     ColChunk1 --> DataPage[RLE Data Page: (3, id=0), (2, id=1)]
   end
   
-  subgraph Query Execution: Projection & Predicate Pushdown
+  subgraph SG3_QueryExecutionProjection ["Query Execution: Projection & Predicate Pushdown"]
     DataPage -->|1. Min/Max Statistics Check: Skip Group if max < 200| Pruning[Row Group Pruned!]
     DataPage -->|2. SIMD Vector Execution| SIMD[Execute SUM directly on Compressed Array!]
   end

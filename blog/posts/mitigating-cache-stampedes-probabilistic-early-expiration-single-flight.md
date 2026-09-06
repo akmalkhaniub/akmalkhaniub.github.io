@@ -16,12 +16,12 @@ How Single-Flight coalesces 1,000 concurrent cache misses into a single database
 
 ```mermaid
 graph TD
-  subgraph Unprotected Thundering Herd
+  subgraph SG1_UnprotectedThunderingHerd ["Unprotected Thundering Herd"]
     A1[1,000 Concurrent Requests] -->|Cache Miss| B1[(Primary Database Storage)]
     B1 -->|1,000 Duplicate DB Queries| C1[Database CPU Spike & Crash]
   end
   
-  subgraph Single-Flight Coalesced Architecture
+  subgraph SG2_SingleFlightCoalesced ["Single-Flight Coalesced Architecture"]
     A2[1,000 Concurrent Requests] -->|Cache Miss| D[Single-Flight Group]
     D -->|1st Request Executes Fetch| E[(Primary Database Storage)]
     D -->|999 Requests Block & Wait| F[Shared Single Result Broadcast]

@@ -18,7 +18,7 @@ How Circuit Breakers trip and isolate resource pools during downstream outages:
 
 ```mermaid
 graph TD
-  subgraph Circuit Breaker Finite State Machine
+  subgraph SG1_CircuitBreakerFinite ["Circuit Breaker Finite State Machine"]
     StateClosed[Closed State: Normal Operations] -->|1. Failure Rate > Threshold e.g., 50%| StateOpen[Open State: Fail-Fast Mode]
     StateOpen -->|2. Sleep Window Expired e.g., 10s| StateHalfOpen[Half-Open State: Trial Probe Mode]
     
@@ -26,7 +26,7 @@ graph TD
     StateHalfOpen -->|4. Probe Failure Detected| StateOpen
   end
   
-  subgraph Bulkhead Isolation Pools
+  subgraph SG2_BulkheadIsolationPools ["Bulkhead Isolation Pools"]
     ClientReq[Incoming HTTP Request] --> Router{Bulkhead Resource Router}
     Router -->|Pool A: Max 10 Threads| PaymentPool[Payment Service Bulkhead]
     Router -->|Pool B: Max 5 Threads| SearchPool[Search Service Bulkhead]

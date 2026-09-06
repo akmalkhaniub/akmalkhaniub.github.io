@@ -133,18 +133,18 @@
 <div class="mermaid">flowchart TD
     UserQuery[User Query: 'Billing code 99214 under audit'] --&gt; InputProc{Input Process}
     
-    subgraph Retrieval [Parallel Retrieval Layer]
+    subgraph SG1_RetrievalParallelRetrieval [&quot;Retrieval [Parallel Retrieval Layer]&quot;]
         InputProc --&gt;|1a. Vector Embeddings| VecSearch[pgvector Semantic Search]
         InputProc --&gt;|1b. Text Tokenization| LexSearch[PostgreSQL Full-Text Search]
     end
 
-    subgraph Fusion [Fusion &amp; Filtering Layer]
+    subgraph SG2_FusionFusionFiltering [&quot;Fusion [Fusion &amp; Filtering Layer]&quot;]
         VecSearch --&gt;|2a. Top 50 Vector Matches| RRF[Reciprocal Rank Fusion RRF]
         LexSearch --&gt;|2b. Top 50 Keyword Matches| RRF
         RRF --&gt;|3. Top 20 Merged Candidates| Reranker[Cross-Encoder Reranker]
     end
 
-    subgraph Generation [Context Generation]
+    subgraph SG3_GenerationContextGeneration [&quot;Generation [Context Generation]&quot;]
         Reranker --&gt;|4. Top 5 Highly-Relevant Chunks| Context[Final Context Payload]
         Context --&gt;|5. Structured Prompt| LLM[Ollama / Anthropic Claude]
         LLM --&gt;|6. Accurate Answer| User[Final User Output]

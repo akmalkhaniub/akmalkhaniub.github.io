@@ -22,20 +22,20 @@ graph TD
   
   Router -->|2. Key 'user_88' falls in Range 2 ['g', 'p')| Node1
   
-  subgraph Physical Database Cluster (3 Nodes)
-    subgraph Server Node 1
+  subgraph SG1_PhysicalDatabaseCluster ["Physical Database Cluster (3 Nodes)"]
+    subgraph SG2_ServerNode1 ["Server Node 1"]
       R1_Leader[Range 1 Leader: 'a' - 'f']
       R2_Leader[Range 2 Leader: 'g' - 'p']
       R3_Follower[Range 3 Follower: 'q' - 'z']
     end
     
-    subgraph Server Node 2
+    subgraph SG3_ServerNode2 ["Server Node 2"]
       R1_Follower[Range 1 Follower]
       R2_Follower2[Range 2 Follower]
       R3_Leader[Range 3 Leader]
     end
     
-    subgraph Server Node 3
+    subgraph SG4_ServerNode3 ["Server Node 3"]
       R1_Follower2[Range 1 Follower]
       R2_Follower3[Range 2 Follower]
       R3_Follower2[Range 3 Follower]

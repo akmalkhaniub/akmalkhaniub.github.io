@@ -16,17 +16,17 @@ HNSW acts as a multi-layer skip-list for high-dimensional vector spaces:
 
 ```mermaid
 graph TD
-  subgraph Layer 2: Sparse Entry Layer
+  subgraph SG1_Layer2Sparse ["Layer 2: Sparse Entry Layer"]
     A((Vector 10)) ----> B((Vector 88))
   end
   
-  subgraph Layer 1: Intermediate Routing Layer
+  subgraph SG2_Layer1Intermediate ["Layer 1: Intermediate Routing Layer"]
     A1((Vector 10)) --> A2((Vector 45))
     A2 --> B1((Vector 88))
     B1 --> B2((Vector 95))
   end
   
-  subgraph Layer 0: Dense Base Layer
+  subgraph SG3_Layer0Dense ["Layer 0: Dense Base Layer"]
     A1_0((Vector 10)) --> A1_1((Vector 12))
     A2_0((Vector 45)) --> A2_1((Vector 48))
     B1_0((Vector 88)) --> B1_1((Vector 90))

@@ -20,16 +20,16 @@ How MVCC maintains tuple version chains to provide consistent Read Snapshots wit
 
 ```mermaid
 graph TD
-  subgraph Tuple Version Chain in Storage (Row: 'account_101')
+  subgraph SG1_TupleVersionChain ["Tuple Version Chain in Storage (Row: 'account_101')"]
     V1["Version 1: Balance=$100 (xmin: 100, xmax: 105)"] --> V2["Version 2: Balance=$150 (xmin: 105, xmax: inf)"]
   end
   
-  subgraph Concurrent Transaction Read Snapshots
+  subgraph SG2_ConcurrentTransactionRead ["Concurrent Transaction Read Snapshots"]
     TxA["Tx A (Start TxID: 102) Read Query"] -->|Visits Chain: Sees xmin 100 <= 102 < xmax 105| V1
     TxB["Tx B (Start TxID: 110) Read Query"] -->|Visits Chain: Sees xmin 105 <= 110 < inf| V2
   end
   
-  subgraph Snapshot Isolation Visibility Check
+  subgraph SG3_SnapshotIsolationVisibility ["Snapshot Isolation Visibility Check"]
     TxA -.->|Reads Immutable Historical Snapshot| ReadA[Balance = $100 (Zero Locking!)]
     TxB -.->|Reads Latest Committed Snapshot| ReadB[Balance = $150]
   end

@@ -15,28 +15,28 @@ When you call `fetch()` in a Next.js App Router Server Component, your request p
 flowchart LR
     R[Server Component<br/>fetch call] --> C1
 
-    subgraph C1 [Cache 1: Request Memoisation]
+    subgraph SG1_C1Cache1 ["C1 [Cache 1: Request Memoisation]"]
         M1[Deduplicates identical<br/>fetch() calls in same render]
         M1 --> M1D[Scope: single request<br/>TTL: request lifetime]
     end
 
     C1 --> C2
 
-    subgraph C2 [Cache 2: Data Cache]
+    subgraph SG2_C2Cache2 ["C2 [Cache 2: Data Cache]"]
         M2[Persistent fetch() cache<br/>across requests & deployments]
         M2 --> M2D[Scope: server-wide<br/>TTL: until revalidated]
     end
 
     C2 --> C3
 
-    subgraph C3 [Cache 3: Full Route Cache]
+    subgraph SG3_C3Cache3 ["C3 [Cache 3: Full Route Cache]"]
         M3[Pre-rendered HTML<br/>cached at build time]
         M3 --> M3D[Scope: static pages only<br/>TTL: until next build]
     end
 
     C3 --> C4
 
-    subgraph C4 [Cache 4: Router Cache]
+    subgraph SG4_C4Cache4 ["C4 [Cache 4: Router Cache]"]
         M4[Client-side prefetch<br/>cache in browser]
         M4 --> M4D[Scope: browser session<br/>TTL: 30s static / 5min dynamic]
     end

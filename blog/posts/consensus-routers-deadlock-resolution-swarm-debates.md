@@ -21,7 +21,7 @@ flowchart TD
     Check -->|No: Majority Met| Execute[Execute Selected Migration Tool]
     Check -->|Yes: Split Vote| Router[Consensus Routing Middleware]
     
-    subgraph Fallback Escalation
+    subgraph SG1_FallbackEscalation ["Fallback Escalation"]
         Router -->|Route to Supervisor| Sup[Supervisor LLM: High-Context Tie Breaker]
         Router -->|Route to Human| HITL[Human-In-The-Loop Approval Gate]
     end

@@ -125,11 +125,11 @@
 <p>Building a production-grade, deterministic matching engine requires mastering <strong>CPU cache line geometry (L1/L2/L3)</strong>, eliminating <strong>False Sharing</strong>, and designing <strong>lock-free circular ring buffers (the LMAX Disruptor pattern)</strong>.</p>
 <p>This architectural guide examines the internal mechanics of zero-allocation Limit Order Books, mechanical sympathy with modern x86/ARM hardware, and the data structures that power sub-microsecond trade execution.</p>
 <div class="mermaid">graph TD
-  subgraph Ultra-Low Latency Limit Order Book Pipeline
+  subgraph SG1_UltraLowLatency [&quot;Ultra-Low Latency Limit Order Book Pipeline&quot;]
     NIC[&quot;Kernel-Bypass NIC (Solarflare / DPDK)&quot;] --&gt; RingBuffer[&quot;1. Lock-Free SPSC Ring Buffer (LMAX Disruptor Pattern)&quot;]
     RingBuffer --&gt; Matcher[&quot;2. Core Matching Engine (Pinned to Isolated CPU Core)&quot;]
     
-    subgraph In-Cache LOB Structures
+    subgraph SG2_InCacheLob [&quot;In-Cache LOB Structures&quot;]
       Matcher &lt;--&gt; Bids[&quot;Bid Ladder: Price-Time FIFO (Dense Cache-Aligned Buckets)&quot;]
       Matcher &lt;--&gt; Asks[&quot;Ask Ladder: Price-Time FIFO (Dense Cache-Aligned Buckets)&quot;]
     end
@@ -168,7 +168,7 @@ Cache-Aligned Fix (64-byte Padding):
 </ol>
 <p>If prices are identical, orders are matched strictly in chronological arrival order (<strong>Price-Time Priority / FIFO</strong>).</p>
 <div class="mermaid">graph LR
-  subgraph Limit Order Book Structure (Bids vs Asks)
+  subgraph SG3_LimitOrderBook [&quot;Limit Order Book Structure (Bids vs Asks)&quot;]
     Bids[&quot;BIDS (Descending)\n$100.50 (Qty: 500) -&gt; [Ord1] &lt;-&gt; [Ord2]\n$100.40 (Qty: 1200) -&gt; [Ord3]\n$100.30 (Qty: 800) -&gt; [Ord4]&quot;]
     Spread[&quot;=== SPREAD: $0.10 ===&quot;]
     Asks[&quot;ASKS (Ascending)\n$100.60 (Qty: 300) -&gt; [Ord5] &lt;-&gt; [Ord6]\n$100.70 (Qty: 1500) -&gt; [Ord7]\n$100.80 (Qty: 2000) -&gt; [Ord8]&quot;]
@@ -188,7 +188,7 @@ Cache-Aligned Fix (64-byte Padding):
 <h2 id="3-the-lock-free-single-producer-single-consumer-spsc-ring-buffer">3. The Lock-Free Single-Producer Single-Consumer (SPSC) Ring Buffer</h2>
 <p>To pass market orders from the network thread to the matching core without thread locking, high-frequency systems implement the <strong>LMAX Disruptor circular ring buffer pattern</strong>:</p>
 <div class="mermaid">graph TD
-  subgraph Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)
+  subgraph SG4_LockFreeCircular [&quot;Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)&quot;]
     Head[&quot;Producer Head Sequence (Padded 64B)&quot;] --&gt;|Writes Next Event| Slot[&quot;Slot [head &amp; (Size - 1)]&quot;]
     Slot --&gt; Tail[&quot;Consumer Tail Sequence (Padded 64B)&quot;]
   end</div>

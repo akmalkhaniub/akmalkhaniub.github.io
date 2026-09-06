@@ -126,17 +126,17 @@
 <h2 id="linux-iouring-shared-memory-ring-buffer-architecture">Linux <code>io_uring</code> Shared Memory Ring Buffer Architecture</h2>
 <p>How <code>io_uring</code> uses kernel-shared Submission (SQ) and Completion (CQ) ring buffers for zero-syscall I/O:</p>
 <div class="mermaid">graph TD
-  subgraph User-Space Database Storage Engine
+  subgraph SG1_UserSpaceDatabase [&quot;User-Space Database Storage Engine&quot;]
     AppMem[Page-Aligned Memory Buffer: O_DIRECT DMA Target]
     SQE_Prep[1. Prepare Submission Queue Entry: IORING_OP_READV]
   end
   
-  subgraph Kernel Shared Memory (mmap Ring Buffers)
+  subgraph SG2_KernelSharedMemory [&quot;Kernel Shared Memory (mmap Ring Buffers)&quot;]
     SQE_Prep --&gt;|2. Push SQE to Tail| SQ[Submission Queue Ring Buffer: SQ Ring]
     CQ[Completion Queue Ring Buffer: CQ Ring] --&gt;|5. Pop CQE from Head| AppMem
   end
   
-  subgraph Linux Kernel io_uring &amp; NVMe Subsystem
+  subgraph SG3_LinuxKernelIo [&quot;Linux Kernel io_uring &amp; NVMe Subsystem&quot;]
     SQ --&gt;|3. Kernel Worker or SQPoll Thread Fetches SQE| KernelDriver[Linux Block I/O Layer]
     KernelDriver --&gt;|4. Zero-Copy DMA Direct to NVMe| NVMe[Physical NVMe SSD Controller]
     NVMe --&gt;|Completion Notification| CQ

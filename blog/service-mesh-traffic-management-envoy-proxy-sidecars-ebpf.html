@@ -122,22 +122,22 @@
 <h2 id="service-mesh-control-plane-ebpf-data-plane-architecture">Service Mesh Control Plane &amp; eBPF Data Plane Architecture</h2>
 <p>How the Service Mesh Control Plane manages traffic routing and mTLS via Envoy sidecars and eBPF kernel sockets:</p>
 <div class="mermaid">graph TD
-  subgraph Service Mesh Control Plane (Istiod)
+  subgraph SG1_ServiceMeshControl [&quot;Service Mesh Control Plane (Istiod)&quot;]
     ControlPlane[Control Plane: xDS gRPC Server] --&gt;|1. Stream Dynamic Config (xDS APIs: LDS, RDS, CDS, EDS)| Sidecar1
     ControlPlane --&gt;|1. Stream Dynamic Config| Sidecar2
     CA[SPIFFE / SPIRE CA] --&gt;|2. Issue mTLS X.509 Certs| Sidecar1 &amp; Sidecar2
   end
   
-  subgraph Data Plane: Kubernetes Pod A
+  subgraph SG2_DataPlaneKubernetes [&quot;Data Plane: Kubernetes Pod A&quot;]
     AppA[Microservice A Container] --&gt;|3. Outbound TCP Traffic| Sidecar1[Envoy Proxy Sidecar Container]
   end
   
-  subgraph Kernel eBPF Sockmap Acceleration (Cilium Ambient Mesh)
+  subgraph SG3_KernelEbpfSockmap [&quot;Kernel eBPF Sockmap Acceleration (Cilium Ambient Mesh)&quot;]
     Sidecar1 --&gt;|4. Standard TCP Socket Loopback| KernelSockmap[eBPF sockmap BPF Program]
     KernelSockmap --&gt;|5. Bypass Network Stack &amp; iptables!| Sidecar2[Envoy Proxy Sidecar Container]
   end
   
-  subgraph Data Plane: Kubernetes Pod B
+  subgraph SG4_DataPlaneKubernetes [&quot;Data Plane: Kubernetes Pod B&quot;]
     Sidecar2 --&gt;|6. Inbound mTLS Decrypted Traffic| AppB[Microservice B Container]
   end</div>
 <h3 id="core-service-mesh-principles">Core Service Mesh Principles</h3>

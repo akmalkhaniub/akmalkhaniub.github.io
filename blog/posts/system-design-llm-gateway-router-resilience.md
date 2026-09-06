@@ -22,7 +22,7 @@ To prevent outages, developers wrap their LLM calls inside a resilient **LLM Gat
 flowchart TD
     Request[Agent Prompt Request] --> Gate[LLM Gateway Router]
     
-    subgraph Circuit Breaker States
+    subgraph SG1_CircuitBreakerStates ["Circuit Breaker States"]
         Gate -->|State: CLOSED| CallPrimary[Try Primary Provider: Claude 3.5]
         Gate -->|State: OPEN| Failover[Route straight to Backup: Gemini 2.0]
         
