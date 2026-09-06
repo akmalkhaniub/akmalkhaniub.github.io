@@ -75,6 +75,43 @@ Every compelling technical blog post follows this narrative arc:
 
 ---
 
+## 🖼️ Figure Integration & Caption Protocol
+
+Never "throw in" a diagram or chart in isolation. In high-tier engineering writing, visuals must be woven seamlessly into the argument:
+
+1. **Preceding Text Introduction**: Always prepare the reader for the figure in the preceding paragraph:
+   > *"To trace how state mutations propagate through these two disparate runtimes, examine the data-flow topology illustrated in Figure 1 below."*
+2. **Explicit Numbered Captions**: Every diagram must have an explicit, italicized caption immediately beneath it explaining what it depicts, defining non-obvious labels, and citing its architectural source:
+   > *Figure 1: High-Level Intermediate Representation (HIR) lowering pipeline and reactive scope inference in the React Compiler. Adapted from Savona & Hanlon (2024) [1].*
+3. **Follow-Through Analysis**: Immediately after the figure, analyze its critical components in prose. Never assume the figure explains itself.
+
+---
+
+## 📑 Authoritative Citations & Scholarly References
+
+Technical authority is anchored in primary sources. Every major architecture essay must substantiate its technical claims with precise citations:
+
+1. **In-Text Reference Markers**: Use standard numbered citations (`[1]`, `[2]`, `[3]`) when asserting performance numbers, citing compiler design decisions, referencing RFCs, or quoting framework creators.
+2. **Primary Sources Required**:
+   * **RFCs and Specifications**: Official React RFCs, W3C Web Vitals specs, ECMAScript proposals, IETF drafts.
+   * **Compiler & Architecture Papers**: Foundational computer science literature (e.g. Cytron et al. on SSA form, Tarjan on dominator trees).
+   * **Keynote & Conference Talks**: Primary presentations by framework creators (React Conf, JSConf, ViteConf) with speaker names and years.
+   * **Benchmark Suites**: Public, reproducible benchmark repositories (e.g. `krausest/js-framework-benchmark`).
+3. **Formal Bibliography Section**: Every essay must conclude with a structured `## References & Further Reading` section featuring clean, clickable markdown links.
+
+---
+
+## 🌊 Fluid Narrative Flow vs. Formulaic Catechisms
+
+Avoid turning architectural investigations into a dry questionnaire (e.g., do not name sections literally *"Why this feature"*, *"Why now"*, *"Why not"*). 
+
+Instead, weave these fundamental inquiries into **thematic, organic chapter titles** that advance a single, unified thesis:
+* Instead of *"1. Why this feature"*, write *"1. The Sisyphus of the Virtual DOM: The Hidden Cost of Top-Down Reconciliation"*.
+* Instead of *"2. Why now"*, write *"2. The 200-Millisecond Reckoning: Google INP and the SSA Compiler Breakthrough"*.
+* Instead of *"3. Why not"*, write *"3. The Heresy of Signals: Why Fine-Grained Reactivity Was Rejected"*.
+
+---
+
 ## 📚 Reference Guides
 For deep dive examples and line-by-line before/after rewrites, consult:
 * [Writer Archetypes & Before/After Transformations](./references/writer-archetypes.md)
