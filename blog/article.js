@@ -65,11 +65,26 @@
     }
 
     if (window.mermaid && document.querySelector('.mermaid')) {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       mermaid.initialize({
         startOnLoad: false,
-        theme: 'neutral',
-        securityLevel: 'strict',
-        flowchart: { useMaxWidth: false, htmlLabels: true }
+        theme: 'base',
+        securityLevel: 'loose',
+        themeVariables: {
+          fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+          fontSize: '14px',
+          darkMode: isDark,
+          background: isDark ? '#0f172a' : '#ffffff',
+          mainBkg: isDark ? '#1e293b' : '#ffffff',
+          textColor: isDark ? '#f8fafc' : '#0f172a',
+          lineColor: isDark ? '#38bdf8' : '#0284c7',
+          clusterBkg: isDark ? 'rgba(30, 41, 59, 0.75)' : '#f8fafc',
+          clusterBorder: isDark ? '#38bdf8' : '#0284c7',
+          titleColor: isDark ? '#38bdf8' : '#0369a1',
+          edgeLabelBackground: isDark ? '#0f172a' : '#ffffff',
+          tertiaryTextColor: isDark ? '#f8fafc' : '#0f172a'
+        },
+        flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' }
       });
       mermaid.run({ querySelector: '.mermaid' }).then(() => {
         document.querySelectorAll('.mermaid').forEach(block => {
