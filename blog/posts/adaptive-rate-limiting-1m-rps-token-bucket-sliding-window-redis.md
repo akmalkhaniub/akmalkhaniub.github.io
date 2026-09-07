@@ -9,7 +9,7 @@ Now consider the opposite extreme: enforce rate limits entirely in local proxy m
 Solving rate limiting at one million requests per second requires **Hierarchical Adaptive Rate Limiting**: decoupling local microsecond validation from asynchronous global quota reconciliation.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_HierarchicalAdaptiveRate ["Hierarchical Adaptive Rate Limiting at Scale"]
     Traffic[1,000,000 Inbound RPS] --> Proxy1[Edge Proxy Node A]
     Traffic --> Proxy2[Edge Proxy Node B]
@@ -127,7 +127,7 @@ Production systems enforce **AWS Full Jitter Backoff**, which decorrelates retry
 $$\text{Sleep Time} = \text{random}\Big(0, \; \min(\text{MaxSleep}, \; \text{BaseSleep} \times 2^{\text{attempt}})\Big)$$
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG4_RegularExponentialBackoff ["Regular Exponential Backoff vs Full Jitter Backoff"]
     subgraph SG5_1RegularExponential ["1. Regular Exponential Backoff (Thundering Herd)"]
       F1[10,000 Concurrent 429 Failures] -->|All Sleep Exactly 4.0s| Spike["Spike: 10,000 Retries at t=4.0s (System Meltdown)"]

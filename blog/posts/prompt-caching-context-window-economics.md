@@ -22,7 +22,7 @@ Every LLM API invocation is billed on token counts — both input and output. Fo
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-graph LR
+flowchart TD
     subgraph SG1_PerRequestToken ["Per Request Token Breakdown"]
         A[System Prompt<br/>~4000 tokens] --> T[Total Input]
         B[RAG Context<br/>~5000 tokens] --> T
@@ -297,7 +297,7 @@ In our next article, we explore **Model Routing** — the strategy of dynamicall
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Anthropic Prompt Caching Guide**: [Cache Control API Reference](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
 *   **OpenAI Prompt Caching**: [Automatic Caching in the Chat Completions API](https://platform.openai.com/docs/guides/prompt-caching)
 *   **LiteLLM**: [Unified LLM Gateway with Caching Support](https://docs.litellm.ai/)

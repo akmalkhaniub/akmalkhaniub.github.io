@@ -19,9 +19,9 @@ This article details classic 2PC state machines, Percolator Primary/Secondary lo
 How Percolator designates a Primary Lock to achieve non-blocking atomic commits across distributed shards:
 
 ```mermaid
-graph TD
-  Client[Transaction Client] -->|1. Prewrite Phase: Write Data + Secondary Locks| Shard2[Shard 2: Key 'account_B']
-  Client -->|1. Prewrite Phase: Write Data + Primary Lock| Shard1[Shard 1: Key 'account_A' (Primary Lock Target)]
+flowchart TD
+  Client[Transaction Client] -->|Prewrite Phase - Write Data + Secondary Locks| Shard2[Shard 2: Key 'account_B']
+  Client -->|Prewrite Phase - Write Data + Primary Lock| Shard1[Shard 1: Key 'account_A' (Primary Lock Target)]
   
   subgraph SG1_PrewritePhaseAcquire ["Prewrite Phase (Acquire Locks)"]
     Shard1 -->|Lock Status| LockA[Primary Lock Set on account_A]
@@ -29,13 +29,13 @@ graph TD
   end
   
   subgraph SG2_CommitPhaseSingle ["Commit Phase (Single Point of Truth)"]
-    Client -->|2. Commit Phase: Commit Primary Lock ONLY| Shard1
-    Shard1 -->|3. Primary Lock Committed!| TxSuccess[🎉 TRANSACTION IS IRREVOCABLY COMMITTED!]
+    Client -->|Commit Phase - Commit Primary Lock ONLY| Shard1
+    Shard1 -->|Primary Lock Committed!| TxSuccess[ TRANSACTION IS IRREVOCABLY COMMITTED!]
   end
   
   subgraph SG3_BackgroundAsyncLock ["Background Async Lock Resolution"]
-    TxSuccess -->|4. Async Background Rollout| Shard2
-    Shard2 -->|5. Convert Secondary Lock to Value| Complete[Complete Transaction on Shard 2]
+    TxSuccess -->|Async Background Rollout| Shard2
+    Shard2 -->|Convert Secondary Lock to Value| Complete[Complete Transaction on Shard 2]
   end
 ```
 

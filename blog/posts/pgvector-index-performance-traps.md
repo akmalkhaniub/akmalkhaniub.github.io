@@ -14,14 +14,14 @@ pgvector supports two search modes: **exact k-NN** (sequential scan — always c
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     Q[Vector Query] --> P{Index exists<br/>and usable?}
-    P -->|No index| S1[💥 Trap 1: Sequential scan<br/>O-n — 4s on 1M rows]
-    P -->|Wrong operator| S2[💥 Trap 2: Wrong distance operator<br/>Index ignored silently]
-    P -->|Filter before ANN| S3[💥 Trap 3: WHERE filter kills<br/>index — exact scan fallback]
+    P -->|No index| S1[ Trap 1: Sequential scan<br/>O-n — 4s on 1M rows]
+    P -->|Wrong operator| S2[ Trap 2: Wrong distance operator<br/>Index ignored silently]
+    P -->|Filter before ANN| S3[ Trap 3: WHERE filter kills<br/>index — exact scan fallback]
     P -->|Index exists| C{ef_search<br/>configured?}
-    C -->|Default ef_search=40| S4[💥 Trap 4: Poor recall<br/>missing relevant results]
+    C -->|Default ef_search=40| S4[ Trap 4: Poor recall<br/>missing relevant results]
     C -->|OK| D{Vacuum run<br/>recently?}
-    D -->|No vacuum| S5[💥 Trap 5: Bloat degrades<br/>HNSW graph quality]
-    D -->|OK| R[✅ Fast ANN search<br/>< 10ms]
+    D -->|No vacuum| S5[ Trap 5: Bloat degrades<br/>HNSW graph quality]
+    D -->|OK| R[ Fast ANN search<br/>< 10ms]
 
     style S1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style S2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -336,7 +336,7 @@ pgvector's greatest strength — living inside Postgres — is also its greatest
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 - **pgvector GitHub**: [pgvector: Open-source vector similarity search for Postgres](https://github.com/pgvector/pgvector)
 - **pgvector HNSW Parameters**: [Indexing configuration guide](https://github.com/pgvector/pgvector#hnsw)
 - **PostgreSQL EXPLAIN**: [Understanding query plans](https://www.postgresql.org/docs/current/using-explain.html)

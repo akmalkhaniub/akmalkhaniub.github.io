@@ -15,7 +15,7 @@ This article details how to construct a streaming guardrail scanner.
 The guardrail scanner buffers token streams, runs parallel classification, and controls client responses:
 
 ```mermaid
-graph TD
+flowchart TD
   A[LLM Inference Engine Stream] -->|Yield Raw Token Chunks| B[Sliding-Window Token Buffer]
   
   subgraph SG1_RealTimeGuardrail ["Real-Time Guardrail Gate"]

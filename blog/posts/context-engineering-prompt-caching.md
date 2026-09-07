@@ -20,34 +20,34 @@ To build responsive, cost-effective agents, we need to optimize our context wind
 Below is the execution flow of an optimized MCP gateway that intercepts incoming prompt frames, computes semantic embeddings, runs similarity searches against a Redis cache, and dynamically prunes prompt components before executing LLM requests.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
     classDef cache fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef llm fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef db fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
 
-    User[User Prompt / Agent Task] -->|1. Request| Gateway[Context Gateway Proxy]
-    Gateway -->|2. Generate Embedding| Embedder[Embeddings API / text-embedding-004]
+    User[User Prompt / Agent Task] -->|Request| Gateway[Context Gateway Proxy]
+    Gateway -->|Generate Embedding| Embedder[Embeddings API / text-embedding-004]
     
-    Embedder -->|3. Query Vector Index| RedisVec[(Redis Vector Cache)]
-    RedisVec -->|4. Similarity Match| MatchCheck{Cosine Similarity > 0.92?}
+    Embedder -->|Query Vector Index| RedisVec[(Redis Vector Cache)]
+    RedisVec -->|Similarity Match| MatchCheck{Cosine Similarity > 0.92?}
     
-    MatchCheck -->|Yes: Cache Hit| ReturnCached[Retrieve Cached LLM Output]
+    MatchCheck -->|Yes - Cache Hit| ReturnCached[Retrieve Cached LLM Output]
     ReturnCached -->|Fast Path / ~50ms| Gateway
     
-    MatchCheck -->|No: Cache Miss| TokenCheck{Payload Size > Token Budget?}
+    MatchCheck -->|No - Cache Miss| TokenCheck{Payload Size > Token Budget?}
     
     TokenCheck -->|Yes| ContextPruner[Prune Context / Summarize Logs]
     TokenCheck -->|No| PromptAssembler[Assemble Prompt Bundle]
     
     ContextPruner --> PromptAssembler
-    PromptAssembler -->|5. Run Inference| LLM[LLM / Gemini 1.5 Pro]
+    PromptAssembler -->|Run Inference| LLM[LLM / Gemini 1.5 Pro]
     
-    LLM -->|6. Return Output| SaveCache[Store Prompt Embedding & LLM Output]
+    LLM -->|Return Output| SaveCache[Store Prompt Embedding & LLM Output]
     SaveCache -->|Write Async| RedisVec
     SaveCache --> Gateway
     
-    Gateway -->|7. Return Response| User
+    Gateway -->|Return Response| User
 
     class User start;
     class Gateway,Embedder,MatchCheck,TokenCheck,ContextPruner,PromptAssembler cache;

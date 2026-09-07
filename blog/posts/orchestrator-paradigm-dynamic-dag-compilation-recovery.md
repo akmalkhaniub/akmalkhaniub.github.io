@@ -13,14 +13,14 @@ To build robust multi-agent systems, modern architectures adopt **The Orchestrat
 The Orchestrator operates as a meta-controller, isolating execution contexts across specialized worker nodes:
 
 ```mermaid
-graph TD
+flowchart TD
   A[User Goal: Refactor Database Access Layer] --> B[Orchestrator Agent: DAG Compilation]
   B --> C[Task 1: Generate Schema AST Interfaces]
   B --> D[Task 2: Implement Postgres Adapter Node]
   C --> E[Task 3: Unit Test Suite Node]
   D --> E
   
-  E -->|Worker Node 3 Fails: Missing Imports| F[Orchestrator Self-Healing Trigger]
+  E -->|Worker Node 3 Fails - Missing Imports| F[Orchestrator Self-Healing Trigger]
   F -->|Dynamic Graph Injection| G[Task 3b: Fix Missing Imports Subagent]
   G --> E
   E -->|Pass| H[Task 4: Final Merge Output]

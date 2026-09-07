@@ -13,10 +13,10 @@ To solve this, high-performance RAG architectures apply **Command Query Responsi
 In a RAG CQRS model, document ingestion (Command) and user querying (Query) are decoupled into isolated pipelines with dedicated databases:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_IngestionPipelineCommand ["Ingestion Pipeline Command"]
     A[New PDF Upload] --> B[Asynchronous Ingestion Worker]
-    B -->|CPU Heavy: OCR, Chunking| C[Generate Embeddings]
+    B -->|CPU Heavy - OCR, Chunking| C[Generate Embeddings]
     C -->|Bulk Insert| D[(Write Database: MongoDB / PostgreSQL)]
   end
   subgraph SG2_SynchronizationHook ["Synchronization Hook"]

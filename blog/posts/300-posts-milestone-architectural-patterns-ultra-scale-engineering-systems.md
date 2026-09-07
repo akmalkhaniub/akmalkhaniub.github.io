@@ -15,25 +15,25 @@ To mark this milestone, this article synthesizes the **10 foundational architect
 How modern distributed software stacks combine consensus, storage, networking, edge compute, and AI:
 
 ```mermaid
-graph TD
-  User[Global User Base] -->|1. Anycast BGP / Geo-DNS Routing| Edge[Edge Network: Wasm SFI + CRDT KV]
+flowchart TD
+  User[Global User Base] -->|Anycast BGP / Geo-DNS Routing| Edge[Edge Network: Wasm SFI + CRDT KV]
   
   subgraph SG1_EdgeComputeSecurity ["Edge Compute & Security Layer"]
-    Edge -->|2. Wasm Micro-Tenancy / V8 Snapshots| API[API Gateway & OTel Collector]
+    Edge -->|Wasm Micro-Tenancy / V8 Snapshots| API[API Gateway & OTel Collector]
   end
   
   subgraph SG2_HighPerformanceNetworking ["High-Performance Networking Layer"]
-    API -->|3. io_uring / Zero-Copy / gRPC HTTP2| Services[Microservice Mesh]
+    API -->|io_uring / Zero-Copy / gRPC HTTP2| Services[Microservice Mesh]
   end
   
   subgraph SG3_StorageVectorSearch ["Storage & Vector Search Engines"]
-    Services -->|4. Multi-Raft Partitioning| DistributedDB[(Multi-Raft LSM Storage: RocksDB)]
-    Services -->|5. HNSW + PQ Quantization| VectorDB[(Vector DB: HNSW + BM25 Hybrid)]
+    Services -->|Multi-Raft Partitioning| DistributedDB[(Multi-Raft LSM Storage: RocksDB)]
+    Services -->|HNSW + PQ Quantization| VectorDB[(Vector DB: HNSW + BM25 Hybrid)]
   end
   
   subgraph SG4_AutonomousAiObservability ["Autonomous AI & Observability Control Plane"]
-    Services -.->|6. Traces & Metrics| Observability[(OTel TSDB & Indexless Logs)]
-    Services <--->|7. ReAct Reasoning Loops| Agents[Autonomous Multi-Agent Supervisor]
+    Services -.->|Traces & Metrics| Observability[(OTel TSDB & Indexless Logs)]
+    Services <--->|ReAct Reasoning Loops| Agents[Autonomous Multi-Agent Supervisor]
   end
 ```
 

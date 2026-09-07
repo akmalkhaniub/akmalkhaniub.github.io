@@ -13,7 +13,7 @@ Tech Leads have evolved into **Architects of Intent**. This article details how 
 Instead of jumping straight into IDE code files, the modern Tech Lead operates at a higher level of abstraction:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Business Objective / User Request] --> B[Tech Lead: Intent Engineering]
   B --> C[Machine-Readable Spec: JSON Schema / OpenAPI]
   B --> D[Context Curation: AST Maps & Boundary Constraints]

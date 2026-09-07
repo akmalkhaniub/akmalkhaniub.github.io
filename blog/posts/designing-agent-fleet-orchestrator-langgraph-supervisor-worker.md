@@ -17,7 +17,7 @@ Agent Fleet Orchestrator implements a **Hierarchical Supervisor-Worker Topology*
 How the Supervisor Agent plans missions, dispatches tasks to parallel worker nodes, and recovers state via persistent checkpoints:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UserMissionIngestion ["User Mission Ingestion"]
     User[User Engineering Goal] --> Supervisor["LangGraph Supervisor Agent (Planner & Router)"]
   end
@@ -32,8 +32,8 @@ graph TD
   subgraph SG3_CheckpointMemoryTelemetry ["Checkpoint Memory & Telemetry"]
     Coder & Security & DB & QA --> Checkpoint["PostgresSaver Checkpointing (Rollback & Resume)"]
     Checkpoint --> Evaluator["Supervisor Evaluation & Synthesis Gate"]
-    Evaluator -->|Approved| MissionSuccess["🎉 Mission Complete (Merged Artifacts)"]
-    Evaluator -->|Tests Failed| AutoHeal["🔄 Dispatch Feedback to Coder Agent"]
+    Evaluator -->|Approved| MissionSuccess[" Mission Complete (Merged Artifacts)"]
+    Evaluator -->|Tests Failed| AutoHeal[" Dispatch Feedback to Coder Agent"]
   end
 ```
 

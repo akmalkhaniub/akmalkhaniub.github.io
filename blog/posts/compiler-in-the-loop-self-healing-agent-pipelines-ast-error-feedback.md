@@ -11,7 +11,7 @@ Achieving **$> 95\%$ first-pass code reliability** requires integrating determin
 By pairing probabilistic LLMs with **Language Server Protocol (LSP)** diagnostics, **Abstract Syntax Tree (AST)** error extractors, and **dynamic git rollback gates**, engineering teams create self-healing coding agents that catch, diagnose, and repair their own defects in real time.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CompilerInThe ["Compiler-in-the-Loop Self-Healing Pipeline"]
     Coder[Probabilistic LLM Coder] --> RawCode[Synthesized Code Buffer]
     
@@ -21,14 +21,14 @@ graph TD
       Tier2 -->|Types Clean| Tier3["Tier 3: Sandboxed Unit Test Harness (pytest, 500ms)"]
     end
     
-    Tier1 -->|💥 Syntax Error| RepairEngine[AST Error Diagnostic Extractor]
-    Tier2 -->|💥 Type Error| RepairEngine
-    Tier3 -->|💥 Test Failed| RepairEngine
+    Tier1 -->|Syntax Error| RepairEngine[AST Error Diagnostic Extractor]
+    Tier2 -->|Type Error| RepairEngine
+    Tier3 -->|Test Failed| RepairEngine
     
     RepairEngine --> TargetedPrompt[Targeted AST Diagnostic Prompt]
     TargetedPrompt --> Coder
     
-    Tier3 -->|✅ All Passed| CommitGate[Atomic Git Commit & Checkpoint]
+    Tier3 -->|All Passed| CommitGate[Atomic Git Commit & Checkpoint]
   end
 ```
 
@@ -88,11 +88,11 @@ sequenceDiagram
   Git->>Git: Save Checkpoint Branch (commit: 0x88f)
   Coder->>LSP: Submit Code (src/payment.py)
   LSP->>LSP: Run AST Parse & Type Check
-  LSP-->>Coder: 💥 Error: Line 28: Undefined variable 'stripe_key'
+  LSP-->>Coder:  Error: Line 28: Undefined variable 'stripe_key'
   Note over Coder: Targeted Healing Loop (Attempt 1/3)
   Coder->>LSP: Submit Repaired Code (import stripe_key added)
   LSP->>LSP: Run AST Parse & Type Check
-  LSP-->>Coder: ✅ AST Clean & Types Validated!
+  LSP-->>Coder:  AST Clean & Types Validated!
   Coder->>Git: Commit State (0x88f -> 0x890)
 ```
 

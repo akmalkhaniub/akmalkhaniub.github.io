@@ -15,7 +15,7 @@ This article details how to implement a graph-traversal engine to enable multi-h
 Graph traversal algorithms navigate codebase invocation pathways to map transitive relations:
 
 ```mermaid
-graph LR
+flowchart TD
   A[Target Module: payment_api.py] -->|IMPORTS| B[Class: BillingService]
   B -->|CALLS| C[Method: charge_card]
   C -->|CALLS| D[Method: execute_http_post]

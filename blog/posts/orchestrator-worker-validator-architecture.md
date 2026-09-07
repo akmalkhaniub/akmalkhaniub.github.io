@@ -21,17 +21,17 @@ This pattern, popularized by enterprise AI engineering teams like Factory, struc
 ## The Three-Tier Architecture Loop
 
 ```mermaid
-graph TD
-    UserReq[User Goal / Issue] -->|1. Request| Orch[Orchestrator Agent]
-    Orch -->|2. Create Plan & Verification Contract| Worker[Worker Agent]
-    Worker -->|3. Produce Execution / Code| Val[Validator Agent]
+flowchart TD
+    UserReq[User Goal / Issue] -->|Request| Orch[Orchestrator Agent]
+    Orch -->|Create Plan & Verification Contract| Worker[Worker Agent]
+    Worker -->|Produce Execution / Code| Val[Validator Agent]
     
     subgraph SG1_ValidationGateValidation ["Validation Gate [Validation Gate]"]
-        Val -->|4. Run Verification Suite| VerifyCheck{Passes Contract?}
+        Val -->|Run Verification Suite| VerifyCheck{Passes Contract?}
     end
     
-    VerifyCheck -->|No: Generate Critique| Worker
-    VerifyCheck -->|Yes: Commit Code| Finish[Approved Output]
+    VerifyCheck -->|No - Generate Critique| Worker
+    VerifyCheck -->|Yes - Commit Code| Finish[Approved Output]
 
     style ValidationGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
     style Finish fill:#f0fdf4,stroke:#16a34a,stroke-width:2px

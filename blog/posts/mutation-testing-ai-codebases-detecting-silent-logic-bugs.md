@@ -17,13 +17,13 @@ Mutation testing programmatically modifies production code by introducing synthe
 The mutation engine acts as an automated adversary that attempts to break production code without getting caught by test suites:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Original Production Source Code AST] --> B[AST Mutation Generator Engine]
   
   subgraph SG1_SyntheticMutationInjection ["Synthetic Mutation Injection"]
-    B -->|Mutant 1: Swap > to <=| C[Mutated AST #1]
-    B -->|Mutant 2: Flip True to False| D[Mutated AST #2]
-    B -->|Mutant 3: Delete Log/Update Call| E[Mutated AST #3]
+    B -->|Mutant 1 - Swap > to <=| C[Mutated AST #1]
+    B -->|Mutant 2 - Flip True to False| D[Mutated AST #2]
+    B -->|Mutant 3 - Delete Log/Update Call| E[Mutated AST #3]
   end
   
   subgraph SG2_TestSuiteExecution ["Test Suite Execution"]
@@ -32,9 +32,9 @@ graph TD
     E --> H[Execute Unit Test Runner]
   end
   
-  F -->|Tests FAIL| I[✅ MUTANT KILLED (Strong Test)]
-  G -->|Tests FAIL| J[✅ MUTANT KILLED (Strong Test)]
-  H -->|Tests PASS| K[❌ MUTANT SURVIVED (Weak Test Alert)]
+  F -->|Tests FAIL| I[ MUTANT KILLED (Strong Test)]
+  G -->|Tests FAIL| J[ MUTANT KILLED (Strong Test)]
+  H -->|Tests PASS| K[ MUTANT SURVIVED (Weak Test Alert)]
   
   K --> L[Calculate Mutation Score = Killed / Total * 100%]
 ```

@@ -25,7 +25,7 @@ A production-grade GraphRAG system operates in two distinct phases: **Graph Inge
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
+flowchart TD
     A[Raw Text Documents] --> B[LLM Entity Extractor]
     B -->|Extract Nodes & Edges| C[Entity Registry]
     B -->|Compute Text Embeddings| D[Vector Index]
@@ -34,8 +34,8 @@ graph TD
     
     subgraph SG1_QueryExecutionGate ["Query Execution Gate"]
         F[User Query] --> G{Query Classifier}
-        G -->|Local Search: Entity Specific| H[Local Query Engine]
-        G -->|Global Search: Thematic| I[Global Community Search]
+        G -->|Local Search - Entity Specific| H[Local Query Engine]
+        G -->|Global Search - Thematic| I[Global Community Search]
         
         E --> H
         E --> I
@@ -172,7 +172,7 @@ In our next article, [Hybrid Search & Reranking: Balancing Dense Retrieval with 
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Microsoft Research**: *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* — [arXiv:2404.16130](https://arxiv.org/abs/2404.16130)
 *   **LlamaIndex Guide**: [Property Graph Index Documentation](https://docs.llamaindex.ai/)
 *   **Neo4j Developer Portal**: [GraphRAG patterns with Neo4j](https://neo4j.com/)

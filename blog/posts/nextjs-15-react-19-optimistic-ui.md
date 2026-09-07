@@ -1,6 +1,10 @@
 # Next.js 15 & React 19: Mastering the useOptimistic Hook
 
 > [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
+> [!NOTE]
 > **📖 Article Overview**
 > User experience is heavily defined by perceived latency. If a user clicks a "Like" button, toggles a bookmark, or submits a comment, waiting for a server round-trip to update the UI makes the application feel sluggish. React 19 introduces a native solution to this problem: the **`useOptimistic`** hook. When combined with Next.js 15 Server Actions, `useOptimistic` allows you to update the UI instantly under the assumption that the server request will succeed, while retaining the ability to roll back the state gracefully if the action fails. This article shows you how to implement this pattern.
 

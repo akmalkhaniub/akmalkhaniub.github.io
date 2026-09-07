@@ -19,22 +19,22 @@ This article details eBPF probe instrumentation, `BPF_MAP_TYPE_HASH` allocation 
 How eBPF attaches kprobes and uprobes to record heap allocations and generate memory leak stack traces:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ProductionUserspaceKernel ["Production Userspace & Kernel Space"]
-    App[User Application / Kernel Module] -->|1. Memory Alloc: malloc(size)| AllocHook["uprobe:libc.so:malloc / kprobe:kmalloc"]
-    App -->|2. Memory Free: free(ptr)| FreeHook["uprobe:libc.so:free / kprobe:kfree"]
+    App[User Application / Kernel Module] -->|Memory Alloc - malloc(size)| AllocHook["uprobe:libc.so:malloc / kprobe:kmalloc"]
+    App -->|Memory Free - free(ptr)| FreeHook["uprobe:libc.so:free / kprobe:kfree"]
   end
   
   subgraph SG2_EbpfInKernel ["eBPF In-Kernel Tracing Map Pipeline"]
-    AllocHook -->|3. Record Pointer + Call Stack ID| AllocMap["eBPF Hash Map: { ptr -> alloc_info_t }"]
-    AllocHook -->|4. Capture Stack Unwind| StackMap["eBPF Stack Trace Map: { stack_id -> [IP1, IP2, IP3] }"]
+    AllocHook -->|Record Pointer + Call Stack ID| AllocMap["eBPF Hash Map: { ptr -> alloc_info_t }"]
+    AllocHook -->|Capture Stack Unwind| StackMap["eBPF Stack Trace Map: { stack_id -> [IP1, IP2, IP3] }"]
     
-    FreeHook -->|5. Delete Pointer Entry| AllocMap
+    FreeHook -->|Delete Pointer Entry| AllocMap
   end
   
   subgraph SG3_MemoryLeakDetection ["Memory Leak Detection & Flamegraphs"]
-    AllocMap -->|6. Scan Remaining Entries (Un-freed!)| LeakDetector[BCC memleak Engine]
-    LeakDetector --> Flamegraph["🔥 Memory Leak Flamegraph Output"]
+    AllocMap -->|Scan Remaining Entries (Un-freed!)| LeakDetector[BCC memleak Engine]
+    LeakDetector --> Flamegraph[" Memory Leak Flamegraph Output"]
   end
 ```
 

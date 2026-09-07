@@ -17,7 +17,7 @@ This article explores the Okapi BM25 formula and Reciprocal Rank Fusion algorith
 How a Hybrid Search Engine executes parallel Sparse + Dense queries and merges rank positions:
 
 ```mermaid
-graph TD
+flowchart TD
   Query["User Search Query: 'FastAPI error ERR-401'"] --> SparseEngine[Sparse BM25 Keyword Search Engine]
   Query --> EmbeddingModel[Text Embedding Model: OpenAI / Cohere]
   

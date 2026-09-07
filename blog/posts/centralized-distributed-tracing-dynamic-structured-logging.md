@@ -15,21 +15,21 @@ This article details how to build a context-aware structured logging framework w
 Tracing incoming requests and correlating structured logs across microservices:
 
 ```mermaid
-graph TD
-  A[Client Request] -->|1. Incoming W3C traceparent Header| B[API Gateway Microservice]
+flowchart TD
+  A[Client Request] -->|Incoming W3C traceparent Header| B[API Gateway Microservice]
   
   subgraph SG1_ServiceAApi ["Service A: API Gateway"]
-    B -->|2. Extract Trace Context| B1[OpenTelemetry Tracer Context]
-    B1 -->|3. Inject trace_id into Logger| B2[Contextual JSON Logger]
-    B2 -->|4. Emit Structured Log| L1[(Centralized Log Store: Loki / ELK)]
+    B -->|Extract Trace Context| B1[OpenTelemetry Tracer Context]
+    B1 -->|Inject trace_id into Logger| B2[Contextual JSON Logger]
+    B2 -->|Emit Structured Log| L1[(Centralized Log Store: Loki / ELK)]
   end
   
-  B1 -->|5. Propagate W3C Header downstream| C[Downstream Order Microservice]
+  B1 -->|Propagate W3C Header downstream| C[Downstream Order Microservice]
   
   subgraph SG2_ServiceBOrder ["Service B: Order Service"]
-    C -->|6. Extract Trace Context| C1[OpenTelemetry Tracer Context]
-    C1 -->|7. Correlate trace_id| C2[Contextual JSON Logger]
-    C2 -->|8. Emit Structured Log| L1
+    C -->|Extract Trace Context| C1[OpenTelemetry Tracer Context]
+    C1 -->|Correlate trace_id| C2[Contextual JSON Logger]
+    C2 -->|Emit Structured Log| L1
   end
   
   L1 -->|Unified Correlation Search| D[Grafana Dashboard: Instant Log-to-Trace Lookup]

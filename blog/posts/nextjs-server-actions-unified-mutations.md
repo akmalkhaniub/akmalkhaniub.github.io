@@ -1,5 +1,9 @@
 # Server Actions and the Unified Mutation Paradigm: Reclaiming the Server-Side
 
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
 Historically, data mutations in React applications were characterized by architectural fragmentation. To update a simple record on a database, developers had to build and maintain multiple layers:
 1. **API Endpoints**: Creating a dedicated REST `/api/update-user` or GraphQL mutation schema.
 2. **Client-Side Fetching**: Writing asynchronous `fetch` wrappers inside component lifecycle handlers.
@@ -15,7 +19,7 @@ Next.js Server Actions (stabilized in v15) represent a massive paradigm shift. B
 To understand the value of Server Actions, we must look at how React mutations evolved over time:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Legacy: PHP/Rails Form Submit] -->|Direct HTTP POST| B[Page reload & re-render]
   C[Modern SPA: React + REST API] -->|useEffect + fetch + local state| D[No reload, but massive client boilerplate]
   E[Unified: Server Actions] -->|Direct call to server function| F[Type-safe server execution + seamless hydration]

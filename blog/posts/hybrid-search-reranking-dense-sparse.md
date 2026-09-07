@@ -1,6 +1,10 @@
 # Hybrid Search & Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders
 
 > [!NOTE]
+> **Catalog note**: For the production RRF path, see [Hybrid Search with Sparse and Dense Ranking](rag-hybrid-search-sparse-dense-rrf-ranking.html).
+
+
+> [!NOTE]
 > **📖 Article Overview**
 > Semantic vector embeddings are powerful for conceptual matching, but they struggle with exact keyword targets, SKU codes, and precise system IDs. In this article, we show how to construct a high-recall **Hybrid Search** pipeline combining dense vector embeddings (**pgvector**) with sparse keyword matching (**BM25 / TSQuery**). We outline the reciprocal rank fusion (RRF) score merger algorithm, evaluate the latency trade-offs of neural **Cross-Encoder rerankers**, and provide a complete Python implementation.
 
@@ -24,7 +28,7 @@ A production-grade hybrid retrieval pipeline executes parallel search queries, m
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
+flowchart TD
     A[User Search Query] --> B[Dense Retrieval Branch]
     A --> C[Sparse Retrieval Branch]
     
@@ -171,7 +175,7 @@ In our next article, [Automated RAG Evals: Stress-Testing Pipelines with DeepEva
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **RRF Paper**: *Reciprocal Rank Fusion Outperforms Single Retrieval Models* (Cormack et al., Waterloo) — [ResearchGate Link](https://www.researchgate.net/)
 *   **pgvector Documentation**: [PostgreSQL extension for vector similarity search](https://github.com/pgvector/pgvector)
 *   **Sentence Transformers**: [Cross-Encoder Documentation](https://sbert.net/)

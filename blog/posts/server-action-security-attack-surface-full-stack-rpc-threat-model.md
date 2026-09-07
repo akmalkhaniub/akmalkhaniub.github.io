@@ -28,7 +28,7 @@ By allowing developers to write server functions directly inline inside UI compo
 Here is the threat model of Server Actions, and the architectural patterns required to secure them in production.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SecurityPerimeter ["The Disappearing Security Perimeter"]
     subgraph TradArch ["Traditional API Architecture: Explicit Perimeter"]
       Client1["Browser Client"] --> Gateway["API Gateway / Router"]

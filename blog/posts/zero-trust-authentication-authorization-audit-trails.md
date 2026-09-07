@@ -15,7 +15,7 @@ This article details how to build Zero-Trust security layers for microservice ec
 The multi-stage security verification pipeline applied to every microservice request:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Incoming Microservice Request] --> B[Layer 1: Mutual TLS mTLS]
   
   subgraph SG1_ZeroTrustSecurity ["Zero-Trust Security Verification Pipeline"]
@@ -25,7 +25,7 @@ graph TD
   end
   
   E -->|Yes| F[Execute Domain Service Method]
-  E -->|No: 403 Forbidden| G[Emit Security Incident Log]
+  E -->|No - 403 Forbidden| G[Emit Security Incident Log]
   
   F --> H[Layer 4: Immutable Hash-Chained Audit Trail]
   G --> H

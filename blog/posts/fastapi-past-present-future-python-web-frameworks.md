@@ -15,7 +15,7 @@ This article explores the historical evolution, current production capabilities,
 The paradigm shift from synchronous WSGI to asynchronous type-driven ASGI:
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG1_PastWsgiEra ["Past: WSGI Era (Pre-2019)"]
     A[Flask / Django] -->|Thread-Per-Request| B[WSGI Server: Gunicorn / uWSGI]
     B -->|Manual Schema Validation| C[Marshmallow / Cerberus]

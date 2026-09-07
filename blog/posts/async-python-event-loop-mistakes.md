@@ -18,7 +18,7 @@ sequenceDiagram
     participant R2 as Request 2
     participant R3 as Request 3
 
-    Note over L: ✅ Correct async — all run concurrently
+    Note over L:  Correct async — all run concurrently
     L->>R1: await async_llm_call()
     L->>R2: await async_db_query()
     L->>R3: await async_embed()
@@ -27,7 +27,7 @@ sequenceDiagram
     R3-->>L: result (1s)
     Note over L: Total wall time: ~2s
 
-    Note over L: ❌ One blocking call — R2 and R3 wait
+    Note over L:  One blocking call — R2 and R3 wait
     L->>R1: time.sleep(2) ← BLOCKS LOOP
     Note over R2,R3: Frozen — cannot execute
     R1-->>L: (2s later)
@@ -338,7 +338,7 @@ Async Python is not automatically fast — it is fast only when every I/O operat
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Python asyncio Documentation**: [Coroutines and Tasks](https://docs.python.org/3/library/asyncio-task.html)
 *   **FastAPI Concurrency Guide**: [Async and Await](https://fastapi.tiangolo.com/async/)
 *   **Python 3.11 TaskGroup**: [PEP 654 — Exception Groups and except*](https://peps.python.org/pep-0654/)

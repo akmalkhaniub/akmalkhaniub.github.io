@@ -1,5 +1,9 @@
 # The RSC Boundary: Deep Dive into Serialization, Shared State, and Thread Boundaries
 
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
 Understanding the boundaries of React Server Components (RSC) is one of the most critical shifts when moving from traditional client-side SPA frameworks to Next.js App Router. 
 
 Rather than executing all components in the browser, Next.js runs Server Components on the server and streams the resulting UI elements down to the client. This introduces a network and serialization boundary that dictates how we pass data, share state, and structure component trees.
@@ -11,7 +15,7 @@ Rather than executing all components in the browser, Next.js runs Server Compone
 The boundary is unidirectional: Server Components can import and render Client Components, but Client Components cannot directly import and render Server Components as components. They can, however, receive Server Components as `children` or `props`.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_ServerThread ["Server Thread"]
         A[Layout.tsx - RSC] --> B[Page.tsx - RSC]
     end

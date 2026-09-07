@@ -21,7 +21,7 @@ Before coding, it is critical to distinguish between **Workflows** and **Agents*
 * **Agents** are systems where the LLM dynamically determines its own loop, tool usage, and execution steps. They offer maximum flexibility but are more expensive and harder to test.
 
 ```mermaid
-graph LR
+flowchart TD
     subgraph SG1_WorkflowsWorkflowsHigh ["Workflows [Workflows: High Predictability / Low Autonomy]"]
         Chaining[Prompt Chaining] --> Routing[Routing]
         Routing --> Parallel[Parallelization]
@@ -46,7 +46,7 @@ Workflows are ideal for step-by-step tasks with clear boundaries, such as docume
 Prompt Chaining executes a sequence of LLM steps, where each step’s output becomes the input for the next. Intermediate programmatic checks can format or filter data between steps.
 
 ```mermaid
-graph LR
+flowchart TD
     Query[User Query] --> Step1[Step 1: Extract Context]
     Step1 --> Programmatic[Programmatic Sanitize]
     Programmatic --> Step2[Step 2: Generate Draft]
@@ -62,7 +62,7 @@ graph LR
 Routing classifies a user query and directs it to a specialized downstream LLM prompt or code path. It ensures that specialized tasks are handled by prompts configured specifically for them.
 
 ```mermaid
-graph TD
+flowchart TD
     Input[User Input] --> Router{Router LLM}
     Router -->|Coding Query| Dev[Developer Prompt]
     Router -->|Database Query| DB[SQL Writer Prompt]
@@ -83,7 +83,7 @@ Parallelization runs multiple LLM tasks concurrently and aggregates their result
 2. **Voting (Consensus)**: Running multiple instances of the same model on the same task to get alternative outputs, then choosing the best one via a referee LLM.
 
 ```mermaid
-graph TD
+flowchart TD
     Input[Input Request] --> Split{Split Task}
     Split --> TaskA[Task A: Security Check]
     Split --> TaskB[Task B: Style Check]
@@ -102,7 +102,7 @@ graph TD
 An Orchestrator LLM breaks a complex user query into dynamically-determined sub-tasks, dispatches them to parallel worker agents, and aggregates their outputs.
 
 ```mermaid
-graph TD
+flowchart TD
     User[User Goal] --> Orch[Orchestrator LLM]
     Orch -->|Plan subtasks| W1[Worker A: Fetch API]
     Orch -->|Plan subtasks| W2[Worker B: SQL Query]
@@ -125,11 +125,11 @@ When tasks are open-ended and the steps to achieve them cannot be predetermined,
 An Evaluator-Optimizer loop consists of a Generator that creates a draft, and an Evaluator that grades the draft against quality criteria. If the draft fails, the evaluator provides a structured critique, and the loop repeats.
 
 ```mermaid
-graph TD
+flowchart TD
     Input[Goal] --> Gen[Generator LLM]
     Gen --> Draft[Draft Output]
     Draft --> Eval{Evaluator LLM}
-    Eval -->|Rejected: Critique| Gen
+    Eval -->|Rejected - Critique| Gen
     Eval -->|Approved| Out[Final Answer]
 ```
 
@@ -141,14 +141,14 @@ graph TD
 The ReAct paradigm combines reasoning (thoughts) and acting (tool execution) in a single loop. The agent reasons about its current state, selects a tool, runs it, observes the result, and repeats until it decides the task is complete.
 
 ```mermaid
-graph TD
+flowchart TD
     Query[User Query] --> State[Agent State Manager]
     State --> Reason[Reason: What is the next step?]
     Reason --> Action{Action: Call Tool?}
-    Action -->|Yes: Execute Tool| Tool[Run Tool / Sandbox]
+    Action -->|Yes - Execute Tool| Tool[Run Tool / Sandbox]
     Tool --> Observation[Observe Result]
     Observation --> State
-    Action -->|No: Task Complete| Out[Return Output]
+    Action -->|No - Task Complete| Out[Return Output]
 ```
 
 * **Best Used For**: Autonomous databases, filesystem managers, and systems that must interact with APIs dynamically to answer open-ended questions.
@@ -161,7 +161,7 @@ For complex environments, multiple independent agents coordinate their work. Two
 2. **Colleague Debate (Consensus Swarms)**: Multiple agents argue opposing viewpoints to challenge biases and converge on a robust consensus.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG3_SupervisorHierarchicalSupervisor ["Supervisor [Hierarchical Supervisor]"]
         S[Supervisor LLM] -->|Delegate| Worker1[Researcher Agent]
         S -->|Delegate| Worker2[Writer Agent]

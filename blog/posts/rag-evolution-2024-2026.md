@@ -22,7 +22,7 @@ This article traces the architectural journey of RAG from 2024 to 2026, mapping 
 The transition can be summarized as a shift from **passive, linear text matching** to **active, multi-tier structured reasoning**.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_Year20242024Linear ["Year2024 [2024: Linear Naïve RAG]"]
         Q1[User Query] -->|Cosine Similarity| V1[(Vector DB)]
         V1 -->|Top K Chunks| G1[LLM Generator]
@@ -30,20 +30,20 @@ graph TD
     end
 
     subgraph SG2_Year20262026Adaptive ["Year2026 [2026: Adaptive Agentic Ecosystem]"]
-        Q2[User Query] -->|1. Route & Decompose| Route{Agent Router}
-        Route -->|2a. Keywords| Lex[(Sparse Index)]
-        Route -->|2b. Vectors| Vec[(pgvector HNSW)]
-        Route -->|2c. Entities| Graph[(GraphRAG Knowledge Base)]
+        Q2[User Query] -->|Route & Decompose| Route{Agent Router}
+        Route -->|Keywords| Lex[(Sparse Index)]
+        Route -->|Vectors| Vec[(pgvector HNSW)]
+        Route -->|Entities| Graph[(GraphRAG Knowledge Base)]
         
-        Lex -->|3. Merge & Score| RRF[Reciprocal Rank Fusion]
-        Vec -->|3. Merge & Score| RRF
+        Lex -->|Merge & Score| RRF[Reciprocal Rank Fusion]
+        Vec -->|Merge & Score| RRF
         
-        RRF -->|4. Rerank Chunks| CE[Cross-Encoder Reranker]
-        Graph -->|4. Pull Entity Subgraphs| CE
+        RRF -->|Rerank Chunks| CE[Cross-Encoder Reranker]
+        Graph -->|Pull Entity Subgraphs| CE
         
-        CE -->|5. Structured Context| Cache[Prompt Cache / KV Store]
-        Cache -->|6. Reason & Synthesize| G2[LLM Engine]
-        G2 -->|7. Self-Verify| Val{Relevance Grader}
+        CE -->|Structured Context| Cache[Prompt Cache / KV Store]
+        Cache -->|Reason & Synthesize| G2[LLM Engine]
+        G2 -->|Self-Verify| Val{Relevance Grader}
         
         Val -->|Failed Check| Rewrite[Query Rewriter]
         Rewrite --> Route

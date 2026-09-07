@@ -21,9 +21,9 @@ This article details the Apache Iceberg metadata tree, Optimistic Concurrency Co
 How Apache Iceberg organizes table metadata into an immutable tree hierarchy to deliver atomic transactions on object storage:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_IcebergCatalogPointer ["Iceberg Catalog Pointer Layer"]
-    Catalog[Iceberg Catalog / Metastore] -->|Atomic Pointer Swap: v2.metadata.json| MetaJSON["1. Table Metadata JSON (v2.metadata.json)"]
+    Catalog[Iceberg Catalog / Metastore] -->|Atomic Pointer Swap - v2.metadata.json| MetaJSON["1. Table Metadata JSON (v2.metadata.json)"]
   end
   
   subgraph SG2_SnapshotMetadataHierarchy ["Snapshot Metadata Hierarchy"]

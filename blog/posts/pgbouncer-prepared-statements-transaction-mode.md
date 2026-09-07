@@ -28,7 +28,7 @@ sequenceDiagram
     
     ClientB->>Proxy: BEGIN; PREPARE S_1 AS SELECT...
     Proxy->>DB: Send to Server Conn #1 (Multiplexed)
-    Note over DB: ❌ Error: prepared statement "S_1" already exists!
+    Note over DB:  Error: prepared statement "S_1" already exists!
     DB-->>Proxy: ERROR 42P05
     Proxy-->>ClientB: Crash / Query Failed
 ```

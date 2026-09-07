@@ -19,7 +19,7 @@ This article contrasts Linux Container isolation with Wasm Software Fault Isolat
 Comparing OS process boundaries against single-process WebAssembly Software Fault Isolation:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LinuxContainerArchitecture ["Linux Container Architecture (OS-Level Isolation)"]
     HostOS[Linux Host Kernel & cgroups] --> Container1[Container 1: Guest OS / Namespaces (50MB RAM)]
     HostOS --> Container2[Container 2: Guest OS / Namespaces (50MB RAM)]

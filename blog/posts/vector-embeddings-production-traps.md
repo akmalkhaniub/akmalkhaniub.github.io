@@ -20,22 +20,22 @@ This is the danger zone: **silent correctness failures** with no stack traces.
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     D[Document] --> T[Tokeniser]
-    T -->|Truncated silently| F1[💥 Trap 1: Silent truncation<br/>at 512 tokens]
+    T -->|Truncated silently| F1[ Trap 1: Silent truncation<br/>at 512 tokens]
     T -->|OK| E[Embedding Model]
     
-    E -->|Model version changed| F2[💥 Trap 2: Stale index<br/>after model upgrade]
+    E -->|Model version changed| F2[ Trap 2: Stale index<br/>after model upgrade]
     E -->|OK| V[(Vector Store)]
     
-    V -->|Wrong metric configured| F3[💥 Trap 3: Cosine vs<br/>dot product mismatch]
-    V -->|No normalisation| F4[💥 Trap 4: L2 distance<br/>on unnormalised vectors]
+    V -->|Wrong metric configured| F3[ Trap 3: Cosine vs<br/>dot product mismatch]
+    V -->|No normalisation| F4[ Trap 4: L2 distance<br/>on unnormalised vectors]
     V -->|OK| Q[Query Embedding]
     
-    Q -->|Different model than index| F5[💥 Trap 5: Query/index<br/>model mismatch]
+    Q -->|Different model than index| F5[ Trap 5: Query/index<br/>model mismatch]
     Q -->|OK| R[Search Results]
     
-    R -->|No re-embedding on update| F6[💥 Trap 6: Stale doc<br/>embeddings after edit]
-    R -->|Multilingual mismatch| F7[💥 Trap 7: Cross-lingual<br/>query on mono model]
-    R -->|Batch dim mismatch| F8[💥 Trap 8: Dimension<br/>mismatch on insert]
+    R -->|No re-embedding on update| F6[ Trap 6: Stale doc<br/>embeddings after edit]
+    R -->|Multilingual mismatch| F7[ Trap 7: Cross-lingual<br/>query on mono model]
+    R -->|Batch dim mismatch| F8[ Trap 8: Dimension<br/>mismatch on insert]
 
     style F1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style F2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -388,7 +388,7 @@ Vector embeddings are deceptively fragile at the boundaries — tokenisation lim
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **OpenAI Embeddings Guide**: [Best practices for using embeddings](https://platform.openai.com/docs/guides/embeddings)
 *   **Sentence Transformers**: [Pretrained Models Reference](https://www.sbert.net/docs/pretrained_models.html)
 *   **pgvector Distance Operators**: [pgvector README](https://github.com/pgvector/pgvector#distance-functions)

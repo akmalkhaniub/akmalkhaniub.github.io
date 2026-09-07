@@ -22,7 +22,7 @@ A production-grade evaluation loop executes RAG queries, captures the inputs, re
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
+flowchart TD
     A[Test Suite Triggered] --> B[Generate Synthetic Q&A Dataset]
     B --> C[Execute RAG Pipeline]
     
@@ -147,7 +147,7 @@ For a broader discussion on monitoring and benchmarking multi-agent architecture
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **RAG Triad Framework**: TruLens evaluation methodologies — [TruLens Portal](https://www.trulens.org/)
 *   **DeepEval Framework**: Programmatic unit testing docs — [Confident AI Portal](https://www.confident-ai.com/)
 *   **LLM-as-a-Judge Evaluation**: *Judging LLM-as-a-Judge: A Study on Evaluation Consistency* — [arXiv:2306.05685](https://arxiv.org/abs/2306.05685)

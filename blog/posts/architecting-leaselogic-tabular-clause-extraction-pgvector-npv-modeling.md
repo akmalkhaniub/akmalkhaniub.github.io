@@ -19,7 +19,7 @@ LeaseLogic combines **layout-aware tabular extraction**, **Claude 3.5 Sonnet Too
 How LeaseLogic processes 120-page commercial lease contracts, verifies clause citations via multi-tenant vector search, and computes 10-year financial cashflows:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_DocumentIngestionSpatial ["Document Ingestion & Spatial Layout Recovery"]
     PDF[100+ Page Commercial Lease PDF] --> Parser[Layout-Aware PDF Engine: pdfplumber Bounding Boxes]
     Parser --> Tables[Extracted Tabular Rent Schedules + Text Blocks]

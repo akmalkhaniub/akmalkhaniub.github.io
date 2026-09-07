@@ -17,7 +17,7 @@ This article details V8 heap spaces, Cheney's Scavenger algorithm, From-Space/To
 How V8 organizes New Space semi-spaces and executes Cheney's Copying Scavenger to promote surviving objects to Old Space:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_V8HeapGeneration ["V8 Heap Generation Layout"]
     Heap[V8 Isolate Heap Memory] --> NewSpace["Baby Objects: New Space (Nursery 1-64 MB)"]
     Heap --> OldSpace["Adult Objects: Old Space (Promoted Long-Lived Data)"]
@@ -29,9 +29,9 @@ graph TD
   end
   
   subgraph SG3_CheneySCopying ["Cheney's Copying Scavenger Algorithm (Minor GC)"]
-    FromSpace -->|1. Traverse Live Roots| Copy[Copy Live Objects Contiguously to To-Space]
-    Copy -->|2. Object Survived 2 Scavenge Cycles?| Promote[Promote Object to Old Space]
-    Copy -->|3. Swap Roles| Flip["🔄 Flip Semi-Spaces: To-Space becomes NEW From-Space!"]
+    FromSpace -->|Traverse Live Roots| Copy[Copy Live Objects Contiguously to To-Space]
+    Copy -->|Object Survived 2 Scavenge Cycles?| Promote[Promote Object to Old Space]
+    Copy -->|Swap Roles| Flip[" Flip Semi-Spaces: To-Space becomes NEW From-Space!"]
   end
 ```
 

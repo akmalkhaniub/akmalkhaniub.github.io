@@ -19,7 +19,7 @@ This article details CXL 3.0 `CXL.mem` protocols, NUMA tiering hierarchies, and 
 How CXL 3.0 and AutoNUMA tier hot and cold memory pages across hardware tiers:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CpuExecutionCore ["CPU Execution Core"]
     CPUCore[Physical CPU Core / Execution Context]
   end
@@ -37,9 +37,9 @@ graph TD
   end
   
   subgraph SG5_LinuxAutonumaKernel ["Linux AutoNUMA Kernel Tiering Engine"]
-    DRAM -->|Cold Page Demotion: Un-accessed 100s| CXL
+    DRAM -->|Cold Page Demotion - Un-accessed 100s| CXL
     CXL -->|Cold Page Demotion| NVMe
-    NVMe -->|Hot Page Promotion: Access Spike| CXL
+    NVMe -->|Hot Page Promotion - Access Spike| CXL
     CXL -->|Hot Page Promotion| DRAM
   end
 ```

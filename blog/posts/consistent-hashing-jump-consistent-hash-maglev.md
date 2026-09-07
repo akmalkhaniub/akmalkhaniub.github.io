@@ -19,7 +19,7 @@ This article details Hash Rings with Virtual Nodes, Google's $O(1)$ memory Jump 
 How Hash Rings with Virtual Nodes and Google Jump Consistent Hash route keys to cluster nodes:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RingBasedConsistent ["Ring-Based Consistent Hashing (2^32 Hash Space)"]
     Ring[Hash Ring: 0 .. 2^32-1] --> NodeA_v1[Node A - Vnode 1: Hash 1000]
     Ring --> NodeB_v1[Node B - Vnode 1: Hash 5000]

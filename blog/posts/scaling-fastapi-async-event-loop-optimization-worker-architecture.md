@@ -15,7 +15,7 @@ This article details how to profile event loop latency, offload CPU workloads, a
 Separating non-blocking async network I/O from blocking CPU-bound computations:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Incoming Client Requests] --> B[ASGI Server: Granian / Uvicorn]
   
   subgraph SG1_SingleWorkerEvent ["Single Worker Event Loop Thread"]

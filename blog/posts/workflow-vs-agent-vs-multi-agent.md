@@ -16,7 +16,7 @@ To design production-grade systems, we must map our tasks against a clear **Spec
 To build reliable systems, we must choose the right architectural pattern based on the complexity and predictability of the target workflow.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_Workflow1Deterministic ["Workflow [1. Deterministic / LLM Workflow]"]
         W_Start[Input] --> W_Step1[Step A: Prompt]
         W_Step1 --> W_Step2[Step B: Code Logic]

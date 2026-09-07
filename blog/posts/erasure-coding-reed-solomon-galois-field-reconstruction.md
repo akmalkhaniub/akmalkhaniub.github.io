@@ -19,7 +19,7 @@ This article details $K+M$ encoding configurations, Galois Field arithmetic, Van
 How Reed-Solomon encoding generates parity blocks and reconstructs missing data chunks following drive failures:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ReedSolomon4 ["Reed-Solomon 4+2 Encoding (K=4 Data, M=2 Parity)"]
     File[Original File Bytes] -->|Split into K=4 Chunks| D1[Data Chunk D1] & D2[Data Chunk D2] & D3[Data Chunk D3] & D4[Data Chunk D4]
     
@@ -29,7 +29,7 @@ graph TD
   
   subgraph SG2_DriveFailureReconstruction ["Drive Failure & Reconstruction (D2 & P1 Lost!)"]
     D1 & D3 & D4 & P2 -->|Read Any K=4 Available Chunks| InvertMatrix[Invert Sub-Matrix G' via Gaussian Elimination]
-    InvertMatrix -->|Reconstruct Lost Chunks| RestoredD2[🎉 Reconstructed Data Chunk D2!]
+    InvertMatrix -->|Reconstruct Lost Chunks| RestoredD2[ Reconstructed Data Chunk D2!]
   end
 ```
 

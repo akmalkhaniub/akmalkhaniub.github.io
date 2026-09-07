@@ -17,7 +17,7 @@ By eliminating the terror of elevator crashes and solving vertical mobility, Oti
 Today, multi-agent artificial intelligence networks face their own **Structural Height Ceiling**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_The1850sSkyscraper ["The 1850s Skyscraper Ceiling vs The 2026 Multi-Agent Ceiling"]
     S1850["1850s: Buildings Capped at 5 Stories (Stair Climbing Limit)"] <---> S2026["2026: Swarms Capped at 5 Agents (Context Window & O(N^2) Token Explosion)"]
     O1850["1854: Otis Safety Elevator (Fast, Deterministic Vertical Transit)"] <---> O2026["2026: Hierarchical IPC & Delta Compaction Routing (O(N) Transit)"]
@@ -94,15 +94,15 @@ Agents exchange immutable, strongly typed **Delta Payloads**:
 At large scale, agents subscribe to a centralized **Topic-Filtered Event Bus** (backed by Redis Streams or Apache Kafka):
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG2_DistributedAgentEvent ["Distributed Agent Event Bus"]
     Bus[(Central Redis / Kafka Agent Bus)]
     
-    Publisher[Coder Agent #12] -->|Publish: event.build.success| Bus
+    Publisher[Coder Agent #12] -->|Publish - event.build.success| Bus
     
-    Bus -->|Topic: event.build.*| Sub1[QA Test Agent]
-    Bus -->|Topic: event.build.success| Sub2[Security Auditor Agent]
-    Bus -.->|Filtered Out: Ignores UI Events| Sub3[Database DBA Agent]
+    Bus -->|Topic - event.build.*| Sub1[QA Test Agent]
+    Bus -->|Topic - event.build.success| Sub2[Security Auditor Agent]
+    Bus -.->|Filtered Out - Ignores UI Events| Sub3[Database DBA Agent]
   end
 ```
 

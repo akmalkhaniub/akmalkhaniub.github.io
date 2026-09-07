@@ -15,21 +15,21 @@ This article details the end-to-end mechanics required to build fault-tolerant E
 The two-phase commit protocol coordinating atomic multi-partition writes:
 
 ```mermaid
-graph TD
-  A[Transactional Producer] -->|1. InitTransactions| B[Kafka Transaction Coordinator]
+flowchart TD
+  A[Transactional Producer] -->|InitTransactions| B[Kafka Transaction Coordinator]
   
   subgraph SG1_Phase1Begin ["Phase 1: Begin & Produce"]
-    A -->|2. AddPartitionsToTxn| B
-    A -->|3. Produce Messages with PID + SeqNum| C[Kafka Topic Partition A]
-    A -->|4. Send Consumer Offsets| D[Kafka Topic Partition B]
+    A -->|AddPartitionsToTxn| B
+    A -->|Produce Messages with PID + SeqNum| C[Kafka Topic Partition A]
+    A -->|Send Consumer Offsets| D[Kafka Topic Partition B]
   end
   
   subgraph SG2_Phase2Commit ["Phase 2: Commit / Abort Protocol"]
-    A -->|5. EndTxn: COMMIT| B
-    B -->|6. Write PREPARE_COMMIT Marker| E[__transaction_state Topic]
-    B -->|7. Write Commit Control Markers| C
-    B -->|8. Write Commit Control Markers| D
-    B -->|9. Write COMMITTED Marker| E
+    A -->|EndTxn - COMMIT| B
+    B -->|Write PREPARE_COMMIT Marker| E[__transaction_state Topic]
+    B -->|Write Commit Control Markers| C
+    B -->|Write Commit Control Markers| D
+    B -->|Write COMMITTED Marker| E
   end
   
   C -->|Filter Control Markers| F[Read-Committed Consumer: Sees only committed events]

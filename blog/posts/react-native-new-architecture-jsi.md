@@ -19,8 +19,8 @@ This asynchronous nature meant:
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     subgraph SG1_OldArchitectureAsync ["Old Architecture (Async JSON Bridge)"]
-        JS_Old[JavaScript Engine] -->|1. Serialize JSON| Bridge[Async Bridge]
-        Bridge -->|2. Deserialize JSON| Native_Old[Native UI Thread]
+        JS_Old[JavaScript Engine] -->|Serialize JSON| Bridge[Async Bridge]
+        Bridge -->|Deserialize JSON| Native_Old[Native UI Thread]
     end
 
     subgraph SG2_NewArchitectureDirect ["New Architecture (Direct C++ JSI Bindings)"]

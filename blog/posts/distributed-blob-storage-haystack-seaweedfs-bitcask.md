@@ -19,7 +19,7 @@ This article details the POSIX inode bottleneck, append-only volume files, in-me
 How Facebook Haystack and Bitcask replace POSIX directory trees with single-seek Append-Only Volume Files:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TraditionalPosixFilesystem ["Traditional POSIX Filesystem Bottleneck (ext4 / XFS)"]
     ReadReq[Read /photos/user101/avatar.jpg] --> Seek1[Seek 1: Directory Inode]
     Seek1 --> Seek2[Seek 2: Directory Data Block]
@@ -28,8 +28,8 @@ graph TD
   end
   
   subgraph SG2_HighDensityBlob ["High-Density Blob Storage (Haystack / Bitcask)"]
-    BlobReq[Read Photo ID 1042] -->|1. O(1) RAM Lookup| KeyDir["In-Memory KeyDir: File #3 | Offset: 0x0F40 | Size: 16 KB"]
-    KeyDir -->|2. Issue pread() at Exact Offset| SingleSeek["🎯 Single Disk Seek on Volume File #3 (1 Seek!)"]
+    BlobReq[Read Photo ID 1042] -->|O(1) RAM Lookup| KeyDir["In-Memory KeyDir: File #3 | Offset: 0x0F40 | Size: 16 KB"]
+    KeyDir -->|Issue pread() at Exact Offset| SingleSeek[" Single Disk Seek on Volume File #3 (1 Seek!)"]
   end
 ```
 

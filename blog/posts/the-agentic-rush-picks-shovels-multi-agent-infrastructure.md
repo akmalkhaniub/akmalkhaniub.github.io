@@ -11,7 +11,7 @@ The enduring fortunes of the era were made not by those panning the riverbeds, b
 Today, in 2026, the technology landscape is engulfed in a parallel phenomenon: **The Agentic Rush**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_The1849Gold ["The 1849 Gold Rush vs The 2026 Agentic Rush"]
     P1849["1849: Prospectors Panning Rivers (High Failure Rate)"] <---> P2026["2026: Raw '1-Click' Wrapper Agents (High Hallucination Rate)"]
     I1849["1849: Picks, Shovels, Heavy Denim & Rail"] <---> I2026["2026: Sandboxes, MCP Protocols, Checkpointing & Vector DBs"]
@@ -71,7 +71,7 @@ During the Gold Rush, anyone could claim they found gold dust; miners relied on 
 In the Agentic Rush, the assayers are the **deterministic verification and governance frameworks**:
 
 ```mermaid
-graph LR
+flowchart TD
   AgentCore[Probabilistic LLM Core] --> Guardrail[Deterministic AST Guardrail / Assayer]
   Guardrail -->|Passed Policy Check| Sandbox[Tool Sandbox Execution]
   Guardrail -->|Policy Violation| CircuitBreaker[Halt & Escalate to Human]

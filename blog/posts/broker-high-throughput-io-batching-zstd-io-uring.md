@@ -17,17 +17,17 @@ This article details client record batching parameters (`batch.size`, `linger.ms
 How Client Batching, Zstd Compression, and Linux `io_uring` Ring Buffers eliminate syscall overhead:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ClientSideRecord ["Client-Side Record Batching & Compression"]
     Records[Client Records: 1000s of 100B Messages] -->|Accumulate linger.ms| Batcher[Batching Buffer Engine: batch.size = 64KB]
     Batcher --> Zstd[Zstd Dictionary Compression: 5x Ratio]
   end
   
   subgraph SG2_LinuxIoUring ["Linux io_uring Asynchronous Ring Buffer Architecture"]
-    Zstd -->|1. Push SQE Entry (Zero Syscall!)| SQ[Submission Queue Ring Buffer: SQ]
-    SQ -->|2. Kernel Worker Polling| KernelIO[Linux Kernel Storage Driver / NVMe]
-    KernelIO -->|3. Complete I/O Async| CQ[Completion Queue Ring Buffer: CQ]
-    CQ -->|4. Lock-Free Pop Result| Broker[Broker Event Processing Loop]
+    Zstd -->|Push SQE Entry (Zero Syscall!)| SQ[Submission Queue Ring Buffer: SQ]
+    SQ -->|Kernel Worker Polling| KernelIO[Linux Kernel Storage Driver / NVMe]
+    KernelIO -->|Complete I/O Async| CQ[Completion Queue Ring Buffer: CQ]
+    CQ -->|Lock-Free Pop Result| Broker[Broker Event Processing Loop]
   end
 ```
 

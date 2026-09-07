@@ -23,8 +23,8 @@ flowchart TD
     Request[Agent Prompt Request] --> Gate[LLM Gateway Router]
     
     subgraph SG1_CircuitBreakerStates ["Circuit Breaker States"]
-        Gate -->|State: CLOSED| CallPrimary[Try Primary Provider: Claude 3.5]
-        Gate -->|State: OPEN| Failover[Route straight to Backup: Gemini 2.0]
+        Gate -->|State - CLOSED| CallPrimary[Try Primary Provider: Claude 3.5]
+        Gate -->|State - OPEN| Failover[Route straight to Backup: Gemini 2.0]
         
         CallPrimary -->|Success| Reset[Reset Error Counter]
         CallPrimary -->|Consecutive Failures > Limit| OpenBreaker[Switch State to OPEN & Start Cooldown]

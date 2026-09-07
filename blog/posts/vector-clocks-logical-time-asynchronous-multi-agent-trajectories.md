@@ -15,7 +15,7 @@ This article details how to construct a Vector Clock tracking engine for asynchr
 Vector timestamp progression and concurrency detection across three agent nodes:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_AgentAPipeline ["Agent A Pipeline"]
     A1["Event A1: [1, 0, 0]"] -->|Send Msg m1| A2["Event A2: [2, 0, 0]"]
   end

@@ -36,7 +36,7 @@ This case study details the architecture, deployment decisions, and gotchas of a
 The architecture routes checkout requests through regional API endpoints while coordinating orders globally:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Global User Checkouts] -->|Geo-DNS Routing| B[Regional Edge API Gateways]
   
   subgraph SG1_GkeRegionalDeployments ["GKE Regional Deployments"]

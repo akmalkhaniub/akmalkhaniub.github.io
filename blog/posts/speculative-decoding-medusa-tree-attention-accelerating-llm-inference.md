@@ -9,7 +9,7 @@ Because the arithmetic intensity is extremely low during single-batch generation
 To break through this hardware memory wall, modern inference engines leverage **Speculative Decoding** and **Medusa Multi-Head Tree Attention**: techniques that accelerate generation by **$2.5\times \text{ to } 3.2\times$** while guaranteeing **zero degradation in output accuracy or mathematical distribution**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_StandardAutoregressiveVs ["Standard Autoregressive vs Speculative Decoding"]
     subgraph SG2_1StandardAutoregressive ["1. Standard Autoregressive (Memory Bound: 1 Token Per Pass)"]
       P1[Load 140GB Weights] --> T1[Generate Token 1]
@@ -86,7 +86,7 @@ While speculative decoding with a draft model is powerful, managing two separate
 **Medusa** (Cai et al., 2023) eliminates the draft model entirely by adding **multiple lightweight Feed-Forward prediction heads** directly on top of the target model’s final transformer layer:
 
 ```mermaid
-graph TD
+flowchart TD
   Backbone["Target Transformer Backbone (70B)"] --> H0["Head 0: Predicts t+1"]
   Backbone --> H1["Head 1: Predicts t+2"]
   Backbone --> H2["Head 2: Predicts t+3"]
@@ -99,7 +99,7 @@ graph TD
 Rather than predicting a single linear chain of tokens, Medusa heads generate top-$k$ candidates for each position, forming a **Candidate Prefix Tree**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG4_MedusaCandidateTree ["Medusa Candidate Tree (Evaluated in 1 Forward Pass)"]
     Root[Current Token] --> A["w1 (p=0.8)"]
     Root --> B["w1' (p=0.2)"]

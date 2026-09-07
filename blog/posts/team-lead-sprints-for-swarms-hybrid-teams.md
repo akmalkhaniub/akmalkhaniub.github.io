@@ -19,8 +19,8 @@ To prevent this chaos, team leads must build a triage gateway that dynamically e
 flowchart TD
     Issue[Incoming Jira Ticket / Github Issue] --> Router{Semantic Issue Router}
     
-    Router -->|Complexity: High / Architectural| Human[Assign to Human Developer]
-    Router -->|Complexity: Low / Boilerplate / Tests| AgentQueue[Enqueue to Agent Swarm]
+    Router -->|Complexity - High / Architectural| Human[Assign to Human Developer]
+    Router -->|Complexity - Low / Boilerplate / Tests| AgentQueue[Enqueue to Agent Swarm]
     
     AgentQueue --> AgentWorker[Agent Coding Node]
     AgentWorker --> PR[Agent PR Created]

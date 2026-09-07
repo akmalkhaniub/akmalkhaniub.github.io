@@ -15,7 +15,7 @@ To prevent a future shortage of senior engineering talent, modern Tech Leads hav
 In the post-junior era, developer growth shifts from *syntax mastery* to *systems & architectural mastery*:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LegacyEngineeringLadder ["Legacy Engineering Ladder"]
     L1[Junior: Syntax & Boilerplate] --> L2[Mid: Feature Implementation]
     L2 --> L3[Senior: System Design & Architecture]

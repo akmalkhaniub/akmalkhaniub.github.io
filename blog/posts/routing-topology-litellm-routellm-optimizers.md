@@ -18,12 +18,12 @@ A production-grade system manages cost and latency profiles:
 flowchart TD
     Request[Agent Prompt Request] --> Gateway{Resilient Routing Gateway}
     
-    Gateway -->|Verify state: Closed| CallPrimary[Execute Primary Model: Claude 3.5]
+    Gateway -->|Verify state - Closed| CallPrimary[Execute Primary Model: Claude 3.5]
     
     CallPrimary -->|Success| Return[Return Agent Response]
-    CallPrimary -->|Fail: Outage / Rate Limit| Trip[Trip Circuit Breaker]
+    CallPrimary -->|Fail - Outage / Rate Limit| Trip[Trip Circuit Breaker]
     
-    Trip -->|Switch State: Open| RouteFallback[Route to Fallback: local Llama-3B]
+    Trip -->|Switch State - Open| RouteFallback[Route to Fallback: local Llama-3B]
     RouteFallback --> Return
 ```
 

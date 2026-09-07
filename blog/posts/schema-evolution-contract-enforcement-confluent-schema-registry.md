@@ -15,20 +15,20 @@ This article details how to manage schema evolution and contract enforcement in 
 The binary framing layout and schema validation workflow:
 
 ```mermaid
-graph TD
-  A[Producer Microservice] -->|1. Register / Lookup Schema| B[Confluent Schema Registry]
-  B -->|2. Return Schema ID: 402| A
+flowchart TD
+  A[Producer Microservice] -->|Register / Lookup Schema| B[Confluent Schema Registry]
+  B -->|Return Schema ID - 402| A
   
   subgraph SG1_BinaryWireFraming ["Binary Wire Framing Format"]
-    A -->|3. Construct Wire Bytes| C[Magic Byte: 0x00]
+    A -->|Construct Wire Bytes| C[Magic Byte: 0x00]
     C --> D[4-Byte Schema ID: 0x00000192]
     D --> E[Avro / Protobuf Binary Payload Bytes]
   end
   
-  E -->|4. Publish Compact Wire Bytes| F[Kafka Broker Topic]
-  F -->|5. Read Wire Bytes| G[Consumer Microservice]
-  G -->|6. Fetch Schema ID 402| B
-  G -->|7. Deserialize Payload| H[Validated Application Object]
+  E -->|Publish Compact Wire Bytes| F[Kafka Broker Topic]
+  F -->|Read Wire Bytes| G[Consumer Microservice]
+  G -->|Fetch Schema ID 402| B
+  G -->|Deserialize Payload| H[Validated Application Object]
 ```
 
 ### Schema Compatibility Modes

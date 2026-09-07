@@ -15,7 +15,7 @@ This article details the three phases of the ARIES crash recovery algorithm and 
 The execution flow during database reboot after an unexpected crash:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Database Crash Event / System Reboot] --> B[Phase 1: Analysis Phase]
   
   subgraph SG1_RecoveryExecutionPipeline ["Recovery Execution Pipeline"]

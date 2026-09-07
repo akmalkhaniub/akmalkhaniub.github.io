@@ -15,12 +15,12 @@ This article details how to design and build a sharded database router with scat
 How the Global Data Router intercepts application queries and routes transactions across isolated shard nodes:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client API Request] --> B[Global Data Router]
   
   subgraph SG1_GlobalDataRouter ["Global Data Router & Shard Directory"]
-    B -->|1. Inspect Shard Key: user_id| C{Routing Engine}
-    C -->|2. Hash Shard Key: MurmurHash3| D[Shard Directory / Hash Ring]
+    B -->|Inspect Shard Key - user_id| C{Routing Engine}
+    C -->|Hash Shard Key - MurmurHash3| D[Shard Directory / Hash Ring]
   end
   
   subgraph SG2_DistributedShardCluster ["Distributed Shard Cluster"]
@@ -30,11 +30,11 @@ graph TD
   end
   
   subgraph SG3_ScatterGatherCross ["Scatter-Gather Cross-Shard Engine"]
-    B -->|3. Cross-Shard Query: List High-Spenders| H[Scatter-Gather Worker Pool]
+    B -->|Cross-Shard Query - List High-Spenders| H[Scatter-Gather Worker Pool]
     H -->|Parallel Execution| E
     H -->|Parallel Execution| F
     H -->|Parallel Execution| G
-    H -->|4. Merge & Sort Results| I[Return Consolidated Response]
+    H -->|Merge & Sort Results| I[Return Consolidated Response]
   end
 ```
 

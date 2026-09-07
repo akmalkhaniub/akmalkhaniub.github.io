@@ -11,7 +11,7 @@ Within ninety seconds, the entire region is dark. The multi-AZ setup did not pro
 To break this shared-fate trap and deliver true **99.999% availability (Five Nines)**, hyper-scale cloud platforms—AWS Route 53, AWS Lambda, Stripe, and Slack—abandon monolithic regional clusters in favor of **Cell-Based Architecture**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_MonolithicRegionalCluster ["Monolithic Regional Cluster vs Cell-Based Architecture"]
     subgraph SG2_1MonolithicRegional ["1. Monolithic Regional Cluster (100% Blast Radius)"]
       Clients1[100,000 Tenants] --> BigCluster[Single Shared Kubernetes Cluster + PostgreSQL]
@@ -76,7 +76,7 @@ In a cell-based architecture, every cell is hard-capped at a predictable scale (
 To direct incoming client traffic to the appropriate cell without introducing a single point of failure, the architecture deploys an ultra-lean **Thin Cell Router** layer:
 
 ```mermaid
-graph LR
+flowchart TD
   Client[Inbound Request: tenant_id = 'org_402'] --> Router[Stateless Thin Cell Router]
   Router --> Mapping["Consistent Hash: hash('org_402') -> Cell 3"]
   Mapping --> Cell3[Cell 3 Ingress Gateway]

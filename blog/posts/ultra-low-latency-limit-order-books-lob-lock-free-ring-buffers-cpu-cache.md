@@ -12,7 +12,7 @@ Building a production-grade, deterministic matching engine requires mastering **
 This architectural guide examines the internal mechanics of zero-allocation Limit Order Books, mechanical sympathy with modern x86/ARM hardware, and the data structures that power sub-microsecond trade execution.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UltraLowLatency ["Ultra-Low Latency Limit Order Book Pipeline"]
     NIC["Kernel-Bypass NIC (Solarflare / DPDK)"] --> RingBuffer["1. Lock-Free SPSC Ring Buffer (LMAX Disruptor Pattern)"]
     RingBuffer --> Matcher["2. Core Matching Engine (Pinned to Isolated CPU Core)"]
@@ -69,7 +69,7 @@ A Limit Order Book maintains two sorted ladders:
 If prices are identical, orders are matched strictly in chronological arrival order (**Price-Time Priority / FIFO**).
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG3_LimitOrderBook ["Limit Order Book Structure (Bids vs Asks)"]
     Bids["BIDS (Descending)\n$100.50 (Qty: 500) -> [Ord1] <-> [Ord2]\n$100.40 (Qty: 1200) -> [Ord3]\n$100.30 (Qty: 800) -> [Ord4]"]
     Spread["=== SPREAD: $0.10 ==="]
@@ -92,7 +92,7 @@ graph LR
 To pass market orders from the network thread to the matching core without thread locking, high-frequency systems implement the **LMAX Disruptor circular ring buffer pattern**:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG4_LockFreeCircular ["Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)"]
     Head["Producer Head Sequence (Padded 64B)"] -->|Writes Next Event| Slot["Slot [head & (Size - 1)]"]
     Slot --> Tail["Consumer Tail Sequence (Padded 64B)"]

@@ -28,7 +28,7 @@ flowchart TD
     subgraph SG2_ModernNodeJs ["Modern Node.js project (Zero Dependencies)"]
         SourceNew[index.ts] -->|--experimental-strip-types| NodeRuntimeNew[Node.js Engine]
         NodeRuntimeNew -->|--env-file| EnvLoader[Built-in Env Loader]
-        NodeRuntimeNew -->|node:test| TestRunner[Built-in Test Runner]
+        NodeRuntimeNew -->|node -test| TestRunner[Built-in Test Runner]
     end
 ```
 

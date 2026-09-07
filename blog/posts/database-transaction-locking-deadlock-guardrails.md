@@ -22,8 +22,8 @@ flowchart TD
     Prepend --> RunQuery[Execute Agent Query]
     RunQuery --> CheckTimeout{Has Query Exceeded Timeout Limits?}
     
-    CheckTimeout -->|No: Completed| Commit[Commit Transaction & Release Locks]
-    CheckTimeout -->|Yes: Exceeded| Abort[Abort Query: Trigger DB Rollback]
+    CheckTimeout -->|No - Completed| Commit[Commit Transaction & Release Locks]
+    CheckTimeout -->|Yes - Exceeded| Abort[Abort Query: Trigger DB Rollback]
     
     Abort --> Release[Release Table & Row Locks]
     Release --> Log[Log Trace to Audit Queue]

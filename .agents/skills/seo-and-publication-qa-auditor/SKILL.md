@@ -32,6 +32,7 @@ This skill acts as the **Release Quality Assurance Engineer**, executing an exha
   - `description`
   - `keywords`
   - `author` (Akmal Khan)
+  - `image` (absolute cover URL; never omit when a cover exists)
 * Confirms OpenGraph (`og:image`, `og:title`, `og:description`) and Twitter Card metadata.
 
 ### 4. Feed & Sitemap Synchronization

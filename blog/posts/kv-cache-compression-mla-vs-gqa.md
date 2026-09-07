@@ -22,7 +22,7 @@ This article synthesizes the trade-offs of MLA vs. GQA, detailing **what is good
 GQA groups multiple Query heads to share single Key/Value heads, while MLA compresses keys and values into a shared low-rank latent vector space, expanding them dynamically during computation.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef gqaStyle fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#92400e;
     classDef mlaStyle fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
@@ -30,10 +30,10 @@ graph TD
 
     Start[Inference: Parse Keys & Values] --> Compression{Attention Method}
     
-    Compression -->|Meta GQA: LLaMA-3| PathGQA[Grouped-Query Attention]
-    Compression -->|DeepSeek MLA: V3/R1| PathMLA[Multi-head Latent Attention]
+    Compression -->|Meta GQA - LLaMA-3| PathGQA[Grouped-Query Attention]
+    Compression -->|DeepSeek MLA - V3/R1| PathMLA[Multi-head Latent Attention]
     
-    PathGQA -->|8:1 Ratio| HBM_Save1[Key-Value heads grouped / Reduces cache size by 8x]
+    PathGQA -->|8 -1 Ratio| HBM_Save1[Key-Value heads grouped / Reduces cache size by 8x]
     PathMLA -->|Low-Rank Latent| HBM_Save2[Compresses K & V into latent vector dc / Reduces cache size by 14x]
 
     class Start,Compression check;

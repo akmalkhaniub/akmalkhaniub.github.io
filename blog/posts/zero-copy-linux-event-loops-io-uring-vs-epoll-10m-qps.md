@@ -11,20 +11,20 @@ To service a single client request under `epoll`, an application still has to ex
 Enter **`io_uring`**. Introduced by Jens Axboe in Linux 5.1, `io_uring` re-architects Linux I/O from first principles by eliminating system calls entirely from the hot path.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_EpollReadinessModel ["epoll Readiness Model vs io_uring Zero-Copy Ring Geometry"]
     subgraph SG2_1TraditionalEpoll ["1. Traditional epoll (Syscall Heavy)"]
-      UserApp[User Application] -->|1. epoll_wait syscall| Kernel1[Kernel: Check Readiness]
-      Kernel1 -->|2. Context Switch Wakeup| UserApp
-      UserApp -->|3. read/write syscall| Kernel2[Kernel: Copy Payload]
-      Kernel2 -->|4. Return Context Switch| UserApp
+      UserApp[User Application] -->|epoll_wait syscall| Kernel1[Kernel: Check Readiness]
+      Kernel1 -->|Context Switch Wakeup| UserApp
+      UserApp -->|read/write syscall| Kernel2[Kernel: Copy Payload]
+      Kernel2 -->|Return Context Switch| UserApp
     end
 
     subgraph SG3_2IoUring ["2. io_uring (Zero Syscall / Lock-Free Shared Rings)"]
-      App[User Application] -->|Push SQE: Non-blocking write| SQ[Shared Submission Queue Ring]
-      SQ -->|Kernel Polling Worker: SQPOLL| KernelAsync[Kernel Worker Thread (Ring 0)]
+      App[User Application] -->|Push SQE - Non-blocking write| SQ[Shared Submission Queue Ring]
+      SQ -->|Kernel Polling Worker - SQPOLL| KernelAsync[Kernel Worker Thread (Ring 0)]
       KernelAsync -->|Direct DMA Transfer| CQ[Shared Completion Queue Ring]
-      CQ -->|Pop CQE: Read Memory Pointer| App
+      CQ -->|Pop CQE - Read Memory Pointer| App
     end
   end
 ```

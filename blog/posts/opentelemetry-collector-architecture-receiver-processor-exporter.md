@@ -17,7 +17,7 @@ This article details the internal Receiver, Processor, and Exporter pipeline arc
 How the OTel Collector ingests, transforms, batches, and exports telemetry streams:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_IngestionLayerReceivers ["Ingestion Layer: Receivers"]
     AppTraces[App Traces: OTLP / gRPC] --> Receiver1[OTLP gRPC Receiver]
     AppLogs[App Logs: FluentBit / HTTP] --> Receiver2[OTLP HTTP Receiver]

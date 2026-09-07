@@ -17,21 +17,21 @@ This article details the multi-layer graph architecture and greedy routing algor
 How multi-layer HNSW graphs enable logarithmic $O(\log N)$ vector search:
 
 ```mermaid
-graph TD
-  Query["Query Vector (1536-dim)"] -->|1. Enter Top Layer| Entry[Global Entry Point: Layer 2]
+flowchart TD
+  Query["Query Vector (1536-dim)"] -->|Enter Top Layer| Entry[Global Entry Point: Layer 2]
   
   subgraph SG1_Layer2Sparse ["Layer 2: Sparse Long-Range Highway"]
-    Entry -->|2. Long-Range Greedy Hop| NodeA[Sparse Graph Node A]
+    Entry -->|Long-Range Greedy Hop| NodeA[Sparse Graph Node A]
   end
   
   subgraph SG2_Layer1Medium ["Layer 1: Medium Density Intermediary"]
-    NodeA -->|3. Step Down Layer| NodeB[Medium Graph Node B]
-    NodeB -->|4. Medium Hop| NodeC[Medium Graph Node C]
+    NodeA -->|Step Down Layer| NodeB[Medium Graph Node B]
+    NodeB -->|Medium Hop| NodeC[Medium Graph Node C]
   end
   
   subgraph SG3_Layer0Dense ["Layer 0: Dense Local Neighborhood"]
-    NodeC -->|5. Step Down to Base Layer| NodeD[Dense Base Graph Node D]
-    NodeD -->|6. Local Neighborhood Refinement| TopK["Top-K Nearest Neighbors: [Doc 88, Doc 412]"]
+    NodeC -->|Step Down to Base Layer| NodeD[Dense Base Graph Node D]
+    NodeD -->|Local Neighborhood Refinement| TopK["Top-K Nearest Neighbors: [Doc 88, Doc 412]"]
   end
 ```
 

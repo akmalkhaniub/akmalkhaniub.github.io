@@ -19,20 +19,20 @@ This article explores Post-Training Quantization (PTQ), Activation-aware Weight 
 How AWQ identifies salient weights based on activation magnitudes to preserve accuracy at 4-bit precision:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UnquantizedModelWeights ["Unquantized Model Weights (FP16: 140 GB VRAM)"]
     Weights[FP16 Model Weights W: 70B Params] --> ActMonitor[Activation Magnitude Monitor]
   end
   
   subgraph SG2_AwqActivationAware ["AWQ (Activation-aware Weight Quantization) Pipeline"]
-    ActMonitor -->|1. Compute Activation Magnitudes |X|| SalientCheck{Identify Salient Weights}
-    SalientCheck -->|2. Top 1% High-Activation Weights| Protect[Apply Scale Factor S > 1: Protect Precision]
-    SalientCheck -->|3. Remaining 99% Non-Critical Weights| Uniform4Bit[Quantize to INT4 (Scale S & Zero-Point Z)]
+    ActMonitor -->|Compute Activation Magnitudes|X|| SalientCheck{Identify Salient Weights}
+    SalientCheck -->|Top 1% High-Activation Weights| Protect[Apply Scale Factor S > 1: Protect Precision]
+    SalientCheck -->|Remaining 99% Non-Critical Weights| Uniform4Bit[Quantize to INT4 (Scale S & Zero-Point Z)]
   end
   
   subgraph SG3_CompressedModelRepresentation ["Compressed Model Representation (INT4: 35 GB VRAM)"]
     Protect & Uniform4Bit --> QuantizedModel[(Quantized 4-Bit Model: AWQ / GPTQ / GGUF)]
-    QuantizedModel -->|4. High-Speed Inference| ConsumerGPU[Single GPU / Desktop CPU]
+    QuantizedModel -->|High-Speed Inference| ConsumerGPU[Single GPU / Desktop CPU]
   end
 ```
 

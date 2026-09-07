@@ -17,22 +17,22 @@ This article details how to design and build a custom Kubernetes Operator Reconc
 How a Custom Controller watches CRD events and drives cluster convergence:
 
 ```mermaid
-graph TD
-  User[Platform Engineer] -->|1. kubectl apply -f db.yaml| API[Kubernetes API Server]
+flowchart TD
+  User[Platform Engineer] -->|kubectl apply -f db.yaml| API[Kubernetes API Server]
   
   subgraph SG1_CustomResourceDefinition ["Custom Resource Definition CRD"]
-    API -->|2. Persist Spec| ETCD[(etcd State Store)]
+    API -->|Persist Spec| ETCD[(etcd State Store)]
   end
   
   subgraph SG2_CustomOperatorController ["Custom Operator Controller"]
-    API -->|3. Watch Event Notification| Informer[Informer / Watch Cache]
-    Informer -->|4. Push Key to WorkQueue| Queue[WorkQueue]
-    Queue -->|5. Pop Key| Reconciler[Reconciler Loop]
+    API -->|Watch Event Notification| Informer[Informer / Watch Cache]
+    Informer -->|Push Key to WorkQueue| Queue[WorkQueue]
+    Queue -->|Pop Key| Reconciler[Reconciler Loop]
   end
   
   subgraph SG3_AutomatedReconciliationLogic ["Automated Reconciliation Logic"]
-    Reconciler -->|6. Query Actual Cluster State| Pods[Live Kubernetes Pods & StatefulSets]
-    Reconciler -->|7. Calculate Delta: Desired vs Actual| Engine{State Delta?}
+    Reconciler -->|Query Actual Cluster State| Pods[Live Kubernetes Pods & StatefulSets]
+    Reconciler -->|Calculate Delta - Desired vs Actual| Engine{State Delta?}
     Engine -->|Out of Sync| Action[Create / Update / Delete Pods]
     Engine -->|In Sync| Status[Update CRD status.conditions]
     Action --> Pods

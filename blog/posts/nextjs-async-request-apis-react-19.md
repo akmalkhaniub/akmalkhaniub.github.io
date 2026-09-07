@@ -1,5 +1,13 @@
 # The Async Request API Shift: Adapting to React 19's Non-Blocking Lifecycles
 
+
+> [!NOTE]
+> **Catalog note**: The full async-params / cookies / PPR treatment is in [The Async Request API Shift](async-request-apis-nextjs-15-cookies-headers-params-concurrency.html).
+
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
 In Next.js 15 and 16, a major breaking change required developers to refactor how they access request-specific properties on the server: properties like dynamic routing parameters (`params`), query parameters (`searchParams`), cookies (`cookies()`), and headers (`headers()`) transitioned into **asynchronous** calls.
 
 This article details the architectural reasons behind this change, why it is critical for React 19's concurrent rendering capabilities, and how to safely implement these changes in your production codebase.

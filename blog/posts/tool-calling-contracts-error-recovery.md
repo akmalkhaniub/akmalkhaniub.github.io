@@ -23,10 +23,10 @@ The solution is a three-layer defense: **Schema Contracts → Runtime Validation
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    A[🧠 LLM Reasoning Layer] -->|Generates tool call JSON| B{Schema Validator<br/>Pydantic v2}
+    A[ LLM Reasoning Layer] -->|Generates tool call JSON| B{Schema Validator<br/>Pydantic v2}
     
-    B -->|✅ Valid Schema| C[Tool Executor<br/>Function Registry]
-    B -->|❌ Invalid Schema| D[Error Feedback Loop<br/>Structured Error Message]
+    B -->|Valid Schema| C[Tool Executor<br/>Function Registry]
+    B -->|Invalid Schema| D[Error Feedback Loop<br/>Structured Error Message]
     D --> A
 
     C -->|Success| E[Tool Result<br/>Typed Response Object]
@@ -436,7 +436,7 @@ In our next article, we explore **Agent Memory: Short-Term, Episodic & Semantic*
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Anthropic Tool Use Guide**: [Function Calling with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)
 *   **OpenAI Function Calling**: [Structured Tool Calling Reference](https://platform.openai.com/docs/guides/function-calling)
 *   **Pydantic v2 Documentation**: [Data Validation for Python](https://docs.pydantic.dev/latest/)

@@ -15,11 +15,11 @@ This article analyzes the technical trade-offs of each protocol and details how 
 Selecting the right streaming protocol depends on the directional requirements and client infrastructure of your agentic system:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Agent Server Event Core] --> B{Client & Topology Type?}
   
   subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
-    B -->|Browser UI Stream: Read-Only| C[HTTP/2 SSE Endpoint]
+    B -->|Browser UI Stream - Read-Only| C[HTTP/2 SSE Endpoint]
     C -->|Unidirectional Token Stream| D[Web Dashboard / Frontend UI]
   end
   

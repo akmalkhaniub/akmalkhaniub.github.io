@@ -36,12 +36,12 @@ This case study details the architecture, deployment, and operational gotchas of
 The system normalizes incoming client requests at edge nodes, serving static caches locally whenever possible:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Global Client Browsers] -->|Geo-Routed Request| B[Cloudflare Edge Node]
   
   subgraph SG1_CloudflareWorkerEdge ["Cloudflare Worker Edge Middleware"]
-    B -->|Step 1: Sanitize Query String| C[URL Normalization Node]
-    C -->|Step 2: Check Local Edge Cache| D{Cache Hit?}
+    B -->|Step 1 - Sanitize Query String| C[URL Normalization Node]
+    C -->|Step 2 - Check Local Edge Cache| D{Cache Hit?}
   end
   
   D -->|Yes| E[Instant Response: sub-50ms TTFB]

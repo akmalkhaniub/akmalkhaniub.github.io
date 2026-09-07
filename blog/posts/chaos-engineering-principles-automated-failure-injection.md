@@ -17,7 +17,7 @@ This article details steady-state hypothesis definition, blast radius containmen
 How automated Chaos Engineering frameworks run experiments while safeguarding production SLAs:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_PreExperimentBaseline ["Pre-Experiment Baseline Phase"]
     SteadyState[1. Measure Steady-State Metrics: HTTP Success >= 99.9%, p99 <= 50ms] --> Hypothesis[2. Formulate Hypothesis: 'DB latency spike +100ms will not cause API 5xx']
   end
@@ -30,8 +30,8 @@ graph TD
   
   subgraph SG3_GuardrailVerificationEmergency ["Guardrail Verification & Emergency Abort"]
     Monitor --> GuardrailCheck{Is Steady-State Metric Preserved?}
-    GuardrailCheck -->|Yes: System Resilient!| Pass[5. Record Chaos Experiment Success]
-    GuardrailCheck -->|No: HTTP Errors Spike > 0.5%| EmergencyAbort[🚨 EMERGENCY ABORT TRIGGERED!]
+    GuardrailCheck -->|Yes - System Resilient!| Pass[5. Record Chaos Experiment Success]
+    GuardrailCheck -->|No - HTTP Errors Spike > 0.5%| EmergencyAbort[ EMERGENCY ABORT TRIGGERED!]
     
     EmergencyAbort --> Rollback[6. Revert Netem Delay & Restore Baseline Topology]
   end

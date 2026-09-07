@@ -15,7 +15,7 @@ This article details how to architect a multi-layered content safety and output 
 The security architecture enforces deterministic checks at both entry and exit points of model execution:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Raw User / Environment Input] --> B[Pre-Execution Guardrails Layer]
   
   subgraph SG1_PreExecutionInput ["Pre-Execution Input Filtering"]

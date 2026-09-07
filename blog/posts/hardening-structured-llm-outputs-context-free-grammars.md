@@ -18,10 +18,10 @@ flowchart TD
     Prompt[LLM Token Generation Step] --> Logits[Calculate Probability distribution for next token]
     Logits --> Filter{Guided Sampler: Does token match EBNF Grammar?}
     
-    Filter -->|No: Violates JSON Syntax| Mask[Apply -infinity Logit Bias]
+    Filter -->|No - Violates JSON Syntax| Mask[Apply -infinity Logit Bias]
     Mask --> Logits
     
-    Filter -->|Yes: Valid continuation| Sample[Sample Token]
+    Filter -->|Yes - Valid continuation| Sample[Sample Token]
     Sample --> Append[Append to Response Stream]
     Append --> Prompt
 ```

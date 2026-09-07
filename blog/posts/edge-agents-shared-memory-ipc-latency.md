@@ -20,8 +20,8 @@ flowchart TD
         SharedBlock[Shared Memory Block / mmap file]
     end
 
-    AgentA[Agent Process A] -->|1. Direct Write JSON payload| SharedBlock
-    AgentB[Agent Process B] -->|2. Read payload instantly| SharedBlock
+    AgentA[Agent Process A] -->|Direct Write JSON payload| SharedBlock
+    AgentB[Agent Process B] -->|Read payload instantly| SharedBlock
     
     style SharedBlock fill:#111827,stroke:#0db49b,stroke-width:2px
 ```

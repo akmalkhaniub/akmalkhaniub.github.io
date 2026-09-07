@@ -12,7 +12,7 @@ In modern high-performance creative software (**Figma**, **Linear**, **Notion**,
 By keeping data stored locally on device and synchronizing changes asynchronously using **Conflict-Free Replicated Data Types (CRDTs)**, local-first applications achieve **instant $0\text{ms}$ latency**, **flawless offline capability**, and **provable peer-to-peer mathematical convergence**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CentralizedCloudVs ["Centralized Cloud vs Local-First CRDTs"]
     subgraph SG2_1CentralizedCloud ["1. Centralized Cloud / Operational Transformation (OT)"]
       ClientA[Client A] -->|100ms RTT| CentralServer[(Centralized Server / DB Lock)]
@@ -74,7 +74,7 @@ A data structure is a valid State-Based CRDT (CvRDT) if its merge operator ($\sq
 3. **Idempotence ($A \sqcup A = A$)**: Receiving duplicate network packets has zero side effects.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG4_MathematicalJoinSemilattice ["Mathematical Join-Semilattice Convergence"]
     StateA["Peer A State: {v1, v2}"]
     StateB["Peer B State: {v1, v3}"]

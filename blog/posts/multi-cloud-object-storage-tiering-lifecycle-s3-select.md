@@ -17,17 +17,17 @@ This article details storage class economics, automated lifecycle transition sta
 How automated lifecycle policies transition objects across storage tiers and how dual-write proxies migrate data across cloud providers without downtime:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_AutomatedStorageClass ["Automated Storage Class Lifecycle State Machine"]
-    Hot["🔥 Hot Tier (S3 Standard): $23/TB/mo (0s latency)"] -->|1. Age > 30 Days| Cool["🧊 Cool Tier (S3 Standard-IA): $12.50/TB/mo"]
-    Cool -->|2. Age > 90 Days| Cold["❄️ Cold Archive (S3 Glacier): $4/TB/mo"]
-    Cold -->|3. Age > 365 Days| DeepArchive["🌌 Deep Archive: $0.99/TB/mo (12h retrieval)"]
+    Hot[" Hot Tier (S3 Standard): $23/TB/mo (0s latency)"] -->|Age > 30 Days| Cool[" Cool Tier (S3 Standard-IA): $12.50/TB/mo"]
+    Cool -->|Age > 90 Days| Cold[" Cold Archive (S3 Glacier): $4/TB/mo"]
+    Cold -->|Age > 365 Days| DeepArchive[" Deep Archive: $0.99/TB/mo (12h retrieval)"]
   end
   
   subgraph SG2_MultiCloudZero ["Multi-Cloud Zero-Downtime Migration Proxy"]
     App[Application Request] --> Proxy[Multi-Cloud Proxy Router]
-    Proxy -->|1. Read from New Target (Cloudflare R2)| TargetStore[Cloudflare R2 / MinIO (Zero Egress!)]
-    TargetStore -.->|2. Fallback Miss: Fetch & Replicate| SourceStore[AWS S3 Source Bucket]
+    Proxy -->|Read from New Target (Cloudflare R2)| TargetStore[Cloudflare R2 / MinIO (Zero Egress!)]
+    TargetStore -.->|Fallback Miss - Fetch & Replicate| SourceStore[AWS S3 Source Bucket]
   end
 ```
 

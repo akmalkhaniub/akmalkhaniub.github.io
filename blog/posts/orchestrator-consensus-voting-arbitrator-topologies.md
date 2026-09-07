@@ -11,7 +11,7 @@ This article compares multi-agent delegation topologies and details how to build
 ## Comparing Multi-Agent Delegations
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_SupervisorWorkerTopology ["Supervisor-Worker Topology"]
     A[Orchestrator] --> B[Worker 1]
     A --> C[Worker 2]

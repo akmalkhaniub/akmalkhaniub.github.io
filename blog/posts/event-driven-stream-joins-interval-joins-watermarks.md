@@ -19,7 +19,7 @@ This article details relative interval boundaries ($[t - \tau_1, t + \tau_2]$), 
 How Interval Joins restrict state retention to relative time windows $[t - 5\text{min}, t + 10\text{min}]$:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UnboundedInputStream ["Unbounded Input Stream A (AdClick Stream)"]
     ClickStream[AdClick Event: click_id=101, timestamp=10:00] -->|KeyBy click_id| JoinOp[Stateful Stream Interval Join Operator]
   end
@@ -29,12 +29,12 @@ graph TD
   end
   
   subgraph SG3_IntervalJoinState ["Interval Join State Retention Window [-1min, +10min]"]
-    JoinOp <-->|Check State: 10:00 - 1min <= 10:04 <= 10:00 + 10min| StateA[(Stream A State Buffer)]
+    JoinOp <-->|Check State - 10 -00 - 1min <= 10 -04 <= 10 -00 + 10min| StateA[(Stream A State Buffer)]
     JoinOp <-->|Match Found!| StateB[(Stream B State Buffer)]
   end
   
   subgraph SG4_WatermarkStatePurging ["Watermark State Purging Engine"]
-    Watermark[Watermark Advances to 10:15] -->|Purge Old Events <= 10:05| EvictState[🗑️ Purge Expired Stream States from RocksDB]
+    Watermark[Watermark Advances to 10:15] -->|Purge Old Events <= 10 -05| EvictState[ Purge Expired Stream States from RocksDB]
     JoinOp -->|Emit Joined Event| Output[Joined Stream: AdClick + Purchase Matched Payload!]
   end
 ```

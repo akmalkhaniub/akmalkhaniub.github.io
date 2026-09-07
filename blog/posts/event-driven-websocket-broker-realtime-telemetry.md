@@ -23,7 +23,7 @@ flowchart TD
         Gateway -->|Multiplex payload| Client2[UI Dashboard Client 2]
     end
     
-    Client1 -->|Subscribe: task_session_101| Gateway
+    Client1 -->|Subscribe - task_session_101| Gateway
 ```
 
 ---

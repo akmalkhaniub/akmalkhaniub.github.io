@@ -21,7 +21,7 @@ This article details Pulsar's stateless broker layer, BookKeeper ledger segments
 How Pulsar separates stateless serve brokers from Apache BookKeeper ledger segments and S3 Tiered Storage:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ClientProducersConsumers ["Client Producers & Consumers"]
     Prod[Event Producer] -->|Publish Event| Broker1[Stateless Pulsar Broker 1]
     Cons[Event Consumer] <--|Subscribe / Read| Broker2[Stateless Pulsar Broker 2]
@@ -32,14 +32,14 @@ graph TD
   end
   
   subgraph SG3_SegmentCentricStorage ["Segment-Centric Storage Layer (Apache BookKeeper)"]
-    Broker1 -->|1. Quorum Write (Ensemble=3, Write=3, Ack=2)| Seg1[Ledger Segment 1: Bookie Node A]
-    Broker1 -->|1. Quorum Write| Seg2[Ledger Segment 1: Bookie Node B]
-    Broker1 -->|1. Quorum Write| Seg3[Ledger Segment 1: Bookie Node C]
+    Broker1 -->|Quorum Write (Ensemble=3, Write=3, Ack=2)| Seg1[Ledger Segment 1: Bookie Node A]
+    Broker1 -->|Quorum Write| Seg2[Ledger Segment 1: Bookie Node B]
+    Broker1 -->|Quorum Write| Seg3[Ledger Segment 1: Bookie Node C]
   end
   
   subgraph SG4_CloudObjectTiered ["Cloud Object Tiered Storage (Infinite Retention)"]
-    Seg1 -->|2. Offload Sealed Cold Ledger Segments| S3[Cloud Object Storage: AWS S3 / GCS]
-    Broker2 -->|3. Transparent Historical Read| S3
+    Seg1 -->|Offload Sealed Cold Ledger Segments| S3[Cloud Object Storage: AWS S3 / GCS]
+    Broker2 -->|Transparent Historical Read| S3
   end
 ```
 

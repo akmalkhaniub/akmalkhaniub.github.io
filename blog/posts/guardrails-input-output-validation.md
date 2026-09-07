@@ -21,17 +21,17 @@ Without a validation layer, LLM APIs are vulnerable to four categories of produc
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-flowchart LR
-    U[User Input] --> IG[🛡️ Input Guard<br/>Injection Detection<br/>PII Masking<br/>Topic Filter]
+flowchart TD
+    U[User Input] --> IG[ Input Guard<br/>Injection Detection<br/>PII Masking<br/>Topic Filter]
     
-    IG -->|BLOCKED| BR[🚫 Blocked Response<br/>Policy Violation Message]
-    IG -->|PASSED| LLM[🧠 LLM Core<br/>Claude / GPT-4o]
+    IG -->|BLOCKED| BR[ Blocked Response<br/>Policy Violation Message]
+    IG -->|PASSED| LLM[ LLM Core<br/>Claude / GPT-4o]
     
-    LLM --> OG[🛡️ Output Guard<br/>Schema Validation<br/>PII Scrubbing<br/>Toxicity Check]
+    LLM --> OG[ Output Guard<br/>Schema Validation<br/>PII Scrubbing<br/>Toxicity Check]
     
-    OG -->|FAILED| RE[🔁 Retry with<br/>Correction Prompt]
+    OG -->|FAILED| RE[ Retry with<br/>Correction Prompt]
     RE --> LLM
-    OG -->|PASSED| FO[✅ Safe Response<br/>to User]
+    OG -->|PASSED| FO[ Safe Response<br/>to User]
 
     style IG fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style OG fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -430,7 +430,7 @@ In our next article, we tackle **Prompt Injection Defence & Red-Teaming** — us
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Guardrails AI Documentation**: [Reliable AI Outputs via Validators](https://www.guardrailsai.com/docs)
 *   **NVIDIA NeMo Guardrails**: [Colang Dialogue Policy Framework](https://github.com/NVIDIA/NeMo-Guardrails)
 *   **OWASP LLM Top 10**: [LLM Application Security Risks](https://owasp.org/www-project-top-10-for-large-language-model-applications/)

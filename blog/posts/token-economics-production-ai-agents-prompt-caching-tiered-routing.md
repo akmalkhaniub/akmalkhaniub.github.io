@@ -11,13 +11,13 @@ In enterprise multi-agent production (**Agent Fleet Orchestrator**, **SpecForge*
 Building economically sustainable AI agents requires applying **Token Economics Governance**: combining **Prompt Prefix Caching**, **Tiered Model Routing**, and **Context Distillation Daemons** to slash token expenses by **$80\%\text{ to }90\%$** with zero loss in task accuracy.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ProductionTokenEconomics ["Production Token Economics Architecture"]
     Task[Incoming Agent Task] --> Classifier[Tier 1: Intent & Complexity Classifier (8B / Flash Model: $0.05/M)]
     
-    Classifier -->|Simple Task: Linting / Formatting| WorkerLow[Fast Edge Model: Llama-3-8B / Gemini Flash]
-    Classifier -->|Moderate Task: Single File Refactor| WorkerMid[Mid-Tier Model: Claude 3.5 Haiku / GPT-4o-mini]
-    Classifier -->|Complex Task: Multi-File Architecture| WorkerHigh[Frontier Reasoning: Claude 3.5 Sonnet / GPT-4o]
+    Classifier -->|Simple Task - Linting / Formatting| WorkerLow[Fast Edge Model: Llama-3-8B / Gemini Flash]
+    Classifier -->|Moderate Task - Single File Refactor| WorkerMid[Mid-Tier Model: Claude 3.5 Haiku / GPT-4o-mini]
+    Classifier -->|Complex Task - Multi-File Architecture| WorkerHigh[Frontier Reasoning: Claude 3.5 Sonnet / GPT-4o]
     
     subgraph SG2_OptimizationEngine80 ["Optimization Engine (80-90% Cost Reduction)"]
       WorkerHigh --> CacheEngine["1. Prompt Prefix Caching (90% Cache Read Discount)"]
@@ -66,7 +66,7 @@ Modern inference APIs (**Anthropic Claude**, **Google Gemini**, **DeepSeek**) im
 ```
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG3_PromptBufferMemory ["Prompt Buffer Memory Geometry (Prefix Invariance Law)"]
     P1["1. System Persona (Static: 2,000 tokens) [CACHE HIT: $0.30/M]"]
     P2["2. Repository AST & Schemas (Static: 45,000 tokens) [CACHE HIT: $0.30/M]"]

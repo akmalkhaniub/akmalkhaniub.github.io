@@ -13,7 +13,7 @@ This article details how to build a programmatic **Synthetic Trajectory Curation
 Rather than relying on human review to verify thousands of multi-step logs, we implement a automated, programmatic verification funnel:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Frontier Model: Generate Trajectory] --> B[Step 1: Syntax & Schema Validation]
   B -->|Pass| C[Step 2: Execution Sandbox Run]
   B -->|Fail| X[Discard / Flag for Repair]

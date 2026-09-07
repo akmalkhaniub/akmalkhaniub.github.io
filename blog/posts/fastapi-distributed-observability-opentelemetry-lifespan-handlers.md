@@ -15,7 +15,7 @@ This article details how to construct an production-ready observable FastAPI ser
 The execution lifecycle of a FastAPI service managed by async lifespan generators and OpenTelemetry context propagation:
 
 ```mermaid
-graph TD
+flowchart TD
   A[ASGI Server Launch] --> B[FastAPI Lifespan Startup Phase]
   
   subgraph SG1_LifespanStateInitialization ["Lifespan State Initialization"]

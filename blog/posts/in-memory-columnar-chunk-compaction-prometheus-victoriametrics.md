@@ -17,7 +17,7 @@ This article details the Prometheus 2-hour Head Block layout, Write-Ahead Log (W
 How time-series databases handle real-time RAM ingestion, 2-hour block cutting, and multi-tier background compaction:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_InMemoryReal ["In-Memory Real-Time Tier (0 - 2 Hours)"]
     Metric[Incoming Metric Write] --> WAL["1. Write-Ahead Log (WAL) on NVMe SSD"]
     Metric --> HeadBlock["2. In-Memory Head Block (RAM Gorilla Chunks)"]

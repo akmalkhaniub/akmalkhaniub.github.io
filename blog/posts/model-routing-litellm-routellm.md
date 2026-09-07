@@ -29,16 +29,16 @@ In most production systems, **100% of requests are routed to the same frontier m
 flowchart TD
     U[Incoming Request] --> C{Complexity Classifier}
     
-    C -->|Score < 0.3: Simple| T1[💚 Tier 1: Cheap<br/>GPT-4o-mini / Gemini Flash<br/>~$0.15/1M tokens]
-    C -->|Score 0.3–0.7: Moderate| T2[🔵 Tier 2: Mid<br/>Claude 3 Haiku / GPT-4o<br/>~$1.25/1M tokens]
-    C -->|Score > 0.7: Complex| T3[🔴 Tier 3: Frontier<br/>Claude 3.5 Sonnet / GPT-4o<br/>~$15/1M tokens]
+    C -->|Score < 0.3 - Simple| T1[ Tier 1: Cheap<br/>GPT-4o-mini / Gemini Flash<br/>~$0.15/1M tokens]
+    C -->|Score 0.3–0.7 - Moderate| T2[ Tier 2: Mid<br/>Claude 3 Haiku / GPT-4o<br/>~$1.25/1M tokens]
+    C -->|Score > 0.7 - Complex| T3[ Tier 3: Frontier<br/>Claude 3.5 Sonnet / GPT-4o<br/>~$15/1M tokens]
     
     T1 --> QC{Quality Check<br/>Score > threshold?}
     T2 --> QC
     T3 --> R[Final Response]
     
-    QC -->|✅ Pass| R
-    QC -->|❌ Fail — Escalate| T3
+    QC -->|Pass| R
+    QC -->|Fail — Escalate| T3
 
     style C fill:#0f172a,stroke:#0ea5e9,stroke-width:2px
     style T1 fill:#052e16,stroke:#10b981,stroke-width:2px
@@ -379,7 +379,7 @@ In our next article, we cover **Batch Processing APIs & Async Inference Queues**
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **LiteLLM Documentation**: [100+ LLM Provider Unified Interface](https://docs.litellm.ai/)
 *   **RouteLLM Research Paper**: [Learning to Route in Similarity Estimation for Efficient LLM Usage](https://arxiv.org/abs/2406.18665)
 *   **OpenAI Model Pricing**: [Current Pricing Grid](https://openai.com/api/pricing/)

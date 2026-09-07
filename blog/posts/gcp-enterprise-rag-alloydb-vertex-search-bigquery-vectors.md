@@ -15,7 +15,7 @@ This article details how to architect and implement an enterprise context engine
 The platform unifies structured relational data, vector embeddings, and analytical telemetry across Google Cloud's data stack:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Agent Worker Context Request] --> B{Context Type?}
   
   subgraph SG1_RelationalVectorContext ["Relational Vector & Context (AlloyDB AI)"]

@@ -25,9 +25,9 @@ flowchart TD
     Prompt[Incoming User Prompt] --> Embed[Convert to Embedding Vector]
     Embed --> Cosine{Cosine Similarity Evaluator}
     
-    Cosine -->|Class: DB Update| DB[Route to Database Queue]
-    Cosine -->|Class: CSS Styling| FE[Route to Frontend Queue]
-    Cosine -->|Class: Unit Tests| Test[Route to Testing Queue]
+    Cosine -->|Class - DB Update| DB[Route to Database Queue]
+    Cosine -->|Class - CSS Styling| FE[Route to Frontend Queue]
+    Cosine -->|Class - Unit Tests| Test[Route to Testing Queue]
     
     style Cosine fill:#111827,stroke:#0db49b,stroke-width:2px
 ```

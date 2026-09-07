@@ -14,24 +14,24 @@ This blueprint represents a robust, scale-tested architecture that can parse doc
 The system mimics a professional digital newsroom, dividing labor among specialized agents coordinating via a shared database:
 
 ```mermaid
-graph TD
+flowchart TD
     UserReq[User Query / Topic] --> Supervisor[1. Supervisor Agent]
     Supervisor -->|Plan & Assign| Researcher[2. Researcher Agent]
-    Researcher -->|Tool: Web Search| Web[Web API / Google]
+    Researcher -->|Tool - Web Search| Web[Web API / Google]
     
-    Researcher -->|Output: Raw Context| Supervisor
+    Researcher -->|Output - Raw Context| Supervisor
     Supervisor -->|Assign Verification| FactChecker[3. Fact Verifier Agent]
-    FactChecker -->|Tool: Vector Search| Vector[(pgvector Knowledge Base)]
+    FactChecker -->|Tool - Vector Search| Vector[(pgvector Knowledge Base)]
     
-    FactChecker -->|Output: Verified Facts| Supervisor
+    FactChecker -->|Output - Verified Facts| Supervisor
     Supervisor -->|Assign Outline| Outliner[4. Outline Agent]
-    Outliner -->|Output: Document Structure| Supervisor
+    Outliner -->|Output - Document Structure| Supervisor
     
     Supervisor -->|Assign Draft| Writer[5. Writer Agent]
-    Writer -->|Output: Draft Report| Critic[6. Critic Agent]
+    Writer -->|Output - Draft Report| Critic[6. Critic Agent]
     
     subgraph SG1_ReviewGateReview ["Review Gate [Review & Verification Loop]"]
-        Critic -->|Fails: Critique Loop| Writer
+        Critic -->|Fails - Critique Loop| Writer
         Critic -->|Passes| Validator[7. Validator Agent]
     end
     
@@ -39,7 +39,7 @@ graph TD
     Validator -->|Passes| HITL{8. Human Approval Gate}
     
     HITL -->|Approved| Commit[Final Published Report]
-    HITL -->|Rejected: Comments| Supervisor
+    HITL -->|Rejected - Comments| Supervisor
     
     style ReviewGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
     style Commit fill:#f0fdf4,stroke:#16a34a,stroke-width:2px

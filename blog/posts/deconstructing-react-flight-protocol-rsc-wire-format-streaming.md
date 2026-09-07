@@ -20,14 +20,14 @@ But in production systems engineering, abstractions are leaks waiting to spring.
 Here is the complete wire-level breakdown of the React Flight protocol.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph FlightPipeline ["React Server Component Serialization Pipeline"]
     ServerTree["Server Component Tree"] --> FiberPass["Server Fiber Reconciliation"]
     FiberPass --> FlightEmitter["React Flight Streaming Emitter"]
     
-    FlightEmitter -->|Emit Module References: Line 1:I| Wire["HTTP Stream: text/x-component"]
-    FlightEmitter -->|Emit VDOM JSON Nodes: Line 0:...| Wire
-    FlightEmitter -->|Emit Suspense Promises: Line 2:...| Wire
+    FlightEmitter -->|Emit Module References - Line 1 -I| Wire["HTTP Stream: text/x-component"]
+    FlightEmitter -->|Emit VDOM JSON Nodes - Line 0 -...| Wire
+    FlightEmitter -->|Emit Suspense Promises - Line 2 -...| Wire
     
     Wire --> ClientParser["Browser Flight Chunk Parser"]
     ClientParser --> ChunkResolver["Resolve Client Components and Fiber Nodes"]

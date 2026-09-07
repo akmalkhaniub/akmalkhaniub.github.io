@@ -15,13 +15,13 @@ This article details how to design multi-region active-active architectures and 
 Global Anycast DNS routing and cross-region asynchronous database replication:
 
 ```mermaid
-graph TD
-  Client1[User in Tokyo] -->|1. DNS Lookup / Anycast BGP| Router[Global Traffic Router / Edge CDN]
+flowchart TD
+  Client1[User in Tokyo] -->|DNS Lookup / Anycast BGP| Router[Global Traffic Router / Edge CDN]
   Client2[User in Frankfurt] --> Router
   
   subgraph SG1_EdgeRoutingLayer ["Edge Routing Layer"]
-    Router -->|2. Route to Lowest Latency Region| RegionAP[AP-East Region: Tokyo]
-    Router -->|3. Route to Lowest Latency Region| RegionEU[EU-Central Region: Frankfurt]
+    Router -->|Route to Lowest Latency Region| RegionAP[AP-East Region: Tokyo]
+    Router -->|Route to Lowest Latency Region| RegionEU[EU-Central Region: Frankfurt]
   end
   
   subgraph SG2_ActiveDatacenterRegion ["Active Datacenter Region: AP-East"]
@@ -35,10 +35,10 @@ graph TD
   end
   
   subgraph SG4_CrossRegionReplication ["Cross-Region Replication Bus"]
-    DBAP <-->|4. Asynchronous Multi-Master Sync| DBEU
+    DBAP <-->|Asynchronous Multi-Master Sync| DBEU
   end
   
-  RegionAP -.->|5. Health Check Fails: Automated Failover| RegionEU
+  RegionAP -.->|Health Check Fails - Automated Failover| RegionEU
 ```
 
 ### Core Multi-Region Principles

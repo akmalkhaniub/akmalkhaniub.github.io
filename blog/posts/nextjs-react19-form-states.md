@@ -1,5 +1,9 @@
 # React 19 Form States: Mastering useActionState, useFormStatus, and useTransition in Next.js
 
+
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
 Managing form lifecycles in single-page applications has historically been a source of significant boilerplate. Developers had to maintain separate hooks for loading indicators, validation errors, and submission status. 
 
 With **React 19** and **Next.js 15/16**, the library introduces a new set of hooks that align form transitions directly with asynchronous execution boundaries: `useActionState`, `useFormStatus`, and `useTransition`. 

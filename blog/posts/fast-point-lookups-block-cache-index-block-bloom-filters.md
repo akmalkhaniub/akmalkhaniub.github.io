@@ -17,15 +17,15 @@ This article details Bloom Filter bit-array mathematics, binary search Index Blo
 How Bloom Filters, Index Blocks, and Block Caches intercept read queries before touching disk:
 
 ```mermaid
-graph TD
+flowchart TD
   ClientRead[Client Point Lookup GET 'user_101'] --> MemTable{Present in MemTable?}
   
-  MemTable -->|Yes: Hit!| ReturnRAM[Return Value from RAM: < 100ns]
-  MemTable -->|No: Miss!| BloomFilter{Check In-Memory Bloom Filter}
+  MemTable -->|Yes - Hit!| ReturnRAM[Return Value from RAM: < 100ns]
+  MemTable -->|No - Miss!| BloomFilter{Check In-Memory Bloom Filter}
   
   subgraph SG1_InMemoryRead ["In-Memory Read Acceleration Layers"]
-    BloomFilter -->|Definitely NOT Present: False| SkipDisk[🚨 SKIP DISK READ! 0 Disk IOPS]
-    BloomFilter -->|Might Be Present: True| BlockCache{Check LRU Block Cache}
+    BloomFilter -->|Definitely NOT Present - False| SkipDisk[ SKIP DISK READ! 0 Disk IOPS]
+    BloomFilter -->|Might Be Present - True| BlockCache{Check LRU Block Cache}
     
     BlockCache -->|Cache Hit| ReturnCache[Return Block from Cache RAM: < 5us]
   end

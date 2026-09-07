@@ -16,8 +16,8 @@ When an API gateway streams token responses to clients:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    LLM[LLM API Stream] -->|Generate Tokens: 100/sec| Gateway[Gateway Buffer Queue]
-    Gateway -->|Consume Tokens: 15/sec| Client[Slow Client Socket]
+    LLM[LLM API Stream] -->|Generate Tokens - 100/sec| Gateway[Gateway Buffer Queue]
+    Gateway -->|Consume Tokens - 15/sec| Client[Slow Client Socket]
     
     Gateway --> Check{Buffer Queue > Threshold?}
     Check -->|Yes| Pause[Trigger Backpressure: Pause LLM Stream]

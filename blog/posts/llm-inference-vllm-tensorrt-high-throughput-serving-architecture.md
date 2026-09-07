@@ -15,7 +15,7 @@ This article analyzes the underlying architecture of high-throughput LLM serving
 The core breakthrough in modern LLM serving is **Continuous Batching** (also known as iteration-level or dynamic batching):
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TraditionalStaticBatching ["Traditional Static Batching (High Latency)"]
     A[Request 1: 50 Tokens] --> B[Static Batch 1]
     C[Request 2: 500 Tokens] --> B

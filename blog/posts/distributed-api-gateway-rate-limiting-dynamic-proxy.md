@@ -17,25 +17,25 @@ This article details API Gateway reverse proxying, Token Bucket vs Leaky Bucket 
 How edge API Gateways perform distributed rate limiting using Redis Lua scripts and route requests to backend microservices:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_PublicInternetClients ["Public Internet Clients"]
-    ClientA[Mobile App / Web Client] -->|1. HTTP Request: GET /api/v1/orders| Gateway[Distributed API Gateway Node]
+    ClientA[Mobile App / Web Client] -->|HTTP Request - GET /api/v1/orders| Gateway[Distributed API Gateway Node]
   end
   
   subgraph SG2_EdgeApiGateway ["Edge API Gateway Processing"]
-    Gateway -->|2. Validate JWT Token| Auth[JWT Auth & Header Injection]
-    Auth -->|3. Distributed Rate Limit Check| Redis[Central Redis Cluster]
+    Gateway -->|Validate JWT Token| Auth[JWT Auth & Header Injection]
+    Auth -->|Distributed Rate Limit Check| Redis[Central Redis Cluster]
     
     subgraph SG3_RedisAtomicLua ["Redis Atomic Lua Script (Token Bucket)"]
       Redis -->|Execute EVAL Lua Script| Lua["Redis Lua: Check & Consume Token (Tokens > 0?)"]
     end
     
-    Lua -->|Allowed: Return 1| Gateway
-    Lua -->|Exceeded: Return 0| RateLimitExceeded[🚨 Return HTTP 429 Too Many Requests]
+    Lua -->|Allowed - Return 1| Gateway
+    Lua -->|Exceeded - Return 0| RateLimitExceeded[ Return HTTP 429 Too Many Requests]
   end
   
   subgraph SG4_BackendMicroserviceReverse ["Backend Microservice Reverse Proxying"]
-    Gateway -->|4. Dynamic Reverse Proxy Route| OrderService[Order Microservice Cluster]
+    Gateway -->|Dynamic Reverse Proxy Route| OrderService[Order Microservice Cluster]
   end
 ```
 

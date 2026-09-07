@@ -15,7 +15,7 @@ The lesson was definitive: **In large-scale network infrastructure, open interop
 Today, the artificial intelligence landscape is reenacting the 1840s Railway Mania.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_The1840sRailway ["The 1840s Railway Mania vs The 2026 AI Infrastructure Race"]
     G1840["1840s: Proprietary Track Gauges (Brunel 7ft vs Stephenson 4ft 8.5in)"] <---> G2026["2026: Proprietary APIs vs Open Protocols (MCP, ONNX, W3C)"]
     L1840["1840s: Hundreds of Competing Steam Locomotives (Commoditized)"] <---> L2026["2026: Competing Foundation Model Weights (Rapidly Commoditizing)"]
@@ -93,7 +93,7 @@ In 1850, the enduring fortunes were not in manufacturing steam boilers, but in o
 In AI, the "freight" is **proprietary enterprise data** and **domain-specific workflows**:
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG2_TheValueShift ["The Value Shift"]
     Engine["Commodity Compute Engines\n(Llama 3 / Claude / GPT-4o)"] --> Track["Standardized Track Protocols\n(MCP / ONNX / Vector DBs)"]
     Track --> Freight["High-Margin Enterprise Freight\n(Proprietary Data, ERP Integrations, Vertical Workflows)"]

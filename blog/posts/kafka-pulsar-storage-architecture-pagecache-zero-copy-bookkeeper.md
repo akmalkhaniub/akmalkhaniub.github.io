@@ -17,7 +17,7 @@ This article details Kafka sequential disk log segments, OS PageCache mechanics,
 How Kafka's coupled PageCache Zero-Copy model compares to Apache Pulsar's disaggregated BookKeeper ledger architecture:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ApacheKafkaCoupled ["Apache Kafka (Coupled Monolithic Storage & Zero-Copy)"]
     Producer1[Kafka Producer] --> Broker[Kafka Broker Node]
     Broker --> PageCache[Linux OS PageCache Memory]

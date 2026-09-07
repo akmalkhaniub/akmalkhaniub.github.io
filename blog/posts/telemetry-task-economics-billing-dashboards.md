@@ -25,8 +25,8 @@ flowchart TD
     Agg --> Calculate[Calculate USD using Model Pricing Matrix]
     Calculate --> Check{Cost > Budget Limit?}
     
-    Check -->|Yes: Over Budget| Pause[Trigger Gateway Safety Pause]
-    Check -->|No: Safe| Update[Update Real-time Cost Dashboard]
+    Check -->|Yes - Over Budget| Pause[Trigger Gateway Safety Pause]
+    Check -->|No - Safe| Update[Update Real-time Cost Dashboard]
 ```
 
 ---

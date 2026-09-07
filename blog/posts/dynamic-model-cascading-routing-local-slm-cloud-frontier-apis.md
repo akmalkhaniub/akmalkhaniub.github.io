@@ -17,17 +17,17 @@ This article details how to design an intelligent hybrid model router gateway.
 The router gateway sits between orchestrator swarms and execution model targets:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Subagent Task Request] --> B[Dynamic Model Router Gateway]
   
   subgraph SG1_ComplexityFallbackRouter ["Complexity & Fallback Router"]
     B --> C{Task Complexity Classifier}
-    C -->|Score < 0.4: Simple JSON / Tool Call| D[Tier 1: Fast Local 4-Bit SLM]
-    C -->|Score 0.4 - 0.75: Code / Functioning| E[Tier 2: Local 14B AWQ Model]
-    C -->|Score > 0.75: Architectural Reasoning| F[Tier 3: Cloud Frontier API]
+    C -->|Score < 0.4 - Simple JSON / Tool Call| D[Tier 1: Fast Local 4-Bit SLM]
+    C -->|Score 0.4 - 0.75 - Code / Functioning| E[Tier 2: Local 14B AWQ Model]
+    C -->|Score > 0.75 - Architectural Reasoning| F[Tier 3: Cloud Frontier API]
   end
   
-  D -->|Validation Check: Failed Schema| G[Fallback Cascade to Tier 3]
+  D -->|Validation Check - Failed Schema| G[Fallback Cascade to Tier 3]
   G --> F
   D -->|Validation Passed| H[Return Result: 80ms, $0.0001]
   F -->|Return Result| I[Return Result: 1200ms, $0.015]

@@ -38,7 +38,7 @@ We assembled a specialized SRE and Systems Architecture team of **6 engineers**:
 The architecture isolates agent diagnosis from execution using a HITL Approval Gateway on GCP:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Cloud Monitoring / Alertmanager Incident Trigger] --> B[GCP Cloud Pub/Sub: Incident Event]
   B --> C[Cloud Run: Incident Command Agent]
   
@@ -49,8 +49,8 @@ graph TD
   end
   
   F --> G{Remediation Risk Level?}
-  G -->|Low Risk: Clear Cache / Restart Pod| H[Kubernetes Operator: Auto-Execute]
-  G -->|High Risk: Failover DB / Scale Cluster| I[HITL Gateway: Dispatch HMAC Token to PagerDuty/Slack]
+  G -->|Low Risk - Clear Cache / Restart Pod| H[Kubernetes Operator: Auto-Execute]
+  G -->|High Risk - Failover DB / Scale Cluster| I[HITL Gateway: Dispatch HMAC Token to PagerDuty/Slack]
   
   I -->|Human SRE Grants Signed Token| H
   I -->|Timeout 15 mins / Rejection| J[Escalate to Secondary On-Call]

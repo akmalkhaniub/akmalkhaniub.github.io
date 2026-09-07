@@ -24,11 +24,11 @@ Instead of hardcoding APIs for your AI agents, the Model Context Protocol standa
 In the `ops-mcp-suite` architecture, a unified **FastAPI Gateway** acts as a secure proxy, routing tool calls from agent networks to specialized local and remote MCP microservices.
 
 ```mermaid
-graph TD
-    A[AI Agent / LLM Client] -->|1. JSON-RPC Request| B[FastAPI Gateway Proxy]
-    B -->|2. Route DevOps Call| C[DevOps MCP Server]
-    B -->|2. Route DB Call| D[DBOps MCP Server]
-    B -->|2. Route Secrets Call| E[Secrets MCP Server]
+flowchart TD
+    A[AI Agent / LLM Client] -->|JSON-RPC Request| B[FastAPI Gateway Proxy]
+    B -->|Route DevOps Call| C[DevOps MCP Server]
+    B -->|Route DB Call| D[DBOps MCP Server]
+    B -->|Route Secrets Call| E[Secrets MCP Server]
     
     C -->|Docker API| F[(Local Containers)]
     D -->|SQL Alchemy| G[(PostgreSQL / MySQL)]

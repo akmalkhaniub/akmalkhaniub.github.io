@@ -11,7 +11,7 @@ During those 10 milliseconds, the system must ingest the transaction event, comp
 This deep-dive architectural guide explores the high-throughput, low-latency streaming infrastructure that powers sub-10ms fraud decisioning at planetary scale.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RealTimeFraud ["Real-Time Fraud Decisioning Pipeline (<= 10ms SLA)"]
     TxEvent[Transaction Ingestion Event: 50k tx/sec] --> Kafka[Apache Kafka Stream]
     
@@ -90,7 +90,7 @@ Organized fraud syndicates use automated bot farms to cycle through thousands of
 * 100 shipping addresses linked to **a single corporate IP proxy**.
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG4_RealTimeBipartite ["Real-Time Bipartite Fraud Graph"]
     Card1[(Card #101)] --- Device1[Device Fingerprint A]
     Card2[(Card #102)] --- Device1

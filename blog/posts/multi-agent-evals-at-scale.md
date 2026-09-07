@@ -18,7 +18,7 @@ This article details how to design and run evaluations at scale, drawing from re
 A production evaluation harness must measure four core system dimensions:
 
 ```mermaid
-graph TD
+flowchart TD
     Metric[Agentic Metrics] --> Acc[1. Extraction Accuracy]
     Metric --> Lat[2. Compounding Latency]
     Metric --> Cost[3. Token Economics]

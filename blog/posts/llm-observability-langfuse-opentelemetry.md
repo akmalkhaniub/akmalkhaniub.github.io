@@ -414,7 +414,7 @@ In our next article, we tackle **Guardrails & Input/Output Validation** — usin
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Langfuse Documentation**: [Open-Source LLM Engineering Platform](https://langfuse.com/docs)
 *   **OpenTelemetry for AI**: [Semantic Conventions for LLM Spans](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
 *   **Langfuse + OTEL Integration**: [Exporting Langfuse Traces via OTLP](https://langfuse.com/docs/integrations/opentelemetry)

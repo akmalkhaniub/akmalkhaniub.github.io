@@ -25,13 +25,13 @@ When agents have overlapping domains of responsibility:
 A good multi-agent system operates like a Michelin-starred restaurant kitchen. There is no generic "helper." Instead, roles are highly specialized and bounded:
 
 ```mermaid
-graph TD
+flowchart TD
     User[Customer Order] --> Expeditor[Expeditor / Supervisor]
     Expeditor -->|Assign Prep| PrepCook[Prep Cook Agent]
     Expeditor -->|Assign Baking| PastryChef[Pastry Chef Agent]
     
-    PrepCook -->|Output: Raw Ingredients| Expeditor
-    PastryChef -->|Output: Baked Pastry| Expeditor
+    PrepCook -->|Output - Raw Ingredients| Expeditor
+    PastryChef -->|Output - Baked Pastry| Expeditor
     
     Expeditor -->|Verification Check| QualityInspector[Quality Inspector Agent]
     QualityInspector -->|Pass/Fail| Expeditor

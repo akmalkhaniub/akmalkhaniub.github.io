@@ -24,14 +24,14 @@ Transitioning to a message broker (like RabbitMQ) solves these challenges by dec
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0b8489', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#14b8a6', 'lineColor': '#0b8489', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Orchestrator[Orchestrator Agent] -->|1. Publish task event| Exchange{Agent Exchange}
-    Exchange -->|Routing Key: research| QueueR[Research Queue]
-    Exchange -->|Routing Key: code| QueueC[Code Queue]
+    Orchestrator[Orchestrator Agent] -->|Publish task event| Exchange{Agent Exchange}
+    Exchange -->|Routing Key - research| QueueR[Research Queue]
+    Exchange -->|Routing Key - code| QueueC[Code Queue]
     
     QueueR --> WorkerR[Research Agent Workers]
     QueueC --> WorkerC[Coding Agent Workers]
     
-    WorkerR -->|2. Error/Malformed payload| DLX{Dead-Letter Exchange}
+    WorkerR -->|Error/Malformed payload| DLX{Dead-Letter Exchange}
     DLX -->|Quarantine| DLQ[Dead-Letter Queue - DLQ]
 ```
 

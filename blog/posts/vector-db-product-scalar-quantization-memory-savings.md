@@ -13,7 +13,7 @@ To solve this, modern vector engines utilize **Vector Quantization** to compress
 ## Quantization Mechanics: SQ vs. PQ
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RawVector1536 ["Raw Vector: 1536 floats 6144 bytes"]
     Raw[1.42, -0.84, ..., 0.12]
   end

@@ -19,7 +19,7 @@ flowchart TD
     Agent1[Agent Worker 1: Architect] -->|Request Write Lock| BB{Central Blackboard State Store}
     Agent2[Agent Worker 2: Coder] -->|Read State| BB
     
-    BB -->|State Lock: Granted| Agent1
+    BB -->|State Lock - Granted| Agent1
     Agent1 -->|Commit JSON Update| BB
     BB -->|Release Lock & Dispatch Update| Agent2
 ```

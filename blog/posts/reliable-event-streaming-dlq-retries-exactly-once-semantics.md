@@ -17,19 +17,19 @@ This article details Idempotent Producer sequence deduplication, 2PC Transaction
 How 2PC Transactions guarantee Exactly-Once processing while DLQ topics safely handle poison pill messages:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ExactlyOnceTransactional ["Exactly-Once Transactional Pipeline (2PC Commit)"]
-    Producer[Idempotent Producer (PID #42)] -->|1. Write Batch (Seq #10)| TopicA[Input Topic Partition]
-    Producer -->|2. Register Offsets in Transaction| TxnCoord[Kafka Transaction Coordinator]
-    Producer -->|3. Commit Transaction (2PC)| TxnCoord
-    TxnCoord -->|4. Write COMMIT Marker| TopicA
-    TopicA -->|5. Read Only Committed| Consumer[Consumer (read_committed)]
+    Producer[Idempotent Producer (PID #42)] -->|Write Batch (Seq #10)| TopicA[Input Topic Partition]
+    Producer -->|Register Offsets in Transaction| TxnCoord[Kafka Transaction Coordinator]
+    Producer -->|Commit Transaction (2PC)| TxnCoord
+    TxnCoord -->|Write COMMIT Marker| TopicA
+    TopicA -->|Read Only Committed| Consumer[Consumer (read_committed)]
   end
   
   subgraph SG2_PoisonPillHandling ["Poison Pill Handling & DLQ Retry Topology"]
     Consumer -->|Process Fails!| Retry1["Retry Topic 1 (1s Delay)"]
-    Retry1 -->|Failed Max Attempts| DLQ["☠️ Dead Letter Queue (DLQ) Topic"]
-    DLQ --> AdminAlert["🚨 Operator Alert & Manual Inspection Dashboard"]
+    Retry1 -->|Failed Max Attempts| DLQ[" Dead Letter Queue (DLQ) Topic"]
+    DLQ --> AdminAlert[" Operator Alert & Manual Inspection Dashboard"]
   end
 ```
 

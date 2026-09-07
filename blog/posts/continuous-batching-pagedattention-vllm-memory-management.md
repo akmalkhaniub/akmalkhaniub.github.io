@@ -19,7 +19,7 @@ This article details PagedAttention block tables and iteration-level continuous 
 How vLLM maps logical sequence tokens to non-contiguous physical GPU VRAM memory blocks:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ClientRequestsLogical ["Client Requests & Logical Token Streams"]
     Req1["Request 1: Token Stream (Logical Tokens 0..31)"]
     Req2["Request 2: Token Stream (Logical Tokens 0..15)"]

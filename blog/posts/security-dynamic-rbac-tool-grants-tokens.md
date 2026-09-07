@@ -22,8 +22,8 @@ flowchart TD
     Gateway --> Decode[Decode JWT Claims]
     Decode --> Match{Do Token Scopes match File Path?}
     
-    Match -->|No: Unauthorized path| Reject([Block Tool Action: Log Alert])
-    Match -->|Yes: Authorized| Execute([Execute Tool & Return File Content])
+    Match -->|No - Unauthorized path| Reject([Block Tool Action: Log Alert])
+    Match -->|Yes - Authorized| Execute([Execute Tool & Return File Content])
 ```
 
 ---

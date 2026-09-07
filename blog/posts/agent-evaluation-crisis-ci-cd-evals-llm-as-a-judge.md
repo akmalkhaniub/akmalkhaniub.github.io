@@ -12,7 +12,7 @@ When engineering autonomous AI agent systems (**Agent Fleet Orchestrator**, **Sp
 Solving the **Agent Evaluation Crisis** requires establishing a modern **Three-Tier Evaluation Pyramid**: combining **Deterministic Symbolic Assertions**, **Trajectory State Graphs**, and **Calibrated LLM-as-a-Judge Rubrics**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_The3Tier ["The 3-Tier Agent Evaluation Pyramid"]
     Tier1["Tier 1: Deterministic Symbolic Invariants (AST Parsing, Type Checks, Linters, 10ms)"]
     Tier2["Tier 2: Trajectory Assertion Graphs (Tool Call Sequence DAG Validation, 50ms)"]
@@ -24,8 +24,8 @@ graph TD
   Tier1 -->|AST Passed| Tier2
   Tier2 -->|Trajectory Valid| Tier3
   Tier3 --> ScoreGate{Pass Rate >= 95%?}
-  ScoreGate -->|Yes| Merge[✅ Merge to Main]
-  ScoreGate -->|No| Block[❌ Block Build: Prompt Regression]
+  ScoreGate -->|Yes| Merge[ Merge to Main]
+  ScoreGate -->|No| Block[ Block Build: Prompt Regression]
 ```
 
 ---
@@ -67,7 +67,7 @@ In autonomous agent swarms, **how the agent solved the problem** is just as impo
 A **Trajectory Assertion Graph** validates that the agent invoked tools in a logical, secure sequence:
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG2_ValidTrajectoryDag ["Valid Trajectory DAG"]
     T1[1. view_file: Inspect Codebase] --> T2[2. replace_file_content: Apply Patch]
     T2 --> T3[3. run_test: Verify Execution]

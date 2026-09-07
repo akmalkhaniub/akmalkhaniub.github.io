@@ -13,7 +13,7 @@ To maintain high team capability, modern Tech Leads actively fight cognitive rot
 Without deliberate intervention, delegating implementation leads to systemic mental model breakdown:
 
 ```mermaid
-graph TD
+flowchart TD
   A[AI Agent Generates Complex Module] --> B[Developer approves PR after high-level check]
   B --> C[Loss of Mental Model of Internal Mechanics]
   C --> D[Cognitive Rot: Ignorance of Edge Cases & Locks]

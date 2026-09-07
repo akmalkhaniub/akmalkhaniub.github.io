@@ -22,7 +22,7 @@ This article synthesizes the trade-offs of Edge SLMs vs. Cloud LLMs, detailing *
 Deploying a hybrid model requires an intelligent router that evaluates security, network state, and query complexity to decide whether to dispatch a job to a local SLM or trigger a cloud API.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
     classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef edge fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;

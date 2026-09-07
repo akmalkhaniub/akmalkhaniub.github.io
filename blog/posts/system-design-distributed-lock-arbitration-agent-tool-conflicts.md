@@ -16,12 +16,12 @@ In uncoordinated multi-agent networks:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent1[Worker Agent Node 1] -->|Request Lock: resource_db| LockMgr[Distributed Lock Manager]
-    Agent2[Worker Agent Node 2] -->|Request Lock: resource_db| LockMgr
+    Agent1[Worker Agent Node 1] -->|Request Lock - resource_db| LockMgr[Distributed Lock Manager]
+    Agent2[Worker Agent Node 2] -->|Request Lock - resource_db| LockMgr
     
     subgraph SG1_LockArbitrator ["Lock Arbitrator"]
         LockMgr -->|Grant Lease + Token 101| Lease1[Lock Granted: Agent 1]
-        LockMgr -->|Reject: Resource Locked| Lockout[Agent 2 Blocked]
+        LockMgr -->|Reject - Resource Locked| Lockout[Agent 2 Blocked]
     end
     
     Lease1 -->|Write Mutation + Token 101| Storage[(Target Resource DB)]

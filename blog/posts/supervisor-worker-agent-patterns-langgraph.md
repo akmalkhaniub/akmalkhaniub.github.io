@@ -24,14 +24,14 @@ In this pattern, a **Supervisor** (also called an Orchestrator) receives the hig
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-graph TD
-    U[User Request] --> S[🧠 Supervisor Agent<br/>Task Decomposer & Synthesiser]
+flowchart TD
+    U[User Request] --> S[ Supervisor Agent<br/>Task Decomposer & Synthesiser]
     
-    S -->|Sub-Task A: Research| W1[🔍 Research Worker<br/>Web Search + RAG Retrieval]
-    S -->|Sub-Task B: Code| W2[💻 Code Worker<br/>Python Sandbox Execution]
-    S -->|Sub-Task C: Review| W3[🛡️ Critic Worker<br/>Security & Accuracy Validator]
+    S -->|Sub-Task A - Research| W1[ Research Worker<br/>Web Search + RAG Retrieval]
+    S -->|Sub-Task B - Code| W2[ Code Worker<br/>Python Sandbox Execution]
+    S -->|Sub-Task C - Review| W3[ Critic Worker<br/>Security & Accuracy Validator]
     
-    W1 -->|Structured Result A| M[📬 Message Bus / State Graph]
+    W1 -->|Structured Result A| M[ Message Bus / State Graph]
     W2 -->|Structured Result B| M
     W3 -->|Structured Result C| M
     
@@ -305,7 +305,7 @@ In our next article, we will explore **Tool-Calling Contracts & Error Recovery**
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **LangGraph Documentation**: [Building Multi-Agent Architectures](https://langchain-ai.github.io/langgraph/)
 *   **CrewAI Documentation**: [Multi-Agent Role-Playing Frameworks](https://docs.crewai.com/)
 *   **Research Paper**: *AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation* (Microsoft Research, 2023)

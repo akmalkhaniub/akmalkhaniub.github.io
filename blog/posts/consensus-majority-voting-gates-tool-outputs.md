@@ -24,8 +24,8 @@ flowchart TD
     Worker2 --> Gate
     Worker3 --> Gate
     
-    Gate -->|Consensus: Scheme A has 2/3 votes| Execute[Execute API Write Tool with Scheme A]
-    Gate -->|Alternative: Tie| Fallback[Trigger Tie-breaker Exception Route]
+    Gate -->|Consensus - Scheme A has 2/3 votes| Execute[Execute API Write Tool with Scheme A]
+    Gate -->|Alternative - Tie| Fallback[Trigger Tie-breaker Exception Route]
 ```
 
 ---

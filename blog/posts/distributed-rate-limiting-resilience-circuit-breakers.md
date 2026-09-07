@@ -15,11 +15,11 @@ This article details how to construct rate limiters and finite state machine cir
 The operational state transitions of a resilience Circuit Breaker:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ClosedStateNormal ["CLOSED State: Normal Operation"]
     A[CLOSED State] -->|Pass Requests| B[Downstream Service]
     B -->|Success| A
-    B -->|Failure Threshold Exceeded: >50%| C[OPEN State]
+    B -->|Failure Threshold Exceeded - >50%| C[OPEN State]
   end
   
   subgraph SG2_OpenStateShort ["OPEN State: Short-Circuit & Fail Fast"]
@@ -29,8 +29,8 @@ graph TD
   
   subgraph SG3_HalfOpenState ["HALF-OPEN State: Probe Recovery"]
     E -->|Send Trial Probe Requests| F{Probes Succeed?}
-    F -->|Yes: Service Recovered| A
-    F -->|No: Service Still Failing| C
+    F -->|Yes - Service Recovered| A
+    F -->|No - Service Still Failing| C
   end
 ```
 

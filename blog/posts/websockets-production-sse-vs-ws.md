@@ -11,10 +11,10 @@
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    Q1{Does the client<br/>send messages<br/>after connection?} -->|No| SSE[✅ Use SSE<br/>Simpler, HTTP/2 multiplexed<br/>Auto-reconnect built in]
+    Q1{Does the client<br/>send messages<br/>after connection?} -->|No| SSE[ Use SSE<br/>Simpler, HTTP/2 multiplexed<br/>Auto-reconnect built in]
     Q1 -->|Yes| Q2{More than<br/>10 msg/sec<br/>in both directions?}
     Q2 -->|No| Q3{Need binary<br/>frames?}
-    Q2 -->|Yes| WS[✅ Use WebSockets<br/>Full-duplex, lower overhead<br/>at high message rates]
+    Q2 -->|Yes| WS[ Use WebSockets<br/>Full-duplex, lower overhead<br/>at high message rates]
     Q3 -->|Yes| WS
     Q3 -->|No| Q4{Collaborative<br/>multi-user<br/>real-time?}
     Q4 -->|Yes| WS
@@ -494,7 +494,7 @@ WebSockets unlock true bidirectional real-time communication but bring a distinc
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 - **MDN WebSocket API**: [WebSocket close codes reference](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code)
 - **RFC 6455**: [The WebSocket Protocol specification](https://datatracker.ietf.org/doc/html/rfc6455)
 - **FastAPI WebSockets**: [WebSocket documentation](https://fastapi.tiangolo.com/advanced/websockets/)

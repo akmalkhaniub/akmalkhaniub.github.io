@@ -17,19 +17,19 @@ This article details Circuit Breaker state machines, Bulkhead thread isolation, 
 How Circuit Breakers trip and isolate resource pools during downstream outages:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CircuitBreakerFinite ["Circuit Breaker Finite State Machine"]
-    StateClosed[Closed State: Normal Operations] -->|1. Failure Rate > Threshold e.g., 50%| StateOpen[Open State: Fail-Fast Mode]
-    StateOpen -->|2. Sleep Window Expired e.g., 10s| StateHalfOpen[Half-Open State: Trial Probe Mode]
+    StateClosed[Closed State: Normal Operations] -->|Failure Rate > Threshold e.g., 50%| StateOpen[Open State: Fail-Fast Mode]
+    StateOpen -->|Sleep Window Expired e.g., 10s| StateHalfOpen[Half-Open State: Trial Probe Mode]
     
-    StateHalfOpen -->|3. Probe Successes >= Target| StateClosed
-    StateHalfOpen -->|4. Probe Failure Detected| StateOpen
+    StateHalfOpen -->|Probe Successes >= Target| StateClosed
+    StateHalfOpen -->|Probe Failure Detected| StateOpen
   end
   
   subgraph SG2_BulkheadIsolationPools ["Bulkhead Isolation Pools"]
     ClientReq[Incoming HTTP Request] --> Router{Bulkhead Resource Router}
-    Router -->|Pool A: Max 10 Threads| PaymentPool[Payment Service Bulkhead]
-    Router -->|Pool B: Max 5 Threads| SearchPool[Search Service Bulkhead]
+    Router -->|Pool A - Max 10 Threads| PaymentPool[Payment Service Bulkhead]
+    Router -->|Pool B - Max 5 Threads| SearchPool[Search Service Bulkhead]
     
     SearchPool -.->|Pool Exhausted!| Reject[Instant Fail-Fast / Fallback Response]
   end

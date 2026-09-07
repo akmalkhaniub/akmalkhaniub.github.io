@@ -17,7 +17,7 @@ This article details how to build a hybrid reranking engine.
 The hybrid retrieval engine merges vector similarity ranks with graph centrality topological ranks:
 
 ```mermaid
-graph TD
+flowchart TD
   A[User / Agent Query] --> B[Initial Retriever Phase]
   
   subgraph SG1_DualRankingEngine ["Dual Ranking Engine"]

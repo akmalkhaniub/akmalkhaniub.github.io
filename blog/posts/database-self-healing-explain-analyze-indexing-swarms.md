@@ -19,8 +19,8 @@ flowchart TD
     Log[Parse PostgreSQL Slow Query Logs] --> CheckExplain[Staging Run: EXPLAIN ANALYZE]
     CheckExplain --> ParsePlan{Is Sequential Scan Detected?}
     
-    ParsePlan -->|No: Index already exists| Exit([Sleep: No Action])
-    ParsePlan -->|Yes: Slow Seq Scan| Recommendations[Generate Index Options]
+    ParsePlan -->|No - Index already exists| Exit([Sleep: No Action])
+    ParsePlan -->|Yes - Slow Seq Scan| Recommendations[Generate Index Options]
     
     Recommendations --> WriteDDL[Generate CREATE INDEX CONCURRENTLY DDL]
     WriteDDL --> Stage[Verify Index Cost Reduction on Staging DB]

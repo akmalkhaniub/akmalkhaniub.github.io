@@ -43,7 +43,7 @@ To build agentic systems that scale predictably, we must treat LLM development a
 When we apply SRP to agentic systems, we move from a single overloaded chatbot to a **Multi-Agent Team**.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_SingleagentTheOverloaded ["SingleAgent [The Overloaded Agent Model]"]
         U1[User Query] --> Agent[Overloaded AI Agent]
         Agent -->|Too many instructions| Tool1[Search Tool]

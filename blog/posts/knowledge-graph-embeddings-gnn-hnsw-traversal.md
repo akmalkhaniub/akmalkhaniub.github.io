@@ -19,7 +19,7 @@ This article details TransE entity-relation vector space translation, Graph Conv
 How GraphRAG combines vector similarity search with explicit Knowledge Graph traversal to eliminate LLM hallucinations:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UserQueryHybrid ["User Query & Hybrid Search Trigger"]
     Query[User Prompt: 'Which drugs interact with Gene X?'] --> VectorSearch[1. HNSW Vector Similarity Search]
     Query --> EntityExtract[2. Extract Seed Knowledge Graph Entity Node]
@@ -27,13 +27,13 @@ graph TD
   
   subgraph SG2_KnowledgeGraphGnn ["Knowledge Graph & GNN Embedding Space (TransE: h + r ≈ t)"]
     EntityExtract --> KGNode["Seed Entity Node: Gene X (Vector h)"]
-    KGNode -->|3. Explicit Subgraph Hop: INHIBITS| TargetNode["Target Node: Drug Y (Vector t)"]
-    VectorSearch -.->|4. Verify Vector Distance| TargetNode
+    KGNode -->|Explicit Subgraph Hop - INHIBITS| TargetNode["Target Node: Drug Y (Vector t)"]
+    VectorSearch -.->|Verify Vector Distance| TargetNode
   end
   
   subgraph SG3_GroundedLlmContext ["Grounded LLM Context Injection"]
     TargetNode --> StructuredContext["5. Factual Subgraph Context: (Gene X -[INHIBITS]-> Drug Y)"]
-    StructuredContext --> LLM["🤖 LLM Generation (Zero Hallucination Grounded Response!)"]
+    StructuredContext --> LLM[" LLM Generation (Zero Hallucination Grounded Response!)"]
   end
 ```
 

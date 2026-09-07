@@ -23,18 +23,18 @@ This article explores the mechanics of zero-copy Linux syscalls.
 Comparing the CPU memory overhead of traditional I/O vs `sendfile()` zero-copy transfers:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_Traditional4Copy ["Traditional 4-Copy Path (read + write)"]
-    Disk1[(Disk Storage)] -->|1. DMA Copy| PageCache1[Kernel Page Cache]
-    PageCache1 -->|2. CPU Copy| UserMem[User Application Memory]
-    UserMem -->|3. CPU Copy| SocketBuf1[Kernel Socket Buffer]
-    SocketBuf1 -->|4. DMA Copy| NIC1[Network NIC Hardware]
+    Disk1[(Disk Storage)] -->|DMA Copy| PageCache1[Kernel Page Cache]
+    PageCache1 -->|CPU Copy| UserMem[User Application Memory]
+    UserMem -->|CPU Copy| SocketBuf1[Kernel Socket Buffer]
+    SocketBuf1 -->|DMA Copy| NIC1[Network NIC Hardware]
   end
   
   subgraph SG2_ZeroCopyPath ["Zero-Copy Path (sendfile / DMA Scatter-Gather)"]
-    Disk2[(Disk Storage)] -->|1. DMA Copy| PageCache2[Kernel Page Cache]
-    PageCache2 -.->|2. Pass Descriptor Pointers Only| SocketBuf2[Kernel Socket Buffer]
-    PageCache2 -->|3. Direct DMA Gather Copy| NIC2[Network NIC Hardware]
+    Disk2[(Disk Storage)] -->|DMA Copy| PageCache2[Kernel Page Cache]
+    PageCache2 -.->|Pass Descriptor Pointers Only| SocketBuf2[Kernel Socket Buffer]
+    PageCache2 -->|Direct DMA Gather Copy| NIC2[Network NIC Hardware]
   end
 ```
 

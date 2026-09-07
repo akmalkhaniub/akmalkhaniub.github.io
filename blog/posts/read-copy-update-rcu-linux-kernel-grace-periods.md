@@ -19,19 +19,19 @@ This article details `rcu_read_lock`, Copy-On-Write pointer swaps, Quiescent Sta
 How RCU enables zero-overhead lockless reads while deferring memory reclamation until a Grace Period completes:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ReaderThreadsZero ["Reader Threads (Zero Lock Overhead)"]
     Reader1["rcu_read_lock(): Reads Data Structure (No Locks, No Atomic Ops!)"] --> ReadFinish["rcu_read_unlock()"]
   end
   
   subgraph SG2_UpdaterThreadCopy ["Updater Thread (Copy-On-Write Mutation)"]
-    OldNode[Original Node A] -->|1. Allocate Copy & Modify| NewNode[New Node A']
-    NewNode -->|2. rcu_assign_pointer(): Atomically Swap Pointer| PointerSwap[Global Pointer points to A']
-    PointerSwap -->|3. synchronize_rcu(): Wait for Grace Period| GracePeriod[Grace Period: Wait for all CPUs to reach Quiescent State]
+    OldNode[Original Node A] -->|Allocate Copy & Modify| NewNode[New Node A']
+    NewNode -->|rcu_assign_pointer() - Atomically Swap Pointer| PointerSwap[Global Pointer points to A']
+    PointerSwap -->|synchronize_rcu() - Wait for Grace Period| GracePeriod[Grace Period: Wait for all CPUs to reach Quiescent State]
   end
   
   subgraph SG3_MemoryReclamation ["Memory Reclamation"]
-    GracePeriod -->|4. Every CPU Passed Quiescent State| FreeOld[kfree(Old Node A) - Safe Deallocation!]
+    GracePeriod -->|Every CPU Passed Quiescent State| FreeOld[kfree(Old Node A) - Safe Deallocation!]
   end
 ```
 

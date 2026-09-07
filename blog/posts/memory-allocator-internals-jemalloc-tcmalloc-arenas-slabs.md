@@ -19,12 +19,12 @@ This article details `ptmalloc` lock bottlenecks, `tcache` thread-local allocati
 How `jemalloc` and `tcmalloc` use Lock-Free Thread-Local Caches (`tcache`) and Per-CPU Arenas to bypass global allocation locks:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_MultiThreadedAllocation ["Multi-Threaded Allocation Flow"]
-    Thread1[Worker Thread 1: malloc 32 Bytes] -->|1. O(1) Lock-Free Path| TCache1[Thread 1 Local Cache: tcache]
+    Thread1[Worker Thread 1: malloc 32 Bytes] -->|O(1) Lock-Free Path| TCache1[Thread 1 Local Cache: tcache]
     TCache1 -->|Fast-Path Success < 5ns| ReturnPtr1[Return Memory Pointer]
     
-    Thread2[Worker Thread 2: malloc 32 Bytes] -->|1. tcache Dry!| Arena1[Per-CPU Arena #1 (Mutex Lock)]
+    Thread2[Worker Thread 2: malloc 32 Bytes] -->|tcache Dry!| Arena1[Per-CPU Arena #1 (Mutex Lock)]
     Arena1 -->|Refill tcache Batch| TCache2[Thread 2 Local Cache: tcache]
   end
   

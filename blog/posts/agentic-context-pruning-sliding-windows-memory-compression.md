@@ -20,7 +20,7 @@ When the context window gets bloated:
 flowchart TD
     Raw[Raw Message Log Stack] --> Slice{Is Token Count > Budget?}
     
-    Slice -->|Yes: Exceeds Limit| Prune[1. Semantic Prune: Strip raw tool outputs]
+    Slice -->|Yes - Exceeds Limit| Prune[1. Semantic Prune: Strip raw tool outputs]
     Prune --> Slide[2. Slide Window: Keep latest N messages]
     Slide --> Compress[3. Compress Memory: Summarize discarded history]
     

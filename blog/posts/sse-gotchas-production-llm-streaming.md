@@ -28,22 +28,22 @@ The result: SSE that works perfectly in local development silently breaks in eve
 flowchart TD
     C[Browser EventSource] --> P1{Proxy / CDN Layer}
     
-    P1 -->|Buffering ON| G1[💥 Gotcha 1<br/>Tokens buffer 30s<br/>then dump all at once]
-    P1 -->|HTTP/1.1| G2[💥 Gotcha 2<br/>6-connection limit<br/>new tabs kill old streams]
-    P1 -->|Auth via Header| G3[💥 Gotcha 3<br/>EventSource can't<br/>set Authorization header]
-    P1 -->|Cloudflare timeout| G4[💥 Gotcha 4<br/>100s hard timeout<br/>kills long responses]
+    P1 -->|Buffering ON| G1[ Gotcha 1<br/>Tokens buffer 30s<br/>then dump all at once]
+    P1 -->|HTTP/1.1| G2[ Gotcha 2<br/>6-connection limit<br/>new tabs kill old streams]
+    P1 -->|Auth via Header| G3[ Gotcha 3<br/>EventSource can't<br/>set Authorization header]
+    P1 -->|Cloudflare timeout| G4[ Gotcha 4<br/>100s hard timeout<br/>kills long responses]
     P1 -->|Passed| S[Server]
 
     S --> P2{Framework Layer}
-    P2 -->|Next.js middleware| G5[💥 Gotcha 5<br/>Edge runtime buffers<br/>full response body]
-    P2 -->|Express compress()| G6[💥 Gotcha 6<br/>Gzip middleware<br/>swallows stream chunks]
-    P2 -->|No keep-alive| G7[💥 Gotcha 7<br/>Connection closes after<br/>first event — client loops]
+    P2 -->|Next.js middleware| G5[ Gotcha 5<br/>Edge runtime buffers<br/>full response body]
+    P2 -->|Express compress()| G6[ Gotcha 6<br/>Gzip middleware<br/>swallows stream chunks]
+    P2 -->|No keep-alive| G7[ Gotcha 7<br/>Connection closes after<br/>first event — client loops]
     P2 -->|Passed| L[LLM API]
 
     L --> P3{Client Reconnect}
-    P3 -->|No Last-Event-ID| G8[💥 Gotcha 8<br/>Reconnect replays<br/>full response from start]
-    P3 -->|No exponential backoff| G9[💥 Gotcha 9<br/>Reconnect storm on<br/>server restart]
-    P3 -->|No done signal| G10[💥 Gotcha 10<br/>Client never closes —<br/>connection leak]
+    P3 -->|No Last-Event-ID| G8[ Gotcha 8<br/>Reconnect replays<br/>full response from start]
+    P3 -->|No exponential backoff| G9[ Gotcha 9<br/>Reconnect storm on<br/>server restart]
+    P3 -->|No done signal| G10[ Gotcha 10<br/>Client never closes —<br/>connection leak]
 
     style G1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style G2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -655,7 +655,7 @@ SSE is the right protocol for LLM token streaming — it's simpler than WebSocke
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **W3C SSE Specification**: [Server-Sent Events Living Standard](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 *   **MDN EventSource API**: [Using server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events)
 *   **Nginx Reverse Proxy**: [proxy_buffering directive reference](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffering)

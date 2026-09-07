@@ -24,20 +24,20 @@ An event-driven agent infrastructure maps jobs through waiting, active, complete
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
-    A[Client User Interface] -->|1. POST /api/agent/run| B[API Gateway: Node.js/Hono]
-    B -->|2. Generate Job UUID & Push Job| C[Redis database]
-    B -->|3. Return 202 Accepted + Job UUID| A
+flowchart TD
+    A[Client User Interface] -->|POST /api/agent/run| B[API Gateway: Node.js/Hono]
+    B -->|Generate Job UUID & Push Job| C[Redis database]
+    B -->|Return 202 Accepted + Job UUID| A
     
     subgraph SG1_BullmqTaskCluster ["BullMQ Task Cluster"]
-        D[BullMQ Worker Pool] -->|4. Pull Job from Queue| C
-        D -->|5. Execute Step 1: LLM Call| E[Frontier API: Claude]
-        D -->|6. Execute Step 2: Tool Run| F[Sandbox Container]
-        D -->|7. Save Result & Update Job Status| C
+        D[BullMQ Worker Pool] -->|Pull Job from Queue| C
+        D -->|Execute Step 1 - LLM Call| E[Frontier API: Claude]
+        D -->|Execute Step 2 - Tool Run| F[Sandbox Container]
+        D -->|Save Result & Update Job Status| C
     end
     
-    A -->|8. Poll GET /api/jobs/:id| B
-    B -->|9. Query Job Status| C
+    A -->|Poll GET /api/jobs/ -id| B
+    B -->|Query Job Status| C
 
     style A fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
     style B fill:#0f172a,stroke:#38bdf8,stroke-width:2px
@@ -163,7 +163,7 @@ In our next article, [Real-Time Token Streaming: Designing SSE and WebSocket Gat
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **BullMQ Documentation**: [Task Queue Manager for Node.js](https://docs.bullmq.io/)
 *   **Redis Architecture**: [How to configure Redis for high-durability caching](https://redis.io/)
 *   **Distributed Systems Guide**: *Designing Event-Driven Architectures for Scale* (O'Reilly)

@@ -20,8 +20,8 @@ flowchart TD
     AST --> Scan[Scan AST Nodes for Imports & Attribute Calls]
     
     Scan --> Verify{Does AST match Security Rules?}
-    Verify -->|No: Forbidden calls| Block([Block Script Execution: Raise Safety Alert])
-    Verify -->|Yes: Safe| Sandbox([Run Code inside Sandboxed MicroVM])
+    Verify -->|No - Forbidden calls| Block([Block Script Execution: Raise Safety Alert])
+    Verify -->|Yes - Safe| Sandbox([Run Code inside Sandboxed MicroVM])
 ```
 
 ---

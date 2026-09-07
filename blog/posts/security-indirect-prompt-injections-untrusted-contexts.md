@@ -19,8 +19,8 @@ flowchart TD
     RawWeb[Scraped Raw Text File] --> Scan[Safety Tokenizer & Regex Audit Engine]
     
     Scan --> Check{Are Malicious Command Tags Found?}
-    Check -->|Yes: Flagged| Quarantine[Quarantine Document & Raise Alert]
-    Check -->|No: Clean| Safe[Pass Document to Agent Context Window]
+    Check -->|Yes - Flagged| Quarantine[Quarantine Document & Raise Alert]
+    Check -->|No - Clean| Safe[Pass Document to Agent Context Window]
     
     Safe --> Exec([Agent Action Execution])
 ```

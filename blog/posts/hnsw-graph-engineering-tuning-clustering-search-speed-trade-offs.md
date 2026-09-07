@@ -15,7 +15,7 @@ This article details the mechanics of HNSW parameters and how to tune them.
 HNSW acts as a multi-layer skip-list for high-dimensional vector spaces:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_Layer2Sparse ["Layer 2: Sparse Entry Layer"]
     A((Vector 10)) ----> B((Vector 88))
   end

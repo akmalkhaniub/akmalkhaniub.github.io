@@ -1,3 +1,6 @@
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
 > ### 📖 Article Overview
 > * **What this article is about:** This article explores the consolidation of the full-stack JavaScript ecosystem in 2026, focusing on React 19 and Next.js 15 features like the React Compiler, Server Actions, Partial Prerendering (PPR), and the `after()` API.
 > * **Why it matters:** Understanding these features allows engineers to build highly performant, secure, and unified web applications with sub-100ms initial load times and seamless state synchronization.

@@ -13,7 +13,7 @@ If stored as an in-memory **Hierarchical Navigable Small World (HNSW)** graph, a
 This article details how modern distributed vector databases achieve sub-$10\text{ms}$ recall across 1 billion vectors using **Product Quantization (PQ)**, **Asymmetric Distance Computation (ADC)**, **DiskANN SSD-optimized graph traversal**, and **disaggregated compute-storage architectures**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_BillionScaleVector ["Billion-Scale Vector Search Pipeline"]
     Query[Query Vector: 1536-dim float32] --> Coordinator[Distributed Query Coordinator]
     Coordinator --> Shards[Parallel Query Shard Nodes]
@@ -69,7 +69,7 @@ $$\text{Dist}(\vec{q}, \vec{x}_{\text{compressed}}) \approx \sum_{m=1}^M \text{L
 To completely overcome the RAM ceiling, **DiskANN** (Microsoft Research, Subramanya et al.) stores the graph structure and compressed vectors on fast **NVMe SSDs** rather than in RAM.
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG3_InMemoryCache ["In-Memory Cache (~10% RAM)"]
     Mem[Compressed PQ Vectors + Fast Entry Point Index]
   end
@@ -96,15 +96,15 @@ graph LR
 At enterprise scale, vector databases decouple stateful storage from stateless compute nodes:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG5_ClientIngestionQuery ["Client Ingestion & Query Layer"]
     Client[Client App] --> Proxy[Stateless Query / Ingest Proxy]
   end
   
   subgraph SG6_StorageConsensusBrokers ["Storage & Consensus Brokers"]
-    Proxy -->|1. Append Insert WAL| LogBroker[Apache Kafka / Pulsar WAL Broker]
-    Proxy -->|2. Parallel Scatter Search| QueryNode1[Query Worker Node 1]
-    Proxy -->|2. Parallel Scatter Search| QueryNode2[Query Worker Node 2]
+    Proxy -->|Append Insert WAL| LogBroker[Apache Kafka / Pulsar WAL Broker]
+    Proxy -->|Parallel Scatter Search| QueryNode1[Query Worker Node 1]
+    Proxy -->|Parallel Scatter Search| QueryNode2[Query Worker Node 2]
   end
   
   subgraph SG7_BackgroundProcessingObject ["Background Processing & Object Store"]

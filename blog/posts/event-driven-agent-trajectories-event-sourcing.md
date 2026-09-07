@@ -16,7 +16,7 @@ To solve this, production agent systems use **Event Sourcing**. Instead of stori
 In an event-sourced agent architecture, the system state is reconstructed dynamically by reading the event stream from the beginning and applying each event to a blank state object—a process called **Projection**:
 
 ```mermaid
-graph TD
+flowchart TD
   A[TaskStartedEvent] -->|Project| State1[State: Active]
   State1 --> B[ThoughtEmittedEvent]
   B -->|Project| State2[State: Rationale Added]

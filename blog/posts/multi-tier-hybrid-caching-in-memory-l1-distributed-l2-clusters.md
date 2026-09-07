@@ -17,23 +17,23 @@ This article details how to design and build a multi-tier L1/L2 caching engine.
 The read path hierarchy and cross-node L1 invalidation bus:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client Request] --> B[L1 In-Memory Process Cache: Sub-microsecond RAM]
   
   subgraph SG1_LocalMicroserviceInstance ["Local Microservice Instance 1"]
-    B -->|1. L1 Hit| C[Return Instant Result: < 0.01ms]
-    B -->|2. L1 Miss| D[L2 Distributed Cache: Redis Cluster]
+    B -->|L1 Hit| C[Return Instant Result: < 0.01ms]
+    B -->|L1 Miss| D[L2 Distributed Cache: Redis Cluster]
   end
   
   subgraph SG2_DistributedCacheStorage ["Distributed Cache & Storage"]
-    D -->|3. L2 Hit| E[Populate L1 & Return Result: 1-2ms]
-    D -->|4. L2 Miss| F[(Primary Database Storage)]
-    F -->|5. DB Result| G[Populate L2 & L1]
+    D -->|L2 Hit| E[Populate L1 & Return Result: 1-2ms]
+    D -->|L2 Miss| F[(Primary Database Storage)]
+    F -->|DB Result| G[Populate L2 & L1]
   end
   
   subgraph SG3_CrossNodeL1 ["Cross-Node L1 Invalidation"]
-    H[Data Updated in Node 2] -->|6. Publish Event| I[Redis Pub/Sub Channel]
-    I -->|7. Broadcast Invalidation| B
+    H[Data Updated in Node 2] -->|Publish Event| I[Redis Pub/Sub Channel]
+    I -->|Broadcast Invalidation| B
   end
 ```
 

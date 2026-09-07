@@ -39,7 +39,7 @@ We assembled a cross-functional engineering taskforce of **8 engineers**:
 The architecture replaced static Java routing logic with an event-driven Cloud Run worker swarm on GCP:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Merchant API Transaction Request] --> B[GCP Cloud Pub/Sub: Payment Event Topic]
   B --> C[Eventarc Event Router]
   C --> D[Cloud Run Intelligent Router Worker]
@@ -49,9 +49,9 @@ graph TD
     D --> F[Vertex AI: Dynamic Fee & Approval Predictor]
   end
   
-  D -->|Option A: Low Fee| G[Processor A: Adyen API]
-  D -->|Option B: Fallback| H[Processor B: Stripe API]
-  D -->|Option C: High Approval| I[Processor C: Chase Paymentech]
+  D -->|Option A - Low Fee| G[Processor A: Adyen API]
+  D -->|Option B - Fallback| H[Processor B: Stripe API]
+  D -->|Option C - High Approval| I[Processor C: Chase Paymentech]
   
   G --> J[Transaction Result Collector]
   H --> J

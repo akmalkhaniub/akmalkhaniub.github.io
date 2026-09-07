@@ -17,7 +17,7 @@ This article details State-based (CvRDT) semi-lattices, Operation-based (CmRDT) 
 How State-Based CRDTs (CvRDT) use mathematical join semi-lattices to achieve deterministic convergence:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_PeerToPeer ["Peer-to-Peer Concurrent Edits"]
     PeerA[Client A: Increments Counter +5] --> StateA["Local State A: {P: [5, 0], N: [0, 0]}"]
     PeerB[Client B: Decrements Counter -2] --> StateB["Local State B: {P: [0, 0], N: [0, 2]}"]

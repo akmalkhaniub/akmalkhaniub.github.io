@@ -11,7 +11,7 @@ To achieve lock-free concurrent reads without sacrificing ACID guarantees, moder
 However, each database engine chose a fundamentally different architectural strategy to store, index, and garbage-collect older tuple versions—resulting in drastically different performance trade-offs under heavy write workloads.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_MvccArchitecturalStrategies ["MVCC Architectural Strategies"]
     Postgres["1. PostgreSQL: Append-Only Heap Versioning\n• Updates insert new tuple in heap with (xmin, xmax)\n• Requires HOT & Autovacuum cleanup"]
     MySQL["2. MySQL InnoDB: In-Place Heap + Undo Logs\n• Updates modify heap page in-place\n• Prior versions stored in rollback Undo Segment chain"]
@@ -71,7 +71,7 @@ Unlike Postgres, MySQL InnoDB updates the row **in-place** inside the clustered 
 * A hidden 7-byte pointer (`roll_ptr`) links the new row to its previous undo log record.
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG2_MysqlInnodbUndo ["MySQL InnoDB Undo Log Chain"]
     ClusteredPage["B+Tree Clustered Index Page: { id: 1, balance: 450, roll_ptr: 0x89a }"]
     Undo1["Undo Log Record (0x89a): { balance: 500, roll_ptr: 0x890 }"]

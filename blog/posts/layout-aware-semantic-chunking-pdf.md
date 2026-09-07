@@ -19,7 +19,7 @@ flowchart TD
     
     subgraph SG1_NaiveWay ["Naive Way"]
         Extract --> Naive[Split by 1000 Characters]
-        Naive --> SplitTable[❌ Table split in half, header separated from text]
+        Naive --> SplitTable[ Table split in half, header separated from text]
     end
 
     subgraph SG2_SemanticWay ["Semantic Way"]
@@ -27,7 +27,7 @@ flowchart TD
         Detector -->|Detect Font/Size changes| Headings[Group under Headings]
         Detector -->|Detect Table bounds| Tables[Keep Tables whole]
         Headings & Tables --> Build[Assemble Semantic Nodes]
-        Build --> Result[✅ Structured chunks containing complete context]
+        Build --> Result[ Structured chunks containing complete context]
     end
 ```
 

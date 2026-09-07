@@ -13,7 +13,7 @@ This article details how to design an automated red-teaming fuzzer for agent wor
 The red-teaming pipeline operates as an automated adversary inside CI/CD test runners:
 
 ```mermaid
-graph TD
+flowchart TD
   A[CI/CD Build Event / PR Submission] --> B[Automated Red Teaming Engine]
   
   subgraph SG1_AdversarialMutationAttack ["Adversarial Mutation & Attack Generators"]
@@ -29,8 +29,8 @@ graph TD
   F --> G[Agent Execution Result & Tool Call Logs]
   G --> H[Automated Evaluator & Assertion Engine]
   
-  H -->|Pass: Zero Violations| I[CI/CD Security Gate PASSED]
-  H -->|Fail: Vulnerability Leaked| J[CI/CD Build FAILED & Security Alert]
+  H -->|Pass - Zero Violations| I[CI/CD Security Gate PASSED]
+  H -->|Fail - Vulnerability Leaked| J[CI/CD Build FAILED & Security Alert]
 ```
 
 ### Key Fuzzing Categories

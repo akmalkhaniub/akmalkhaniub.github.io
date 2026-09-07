@@ -13,11 +13,11 @@ This article details how to operationalize and optimize agent compute budgets on
 The operational telemetry loop buffers requests, monitors token expenditure, and tracks SLO performance:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Agent Tool Execution Dispatch] --> B[GCP Cloud Tasks Queue]
   
   subgraph SG1_RateLimitingResiliency ["Rate Limiting & Resiliency"]
-    B -->|Rate-Limited Dispatch: 10 QPS| C[Worker Agent Container]
+    B -->|Rate-Limited Dispatch - 10 QPS| C[Worker Agent Container]
     B -->|Automatic Exponential Backoff| B
   end
   

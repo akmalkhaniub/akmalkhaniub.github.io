@@ -19,7 +19,7 @@ This article details Gorilla **Delta-of-Delta Timestamp Encoding**, **IEEE 754 F
 How Gorilla combines Delta-of-Delta Timestamp Encoding and Floating-Point XOR Bit-Packing to achieve $12\times$ compression:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RawMetricIngestion ["Raw Metric Ingestion Stream"]
     Raw[Raw Data Points: timestamp t_n, float v_n] --> Split[Split Channel Pipeline]
   end

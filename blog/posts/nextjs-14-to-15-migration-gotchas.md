@@ -1,3 +1,6 @@
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
 > ### 📖 Article Overview
 > * **What this article is about:** This article provides a comprehensive migration guide detailing the critical breaking changes when upgrading from Next.js 14 to Next.js 15.
 > * **Why it matters:** Understanding these architectural shifts prevents production-breaking compilation errors, broken component references, and unexpected database load spikes caused by new caching defaults.
@@ -22,7 +25,7 @@ The most dangerous gotcha in Next.js 15 is the silent flip in default caching be
 The diagram below maps the decision paths and visualizes how this swap impacts your database traffic:
 
 ```mermaid
-graph TD
+flowchart TD
     classDef v14 fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef v15 fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e;
     classDef cache fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;

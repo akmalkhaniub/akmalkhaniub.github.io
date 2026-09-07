@@ -8,7 +8,7 @@ Following the collapse of monolithic synchronous Two-Phase Commit (2PC) at inter
 This article examines how Google, Uber, Netflix, and modern e-commerce engineering teams solved distributed consistency at planetary scale.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TheModernDistributed ["The Modern Distributed Transaction Landscape (2010s - 2020s)"]
     Direction[Two Modern Paradigms] --> NewSQL[Planetary NewSQL DBs]
     Direction --> MicroSagas[Event-Driven Microservice Sagas]
@@ -131,20 +131,20 @@ At **Netflix**, subscription renewals, video transcoding pipelines, and digital 
 To eliminate the dual-write bug (writing to a database and publishing to Apache Kafka without 2PC), Netflix and large e-commerce platforms employ the **Transactional Outbox Pattern**:
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG2_LocalAtomicDb ["Local Atomic DB Transaction"]
-    Service[Subscription Service] -->|1. Update Account & Insert Outbox| DB[(PostgreSQL Database)]
+    Service[Subscription Service] -->|Update Account & Insert Outbox| DB[(PostgreSQL Database)]
     DB --> Tables[Subscription Table + Outbox Table]
   end
   
   subgraph SG3_ChangeDataCapture ["Change Data Capture CDC"]
-    DB -->|2. Read WAL Log| Debezium[Debezium CDC Connector]
-    Debezium -->|3. At-Least-Once Delivery| Kafka[Apache Kafka Cluster]
+    DB -->|Read WAL Log| Debezium[Debezium CDC Connector]
+    Debezium -->|At-Least-Once Delivery| Kafka[Apache Kafka Cluster]
   end
   
   subgraph SG4_ConsumersIdempotency ["Consumers & Idempotency"]
-    Kafka -->|4. Consume Event| BillingWorker[Billing Worker]
-    BillingWorker -->|5. Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
+    Kafka -->|Consume Event| BillingWorker[Billing Worker]
+    BillingWorker -->|Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
   end
 ```
 

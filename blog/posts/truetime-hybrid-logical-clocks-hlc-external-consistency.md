@@ -17,16 +17,16 @@ This article details TrueTime atomic clock uncertainty bounds ($\epsilon$), Comm
 How TrueTime Commit Wait ($2\epsilon$) and Hybrid Logical Clocks (HLC) guarantee global transaction ordering:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_GoogleSpannerTruetime ["Google Spanner TrueTime (Hardware Atomic Clocks)"]
     GPS[GPS Hardware Receivers] & Atomic[Rubidium Atomic Clocks] --> TrueTimeAPI[TrueTime.now API -> Returns Interval: t_earliest .. t_latest]
-    TrueTimeAPI -->|Bounded Uncertainty: epsilon <= 1ms| CommitWait[Spanner Commit Wait Protocol: Wait 2 * epsilon before releasing locks]
-    CommitWait -->|Guarantees Real-World Ordering| ExternalConsistency[🎉 External Consistency Achieved!]
+    TrueTimeAPI -->|Bounded Uncertainty - epsilon <= 1ms| CommitWait[Spanner Commit Wait Protocol: Wait 2 * epsilon before releasing locks]
+    CommitWait -->|Guarantees Real-World Ordering| ExternalConsistency[ External Consistency Achieved!]
   end
   
   subgraph SG2_HybridLogicalClocks ["Hybrid Logical Clocks - HLC (Software Commodity NTP)"]
     NTP[Standard NTP Physical Time pt] --> HLC[HLC State: tuple physical, logical]
-    HLC -->|Causal Event Message: msg_physical, msg_logical| UpdateHLC[Update HLC: Max physical, msg_physical, pt]
+    HLC -->|Causal Event Message - msg_physical, msg_logical| UpdateHLC[Update HLC: Max physical, msg_physical, pt]
     UpdateHLC --> CausalOrdering[Causal Consistency Preserved without Atomic Clocks!]
   end
 ```

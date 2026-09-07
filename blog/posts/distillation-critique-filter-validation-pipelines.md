@@ -19,7 +19,7 @@ flowchart TD
     Raw[Raw Synthetic Trajectory Record] --> Parse[Parse code blocks & JSON tool calls]
     Parse --> AST[Run AST Syntax Compiler]
     
-    AST -->|Fail: Syntax Error| Discard([Discard Record])
+    AST -->|Fail - Syntax Error| Discard([Discard Record])
     AST -->|Pass| Sandbox[Execute Code inside Sandbox]
     
     Sandbox --> CheckTests{Did all Unit Tests Pass?}

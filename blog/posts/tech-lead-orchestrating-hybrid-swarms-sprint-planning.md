@@ -13,7 +13,7 @@ This structural shift renders traditional story-point estimation obsolete. This 
 In a hybrid team model, task allocation is driven by **Task Complexity & Determinism**:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_BacklogRefinement ["Backlog Refinement"]
     A[Sprint Backlog] --> B{Tech Lead Task Classifier}
   end

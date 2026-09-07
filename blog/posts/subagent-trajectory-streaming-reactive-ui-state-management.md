@@ -15,7 +15,7 @@ This article details how to manage frontend state for streaming subagent swarms.
 The frontend architecture decouples high-frequency WebSocket/SSE events from React render cycles using a buffered state store:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Agent Server SSE / WS Stream] -->|High-Frequency Events| B[Event Sequence Buffer & Deduplicator]
   
   subgraph SG1_ClientSideReactive ["Client-Side Reactive State Engine"]
@@ -25,7 +25,7 @@ graph TD
     E --> F[requestAnimationFrame RAF Render Batcher]
   end
   
-  F -->|Batched UI Update: 60 FPS| G[React DAG Graph Component]
+  F -->|Batched UI Update - 60 FPS| G[React DAG Graph Component]
   F -->|Batched UI Update| H[Live Code Diff & Token Stream View]
 ```
 

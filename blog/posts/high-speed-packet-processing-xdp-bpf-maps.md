@@ -19,24 +19,24 @@ This article details XDP driver hooks, packet action codes (`XDP_DROP`, `XDP_TX`
 How XDP intercepts raw ethernet frames at the NIC driver layer before traditional Linux kernel stack processing:
 
 ```mermaid
-graph TD
+flowchart TD
   Wire[Incoming Network Packet: 100GbE NIC] --> RXRing[NIC Driver RX Ring Buffer]
   
   subgraph SG1_XdpExpressData ["XDP (eXpress Data Path) Ingress Layer"]
-    RXRing -->|1. Direct Frame Intercept| XDPProg[XDP eBPF Program]
-    XDPProg <-->|2. Lookup/Update IP Blacklist State| BPFMap[(BPF Hash Map: BPF_MAP_TYPE_HASH)]
+    RXRing -->|Direct Frame Intercept| XDPProg[XDP eBPF Program]
+    XDPProg <-->|Lookup/Update IP Blacklist State| BPFMap[(BPF Hash Map: BPF_MAP_TYPE_HASH)]
     
     XDPProg --> Action{Evaluate XDP Action Code}
   end
   
   subgraph SG2_XdpFastPath ["XDP Fast-Path Action Decisions"]
-    Action -->|XDP_DROP: DDoS Attack Identified!| Drop[3a. Drop Packet Instantly! 0 sk_buff Allocations]
-    Action -->|XDP_TX: Hairpin LB| Bounce[3b. Re-transmit out same NIC]
-    Action -->|XDP_REDIRECT: AF_XDP| FastUser[3c. Bypass Kernel to User-Space AF_XDP]
+    Action -->|XDP_DROP - DDoS Attack Identified!| Drop[3a. Drop Packet Instantly! 0 sk_buff Allocations]
+    Action -->|XDP_TX - Hairpin LB| Bounce[3b. Re-transmit out same NIC]
+    Action -->|XDP_REDIRECT - AF_XDP| FastUser[3c. Bypass Kernel to User-Space AF_XDP]
   end
   
   subgraph SG3_StandardLinuxNetwork ["Standard Linux Network Stack"]
-    Action -->|XDP_PASS: Legitimate Packet| SKBAlloc[3d. Allocate sk_buff Memory Structure]
+    Action -->|XDP_PASS - Legitimate Packet| SKBAlloc[3d. Allocate sk_buff Memory Structure]
     SKBAlloc --> NetStack[Linux TCP/IP Stack -> User Socket]
   end
 ```

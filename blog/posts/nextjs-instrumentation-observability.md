@@ -1,5 +1,9 @@
 # Production-Grade Observability: Harnessing Stable instrumentation.ts
 
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
 In cloud architectures, monitoring high-throughput applications is essential for diagnosing production failures. While standard APIs (like logging middleware) work in traditional monoliths, serverless and edge environments present unique monitoring challenges:
 * **Serverless Boot Strapping**: Cold starts launch isolated runtimes on request. There was historically no built-in, unified way in Next.js to initialize monitoring utilities before routing requests.
 * **Hacked Solutions**: Developers resorted to loading tracing libraries inside root `layout.tsx` files (which executed repeatedly, causing memory leaks) or wrapping builds in heavy Express configurations that broke Vercel/Netlify deployments.

@@ -15,10 +15,10 @@ This article details how to design **HITL Gateways**, manage **JWT-signed approv
 When a task node inside an orchestrator DAG is marked as `REQUIRES_HUMAN_APPROVAL`, the execution engine transitions into a `WAITING_FOR_APPROVAL` state:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Orchestrator DAG Execution] --> B[Task Node: Apply Database Migration]
   B --> C{Orchestrator Boundary Check}
-  C -->|Marked: REQUIRES_HUMAN_APPROVAL| D[Pause DAG & Generate JWT Approval Token]
+  C -->|Marked - REQUIRES_HUMAN_APPROVAL| D[Pause DAG & Generate JWT Approval Token]
   D --> E[Dispatch Alert to Slack / Dashboard]
   
   E --> F{Human Reviewer Action}

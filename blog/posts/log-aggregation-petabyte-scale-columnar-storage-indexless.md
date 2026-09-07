@@ -19,26 +19,26 @@ This article details indexless log aggregation architecture and columnar chunk c
 How Loki-style indexless log engines partition streams and execute parallel query scans:
 
 ```mermaid
-graph TD
+flowchart TD
   LogStream["Log Stream: 2026-08-18 10:00:00 [ERROR] Connection Timeout"] --> Ingestor[Log Ingestor Daemon]
   
   subgraph SG1_MetadataIndexingOnly ["Metadata Indexing Only (Loki Model)"]
-    Ingestor -->|1. Extract High-Level Labels| LabelIndex["Stream Label Index: {app='payment', env='prod'}"]
+    Ingestor -->|Extract High-Level Labels| LabelIndex["Stream Label Index: {app='payment', env='prod'}"]
   end
   
   subgraph SG2_CompressedChunkStorage ["Compressed Chunk Storage (No Inverted Token Index!)"]
-    Ingestor -->|2. Append to Stream Chunk Buffer| Chunk[2MB Compressed Log Chunk Block]
-    Chunk -->|3. Flush to Object Storage| S3[(Cloud Object Storage: S3 / GCS)]
+    Ingestor -->|Append to Stream Chunk Buffer| Chunk[2MB Compressed Log Chunk Block]
+    Chunk -->|Flush to Object Storage| S3[(Cloud Object Storage: S3 / GCS)]
   end
   
   subgraph SG3_ParallelizedMapreduceQuery ["Parallelized MapReduce Query Scanner (LogQL)"]
     Query["User Query: {app='payment'} |= 'Connection Timeout'"] --> Querier[Distributed Query Engine]
-    LabelIndex -->|4. Lookup Chunks for Stream| Querier
+    LabelIndex -->|Lookup Chunks for Stream| Querier
     
-    Querier -->|5. Fetch & Parallel Decompress Chunks| Worker1[Query Worker 1: Regex Scan Chunk A]
-    Querier -->|5. Fetch & Parallel Decompress Chunks| Worker2[Query Worker 2: Regex Scan Chunk B]
+    Querier -->|Fetch & Parallel Decompress Chunks| Worker1[Query Worker 1: Regex Scan Chunk A]
+    Querier -->|Fetch & Parallel Decompress Chunks| Worker2[Query Worker 2: Regex Scan Chunk B]
     
-    Worker1 & Worker2 -->|6. Merge Matching Lines| UserOutput[User Log Results Output]
+    Worker1 & Worker2 -->|Merge Matching Lines| UserOutput[User Log Results Output]
   end
 ```
 

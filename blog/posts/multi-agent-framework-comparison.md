@@ -14,7 +14,7 @@ This article provides a comparative analysis of the leading agent orchestration 
 The current ecosystem is split into three paradigms based on the balance between **Autonomy** and **Deterministic Control**:
 
 ```mermaid
-graph LR
+flowchart TD
     subgraph SG1_DeclarativeHighAutonomy ["Declarative [High Autonomy / Declarative Crews]"]
         CrewAI[CrewAI] --> AutoGen[Microsoft AutoGen]
     end

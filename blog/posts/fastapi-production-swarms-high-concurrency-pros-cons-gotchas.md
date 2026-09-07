@@ -13,7 +13,7 @@ This article presents an objective architectural review of FastAPI in high-concu
 Evaluating FastAPI's strengths, limitations, and operational risks:
 
 ```mermaid
-graph TD
+flowchart TD
   A[FastAPI Production Service] --> B[Architectural Pros]
   A --> C[Architectural Cons]
   A --> D[Production Gotchas]

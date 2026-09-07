@@ -15,21 +15,21 @@ This article details how to design and build a pull-based GitOps synchronization
 How an in-cluster GitOps Agent pulls Git commit manifests and heals live cluster state:
 
 ```mermaid
-graph TD
-  Developer[Developer Git Commit] -->|1. git push main| GitRepo[(Git Repository: Single Source of Truth)]
+flowchart TD
+  Developer[Developer Git Commit] -->|git push main| GitRepo[(Git Repository: Single Source of Truth)]
   
   subgraph SG1_InClusterGitops ["In-Cluster GitOps Agent (ArgoCD / Flux)"]
-    GitRepo -->|2. Pull Latest Git Commit SHA| Agent[GitOps Sync Agent]
-    ClusterState[Live Kubernetes Cluster API] -->|3. Read Actual Live State| Agent
+    GitRepo -->|Pull Latest Git Commit SHA| Agent[GitOps Sync Agent]
+    ClusterState[Live Kubernetes Cluster API] -->|Read Actual Live State| Agent
     
-    Agent -->|4. Compare Git Manifest vs Live State| DiffEngine{Drift Detected?}
+    Agent -->|Compare Git Manifest vs Live State| DiffEngine{Drift Detected?}
   end
   
   subgraph SG2_AutomatedSelfHealing ["Automated Self-Healing Remediation"]
-    DiffEngine -->|Yes: Out of Sync / Drifted| Healer[Automated Self-Healing Reconciler]
-    DiffEngine -->|No: Synced| Sleep[Sleep & Wait for Next Poll / Webhook]
+    DiffEngine -->|Yes - Out of Sync / Drifted| Healer[Automated Self-Healing Reconciler]
+    DiffEngine -->|No - Synced| Sleep[Sleep & Wait for Next Poll / Webhook]
     
-    Healer -->|5. Overwrite Out-of-Band Changes| ClusterState
+    Healer -->|Overwrite Out-of-Band Changes| ClusterState
   end
 ```
 

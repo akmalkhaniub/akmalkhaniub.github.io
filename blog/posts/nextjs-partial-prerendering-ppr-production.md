@@ -1,5 +1,9 @@
 # Partial Prerendering (PPR) in Practice: Blending Static Shells and Dynamic Streams
 
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
 In the battle between static and dynamic web rendering, developers have historically faced a binary compromise:
 * **Static Site Generation (SSG)**: Insanely fast Time to First Byte (TTFB) and robust CDN edge caching, but completely incapable of displaying real-time user-specific content.
 * **Server-Side Rendering (SSR)**: Capable of generating personalized pages, but blocks delivery of the entire document until every database call completes, degrading TTFB.
@@ -17,7 +21,7 @@ It splits the component tree at every **React Suspense Boundary**:
 2. **The Dynamic Holes**: Components wrapped in `<Suspense>` are compiled into dynamic execution instructions.
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client requests page] --> B[Edge Server returns pre-rendered Static HTML Shell]
   B --> C[Client renders Navbar, Sidebar, Layout immediately]
   A --> D[Next.js Server executes dynamic database/API calls]

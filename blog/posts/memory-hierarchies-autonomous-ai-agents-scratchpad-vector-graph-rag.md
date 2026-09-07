@@ -9,7 +9,7 @@ Stuffing raw conversation histories into the prompt triggers **attention dilutio
 To achieve human-like persistence, production agent architectures mimic biological cognition by implementing a **Hierarchical Memory Architecture**: separating fast **Ephemeral Working Scratchpads**, mid-term **Episodic Vector Stores with Temporal Decay**, and durable **Graph-RAG Semantic Long-Term Stores**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_AutonomousAiAgent ["Autonomous AI Agent Memory Hierarchy"]
     Tier1["Tier 1: Ephemeral Working Memory (In-Context Scratchpad, 8k-32k tokens)"]
     Tier2["Tier 2: Episodic Memory (Vector DB with Temporal Decay & Session Logs)"]

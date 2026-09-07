@@ -12,7 +12,7 @@ Debugging production AI agent swarms requires treating agent trajectories as **d
 By combining **OpenTelemetry distributed tracing**, **Context Window Flame Graphs**, and **Time-Travel Trajectory Replay**, engineering teams can inspect, profile, and replay complex multi-agent failures deterministically without spending a single cent on redundant LLM API calls.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ProductionAgentObservability ["Production Agent Observability Pipeline"]
     AgentCore[Agent Execution Core] --> OTel[OpenTelemetry Span Collector]
     AgentCore --> Recorder[Deterministic Trajectory Recorder]

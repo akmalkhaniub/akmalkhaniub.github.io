@@ -15,7 +15,7 @@ This article details the mechanics of SQ and PQ compression algorithms.
 Product Quantization splits vectors into sub-spaces and encodes them using codebook cluster IDs:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Raw Vector: 1024-dim FP32 - 4096 Bytes] --> B[Split into 8 Sub-Vectors of 128-dim]
   
   subgraph SG1_ProductQuantizationEncoding ["Product Quantization Encoding"]

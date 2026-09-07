@@ -19,16 +19,16 @@ This article details Linux virtual memory page translation, Explicit HugePages, 
 How 4-Level Page Table Translation works and how HugePages reduce TLB cache misses by 512x:
 
 ```mermaid
-graph TD
+flowchart TD
   VirtualAddr[Virtual Memory Address: 0x7FFF80001000] --> MMU[CPU Memory Management Unit]
   
   subgraph SG1_CpuCacheHardware ["CPU Cache Hardware"]
-    MMU -->|1. Check TLB Hardware Cache| TLB{TLB Cache Hit?}
+    MMU -->|Check TLB Hardware Cache| TLB{TLB Cache Hit?}
     TLB -->|Hit (sub-1ns)| PhysicalRAM[Physical RAM Address]
   end
   
   subgraph SG2_4LevelPage ["4-Level Page Table Walk (TLB Miss Penalty ~10-20ns)"]
-    TLB -.->|Miss: Traverse Page Hierarchy| PGD[1. Page Global Directory: PGD]
+    TLB -.->|Miss - Traverse Page Hierarchy| PGD[1. Page Global Directory: PGD]
     PGD --> PUD[2. Page Upper Directory: PUD]
     PUD --> PMD[3. Page Middle Directory: PMD]
     PMD --> PTE[4. Page Table Entry: PTE (4KB Page)]

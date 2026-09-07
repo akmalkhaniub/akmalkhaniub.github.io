@@ -19,23 +19,23 @@ This article details Circuit Breaker states, sliding-window error evaluation, pr
 How Circuit Breaker state transitions protect downstream microservices and how Google SRE Adaptive Throttling dynamically drops excess requests:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CircuitBreakerState ["Circuit Breaker State Machine (Resilience4j)"]
-    Closed["🟢 CLOSED State: Normal Operation (Sliding Ring Buffer tracks error %)"]
-    Open["🔴 OPEN State: Short-Circuit Active! Reject 100% of requests immediately"]
-    HalfOpen["🟡 HALF-OPEN State: Probe Probe Requests allowed to test health"]
+    Closed[" CLOSED State: Normal Operation (Sliding Ring Buffer tracks error %)"]
+    Open[" OPEN State: Short-Circuit Active! Reject 100% of requests immediately"]
+    HalfOpen[" HALF-OPEN State: Probe Probe Requests allowed to test health"]
     
-    Closed -->|1. Error Rate > 50% Threshold| Open
-    Open -->|2. Wait Duration Expired (10s)| HalfOpen
-    HalfOpen -->|3. Probe Requests Succeed| Closed
-    HalfOpen -->|4. Probe Request Fails| Open
+    Closed -->|Error Rate > 50% Threshold| Open
+    Open -->|Wait Duration Expired (10s)| HalfOpen
+    HalfOpen -->|Probe Requests Succeed| Closed
+    HalfOpen -->|Probe Request Fails| Open
   end
   
   subgraph SG2_GoogleSreClient ["Google SRE Client-Side Adaptive Throttling"]
-    Req[Client Request] --> ProbCheck{"Is Reject Prob P > 0?"}
+    Req[Client Request] --> ProbCheck["Is Reject Prob P > 0?"]
     ProbCheck -->|P = Max(0, (Requests - K * Accepts)/(Requests + 1))| Evaluate
     Evaluate -->|Pass| Downstream[Call Server Microservice]
-    Evaluate -->|Reject| LocalShed[🚨 Local Load Shedding: Return HTTP 429 Too Many Requests]
+    Evaluate -->|Reject| LocalShed[ Local Load Shedding: Return HTTP 429 Too Many Requests]
   end
 ```
 

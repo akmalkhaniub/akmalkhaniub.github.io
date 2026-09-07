@@ -17,15 +17,15 @@ This article details how to architect a hybrid GraphRAG retrieval pipeline.
 The GraphRAG pipeline merges dense semantic retrieval with explicit property graph relationships:
 
 ```mermaid
-graph TD
+flowchart TD
   A[User / Agent Query] --> B[Dynamic Hybrid Retriever]
   
   subgraph SG1_GraphragKnowledgeEngine ["GraphRAG Knowledge Engine"]
-    B -->|Step 1: Vector Semantic Match| C[(Vector Embedding Index)]
-    B -->|Step 2: Explicit Relationship Hop| D[(Neo4j Property Graph)]
+    B -->|Step 1 - Vector Semantic Match| C[(Vector Embedding Index)]
+    B -->|Step 2 - Explicit Relationship Hop| D[(Neo4j Property Graph)]
     
     C -->|Locate Seed Entity Node| E[Identify Start Node: UserBilling]
-    D -->|Traverse Edges: CALLS / INHERITS| F[Find Dependent Nodes: StripeRouter, LedgerWriter]
+    D -->|Traverse Edges - CALLS / INHERITS| F[Find Dependent Nodes: StripeRouter, LedgerWriter]
   end
   
   E --> G[Extract Semantic Context Subgraph]

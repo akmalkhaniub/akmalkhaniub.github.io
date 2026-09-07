@@ -13,7 +13,7 @@ This article analyzes the attack mechanics of Indirect Prompt Injection in multi
 Indirect Prompt Injections exploit the fact that foundation models process system instructions, user prompts, and retrieved tool data within the exact same context window:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Agent Worker Task: Summarize Customer Support Email] --> B[Tool: Fetch External Email Payload]
   B --> C[Untrusted Email Body containing Hidden Payload]
   

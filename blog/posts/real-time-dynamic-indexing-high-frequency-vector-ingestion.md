@@ -15,7 +15,7 @@ This article details how to build a dynamic vector ingestion engine.
 The write pipeline buffers new vectors in memory, while the search gateway queries both indexes concurrently:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Incoming Write Vector] --> B[Write-Ahead Log WAL on Disk]
   A --> C[In-Memory Vector Write Buffer: MemTable]
   

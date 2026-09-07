@@ -1,5 +1,9 @@
 # Lock-Free Data Structures: Hazard Pointers, Atomic Compare-And-Swap (CAS) & ABA Problem
 
+> [!NOTE]
+> **Catalog note**: This post overlaps [Lock-Free Data Structures: CAS, ABA, and Hazard Pointers](lock-free-data-structures-cas-aba-hazard-pointers.html). Read them as a pair, not as two competing introductions.
+
+
 In high-concurrency systems (such as high-frequency trading engines, kernel task schedulers, and event loops), utilizing traditional mutex locks (`pthread_mutex_t` or `std::mutex`) introduces severe performance penalties.
 
 Mutexes rely on kernel-level thread blocking. When lock contention occurs, the OS kernel context switches the thread off the CPU, incurring **$1,000\text{ns}$ to $3,000\text{ns}$ context switch overheads**, priority inversion, and potential deadlocks.
@@ -19,23 +23,23 @@ This article details Atomic CAS loops, Michael-Scott Lock-Free Queues, the ABA p
 How Lock-Free Queues use Compare-And-Swap (CAS) and Hazard Pointers to prevent memory corruption:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LockFreeCas ["Lock-Free CAS Retry Loop"]
-    ThreadA[Thread A: Enqueue / Dequeue] -->|1. Read Current Head Pointer A| ReadHead[Read Head -> Pointer A]
-    ReadHead -->|2. Compute Next Pointer B| ComputeNext[Compute Next Node -> Pointer B]
-    ComputeNext -->|3. Atomic CAS(Head, Expected A, New B)| CASAttempt{Hardware CAS Instruction}
+    ThreadA[Thread A: Enqueue / Dequeue] -->|Read Current Head Pointer A| ReadHead[Read Head -> Pointer A]
+    ReadHead -->|Compute Next Pointer B| ComputeNext[Compute Next Node -> Pointer B]
+    ComputeNext -->|Atomic CAS(Head, Expected A, New B)| CASAttempt{Hardware CAS Instruction}
     
-    CASAttempt -->|Success: Updated atomically| Complete[Operation Complete]
-    CASAttempt -->|Failure: Interrupted by Thread B| ReadHead
+    CASAttempt -->|Success - Updated atomically| Complete[Operation Complete]
+    CASAttempt -->|Failure - Interrupted by Thread B| ReadHead
   end
   
   subgraph SG2_HazardPointerMemory ["Hazard Pointer Memory Protection (Prevents ABA & Use-After-Free)"]
-    ThreadA -->|4. Publish Active Pointer to Hazard Array| HazardPointer[Hazard Pointer: 'Pointer A in Use!']
-    HazardPointer -.->|5. Guard Node Memory| NodeA[Queue Node A Memory]
+    ThreadA -->|Publish Active Pointer to Hazard Array| HazardPointer[Hazard Pointer: 'Pointer A in Use!']
+    HazardPointer -.->|Guard Node Memory| NodeA[Queue Node A Memory]
     
-    ThreadB[Thread B: Retires Node A] -->|6. Check Hazard Array| GuardCheck{Is Pointer A in Hazard Array?}
-    GuardCheck -->|Yes: Reader active!| DeferFree[Defer Free to Retirement List]
-    GuardCheck -->|No: Safe to delete| FreeMemory[Reclaim Memory Page]
+    ThreadB[Thread B: Retires Node A] -->|Check Hazard Array| GuardCheck{Is Pointer A in Hazard Array?}
+    GuardCheck -->|Yes - Reader active!| DeferFree[Defer Free to Retirement List]
+    GuardCheck -->|No - Safe to delete| FreeMemory[Reclaim Memory Page]
   end
 ```
 

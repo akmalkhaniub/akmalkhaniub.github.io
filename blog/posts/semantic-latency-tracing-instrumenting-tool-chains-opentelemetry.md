@@ -17,7 +17,7 @@ This article details how to instrument an agentic pipeline.
 Semantic tracing wraps every model call and tool invocation inside nested tracer spans:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TraceId77d43bf0 ["Trace ID: 77d43bf0-4278"]
     A[Root Span: /agent/execute_task] --> B[Sub-Span 1: model/generate_plan]
     A --> C[Sub-Span 2: tool/db_query]

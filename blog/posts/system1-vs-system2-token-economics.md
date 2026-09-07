@@ -22,7 +22,7 @@ This article synthesizes the trade-offs of inference-time scaling, analyzing **w
 Unlike standard token generation, System 2 reasoning models execute a multi-turn, hidden computation loop before delivering the first user-facing token.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
     classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef system1 fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
@@ -31,8 +31,8 @@ graph TD
 
     Input[User Query Input] --> ModeCheck{Requires Reasoning?}
     
-    ModeCheck -->|No: System 1| DirectGen[Direct Token Generation]
-    ModeCheck -->|Yes: System 2| InitPlan[Initialize Step-by-Step Plan]
+    ModeCheck -->|No - System 1| DirectGen[Direct Token Generation]
+    ModeCheck -->|Yes - System 2| InitPlan[Initialize Step-by-Step Plan]
     
     subgraph SG1_ThinkingloopInferenceTime ["ThinkingLoop [Inference-Time Search]"]
         InitPlan --> RunStep[Generate Thinking Tokens / Step N]

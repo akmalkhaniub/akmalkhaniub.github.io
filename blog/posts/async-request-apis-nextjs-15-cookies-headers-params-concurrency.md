@@ -1,3 +1,6 @@
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
 When Next.js 15 was officially announced, developers upgrading their codebases encountered a compiler error that made many question the framework's sanity:
 
 ```
@@ -26,7 +29,7 @@ So why did the React and Next.js engineering teams break backward compatibility 
 The answer has nothing to do with typing ergonomics. It has everything to do with **V8 microtask scheduling, Concurrent Prerendering, and the physical limits of build-time static analysis**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph RequestTrap ["The Synchronous vs Asynchronous Request Trap"]
     subgraph SyncAccess ["Synchronous Access: Next.js 13 and 14"]
       Component1["Child Component reads cookies synchronously"] --> GlobalBailout["Immediate Compiler Bailout: Mark Entire Route Dynamic"]

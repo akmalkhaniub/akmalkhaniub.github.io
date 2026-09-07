@@ -9,15 +9,15 @@ However, as internet-scale e-commerce platforms scaled from thousands to million
 This article examines the foundational mathematical protocols of distributed transactions, analyzes why the coordinator blocking vulnerability paralyzed early e-commerce architectures, and uncovers the real-world lessons that forced the industry to rethink data consistency.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TheClassicalDistributed ["The Classical Distributed Transaction Era (1970s - 2000s)"]
     App[Monolithic Application Server] --> TM[XA Transaction Manager / Coordinator]
-    TM -->|1. PREPARE| DB1[(Database 1: Order DB)]
-    TM -->|1. PREPARE| DB2[(Database 2: Inventory DB)]
-    TM -->|1. PREPARE| DB3[(Database 3: Payment DB)]
+    TM -->|PREPARE| DB1[(Database 1: Order DB)]
+    TM -->|PREPARE| DB2[(Database 2: Inventory DB)]
+    TM -->|PREPARE| DB3[(Database 3: Payment DB)]
     DB1 & DB2 & DB3 -->|Acquire Strict Exclusive Locks 2PL| Locks[Held Exclusive Row Locks]
-    DB1 & DB2 & DB3 -->|2. VOTE COMMIT| TM
-    TM -->|3. GLOBAL COMMIT| DB1 & DB2 & DB3
+    DB1 & DB2 & DB3 -->|VOTE COMMIT| TM
+    TM -->|GLOBAL COMMIT| DB1 & DB2 & DB3
   end
   
   style Locks fill:#f43f5e,stroke:#881337,color:#ffffff
@@ -124,7 +124,7 @@ In 1991, the Open Group published the **X/Open Distributed Transaction Processin
 XA standardized the interface between an AP (Application Program), a TM (Transaction Manager, like BEA Tuxedo or IBM CICS), and multiple RMs (Resource Managers, like Oracle, DB2, or Sybase).
 
 ```mermaid
-graph TD
+flowchart TD
   AP["Application Program (AP)"] -->|tx_begin / tx_commit| TM["Transaction Manager (TM)"]
   AP -->|SQL Queries| RM1["Resource Manager 1 (Oracle)"]
   AP -->|SQL Queries| RM2["Resource Manager 2 (DB2)"]
@@ -142,7 +142,7 @@ XA enforced serializability across databases using **Strict Distributed Two-Phas
 In a single database, deadlocks are detected via an in-memory Wait-For-Graph (WFG) cycle detector. In distributed XA transactions across distinct database instances, deadlocks form **distributed cycles**:
 
 ```mermaid
-graph LR
+flowchart TD
   Tx1((Tx 1)) -->|Holds Lock on Table A, Waits for Table B| DB2[(Oracle Node 2)]
   DB2 -->|Holds Lock on Table B| Tx2((Tx 2))
   Tx2 -->|Holds Lock on Table C, Waits for Table A| DB1[(Oracle Node 1)]

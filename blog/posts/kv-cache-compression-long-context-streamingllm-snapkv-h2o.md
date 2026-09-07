@@ -17,7 +17,7 @@ The KV-cache memory footprint **vastly exceeds the size of the model weights the
 To make long-context agents economically viable, modern inference engines deploy **KV-Cache Compression**: leveraging **StreamingLLM Attention Sinks**, **SnapKV Positional Clustering**, and **H2O Heavy-Hitter Eviction** to reduce VRAM consumption by **$80\%\text{ to }90\%$** with near-zero degradation in reasoning accuracy.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UncompressedKvCache ["Uncompressed KV-Cache vs StreamingLLM & H2O Compression"]
     subgraph SG2_1Uncompressed1m ["1. Uncompressed 1M Context (164GB VRAM - OOM Crash)"]
       FullKV["Linear KV-Cache: 1,000,000 Tokens (164 GB GPU VRAM)"]
@@ -68,7 +68,7 @@ In 2023, researchers at MIT and Meta (Xiao et al.) discovered the **Attention Si
 * When sliding window attention evicted those initial tokens, the softmax denominator destabilized, destroying the model's internal attention distribution.
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG4_StreamingllmKvCache ["StreamingLLM KV-Cache Eviction Policy"]
     T0["Token 0: <s> (Sink Token: 40% Attention)"]
     T1["Token 1: System (Sink Token: 15% Attention)"]

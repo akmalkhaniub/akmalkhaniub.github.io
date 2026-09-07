@@ -38,7 +38,7 @@ We led a high-velocity engineering pod of **7 engineers**:
 The architecture deployed specialized agent worker nodes coordinated via a central Redis Blackboard store:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Shopper Session HTTP Event] --> B[GCP Cloud API Gateway]
   B --> C[Cloud Run: Recommendation Swarm Dispatcher]
   

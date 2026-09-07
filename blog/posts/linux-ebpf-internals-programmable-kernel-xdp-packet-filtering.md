@@ -12,7 +12,7 @@ In modern high-performance cloud infrastructure (**Cilium**, **Cloudflare Magic 
 Running sandboxed bytecode verified for mathematical safety directly inside kernel space, eBPF enables **zero-overhead observability**, **kernel-level security sandboxing**, and **sub-microsecond network packet filtering at the NIC hardware layer (XDP)**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LinuxKernelEbpf ["Linux Kernel eBPF Architecture"]
     UserProg[User Space Program: Go / C / Rust Loader] --> BPFBytecode[Compiled eBPF Bytecode]
     
@@ -67,7 +67,7 @@ Under a massive Distributed Denial of Service (DDoS) attack ($10\text{M+ SYN pac
 **eXpress Data Path (XDP)** executes an eBPF program directly inside the **NIC driver layer** before memory allocation:
 
 ```mermaid
-graph LR
+flowchart TD
   NIC[NIC Packet Ingress] --> XDP{eBPF XDP Program}
   XDP -->|DDoS Signature Match| Drop["XDP_DROP (Zero CPU / RAM overhead!)"]
   XDP -->|Fast Forwarding| TX["XDP_TX / XDP_REDIRECT (Bypass Kernel Stack)"]

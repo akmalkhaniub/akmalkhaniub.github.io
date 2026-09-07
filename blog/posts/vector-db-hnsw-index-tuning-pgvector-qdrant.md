@@ -13,7 +13,7 @@ HNSW organizes vectors into a multi-layered graph, mimicking a skip list:
 * **Lower Layers**: Contain denser links. Routing transitions downward to execute fine-grained, localized searches until it reaches the base layer (Layer 0), which contains all vectors.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_Layer2Express ["Layer 2 (Express Layer)"]
     L2_A[Vector Entry] --> L2_B[Far Destination]
   end

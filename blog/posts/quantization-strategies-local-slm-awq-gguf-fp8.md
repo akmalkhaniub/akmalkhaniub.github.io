@@ -15,7 +15,7 @@ Quantization compresses model weights from 16-bit floating point numbers into lo
 Choosing the optimal quantization scheme depends on your deployment target and hardware architecture:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Target Model & Hardware Deployment] --> B{Hardware Infrastructure?}
   
   subgraph SG1_GpuServerInference ["GPU Server Inference vLLM / TensorRT-LLM"]

@@ -1,5 +1,9 @@
 # The Future of Next.js Compilation: Experimental dynamicIO & Dynamic Hooks
 
+
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
 In standard Next.js compilation, the framework evaluates whether a route is static (pre-rendered at build time) or dynamic (rendered on demand per request) based on heuristics. If you call functions like `cookies()`, `headers()`, or read `searchParams` directly inside a component, the compiler flags the entire page as dynamic.
 
 In **Next.js 15/16**, Vercel introduces the experimental **`dynamicIO`** compiler configuration. It changes the paradigm from *implicit heuristics* to *explicit async boundaries*, enforcing strict compile-time checks to prevent unexpected database hits or layout shifts.

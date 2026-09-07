@@ -13,7 +13,7 @@ This article explores the internal Rust-backed architecture of Pydantic v2, key 
 The architectural evolution from pure Python loops to Rust-compiled validation graphs:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LegacyPydanticV1 ["Legacy Pydantic v1 (Pure Python)"]
     A[Raw JSON Payload] --> B[CPython JSON Decoder]
     B --> C[Python Object Instantiation]

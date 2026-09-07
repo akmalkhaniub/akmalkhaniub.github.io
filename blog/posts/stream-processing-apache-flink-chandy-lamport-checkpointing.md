@@ -19,7 +19,7 @@ This article details Flink's DAG execution engine, embedded state backends, Chan
 How Flink injects Stream Barriers into continuous data streams to capture consistent global snapshots:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UnboundedDataStream ["Unbounded Data Stream Ingestion"]
     Source[Kafka Source Partition] -->|Inject Checkpointing Stream Barrier B1| BarrierStream[Data Stream: e1, e2, B1, e3, e4]
   end
@@ -33,11 +33,11 @@ graph TD
   end
   
   subgraph SG3_AsynchronousBarrierSnapshotting ["Asynchronous Barrier Snapshotting (Chandy-Lamport)"]
-    Task1 -->|1. Barrier B1 Received: Align Inputs| Snapshot1[Asynchronously Copy RocksDB State to S3/HDFS]
-    Task2 -->|1. Barrier B1 Received: Align Inputs| Snapshot2[Asynchronously Copy RocksDB State to S3/HDFS]
+    Task1 -->|Barrier B1 Received - Align Inputs| Snapshot1[Asynchronously Copy RocksDB State to S3/HDFS]
+    Task2 -->|Barrier B1 Received - Align Inputs| Snapshot2[Asynchronously Copy RocksDB State to S3/HDFS]
     
     Snapshot1 & Snapshot2 --> JobManager[Flink JobManager: Checkpoint Metadata Store]
-    JobManager -->|2. All Operators Ack B1| ConsistentState[🎉 CONSISTENT GLOBAL STATE SNAPSHOT COMPLETED!]
+    JobManager -->|All Operators Ack B1| ConsistentState[ CONSISTENT GLOBAL STATE SNAPSHOT COMPLETED!]
   end
 ```
 

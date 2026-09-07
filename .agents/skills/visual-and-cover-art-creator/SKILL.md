@@ -52,6 +52,21 @@ Never produce dry, monochrome gray diagrams. Every diagram must use this high-co
 | **Decision / Quorum / Flap** | Warm Amber (\`#fef3c7\` / \`#d97706\`) | \`classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;\` |
 | **Database / Ledger / Token** | Royal Purple (\`#ede9fe\` / \`#7c3aed\`) | \`classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;\` |
 
+Banner / badge aliases (use these **inside the diagram** via \`classDef\`, not as CSS in \`article.css\`):
+
+\`\`\`
+classDef headerGreen fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef headerRed fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef headerBlue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef headerAmber fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef badgeGreen fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef badgeRed fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef badgeBlue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef badgeAmber fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+\`\`\`
+
+Apply with \`NodeID["Title"]:::headerBlue\`. Never invent a CSS class that is not also declared as \`classDef\` in that same mermaid block.
+
 ### Compact Vertical Layout Rule:
 * Consolidate redundant node clusters (e.g. write \`Followers["Nodes 2, 3, 4, 5"]\` instead of 4 separate boxes).
 * Keep subgraph padding tight and node titles concise (2–4 words) to maximize visual density and prevent vertical ballooning.

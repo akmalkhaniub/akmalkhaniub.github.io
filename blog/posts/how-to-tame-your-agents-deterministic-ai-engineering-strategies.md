@@ -11,7 +11,7 @@ Taming autonomous AI agents does not require waiting for smarter foundation mode
 Here is the blueprint for transforming stochastic LLM chaos into predictable, production-grade software delivery engines.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_DeterministicAgentEngineering ["Deterministic Agent Engineering Pipeline"]
     Contract["1. Specification-First Contract (OpenAPI / Gherkin)"] --> Skills["2. Modular Agent Skills (SKILL.md & Scripts)"]
     Skills --> PlanGate["3. Two-Pass Planning Gate (plan.md Approval)"]
@@ -95,7 +95,7 @@ acceptance_criteria:
 Giving an agent unrestricted shell execution (`exec("bash")`) is an invitation to catastrophe. When an agent encounters an unfamiliar compilation error, a common failure mode is attempting to install arbitrary third-party packages or mutating the global host environment.
 
 ```mermaid
-graph LR
+flowchart TD
   Agent[Autonomous Agent] -->|Least-Privilege Scoped Call| Sandbox[MCP Tool Sandbox]
   Sandbox --> ToolA[replace_file_content: Atomic Line-Bounded Diff]
   Sandbox --> ToolB[run_test_suite: Read-Only Test Runner]

@@ -17,7 +17,7 @@ This article details how to implement CRDT state synchronization engines for mul
 Mathematical properties of State-Based CRDT merge operations ($\sqcup$):
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ReplicaAgent1 ["Replica Agent 1"]
     A1[State S1] -->|Local Edit| A2[State S1']
   end

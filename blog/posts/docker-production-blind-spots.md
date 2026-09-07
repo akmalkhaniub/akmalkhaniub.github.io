@@ -10,7 +10,7 @@
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-flowchart LR
+flowchart TD
     subgraph SG1_TutorialDockerfile ["Tutorial Dockerfile"]
         T1[FROM python:3.11]
         T2[COPY . .]
@@ -19,13 +19,13 @@ flowchart LR
     end
 
     subgraph SG2_ProductionReality ["Production Reality"]
-        P1[💥 PID 1 ignores SIGTERM]
-        P2[💥 node_modules copied into image]
-        P3[💥 pip cache busted on every build]
-        P4[💥 Running as root user]
-        P5[💥 Secrets baked into layers]
-        P6[💥 No health check]
-        P7[💥 Image is 2.4GB]
+        P1[ PID 1 ignores SIGTERM]
+        P2[ node_modules copied into image]
+        P3[ pip cache busted on every build]
+        P4[ Running as root user]
+        P5[ Secrets baked into layers]
+        P6[ No health check]
+        P7[ Image is 2.4GB]
     end
 
     Tutorial Dockerfile --> Production Reality
@@ -389,7 +389,7 @@ Docker's simplicity is a double-edged sword — it hides complexity that resurfa
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 - **Docker Multi-Stage Builds**: [Use multi-stage builds](https://docs.docker.com/build/building/multi-stage/)
 - **Docker BuildKit Secrets**: [Build secrets reference](https://docs.docker.com/build/building/secrets/)
 - **tini Init Process**: [A tiny but valid init for containers](https://github.com/krallin/tini)

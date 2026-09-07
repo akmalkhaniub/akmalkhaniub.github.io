@@ -17,18 +17,18 @@ This article details the Airflow Scheduler loop, task state transitions, Celery/
 How the Airflow Scheduler parses DAG files, dispatches tasks to distributed worker queues, and dynamically expands parallel task instances:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_AirflowControlPlane ["Airflow Control Plane Architecture"]
-    Scheduler[Airflow Scheduler Daemon] -->|1. Parse DAG Python Files| DagBag[DagBag Dependency Graphs]
-    Scheduler -->|2. Query & Update Task State| MetaDB[(Airflow Metadata Database)]
-    Scheduler -->|3. Push QUEUED Tasks| Queue["Celery Redis Queue / Kubernetes Pod Creator"]
+    Scheduler[Airflow Scheduler Daemon] -->|Parse DAG Python Files| DagBag[DagBag Dependency Graphs]
+    Scheduler -->|Query & Update Task State| MetaDB[(Airflow Metadata Database)]
+    Scheduler -->|Push QUEUED Tasks| Queue["Celery Redis Queue / Kubernetes Pod Creator"]
   end
   
   subgraph SG2_DistributedWorkerExecution ["Distributed Worker Execution"]
-    Queue -->|4. Pull QUEUED Tasks| Worker1[Celery / K8s Worker Pod 1]
-    Queue -->|4. Pull QUEUED Tasks| Worker2[Celery / K8s Worker Pod 2]
+    Queue -->|Pull QUEUED Tasks| Worker1[Celery / K8s Worker Pod 1]
+    Queue -->|Pull QUEUED Tasks| Worker2[Celery / K8s Worker Pod 2]
     
-    Worker1 -->|5. Update State -> SUCCESS| MetaDB
+    Worker1 -->|Update State -> SUCCESS| MetaDB
   end
   
   subgraph SG3_DynamicTaskMapping ["Dynamic Task Mapping (expand())"]

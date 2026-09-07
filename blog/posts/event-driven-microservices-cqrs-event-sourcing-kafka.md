@@ -15,7 +15,7 @@ This article details how to architect a CQRS and Event Sourcing system with Kafk
 The flow of write commands, immutable event streams, and projected read models:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client Write Request / Command] --> B[Command Service]
   
   subgraph SG1_WriteSideEvent ["Write Side: Event Sourcing Log"]

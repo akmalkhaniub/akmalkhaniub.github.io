@@ -18,7 +18,7 @@ This article explores high-cardinality TSDB indexing and Gorilla float compressi
 How Time Series Databases compress metrics and index label combinations:
 
 ```mermaid
-graph TD
+flowchart TD
   MetricStream["Metric Stream: http_requests_total{service='payment', status='500'}"] --> LabelIdx[TSDB Inverted Label Index]
   
   subgraph SG1_InvertedIndexLabel ["Inverted Index Label Lookup"]
@@ -28,11 +28,11 @@ graph TD
   subgraph SG2_TimeSeriesChunk ["Time Series Chunk Compressor (2-Hour Head Block)"]
     SeriesList --> HeadChunk[2-Hour Head Chunk Memory Buffer]
     
-    HeadChunk -->|1. Double-Delta Timestamp Encoding| Timestamps[Timestamps: 1-bit / 7-bit deltas]
-    HeadChunk -->|2. XOR Bitwise Value Compression| GorillaVal[Gorilla XOR Float Compression]
+    HeadChunk -->|Double-Delta Timestamp Encoding| Timestamps[Timestamps: 1-bit / 7-bit deltas]
+    HeadChunk -->|XOR Bitwise Value Compression| GorillaVal[Gorilla XOR Float Compression]
   end
   
-  GorillaVal -->|3. Compressed Block (1.37 bytes / sample)| BlockFile[(Immutable TSDB Block File on Disk)]
+  GorillaVal -->|Compressed Block (1.37 bytes / sample)| BlockFile[(Immutable TSDB Block File on Disk)]
 ```
 
 ### Core TSDB Compression & Indexing Mechanics

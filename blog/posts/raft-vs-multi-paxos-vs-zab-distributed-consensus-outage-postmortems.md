@@ -12,7 +12,7 @@ To build fault-tolerant State Machine Replication (SMR) engines, modern distribu
 This guide provides a rigorous architectural breakdown of **Raft vs Multi-Paxos vs Zab**, dissects real-world **production outage post-mortems**, and analyzes how modern engines achieve sub-millisecond linearizable reads using **Read-Index and Leader Leases**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_DistributedConsensusEvolution ["Distributed Consensus Evolution"]
     Paxos["Multi-Paxos (1998)\n• Weak Leader / Symmetric\n• Log Holes Permitted\n• Powering: Google Spanner / Chubby"]
     Zab["Zab (2010)\n• Epoch-Based (zxid)\n• Strict FIFO TCP Pipelines\n• Powering: Apache ZooKeeper"]

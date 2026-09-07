@@ -16,7 +16,7 @@ In traditional software development:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Adversary[Red-Team Simulator Agent] -->|Compile Exploit Prompt: Override sandbox rules| Target[Primary Target Agent]
+    Adversary[Red-Team Simulator Agent] -->|Compile Exploit Prompt - Override sandbox rules| Target[Primary Target Agent]
     
     Target -->|Execute Action| Output[Evaluate Action Outcome]
     

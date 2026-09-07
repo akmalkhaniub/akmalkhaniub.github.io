@@ -17,7 +17,7 @@ This article details how PagedAttention virtual memory mapping works and how to 
 PagedAttention adapts classic Operating System virtual memory paging to GPU VRAM management:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_VirtualContextPages ["Virtual Context Pages (Logical Sequence)"]
     A[Logical Block 0: Tokens 0..15]
     B[Logical Block 1: Tokens 16..31]
@@ -25,9 +25,9 @@ graph TD
   end
   
   subgraph SG2_BlockTablePage ["Block Table Page Map"]
-    D[Logical 0 ➔ Physical Block #7]
-    E[Logical 1 ➔ Physical Block #3]
-    F[Logical 2 ➔ Physical Block #12]
+    D[Logical 0  Physical Block #7]
+    E[Logical 1  Physical Block #3]
+    F[Logical 2  Physical Block #12]
   end
   
   subgraph SG3_NonContiguousPhysical ["Non-Contiguous Physical GPU VRAM Blocks"]

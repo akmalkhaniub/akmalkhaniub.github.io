@@ -18,13 +18,13 @@ To build reliable systems, we must separate generation from verification using t
 A validator agent is a dedicated node in your system design whose sole responsibility is to evaluate a worker's output against a **Verification Contract**. Validators should be structured in two distinct layers, executing in a strict sequence:
 
 ```mermaid
-graph TD
+flowchart TD
     Output[Worker Output] --> Layer1[1. Programmatic Validator]
     Layer1 -->|Passes| Layer2[2. Model-Based Validator]
-    Layer1 -->|Fails: Syntax/Type Error| Fail[Reject & Critique]
+    Layer1 -->|Fails - Syntax/Type Error| Fail[Reject & Critique]
     
     Layer2 -->|Passes| Pass[Approved Output]
-    Layer2 -->|Fails: Content/Safety Drift| Fail
+    Layer2 -->|Fails - Content/Safety Drift| Fail
     
     style Layer1 fill:#f8fafc,stroke:#64748b,stroke-width:2px
     style Layer2 fill:#f0fdf4,stroke:#22c55e,stroke-width:2px

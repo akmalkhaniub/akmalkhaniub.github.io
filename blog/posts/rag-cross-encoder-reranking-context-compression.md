@@ -22,8 +22,8 @@ flowchart TD
     Rerank --> Score[Compute Query-Chunk Attention Scores]
     Score --> Filter{Is Score Above Relevance Threshold?}
     
-    Filter -->|No: Noise| Drop([Drop Chunk: Save Token Space])
-    Filter -->|Yes: High Relevancy| Keep[Keep Chunk: Add to Context Window]
+    Filter -->|No - Noise| Drop([Drop Chunk: Save Token Space])
+    Filter -->|Yes - High Relevancy| Keep[Keep Chunk: Add to Context Window]
     
     Keep --> Prompt[Compile Optimized Prompt Context]
 ```

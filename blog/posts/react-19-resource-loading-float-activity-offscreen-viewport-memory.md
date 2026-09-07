@@ -14,7 +14,7 @@ React core absorbed the document lifecycle: introducing **Native Resource Loadin
 Here is how React 19 re-architects client browser memory and the document asset pipeline.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph ViewportArch ["React 19 Viewport and Asset Lifecycle Architecture"]
     subgraph FloatLoading ["Resource Loading: Float"]
       ComponentA["Lazy-Loaded Component"] --> DeclareStyle["Stylesheet link element with precedence high"]

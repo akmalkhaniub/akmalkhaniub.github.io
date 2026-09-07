@@ -16,7 +16,7 @@ In traditional cold-start container architectures:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Code Agent Worker] -->|Request Sandbox: <10ms| PoolMgr[Pre-Warmed Pool Manager]
+    Agent[Code Agent Worker] -->|Request Sandbox - <10ms| PoolMgr[Pre-Warmed Pool Manager]
     
     subgraph SG1_PreWarmedSandbox ["Pre-Warmed Sandbox Ring Buffer"]
         PoolMgr -->|Pop Active Warm Instance| Instance1[Warm Sandbox Instance 1 (IDLE)]

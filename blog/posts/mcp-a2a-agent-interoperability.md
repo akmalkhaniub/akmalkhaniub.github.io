@@ -16,7 +16,7 @@ This article explores how MCP and emerging Agent-to-Agent (A2A) protocols are de
 Before MCP, model integration was an N-to-M complexity problem. Every model client had to write custom code to connect to every tool or data source. With MCP, the architecture is decoupled into a clean client-server model:
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_ClientsClientsLlm ["Clients [Clients / LLM orchestrators]"]
         Claude[Claude Desktop / Agent]
         CustomAgent[Custom LangGraph Agent]

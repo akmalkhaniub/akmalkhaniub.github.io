@@ -1,5 +1,9 @@
 # Distributed Transaction Protocols: 2-Phase Commit (2PC) & Percolator
 
+> [!NOTE]
+> **Catalog note**: This post overlaps [Distributed Transactions: Two-Phase Commit and Percolator](distributed-transactions-two-phase-commit-percolator.html). Prefer that sibling for the primary-lock walkthrough; keep this one for the TSO / prewrite packet sequence.
+
+
 When building sharded distributed databases (**TiDB**, **CockroachDB**, **Google Spanner**), executing single-shard operations using Raft is straightforward. However, modern applications require **ACID transactions** that span across multiple database shards (e.g. transferring money from Account A on Shard 1 to Account B on Shard 2).
 
 Executing cross-shard transactions introduces severe consistency risks: if Shard 1 commits while Shard 2 crashes, the system suffers data corruption and lost funds.
@@ -19,21 +23,21 @@ This article details traditional 2PC and Google Percolator distributed transacti
 How Percolator uses a Timestamp Oracle (TSO) and Primary Lock pointers to execute non-blocking distributed transactions:
 
 ```mermaid
-graph TD
-  Client[Transaction Client] -->|1. Get Start Timestamp T_start=100| TSO[Timestamp Oracle TSO]
+flowchart TD
+  Client[Transaction Client] -->|Get Start Timestamp T_start=100| TSO[Timestamp Oracle TSO]
   
   subgraph SG1_Phase1Prewrite ["Phase 1: Prewrite (Acquire Locks)"]
-    Client -->|2a. Lock & Prewrite Primary Key A| ShardA[Shard A: Primary Lock Column -> Primary A]
-    Client -->|2b. Lock & Prewrite Secondary Key B| ShardB[Shard B: Secondary Lock -> Pointer to Primary A]
+    Client -->|Lock & Prewrite Primary Key A| ShardA[Shard A: Primary Lock Column -> Primary A]
+    Client -->|Lock & Prewrite Secondary Key B| ShardB[Shard B: Secondary Lock -> Pointer to Primary A]
   end
   
   subgraph SG2_Phase2Commit ["Phase 2: Commit (Get Commit Timestamp T_commit=105)"]
-    Client -->|3. Get Commit Timestamp T_commit=105| TSO
-    Client -->|4. Commit Primary Key A: Remove Lock, Write Commit Data| ShardA
+    Client -->|Get Commit Timestamp T_commit=105| TSO
+    Client -->|Commit Primary Key A - Remove Lock, Write Commit Data| ShardA
     
-    ShardA -.->|5. Primary A Committed! Transaction SUCCESS| Client
+    ShardA -.->|Primary A Committed! Transaction SUCCESS| Client
     
-    Client -->|6. Async Commit Secondary Key B| ShardB
+    Client -->|Async Commit Secondary Key B| ShardB
   end
 ```
 

@@ -19,7 +19,7 @@ This article details ZGC colored pointers, region relocation tables, and Load Ba
 How ZGC uses 64-bit Colored Pointers and JIT Load Barriers to achieve concurrent, self-healing memory compaction:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_Zgc64Bit ["ZGC 64-bit Colored Pointer Memory Layout"]
     Ptr[64-bit Pointer] --> Final42[Bits 0..41: Object Virtual Address Space (Up to 16 TB)]
     Ptr --> ColorBits[Bits 42..45: Metadata Color Bits]
@@ -31,10 +31,10 @@ graph TD
   
   subgraph SG2_JitLoadBarrier ["JIT Load Barrier (Self-Healing Pointer Execution)"]
     Mutator[Application Thread: Dereference Pointer 'obj.field'] --> CheckRemapped{Is Pointer Bit 'Remapped' == 1?}
-    CheckRemapped -->|Yes: Fast Path < 1ns| ReturnObj[Return Object Address]
+    CheckRemapped -->|Yes - Fast Path < 1ns| ReturnObj[Return Object Address]
     
-    CheckRemapped -->|No: Slow Path - Pointer Points to Old Relocated Page!| LookupTable[Lookup New Address in ZGC Forwarding Table]
-    LookupTable -->|Update Reference In-Place| SelfHeal[✨ Self-Healing Pointer Updated: Remapped = 1]
+    CheckRemapped -->|No - Slow Path - Pointer Points to Old Relocated Page!| LookupTable[Lookup New Address in ZGC Forwarding Table]
+    LookupTable -->|Update Reference In-Place| SelfHeal[ Self-Healing Pointer Updated: Remapped = 1]
     SelfHeal --> ReturnObj
   end
 ```

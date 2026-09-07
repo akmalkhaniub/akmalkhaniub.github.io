@@ -17,21 +17,21 @@ This article details HNSW multi-layer graph structures, skip-list express lanes,
 How HNSW navigates top-layer sparse express lanes down to dense Layer 0 local clusters for logarithmic ANN search:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_Layer2Sparse ["Layer 2: Sparse Long-Range Express Lane"]
-    StartNode[Top Entry Point: Vector 101] -->|1. Long-Range Hop| Node202[Vector 202]
+    StartNode[Top Entry Point: Vector 101] -->|Long-Range Hop| Node202[Vector 202]
   end
   
   subgraph SG2_Layer1Intermediate ["Layer 1: Intermediate Regional Hops"]
-    Node202 -->|2. Drop Down to Layer 1| Node202_L1[Vector 202]
-    Node202_L1 -->|3. Regional Hop| Node305[Vector 305]
+    Node202 -->|Drop Down to Layer 1| Node202_L1[Vector 202]
+    Node202_L1 -->|Regional Hop| Node305[Vector 305]
   end
   
   subgraph SG3_Layer0Dense ["Layer 0: Dense Local Proximity Graph"]
-    Node305 -->|4. Drop Down to Layer 0| Node305_L0[Vector 305]
-    Node305_L0 -->|5. Dense Local Neighbors| NN1[Nearest Neighbor 1]
-    Node305_L0 -->|5. Dense Local Neighbors| NN2[Nearest Neighbor 2]
-    Node305_L0 -->|5. Dense Local Neighbors| NN3[Nearest Neighbor 3]
+    Node305 -->|Drop Down to Layer 0| Node305_L0[Vector 305]
+    Node305_L0 -->|Dense Local Neighbors| NN1[Nearest Neighbor 1]
+    Node305_L0 -->|Dense Local Neighbors| NN2[Nearest Neighbor 2]
+    Node305_L0 -->|Dense Local Neighbors| NN3[Nearest Neighbor 3]
   end
 ```
 

@@ -17,7 +17,7 @@ Achieving **$99.9\%$ operational reliability** with autonomous AI agents require
 This master blueprint synthesizes **10 foundational architectural principles** for engineering production-grade AI agent swarms.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ProductionAiAgent ["Production AI Agent Swarm Architecture (The 10 Principles)"]
     Supervisor["1. Hierarchical Supervisor (O(N) Topology)"]
     StateMachine["2. Deterministic State Machine Gates"]
@@ -103,7 +103,7 @@ sequenceDiagram
   S->>C: Dispatch: Generate REST Endpoints
   C->>C: Generates 5 files in workspace
   C->>DB: Atomic Checkpoint (Thread: tx_99, Step: 4, State Hash: 0x88f2)
-  Note over C: 💥 Worker Pod Crashes (Out-of-Memory / Spot Eviction)
+  Note over C:  Worker Pod Crashes (Out-of-Memory / Spot Eviction)
   S->>DB: Fetch Latest Valid Checkpoint for Thread tx_99
   DB-->>S: Restores State at Step 4 (0x88f2)
   S->>C: Respawn New Worker -> Resume at Step 5 immediately!
@@ -128,14 +128,14 @@ In distributed networks, tool executions time out, triggering automatic retries.
 Unlike local databases where `ROLLBACK` undoes all writes, autonomous agent swarms trigger **irreversible external side effects** (sending emails, modifying DNS records, purchasing cloud instances).
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG2_DynamicSemanticCompensation ["Dynamic Semantic Compensation Graph"]
     Step1[1. Reserve Cloud GPUs] --> Step2[2. Charge Customer Card]
     Step2 --> Step3[3. Provision Kubernetes Cluster]
-    Step3 -->|💥 Cluster Provisioning 500 Error| RollbackManager[Semantic Rollback Supervisor]
+    Step3 -->|Cluster Provisioning 500 Error| RollbackManager[Semantic Rollback Supervisor]
     
-    RollbackManager --> Comp2[↩️ Issue Stripe Card Refund]
-    RollbackManager --> Comp1[↩️ Release Cloud GPU Reservation]
+    RollbackManager --> Comp2[↩ Issue Stripe Card Refund]
+    RollbackManager --> Comp1[↩ Release Cloud GPU Reservation]
   end
 ```
 

@@ -17,23 +17,23 @@ This article details the mechanics of **Cache-Aside**, **Write-Through**, and **
 How Cache-Aside (Lazy Loading) and Write-Behind (Async Batching) handle database synchronization:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CacheAsideRead ["Cache-Aside Read Flow"]
-    ClientR[Client Read] -->|1. Check Cache| RedisR[In-Memory Cache Redis]
-    RedisR -->|2a. Cache Hit| ReturnData[Return Data < 1ms]
-    RedisR -->|2b. Cache Miss| DBR[Backend Database]
-    DBR -->|3. Populate Cache| RedisR
+    ClientR[Client Read] -->|Check Cache| RedisR[In-Memory Cache Redis]
+    RedisR -->|Cache Hit| ReturnData[Return Data < 1ms]
+    RedisR -->|Cache Miss| DBR[Backend Database]
+    DBR -->|Populate Cache| RedisR
   end
   
   subgraph SG2_WriteBehindAsync ["Write-Behind Async Batching Flow"]
-    ClientW[Client Write] -->|1. Write to In-Memory Ring Buffer| CacheQueue[Cache Layer Async Write Queue]
-    CacheQueue -->|2. Instant Ack < 100us| ClientW
-    CacheQueue -->|3. Background Worker Batch Flush| DBW[Persistent Database]
+    ClientW[Client Write] -->|Write to In-Memory Ring Buffer| CacheQueue[Cache Layer Async Write Queue]
+    CacheQueue -->|Instant Ack < 100us| ClientW
+    CacheQueue -->|Background Worker Batch Flush| DBW[Persistent Database]
   end
   
   subgraph SG3_XfetchProbabilisticEarly ["XFetch Probabilistic Early Expiration"]
     RedisR -->|Check ttl - delta * beta * log(rnd)| XFetchCheck{Is Early Recompute Triggered?}
-    XFetchCheck -->|Yes: Pre-empt Expiration| AsyncRefresh[Asynchronously Refresh Cache BEFORE Expiration!]
+    XFetchCheck -->|Yes - Pre-empt Expiration| AsyncRefresh[Asynchronously Refresh Cache BEFORE Expiration!]
   end
 ```
 

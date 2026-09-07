@@ -17,7 +17,7 @@ This article details Hybrid Logical Clock math, Multi-Raft $64\text{ MB}$ range 
 How CockroachDB and YugabyteDB combine Hybrid Logical Clocks and Multi-Raft consensus to execute distributed ACID transactions:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_HybridLogicalClock ["Hybrid Logical Clock (HLC) Time Engine"]
     PhysicalClock[Physical Server Clock pt] & RemoteHLC[Incoming Message HLC: l_m, c_m] --> HLCUpdate[HLC Update Math: l_next = max(l_curr, pt, l_m)]
     HLCUpdate --> HLCTuple["HLC Timestamp Tuple: (l_next, c_next)"]
@@ -31,8 +31,8 @@ graph TD
   subgraph SG3_DistributedMvccWrite ["Distributed MVCC & Write Intent Resolution"]
     Range1 --> WriteIntent["Write Intent Record: key@HLC -> [Val, Pointer to Txn Record]"]
     WriteIntent --> TxnState{Is Txn Record Status = COMMITTED?}
-    TxnState -->|Yes| MVCCRead["🎉 Instant MVCC Read: Return Value at HLC Timestamp!"]
-    TxnState -->|No: Aborted/Pending| Rollback["Wait or Push Transaction Threshold"]
+    TxnState -->|Yes| MVCCRead[" Instant MVCC Read: Return Value at HLC Timestamp!"]
+    TxnState -->|No - Aborted/Pending| Rollback["Wait or Push Transaction Threshold"]
   end
 ```
 

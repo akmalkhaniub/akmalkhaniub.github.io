@@ -22,7 +22,7 @@ This article reviews the trade-offs of ternary quantization vs. standard float r
 Standard floating-point representation requires complex multiplier circuits, while ternary representation simplifies the matrix kernel to simple sign-swaps and additions.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef floatStyle fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef ternaryStyle fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;

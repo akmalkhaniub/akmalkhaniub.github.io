@@ -19,7 +19,7 @@ This article details Liveness Analysis, Chaitin-Briggs Graph Coloring, and Linea
 How compiler backends compute variable liveness intervals and allocate physical CPU registers:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CompilerIrLiveness ["Compiler IR & Liveness Analysis"]
     IR[IR Code Sequence: v0, v1, v2, v3] --> Liveness[Liveness Analysis: Compute Live Intervals]
     Liveness --> Intervals["Live Intervals: v0=[1..4], v1=[2..6], v2=[3..5], v3=[7..9]"]
@@ -28,8 +28,8 @@ graph TD
   subgraph SG2_RegisterAllocatorAlgorithm ["Register Allocator Algorithm (Linear Scan / Graph Coloring)"]
     Intervals --> Allocator{Are Free CPU Registers Available?}
     
-    Allocator -->|Yes: Assign Register| RegAssign["v0 -> RAX, v1 -> RBX, v2 -> RCX"]
-    Allocator -->|No: Register Exhaustion!| Spill[Register Spiller: Spill longest interval v1 to RAM Stack [RBP-8]]
+    Allocator -->|Yes - Assign Register| RegAssign["v0 -> RAX, v1 -> RBX, v2 -> RCX"]
+    Allocator -->|No - Register Exhaustion!| Spill[Register Spiller: Spill longest interval v1 to RAM Stack [RBP-8]]
   end
   
   subgraph SG3_FinalTargetMachine ["Final Target Machine Code"]

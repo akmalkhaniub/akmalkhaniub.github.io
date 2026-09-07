@@ -9,9 +9,9 @@ Antirez argued that by acquiring a lock across a majority of independent Redis n
 Kleppmann replied with a surgical mathematical critique that dismantled the premise. In asynchronous networks subject to unbounded network latency, garbage collection pauses, and physical clock drift, **no lock based on wall-clock time can ever guarantee safety without monotonically increasing fencing tokens**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TheDistributedLock ["The Distributed Lock GC Pause Hazard (Split-Brain Corruption)"]
-    ClientA["Client 1: Acquires Lock Lease (10s)"] --> GC["🚨 12-Second GC / VM Pause (Lock Expires!)"]
+    ClientA["Client 1: Acquires Lock Lease (10s)"] --> GC[" 12-Second GC / VM Pause (Lock Expires!)"]
     
     subgraph SG2_CentralLockService ["Central Lock Service (Redis / DLM)"]
       Expire["Lease expires at t=10s"] --> GrantB["Grant Lock to Client 2 at t=11s"]
@@ -19,7 +19,7 @@ graph TD
     
     GrantB --> ClientB["Client 2: Writes to Shared Storage"]
     GC --> Wakeup["Client 1 Wakes Up at t=12s (Believes lease is still valid!)"]
-    Wakeup --> Overwrite["Client 1 Overwrites Storage (💥 DATA CORRUPTION)"]
+    Wakeup --> Overwrite["Client 1 Overwrites Storage ( DATA CORRUPTION)"]
   end
 ```
 

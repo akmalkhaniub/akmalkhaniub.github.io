@@ -24,20 +24,20 @@ flowchart TD
     UserQuery[User Query: 'Billing code 99214 under audit'] --> InputProc{Input Process}
     
     subgraph SG1_RetrievalParallelRetrieval ["Retrieval [Parallel Retrieval Layer]"]
-        InputProc -->|1a. Vector Embeddings| VecSearch[pgvector Semantic Search]
-        InputProc -->|1b. Text Tokenization| LexSearch[PostgreSQL Full-Text Search]
+        InputProc -->|Vector Embeddings| VecSearch[pgvector Semantic Search]
+        InputProc -->|Text Tokenization| LexSearch[PostgreSQL Full-Text Search]
     end
 
     subgraph SG2_FusionFusionFiltering ["Fusion [Fusion & Filtering Layer]"]
-        VecSearch -->|2a. Top 50 Vector Matches| RRF[Reciprocal Rank Fusion RRF]
-        LexSearch -->|2b. Top 50 Keyword Matches| RRF
-        RRF -->|3. Top 20 Merged Candidates| Reranker[Cross-Encoder Reranker]
+        VecSearch -->|Top 50 Vector Matches| RRF[Reciprocal Rank Fusion RRF]
+        LexSearch -->|Top 50 Keyword Matches| RRF
+        RRF -->|Top 20 Merged Candidates| Reranker[Cross-Encoder Reranker]
     end
 
     subgraph SG3_GenerationContextGeneration ["Generation [Context Generation]"]
-        Reranker -->|4. Top 5 Highly-Relevant Chunks| Context[Final Context Payload]
-        Context -->|5. Structured Prompt| LLM[Ollama / Anthropic Claude]
-        LLM -->|6. Accurate Answer| User[Final User Output]
+        Reranker -->|Top 5 Highly-Relevant Chunks| Context[Final Context Payload]
+        Context -->|Structured Prompt| LLM[Ollama / Anthropic Claude]
+        LLM -->|Accurate Answer| User[Final User Output]
     end
 
     style Retrieval fill:#f8fafc,stroke:#64748b,stroke-width:2px

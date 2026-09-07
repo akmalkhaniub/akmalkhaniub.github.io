@@ -21,7 +21,7 @@ flowchart TD
     FilterJSON -->|Invalid| Discard[Discard Example]
     FilterJSON -->|Valid| DeDup{Is Query Unique?}
     
-    DeDup -->|No: Duplicate| Discard
+    DeDup -->|No - Duplicate| Discard
     DeDup -->|Yes| Format[Format into ChatML Structure]
     
     Format --> Export[Export cleaned JSONL Dataset]

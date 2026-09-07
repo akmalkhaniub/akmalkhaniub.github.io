@@ -15,7 +15,7 @@ This article details how to architect stateful stream processors using Flink and
 How Flink streams inject checkpoint barriers to capture consistent distributed state:
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG1_EventStreamInput ["Event Stream Input"]
     S1[Event Record e1] --> B1[Checkpoint Barrier n]
     B1 --> S2[Event Record e2]

@@ -12,7 +12,7 @@ An LLM's weights are originally stored as 16-bit floating-point numbers (FP16 or
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart LR
+flowchart TD
     FP16[Original Weights: FP16 / BF16 <br> 16 bits per parameter] -->|Quantization Process| INT4[Compressed Weights: INT4 / INT8 <br> 4-8 bits per parameter]
     INT4 --> GGUF[GGUF format <br> CPU+GPU offload]
     INT4 --> AWQ[AWQ format <br> Activation-Aware, GPU only]

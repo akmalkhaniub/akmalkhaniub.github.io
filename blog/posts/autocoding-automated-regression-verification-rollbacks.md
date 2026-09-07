@@ -20,8 +20,8 @@ flowchart TD
     
     TestRunner --> Intercept{Did all tests pass?}
     
-    Intercept -->|Yes: 100% Pass| Merge[Merge Branch into Target Codebase]
-    Intercept -->|No: Test Failures| Evaluate[Evaluate Error Trace logs]
+    Intercept -->|Yes - 100% Pass| Merge[Merge Branch into Target Codebase]
+    Intercept -->|No - Test Failures| Evaluate[Evaluate Error Trace logs]
     
     Evaluate --> Retry{Attempts < Max Retries?}
     Retry -->|Yes| Heal[Trigger Self-Healing Repair Loop]

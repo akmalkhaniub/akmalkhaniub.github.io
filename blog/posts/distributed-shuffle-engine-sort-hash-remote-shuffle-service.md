@@ -19,15 +19,15 @@ This article details Map-side shuffle partitioning, Hash vs Sort Shuffle disk st
 How distributed engines manage map-side shuffle output files and how Remote Shuffle Services eliminate executor disk dependencies:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LegacyHashShuffle ["Legacy Hash Shuffle (M Mappers x R Reducers File Explosion)"]
     Map1[Map Task 1] --> File1[Partition File 1] & File2[Partition File 2] & File3[Partition File R (M x R Files!)]
   end
   
   subgraph SG2_ModernSortShuffle ["Modern Sort Shuffle (Single Data File + Index File)"]
     MapSort[Map Task] -->|Sort Records by Reducer ID| InMemBuffer[In-Memory Sorter Buffer]
-    InMemBuffer --> SingleDataFile["📄 Single Data File: [Part 0 Data | Part 1 Data | Part 2 Data]"]
-    InMemBuffer --> IndexFile["📑 Index File: [Part 0: Offset 0..1024 | Part 1: Offset 1024..4096]"]
+    InMemBuffer --> SingleDataFile[" Single Data File: [Part 0 Data | Part 1 Data | Part 2 Data]"]
+    InMemBuffer --> IndexFile[" Index File: [Part 0: Offset 0..1024 | Part 1: Offset 1024..4096]"]
   end
   
   subgraph SG3_DisaggregatedRemoteShuffle ["Disaggregated Remote Shuffle Service (RSS: Apache Uniffle / Celeborn)"]

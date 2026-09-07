@@ -19,8 +19,8 @@ flowchart TD
     User[User Query] --> Embed[Generate Query Vector]
     Embed --> DBQuery[Search Vector Database]
     DBQuery --> Match{Is Cosine Similarity > Threshold?}
-    Match -->|Yes: Cache Hit| Return[Return Cached LLM Response]
-    Match -->|No: Cache Miss| LLM[Invoke LLM API]
+    Match -->|Yes - Cache Hit| Return[Return Cached LLM Response]
+    Match -->|No - Cache Miss| LLM[Invoke LLM API]
     LLM --> WriteCache[Insert Query & Response to Vector DB]
     WriteCache --> Return
 ```

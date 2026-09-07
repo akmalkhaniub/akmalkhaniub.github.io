@@ -9,7 +9,7 @@ Network latency, partial failures, asynchronous race conditions, and uncontrolle
 This deep-dive architectural guide dissects the **7 most lethal microservices gotchas**, analyzes the underlying distributed systems mechanics that cause them, and provides production-tested solutions backed by real-world engineering case studies.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ProductionMicroserviceOutage ["Production Microservice Outage Antipatterns"]
     G1["1. Cascading Retry Storms & 9x Amplification (AWS)"]
     G2["2. The Distributed Dual-Write Trap (Shopify / Stripe)"]
@@ -91,12 +91,12 @@ Distributed computing guarantees that one of these two network operations will e
 * **Failure Mode B**: Reversing the order (`kafka.send()` first, `db.commit()` second). Kafka publishes the event, but the database transaction aborts due to a constraint violation. Result: **Warehouse ships items for an order that was never paid for.**
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG2_TheDualWrite ["The Dual-Write Vulnerability"]
-    App[Application Pod] -->|1. Commit DB| DB[(PostgreSQL)]
-    App -->|💥 Crash / Network Drop| Kafka[Apache Kafka]
-    DB -.->|State: PAID| Desync[Data Divergence & Lost Revenue]
-    Kafka -.->|State: Missing Event| Desync
+    App[Application Pod] -->|Commit DB| DB[(PostgreSQL)]
+    App -->|Crash / Network Drop| Kafka[Apache Kafka]
+    DB -.->|State - PAID| Desync[Data Divergence & Lost Revenue]
+    Kafka -.->|State - Missing Event| Desync
   end
 ```
 
@@ -151,7 +151,7 @@ In real-world social and communication graphs:
 * When a celebrity user with 100M followers posts, the single database node holding that partition receives **1,000,000x the write and read throughput**, maxing out CPU and I/O while the other 127 shards sit at $2\%$ utilization.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG3_TheHotShard ["The Hot Shard Problem"]
     Users[100M Active Followers] -->|Simultaneous Timeline Reads| Shard1[(Shard 1: Celebrity User)]
     Users -.->|Idle| Shard2[(Shard 2: Regular Users)]
@@ -233,11 +233,11 @@ When Service $A$ passes work to an asynchronous background worker (e.g. Celery, 
 The async worker executes with an unlinked `trace_id`, creating an invisible "black box" in distributed telemetry.
 
 ```mermaid
-graph LR
-  API[API Gateway] -->|trace_id: 00-4bf92f...| SvcA[Order Service]
-  SvcA -->|trace_id: 00-4bf92f...| SvcB[Payment Service]
-  SvcB -->|❌ Missing Header Carrier| Kafka[(Kafka Topic)]
-  Kafka -->|New random trace_id: 00-99aa11...| Worker[Async Fulfillment Worker]
+flowchart TD
+  API[API Gateway] -->|trace_id - 00-4bf92f...| SvcA[Order Service]
+  SvcA -->|trace_id - 00-4bf92f...| SvcB[Payment Service]
+  SvcB -->|Missing Header Carrier| Kafka[(Kafka Topic)]
+  Kafka -->|New random trace_id - 00-99aa11...| Worker[Async Fulfillment Worker]
   
   style Worker fill:#f43f5e,stroke:#881337,color:#ffffff
 ```

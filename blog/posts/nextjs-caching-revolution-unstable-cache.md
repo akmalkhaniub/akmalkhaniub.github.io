@@ -1,5 +1,9 @@
 # The Caching Revolution: Mastering Uncached-by-Default Architectures in Next.js 15/16
 
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
 For years, Next.js was notorious for its aggressive caching behavior. If you ran a standard `fetch` call in an App Router page, Next.js would automatically intercept and cache the response statically forever unless you explicitly configured dynamic routing parameters. In production, this resulted in countless "stale dashboard" and "out-of-sync product list" bugs that developers struggled to debug.
 
 Next.js 15 flipped this model on its head by introducing **uncached-by-default** behavior. This article explores the architectural rationale behind this shift, the performance benefits, and how high-volume production platforms safely configure explicit, predictable caching.
@@ -104,7 +108,7 @@ export async function updateProductStock(productId: string, newStock: number) {
 Production sites have adapted to the uncached-by-default shift by implementing tiered caching layouts:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client Request] --> B[Next.js Server Component]
   B --> C{Cache Hit in unstable_cache?}
   C -- Yes --> D[Serve from Next.js Memory Cache]

@@ -18,7 +18,7 @@ If ten users simultaneously visit a page containing a CPU-intensive Server Compo
 This is **The Node.js Event Loop Trap in Server Components**. Here is the systems engineering analysis of CPU starvation in modern full-stack React, and how to protect multi-tenant servers from collapse.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_NodeJsSingle ["Node.js Single-Threaded Event Loop Saturation"]
     Client1[User 1: GET /analytics] --> Ingress[Single-Threaded Node.js Event Loop]
     Client2[User 2: GET /healthz] --> Ingress
@@ -93,7 +93,7 @@ When Server Actions encrypt closure payloads and Server Components resolve datab
 To run React Server Components safely at scale, systems architects must establish a strict boundary: **the main Node.js event loop must only route I/O; heavy computation must be isolated**.
 
 ```mermaid
-graph LR
+flowchart TD
   MainThread["Node.js Main Event Loop"] -->|Dispatches CPU Work| WorkerPool["Node.js worker_threads or Piscina Pool"]
   WorkerPool --> Thread1["Worker Core 1"]
   WorkerPool --> Thread2["Worker Core 2"]

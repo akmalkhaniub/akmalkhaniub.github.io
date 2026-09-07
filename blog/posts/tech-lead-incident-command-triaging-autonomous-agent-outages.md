@@ -13,7 +13,7 @@ When an autonomous agent enters a feedback loop, it can generate thousands of in
 When an autonomous agent runaway occurs, the Incident Commander must execute a strict containment protocol:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Telemetry Anomaly Detected: High Error Rate / Rate Limit Spike] --> B[Incident Command Activated]
   B --> C[Layer 1: Trigger Emergency Kill-Switch]
   C -->|Freeze Subagent Pools| D[Layer 2: Isolate Git Branch & Lock Repos]

@@ -17,7 +17,7 @@ $$\Delta W = B \cdot A$$
 Where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$, with the rank $r \ll \min(d, k)$ (typically $r = 8$ or $16$).
 
 ```mermaid
-graph LR
+flowchart TD
   Input([Input Vector x]) --> |Freeze W0| BaseProduct[W0 * x]
   Input --> |Trainable A| MatrixA[A * x]
   MatrixA --> |Trainable B| MatrixB[B * A * x]

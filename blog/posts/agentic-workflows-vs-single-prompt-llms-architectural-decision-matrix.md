@@ -11,7 +11,7 @@ Every step up the agentic complexity ladder increases task capabilities—but co
 This guide outlines the **5-Level Agentic Complexity Spectrum**, provides a rigorous **architectural trade-off decision matrix**, and details the mathematical rules for when to use single prompts versus multi-agent swarms.
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG1_The5Level ["The 5-Level Agentic Complexity Spectrum"]
     L1["Level 1: Zero-Shot Prompt\n• Latency: 400ms\n• Cost: $0.001\n• Reliability: 99%"] --> L2["Level 2: Chain-of-Thought (CoT)\n• Latency: 1.2s\n• Cost: $0.005\n• Reliability: 95%"]
     L2 --> L3["Level 3: ReAct (Tool Loop)\n• Latency: 4.5s\n• Cost: $0.04\n• Reliability: 88%"]
@@ -63,7 +63,7 @@ $$\text{Total Pipeline Reliability} = P^N$$
 ## 3. The Architectural Decision Matrix
 
 ```mermaid
-graph TD
+flowchart TD
   Start[Incoming Task] --> Q1{Is external state or dynamic data required?}
   Q1 -->|No| Q2{Does task require multi-step logical deduction?}
   Q1 -->|Yes| Q3{Is task bounded to a single file / API?}

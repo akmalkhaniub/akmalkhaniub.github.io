@@ -17,21 +17,21 @@ This article details Log Sequence Numbers (LSN), ARIES 3-phase recovery (Analysi
 How the ARIES recovery protocol restores database state following a crash:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_PreCrashDatabase ["Pre-Crash Database Execution"]
-    Tx[Transaction Mutation] -->|1. Append WAL Record| WALBuffer[In-Memory WAL Buffer]
-    WALBuffer -->|2. fsync() Group Commit| WALDisk[Append-Only WAL Disk File]
-    WALDisk -->|3. Flush Dirty Page to Disk| DataPages[Database Data Pages]
+    Tx[Transaction Mutation] -->|Append WAL Record| WALBuffer[In-Memory WAL Buffer]
+    WALBuffer -->|fsync() Group Commit| WALDisk[Append-Only WAL Disk File]
+    WALDisk -->|Flush Dirty Page to Disk| DataPages[Database Data Pages]
   end
   
   subgraph SG2_UnexpectedDatabaseCrash ["Unexpected Database Crash & Restart"]
-    WALDisk -->|4. Read Last Checkpoint LSN| Analysis[Phase 1: Analysis Phase]
+    WALDisk -->|Read Last Checkpoint LSN| Analysis[Phase 1: Analysis Phase]
     Analysis -->|Rebuild ATT & DPT Tables| Redo[Phase 2: Redo Phase - Repeat History]
     
-    Redo -->|Replay Log Forward: page.lsn < record.lsn| RestoredState[Restored Crash Instant State]
+    Redo -->|Replay Log Forward - page.lsn < record.lsn| RestoredState[Restored Crash Instant State]
     RestoredState --> Undo[Phase 3: Undo Phase - Rollback Uncommitted]
     
-    Undo -->|Write CLR Records| ActiveDB[🎉 Database Ready for Production!]
+    Undo -->|Write CLR Records| ActiveDB[ Database Ready for Production!]
   end
 ```
 

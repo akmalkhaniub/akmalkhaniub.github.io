@@ -19,14 +19,14 @@ This article details tuple versioning (`xmin`/`xmax`), Read Snapshots, Snapshot 
 How MVCC maintains tuple version chains to provide consistent Read Snapshots without locking:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TupleVersionChain ["Tuple Version Chain in Storage (Row: 'account_101')"]
     V1["Version 1: Balance=$100 (xmin: 100, xmax: 105)"] --> V2["Version 2: Balance=$150 (xmin: 105, xmax: inf)"]
   end
   
   subgraph SG2_ConcurrentTransactionRead ["Concurrent Transaction Read Snapshots"]
-    TxA["Tx A (Start TxID: 102) Read Query"] -->|Visits Chain: Sees xmin 100 <= 102 < xmax 105| V1
-    TxB["Tx B (Start TxID: 110) Read Query"] -->|Visits Chain: Sees xmin 105 <= 110 < inf| V2
+    TxA["Tx A (Start TxID: 102) Read Query"] -->|Visits Chain - Sees xmin 100 <= 102 < xmax 105| V1
+    TxB["Tx B (Start TxID: 110) Read Query"] -->|Visits Chain - Sees xmin 105 <= 110 < inf| V2
   end
   
   subgraph SG3_SnapshotIsolationVisibility ["Snapshot Isolation Visibility Check"]

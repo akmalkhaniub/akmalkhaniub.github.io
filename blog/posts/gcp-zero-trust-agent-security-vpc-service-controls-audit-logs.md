@@ -15,7 +15,7 @@ This article details how to lock down agentic execution environments on GCP.
 The platform enforces perimeter isolation, credential rotation, and granular tool tracing:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_GcpVpcService ["GCP VPC Service Control Perimeter"]
     A[Cloud Run Agent Worker] --> B[GCP Secret Manager]
     A --> C[Vertex AI Foundation Models]

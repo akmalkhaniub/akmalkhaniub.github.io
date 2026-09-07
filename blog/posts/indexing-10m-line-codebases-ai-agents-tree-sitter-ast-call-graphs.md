@@ -11,7 +11,7 @@ To provide sub-second, highly accurate code context without context bloat, moder
 By combining **Tree-sitter Abstract Syntax Tree (AST) parsing**, **SCIP/LSIF Symbol Reference Graphs**, and **Hybrid BM25 + Vector Search**, engineering teams assemble laser-focused $< 4,000\text{-token}$ context payloads that give agents deep architectural clarity across massive codebases.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_EnterpriseCodeIntelligence ["Enterprise Code Intelligence Indexing Pipeline"]
     Repo[10M Line Monorepo: 25,000 Source Files] --> TreeSitter["1. Tree-sitter AST Parser (Extracts Functions, Types, Classes)"]
     
@@ -64,7 +64,7 @@ By parsing at the AST level, every chunk in the vector database corresponds to a
 To understand how code executes, the indexer constructs two directed graphs:
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG3_HierarchicalCallGraph ["Hierarchical Call Graph (Caller -> Callee)"]
     A[OrderController.postCheckout] -->|Calls| B[BillingService.processCharge]
     B -->|Calls| C[StripeClient.createPaymentIntent]

@@ -17,7 +17,7 @@ This article details how to implement an LLM-as-a-Judge calibration pipeline.
 The calibration pipeline uses human-annotated golden test suites to audit, evaluate, and tune LLM judge prompts:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Golden Test Dataset] --> B[Candidate Models Inference]
   B --> C[Candidate Outputs]
   

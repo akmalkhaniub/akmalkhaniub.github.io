@@ -15,7 +15,7 @@ This article details how to extract AST metadata and populate a Neo4j knowledge 
 The code parser translates Abstract Syntax Tree components directly into nodes and edges within the graph database:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CodebaseSourceFiles ["Codebase Source Files"]
     A[Module: billing.py]
     B[Class: UserBilling]

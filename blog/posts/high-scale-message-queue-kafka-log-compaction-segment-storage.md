@@ -19,20 +19,20 @@ This article details Kafka segment indexing, zero-copy network reads, and log co
 How Kafka structures partition log segments and executes background key-based compaction:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_KafkaPartitionCommit ["Kafka Partition Commit Log Directory on Disk"]
     Seg1[Segment File 000.log: Appended Messages] --- Idx1[Sparse Index File 000.index: Offset -> Bytes]
     Seg2[Segment File 005.log: Active Segment] --- Idx2[Sparse Index File 005.index]
   end
   
   subgraph SG2_KeyBasedLog ["Key-Based Log Compaction (Cleaner Thread)"]
-    Seg1 -->|1. Scan Key History| Cleaner[Cleaner Thread: Deduplicate Keys]
-    Cleaner -->|2. Retain Latest Record per Key| CompactedSeg[Compacted Segment File: Retains Key='user_42' Latest State]
+    Seg1 -->|Scan Key History| Cleaner[Cleaner Thread: Deduplicate Keys]
+    Cleaner -->|Retain Latest Record per Key| CompactedSeg[Compacted Segment File: Retains Key='user_42' Latest State]
   end
   
   subgraph SG3_HighPerformanceZero ["High-Performance Zero-Copy Egress"]
-    Seg2 -->|3. OS Page Cache| PageCache[Linux OS Kernel Page Cache]
-    PageCache -->|4. sendfile() DMA Transfer| Socket[NIC Network Socket -> Consumer]
+    Seg2 -->|OS Page Cache| PageCache[Linux OS Kernel Page Cache]
+    PageCache -->|sendfile() DMA Transfer| Socket[NIC Network Socket -> Consumer]
   end
 ```
 

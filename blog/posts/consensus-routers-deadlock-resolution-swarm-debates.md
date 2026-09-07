@@ -18,8 +18,8 @@ In consensus-driven agent configurations:
 flowchart TD
     Voting[Voting Gate: Propose Migration Path] --> Check{Is Vote Deadlocked?}
     
-    Check -->|No: Majority Met| Execute[Execute Selected Migration Tool]
-    Check -->|Yes: Split Vote| Router[Consensus Routing Middleware]
+    Check -->|No - Majority Met| Execute[Execute Selected Migration Tool]
+    Check -->|Yes - Split Vote| Router[Consensus Routing Middleware]
     
     subgraph SG1_FallbackEscalation ["Fallback Escalation"]
         Router -->|Route to Supervisor| Sup[Supervisor LLM: High-Context Tie Breaker]

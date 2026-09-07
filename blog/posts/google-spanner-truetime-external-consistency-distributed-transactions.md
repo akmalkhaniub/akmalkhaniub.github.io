@@ -19,7 +19,7 @@ This article details the TrueTime API interval mechanics (`TT.now()`), External 
 How Google TrueTime bounds clock uncertainty $\epsilon$ and uses the Commit Wait Rule to guarantee global External Consistency:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_GoogleDatacenterHardware ["Google Datacenter Hardware Infrastructure"]
     GPS[Datacenter GPS Receivers] & Atomic[Rubidium Atomic Clocks] --> TrueTimeEngine[TrueTime Master Daemon]
   end
@@ -30,9 +30,9 @@ graph TD
   
   subgraph SG3_CommitWaitRule ["Commit Wait Rule Execution (External Consistency)"]
     TT -->|Assign Commit Timestamp| Ts1["Assign Commit Timestamp t_s1 = t_latest"]
-    Ts1 --> WaitCheck{"Has Real Time Passed t_s1? (TT.now().earliest > t_s1)"}
-    WaitCheck -->|No: Wait 2 * ε| Sleep["⏳ Commit Wait Sleep (e.g. 4ms)"]
-    WaitCheck -->|Yes: Safe!| CommitSuccess["🎉 Transaction T1 Committed! (Guarantees T2 > T1 Globally)"]
+    Ts1 --> WaitCheck["Has Real Time Passed t_s1? (TT.now().earliest > t_s1)"]
+    WaitCheck -->|No - Wait 2 * ε| Sleep["⏳ Commit Wait Sleep (e.g. 4ms)"]
+    WaitCheck -->|Yes - Safe!| CommitSuccess[" Transaction T1 Committed! (Guarantees T2 > T1 Globally)"]
   end
 ```
 

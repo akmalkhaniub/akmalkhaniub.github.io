@@ -20,8 +20,8 @@ flowchart TD
     Gen --> Parse[Scan DDL Commands for Lock Risks]
     
     Parse --> CheckLock{Is Lock Conflict Found?}
-    CheckLock -->|Yes: Risk Detected| Rewrite[Agent Re-writes: Use Safe Migration Pattern]
-    CheckLock -->|No: Safe| Verify[Staging Verification Check]
+    CheckLock -->|Yes - Risk Detected| Rewrite[Agent Re-writes: Use Safe Migration Pattern]
+    CheckLock -->|No - Safe| Verify[Staging Verification Check]
     
     Rewrite --> Verify
     Verify -->|Pass| Commit[Export Safe Migration Script]

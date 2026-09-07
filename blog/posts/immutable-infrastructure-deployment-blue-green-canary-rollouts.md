@@ -15,7 +15,7 @@ This article details how to design automated Canary deployments with real-time e
 Progressive traffic shifting and automated rollback monitoring across application versions:
 
 ```mermaid
-graph TD
+flowchart TD
   User[Client Production Traffic] --> Router[Ingress Load Balancer / Router]
   
   subgraph SG1_ProductionEnvironments ["Production Environments"]
@@ -27,8 +27,8 @@ graph TD
     Canary -->|Emit HTTP Telemetry| Prometheus[(Prometheus / CloudWatch Metrics)]
     Prometheus -->|Poll Error Rate & Latency| Controller[Canary Rollout Controller]
     
-    Controller -->|Error Rate < 0.1%: Healthy| StepUp[Increment Traffic: 10% -> 50% -> 100%]
-    Controller -->|Error Rate > 1.0%: Outage!| Rollback[AUTOMATED ROLLBACK: Shift 0% Traffic to Canary]
+    Controller -->|Error Rate < 0.1% - Healthy| StepUp[Increment Traffic: 10% -> 50% -> 100%]
+    Controller -->|Error Rate > 1.0% - Outage!| Rollback[AUTOMATED ROLLBACK: Shift 0% Traffic to Canary]
   end
   
   StepUp --> Router

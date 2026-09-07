@@ -13,7 +13,7 @@ This failure is not an accident of model scale. It is a mathematical consequence
 To reason across interconnected domains, modern AI architectures must graduate from flat vector similarity to **Graph-RAG**: the synthesis of knowledge graph entity-relationship extraction, hierarchical community clustering, and graph traversal algorithms.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_VectorRagVs ["Vector RAG vs Graph-RAG Architecture"]
     subgraph SG2_1FlatVector ["1. Flat Vector RAG (Isolated Chunks)"]
       Q1["Holistic Query: 'Identify cross-service failure modes'"] --> VectorSearch[Top-K Cosine Similarity]

@@ -17,26 +17,26 @@ This article details Asynchronous replication lag, Synchronous latency penalties
 How Asynchronous, Semi-Synchronous, and Raft Majority Quorum replication models process client write requests:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ClientWriteRequest ["Client Write Request"]
     Client[Client Tx Write Request] --> Primary[Primary Database Node]
   end
   
   subgraph SG2_AsynchronousReplicationZero ["Asynchronous Replication (Zero Latency Penalty)"]
-    Primary -->|1. Commit Locally & Return Ack < 1ms| Client
-    Primary -.->|2. Async WAL Stream| Replica1[Replica Node 1 (Replication Lag)]
+    Primary -->|Commit Locally & Return Ack < 1ms| Client
+    Primary -.->|Async WAL Stream| Replica1[Replica Node 1 (Replication Lag)]
   end
   
   subgraph SG3_SemiSynchronousReplication ["Semi-Synchronous Replication (1 Slave Ack)"]
-    Primary -->|1. Stream Binlog| RelayLog[Replica 1 Relay Log]
-    RelayLog -->|2. Ack Received| Primary
-    Primary -->|3. Return Ack to Client| Client
+    Primary -->|Stream Binlog| RelayLog[Replica 1 Relay Log]
+    RelayLog -->|Ack Received| Primary
+    Primary -->|Return Ack to Client| Client
   end
   
   subgraph SG4_RaftConsensusMajority ["Raft Consensus Majority Quorum (CockroachDB / TiKV)"]
-    Primary -->|1. Broadcast AppendEntries| NodeB[Raft Node B] & NodeC[Raft Node C]
-    NodeB -->|2. Majority Ack (2 of 3 Nodes)| Primary
-    Primary -->|3. Commit Majority Entry!| Client
+    Primary -->|Broadcast AppendEntries| NodeB[Raft Node B] & NodeC[Raft Node C]
+    NodeB -->|Majority Ack (2 of 3 Nodes)| Primary
+    Primary -->|Commit Majority Entry!| Client
   end
 ```
 

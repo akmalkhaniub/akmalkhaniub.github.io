@@ -21,8 +21,8 @@ flowchart TD
     
     subgraph SG1_ReconciliationBuffer ["Reconciliation Buffer"]
         Queue -->|Read logical clock values| Sort{Identify Sequence Gap: Step 2 missing?}
-        Sort -->|Yes: Step 3 waits| Buffer[Pending Buffer Array]
-        Sort -->|No: Sequence intact| Flush[Flush to Dashboard Database]
+        Sort -->|Yes - Step 3 waits| Buffer[Pending Buffer Array]
+        Sort -->|No - Sequence intact| Flush[Flush to Dashboard Database]
     end
     
     Buffer -->|Step 2 arrives| Flush

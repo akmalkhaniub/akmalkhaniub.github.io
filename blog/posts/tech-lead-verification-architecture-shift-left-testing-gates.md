@@ -13,7 +13,7 @@ To maintain code reliability without slowing down team velocity, modern Tech Lea
 Rather than trusting agent code outputs, every generatedPull Request must pass through four automated verification layers:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Agent Outputs Pull Request] --> B[Layer 1: Static AST & Security Linting]
   B -->|Pass| C[Layer 2: Isolated Micro-VM Unit Test Sandbox]
   B -->|Fail| X[Reject & Trigger Agent Retry]

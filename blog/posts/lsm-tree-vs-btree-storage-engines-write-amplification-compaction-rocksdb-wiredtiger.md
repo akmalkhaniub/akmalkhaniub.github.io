@@ -12,7 +12,7 @@ According to the **RUM Conjecture** (Read, Update, Memory trade-off), no storage
 This deep-dive architectural analysis explores the internal mechanics of B+Trees versus LSM-Trees, calculates exact Write, Read, and Space Amplification factors ($WAF, RAF, SAF$), and details the compaction algorithms that prevent disk saturation.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_StorageEngineTrade ["Storage Engine Trade-Off (The RUM Conjecture)"]
     BTree["B+Tree (WiredTiger / InnoDB)"] -->|Pros| LowRAF["Lowest Read Amplification (Point & Range Lookups)"]
     BTree -->|Cons| HighWAF["High Write Amplification (Random Page Writes & Doublewrite)"]
@@ -56,7 +56,7 @@ Under random-write workloads, B+Trees quickly saturate NVMe write bandwidth and 
 Log-Structured Merge-Trees (invented by Patrick O’Neil in 1996 and popularized by Google Bigtable, LevelDB, and Meta's **RocksDB**) convert all random writes into sequential disk operations.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG2_LsmTreeWrite ["LSM-Tree Write Path (RocksDB)"]
     Write[Client Put Request: key, value] --> WAL[1. Write-Ahead Log WAL (Disk Append)]
     Write --> MemTable[2. MemTable (In-Memory Concurrent SkipList)]

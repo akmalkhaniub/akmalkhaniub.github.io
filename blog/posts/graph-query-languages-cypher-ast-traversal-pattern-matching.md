@@ -19,7 +19,7 @@ This article details Cypher query AST compilation, variable-length BFS path expa
 How graph engines parse Cypher ASTs and use VF2 Subgraph Isomorphism backtracking to match patterns against graph storage:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CypherAstQuery ["Cypher AST Query Compilation"]
     Cypher["Query: MATCH (a:User)-[:KNOWS]->(b:User) WHERE a.age > 25 RETURN b.name"] --> Lexer[Lexer & Parser]
     Lexer --> AST["1. Cypher AST: [MatchPatternNode | WhereFilterNode | ProjectionNode]"]
@@ -27,11 +27,11 @@ graph TD
   end
   
   subgraph SG2_SubgraphIsomorphismVf2 ["Subgraph Isomorphism (VF2 Backtracking Engine)"]
-    Planner -->|2. Expand Candidate State Space| VF2["VF2 State Space Search Tree"]
-    VF2 -->|3. Evaluate Feasibility Rules| LabelCheck{Check Label & Direction match?}
-    LabelCheck -->|Yes: Extend Mapping| ExtendState[Extend Target State Pair: (QueryNode_A -> RealNode_101)]
-    LabelCheck -->|No: Backtrack| Backtrack[Backtrack State Tree]
-    ExtendState --> OutputMatches[🎉 Matched Subgraph Results!]
+    Planner -->|Expand Candidate State Space| VF2["VF2 State Space Search Tree"]
+    VF2 -->|Evaluate Feasibility Rules| LabelCheck{Check Label & Direction match?}
+    LabelCheck -->|Yes - Extend Mapping| ExtendState[Extend Target State Pair: (QueryNode_A -> RealNode_101)]
+    LabelCheck -->|No - Backtrack| Backtrack[Backtrack State Tree]
+    ExtendState --> OutputMatches[ Matched Subgraph Results!]
   end
 ```
 

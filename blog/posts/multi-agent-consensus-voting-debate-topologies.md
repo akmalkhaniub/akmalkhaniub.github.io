@@ -24,7 +24,7 @@ flowchart TD
     AgentC -->|Report C| Debate
 
     Debate -->|Critiques Exchanged| Eval{Consensus Reached?}
-    Eval -->|No: Next Round| Debate
+    Eval -->|No - Next Round| Debate
     Eval -->|Yes / Max Rounds Met| Compile[Leader Node: Compile & Deliver Output]
 ```
 

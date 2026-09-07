@@ -13,11 +13,11 @@ In 2026, Tech Leads must operate as **Compute Engineers**. This article details 
 Not every code generation task requires a 200B+ parameter frontier model. The core principle of Token Economics is matching task complexity with model tier:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Task Request Received] --> B{Task Complexity Classifier}
-  B -->|High Complexity: Architecture / Security| C[Frontier Model: GPT-4o / Claude 3.5]
-  B -->|Moderate: Business Logic / Integration| D[Mid-Tier Model: Flash / Mini]
-  B -->|Low Complexity: Boilerplate / Unit Tests| E[Local Quantized SLM: Qwen-7B / Llama-8B]
+  B -->|High Complexity - Architecture / Security| C[Frontier Model: GPT-4o / Claude 3.5]
+  B -->|Moderate - Business Logic / Integration| D[Mid-Tier Model: Flash / Mini]
+  B -->|Low Complexity - Boilerplate / Unit Tests| E[Local Quantized SLM: Qwen-7B / Llama-8B]
   
   C --> F[Token Usage Meter & Cost Allocation]
   D --> F

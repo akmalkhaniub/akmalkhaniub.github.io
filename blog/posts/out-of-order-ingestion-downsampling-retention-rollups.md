@@ -19,11 +19,11 @@ This article details OOO skip-list buffering, background chunk merging, multi-re
 How time-series databases handle late-arriving metrics and execute automated multi-tier downsampling rollups:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_OutOfOrder ["Out-of-Order (OOO) Ingestion Pipeline"]
-    MetricStream[Incoming Metric Stream] --> CheckTime{"Timestamp > Last Sample?"}
-    CheckTime -->|Yes: In-Order| NormalHead[Standard Gorilla RAM Chunk]
-    CheckTime -->|No: Late-Arriving OOO!| OOOBuffer["⚠️ Out-of-Order (OOO) Skip-List RAM Buffer"]
+    MetricStream[Incoming Metric Stream] --> CheckTime["Timestamp > Last Sample?"]
+    CheckTime -->|Yes - In-Order| NormalHead[Standard Gorilla RAM Chunk]
+    CheckTime -->|No - Late-Arriving OOO!| OOOBuffer[" Out-of-Order (OOO) Skip-List RAM Buffer"]
     
     NormalHead & OOOBuffer -->|Background Merge| CompactedChunk[Compacted Immutable Block Segment]
   end

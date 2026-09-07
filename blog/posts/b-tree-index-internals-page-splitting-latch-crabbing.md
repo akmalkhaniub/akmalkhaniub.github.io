@@ -17,7 +17,7 @@ This article details B+Tree slotted page layouts, Page Splitting algorithms, Lat
 How Slotted-Page layouts organize tuples inside $8\text{ KB}$ disk blocks and how Latch Crabbing lock coupling navigates concurrent trees:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_SlottedPageDisk ["Slotted-Page Disk Block Layout (8 KB Fixed Size)"]
     Header[Page Header: LSN, Slot Count, Free Space Pointer] --> SlotArray[Slot Array: Slot 0 Offset, Slot 1 Offset...]
     SlotArray --> FreeSpace[<-- Free Space Gap -->]
@@ -25,11 +25,11 @@ graph TD
   end
   
   subgraph SG2_LatchCrabbingConcurrency ["Latch Crabbing Concurrency Protocol (Lock Coupling)"]
-    ReadOp[Read Request: Key = 42] -->|1. Acquire Read Latch| Root[Root Node Page 0]
-    Root -->|2. Read Child Page P1 Pointer| Child[Internal Node Page P1]
-    Child -->|3. Acquire Read Latch on P1 FIRST| ChildLatch[Child Latch Held]
-    ChildLatch -->|4. Safe! Release Read Latch on Root| ReleaseRoot[Release Parent Latch]
-    ReleaseRoot -->|5. Traverse to Leaf Page| Leaf[Leaf Page P9: Return Value]
+    ReadOp[Read Request: Key = 42] -->|Acquire Read Latch| Root[Root Node Page 0]
+    Root -->|Read Child Page P1 Pointer| Child[Internal Node Page P1]
+    Child -->|Acquire Read Latch on P1 FIRST| ChildLatch[Child Latch Held]
+    ChildLatch -->|Safe! Release Read Latch on Root| ReleaseRoot[Release Parent Latch]
+    ReleaseRoot -->|Traverse to Leaf Page| Leaf[Leaf Page P9: Return Value]
   end
 ```
 

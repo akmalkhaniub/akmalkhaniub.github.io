@@ -1,5 +1,9 @@
 # Turbopack and the Native Tooling Era: Moving Beyond Webpack
 
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
 For over a decade, **Webpack** was the undisputed king of web bundling. It powered the JavaScript revolution, introducing code splitting, asset loaders, and hot-module replacement (HMR). However, as frontend applications scaled into millions of lines of code and massive monorepos, Webpack hit its limits: HMR updates could take up to 10 seconds, local start times slowed to minutes, and build memory limits caused regular out-of-memory errors.
 
 Next.js 15/16 marks a milestone in native compilation with **Turbopack** (stabilized for development). Built in Rust, Turbopack represents a shift away from JavaScript-based compilers and bundlers toward native, hardware-optimized tools.
@@ -15,10 +19,10 @@ Turbopack bypasses these bottlenecks using:
 2. **Incremental Compute Engine**: Powered by Turborepo's caching engine, Turbopack never compiles the same code twice. If you edit a component, it only compiles that component and its immediate dependents, leaving the rest of the build tree cached.
 
 ```mermaid
-graph TD
+flowchart TD
   A[Developer edits page.tsx] --> B{Build System}
-  B -->|Webpack: Full AST parsing & Re-bundling| C[Slow HMR: 2-10s delay]
-  B -->|Turbopack: Query dynamic dependency cache| D[Instant HMR: sub-100ms update]
+  B -->|Webpack - Full AST parsing & Re-bundling| C[Slow HMR: 2-10s delay]
+  B -->|Turbopack - Query dynamic dependency cache| D[Instant HMR: sub-100ms update]
   D --> E[Render changes in client browser]
 ```
 

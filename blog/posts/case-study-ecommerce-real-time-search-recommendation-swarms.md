@@ -36,7 +36,7 @@ This case study details the architecture, optimization strategies, and gotchas o
 The system coordinates standard lexical search queries and real-time recommendation routing:
 
 ```mermaid
-graph TD
+flowchart TD
   A[User Search Query] --> B[Search Coordinator Gateway]
   
   subgraph SG1_LexicalSemanticRetrieval ["Lexical & Semantic Retrieval"]

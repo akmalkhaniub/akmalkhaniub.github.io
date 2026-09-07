@@ -11,7 +11,7 @@ Over time, this local optimization causes architectural degradation. This articl
 ## Local Optimization vs. Global Architectural Entropy
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LocalAgentOptimization ["Local Agent Optimization (High Velocity)"]
     A[Task: Parse User Date] --> B[AI Agent creates custom_date_parser.py]
     C[Task: Format Billing Date] --> D[AI Agent creates format_utils.py]

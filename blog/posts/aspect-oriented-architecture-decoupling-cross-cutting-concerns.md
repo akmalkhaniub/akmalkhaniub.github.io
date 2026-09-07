@@ -19,24 +19,24 @@ This article explores how to architect clean, decoupled microservices using Aspe
 How Aspect interceptors wrap business domain methods without altering core business code:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client API Request] --> B[Middleware / Aspect Interceptor Stack]
   
   subgraph SG1_CrossCuttingAspect ["Cross-Cutting Aspect Interceptors"]
-    B -->|1. @before: Validate Token & Schema| C[Security & Validation Aspect]
-    C -->|2. @around: Start Timer & Trace| D[Telemetry & Profiling Aspect]
-    D -->|3. @around: Open DB Transaction| E[Transaction Management Aspect]
+    B -->|@before - Validate Token & Schema| C[Security & Validation Aspect]
+    C -->|@around - Start Timer & Trace| D[Telemetry & Profiling Aspect]
+    D -->|@around - Open DB Transaction| E[Transaction Management Aspect]
   end
   
   subgraph SG2_CleanCoreBusiness ["Clean Core Business Domain"]
-    E -->|4. Invoke Join Point| F[Business Logic: ProcessPayment]
+    E -->|Invoke Join Point| F[Business Logic: ProcessPayment]
     F -->|Return Result| E
   end
   
   subgraph SG3_AspectPostProcessing ["Aspect Post-Processing"]
-    E -->|5. Commit Transaction| D
-    D -->|6. Calculate Latency & Record Metrics| C
-    C -->|7. Format Clean JSON Response| G[Client Response]
+    E -->|Commit Transaction| D
+    D -->|Calculate Latency & Record Metrics| C
+    C -->|Format Clean JSON Response| G[Client Response]
   end
 ```
 

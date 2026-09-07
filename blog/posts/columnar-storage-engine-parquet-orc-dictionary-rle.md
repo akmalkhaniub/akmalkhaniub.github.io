@@ -19,7 +19,7 @@ This article details Parquet/ORC file layouts, Dictionary Encoding, RLE compress
 How Apache Parquet organizes Row Groups, Column Chunks, and RLE Dictionary Encoding:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RowOrientedVs ["Row-Oriented vs Columnar Memory Layout"]
     RowLayout["Row-Oriented (PostgreSQL): [Row0: id, country, rev] [Row1: id, country, rev]"]
     ColLayout["Columnar (Parquet): [Country Col: US, US, CA...] [Revenue Col: 100, 200, 150...]"]
@@ -35,8 +35,8 @@ graph TD
   end
   
   subgraph SG3_QueryExecutionProjection ["Query Execution: Projection & Predicate Pushdown"]
-    DataPage -->|1. Min/Max Statistics Check: Skip Group if max < 200| Pruning[Row Group Pruned!]
-    DataPage -->|2. SIMD Vector Execution| SIMD[Execute SUM directly on Compressed Array!]
+    DataPage -->|Min/Max Statistics Check - Skip Group if max < 200| Pruning[Row Group Pruned!]
+    DataPage -->|SIMD Vector Execution| SIMD[Execute SUM directly on Compressed Array!]
   end
 ```
 

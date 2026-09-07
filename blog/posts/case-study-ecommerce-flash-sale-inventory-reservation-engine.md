@@ -36,7 +36,7 @@ This case study details the architecture, deployment, and operational gotchas of
 The reservation engine separates the high-speed reservation check from the transactional checkout write pathway:
 
 ```mermaid
-graph TD
+flowchart TD
   A[User Flash Sale Request] --> B[API Gateway / Load Balancer]
   B --> C[GKE Inventory Reservation Microservice]
   

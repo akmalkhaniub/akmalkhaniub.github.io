@@ -17,10 +17,10 @@ This article details the architecture, memory model, and performance mechanics o
 How user space and kernel space communicate asynchronously via shared memory ring buffers without syscalls:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UserSpaceMemory ["User Space Memory"]
-    App[User Application] -->|1. Write SQE Entries| SQ[Submission Queue Ring SQ]
-    CQ[Completion Queue Ring CQ] -->|4. Read CQE Results| App
+    App[User Application] -->|Write SQE Entries| SQ[Submission Queue Ring SQ]
+    CQ[Completion Queue Ring CQ] -->|Read CQE Results| App
   end
   
   subgraph SG2_LocklessSharedRing ["Lockless Shared Ring Buffers"]
@@ -29,8 +29,8 @@ graph TD
   end
   
   subgraph SG3_LinuxKernelSpace ["Linux Kernel Space"]
-    SQ_K -->|2. SQPOLL Kernel Thread Reads SQEs| KernelThread[Kernel Async I/O Thread]
-    KernelThread -->|3. Perform Async Storage/Socket I/O| NVMe[NVMe Storage / NIC Network Hardware]
+    SQ_K -->|SQPOLL Kernel Thread Reads SQEs| KernelThread[Kernel Async I/O Thread]
+    KernelThread -->|Perform Async Storage/Socket I/O| NVMe[NVMe Storage / NIC Network Hardware]
     NVMe -->|Completion Event| KernelThread
     KernelThread -->|Write CQE Entry| CQ_K
   end

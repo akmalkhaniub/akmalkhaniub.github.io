@@ -15,7 +15,7 @@ This article details the math and implementation of both anti-stampede strategie
 How Single-Flight coalesces 1,000 concurrent cache misses into a single database query:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UnprotectedThunderingHerd ["Unprotected Thundering Herd"]
     A1[1,000 Concurrent Requests] -->|Cache Miss| B1[(Primary Database Storage)]
     B1 -->|1,000 Duplicate DB Queries| C1[Database CPU Spike & Crash]

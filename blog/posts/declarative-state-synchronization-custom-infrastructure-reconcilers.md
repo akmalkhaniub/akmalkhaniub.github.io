@@ -15,15 +15,15 @@ This article details how to build custom declarative reconcilers using Level-Tri
 How a Declarative Reconciler evaluates Level-Triggered state diffs and drives infrastructure convergence:
 
 ```mermaid
-graph TD
-  User[Declarative Spec: YAML / JSON] -->|1. Submit Desired State| Store[(State Store: Desired State)]
+flowchart TD
+  User[Declarative Spec: YAML / JSON] -->|Submit Desired State| Store[(State Store: Desired State)]
   
   subgraph SG1_LevelTriggeredReconciliation ["Level-Triggered Reconciliation Engine"]
-    Store -->|2. Read Desired State| DiffEngine[Three-Way Diff Engine]
-    Live[Cloud API: Actual Live State] -->|3. Query Actual State| DiffEngine
-    Last[Last-Applied Configuration] -->|4. Read Last Applied| DiffEngine
+    Store -->|Read Desired State| DiffEngine[Three-Way Diff Engine]
+    Live[Cloud API: Actual Live State] -->|Query Actual State| DiffEngine
+    Last[Last-Applied Configuration] -->|Read Last Applied| DiffEngine
     
-    DiffEngine -->|5. Compute Minimal Delta CRUD| ActionPlan{Delta Required?}
+    DiffEngine -->|Compute Minimal Delta CRUD| ActionPlan{Delta Required?}
   end
   
   subgraph SG2_AutomatedInfrastructureProvisioner ["Automated Infrastructure Provisioner"]

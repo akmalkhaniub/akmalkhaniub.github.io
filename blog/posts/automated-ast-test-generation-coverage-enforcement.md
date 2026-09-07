@@ -17,7 +17,7 @@ This article details how to build an AST-driven test generator and enforce cover
 The AST Test Synthesizer parses source code into structural nodes before prompting an LLM to generate targeted assertions:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Target Source Code File] --> B[Python AST Parser ast.parse]
   
   subgraph SG1_StructuralAstBranch ["Structural AST Branch Extraction"]
@@ -32,8 +32,8 @@ graph TD
   G --> H[Generated Pytest Test Suite]
   H --> I[Execute pytest-cov Branch Coverage Gate]
   
-  I -->|Branch Coverage = 100%| J[✅ CI/CD Security Gate Passed]
-  I -->|Branch Coverage < 100%| K[❌ Reject & Re-prompt Uncovered Branches]
+  I -->|Branch Coverage = 100%| J[ CI/CD Security Gate Passed]
+  I -->|Branch Coverage < 100%| K[ Reject & Re-prompt Uncovered Branches]
 ```
 
 ### Structural Branch Discovery Steps

@@ -17,7 +17,7 @@ This article details the internal data structures of inverted indexes and skip p
 How a Term Dictionary maps tokens to sorted Postings Lists with Skip Pointers for fast list intersection:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TokenizationTermDictionary ["Tokenization & Term Dictionary"]
     Query["Search Query: 'distributed AND consensus'"] -->|Tokenize| T1["Term 1: 'distributed'"]
     Query -->|Tokenize| T2["Term 2: 'consensus'"]

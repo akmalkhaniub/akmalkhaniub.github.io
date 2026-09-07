@@ -22,20 +22,20 @@ This article reviews the MCP architecture and walks through building a secure, c
 MCP operates on a clean **Client-Server model** over standardized communication channels (Standard Input/Output or Server-Sent Events). The LLM engine is decoupled from tool execution, meaning the model never runs raw system commands directly; instead, it issues structured JSON-RPC requests to the local MCP server.
 
 ```mermaid
-graph LR
+flowchart TD
     subgraph SG1_ClienthostMcpClient ["ClientHost [MCP Client: Cursor / Claude Desktop / Custom App]"]
         User[User Interface] -->|Prompt query| ModelEngine[LLM Engine]
     end
 
     subgraph SG2_RouterMcpProtocol ["Router [MCP Protocol Layer / JSON-RPC]"]
-        ModelEngine -->|1. List Tools| MCPClient[MCP Client SDK]
-        MCPClient -->|2. callTool: query_database| MCPServer[MCP Server SDK]
+        ModelEngine -->|List Tools| MCPClient[MCP Client SDK]
+        MCPClient -->|callTool - query_database| MCPServer[MCP Server SDK]
     end
 
     subgraph SG3_ServicesMcpServer ["Services [MCP Server Layer]"]
-        MCPServer -->|3. Query database| DB[(PostgreSQL Database)]
-        MCPServer -->|3. Fetch log files| FS[Filesystem Logs]
-        MCPServer -->|3. Fetch git commits| Git[GitHub API]
+        MCPServer -->|Query database| DB[(PostgreSQL Database)]
+        MCPServer -->|Fetch log files| FS[Filesystem Logs]
+        MCPServer -->|Fetch git commits| Git[GitHub API]
     end
 
     style ClientHost fill:#f8fafc,stroke:#64748b,stroke-width:2px

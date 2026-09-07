@@ -14,7 +14,7 @@ To build resilient, highly scalable agent swarms, production systems use **Apach
 Rather than invoking downstream services directly, agents write status and command events to Kafka topics. Downstream workers subscribe to these topics and process events asynchronously:
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG1_ProducerAgent ["Producer Agent"]
     A[Planner Agent] -->|Emit TaskApprovedEvent| K[Kafka Broker]
   end

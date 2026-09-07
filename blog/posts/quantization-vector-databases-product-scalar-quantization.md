@@ -19,21 +19,21 @@ This article explores the mathematical mechanics of SQ8, Product Quantization, a
 How Product Quantization splits high-dimensional vectors into sub-vectors and encodes them into byte codes:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RawFloat32Vector ["Raw Float32 Vector (D = 1536 dims, 6144 bytes)"]
-    V[Raw Vector: 1536 float32 values] -->|1. Decompose into M=8 Sub-vectors| SV1[Sub-vector 1: 192 dims]
+    V[Raw Vector: 1536 float32 values] -->|Decompose into M=8 Sub-vectors| SV1[Sub-vector 1: 192 dims]
     V --> SV2[Sub-vector 2: 192 dims]
     V --> SV8[Sub-vector 8: 192 dims]
   end
   
   subgraph SG2_SubSpaceK ["Sub-space K-Means Codebooks (256 Centroids per Sub-space)"]
-    SV1 -->|2. Find Nearest Centroid| CB1[Codebook 1: Centroid ID #42]
-    SV2 -->|2. Find Nearest Centroid| CB2[Codebook 2: Centroid ID #189]
-    SV8 -->|2. Find Nearest Centroid| CB8[Codebook 8: Centroid ID #7]
+    SV1 -->|Find Nearest Centroid| CB1[Codebook 1: Centroid ID #42]
+    SV2 -->|Find Nearest Centroid| CB2[Codebook 2: Centroid ID #189]
+    SV8 -->|Find Nearest Centroid| CB8[Codebook 8: Centroid ID #7]
   end
   
   subgraph SG3_CompressedByteCode ["Compressed Byte Code Output (8 bytes total! 99.87% Memory Savings)"]
-    CB1 & CB2 & CB8 -->|3. Assemble Byte Code| Quantized[Quantized Byte Array: [42, 189, ..., 7]]
+    CB1 & CB2 & CB8 -->|Assemble Byte Code| Quantized[Quantized Byte Array: [42, 189, ..., 7]]
   end
 ```
 

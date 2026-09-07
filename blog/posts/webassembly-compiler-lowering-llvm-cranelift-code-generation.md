@@ -17,20 +17,20 @@ This article details stack-to-register translation, Cranelift IR (CLIF) lowering
 How Cranelift lowers stack-based Wasm bytecode into SSA register machine code and native assembly:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_WebassemblyBytecodeStack ["WebAssembly Bytecode (Stack Machine Model)"]
     WasmBytecode["Wasm Bytecode Stream: i32.const 10, i32.const 20, i32.add"]
   end
   
   subgraph SG2_WasmCompilerLowering ["Wasm Compiler Lowering Engine (Cranelift CLIF)"]
-    WasmBytecode -->|1. Symbolic Stack Translation| StackMapper[Symbolic Operand Stack]
-    StackMapper -->|2. Push v0, Push v1| SSABlocks[SSA Register Allocator: v0=10, v1=20]
-    SSABlocks -->|3. Lower to CLIF IR| CLIF[Cranelift IR: v2 = iadd v0, v1]
+    WasmBytecode -->|Symbolic Stack Translation| StackMapper[Symbolic Operand Stack]
+    StackMapper -->|Push v0, Push v1| SSABlocks[SSA Register Allocator: v0=10, v1=20]
+    SSABlocks -->|Lower to CLIF IR| CLIF[Cranelift IR: v2 = iadd v0, v1]
   end
   
   subgraph SG3_SecurityGuardInjection ["Security Guard Injection & Code Generation"]
-    CLIF -->|4. Inject Memory Bounds Check| BoundsCheck[Check: v_addr + size <= linear_memory_bound]
-    BoundsCheck -->|5. Backend Register Allocation| NativeASM["Native Assembly: MOV EAX, 10; ADD EAX, 20"]
+    CLIF -->|Inject Memory Bounds Check| BoundsCheck[Check: v_addr + size <= linear_memory_bound]
+    BoundsCheck -->|Backend Register Allocation| NativeASM["Native Assembly: MOV EAX, 10; ADD EAX, 20"]
   end
 ```
 

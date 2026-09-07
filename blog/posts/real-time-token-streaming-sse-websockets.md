@@ -1,6 +1,10 @@
 # Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono
 
 > [!NOTE]
+> **Catalog note**: Gateway-level SSE vs WebSocket trade-offs also live in [Gateway SSE vs WebSockets](gateway-sse-vs-websockets-real-time-streaming.html).
+
+
+> [!NOTE]
 > **📖 Article Overview**
 > In generative systems, perceived latency is everything. Waiting 10 seconds for an agent to compile a complete response is a frustrating user experience. By streaming outputs token-by-token, we reduce the Time-to-First-Token (TTFT) to milliseconds. This article evaluates the architectural choices for token delivery—**Server-Sent Events (SSE)** vs. **WebSockets**—and provides a complete TypeScript gateway implementation using **Hono**.
 
@@ -24,7 +28,7 @@ When designing a token gateway, two protocols dominate: **Server-Sent Events (SS
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
+flowchart TD
     subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
         A[Client Browser] -->|HTTP GET Request / Keep-Alive| B[Hono API Gateway]
         B -->|Keep Connection Open| A
@@ -36,8 +40,8 @@ graph TD
     subgraph WebSockets
         C[Client Browser] -->|HTTP Upgrade Handshake| D[Node.js Server]
         D -->|Establish TCP Socket| C
-        C <-->|Bidirectional Data Frame: Send Input| D
-        D <-->|Bidirectional Data Frame: Stream Output| C
+        C <-->|Bidirectional Data Frame - Send Input| D
+        D <-->|Bidirectional Data Frame - Stream Output| C
     end
 
     style A fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
@@ -131,7 +135,7 @@ In our next article, [Local LLM Fallback: Scaling Bulk Document Processing with 
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Hono Streaming Guide**: [Streaming API documentation for Hono](https://hono.dev/)
 *   **SSE Specification**: W3C Server-Sent Events standard — [HTML Living Standard](https://html.spec.whatwg.org/)
 *   **MDN Web Docs**: [Using server-sent events guide](https://developer.mozilla.org/)

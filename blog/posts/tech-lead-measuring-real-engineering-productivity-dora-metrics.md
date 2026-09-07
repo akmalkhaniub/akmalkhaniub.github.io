@@ -13,7 +13,7 @@ To measure true team leverage in the AI era, Tech Leads must discard vanity metr
 Measuring developer productivity by lines of code in an AI-driven environment is like measuring aircraft efficiency by how much fuel it burns:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_FlawedVanityMetrics ["Flawed Vanity Metrics (Focus on Output Volume)"]
     A[Lines of Code Generated] --> B[High PR Count]
     B --> C[False Sense of Velocity]

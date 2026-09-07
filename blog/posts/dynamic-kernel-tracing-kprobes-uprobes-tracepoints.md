@@ -17,21 +17,21 @@ This article details Kprobe instruction patching, Uprobe user-space symbol track
 How Kprobes, Uprobes, and Tracepoints capture telemetry events inside the kernel:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UserSpaceApplication ["User-Space Application (e.g. OpenSSL / MySQL)"]
-    UserApp[User-Space Binary /lib/libssl.so] -->|1. Call SSL_write()| UprobeHook{Uprobe / Uretprobe Hook}
+    UserApp[User-Space Binary /lib/libssl.so] -->|Call SSL_write()| UprobeHook{Uprobe / Uretprobe Hook}
   end
   
   subgraph SG2_LinuxKernelSpace ["Linux Kernel Space"]
-    Syscall[Syscall: sys_enter_openat] -->|2. Trigger Static Tracepoint| TracepointHook{Kernel Tracepoint Hook}
-    KernelFunc[Kernel Function: tcp_v4_connect] -->|3. INT3 Breakpoint Trap| KprobeHook{Kprobe / Kretprobe Hook}
+    Syscall[Syscall: sys_enter_openat] -->|Trigger Static Tracepoint| TracepointHook{Kernel Tracepoint Hook}
+    KernelFunc[Kernel Function: tcp_v4_connect] -->|INT3 Breakpoint Trap| KprobeHook{Kprobe / Kretprobe Hook}
     
-    UprobeHook & TracepointHook & KprobeHook -->|4. Fire Event| eBPFProg[eBPF Tracing Program]
+    UprobeHook & TracepointHook & KprobeHook -->|Fire Event| eBPFProg[eBPF Tracing Program]
   end
   
   subgraph SG3_TelemetryAggregationRing ["Telemetry Aggregation & Ring Buffers"]
-    eBPFProg -->|5. Push Struct Event| BPF_RingBuf[BPF Ring Buffer: BPF_MAP_TYPE_RINGBUF]
-    BPF_RingBuf -->|6. Zero-Copy Poll| BPFTraceDaemon[User-Space Observability Daemon / bpftrace]
+    eBPFProg -->|Push Struct Event| BPF_RingBuf[BPF Ring Buffer: BPF_MAP_TYPE_RINGBUF]
+    BPF_RingBuf -->|Zero-Copy Poll| BPFTraceDaemon[User-Space Observability Daemon / bpftrace]
   end
 ```
 

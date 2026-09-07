@@ -17,13 +17,13 @@ Even inside a sandbox environment, outbound network controls can be bypassed:
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     Agent[Compromised Agent Tool] -->|Outbound request to webhook.site| Proxy{Egress Proxy Gate}
-    Agent -->|DNS query: base64key.attacker.com| Proxy
+    Agent -->|DNS query - base64key.attacker.com| Proxy
     
     Proxy --> DomainCheck{Is Domain Whitelisted?}
     Proxy --> PayloadCheck{Is Subdomain Length Excessive?}
     
     DomainCheck -->|No| Block[Block Request & Raise Security Event]
-    PayloadCheck -->|Yes: DNS Tunnel| Block
+    PayloadCheck -->|Yes - DNS Tunnel| Block
     
     DomainCheck -->|Yes| Route[Forward Clean Request]
 ```

@@ -19,7 +19,7 @@ This article details Size-Tiered Compaction (STCS), Leveled Compaction (LCS), an
 How Leveled Compaction (LCS) organizes SSTables into non-overlapping exponential levels:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_Level0Overlapping ["Level 0 (Overlapping Key Ranges from Flushes)"]
     L0_1[SST File 1: Keys 'a'..'z'] --- L0_2[SST File 2: Keys 'c'..'m']
   end
@@ -29,12 +29,12 @@ graph TD
   end
   
   subgraph SG3_CompactionPriorityQueue ["Compaction Priority Queue Engine"]
-    L0_1 & L0_2 -->|1. N-Way Merge-Sort Stream| PriorityQueue[Heap Priority Queue: Stream K-V Pairs]
-    PriorityQueue -->|2. Purge Obsolete Keys & Tombstones| L1_1 & L1_2 & L1_3
+    L0_1 & L0_2 -->|N-Way Merge-Sort Stream| PriorityQueue[Heap Priority Queue: Stream K-V Pairs]
+    PriorityQueue -->|Purge Obsolete Keys & Tombstones| L1_1 & L1_2 & L1_3
   end
   
   subgraph SG4_Level2Max ["Level 2 (Max 100MB, Non-Overlapping Ranges)"]
-    L1_3 -->|3. Level 1 Overflow (>10MB)| L2_1[SST File 6: Keys 'a'..'m']
+    L1_3 -->|Level 1 Overflow (>10MB)| L2_1[SST File 6: Keys 'a'..'m']
   end
 ```
 

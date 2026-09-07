@@ -29,3 +29,5 @@ Whenever the user asks to write, research, draft, or publish a blog post or tech
 
 5. **Syndication Protection**:
    - All downstream cross-posts to Dev.to, Hashnode, or Medium must include canonical URL tags pointing to `https://akmalkhaniub.github.io/blog/<slug>.html`.
+
+6. **Fleet Order**: Follow `DEEP_TECH_RESEARCH_AND_VISUAL_BLOG_FRAMEWORK_2026-09-07.md` §6. `community-feedback-and-errata-manager` and `evergreen-lifecycle-and-analytics-monitor` run **after** Gate 3, never instead of it. Mechanical gate: `npm run pipeline`.

@@ -23,9 +23,9 @@ flowchart TD
     ExternalDoc -->|Hijacks LLM planner| Agent
     Agent -->|Attempts unauthorized Tool Call + User JWT| Gate[Secure API Tool Gateway]
     
-    Gate -->|1. Validate JWT signature| Verify{IsValid & Role Allowed?}
-    Verify -->|No: Role 'viewer' cannot WRITE| Block[Block Execution & Raise Security Alert]
-    Verify -->|Yes: Allowed| Execute[Execute Tool Action]
+    Gate -->|Validate JWT signature| Verify{IsValid & Role Allowed?}
+    Verify -->|No - Role 'viewer' cannot WRITE| Block[Block Execution & Raise Security Alert]
+    Verify -->|Yes - Allowed| Execute[Execute Tool Action]
 ```
 
 To secure this, we enforce a strict rule: **The agent itself has no permissions.**

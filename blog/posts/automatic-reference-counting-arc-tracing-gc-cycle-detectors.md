@@ -19,23 +19,23 @@ This article details ARC retain/release operations, strong reference cycles, Swi
 How Automatic Reference Counting operates, how strong reference cycles leak memory, and how Swift weak side-tables prevent use-after-free crashes:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_AutomaticReferenceCounting ["Automatic Reference Counting (Deterministic Deallocation)"]
-    Assign[Object Pointer Assigned] -->|1. Compiler injects swift_retain()| Inc[Increment Strong Ref Count]
-    ScopeExit[Pointer Leaves Scope] -->|2. Compiler injects swift_release()| Dec[Decrement Strong Ref Count]
-    Dec -->|3. Is Ref Count == 0?| FreeCheck{Ref Count == 0?}
-    FreeCheck -->|Yes| InstantFree["🎉 Immediate Destructor & Memory Free! (0ms Latency!)"]
+    Assign[Object Pointer Assigned] -->|Compiler injects swift_retain()| Inc[Increment Strong Ref Count]
+    ScopeExit[Pointer Leaves Scope] -->|Compiler injects swift_release()| Dec[Decrement Strong Ref Count]
+    Dec -->|Is Ref Count == 0?| FreeCheck{Ref Count == 0?}
+    FreeCheck -->|Yes| InstantFree[" Immediate Destructor & Memory Free! (0ms Latency!)"]
   end
   
   subgraph SG2_StrongReferenceCycle ["Strong Reference Cycle (Circular Memory Leak)"]
     NodeA[Object A (Strong Count: 1)] -->|Strong Pointer| NodeB[Object B (Strong Count: 1)]
     NodeB -->|Strong Pointer| NodeA
-    ScopeDrop[Parent Scope Dropped] -->|Count Drops to 1 -> NEVER REACHES 0!| LeakedMemory[🚨 Memory Leak! Objects A & B Unreachable but Unfreed!]
+    ScopeDrop[Parent Scope Dropped] -->|Count Drops to 1 -> NEVER REACHES 0!| LeakedMemory[ Memory Leak! Objects A & B Unreachable but Unfreed!]
   end
   
   subgraph SG3_SolutionSwiftWeak ["Solution: Swift Weak Side-Tables & Cycle Collectors"]
     NodeB -.->|weak Pointer| SideTable[Swift HeapObject Side-Table Entry]
-    SideTable -->|Zeroes Pointer to nil on Deallocation| SafeWeak["✨ Safe Nil Zeroing! No Memory Leak!"]
+    SideTable -->|Zeroes Pointer to nil on Deallocation| SafeWeak[" Safe Nil Zeroing! No Memory Leak!"]
   end
 ```
 

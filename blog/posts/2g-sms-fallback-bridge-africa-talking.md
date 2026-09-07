@@ -16,21 +16,21 @@ This article details how to design and build an SMS-to-AI bridge using **Node.js
 The SMS bridge translates incoming cellular text messages into standard HTTP requests, routes them to our local offline AI server, and converts the model's text response back into an outgoing SMS payload.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_VillageVillageLevel ["Village [Village Level / 2G Network]"]
-        Patient[Patient Feature Phone] -->|1. SMS Text: 'Status 129'| Telco((Cellular Telco tower))
+        Patient[Patient Feature Phone] -->|SMS Text - 'Status 129'| Telco((Cellular Telco tower))
     end
     
     subgraph SG2_GatewayCloudGateway ["Gateway [Cloud Gateway]"]
-        Telco -->|2. Webhook payload| AT[Africa's Talking API Gateway]
+        Telco -->|Webhook payload| AT[Africa's Talking API Gateway]
     end
     
     subgraph SG3_ClinicLocalClinic ["Clinic [Local Clinic / Offline Server]"]
-        AT -->|3. HTTP Post: Ngrok tunnel| Express[Express Server Gateway]
-        Express -->|4. Parse Message & Query| LLM[Ollama Local LLM]
-        LLM -->|5. SOAP Status / Summary| Express
-        Express -->|6. POST JSON reply| AT
-        AT -->|7. Deliver SMS| Patient
+        AT -->|HTTP Post - Ngrok tunnel| Express[Express Server Gateway]
+        Express -->|Parse Message & Query| LLM[Ollama Local LLM]
+        LLM -->|SOAP Status / Summary| Express
+        Express -->|POST JSON reply| AT
+        AT -->|Deliver SMS| Patient
     end
 
     style Village fill:#fffbeb,stroke:#d97706,stroke-width:2px

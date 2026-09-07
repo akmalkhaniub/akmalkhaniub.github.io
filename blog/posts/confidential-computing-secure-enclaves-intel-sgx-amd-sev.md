@@ -19,9 +19,9 @@ This article details Enclave Page Cache (EPC) encryption, AMD SEV-SNP memory iso
 How Secure Enclaves isolate memory and provide cryptographic Remote Attestation quotes to verify binary integrity:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UntrustedCloudInfrastructure ["Untrusted Cloud Infrastructure (Hypervisor / OS Kernel)"]
-    UntrustedOS[Untrusted Host OS / Hypervisor] -.->|Attempt Memory Peeking| Blocked[🚫 BLOCKED by Hardware Memory Encryption Engine!]
+    UntrustedOS[Untrusted Host OS / Hypervisor] -.->|Attempt Memory Peeking| Blocked[ BLOCKED by Hardware Memory Encryption Engine!]
   end
   
   subgraph SG2_PhysicalCpuHardware ["Physical CPU Hardware (Intel SGX / AMD SEV)"]
@@ -30,10 +30,10 @@ graph TD
   end
   
   subgraph SG3_RemoteHardwareAttestation ["Remote Hardware Attestation Verification"]
-    Enclave -->|1. Generate Enclave Report| CPU_Key[CPU Hardware Attestation Secret Key]
-    CPU_Key -->|2. Cryptographically Sign Quote| AttestationQuote[Signed Hardware Attestation Quote]
-    AttestationQuote -->|3. Transmit Quote over TLS| RemoteClient[Remote Client / Verifier]
-    RemoteClient -->|4. Verify Signature via Intel/AMD PKI| Trust[🎉 VERIFIED: Code is running inside Genuine CPU Enclave!]
+    Enclave -->|Generate Enclave Report| CPU_Key[CPU Hardware Attestation Secret Key]
+    CPU_Key -->|Cryptographically Sign Quote| AttestationQuote[Signed Hardware Attestation Quote]
+    AttestationQuote -->|Transmit Quote over TLS| RemoteClient[Remote Client / Verifier]
+    RemoteClient -->|Verify Signature via Intel/AMD PKI| Trust[ VERIFIED: Code is running inside Genuine CPU Enclave!]
   end
 ```
 

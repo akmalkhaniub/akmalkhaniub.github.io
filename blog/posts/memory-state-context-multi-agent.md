@@ -18,7 +18,7 @@ To build production-grade agentic applications, you must design a **Multi-Tiered
 A reliable multi-agent system divides memory into three distinct tiers, separating short-term task states from long-term database memory:
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_Context1Ephemeral ["Context [1. Ephemeral Task State]"]
         Thread[Current Node Thread History]
     end

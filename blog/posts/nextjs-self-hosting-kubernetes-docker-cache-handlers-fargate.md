@@ -18,7 +18,7 @@ And immediately, the platform starts unraveling:
 This is **The Self-Hosting Gauntlet**. Here is the architectural guide to taming Next.js in production on Docker, Kubernetes, and AWS Fargate.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph K8sArch ["Self-Hosted Next.js Architecture on Kubernetes"]
     Ingress["Cloudflare or AWS ALB"] --> Pod1["Next.js Pod 1: Standalone Node"]
     Ingress --> Pod2["Next.js Pod 2: Standalone Node"]

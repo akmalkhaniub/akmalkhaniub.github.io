@@ -17,19 +17,19 @@ This article details the WAL, MemTable, SSTable, and Compaction mechanics of LSM
 How an LSM Tree processes writes via WAL + MemTable and flushes immutable SSTables to disk:
 
 ```mermaid
-graph TD
-  WriteReq[Client Write: SET key=val] -->|1. Sequential Disk Append| WAL[(Write-Ahead Log WAL)]
-  WriteReq -->|2. In-Memory Write| MemTable[MemTable: In-Memory SkipList]
+flowchart TD
+  WriteReq[Client Write: SET key=val] -->|Sequential Disk Append| WAL[(Write-Ahead Log WAL)]
+  WriteReq -->|In-Memory Write| MemTable[MemTable: In-Memory SkipList]
   
   subgraph SG1_MemorySpace ["Memory Space"]
-    MemTable -->|3. MemTable Full Threshold Reached| ImmutableMemTable[Immutable MemTable]
+    MemTable -->|MemTable Full Threshold Reached| ImmutableMemTable[Immutable MemTable]
   end
   
   subgraph SG2_DiskStorageLayers ["Disk Storage Layers"]
-    ImmutableMemTable -->|4. Background Flush| SST_L0[Level 0 SSTables: Overlapping Key Ranges]
+    ImmutableMemTable -->|Background Flush| SST_L0[Level 0 SSTables: Overlapping Key Ranges]
     
-    SST_L0 -->|5. Leveled Compaction Merge| SST_L1[Level 1 SSTables: Sorted Non-Overlapping Files]
-    SST_L1 -->|6. Leveled Compaction Merge| SST_L2[Level 2 SSTables: Larger Partition Ranges]
+    SST_L0 -->|Leveled Compaction Merge| SST_L1[Level 1 SSTables: Sorted Non-Overlapping Files]
+    SST_L1 -->|Leveled Compaction Merge| SST_L2[Level 2 SSTables: Larger Partition Ranges]
   end
   
   subgraph SG3_ReadAcceleration ["Read Acceleration"]

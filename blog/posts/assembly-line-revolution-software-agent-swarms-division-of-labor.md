@@ -16,7 +16,7 @@ Ford transformed this process by decomposing automobile manufacturing into **84 
 Today, software engineering with generative AI is undergoing its own **Assembly Line Revolution**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CraftArtisanAi ["Craft Artisan AI vs The Industrial Assembly Line"]
     A1913["1913: Single Craft Artisan (Hand-filing every part, 12.5 hours)"] <---> A2026["2026: Lone Polymath Agent (1 Prompt trying to do Planner + Coder + SecOps)"]
     F1913["1913: 84 Discrete Assembly Stations on a Conveyor Belt"] <---> F2026["2026: Multi-Agent Pipeline (Planner -> Coder -> Auditor -> QA -> Release)"]
@@ -51,16 +51,16 @@ In early autonomous agent experiments (AutoGPT, generic coding assistants), deve
 Production agent systems (**Agent Fleet Orchestrator**, **SpecForge**) abandon the lone polymath paradigm in favor of **Specialized Multi-Agent Assembly Lines**:
 
 ```mermaid
-graph LR
+flowchart TD
   Mission[User Business Mission] --> Station1[Station 1: Architecture Planner]
   Station1 -->|Validated Spec & OpenAPI Schema| Station2[Station 2: Sub-Component Coder]
   Station2 -->|Code Diff Artifacts| Station3[Station 3: Security & AST Auditor]
   
   Station3 -->|AST Passed| Station4[Station 4: Automated QA Runner]
-  Station3 -->|💥 Flagged Vulnerability| Station2
+  Station3 -->|Flagged Vulnerability| Station2
   
   Station4 -->|Unit & E2E Tests Passed| Station5[Station 5: Release Packager]
-  Station4 -->|💥 Test Failed| Station2
+  Station4 -->|Test Failed| Station2
   
   Station5 --> PR[GitHub Pull Request / Deployment]
 ```

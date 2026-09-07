@@ -17,20 +17,20 @@ This article details Write-Ahead Log persistence, MemTable SkipList indexing, an
 How LSM-Tree storage engines handle writes, maintain ACID durability, and flush SSTables to disk:
 
 ```mermaid
-graph TD
+flowchart TD
   WriteReq[Client Put / Delete Request] --> Engine{LSM Storage Engine}
   
   subgraph SG1_AcidDurabilityLayer ["ACID Durability Layer"]
-    Engine -->|1. Sequential Disk Append| WAL[Write-Ahead Log .wal File]
+    Engine -->|Sequential Disk Append| WAL[Write-Ahead Log .wal File]
   end
   
   subgraph SG2_InMemoryRam ["In-Memory RAM Buffer Layer"]
-    Engine -->|2. Insert Sorted Mutation| MemTable[Active MemTable: In-Memory SkipList]
+    Engine -->|Insert Sorted Mutation| MemTable[Active MemTable: In-Memory SkipList]
   end
   
   subgraph SG3_AsynchronousDiskFlushing ["Asynchronous Disk Flushing Layer"]
-    MemTable -->|3. MemTable Full >= 64MB| ImmutableMem[Frozen Immutable MemTable]
-    ImmutableMem -->|4. Sequential Flush to Disk| Level0SST[Level 0 SSTable .sst File on Disk]
+    MemTable -->|MemTable Full >= 64MB| ImmutableMem[Frozen Immutable MemTable]
+    ImmutableMem -->|Sequential Flush to Disk| Level0SST[Level 0 SSTable .sst File on Disk]
   end
 ```
 

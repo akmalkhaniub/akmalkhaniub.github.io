@@ -15,13 +15,13 @@ This article details how to architect resilient background task queues with Dead
 How tasks transition through brokers, worker threads, retries, and Dead-Letter Queues:
 
 ```mermaid
-graph TD
-  A[Client Web Request] -->|1. Enqueue Task Payload| B[Message Broker: Redis / RabbitMQ Queue]
-  A -->|2. Instant 202 Accepted Response| Client[Client HTTP Response]
+flowchart TD
+  A[Client Web Request] -->|Enqueue Task Payload| B[Message Broker: Redis / RabbitMQ Queue]
+  A -->|Instant 202 Accepted Response| Client[Client HTTP Response]
   
   subgraph SG1_DistributedWorkerCluster ["Distributed Worker Cluster"]
-    B -->|3. Pop Task| C[Worker Thread Pool]
-    C -->|4. Execute Task| D{Execution Status}
+    B -->|Pop Task| C[Worker Thread Pool]
+    C -->|Execute Task| D{Execution Status}
   end
   
   D -->|Success| E[Save Result to Backend Store]
@@ -33,7 +33,7 @@ graph TD
   end
   
   subgraph SG3_DeadLetterQueue ["Dead-Letter Queue DLQ Isolation"]
-    F -->|No: Max Retries Exceeded| H[Route Task to Dead-Letter Queue DLQ]
+    F -->|No - Max Retries Exceeded| H[Route Task to Dead-Letter Queue DLQ]
     H --> I[(DLQ Storage: For Ops Inspection)]
   end
 ```

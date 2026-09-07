@@ -19,7 +19,7 @@ This article details Power-Law graph distributions, 1D Edge-Cut vs 2D Vertex-Cut
 How 2D Vertex-Cut partitions high-degree supernodes across worker nodes and how Google Pregel executes synchronous Superstep message passing:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_2dVertexCut ["2D Vertex-Cut Partitioning (PowerGraph / GraphX)"]
     Supernode["High-Degree Supernode V (Millions of Edges)"] -->|Split across Cluster Nodes| MasterV["Master Vertex V (Worker Node 1)"]
     Supernode --> Mirror1["Mirror Vertex V1 (Worker Node 2)"]
@@ -33,7 +33,7 @@ graph TD
     SyncBarrier --> Superstep2[Superstep N+1: Send Outgoing Messages]
     Superstep2 --> HaltCheck{All Vertices Voted to Halt?}
     HaltCheck -->|No| Superstep1
-    HaltCheck -->|Yes| Finish[🎉 Algorithm Converged!]
+    HaltCheck -->|Yes| Finish[ Algorithm Converged!]
   end
 ```
 

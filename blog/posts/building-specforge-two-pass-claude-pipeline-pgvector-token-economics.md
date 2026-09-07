@@ -17,7 +17,7 @@ SpecForge decouples requirements synthesis into a **Two-Pass Claude 3.5 Sonnet E
 How SpecForge ingests raw DOCX/PDF PRDs, performs two-pass hierarchical analysis, and indexes user stories into PostgreSQL:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_IngestionDocumentChunking ["Ingestion & Document Chunking"]
     Doc[Raw PRD / BRD Document .docx/.pdf] --> Ingestion[mammoth / pdfplumber Ingest Engine]
     Ingestion --> Chunks[Hierarchical Markdown Chunking]

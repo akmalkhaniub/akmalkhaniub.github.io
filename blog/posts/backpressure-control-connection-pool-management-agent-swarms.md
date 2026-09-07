@@ -15,7 +15,7 @@ This article details how to design backpressure throttling engines and manage co
 Backpressure acts as a reactive brake pedal, slowing down upstream event producers when downstream consumer queues reach capacity:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Fast Producer: Agent Orchestration Engine] --> B[Task Event Dispatch Queue]
   
   subgraph SG1_BackpressureFlowControl ["Backpressure Flow Control Gateway"]

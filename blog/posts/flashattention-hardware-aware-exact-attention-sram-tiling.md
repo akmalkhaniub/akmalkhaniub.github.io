@@ -21,7 +21,7 @@ This article details GPU memory hierarchy, SRAM tiling, and online softmax algor
 How FlashAttention loads blocks into high-speed GPU SRAM to avoid HBM memory bandwidth bottlenecks:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_SlowGpuMemory ["Slow GPU Memory: High Bandwidth Memory (HBM ~2 TB/sec)"]
     Q_HBM[Q Matrix: N x d]
     K_HBM[K Matrix: N x d]
@@ -29,14 +29,14 @@ graph TD
   end
   
   subgraph SG2_FastOnChip ["Fast On-Chip GPU Cache: L1 SRAM (~19 TB/sec)"]
-    Q_HBM -->|1. Stream Tile Block Br x d| Q_SRAM[Q Tile Block in SRAM]
-    K_HBM -->|2. Stream Tile Block Bc x d| K_SRAM[K Tile Block in SRAM]
-    V_HBM -->|3. Stream Tile Block Bc x d| V_SRAM[V Tile Block in SRAM]
+    Q_HBM -->|Stream Tile Block Br x d| Q_SRAM[Q Tile Block in SRAM]
+    K_HBM -->|Stream Tile Block Bc x d| K_SRAM[K Tile Block in SRAM]
+    V_HBM -->|Stream Tile Block Bc x d| V_SRAM[V Tile Block in SRAM]
     
-    Q_SRAM & K_SRAM & V_SRAM -->|4. Compute Tile QK^T & Online Softmax| OnlineSoftmax[Online Softmax Incremental Accumulator]
+    Q_SRAM & K_SRAM & V_SRAM -->|Compute Tile QK^T & Online Softmax| OnlineSoftmax[Online Softmax Incremental Accumulator]
   end
   
-  OnlineSoftmax -->|5. Write Final Output Tile Block (N x d)| Out_HBM[Final Output O in HBM]
+  OnlineSoftmax -->|Write Final Output Tile Block (N x d)| Out_HBM[Final Output O in HBM]
 ```
 
 ### Core FlashAttention Mechanics

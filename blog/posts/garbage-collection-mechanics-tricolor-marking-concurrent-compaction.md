@@ -15,18 +15,18 @@ This article details the Tri-Color Abstraction, Write Barriers, and Generational
 How concurrent garbage collectors track live objects while mutator threads mutate heap references:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TriColorGc ["Tri-Color GC Graph Marking States"]
-    Root[Root Pointers: Stack / Globals] -->|1. Mark Roots Grey| GreySet[Grey Set: Objects Scanned, Children Unscanned]
+    Root[Root Pointers: Stack / Globals] -->|Mark Roots Grey| GreySet[Grey Set: Objects Scanned, Children Unscanned]
     
-    GreySet -->|2. Scan Children & Move to Black| BlackSet[Black Set: Live Objects & Children Fully Scanned]
+    GreySet -->|Scan Children & Move to Black| BlackSet[Black Set: Live Objects & Children Fully Scanned]
     
-    WhiteSet[White Set: Unvisited Objects / Garbage Candidates] -.->|3. Unreachable at End of Phase| Sweep[Sweep / Reclaim Physical Memory]
+    WhiteSet[White Set: Unvisited Objects / Garbage Candidates] -.->|Unreachable at End of Phase| Sweep[Sweep / Reclaim Physical Memory]
   end
   
   subgraph SG2_ConcurrentMutatorWrite ["Concurrent Mutator Write Barrier Interception"]
-    Mutator[Mutator Thread: Mutates Reference] -->|4. Writes Black -> White Pointer| WriteBarrier[Write Barrier: Catch Mutation]
-    WriteBarrier -->|5. Shade White Object Grey| GreySet
+    Mutator[Mutator Thread: Mutates Reference] -->|Writes Black -> White Pointer| WriteBarrier[Write Barrier: Catch Mutation]
+    WriteBarrier -->|Shade White Object Grey| GreySet
   end
 ```
 

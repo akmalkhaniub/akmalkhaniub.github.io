@@ -15,7 +15,7 @@ This article details how Tech Leads build **Cross-Functional Alignment**, transl
 Tech Leads must translate internal engineering mechanics into strategic business metrics:
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG1_TechnicalRealityEngineering ["Technical Reality Engineering"]
     A[AST Verification & Lint Gates]
     B[Model Token Compute Budgets]

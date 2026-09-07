@@ -19,18 +19,18 @@ This article details CAS primitives, the Treiber Stack algorithm, the ABA Proble
 How atomic Compare-And-Swap (CAS) instructions operate, the ABA problem vulnerability, and Hazard Pointer memory safety:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CompareAndSwap ["Compare-And-Swap (CAS) Loop"]
     ReadVal[1. Read Current Head Pointer A] --> PrepareNew[2. Construct New Node B -> next = A]
-    PrepareNew --> CASCheck{"3. Execute Hardware CAS (Head, Expected=A, New=B)"}
-    CASCheck -->|Success: Head updated to B| Done[🎉 Operation Complete!]
-    CASCheck -->|Failure: Contention detected!| ReadVal
+    PrepareNew --> CASCheck["3. Execute Hardware CAS (Head, Expected=A, New=B)"]
+    CASCheck -->|Success - Head updated to B| Done[ Operation Complete!]
+    CASCheck -->|Failure - Contention detected!| ReadVal
   end
   
   subgraph SG2_TheAbaProblem ["The ABA Problem Vulnerability"]
     T1[Thread 1 reads Head A] -.->|Thread 1 Suspended| T2[Thread 2 Pops A, Pops B, Pushes A back!]
     T2 -.-> T1Resume[Thread 1 Resumes: CAS sees Head is STILL A!]
-    T1Resume -->|CAS Succeeds Unsafely!| CorruptedStack[🚨 STACK CORRUPTION! Node B was freed!]
+    T1Resume -->|CAS Succeeds Unsafely!| CorruptedStack[ STACK CORRUPTION! Node B was freed!]
   end
   
   subgraph SG3_MitigationTaggedPointers ["Mitigation: Tagged Pointers & Hazard Pointers"]

@@ -47,7 +47,7 @@ async function generateClinicalSummary(rawTranscription: string) {
 Deploying local models requires understanding the performance and resource tradeoffs:
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_CloudCloudApis ["Cloud [Cloud APIs: Claude / GPT]"]
         C_Cap[High Parameters / 100B+] --> C_Lat[Sub-second Latency / 80+ tps]
         C_Lat --> C_Sec[Vulnerable to Network / HIPAA overhead]

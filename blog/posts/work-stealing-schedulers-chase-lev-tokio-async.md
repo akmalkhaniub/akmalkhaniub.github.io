@@ -17,9 +17,9 @@ This article details per-thread local deques, the Chase-Lev lock-free algorithm,
 How the Chase-Lev Deque balances owner LIFO operations and thief FIFO stealing:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_WorkerThread0 ["Worker Thread 0 (Busy Worker)"]
-    Owner[Worker Thread 0 Owner] -->|1. Push / Pop Tasks at BOTTOM (LIFO Order - Cache Hot!)| Bottom[Bottom Pointer]
+    Owner[Worker Thread 0 Owner] -->|Push / Pop Tasks at BOTTOM (LIFO Order - Cache Hot!)| Bottom[Bottom Pointer]
     
     subgraph SG2_ChaseLevWork ["Chase-Lev Work-Stealing Deque (Worker 0)"]
       Bottom -->|Local Tasks Array| TaskN[Task N]
@@ -30,8 +30,8 @@ graph TD
   end
   
   subgraph SG3_WorkerThread1 ["Worker Thread 1 (Idle Thief)"]
-    Thief[Idle Worker Thread 1] -->|2. Steal Task from TOP via CAS (FIFO Order)| Top
-    Thief -->|3. Execute Steolen Task 0| Exec[Execute Async Task 0]
+    Thief[Idle Worker Thread 1] -->|Steal Task from TOP via CAS (FIFO Order)| Top
+    Thief -->|Execute Steolen Task 0| Exec[Execute Async Task 0]
   end
 ```
 

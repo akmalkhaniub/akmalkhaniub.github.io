@@ -19,7 +19,7 @@ This article details the 4-phase Catalyst pipeline, expression tree manipulation
 How Apache Spark translates SQL/DataFrame ASTs through Catalyst logical transformations into JIT-compiled Whole-Stage Java Loops:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CatalystQueryCompilation ["Catalyst Query Compilation Pipeline"]
     SQL[SQL / DataFrame Query] --> Unresolved[1. Unresolved Logical Plan AST]
     Catalog[Spark Catalog Schema] --> Analysis[2. Analysis Phase: Resolve Columns & Types]
@@ -30,7 +30,7 @@ graph TD
   end
   
   subgraph SG2_ProjectTungstenExecution ["Project Tungsten Execution Engine"]
-    Physical --> Codegen["⚡ Whole-Stage Code Generation (JIT Java Loop)"]
+    Physical --> Codegen[" Whole-Stage Code Generation (JIT Java Loop)"]
     Codegen --> OffHeap["Binary Off-Heap Memory (Unsafe Memory Registers)"]
   end
 ```

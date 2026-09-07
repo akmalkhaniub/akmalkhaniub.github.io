@@ -21,7 +21,7 @@ sequenceDiagram
 
     Client->>Gateway: POST /profile (Header: Next-Action: a8df293c...) [Body: [99, "New Title"]]
     Note over Gateway: Route maps request parameters to updateProfile(99, "New Title")
-    Note over Gateway: 🚨 Security Check Missing!
+    Note over Gateway:  Security Check Missing!
     Gateway->>DB: UPDATE projects SET title = 'New Title' WHERE id = 99
     DB-->>Gateway: OK
     Gateway-->>Client: Return JSON response

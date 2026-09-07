@@ -13,7 +13,7 @@ To build production-grade agentic platforms, engineering teams enforce **Structu
 Instead of passing massive state payloads back and forth between agents, multi-agent swarms store execution artifacts in a central **Blackboard Store**. The Orchestrator passes lightweight, typed **Handoff Tokens**:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_OrchestratorAgent ["Orchestrator Agent"]
     A[Task Router Node] -->|Generate Typed Handoff Payload| B[Handoff Schema Validation]
   end

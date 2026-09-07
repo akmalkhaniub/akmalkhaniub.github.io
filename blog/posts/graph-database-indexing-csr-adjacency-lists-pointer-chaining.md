@@ -19,17 +19,17 @@ This article details the relational JOIN bottleneck, Index-Free Adjacency pointe
 How native graph databases bypass B-Tree index lookups using Index-Free Adjacency and Compressed Sparse Row (CSR) contiguous arrays:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RelationalBTree ["Relational B-Tree JOIN Bottleneck (O(log N) per hop)"]
-    R1[Node A: Foreign Key = 42] -->|1. B-Tree Index Lookup| Index1[Index Lookup O(log N)]
+    R1[Node A: Foreign Key = 42] -->|B-Tree Index Lookup| Index1[Index Lookup O(log N)]
     Index1 --> R2[Relationship Record]
-    R2 -->|2. B-Tree Index Lookup| Index2[Index Lookup O(log N)]
+    R2 -->|B-Tree Index Lookup| Index2[Index Lookup O(log N)]
     Index2 --> R3[Node B (High Latency!)]
   end
   
   subgraph SG2_NativeIndexFree ["Native Index-Free Adjacency & CSR Layout (O(1) Traversal)"]
-    NodeA[Node A Record] -->|1. Direct C++ Pointer Dereference| Rel1["Relationship Record (Next: 0x4F00)"]
-    Rel1 -->|2. Direct Pointer Dereference| NodeB["🎯 Node B Record (O(1) Constant Time!)"]
+    NodeA[Node A Record] -->|Direct C++ Pointer Dereference| Rel1["Relationship Record (Next: 0x4F00)"]
+    Rel1 -->|Direct Pointer Dereference| NodeB[" Node B Record (O(1) Constant Time!)"]
     
     subgraph SG3_CompressedSparseRow ["Compressed Sparse Row (CSR) Contiguous Memory Arrays"]
       Offsets["Offsets Array: [0, 3, 7, 10] (Index for Node i)"] -->|Slice offsets[A]..offsets[A+1]| Neighbors["Edge Targets Array: [NodeB, NodeC, NodeD, NodeE...] (Single L1 CPU Cache Line!)"]

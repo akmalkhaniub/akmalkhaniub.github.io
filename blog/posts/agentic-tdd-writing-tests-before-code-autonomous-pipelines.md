@@ -17,7 +17,7 @@ This article details how to architect an autonomous TDD pipeline for AI agent wo
 Agentic TDD replaces monolithic single-pass generation with an iterative, contract-first state machine:
 
 ```mermaid
-graph TD
+flowchart TD
   A[User Requirement / Feature Spec] --> B[Phase 1: Test Specification Agent]
   
   subgraph SG1_RedGreenRefactor ["Red-Green-Refactor Pipeline"]

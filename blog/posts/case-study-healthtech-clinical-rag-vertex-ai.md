@@ -40,7 +40,7 @@ We led a specialized HIPAA-certified engineering team of **9 members**:
 The platform architecture enforces strict HIPAA data perimeters around GCP data stores:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Hospital EHR System / FHIR Stream] --> B[GCP Cloud Healthcare API]
   B --> C[Cloud Dataflow De-identification Pipeline]
   C --> D[(AlloyDB AI: Encrypted Medical Vector Store)]

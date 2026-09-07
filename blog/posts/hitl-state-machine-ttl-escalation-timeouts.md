@@ -18,8 +18,8 @@ When an agent halts mid-transaction to await validation:
 flowchart TD
     Pause[Agent pauses: Starts TTL Clock] --> Check{Has TTL Expired?}
     
-    Check -->|No: Callback Received| Resume[Resume Agent: Commit Changes]
-    Check -->|Yes: Expired| Fallback[Trigger Timeout Fallback Handler]
+    Check -->|No - Callback Received| Resume[Resume Agent: Commit Changes]
+    Check -->|Yes - Expired| Fallback[Trigger Timeout Fallback Handler]
     
     Fallback --> Rollback[Execute Compensating Transaction Rollback]
     Rollback --> Release[Release DB & Git Row Locks]

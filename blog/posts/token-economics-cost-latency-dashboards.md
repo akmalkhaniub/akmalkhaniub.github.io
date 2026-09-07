@@ -16,19 +16,19 @@ This article details how to optimize prompt structures for **Prompt Caching**, t
 To audit and optimize costs, every single model call must pass through a wrapper that logs token metrics and latency data into an analytical database before resolving back to the agent application.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_ClientappAgentApplication ["ClientApp [Agent Application Layer]"]
-        Agent[Agent Orchestrator] -->|1. Generate Request| MW[Telemetry Middleware]
+        Agent[Agent Orchestrator] -->|Generate Request| MW[Telemetry Middleware]
     end
 
     subgraph SG2_GatewayInferenceTelemetry ["Gateway [Inference & Telemetry Gateway]"]
-        MW -->|2. Route to LLM API| LLM[LLM API: Claude / GPT-4o]
-        LLM -->|3. Return Completion + Usage Metrics| MW
-        MW -->|4. Log usage as async job| DB[(PostgreSQL Telemetry DB)]
+        MW -->|Route to LLM API| LLM[LLM API: Claude / GPT-4o]
+        LLM -->|Return Completion + Usage Metrics| MW
+        MW -->|Log usage as async job| DB[(PostgreSQL Telemetry DB)]
     end
 
     subgraph SG3_MonitorObservabilityLayer ["Monitor [Observability Layer]"]
-        Dash[Grafana / Cost Dashboard] -->|5. Query aggregate analytics| DB
+        Dash[Grafana / Cost Dashboard] -->|Query aggregate analytics| DB
     end
 
     style ClientApp fill:#f8fafc,stroke:#64748b,stroke-width:2px

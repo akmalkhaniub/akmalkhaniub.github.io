@@ -15,24 +15,24 @@ This article details the architectural patterns and multi-agent coordination mec
 How a Supervisor Agent coordinates specialized Sub-Agents executing ReAct reasoning loops:
 
 ```mermaid
-graph TD
+flowchart TD
   UserTask["User Request: 'Refactor database sharding & run tests'"] --> Supervisor[Parent Supervisor Agent]
   
   subgraph SG1_MultiAgentDelegation ["Multi-Agent Delegation Bus"]
-    Supervisor -->|1. Delegate Research Task| ResearchAgent[Research Sub-Agent]
-    Supervisor -->|2. Delegate Code Edit Task| CoderAgent[Coder Sub-Agent]
+    Supervisor -->|Delegate Research Task| ResearchAgent[Research Sub-Agent]
+    Supervisor -->|Delegate Code Edit Task| CoderAgent[Coder Sub-Agent]
   end
   
   subgraph SG2_ReactReasonAct ["ReAct (Reason + Act) Execution Loop"]
-    CoderAgent -->|3. Thought: Analyze code bug| Thought[1. Thought Step]
-    Thought -->|4. Action: Call tool run_command| Action[2. Action Step: Tool Invocation]
-    Action -->|5. Execute Tool in Sandbox| ToolRunner[Sandbox Tool Dispatcher]
-    ToolRunner -->|6. Return Tool Output| Observation[3. Observation Step]
-    Observation -->|7. Re-evaluate Context| CoderAgent
+    CoderAgent -->|Thought - Analyze code bug| Thought[1. Thought Step]
+    Thought -->|Action - Call tool run_command| Action[2. Action Step: Tool Invocation]
+    Action -->|Execute Tool in Sandbox| ToolRunner[Sandbox Tool Dispatcher]
+    ToolRunner -->|Return Tool Output| Observation[3. Observation Step]
+    Observation -->|Re-evaluate Context| CoderAgent
   end
   
-  CoderAgent -->|8. Report Final Solution| Supervisor
-  Supervisor -->|9. Final Response| UserTask
+  CoderAgent -->|Report Final Solution| Supervisor
+  Supervisor -->|Final Response| UserTask
 ```
 
 ### Core Autonomous Agent Mechanics

@@ -19,7 +19,7 @@ ClaimPilot pairs **multi-modal vision damage estimation** with a **deterministic
 How ClaimPilot ingests FNOL claims, coordinates multi-modal vision and document models, and enforces deterministic policy guardrails:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_MultiModalIngestion ["Multi-Modal Ingestion"]
     Claimant[Claimant FNOL Submission] --> Uploads[Damage Photos + Police Report PDF + Audio Statement]
     Uploads --> Vision["Multi-Modal Vision Engine (Damage Localization & Severity Scoring)"]
@@ -33,8 +33,8 @@ graph TD
   
   subgraph SG3_DeterministicPolicyGuardrails ["Deterministic Policy Guardrails & Decision Engine"]
     FraudEngine --> Guardrails["Deterministic Rules Engine: Policy Limits & Deductible Bounds"]
-    Guardrails -->|Low Risk & Within Limits| AutoApprove["🎉 Automated Payout Approval: $Repair - Deductible"]
-    Guardrails -->|Fraud Flag or Coverage Dispute| ManualReview["⚠️ Escalate to Senior Human Adjuster"]
+    Guardrails -->|Low Risk & Within Limits| AutoApprove[" Automated Payout Approval: $Repair - Deductible"]
+    Guardrails -->|Fraud Flag or Coverage Dispute| ManualReview[" Escalate to Senior Human Adjuster"]
   end
 ```
 

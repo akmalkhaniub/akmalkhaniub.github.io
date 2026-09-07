@@ -20,7 +20,7 @@ This article details the math and implementation of Consistent Hashing hash ring
 How keys map to physical cache nodes along a continuous $2^{32}-1$ hash space ring:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ContinuousHashRing ["Continuous Hash Ring Space (0 to 2^32 - 1)"]
     R1["Virtual Node: Node_A_v1 (Hash: 0x1A00)"] --> R2["Key: user:101 (Hash: 0x2C10)"]
     R2 -->|Clockwise Lookup| R3["Virtual Node: Node_B_v1 (Hash: 0x3F00)"]

@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
  * Automated Verification Pipeline for Akmal Khan Tech Blog.
- * 
+ *
  * Audits:
- * 1. Markdown syntax & vertical Mermaid diagrams (flowchart TD / graph TD).
- * 2. Scholarly citation balance ([n] markers vs references).
- * 3. Static build compilation (build-blog.js).
- * 4. Syndication package generation according to PUBLICATION_TARGETS.json.
- * 
+ * 1. Mermaid v10 invariants (flowchart TD only, no LR, no quoted rhombus nodes).
+ * 2. Duplicate slugs in posts.json.
+ * 3. Canonical ## References & Further Reading heading (warn).
+ * 4. Static build compilation (build-blog.js).
+ *
  * Usage: npm run pipeline [optional-slug]
  */
 import fs from 'fs';
@@ -18,52 +18,74 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
-console.log('🚀 Running 3-Tier Publishing Verification Pipeline...\n');
+console.log('Running 3-Tier Publishing Verification Pipeline...\n');
 
-// 1. Audit Markdown Posts
 const targetSlug = process.argv[2];
 const postsDir = path.join(ROOT, 'blog', 'posts');
-const files = targetSlug 
-  ? [`${targetSlug.replace(/\.md$/, '')}.md`] 
-  : fs.readdirSync(postsDir).filter(f => f.endsWith('.md'));
+const postsJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'blog', 'posts.json'), 'utf8'));
+
+const slugCounts = new Map();
+for (const p of postsJson) {
+  slugCounts.set(p.slug, (slugCounts.get(p.slug) || 0) + 1);
+}
+const dupes = [...slugCounts.entries()].filter(([, n]) => n > 1);
+if (dupes.length) {
+  console.error('Duplicate slugs in posts.json:');
+  for (const [slug, n] of dupes) console.error(`  ${slug} x${n}`);
+  process.exit(1);
+}
+
+const files = targetSlug
+  ? [`${targetSlug.replace(/\.md$/, '')}.md`]
+  : fs.readdirSync(postsDir).filter((f) => f.endsWith('.md'));
 
 let hasError = false;
+let warnCount = 0;
 
 for (const file of files) {
   const filePath = path.join(postsDir, file);
   if (!fs.existsSync(filePath)) {
-    console.error(`❌ File not found: ${filePath}`);
+    console.error(`File not found: ${filePath}`);
     hasError = true;
     continue;
   }
-  
+
   const content = fs.readFileSync(filePath, 'utf8');
-  
-  // Check for horizontal Mermaid diagrams
-  if (/\`\`\`mermaid\s*\n\s*(?:flowchart|graph)\s+LR/i.test(content)) {
-    console.warn(`⚠️  [${file}] Found horizontal diagram (flowchart LR). Convert to vertical (flowchart TD) for zero-zoom readability.`);
+  const mermaidBlocks = [...content.matchAll(/```mermaid[^\n]*\n([\s\S]*?)```/g)].map((m) => m[1]);
+
+  for (const block of mermaidBlocks) {
+    if (/\b(?:flowchart|graph)\s+LR\b/i.test(block)) {
+      console.error(`[${file}] Horizontal diagram (LR). Convert to flowchart TD.`);
+      hasError = true;
+    }
+    if (/\bgraph\s+TD\b/i.test(block)) {
+      console.error(`[${file}] Use flowchart TD, not graph TD.`);
+      hasError = true;
+    }
+    if (/\w+\{\s*["']/.test(block)) {
+      console.error(`[${file}] Quoted curly-brace Mermaid node. Use NodeID["Label"].`);
+      hasError = true;
+    }
   }
-  
-  // Check for forbidden Mermaid syntax (curly quotes or edge colons)
-  const forbiddenRhombus = /\w+\{\s*".*?"\s*\}/.test(content);
-  if (forbiddenRhombus) {
-    console.error(`❌ [${file}] Found forbidden curly-brace quotes in Mermaid node. Use NodeID["Label"] instead.`);
-    hasError = true;
+
+  if (!/^## References & Further Reading\s*$/m.test(content)) {
+    console.warn(`[${file}] Missing canonical ## References & Further Reading heading.`);
+    warnCount++;
   }
 }
 
 if (hasError) {
-  console.error('\n❌ Pipeline halted due to syntax errors. Please fix before publishing.');
+  console.error('\nPipeline halted due to diagram/syntax errors.');
   process.exit(1);
 }
 
-// 2. Run static site build
-console.log('📦 Executing static blog build (scripts/build-blog.js)...');
+console.log(`Markdown audit passed (${files.length} files, ${warnCount} reference warnings).`);
+console.log('Executing static blog build (scripts/build-blog.js)...');
 try {
   execSync('node scripts/build-blog.js', { cwd: ROOT, stdio: 'inherit' });
-} catch (err) {
-  console.error('❌ Build failed.');
+} catch {
+  console.error('Build failed.');
   process.exit(1);
 }
 
-console.log('\n✅ 3-Tier Publishing Pipeline verification completed successfully!');
+console.log('\n3-Tier Publishing Pipeline verification completed.');

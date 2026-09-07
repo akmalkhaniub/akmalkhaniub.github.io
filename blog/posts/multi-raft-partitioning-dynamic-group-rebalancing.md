@@ -17,10 +17,10 @@ This article details Multi-Raft architecture, range splitting, and dynamic repli
 How physical database nodes host hundreds of independent Raft consensus groups:
 
 ```mermaid
-graph TD
-  Client[Client SQL / KV Request] -->|1. Route Key 'user_88'| Router[Multi-Raft Range Router]
+flowchart TD
+  Client[Client SQL / KV Request] -->|Route Key 'user_88'| Router[Multi-Raft Range Router]
   
-  Router -->|2. Key 'user_88' falls in Range 2 ['g', 'p')| Node1
+  Router -->|Key 'user_88' falls in Range 2 ['g', 'p')| Node1
   
   subgraph SG1_PhysicalDatabaseCluster ["Physical Database Cluster (3 Nodes)"]
     subgraph SG2_ServerNode1 ["Server Node 1"]
@@ -42,7 +42,7 @@ graph TD
     end
   end
   
-  R2_Leader -->|3. AppendEntries to Raft Group 2| R2_Follower2 & R2_Follower3
+  R2_Leader -->|AppendEntries to Raft Group 2| R2_Follower2 & R2_Follower3
 ```
 
 ### Core Multi-Raft Principles

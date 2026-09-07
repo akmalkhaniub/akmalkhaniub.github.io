@@ -15,14 +15,14 @@ This article details how to design immutable trajectory audit logging pipelines 
 The forensic logging pipeline captures immutable telemetry at every step of the agent execution lifecycle:
 
 ```mermaid
-graph TD
+flowchart TD
   A[User / System Incident Trigger] --> B[Agent Worker Execution Loop]
   
   subgraph SG1_ImmutableTrajectoryAudit ["Immutable Trajectory Audit Logging (JSONL / BigQuery)"]
-    B -->|Step 1: System Prompt & User Context| C[(Trajectory Log Store)]
-    B -->|Step 2: Retrieved Context & Vector Scores| C
-    B -->|Step 3: Raw LLM Output & Tool Invocation| C
-    B -->|Step 4: Tool Execution Result & Status| C
+    B -->|Step 1 - System Prompt & User Context| C[(Trajectory Log Store)]
+    B -->|Step 2 - Retrieved Context & Vector Scores| C
+    B -->|Step 3 - Raw LLM Output & Tool Invocation| C
+    B -->|Step 4 - Tool Execution Result & Status| C
   end
   
   subgraph SG2_PostIncidentForensic ["Post-Incident Forensic Reconstruction"]

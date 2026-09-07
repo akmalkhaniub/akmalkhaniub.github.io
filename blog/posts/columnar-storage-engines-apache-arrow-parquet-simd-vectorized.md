@@ -17,7 +17,7 @@ This article details the mechanics of columnar memory structures and SIMD vector
 Comparing memory layout topologies for analytical queries:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RowOrientedMemory ["Row-Oriented Memory Layout (OLTP: Postgres/MySQL)"]
     R1[Row 1: ID, Age, City, Salary] --> R2[Row 2: ID, Age, City, Salary]
     R2 --> R3[Row 3: ID, Age, City, Salary]

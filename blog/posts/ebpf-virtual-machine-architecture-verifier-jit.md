@@ -19,19 +19,19 @@ This article details the 64-bit eBPF virtual machine, static verifier safety che
 How eBPF programs pass static kernel verification before JIT compilation into native assembly:
 
 ```mermaid
-graph TD
-  Source[eBPF C Source Code: bpf_program.c] -->|1. Compile via Clang/LLVM| Bytecode[eBPF Bytecode File: .o]
+flowchart TD
+  Source[eBPF C Source Code: bpf_program.c] -->|Compile via Clang/LLVM| Bytecode[eBPF Bytecode File: .o]
   
   subgraph SG1_LinuxKernelSandbox ["Linux Kernel Sandbox (bpf Syscall)"]
-    Bytecode -->|2. bpf(BPF_PROG_LOAD)| Verifier{Linux eBPF Static Verifier}
+    Bytecode -->|bpf(BPF_PROG_LOAD)| Verifier{Linux eBPF Static Verifier}
     
-    Verifier -->|3a. Check CFG: Unreachable code, Out-of-bounds Pointers, Infinite Loops| Reject[🚨 REJECT LOAD: Insecure Program!]
-    Verifier -->|3b. Verification Passed!| JIT[eBPF Kernel JIT Compiler]
+    Verifier -->|Check CFG - Unreachable code, Out-of-bounds Pointers, Infinite Loops| Reject[ REJECT LOAD: Insecure Program!]
+    Verifier -->|Verification Passed!| JIT[eBPF Kernel JIT Compiler]
   end
   
   subgraph SG2_HighSpeedNative ["High-Speed Native Kernel Execution"]
-    JIT -->|4. Emit Native Machine Code| Assembly[Native x86_64 / ARM64 Assembly]
-    Assembly -->|5. Hook Attach: Kprobes / Tracepoints / XDP| KernelExec[Direct Execution in Kernel Context]
+    JIT -->|Emit Native Machine Code| Assembly[Native x86_64 / ARM64 Assembly]
+    Assembly -->|Hook Attach - Kprobes / Tracepoints / XDP| KernelExec[Direct Execution in Kernel Context]
   end
 ```
 

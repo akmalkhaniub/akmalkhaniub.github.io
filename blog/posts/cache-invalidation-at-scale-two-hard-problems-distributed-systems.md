@@ -15,7 +15,7 @@ This article explores the trade-offs of modern caching patterns—**Cache-Aside*
 How database transaction log streaming guarantees eventual consistency between primary storage and distributed caches:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client Write Request] --> B[Primary Database Write: PostgreSQL / MySQL]
   
   subgraph SG1_PrimaryStorageLayer ["Primary Storage Layer"]

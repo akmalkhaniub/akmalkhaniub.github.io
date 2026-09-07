@@ -22,10 +22,10 @@ To verify stability, we inject failures directly inside the **Agent-to-Tool boun
 flowchart TD
     Agent[Agent Requests Tool Call] --> Interceptor{Chaos Interceptor Middleware}
     
-    Interceptor -->|Rule: Apply Rate Limit| Mock429[Return HTTP 429 / Rate Limit]
-    Interceptor -->|Rule: Corrupt JSON| MockCorrupt[Return Malformed JSON String]
-    Interceptor -->|Rule: Timeout Delay| Delay[Inject 5s Network Latency]
-    Interceptor -->|Rule: Clean Bypass| API[Pass through to Real API]
+    Interceptor -->|Rule - Apply Rate Limit| Mock429[Return HTTP 429 / Rate Limit]
+    Interceptor -->|Rule - Corrupt JSON| MockCorrupt[Return Malformed JSON String]
+    Interceptor -->|Rule - Timeout Delay| Delay[Inject 5s Network Latency]
+    Interceptor -->|Rule - Clean Bypass| API[Pass through to Real API]
     
     Mock429 --> Eval[Evaluate Agent Recovery Logic]
     MockCorrupt --> Eval

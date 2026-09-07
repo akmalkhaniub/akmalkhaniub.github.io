@@ -17,22 +17,22 @@ This article explores the internal state machines, RPC mechanics, and safety inv
 How Raft nodes transition between Follower, Candidate, and Leader roles while replicating log entries:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RaftNodeState ["Raft Node State Machine"]
-    Follower[Follower State] -->|1. Election Timeout Elapses| Candidate[Candidate State]
-    Candidate -->|2. Wins Majority Quorum Votes| Leader[Leader State]
-    Candidate -->|3. Discovers Higher Term / New Leader| Follower
-    Leader -->|4. Discovers Higher Term Peer| Follower
+    Follower[Follower State] -->|Election Timeout Elapses| Candidate[Candidate State]
+    Candidate -->|Wins Majority Quorum Votes| Leader[Leader State]
+    Candidate -->|Discovers Higher Term / New Leader| Follower
+    Leader -->|Discovers Higher Term Peer| Follower
   end
   
   subgraph SG2_LogReplicationPipeline ["Log Replication Pipeline (Term T)"]
-    Leader -->|5. AppendEntries RPC: Entry + prevLogIndex| F1[Follower Node 1]
-    Leader -->|5. AppendEntries RPC: Entry + prevLogIndex| F2[Follower Node 2]
+    Leader -->|AppendEntries RPC - Entry + prevLogIndex| F1[Follower Node 1]
+    Leader -->|AppendEntries RPC - Entry + prevLogIndex| F2[Follower Node 2]
     
-    F1 -->|6. Log Match Validated -> Ack| Leader
-    F2 -->|6. Log Match Validated -> Ack| Leader
+    F1 -->|Log Match Validated -> Ack| Leader
+    F2 -->|Log Match Validated -> Ack| Leader
     
-    Leader -->|7. Majority Acknowledged -> Advance commitIndex| StateMachine[State Machine Execution]
+    Leader -->|Majority Acknowledged -> Advance commitIndex| StateMachine[State Machine Execution]
   end
 ```
 

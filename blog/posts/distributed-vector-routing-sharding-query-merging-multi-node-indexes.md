@@ -15,7 +15,7 @@ This article details how to design partition schemes and execute scatter-gather 
 The query coordinator broadcasts queries to shards and resolves local lists into a global output:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client Query Vector] --> B[Distributed Coordinator Node]
   
   subgraph SG1_ClusterScatterPhase ["Cluster Scatter Phase"]

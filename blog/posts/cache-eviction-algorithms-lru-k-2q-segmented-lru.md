@@ -19,21 +19,21 @@ This article details LRU-K $K$-th backward reference math, 2Q FIFO/LRU separatio
 How Segmented LRU (SLRU) isolates cold single-access scan items from hot protected items:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ClientReadRequest ["Client Read Request"]
     Req[Incoming Key Read Request] --> Check{Key in Cache?}
   end
   
   subgraph SG2_SegmentedLruSlru ["Segmented LRU (SLRU) State Machine"]
-    Check -->|Miss: First Access| Prob[Probationary Segment LRU - 20% Capacity]
+    Check -->|Miss - First Access| Prob[Probationary Segment LRU - 20% Capacity]
     
-    Prob -->|Hit: Second Access!| Promoted[PROMOTED to Protected Segment!]
+    Prob -->|Hit - Second Access!| Promoted[PROMOTED to Protected Segment!]
     Promoted --> Prot[Protected Segment LRU - 80% Capacity]
     
     Prot -->|Evicted from Protected| Demoted[Demoted back to Probationary]
     Demoted --> Prob
     
-    Prob -->|Evicted from Probationary| Evict[🗑️ PERMANENTLY EVICTED FROM CACHE]
+    Prob -->|Evicted from Probationary| Evict[ PERMANENTLY EVICTED FROM CACHE]
   end
 ```
 

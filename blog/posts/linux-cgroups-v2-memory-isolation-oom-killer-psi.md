@@ -17,21 +17,21 @@ This article details the Cgroups v2 unified tree hierarchy, memory boundary cont
 How Linux Cgroups v2 enforces multi-tiered memory boundaries and triggers group-level OOM eviction:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LinuxCgroupsV2 ["Linux Cgroups v2 Memory Boundary Controls"]
-    Alloc[Process Memory Allocation] --> MinCheck{"Below memory.min? ($0-100 MB)"}
-    MinCheck -->|Yes: Never Reclaimed| SafeRAM[Protected In-RAM Page]
+    Alloc[Process Memory Allocation] --> MinCheck["Below memory.min? ($0-100 MB)"]
+    MinCheck -->|Yes - Never Reclaimed| SafeRAM[Protected In-RAM Page]
     
-    MinCheck -->|No| HighCheck{"Exceeds memory.high? ($1 GB)"}
-    HighCheck -->|Yes| Throttle["⚠️ Kernel Throttle! Force Process Page Reclaim"]
+    MinCheck -->|No| HighCheck["Exceeds memory.high? ($1 GB)"]
+    HighCheck -->|Yes| Throttle[" Kernel Throttle! Force Process Page Reclaim"]
     
-    HighCheck -->|No| MaxCheck{"Exceeds memory.max? ($2 GB Hard Cap)"}
-    MaxCheck -->|Yes: Direct Reclaim Fails| OOM["💥 OOM Killer Triggered!"]
+    HighCheck -->|No| MaxCheck["Exceeds memory.max? ($2 GB Hard Cap)"]
+    MaxCheck -->|Yes - Direct Reclaim Fails| OOM[" OOM Killer Triggered!"]
   end
   
   subgraph SG2_GroupLevelOom ["Group-Level OOM Killer Execution (memory.oom.group = 1)"]
     OOM --> Badness[Compute oom_score = RAM% + oom_score_adj]
-    Badness --> KillTree["🗡️ Atomic Eviction: Terminate Entire Container Cgroup Process Tree!"]
+    Badness --> KillTree[" Atomic Eviction: Terminate Entire Container Cgroup Process Tree!"]
   end
 ```
 

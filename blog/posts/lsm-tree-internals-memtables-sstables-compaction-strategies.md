@@ -15,7 +15,7 @@ This article details the low-level internals of LSM-Tree storage engines.
 The write path vs read path execution flow in an LSM-Tree storage engine:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client Write Request] --> B[Sequential Append: WAL Log]
   B --> C[In-Memory Write Buffer: MemTable]
   

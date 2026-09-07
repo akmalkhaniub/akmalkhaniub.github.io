@@ -26,7 +26,7 @@ A failover gateway routes inbound requests to cloud APIs based on priority, auto
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
+flowchart TD
     A[Incoming Task Request] --> B{Check Task Priority}
     
     B -->|Batch / Low-Priority| C[Local Inference Cluster]
@@ -154,7 +154,7 @@ To review the comparative parameter bounds of local small language models vs clo
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **vLLM Paper**: *Efficient Memory Management for Large Language Model Serving with PagedAttention* (Kwon et al., Berkeley) — [arXiv:2309.06180](https://arxiv.org/abs/2309.06180)
 *   **vLLM Project**: [High-throughput serving engine github repo](https://github.com/vllm-project/vllm)
 *   **Ollama Portal**: [Local llama.cpp inference runtime portal](https://ollama.com/)

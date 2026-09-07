@@ -17,7 +17,7 @@ This article details Event Time notions, Bounded-Out-Of-Orderness Watermarks, Tu
 How Watermarks track Event Time progress and trigger window computations despite out-of-order arrivals:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RealWorldOut ["Real-World Out-of-Order Event Arrival (Event Time)"]
     E1["Event 1 (t=10:00)"] --> Broker[Kafka Stream Topic]
     E3["Event 3 (t=10:04)"] --> Broker
@@ -25,16 +25,16 @@ graph TD
   end
   
   subgraph SG2_WatermarkGeneratorBounded ["Watermark Generator (Bounded Out-of-Orderness: 2 mins)"]
-    Broker -->|Generate Watermark: W = Max(t) - 2 mins| WMEngine[Watermark Generator Node]
-    WMEngine -->|Emit WM: W(10:02)| StreamDAG[Stream Operator Window Processor]
+    Broker -->|Generate Watermark - W = Max(t) - 2 mins| WMEngine[Watermark Generator Node]
+    WMEngine -->|Emit WM - W(10 -02)| StreamDAG[Stream Operator Window Processor]
   end
   
   subgraph SG3_WindowEvaluationLate ["Window Evaluation & Late Data Handling"]
-    StreamDAG -->|Evaluate Window [10:00 .. 10:05]| WindowResult[Calculate 5-Min Aggregate]
+    StreamDAG -->|Evaluate Window [10 -00 .. 10 -05]| WindowResult[Calculate 5-Min Aggregate]
     StreamDAG -->|Check Late Event (t < Current Watermark)| LateCheck{Is Event Timestamp < W(10:02)?}
     
-    LateCheck -->|No: On-Time| NormalEval[Process in Window State]
-    LateCheck -->|Yes: LATE DATA!| SideOutput[🚨 Emit to Allowed Lateness Side-Output Stream]
+    LateCheck -->|No - On-Time| NormalEval[Process in Window State]
+    LateCheck -->|Yes - LATE DATA!| SideOutput[ Emit to Allowed Lateness Side-Output Stream]
   end
 ```
 

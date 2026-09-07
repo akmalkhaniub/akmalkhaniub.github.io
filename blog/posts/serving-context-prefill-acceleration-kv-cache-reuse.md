@@ -18,8 +18,8 @@ LLM generation happens in two distinct phases:
 flowchart TD
     Prompt[Query Prompt Input] --> Match{Does prefix match static cache?}
     
-    Match -->|Yes: Cache Hit| Reuse[Inject pre-calculated KV Cache blocks]
-    Match -->|No: Cache Miss| Prefill[Run full parallel GPU matrix prefill]
+    Match -->|Yes - Cache Hit| Reuse[Inject pre-calculated KV Cache blocks]
+    Match -->|No - Cache Miss| Prefill[Run full parallel GPU matrix prefill]
     
     Reuse --> Suffix[Process dynamic user input suffix]
     Prefill --> Suffix

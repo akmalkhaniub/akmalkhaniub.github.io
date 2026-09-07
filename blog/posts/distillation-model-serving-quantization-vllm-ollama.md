@@ -15,7 +15,7 @@ In traditional serving frameworks (like Hugging Face Transformers), VRAM is allo
 2. **External Fragmentation**: Virtual memory slots cannot be shared across concurrent requests.
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client Request] --> B[vLLM Inference Engine]
   B --> C{PagedAttention Router}
   C -->|Divide KV Cache into physical blocks| D[Non-contiguous VRAM allocation]

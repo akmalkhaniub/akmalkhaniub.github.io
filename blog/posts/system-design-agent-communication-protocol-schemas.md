@@ -19,11 +19,11 @@ To address these concerns, we structure agent-to-agent communication payloads in
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#4c1d95', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#8b5cf6', 'lineColor': '#4c1d95', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Sender[Agent A: Researcher] -->|1. Serialize State| Package[Build Handoff Envelope]
-    Package -->|2. HTTP / MQ Transit| ReceiverGate[Receiver Contract Validator]
-    ReceiverGate -->|3. Validate Schema| Check{Is Schema Valid?}
-    Check -->|No: Fail & Rollback| Alert[Trigger Handoff Reject Route]
-    Check -->|Yes: Accept State| Worker[Agent B: Writer Executing Task]
+    Sender[Agent A: Researcher] -->|Serialize State| Package[Build Handoff Envelope]
+    Package -->|HTTP / MQ Transit| ReceiverGate[Receiver Contract Validator]
+    ReceiverGate -->|Validate Schema| Check{Is Schema Valid?}
+    Check -->|No - Fail & Rollback| Alert[Trigger Handoff Reject Route]
+    Check -->|Yes - Accept State| Worker[Agent B: Writer Executing Task]
 ```
 
 ---

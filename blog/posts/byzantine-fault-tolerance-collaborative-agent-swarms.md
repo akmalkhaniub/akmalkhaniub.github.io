@@ -18,7 +18,7 @@ This article details how to implement PBFT voting protocols for agent swarms.
 The three-phase voting pipeline used to validate proposed agent execution states:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Client Request / Primary Agent Proposal] --> B[Phase 1: Pre-Prepare]
   
   subgraph SG1_PbftThreePhase ["PBFT Three-Phase Consensus Protocol"]
@@ -29,8 +29,8 @@ graph TD
     E -->|Collect 2f + 1 Commit Votes| F{Commit Quorum Met?}
   end
   
-  F -->|Yes: Verified State| G[Execute & Commit Agent Swarm Action]
-  F -->|No: Reject| H[Trigger Primary View Change / Abort]
+  F -->|Yes - Verified State| G[Execute & Commit Agent Swarm Action]
+  F -->|No - Reject| H[Trigger Primary View Change / Abort]
 ```
 
 ### PBFT Consensus Phases

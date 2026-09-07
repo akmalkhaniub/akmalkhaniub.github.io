@@ -9,7 +9,7 @@ As distributed systems cross into the mid-2020s and beyond, the boundaries of tr
 This article examines the cutting-edge architectural frontiers that define the future of distributed transactions.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TheFutureFrontier ["The Future Frontier (2026 & Beyond)"]
     F1[1. Deterministic Scheduling] --> Calvin["Calvin / FaunaDB: Pre-Sequencing Log (Zero 2PC Aborts)"]
     F2[2. Hardware Acceleration] --> RDMA["RDMA & CXL 3.0: Pooled Memory (1µs Atomic Commits)"]
@@ -95,7 +95,7 @@ Unlike database rows that can simply be rolled back with `pg_wal`, real-world ag
 * *Cannot un-execute an external credit card charge without a fee and refund latency.*
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG2_AutonomousAgenticTransaction ["Autonomous Agentic Transaction Swarm"]
     Mission[User Business Mission] --> AgentCoordinator[Agent Transaction Supervisor]
     AgentCoordinator --> TaskA[1. Provision AWS GPU Cluster]
@@ -103,12 +103,12 @@ graph TD
     AgentCoordinator --> TaskC[3. Send Email Confirmation]
     AgentCoordinator --> TaskD[4. Deploy Containerized Microservices]
     
-    TaskD -->|💥 API Deployment Error 500| Failure[Failure Detection]
+    TaskD -->|API Deployment Error 500| Failure[Failure Detection]
     Failure --> SemanticPlanner[LLM Semantic Compensation Planner]
     
-    SemanticPlanner --> CompA[↩️ Terminate AWS GPU Cluster]
-    SemanticPlanner --> CompB[↩️ Issue Stripe Partial Refund]
-    SemanticPlanner --> CompC[↩️ Send Apology & Status Email]
+    SemanticPlanner --> CompA[↩ Terminate AWS GPU Cluster]
+    SemanticPlanner --> CompB[↩ Issue Stripe Partial Refund]
+    SemanticPlanner --> CompC[↩ Send Apology & Status Email]
   end
 ```
 

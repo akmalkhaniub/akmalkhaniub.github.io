@@ -17,15 +17,15 @@ This article details how modern Tech Leads construct an **Automated Security, Su
 To protect proprietary software from AI-introduced vulnerabilities, every agent-generated pull request must pass through a strict security boundary:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Untrusted Context / Web Ingestion] --> B[Sanitizer: Prompt Injection Firewall]
   B --> C[Agent Execution Sandbox: Network Egress Locked]
   C --> D[Agent Outputs Generated PR]
   D --> E[Gate 1: Dependency Lockfile Auditor]
   E -->|Pass| F[Gate 2: License Compliance AST Scanner]
-  E -->|Fail: Typosquatted Package| X[Block PR & Trigger Security Alert]
-  F -->|Pass: Approved License| G[Production Verification & Merge]
-  F -->|Fail: Copyleft GPL Violation| X
+  E -->|Fail - Typosquatted Package| X[Block PR & Trigger Security Alert]
+  F -->|Pass - Approved License| G[Production Verification & Merge]
+  F -->|Fail - Copyleft GPL Violation| X
 ```
 
 ### The Three Core Security Controls

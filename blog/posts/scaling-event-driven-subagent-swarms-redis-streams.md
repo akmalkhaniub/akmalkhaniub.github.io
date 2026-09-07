@@ -15,8 +15,8 @@ This article details how to architect and scale an event-driven subagent swarm u
 The architecture decouples task dispatchers, subagent worker pools, and result aggregators using Redis Streams Consumer Groups:
 
 ```mermaid
-graph TD
-  A[Orchestrator Task Dispatcher] -->|XADD agent:tasks:stream| B[(Redis Stream: agent:tasks:stream)]
+flowchart TD
+  A[Orchestrator Task Dispatcher] -->|XADD agent -tasks -stream| B[(Redis Stream: agent:tasks:stream)]
   
   subgraph SG1_DistributedConsumerGroup ["Distributed Consumer Group: swarm_workers"]
     B -->|XREADGROUP Consumer 1| C[Worker Container A]
@@ -24,15 +24,15 @@ graph TD
     B -->|XREADGROUP Consumer 3| E[Worker Container C]
   end
   
-  C -->|Task Complete: XACK| B
-  D -->|Task Complete: XACK| B
+  C -->|Task Complete - XACK| B
+  D -->|Task Complete - XACK| B
   
   subgraph SG2_OrphanRecoveryEngine ["Orphan Recovery Engine"]
     E -.->|Container Crashes Mid-Task| F[Pending Entries List PEL Timeout]
     F -->|XCLAIM Claim Orphaned Task| C
   end
   
-  C -->|XADD agent:results:stream| G[(Redis Stream: agent:results:stream)]
+  C -->|XADD agent -results -stream| G[(Redis Stream: agent:results:stream)]
   G --> H[Orchestrator Result Aggregator]
 ```
 

@@ -15,7 +15,7 @@ This article details how to implement a Raft-backed decentralized agent registry
 The lifecycle states and transition pathways of a Raft cluster node:
 
 ```mermaid
-graph TD
+flowchart TD
   A[Follower Node] -->|Election Timeout Expires| B[Candidate Node]
   
   subgraph SG1_LeaderElectionPhase ["Leader Election Phase"]

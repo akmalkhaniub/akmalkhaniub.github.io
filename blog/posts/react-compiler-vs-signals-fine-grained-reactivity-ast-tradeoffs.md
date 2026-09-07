@@ -13,7 +13,7 @@ Why did React refuse the signals train? Why bet the future of the world's most d
 To trace how state mutations propagate through these two disparate runtimes, examine the data-flow topology illustrated in Figure 1 below.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CompilerMemo ["Top-Down Compiler Memoization (React 19 & Compiler)"]
     StateChange1["State Mutation: setCount"] --> ReRenderTree["Re-evaluate Component Function Scope"]
     ReRenderTree --> CacheCheck["HIR Memo Cache Hit Check"]
@@ -73,7 +73,7 @@ Building a compiler that could automatically insert memoization without changing
 As illustrated in Figure 2 below, the compiler lowers raw Babel AST into an intermediate representation where every variable is assigned exactly once, allowing rigorous data-flow and lifetime analysis.
 
 ```mermaid
-graph LR
+flowchart TD
   RawCode["Raw JSX or TSX Source"] --> BabelAST["Babel AST Parser"]
   BabelAST --> HIRLowering["HIR Lowering to SSA Form"]
   HIRLowering --> CFG["Control Flow Graph Analysis"]

@@ -15,7 +15,7 @@ This article details the architecture and implementation of an enterprise-grade 
 The architecture decouples task dispatching, context lookup, model invocation, and state updates using GCP serverless primitives:
 
 ```mermaid
-graph TD
+flowchart TD
   A[API Gateway / Client Request] --> B[Cloud Pub/Sub: Agent Task Topic]
   B --> C[Eventarc Event Router]
   C --> D[Cloud Run Worker Pool: Containerized Agent]
