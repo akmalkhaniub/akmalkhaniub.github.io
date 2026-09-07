@@ -26,25 +26,49 @@ This skill governs the **visual aesthetics, cover art generation, and diagram sy
 ### Vertical Template Example:
 ```mermaid
 flowchart TD
+  classDef leader fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+  classDef zombie fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+  classDef client fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+  classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+  classDef storage fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+
   subgraph Step1_Client ["1. Client Interaction Layer"]
-    A["User Triggers Navigation Event"] --> B["Router Intercepts Link Click"]
+    A["User Triggers Navigation Event"]:::client --> B["Router Intercepts Link Click"]:::client
   end
 
   subgraph Step2_EdgeShell ["2. Edge & Local Cache Evaluation"]
-    B --> C{"Prewarmed App Shell in Cache?"}
-    C -->|Yes: Hit| D["Instant 0ms DOM Layout Paint"]
-    C -->|No: Miss| E["Fetch Minimal Shell Skeleton"]
+    B --> C{"Prewarmed App Shell in Cache?"}:::decision
+    C -->|Yes: Hit| D["Instant 0ms DOM Layout Paint"]:::leader
+    C -->|No: Miss| E["Fetch Minimal Shell Skeleton"]:::zombie
   end
 
   subgraph Step3_DynamicStreaming ["3. Server RSC Dynamic Stream"]
-    D --> F["Dispatch Targeted Dynamic Hole Request"]
-    F --> G["Server Streams React Flight Chunks"]
+    D --> F["Dispatch Targeted Dynamic Hole Request"]:::client
+    F --> G["Server Streams React Flight Chunks"]:::storage
   end
 
   subgraph Step4_SlotHydration ["4. Selective Slot Hydration"]
-    G --> H["Browser Hydrates Dynamic Hole Slots Only"]
+    G --> H["Browser Hydrates Dynamic Hole Slots Only"]:::leader
   end
 ```
+
+---
+
+## 🎨 The ByteByteGo Vibrant 5-Color System (`classDef`)
+
+Never produce dry, monochrome gray diagrams. Every diagram must use this high-contrast semantic palette:
+
+| Semantic Role | Palette Tokens | Mermaid \`classDef\` Syntax |
+| :--- | :--- | :--- |
+| **Healthy / Active / Success** | Mint Green (\`#dcfce7\` / \`#16a34a\`) | \`classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;\` |
+| **Failure / Zombie / Drop** | Coral Red (\`#fee2e2\` / \`#dc2626\`) | \`classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;\` |
+| **Client / Gateway / Router** | Sky Blue (\`#e0f2fe\` / \`#0284c7\`) | \`classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;\` |
+| **Decision / Quorum / Flap** | Warm Amber (\`#fef3c7\` / \`#d97706\`) | \`classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;\` |
+| **Database / Ledger / Token** | Royal Purple (\`#ede9fe\` / \`#7c3aed\`) | \`classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;\` |
+
+### Compact Vertical Layout Rule:
+* Consolidate redundant node clusters (e.g. write \`Followers["Nodes 2, 3, 4, 5"]\` instead of 4 separate boxes).
+* Keep subgraph padding tight and node titles concise (2–4 words) to maximize visual density and prevent vertical ballooning.
 
 ---
 
