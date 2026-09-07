@@ -27,36 +27,16 @@ This skill governs the **visual aesthetics, cover art generation, and diagram sy
 > 1. **Top-Down Macro Flow (`TD`)**: The overall system timeline and lifecycle always progress vertically.
 > 2. **Max 2 Parallel Columns**: Whenever comparing two systems, partitions, branches, or actors (e.g. *Minority Partition vs Majority Partition*, *Client A vs Client B*, or *Memory Guard vs Storage Guard*), place them **side-by-side in 2 symmetrical parallel columns**.
 > 3. **Minimum Readable Node Width**: By limiting concurrency to **2 columns**, each branch maintains $\approx 350\text{px}$ width—safely fitting inside 780px–800px containers with **zero SVG downscaling** and full 14px–16px readable typography.
-> 4. **Never exceed 2 parallel columns** (3 or 4 columns will trigger browser downscaling).
+## 🏷️ The Banner & Badge Node Architecture (Eliminating Faint Gray Text)
 
-### Vertical Template Example:
-```mermaid
-flowchart TD
-  classDef leader fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
-  classDef zombie fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
-  classDef client fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
-  classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
-  classDef storage fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
-
-  subgraph Step1_Client ["1. Client Interaction Layer"]
-    A["User Triggers Navigation Event"]:::client --> B["Router Intercepts Link Click"]:::client
-  end
-
-  subgraph Step2_EdgeShell ["2. Edge & Local Cache Evaluation"]
-    B --> C{"Prewarmed App Shell in Cache?"}:::decision
-    C -->|Yes: Hit| D["Instant 0ms DOM Layout Paint"]:::leader
-    C -->|No: Miss| E["Fetch Minimal Shell Skeleton"]:::zombie
-  end
-
-  subgraph Step3_DynamicStreaming ["3. Server RSC Dynamic Stream"]
-    D --> F["Dispatch Targeted Dynamic Hole Request"]:::client
-    F --> G["Server Streams React Flight Chunks"]:::storage
-  end
-
-  subgraph Step4_SlotHydration ["4. Selective Slot Hydration"]
-    G --> H["Browser Hydrates Dynamic Hole Slots Only"]:::leader
-  end
-```
+> [!IMPORTANT]
+> **Why Native Subgraph Titles and Arrow Pipe Text Fail**:
+> Many chat markdown viewers and documentation themes apply hardcoded CSS rules that render Mermaid's `.cluster-label` (subgraph titles) and `.edgeLabel` (pipe arrow text) in **faint, washed-out gray**.
+>
+> **The ByteByteGo Solution: Explicit Banner & Badge Nodes**:
+> 1. **Header Banner Nodes**: Replace empty subgraph titles with prominent, full-width **Header Banner Nodes** (`:::headerGreen`, `:::headerRed`, `:::headerBlue`, `:::headerAmber`). Because these are styled nodes, they inherit bold typography, colored background fills, and distinct 2px borders that are **100% immune to being grayed out**.
+> 2. **Action / Status Badge Nodes**: For key transitions and packet events, use dedicated **Badge Nodes** (`:::badgeGreen`, `:::badgeRed`, `:::badgeAmber`, `:::badgeBlue`) along the path rather than relying exclusively on faint gray edge text.
+> 3. **Colored Link Arrows**: Use explicit \`linkStyle\` commands to paint arrows green, red, blue, or amber.
 
 ---
 
