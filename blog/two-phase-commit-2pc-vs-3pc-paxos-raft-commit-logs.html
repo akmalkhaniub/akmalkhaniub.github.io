@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/two-phase-commit-2pc-vs-3pc-paxos-raft-commit-logs.html">
   <meta property="og:title" content="Two-Phase Commit (2PC) vs Three-Phase Commit (3PC): Blocking Protocols, Coordinator Failures &amp; Paxos/Raft Commit Logs">
   <meta property="og:description" content="Distributed ACID transactions: implementing Two-Phase Commit (Prepare to Commit/Abort), the Coordinator single-point-of-failure blocking problem, Non-blocking Three-Phase Commit, and Paxos/Raft consensus replicated logs.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/two-phase-commit-2pc-vs-3pc-paxos-raft-commit-logs.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Two-Phase Commit (2PC) vs Three-Phase Commit (3PC): Blocking Protocols, Coordinator Failures &amp; Paxos/Raft Commit Logs">
   <meta name="twitter:description" content="Distributed ACID transactions: implementing Two-Phase Commit (Prepare to Commit/Abort), the Coordinator single-point-of-failure blocking problem, Non-blocking Three-Phase Commit, and Paxos/Raft consensus replicated logs.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/two-phase-commit-2pc-vs-3pc-paxos-raft-commit-logs.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Two-Phase Commit (2PC) vs Three-Phase Commit (3PC): Blocking Protocols, Coordinator Failures & Paxos/Raft Commit Logs",
   "description": "Distributed ACID transactions: implementing Two-Phase Commit (Prepare to Commit/Abort), the Coordinator single-point-of-failure blocking problem, Non-blocking Three-Phase Commit, and Paxos/Raft consensus replicated logs.",
   "url": "https://akmalkhaniub.github.io/blog/two-phase-commit-2pc-vs-3pc-paxos-raft-commit-logs.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/two-phase-commit-2pc-vs-3pc-paxos-raft-commit-logs.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Distributed Transactions, 2PC, Raft Consensus, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Two-Phase Commit (2PC) vs Three-Phase Commit (3PC): Blocking Protocols, Coordinator Failures &amp; Paxos/Raft Commit Logs Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/two-phase-commit-2pc-vs-3pc-paxos-raft-commit-logs.jpg" class="article-cover-img" alt="Two-Phase Commit (2PC) vs Three-Phase Commit (3PC): Blocking Protocols, Coordinator Failures &amp; Paxos/Raft Commit Logs Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Two-Phase Commit (2PC) vs Three-Phase Commit (3PC): Blocking Protocols, Coordinator Failures &amp; Paxos/Raft Commit Logs</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-2pc-coordinator-raft-consensus-replicator">Python Implementation: 2PC Coordinator &amp; Raft Consensus Replicator</a></li>
                 <li><a href="#distributed-transaction-gotchas-best-practices">Distributed Transaction Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In distributed database architecture (<strong>PostgreSQL Shards</strong>, <strong>Oracle RAC</strong>, <strong>CockroachDB</strong>, <strong>Google Spanner</strong>), executing multi-node ACID transactions requires <strong>Atomic Commitment Protocols</strong>.</p>
+<p>In distributed database architecture (<strong>PostgreSQL Shards</strong>, <strong>Oracle RAC</strong>, <strong>CockroachDB</strong>, <strong>Google Spanner</strong>), executing multi-node ACID transactions requires <strong>Atomic Commitment Protocols</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>When a transaction spans multiple database shards, all participating nodes (Cohorts) must agree to either <strong>Commit</strong> the changes permanently or <strong>Abort</strong> them entirely.</p>
 <p>If a single shard commits while another aborts, the database enters an unrecoverable state of data corruption.</p>
 <p>For decades, distributed systems relied on the <strong>Two-Phase Commit (2PC)</strong> protocol.</p>
@@ -127,8 +128,8 @@
 <p>How classic Two-Phase Commit (2PC) operates, its blocking flaw, and how Raft consensus groups make 2PC fault-tolerant:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_ClassicTwoPhase [&quot;Classic Two-Phase Commit (2PC) Protocol&quot;]
-    Coord[Transaction Coordinator] --&gt;|Phase 1 - PREPARE| Cohort1[Database Shard 1]
-    Coord --&gt;|Phase 1 - PREPARE| Cohort2[Database Shard 2]
+    Coord[&quot;Transaction Coordinator&quot;] --&gt;|Phase 1 - PREPARE| Cohort1[&quot;Database Shard 1&quot;]
+    Coord --&gt;|Phase 1 - PREPARE| Cohort2[&quot;Database Shard 2&quot;]
     
     Cohort1 --&gt;|VOTE_COMMIT| Coord
     Cohort2 --&gt;|VOTE_COMMIT| Coord
@@ -141,10 +142,21 @@
     Coord -.-&gt;|Crash Before Phase 2!| Blocked[&quot; Cohorts Blocked Holding Locks Indefinitely!&quot;]
     
     subgraph SG3_FaultTolerantConsensus [&quot;Fault-Tolerant Consensus Transaction Log&quot;]
-      RaftGroup[&quot;Leader + Follower Raft Group&quot;] --&gt;|Replicate Transaction Log| Storage[Persistent Shard Storage]
-      RaftGroup -.-&gt;|Leader Dies -&gt; Auto Failover| NewLeader[New Raft Leader Resumes 2PC!]
+      RaftGroup[&quot;Leader + Follower Raft Group&quot;] --&gt;|Replicate Transaction Log| Storage[&quot;Persistent Shard Storage&quot;]
+      RaftGroup -.-&gt;|Leader Dies -&gt; Auto Failover| NewLeader[&quot;New Raft Leader Resumes 2PC!&quot;]
     end
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Coord,Storage blue
+class Cohort1,NewLeader green
+class Cohort2 purple
+class Blocked yellow
+class RaftGroup red</div>
 <h3 id="core-atomic-commitment-mechanics">Core Atomic Commitment Mechanics</h3>
 <ol>
 <li><strong>Classic Two-Phase Commit (2PC)</strong>:<ul>
@@ -269,8 +281,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Consensus-backed atomic commit protocols (in <strong>Google Spanner</strong>, <strong>CockroachDB</strong>, and <strong>YugabyteDB</strong>) report:</p>
 <ul>
 <li><strong>Zero 2PC Lock Deadlocks on Coordinator Crashes</strong>: Replicating transaction coordinator state via Raft consensus allows instant leader failover without stalling database locks.</li>
-<li><strong>$100%$ Multi-Shard ACID Integrity</strong>: Guarantees zero partial commit corruptions across globally distributed database clusters.</li>
+<li><strong>$100%$ Multi-Shard ACID Integrity</strong>: Guarantees zero partial commit corruptions across globally distributed database clusters. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (2001)</strong>. <em>Paxos Made Simple</em>. ACM SIGACT News. <a href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/paxos-simple.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Lamport, L. (1998)</strong>. <em>The Part-Time Parliament</em>. ACM TOCS. <a href="https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Corbett, J. C., et al. (2012)</strong>. <em>Spanner: Google&#39;s Globally-Distributed Database</em>. OSDI. <a href="https://research.google/pubs/pub39966/" target="_blank" rel="noopener">https://research.google/pubs/pub39966/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Lamport, L. (1978)</strong>. <em>Time, Clocks, and the Ordering of Events in a Distributed System</em>. CACM. <a href="https://lamport.azurewebsites.net/pubs/time-clocks.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/time-clocks.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Thomson, A., et al. (2012)</strong>. <em>Calvin: Fast Distributed Transactions for Partitioned Database Systems</em>. SIGMOD. <a href="https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf" target="_blank" rel="noopener">https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -307,6 +331,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-2pc-coordinator-raft-consensus-replicator" class="toc-link">Python Implementation: 2PC Coordinator &amp; Raft Consensus Replicator</a></li>
               <li class="toc-item toc-h2"><a href="#distributed-transaction-gotchas-best-practices" class="toc-link">Distributed Transaction Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

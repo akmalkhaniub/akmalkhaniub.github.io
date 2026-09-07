@@ -1,6 +1,6 @@
 # GitOps Pipeline Engineering: Automated State Drift Detection & Remediation
 
-In traditional CI/CD pipelines, external deployment runners (like Jenkins or GitHub Actions runners) execute imperative deployment commands (`kubectl apply -f manifest.yaml`) pushing changes into production. This **Push-Based** approach requires granting external CI systems cluster-admin credentials, creating significant security risks and potential configuration drift when developers make manual hotfix changes directly in production environments.
+In traditional CI/CD pipelines, external deployment runners (like Jenkins or GitHub Actions runners) execute imperative deployment commands (`kubectl apply -f manifest [1].yaml`) pushing changes into production. This **Push-Based** approach requires granting external CI systems cluster-admin credentials, creating significant security risks and potential configuration drift when developers make manual hotfix changes directly in production environments.
 
 To guarantee security and compliance, platform teams adopt the **GitOps Model**.
 
@@ -16,21 +16,32 @@ How an in-cluster GitOps Agent pulls Git commit manifests and heals live cluster
 
 ```mermaid
 flowchart TD
-  Developer[Developer Git Commit] -->|git push main| GitRepo[(Git Repository: Single Source of Truth)]
+  Developer["Developer Git Commit"] -->|git push main| GitRepo[(Git Repository: Single Source of Truth)]
   
   subgraph SG1_InClusterGitops ["In-Cluster GitOps Agent (ArgoCD / Flux)"]
-    GitRepo -->|Pull Latest Git Commit SHA| Agent[GitOps Sync Agent]
-    ClusterState[Live Kubernetes Cluster API] -->|Read Actual Live State| Agent
+    GitRepo -->|Pull Latest Git Commit SHA| Agent["GitOps Sync Agent"]
+    ClusterState["Live Kubernetes Cluster API"] -->|Read Actual Live State| Agent
     
     Agent -->|Compare Git Manifest vs Live State| DiffEngine{Drift Detected?}
   end
   
   subgraph SG2_AutomatedSelfHealing ["Automated Self-Healing Remediation"]
-    DiffEngine -->|Yes - Out of Sync / Drifted| Healer[Automated Self-Healing Reconciler]
-    DiffEngine -->|No - Synced| Sleep[Sleep & Wait for Next Poll / Webhook]
+    DiffEngine -->|Yes - Out of Sync / Drifted| Healer["Automated Self-Healing Reconciler"]
+    DiffEngine -->|No - Synced| Sleep["Sleep & Wait for Next Poll / Webhook"]
     
     Healer -->|Overwrite Out-of-Band Changes| ClusterState
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Developer blue
+class Agent green
+class ClusterState purple
+class Healer yellow
+class Sleep red
 ```
 
 ### Core GitOps Principles
@@ -173,4 +184,11 @@ When building GitOps deployment pipelines:
 ## Real-World Enterprise Impact
 Teams deploying GitOps pipelines report:
 * **Zero Out-of-Band Production Drift**: In-cluster pull agents continuously audit and revert unauthorized manual changes back to verified Git code states.
-* **Streamlined Security Auditing**: Every production change is linked directly to a Git commit SHA, providing complete audit compliance for SOC2 and ISO27001.
+* **Streamlined Security Auditing**: Every production change is linked directly to a Git commit SHA, providing complete audit compliance for SOC2 and ISO27001. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

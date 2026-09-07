@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/protocol-buffers-grpc-streaming-multiplexed-http2-framing.html">
   <meta property="og:title" content="Protocol Buffers &amp; gRPC Streaming: Multiplexed HTTP/2 Framing Internals">
   <meta property="og:description" content="High-speed inter-service RPC communication: implementing Protobuf 7-bit Varint encoding, gRPC 5-byte framing headers, and multiplexed HTTP/2 binary streams.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/protocol-buffers-grpc-streaming-multiplexed-http2-framing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-17">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Protocol Buffers &amp; gRPC Streaming: Multiplexed HTTP/2 Framing Internals">
   <meta name="twitter:description" content="High-speed inter-service RPC communication: implementing Protobuf 7-bit Varint encoding, gRPC 5-byte framing headers, and multiplexed HTTP/2 binary streams.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/protocol-buffers-grpc-streaming-multiplexed-http2-framing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Protocol Buffers & gRPC Streaming: Multiplexed HTTP/2 Framing Internals",
   "description": "High-speed inter-service RPC communication: implementing Protobuf 7-bit Varint encoding, gRPC 5-byte framing headers, and multiplexed HTTP/2 binary streams.",
   "url": "https://akmalkhaniub.github.io/blog/protocol-buffers-grpc-streaming-multiplexed-http2-framing.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/protocol-buffers-grpc-streaming-multiplexed-http2-framing.jpg",
   "datePublished": "2026-08-17",
   "keywords": "gRPC, Protobuf, HTTP2, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Protocol Buffers &amp; gRPC Streaming: Multiplexed HTTP/2 Framing Internals Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/protocol-buffers-grpc-streaming-multiplexed-http2-framing.jpg" class="article-cover-img" alt="Protocol Buffers &amp; gRPC Streaming: Multiplexed HTTP/2 Framing Internals Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Protocol Buffers &amp; gRPC Streaming: Multiplexed HTTP/2 Framing Internals</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-protobuf-varint-grpc-framing-engine">Python Implementation: Protobuf Varint &amp; gRPC Framing Engine</a></li>
                 <li><a href="#grpc-protobuf-gotchas-best-practices">gRPC &amp; Protobuf Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Modern microservices require high-speed inter-service communication. Traditional REST APIs over HTTP/1.1 with JSON payloads present significant performance limitations:</p>
+<p>Modern microservices require high-speed inter-service communication. Traditional REST APIs over HTTP/1 <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.1 with JSON payloads present significant performance limitations:</p>
 <ol>
 <li><strong>Verbose Payload Sizes</strong>: Repeating JSON key strings (e.g. <code>&quot;transaction_id&quot;: ...</code>) across millions of API calls inflates network bandwidth.</li>
 <li><strong>Slow Text Parsing</strong>: Converting JSON strings to in-memory native objects requires CPU-intensive string parsing.</li>
@@ -129,21 +130,32 @@
 <p>How gRPC packages Protobuf payloads into 5-byte framed messages over HTTP/2 streams:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_UserApplicationLayer [&quot;User Application Layer&quot;]
-    Req[gRPC Service Request Struct] --&gt;|Protobuf Binary Serialization| ProtoBytes[Protobuf Binary Bytes]
+    Req[&quot;gRPC Service Request Struct&quot;] --&gt;|Protobuf Binary Serialization| ProtoBytes[&quot;Protobuf Binary Bytes&quot;]
   end
   
   subgraph SG2_Grpc5Byte [&quot;gRPC 5-Byte Framing Layer&quot;]
-    ProtoBytes --&gt;|Prepend 1-byte Compression Flag + 4-byte Length| FramedMsg[gRPC Framed Message: 5-byte Prefix + Payload]
+    ProtoBytes --&gt;|Prepend 1-byte Compression Flag + 4-byte Length| FramedMsg[&quot;gRPC Framed Message: 5-byte Prefix + Payload&quot;]
   end
   
   subgraph SG3_Http2Transport [&quot;HTTP/2 Transport Layer&quot;]
-    FramedMsg --&gt;|Slice into HTTP/2 DATA Frames| H2_Stream[HTTP/2 Stream ID #3]
-    H2_Headers[HTTP/2 HEADERS Frame: HPACK Compressed] --&gt; H2_Stream
+    FramedMsg --&gt;|Slice into HTTP/2 DATA Frames| H2_Stream[&quot;HTTP/2 Stream ID #3&quot;]
+    H2_Headers[&quot;HTTP/2 HEADERS Frame: HPACK Compressed&quot;] --&gt; H2_Stream
     
-    H2_Stream --&gt;|Multiplex Streams over Single TCP Connection| TCP[Single Persistent TCP Connection]
+    H2_Stream --&gt;|Multiplex Streams over Single TCP Connection| TCP[&quot;Single Persistent TCP Connection&quot;]
   end
   
-  TCP --&gt; Server[gRPC Server Processing]</div>
+  TCP --&gt; Server[&quot;gRPC Server Processing&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Req,TCP blue
+class ProtoBytes,Server green
+class FramedMsg purple
+class H2_Stream yellow
+class H2_Headers red</div>
 <h3 id="core-serialization-protocol-mechanics">Core Serialization &amp; Protocol Mechanics</h3>
 <ol>
 <li><strong>Protobuf Varint Encoding</strong>: Variable-Length Quantity (Varint) encodes integers using 1 to 10 bytes depending on magnitude. Each byte uses the 7 least significant bits for data and the Most Significant Bit (MSB, <code>0x80</code>) as a Continuation Bit indicating if more bytes follow.</li>
@@ -279,8 +291,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Microservice platforms migrating from REST/JSON to gRPC report:</p>
 <ul>
 <li><strong>70% Network Bandwidth Savings</strong>: Binary Protobuf serialization reduces payload sizes by up to $70%$ compared to JSON text.</li>
-<li><strong>$7\times$ Faster Deserialization</strong>: Binary wire parsing eliminates string allocations, dramatically reducing CPU overhead on microservice API gateways.</li>
+<li><strong>$7\times$ Faster Deserialization</strong>: Binary wire parsing eliminates string allocations, dramatically reducing CPU overhead on microservice API gateways. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Belshe, M., Peon, R., &amp; Thomson, M. (2015)</strong>. <em>Hypertext Transfer Protocol Version 2 (HTTP/2)</em>. RFC 7540. <a href="https://www.rfc-editor.org/rfc/rfc7540" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7540</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>gRPC Authors (2024)</strong>. <em>gRPC Documentation</em>. grpc.io. <a href="https://grpc.io/docs/" target="_blank" rel="noopener">https://grpc.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Google (2024)</strong>. <em>Protocol Buffers Language Guide</em>. protobuf.dev. <a href="https://protobuf.dev/programming-guides/proto3/" target="_blank" rel="noopener">https://protobuf.dev/programming-guides/proto3/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -317,6 +340,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-protobuf-varint-grpc-framing-engine" class="toc-link">Python Implementation: Protobuf Varint &amp; gRPC Framing Engine</a></li>
               <li class="toc-item toc-h2"><a href="#grpc-protobuf-gotchas-best-practices" class="toc-link">gRPC &amp; Protobuf Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

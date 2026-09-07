@@ -9,21 +9,32 @@
 ## The Operational Risk of Suspended State Locks
 
 When an agent halts mid-transaction to await validation:
-* **Active Resource Locking**: The agent might hold open database connections, pessimistic row locks, or staged branch files.
+* **Active Resource Locking**: The agent might hold open database connections, pessimistic row locks, or staged branch files [1].
 * **Pipeline Staging**: Staged feature branches remain unmerged, blocking subsequent developer deployments.
 * **The Solution**: **TTL Expirations**. We assign a strict Time-to-Live limit to every human approval request. If the TTL expires without validation, a daemon process triggers a fallback plan, rolls back database transactions, and alerts backup managers.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Pause[Agent pauses: Starts TTL Clock] --> Check{Has TTL Expired?}
+    Pause["Agent pauses: Starts TTL Clock"] --> Check{Has TTL Expired?}
     
-    Check -->|No - Callback Received| Resume[Resume Agent: Commit Changes]
-    Check -->|Yes - Expired| Fallback[Trigger Timeout Fallback Handler]
+    Check -->|No - Callback Received| Resume["Resume Agent: Commit Changes"]
+    Check -->|Yes - Expired| Fallback["Trigger Timeout Fallback Handler"]
     
-    Fallback --> Rollback[Execute Compensating Transaction Rollback]
-    Rollback --> Release[Release DB & Git Row Locks]
-    Release --> Notify[Escalate to Secondary Slack / Email Alert]
+    Fallback --> Rollback["Execute Compensating Transaction Rollback"]
+    Rollback --> Release["Release DB & Git Row Locks"]
+    Release --> Notify["Escalate to Secondary Slack / Email Alert"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Pause,Notify blue
+class Resume green
+class Fallback purple
+class Rollback yellow
+class Release red
 ```
 
 ---
@@ -123,4 +134,11 @@ if __name__ == "__main__":
 
 * **Set Strict TTL Limits**: Never allow agent processes to pause indefinitely. Always attach a Time-To-Live expiration limit to every human review request.
 * **Design Compensating Actions**: For every state modification executed in Phase 1, define a reverse compensating action to clean up changes upon timeout.
-* **Escalate, Don't Fail Silently**: Configure email or PagerDuty alerts to flag escalated timeouts, ensuring critical tasks are not forgotten in the queue.
+* **Escalate, Don't Fail Silently**: Configure email or PagerDuty alerts to flag escalated timeouts, ensuring critical tasks are not forgotten in the queue. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

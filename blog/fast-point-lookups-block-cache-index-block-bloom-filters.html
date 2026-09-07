@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/fast-point-lookups-block-cache-index-block-bloom-filters.html">
   <meta property="og:title" content="Fast Point Lookups: Block Cache, Index Block &amp; Counting Bloom Filters">
   <meta property="og:description" content="Sub-millisecond read latency in LSM storage: implementing Counting Bloom Filters, binary search Index Blocks, and LRU Block Cache eviction.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/fast-point-lookups-block-cache-index-block-bloom-filters.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Fast Point Lookups: Block Cache, Index Block &amp; Counting Bloom Filters">
   <meta name="twitter:description" content="Sub-millisecond read latency in LSM storage: implementing Counting Bloom Filters, binary search Index Blocks, and LRU Block Cache eviction.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/fast-point-lookups-block-cache-index-block-bloom-filters.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Fast Point Lookups: Block Cache, Index Block & Counting Bloom Filters",
   "description": "Sub-millisecond read latency in LSM storage: implementing Counting Bloom Filters, binary search Index Blocks, and LRU Block Cache eviction.",
   "url": "https://akmalkhaniub.github.io/blog/fast-point-lookups-block-cache-index-block-bloom-filters.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/fast-point-lookups-block-cache-index-block-bloom-filters.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Bloom Filters, Storage Engines, RocksDB, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Fast Point Lookups: Block Cache, Index Block &amp; Counting Bloom Filters Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/fast-point-lookups-block-cache-index-block-bloom-filters.jpg" class="article-cover-img" alt="Fast Point Lookups: Block Cache, Index Block &amp; Counting Bloom Filters Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Fast Point Lookups: Block Cache, Index Block &amp; Counting Bloom Filters</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-fast-lsm-point-lookup-engine">Python Implementation: Fast LSM Point Lookup Engine</a></li>
                 <li><a href="#read-acceleration-gotchas-best-practices">Read Acceleration Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>While Log-Structured Merge-Tree (LSM-Tree) storage engines (<strong>RocksDB</strong>, <strong>LevelDB</strong>) excel at high-throughput write workloads, point lookups (<code>GET key</code>) face an inherent structural challenge: <strong>Read Amplification</strong>.</p>
+<p>While Log-Structured Merge-Tree (LSM-Tree) storage engines (<strong>RocksDB</strong>, <strong>LevelDB</strong>) excel at high-throughput write workloads, point lookups (<code>GET key</code>) face an inherent structural challenge: <strong>Read Amplification</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>If a requested key is not present in the active in-memory MemTable, the database must search across multiple immutable Sorted String Table (SSTable) files on disk.</p>
 <p>Scanning every SSTable file on disk for a non-existent key results in devastating read latency spikes (issuing tens of disk I/O operations per query).</p>
 <p>To achieve sub-millisecond point lookup latencies, high-performance storage engines employ a <strong>3-Tier Read Acceleration Stack</strong>: <strong>In-Memory Bloom Filters</strong>, <strong>SSTable Index Blocks</strong>, and <strong>Block Caches</strong>.</p>
@@ -124,23 +125,34 @@
 <h2 id="lsm-tree-fast-read-acceleration-pipeline">LSM-Tree Fast Read Acceleration Pipeline</h2>
 <p>How Bloom Filters, Index Blocks, and Block Caches intercept read queries before touching disk:</p>
 <div class="mermaid">flowchart TD
-  ClientRead[Client Point Lookup GET 'user_101'] --&gt; MemTable{Present in MemTable?}
+  ClientRead[&quot;Client Point Lookup GET 'user_101'&quot;] --&gt; MemTable{Present in MemTable?}
   
-  MemTable --&gt;|Yes - Hit!| ReturnRAM[Return Value from RAM: &lt; 100ns]
+  MemTable --&gt;|Yes - Hit!| ReturnRAM[&quot;Return Value from RAM: &lt; 100ns&quot;]
   MemTable --&gt;|No - Miss!| BloomFilter{Check In-Memory Bloom Filter}
   
   subgraph SG1_InMemoryRead [&quot;In-Memory Read Acceleration Layers&quot;]
-    BloomFilter --&gt;|Definitely NOT Present - False| SkipDisk[ SKIP DISK READ! 0 Disk IOPS]
+    BloomFilter --&gt;|Definitely NOT Present - False| SkipDisk[&quot; SKIP DISK READ! 0 Disk IOPS&quot;]
     BloomFilter --&gt;|Might Be Present - True| BlockCache{Check LRU Block Cache}
     
-    BlockCache --&gt;|Cache Hit| ReturnCache[Return Block from Cache RAM: &lt; 5us]
+    BlockCache --&gt;|Cache Hit| ReturnCache[&quot;Return Block from Cache RAM: &lt; 5us&quot;]
   end
   
   subgraph SG2_SstableDiskRead [&quot;SSTable Disk Read Layer&quot;]
-    BlockCache --&gt;|Cache Miss| IndexBlock[Read SSTable Footer Index Block]
-    IndexBlock --&gt;|Binary Search Offset| DataBlock[Seek Data Block on NVMe Disk: &lt; 100us]
-    DataBlock --&gt; PopulateCache[Populate LRU Block Cache &amp; Return Value]
-  end</div>
+    BlockCache --&gt;|Cache Miss| IndexBlock[&quot;Read SSTable Footer Index Block&quot;]
+    IndexBlock --&gt;|Binary Search Offset| DataBlock[&quot;Seek Data Block on NVMe Disk: &lt; 100us&quot;]
+    DataBlock --&gt; PopulateCache[&quot;Populate LRU Block Cache &amp; Return Value&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ClientRead,DataBlock blue
+class ReturnRAM,PopulateCache green
+class SkipDisk purple
+class ReturnCache yellow
+class IndexBlock red</div>
 <h3 id="core-read-acceleration-mechanics">Core Read Acceleration Mechanics</h3>
 <ol>
 <li><strong>Counting / Bit-Array Bloom Filters</strong>: A probabilistic data structure stored entirely in RAM alongside each SSTable file. A Bloom filter uses $k$ independent hash functions to set bits in an $m$-bit array:<ul>
@@ -299,8 +311,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Storage engines deploying Bloom Filters, Index Blocks, and Block Caches (such as <strong>RocksDB</strong> and <strong>LevelDB</strong>) report:</p>
 <ul>
 <li><strong>Over 99% Reduction in Disk Reads for Negative Queries</strong>: Intercepting non-existent key lookups via Bloom filters saves millions of unnecessary disk IOPS daily.</li>
-<li><strong>Sub-100 Microsecond p99 Read Latencies</strong>: Servicing repeated point lookups directly from LRU Block Cache matches in-memory database performance.</li>
+<li><strong>Sub-100 Microsecond p99 Read Latencies</strong>: Servicing repeated point lookups directly from LRU Block Cache matches in-memory database performance. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -337,6 +360,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-fast-lsm-point-lookup-engine" class="toc-link">Python Implementation: Fast LSM Point Lookup Engine</a></li>
               <li class="toc-item toc-h2"><a href="#read-acceleration-gotchas-best-practices" class="toc-link">Read Acceleration Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

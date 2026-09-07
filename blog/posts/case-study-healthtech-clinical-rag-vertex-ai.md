@@ -1,6 +1,6 @@
 # Case Study: Scaling an AI-Powered HealthTech Diagnostics & Clinical RAG Platform
 
-Deploying artificial intelligence inside healthcare environments requires adhering to strict regulatory security, zero data leakage, and ultra-high retrieval precision. This case study documents how our team built and scaled a HIPAA-compliant clinical context and diagnostic RAG engine on Google Cloud Platform for over 120 hospital networks.
+Deploying artificial intelligence inside healthcare environments requires adhering to strict regulatory security, zero data leakage, and ultra-high retrieval precision [1]. This case study documents how our team built and scaled a HIPAA-compliant clinical context and diagnostic RAG engine on Google Cloud Platform for over 120 hospital networks.
 
 ---
 
@@ -41,19 +41,30 @@ The platform architecture enforces strict HIPAA data perimeters around GCP data 
 
 ```mermaid
 flowchart TD
-  A[Hospital EHR System / FHIR Stream] --> B[GCP Cloud Healthcare API]
-  B --> C[Cloud Dataflow De-identification Pipeline]
+  A["Hospital EHR System / FHIR Stream"] --> B["GCP Cloud Healthcare API"]
+  B --> C["Cloud Dataflow De-identification Pipeline"]
   C --> D[(AlloyDB AI: Encrypted Medical Vector Store)]
   
   subgraph SG1_HipaaSecureGcp ["HIPAA Secure GCP VPC Perimeter"]
-    E[Clinician Diagnostic Query] --> F[Cloud Run: Authenticated Clinical Agent Worker]
+    E["Clinician Diagnostic Query"] --> F["Cloud Run: Authenticated Clinical Agent Worker"]
     F -->|Row-Level Security RLS| D
-    F -->|Hybrid Search| G[Vertex AI Search: Medical Knowledgebase]
-    F --> H[Vertex AI: MedLM / Gemini 1.5 Pro]
+    F -->|Hybrid Search| G["Vertex AI Search: Medical Knowledgebase"]
+    F --> H["Vertex AI: MedLM / Gemini 1.5 Pro"]
   end
   
-  H --> I[Diagnostic Summary + Citation Verification]
-  F --> J[Cloud Audit Logs + Cloud KMS Audit Trail]
+  H --> I["Diagnostic Summary + Citation Verification"]
+  F --> J["Cloud Audit Logs + Cloud KMS Audit Trail"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B,H green
+class C,I purple
+class E,J yellow
+class F red
 ```
 
 ### Tech Stack Breakdown
@@ -180,4 +191,10 @@ Following full production deployment across 120 hospital networks:
 
 > **"In healthcare AI, deterministic security gates must always wrap probabilistic models."**
 > 
-> As Tech Lead, this project proved that LLMs should never be trusted as primary security boundaries. Placing deterministic PII scrubbing (Cloud DLP) and relational access controls (PostgreSQL RLS) *outside* the model guarantees compliance regardless of model behavior.
+> As Tech Lead, this project proved that LLMs should never be trusted as primary security boundaries. Placing deterministic PII scrubbing (Cloud DLP) and relational access controls (PostgreSQL RLS) *outside* the model guarantees compliance regardless of model behavior. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

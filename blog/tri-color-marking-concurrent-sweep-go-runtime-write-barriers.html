@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/tri-color-marking-concurrent-sweep-go-runtime-write-barriers.html">
   <meta property="og:title" content="Tri-Color Marking &amp; Concurrent Sweep: Go Runtime Garbage Collector &amp; Write Barriers">
   <meta property="og:description" content="Low-latency concurrent GC: implementing Dijkstra Tri-Color Abstraction (White, Grey, Black), Go Hybrid Write Barriers, concurrent sweep mechanics, and GC CPU pacer.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/tri-color-marking-concurrent-sweep-go-runtime-write-barriers.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Tri-Color Marking &amp; Concurrent Sweep: Go Runtime Garbage Collector &amp; Write Barriers">
   <meta name="twitter:description" content="Low-latency concurrent GC: implementing Dijkstra Tri-Color Abstraction (White, Grey, Black), Go Hybrid Write Barriers, concurrent sweep mechanics, and GC CPU pacer.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/tri-color-marking-concurrent-sweep-go-runtime-write-barriers.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Tri-Color Marking & Concurrent Sweep: Go Runtime Garbage Collector & Write Barriers",
   "description": "Low-latency concurrent GC: implementing Dijkstra Tri-Color Abstraction (White, Grey, Black), Go Hybrid Write Barriers, concurrent sweep mechanics, and GC CPU pacer.",
   "url": "https://akmalkhaniub.github.io/blog/tri-color-marking-concurrent-sweep-go-runtime-write-barriers.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/tri-color-marking-concurrent-sweep-go-runtime-write-barriers.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Go Runtime, Tri-Color GC, Write Barriers, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Tri-Color Marking &amp; Concurrent Sweep: Go Runtime Garbage Collector &amp; Write Barriers Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/tri-color-marking-concurrent-sweep-go-runtime-write-barriers.jpg" class="article-cover-img" alt="Tri-Color Marking &amp; Concurrent Sweep: Go Runtime Garbage Collector &amp; Write Barriers Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Tri-Color Marking &amp; Concurrent Sweep: Go Runtime Garbage Collector &amp; Write Barriers</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-tri-color-gc-engine-hybrid-write-barrier">Python Implementation: Tri-Color GC Engine &amp; Hybrid Write Barrier</a></li>
                 <li><a href="#go-gc-gotchas-best-practices">Go GC Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In cloud-native microservices (<strong>Kubernetes</strong>, <strong>Docker</strong>, <strong>CockroachDB</strong>, <strong>Terraform</strong>), the <strong>Go Runtime</strong> powers high-concurrency networking workloads.</p>
+<p>In cloud-native microservices (<strong>Kubernetes</strong>, <strong>Docker</strong>, <strong>CockroachDB</strong>, <strong>Terraform</strong>), the <strong>Go Runtime</strong> powers high-concurrency networking workloads <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>To serve millions of concurrent Goroutines without latency disruptions, Go features a low-latency <strong>Concurrent Tri-Color Mark-and-Sweep Garbage Collector</strong>.</p>
 <p>Unlike generational collectors that require complex object relocation, Go&#39;s GC collector operates concurrently alongside active Goroutines (<strong>Mutators</strong>), keeping Stop-The-World (STW) pauses well under <strong>$1\text{ millisecond}$</strong>.</p>
 <p>To prevent Mutator threads from hiding live objects during concurrent marking, the Go runtime enforces strict memory invariants using <strong>Hybrid Write Barriers</strong>.</p>
@@ -134,10 +135,21 @@
   end
   
   subgraph SG2_TriColorInvariant [&quot;Tri-Color Invariant Breakdown &amp; Hybrid Write Barrier Protection&quot;]
-    Mutator[Goroutine Mutator Thread] --&gt;|Mutator Action - black.field = white| DangerCheck{Danger: Black points to White!}
-    DangerCheck --&gt;|Go Hybrid Write Barrier Intercepts!| Shade[ Shade Target White Object -&gt; Turn GREY!]
-    Shade --&gt; SafeMark[ Tri-Color Invariant Preserved: Zero Live Object Loss!]
-  end</div>
+    Mutator[&quot;Goroutine Mutator Thread&quot;] --&gt;|Mutator Action - black.field = white| DangerCheck{Danger: Black points to White!}
+    DangerCheck --&gt;|Go Hybrid Write Barrier Intercepts!| Shade[&quot; Shade Target White Object -&gt; Turn GREY!&quot;]
+    Shade --&gt; SafeMark[&quot; Tri-Color Invariant Preserved: Zero Live Object Loss!&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class White,SafeMark blue
+class Grey green
+class Black purple
+class Mutator yellow
+class Shade red</div>
 <h3 id="core-go-gc-principles">Core Go GC Principles</h3>
 <ol>
 <li><strong>The Tri-Color Marking Abstraction</strong>:<ul>
@@ -304,8 +316,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Go&#39;s concurrent tri-color garbage collector (powering <strong>Kubernetes</strong>, <strong>Docker</strong>, and <strong>CockroachDB</strong>) reports:</p>
 <ul>
 <li><strong>Microsecond Max STW Pause Times ($&lt; 500\mu\text{s}$)</strong>: Hybrid write barriers eliminate long stack re-scanning pauses.</li>
-<li><strong>Predictable Microservice P99 Latency</strong>: Background concurrent sweeping prevents stop-the-world latency spikes in API gateways and cloud control planes.</li>
+<li><strong>Predictable Microservice P99 Latency</strong>: Background concurrent sweeping prevents stop-the-world latency spikes in API gateways and cloud control planes. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -342,6 +365,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-tri-color-gc-engine-hybrid-write-barrier" class="toc-link">Python Implementation: Tri-Color GC Engine &amp; Hybrid Write Barrier</a></li>
               <li class="toc-item toc-h2"><a href="#go-gc-gotchas-best-practices" class="toc-link">Go GC Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

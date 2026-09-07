@@ -1,6 +1,6 @@
 # Building SpecForge: Two-Pass Claude 3.5 Extraction Pipeline, pgvector Deduplication & Real-Time Token Economics
 
-In modern agile software engineering (**SpecForge**, **Jira Automation**, **Linear Integrations**), transforming 50-page unstructured Product Requirement Documents (PRDs) and Business Requirement Documents (BRDs) into actionable backlog tickets is a notorious bottleneck.
+In modern agile software engineering (**SpecForge**, **Jira Automation**, **Linear Integrations**), transforming 50-page unstructured Product Requirement Documents (PRDs) and Business Requirement Documents (BRDs) into actionable backlog tickets is a notorious bottleneck [1].
 
 When product managers and engineering leads attempt to parse complex PRDs in a single LLM prompt, models suffer from "attention dilution"—skipping subtle non-functional requirements, hallucinating edge cases, and generating inconsistent ticket formats.
 
@@ -19,8 +19,8 @@ How SpecForge ingests raw DOCX/PDF PRDs, performs two-pass hierarchical analysis
 ```mermaid
 flowchart TD
   subgraph SG1_IngestionDocumentChunking ["Ingestion & Document Chunking"]
-    Doc[Raw PRD / BRD Document .docx/.pdf] --> Ingestion[mammoth / pdfplumber Ingest Engine]
-    Ingestion --> Chunks[Hierarchical Markdown Chunking]
+    Doc["Raw PRD / BRD Document .docx/.pdf"] --> Ingestion["mammoth / pdfplumber Ingest Engine"]
+    Ingestion --> Chunks["Hierarchical Markdown Chunking"]
   end
   
   subgraph SG2_TwoPassClaude ["Two-Pass Claude 3.5 Extraction Engine"]
@@ -37,6 +37,17 @@ flowchart TD
     PGVector -->|New Unique Story| Backlog["Persistent Jira / Linear Backlog"]
     Pass1 & Pass2 --> Metering["Token Economics Metering ($ / session)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Doc,Pass2,Backlog blue
+class Ingestion,Stories,Metering green
+class Chunks,Embedder purple
+class Pass1,PGVector yellow
+class Epics,Merge red
 ```
 
 ### Core Architecture Highlights
@@ -212,4 +223,13 @@ Deploying SpecForge across enterprise engineering workflows delivers:
 * **$100\%$ Schema Determinism**: Structured tool calling eliminates markdown parsing syntax errors.
 * **Zero Duplicate Backlog Tickets**: `pgvector` semantic deduplication catches overlapping stories across multi-author PRDs.
 
-You can explore the full open-source codebase on GitHub: **[`akmalkhaniub/specforge`](https://github.com/akmalkhaniub/specforge)**.
+You can explore the full open-source codebase on GitHub: **[`akmalkhaniub/specforge`](https://github.com/akmalkhaniub/specforge)**. [2]
+
+## References & Further Reading
+
+1. **pgvector Authors (2024)**. *pgvector: Open-source vector similarity search for Postgres*. GitHub. [https://github.com/pgvector/pgvector](https://github.com/pgvector/pgvector)
+2. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Dao, T., et al. (2022)**. *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*. NeurIPS. [https://arxiv.org/abs/2205.14135](https://arxiv.org/abs/2205.14135)
+5. **Vaswani, A., et al. (2017)**. *Attention Is All You Need*. NeurIPS. [https://arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
+6. **Kwon, W., et al. (2023)**. *Efficient Memory Management for Large Language Model Serving with PagedAttention*. SOSP. [https://arxiv.org/abs/2309.06180](https://arxiv.org/abs/2309.06180)

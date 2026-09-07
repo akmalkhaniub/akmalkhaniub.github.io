@@ -18,7 +18,7 @@ export default function Page({ params }: { params: { id: string } }) {
 }
 ```
 
-Now, developers were told that reading a string from the URL path required an asynchronous `await`. Accessing cookies was no longer `cookies().get('session')`; it was `(await cookies()).get('session')`. Accessing HTTP headers required `await headers()`.
+Now, developers were told that reading a string from the URL path required an asynchronous `await` [1]. Accessing cookies was no longer `cookies().get('session')`; it was `(await cookies()).get('session')`. Accessing HTTP headers required `await headers()`.
 
 Across social media and GitHub issues, the reaction was swift: *"Why did Next.js add useless boilerplate to basic properties? Why are strings in a URL asynchronous?"*
 
@@ -42,6 +42,17 @@ flowchart TD
       DeferredRead --> MicrotaskAwait["Microtask resolves only when await is executed inside Suspense"]
     end
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Component1,BuildStaticShell blue
+class GlobalBailout,MicrotaskAwait green
+class NullifyPrerender purple
+class Component2 yellow
+class DeferredRead red
 ```
 *Figure 1: Concurrency comparison between synchronous parameter blocking and decoupled asynchronous request promise microtask scheduling. Source: ECMAScript & Next.js Core Architecture [1, 3, 4].*
 

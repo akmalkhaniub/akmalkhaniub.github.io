@@ -3,7 +3,7 @@
 > * **Why it matters:** Choosing the wrong framework locks you into rigid state and execution models, leading to massive refactoring bottlenecks, security risks, or performance issues as your agentic system scales.
 > * **What we synthesized:** We synthesized a clear architectural alignment guide and selection checklist based on recent 2026 benchmark studies to help you map your project requirements to the ideal framework paradigm.
 
-Choosing the right framework is the most critical decision when building agentic systems. A framework locks you into a specific way of managing state, executing loops, and handling tool calls. Selecting the wrong foundation can cause massive refactoring bottlenecks when your project requirements evolve.
+Choosing the right framework is the most critical decision when building agentic systems [1]. A framework locks you into a specific way of managing state, executing loops, and handling tool calls. Selecting the wrong foundation can cause massive refactoring bottlenecks when your project requirements evolve.
 
 This article provides a comparative analysis of the leading agent orchestration libraries, drawing from recent framework evaluations such as the 2026 **MAFBench** (Multi-Agent Framework Benchmark) study.
 
@@ -16,19 +16,30 @@ The current ecosystem is split into three paradigms based on the balance between
 ```mermaid
 flowchart TD
     subgraph SG1_DeclarativeHighAutonomy ["Declarative [High Autonomy / Declarative Crews]"]
-        CrewAI[CrewAI] --> AutoGen[Microsoft AutoGen]
+        CrewAI["CrewAI"] --> AutoGen["Microsoft AutoGen"]
     end
     subgraph SG2_ImperativeHighControl ["Imperative [High Control / State Graphs]"]
-        LangGraph[LangGraph] --> PydanticAI[PydanticAI]
+        LangGraph["LangGraph"] --> PydanticAI["PydanticAI"]
     end
     subgraph SG3_NativeProviderNative ["Native [Provider Native / Serverless]"]
-        OpenAI[OpenAI Agents SDK] --> Vertex[Google ADK]
+        OpenAI["OpenAI Agents SDK"] --> Vertex["Google ADK"]
     end
     Declarative ===> Imperative
     Imperative ===> Native
     style Declarative fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
     style Imperative fill:#f0f9ff,stroke:#0ea5e9,stroke-width:2px
     style Native fill:#faf5ff,stroke:#a855f7,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class CrewAI,Vertex blue
+class AutoGen green
+class LangGraph purple
+class PydanticAI yellow
+class OpenAI red
 ```
 
 ---

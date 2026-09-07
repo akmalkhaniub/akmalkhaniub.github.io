@@ -1,6 +1,6 @@
 # Scaling FastAPI: Async Event Loop Optimization & Worker Architecture
 
-FastAPI delivers exceptional performance when handling I/O-bound web requests. However, in high-concurrency production environments, developers frequently encounter performance degradation caused by a single misconfigured route.
+FastAPI delivers exceptional performance when handling I/O-bound web requests. However, in high-concurrency production environments, developers frequently encounter performance degradation caused by a single misconfigured route [1].
 
 Because Python's `asyncio` event loop runs on a single thread per worker process, executing a single blocking synchronous computation (such as CPU-heavy data transformations or blocking third-party library calls) within an `async def` endpoint freezes the entire event loop, blocking all other incoming connections.
 
@@ -16,22 +16,33 @@ Separating non-blocking async network I/O from blocking CPU-bound computations:
 
 ```mermaid
 flowchart TD
-  A[Incoming Client Requests] --> B[ASGI Server: Granian / Uvicorn]
+  A["Incoming Client Requests"] --> B["ASGI Server: Granian / Uvicorn"]
   
   subgraph SG1_SingleWorkerEvent ["Single Worker Event Loop Thread"]
-    B -->|Async Network I/O| C[Async Route: async def get_data]
+    B -->|Async Network I/O| C["Async Route: async def get_data"]
     C -->|Non-blocking DB query| D[(Async Database Driver: Asyncpg)]
     
-    B -->|Blocking CPU Request| E[Sync Route: def compute_stats]
+    B -->|Blocking CPU Request| E["Sync Route: def compute_stats"]
   end
   
   subgraph SG2_ThreadpoolWorkerPool ["Threadpool Worker Pool"]
-    E -->|Delegate Task| F[FastAPI Threadpool Worker]
-    F -->|CPU Heavy Processing| G[Return Result to Event Loop]
+    E -->|Delegate Task| F["FastAPI Threadpool Worker"]
+    F -->|CPU Heavy Processing| G["Return Result to Event Loop"]
   end
   
-  D --> H[FastAPI HTTP Response]
+  D --> H["FastAPI HTTP Response"]
   G --> H
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B,H green
+class C purple
+class E yellow
+class F red
 ```
 
 ### Worker Server Comparison
@@ -143,4 +154,11 @@ When scaling FastAPI applications:
 ## Real-World Enterprise Impact
 Teams deploying event-loop optimization strategies report:
 * **Zero Event Loop Lockups**: Offloading CPU tasks prevents single-route spikes from freezing API gateways.
-* **40% Memory Reduction**: Switching to Rust-based Granian ASGI servers reduces baseline memory footprint while maintaining high throughput.
+* **40% Memory Reduction**: Switching to Rust-based Granian ASGI servers reduces baseline memory footprint while maintaining high throughput. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

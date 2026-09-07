@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-transactions-evolution-past-2pc-3pc-xa-distributed-2pl.html">
   <meta property="og:title" content="The Evolution of Distributed Transactions Part 1: The Past — Classical 2PC/3PC, X/Open XA, Distributed 2PL &amp; Why E-Commerce Abandoned Monolithic Coordination">
   <meta property="og:description" content="Foundational atomic commit protocols: 2PC coordinator blocking vulnerability, Skeen's 3PC network partition failure, X/Open XA distributed 2PL deadlocks, and why early e-commerce monoliths (Amazon, eBay) abandoned synchronous ACID.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-transactions-evolution-past-2pc-3pc-xa-distributed-2pl.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-20">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="The Evolution of Distributed Transactions Part 1: The Past — Classical 2PC/3PC, X/Open XA, Distributed 2PL &amp; Why E-Commerce Abandoned Monolithic Coordination">
   <meta name="twitter:description" content="Foundational atomic commit protocols: 2PC coordinator blocking vulnerability, Skeen's 3PC network partition failure, X/Open XA distributed 2PL deadlocks, and why early e-commerce monoliths (Amazon, eBay) abandoned synchronous ACID.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-transactions-evolution-past-2pc-3pc-xa-distributed-2pl.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "The Evolution of Distributed Transactions Part 1: The Past — Classical 2PC/3PC, X/Open XA, Distributed 2PL & Why E-Commerce Abandoned Monolithic Coordination",
   "description": "Foundational atomic commit protocols: 2PC coordinator blocking vulnerability, Skeen's 3PC network partition failure, X/Open XA distributed 2PL deadlocks, and why early e-commerce monoliths (Amazon, eBay) abandoned synchronous ACID.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-transactions-evolution-past-2pc-3pc-xa-distributed-2pl.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distributed-transactions-evolution-past-2pc-3pc-xa-distributed-2pl.jpg",
   "datePublished": "2026-08-20",
   "keywords": "Distributed Systems, 2PC, 3PC, XA Transactions, Database Internals",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="The Evolution of Distributed Transactions Part 1: The Past — Classical 2PC/3PC, X/Open XA, Distributed 2PL &amp; Why E-Commerce Abandoned Monolithic Coordination Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distributed-transactions-evolution-past-2pc-3pc-xa-distributed-2pl.jpg" class="article-cover-img" alt="The Evolution of Distributed Transactions Part 1: The Past — Classical 2PC/3PC, X/Open XA, Distributed 2PL &amp; Why E-Commerce Abandoned Monolithic Coordination Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">The Evolution of Distributed Transactions Part 1: The Past — Classical 2PC/3PC, X/Open XA, Distributed 2PL &amp; Why E-Commerce Abandoned Monolithic Coordination</h1>
             <div class="article-meta">
@@ -123,24 +123,34 @@
                 <li><a href="#python-simulation-distributed-deadlock-detection-3pc-state-machine">Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</a></li>
                 <li><a href="#engineering-lessons-from-the-classical-era">Engineering Lessons from the Classical Era</a></li>
                 <li><a href="#next-in-the-series">Next in the Series</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In the early decades of distributed systems and enterprise software (<strong>Amazon</strong>, <strong>eBay</strong>, <strong>Oracle</strong>, <strong>Tuxedo</strong>, <strong>Java JTA/XA</strong>), maintaining transactional integrity across multiple physical databases was treated as an all-or-nothing requirement.</p>
+<p>In the early decades of distributed systems and enterprise software (<strong>Amazon</strong>, <strong>eBay</strong>, <strong>Oracle</strong>, <strong>Tuxedo</strong>, <strong>Java JTA/XA</strong>), maintaining transactional integrity across multiple physical databases was treated as an all-or-nothing requirement <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Engineers demanded the same strict <strong>ACID</strong> guarantees (Atomicity, Consistency, Isolation, Durability) across distributed networks that they enjoyed on a single mainframe.</p>
 <p>However, as internet-scale e-commerce platforms scaled from thousands to millions of concurrent shoppers in the late 1990s and early 2000s, classical distributed transaction protocols—specifically <strong>Two-Phase Commit (2PC)</strong>, <strong>Three-Phase Commit (3PC)</strong>, and <strong>X/Open XA Distributed Two-Phase Locking (2PL)</strong>—collapsed under their own synchronization overhead.</p>
 <p>This article examines the foundational mathematical protocols of distributed transactions, analyzes why the coordinator blocking vulnerability paralyzed early e-commerce architectures, and uncovers the real-world lessons that forced the industry to rethink data consistency.</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_TheClassicalDistributed [&quot;The Classical Distributed Transaction Era (1970s - 2000s)&quot;]
-    App[Monolithic Application Server] --&gt; TM[XA Transaction Manager / Coordinator]
+    App[&quot;Monolithic Application Server&quot;] --&gt; TM[&quot;XA Transaction Manager / Coordinator&quot;]
     TM --&gt;|PREPARE| DB1[(Database 1: Order DB)]
     TM --&gt;|PREPARE| DB2[(Database 2: Inventory DB)]
     TM --&gt;|PREPARE| DB3[(Database 3: Payment DB)]
-    DB1 &amp; DB2 &amp; DB3 --&gt;|Acquire Strict Exclusive Locks 2PL| Locks[Held Exclusive Row Locks]
+    DB1 &amp; DB2 &amp; DB3 --&gt;|Acquire Strict Exclusive Locks 2PL| Locks[&quot;Held Exclusive Row Locks&quot;]
     DB1 &amp; DB2 &amp; DB3 --&gt;|VOTE COMMIT| TM
     TM --&gt;|GLOBAL COMMIT| DB1 &amp; DB2 &amp; DB3
   end
   
-  style Locks fill:#f43f5e,stroke:#881337,color:#ffffff</div>
+  style Locks fill:#f43f5e,stroke:#881337,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class App blue
+class TM green
+class Locks purple</div>
 <hr>
 <h2 id="1-jim-grays-atomic-commit-two-phase-commit-2pc">1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</h2>
 <p>In his seminal 1978 paper, <em>Notes on Data Base Operating Systems</em>, Turing Award winner <strong>Jim Gray</strong> formalized the fundamental challenge of distributed consensus:</p>
@@ -226,7 +236,17 @@
   AP --&gt;|SQL Queries| RM1[&quot;Resource Manager 1 (Oracle)&quot;]
   AP --&gt;|SQL Queries| RM2[&quot;Resource Manager 2 (DB2)&quot;]
   TM --&gt;|xa_open / xa_prepare / xa_commit| RM1
-  TM --&gt;|xa_open / xa_prepare / xa_commit| RM2</div>
+  TM --&gt;|xa_open / xa_prepare / xa_commit| RM2
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class AP blue
+class TM green
+class RM1 purple
+class RM2 yellow</div>
 <h3 id="distributed-two-phase-locking-2pl-distributed-deadlocks">Distributed Two-Phase Locking (2PL) &amp; Distributed Deadlocks</h3>
 <p>XA enforced serializability across databases using <strong>Strict Distributed Two-Phase Locking (Strict 2PL)</strong>:</p>
 <ul>
@@ -242,7 +262,14 @@
   DB1 --&gt;|Holds Lock on Table A| Tx1
   
   style Tx1 fill:#f59e0b,stroke:#b45309,color:#ffffff
-  style Tx2 fill:#f59e0b,stroke:#b45309,color:#ffffff</div>
+  style Tx2 fill:#f59e0b,stroke:#b45309,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+</div>
 <p>Neither Oracle Node 1 nor Oracle Node 2 has the global graph in its local memory. Without expensive global deadlock detection algorithms (like Obermarck’s path-pushing algorithm or Chandy-Misra-Haas probe computation), systems were forced to rely on <strong>lock wait timeouts</strong>.</p>
 <p>Under heavy e-commerce holiday traffic, lock wait timeouts triggered cascading abort storms, consuming CPU while completing zero useful work.</p>
 <hr>
@@ -371,7 +398,18 @@ if __name__ == &quot;__main__&quot;:
 </div>
 <hr>
 <h2 id="next-in-the-series">Next in the Series</h2>
-<p>In <strong>Part 2</strong>, we will explore <strong>The Present (2010s–2020s)</strong>: How Google solved distributed consistency at global scale with <strong>Spanner and TrueTime</strong>, how CockroachDB &amp; YugabyteDB implement <strong>Multi-Raft with Hybrid Logical Clocks</strong>, and how <strong>Uber &amp; Netflix</strong> revolutionized microservices using <strong>Event-Driven Sagas (Cadence / Conductor)</strong>.</p>
+<p>In <strong>Part 2</strong>, we will explore <strong>The Present (2010s–2020s)</strong>: How Google solved distributed consistency at global scale with <strong>Spanner and TrueTime</strong>, how CockroachDB &amp; YugabyteDB implement <strong>Multi-Raft with Hybrid Logical Clocks</strong>, and how <strong>Uber &amp; Netflix</strong> revolutionized microservices using <strong>Event-Driven Sagas (Cadence / Conductor)</strong>. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Peng, D., &amp; Dabek, F. (2010)</strong>. <em>Large-scale Incremental Processing Using Distributed Transactions and Notifications</em>. OSDI. <a href="https://research.google/pubs/pub36726/" target="_blank" rel="noopener">https://research.google/pubs/pub36726/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Thomson, A., et al. (2012)</strong>. <em>Calvin: Fast Distributed Transactions for Partitioned Database Systems</em>. SIGMOD. <a href="https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf" target="_blank" rel="noopener">https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Corbett, J. C., et al. (2012)</strong>. <em>Spanner: Google&#39;s Globally-Distributed Database</em>. OSDI. <a href="https://research.google/pubs/pub39966/" target="_blank" rel="noopener">https://research.google/pubs/pub39966/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -418,6 +456,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-simulation-distributed-deadlock-detection-3pc-state-machine" class="toc-link">Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</a></li>
               <li class="toc-item toc-h2"><a href="#engineering-lessons-from-the-classical-era" class="toc-link">Engineering Lessons from the Classical Era</a></li>
               <li class="toc-item toc-h2"><a href="#next-in-the-series" class="toc-link">Next in the Series</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

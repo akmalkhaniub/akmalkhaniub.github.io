@@ -1,6 +1,6 @@
 # Memory Hierarchies in Autonomous AI Agents: Ephemeral Scratchpads, Vector Episodic Memory & Graph-RAG Long-Term Stores
 
-As autonomous AI agents (**Agent Fleet Orchestrator**, **MemGPT / Letta**, **Devin**, **AutoGPT**) evolve from single-turn chatbots into persistent software engineers and enterprise operators, managing state across hours, days, and months becomes the central architectural challenge.
+As autonomous AI agents (**Agent Fleet Orchestrator**, **MemGPT / Letta**, **Devin**, **AutoGPT**) evolve from single-turn chatbots into persistent software engineers and enterprise operators, managing state across hours, days, and months becomes the central architectural challenge [1].
 
 While modern LLMs boast massive context windows (128k to 2M tokens), treating the raw context window as an unbounded memory buffer fails in production.
 
@@ -16,10 +16,20 @@ flowchart TD
     Tier3["Tier 3: Semantic Long-Term Knowledge (Graph-RAG Entity Triples & MemGPT Paging)"]
   end
   
-  LLM[Agent Reasoning Core] <-->|Active Prompt & Tool Buffer| Tier1
+  LLM["Agent Reasoning Core"] <-->|Active Prompt & Tool Buffer| Tier1
   Tier1 <-->|Async Paging & Summarization| Tier2
   Tier2 <-->|Background Knowledge Consolidation| Tier3
   Tier3 -.->|High-Relevance Entity Injections| Tier1
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Tier1 blue
+class Tier2 green
+class Tier3 purple
+class LLM yellow
 ```
 
 ---
@@ -271,4 +281,13 @@ if __name__ == "__main__":
 ---
 
 ## Next in the Series
-In **Post 400 (Milestone Special)**, we will synthesize these principles into **The Blueprint for Production AI Agent Swarms: 10 Architectural Principles for 99.9% Reliable Autonomous Workflows**.
+In **Post 400 (Milestone Special)**, we will synthesize these principles into **The Blueprint for Production AI Agent Swarms: 10 Architectural Principles for 99.9% Reliable Autonomous Workflows**. [2]
+
+## References & Further Reading
+
+1. **Dao, T., et al. (2022)**. *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*. NeurIPS. [https://arxiv.org/abs/2205.14135](https://arxiv.org/abs/2205.14135)
+2. **Vaswani, A., et al. (2017)**. *Attention Is All You Need*. NeurIPS. [https://arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
+3. **Kwon, W., et al. (2023)**. *Efficient Memory Management for Large Language Model Serving with PagedAttention*. SOSP. [https://arxiv.org/abs/2309.06180](https://arxiv.org/abs/2309.06180)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

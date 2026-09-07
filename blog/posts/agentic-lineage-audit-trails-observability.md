@@ -8,7 +8,7 @@
 
 ## The Auditing Challenge in AI Swarms
 
-Unlike standard software systems with deterministic code paths, AI swarms navigate complex, dynamic decision trees. During a single user request, an agent might:
+Unlike standard software systems with deterministic code paths, AI swarms navigate complex, dynamic decision trees [1]. During a single user request, an agent might:
 1. Parse the prompt and split it into three sub-tasks.
 2. Call a database tool, encounter a connection error, and retry.
 3. Review its own output, detect a validation mismatch, and regenerate its response.
@@ -18,22 +18,33 @@ If the final output is incorrect, diagnosing the root cause is impossible withou
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#d97706', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f59e0b', 'lineColor': '#d97706', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Root[Root: User Request] --> Plan[Plan: Task Decomposition]
-    Plan --> SubTask1[Task 1: SQL Retrieval]
-    Plan --> SubTask2[Task 2: Financial Aggregation]
+    Root["Root: User Request"] --> Plan["Plan: Task Decomposition"]
+    Plan --> SubTask1["Task 1: SQL Retrieval"]
+    Plan --> SubTask2["Task 2: Financial Aggregation"]
     
-    SubTask1 --> ToolCall1[Tool Call: run_sql]
-    ToolCall1 --> ToolResult1[Result: Connection Timeout]
+    SubTask1 --> ToolCall1["Tool Call: run_sql"]
+    ToolCall1 --> ToolResult1["Result: Connection Timeout"]
     
-    ToolResult1 --> SelfReflect[Self-Correction Node]
-    SelfReflect --> ToolCall2[Tool Call: run_sql retry]
-    ToolCall2 --> ToolResult2[Result: Active Data]
+    ToolResult1 --> SelfReflect["Self-Correction Node"]
+    SelfReflect --> ToolCall2["Tool Call: run_sql retry"]
+    ToolCall2 --> ToolResult2["Result: Active Data"]
     
-    SubTask2 --> Aggregator[Tool Call: compute_stats]
+    SubTask2 --> Aggregator["Tool Call: compute_stats"]
     
-    ToolResult2 --> Merge[Final Merge Node]
+    ToolResult2 --> Merge["Final Merge Node"]
     Aggregator --> Merge
-    Merge --> FinalOutput[Final Answer Output]
+    Merge --> FinalOutput["Final Answer Output"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Root,ToolResult1,Merge blue
+class Plan,SelfReflect,FinalOutput green
+class SubTask1,ToolCall2 purple
+class SubTask2,ToolResult2 yellow
+class ToolCall1,Aggregator red
 ```
 
 To reconstruct this path, we must store logs as a **Tree of Node Executions**, rather than flat, sequential logs.
@@ -217,4 +228,13 @@ To satisfy audit requirements in enterprise agent networks:
 * [ ] **Enforce parent-child keys**: Ensure every action node captures a `parent_id` reference to preserve the non-linear execution path.
 * [ ] **Log raw inputs and outputs**: Never allow agents to mutate data without logging the raw input payloads and returned server responses.
 * [ ] **Capture token metrics**: Track tokens and execution latencies at every node to monitor efficiency and plan resource budgets.
-* [ ] **Structure with JSONB**: Store execution lineages in queryable JSONB columns to enable easy auditing of failures or security compromises.
+* [ ] **Structure with JSONB**: Store execution lineages in queryable JSONB columns to enable easy auditing of failures or security compromises. [2]
+
+## References & Further Reading
+
+1. **W3C Distributed Tracing Working Group (2021)**. *Trace Context*. W3C Recommendation. [https://www.w3.org/TR/trace-context/](https://www.w3.org/TR/trace-context/)
+2. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+3. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)
+4. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+5. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+6. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

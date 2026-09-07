@@ -144,7 +144,18 @@
     StateChange2[&quot;Signal Mutation: count.set&quot;] --&gt; DirectGraph[&quot;Traverse Reactive Dependency Graph&quot;]
     DirectGraph --&gt; ZeroVDOM[&quot;Zero Component Function Re-executions&quot;]
     ZeroVDOM --&gt; SurgicalDOM[&quot;Direct In-Place Mutation of Bound Text Node&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class StateChange1,StateChange2 blue
+class ReRenderTree,DirectGraph green
+class CacheCheck,ZeroVDOM purple
+class SkipVDOM,SurgicalDOM yellow
+class UpdateVDOM red</div>
 <p><em>Figure 1: Comparative data-flow topologies of Top-Down Compiler Memoization versus Fine-Grained Reactive Subscriber Graphs. In the compiler model, execution remains top-down but is arrested by memoization slots; in the signal model, component scopes execute only once, and signals notify DOM bindings directly. Source: Adapted from Savona &amp; Hanlon (2024) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup> and Carniato (2021) <sup class="citation-ref"><a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a></sup>.</em></p>
 <p>As Figure 1 reveals, this divergence is not a trivial syntactic disagreement over accessor functions (<code>count()</code> vs <code>count</code>). It is a fundamental philosophical split between <strong>ambient dependency graphs managed in client RAM</strong> and <strong>top-down deterministic functional execution bounded by static analysis</strong>.</p>
 <hr>
@@ -180,7 +191,18 @@
   BabelAST --&gt; HIRLowering[&quot;HIR Lowering to SSA Form&quot;]
   HIRLowering --&gt; CFG[&quot;Control Flow Graph Analysis&quot;]
   CFG --&gt; ReactiveInference[&quot;Reactive Scope Inference&quot;]
-  ReactiveInference --&gt; MemoCodegen[&quot;Codegen: Array-Indexed Memo Cache Slots&quot;]</div>
+  ReactiveInference --&gt; MemoCodegen[&quot;Codegen: Array-Indexed Memo Cache Slots&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class RawCode,MemoCodegen blue
+class BabelAST green
+class HIRLowering purple
+class CFG yellow
+class ReactiveInference red</div>
 <p><em>Figure 2: The five-stage compilation pipeline of the React Compiler. Source: Architecture of babel-plugin-react-compiler, adapted from Savona et al. <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</em></p>
 <p>In the pipeline depicted in Figure 2, the compiler translates JavaScript into a High-Level Intermediate Representation (HIR). In this form, it constructs a formal Control Flow Graph (CFG) that tracks every variable from its declaration to its destruction. </p>
 <p>By calculating the precise &quot;liveness&quot; of every value, the compiler can mathematically prove whether an object might be mutated downstream. If a value is guaranteed immutable across a render pass, the compiler groups it into a <strong>Reactive Scope</strong>—an automated memoization block that caches both the computation and the resulting JSX elements.</p>

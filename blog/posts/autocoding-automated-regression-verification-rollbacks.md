@@ -9,23 +9,34 @@
 ## Safeguarding Production Codebase Mutations
 
 In basic AI coding agent setups:
-* **Silent Logic Errors**: Code compiles cleanly, but edge cases in business calculations generate silent failures.
+* **Silent Logic Errors**: Code compiles cleanly, but edge cases in business calculations generate silent failures [1].
 * **Corrupted Git History**: Merging broken agent commits pollutes the primary branch, requiring manual developer intervention.
 * **The Solution**: **Automated Verification Gates**. We execute test runners inside isolated container sandboxes. If tests pass, we commit the changes; if tests fail, we capture error logs for self-healing repair passes or trigger automatic git rollbacks.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Refactor[Agent Generates Refactored Code Branch] --> TestRunner[Execute Automated Test Runner: pytest/jest]
+    Refactor["Agent Generates Refactored Code Branch"] --> TestRunner["Execute Automated Test Runner: pytest/jest"]
     
     TestRunner --> Intercept{Did all tests pass?}
     
-    Intercept -->|Yes - 100% Pass| Merge[Merge Branch into Target Codebase]
-    Intercept -->|No - Test Failures| Evaluate[Evaluate Error Trace logs]
+    Intercept -->|Yes - 100% Pass| Merge["Merge Branch into Target Codebase"]
+    Intercept -->|No - Test Failures| Evaluate["Evaluate Error Trace logs"]
     
     Evaluate --> Retry{Attempts < Max Retries?}
-    Retry -->|Yes| Heal[Trigger Self-Healing Repair Loop]
-    Retry -->|No| Rollback[Execute Git Rollback to Clean State]
+    Retry -->|Yes| Heal["Trigger Self-Healing Repair Loop"]
+    Retry -->|No| Rollback["Execute Git Rollback to Clean State"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Refactor,Rollback blue
+class TestRunner green
+class Merge purple
+class Evaluate yellow
+class Heal red
 ```
 
 ---
@@ -124,4 +135,10 @@ if __name__ == "__main__":
 
 * **Test Before Merging**: Always run unit test suites on candidate branches before merging generated code.
 * **Capture Failure Traces**: Extract exact error stack traces to feed context back into self-healing repair loops.
-* **Automate Hard Rollbacks**: Enforce automated git rollbacks if self-healing loops fail to pass tests within designated retry limits.
+* **Automate Hard Rollbacks**: Enforce automated git rollbacks if self-healing loops fail to pass tests within designated retry limits. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

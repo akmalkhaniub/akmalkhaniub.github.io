@@ -7,7 +7,7 @@
 
 ---
 
-The software engineering landscape is undergoing a massive shift. We are moving from simple **single-prompt LLM utilities**—where a user sends a query and receives a text response—to **stateful, collaborative AI Agents and Workflows**. These systems plan execution paths, invoke specialized tools, evaluate intermediate outputs, and self-correct when errors occur.
+The software engineering landscape is undergoing a massive shift [1]. We are moving from simple **single-prompt LLM utilities**—where a user sends a query and receives a text response—to **stateful, collaborative AI Agents and Workflows**. These systems plan execution paths, invoke specialized tools, evaluate intermediate outputs, and self-correct when errors occur.
 
 However, when building agentic systems for enterprise environments, developers often struggle with predictability and cost. Giving a single LLM complete autonomy with dozens of tools frequently leads to attention dispersion, high latency, and hallucinations. 
 
@@ -45,27 +45,38 @@ When we apply SRP to agentic systems, we move from a single overloaded chatbot t
 ```mermaid
 flowchart TD
     subgraph SG1_SingleagentTheOverloaded ["SingleAgent [The Overloaded Agent Model]"]
-        U1[User Query] --> Agent[Overloaded AI Agent]
-        Agent -->|Too many instructions| Tool1[Search Tool]
-        Agent -->|Cognitive overload| Tool2[DB Tool]
-        Agent -->|Attention dispersion| Tool3[Write Tool]
-        Agent -->|Hallucinations| Out1[Unpredictable Output]
+        U1["User Query"] --> Agent["Overloaded AI Agent"]
+        Agent -->|Too many instructions| Tool1["Search Tool"]
+        Agent -->|Cognitive overload| Tool2["DB Tool"]
+        Agent -->|Attention dispersion| Tool3["Write Tool"]
+        Agent -->|Hallucinations| Out1["Unpredictable Output"]
     end
 
     subgraph SG2_MultiagentTheMulti ["MultiAgent [The Multi-Agent Team Model]"]
-        U2[User Query] --> Supervisor[Supervisor Agent]
-        Supervisor -->|Delegate Research| Researcher[Research Specialist]
-        Supervisor -->|Delegate Coding| Coder[Code Specialist]
-        Supervisor -->|Delegate Verification| Validator[Validator Specialist]
+        U2["User Query"] --> Supervisor["Supervisor Agent"]
+        Supervisor -->|Delegate Research| Researcher["Research Specialist"]
+        Supervisor -->|Delegate Coding| Coder["Code Specialist"]
+        Supervisor -->|Delegate Verification| Validator["Validator Specialist"]
         
         Researcher --> Supervisor
         Coder --> Supervisor
         Validator -->|Check output| Supervisor
-        Supervisor --> Out2[Predictable, High-Quality Output]
+        Supervisor --> Out2["Predictable, High-Quality Output"]
     end
 
     style SingleAgent fill:#fff1f2,stroke:#f43f5e,stroke-width:2px
     style MultiAgent fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class U1,Out1,Validator blue
+class Agent,U2,Out2 green
+class Tool1,Supervisor purple
+class Tool2,Researcher yellow
+class Tool3,Coder red
 ```
 
 Instead of one model trying to manage planning, execution, and validation, we divide the labor among specialized, narrow agents:

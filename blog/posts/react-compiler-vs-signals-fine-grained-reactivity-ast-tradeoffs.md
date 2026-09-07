@@ -26,6 +26,17 @@ flowchart TD
     DirectGraph --> ZeroVDOM["Zero Component Function Re-executions"]
     ZeroVDOM --> SurgicalDOM["Direct In-Place Mutation of Bound Text Node"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class StateChange1,StateChange2 blue
+class ReRenderTree,DirectGraph green
+class CacheCheck,ZeroVDOM purple
+class SkipVDOM,SurgicalDOM yellow
+class UpdateVDOM red
 ```
 *Figure 1: Comparative data-flow topologies of Top-Down Compiler Memoization versus Fine-Grained Reactive Subscriber Graphs. In the compiler model, execution remains top-down but is arrested by memoization slots; in the signal model, component scopes execute only once, and signals notify DOM bindings directly. Source: Adapted from Savona & Hanlon (2024) [1] and Carniato (2021) [3].*
 
@@ -79,6 +90,17 @@ flowchart TD
   HIRLowering --> CFG["Control Flow Graph Analysis"]
   CFG --> ReactiveInference["Reactive Scope Inference"]
   ReactiveInference --> MemoCodegen["Codegen: Array-Indexed Memo Cache Slots"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class RawCode,MemoCodegen blue
+class BabelAST green
+class HIRLowering purple
+class CFG yellow
+class ReactiveInference red
 ```
 *Figure 2: The five-stage compilation pipeline of the React Compiler. Source: Architecture of babel-plugin-react-compiler, adapted from Savona et al. [1].*
 

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html">
   <meta property="og:title" content="Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable">
   <meta property="og:description" content="The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/rag-reranking-cross-encoders-bge.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-04-01">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable">
   <meta name="twitter:description" content="The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/rag-reranking-cross-encoders-bge.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable",
   "description": "The mathematical limits of Bi-Encoder vector search and how to implement a hybrid search pipeline with Reciprocal Rank Fusion (RRF) and Cross-Encoder neural rerankers.",
   "url": "https://akmalkhaniub.github.io/blog/rag-reranking-cross-encoders-bge.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/rag-reranking-cross-encoders-bge.jpg",
   "datePublished": "2026-04-01",
   "keywords": "RAG, Rerankers, pgvector, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/rag-reranking-cross-encoders-bge.jpg" class="article-cover-img" alt="Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Beyond Simple Vector Search: Why Cohere/BGE Rerankers are Non-Negotiable</h1>
             <div class="article-meta">
@@ -111,6 +111,7 @@
                 <li><a href="#the-limits-of-bi-encoders-vector-embeddings">The Limits of Bi-Encoders (Vector Embeddings)</a></li>
                 <li><a href="#step-by-step-implementation-hybrid-search-rrf-bge-reranker">Step-by-Step Implementation: Hybrid Search + RRF + BGE Reranker</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -121,19 +122,30 @@ Most basic Retrieval-Augmented Generation (RAG) tutorials stop at cosine similar
 </div>
 <hr>
 <h2 id="the-limits-of-bi-encoders-vector-embeddings">The Limits of Bi-Encoders (Vector Embeddings)</h2>
-<p>Embedding models are <strong>Bi-encoders</strong>. They process the user query and the database documents independently, converting them into vectors to measure distance. While fast, this means the model cannot capture token-to-token interactions between the query and the candidate documents. </p>
+<p>Embedding models are <strong>Bi-encoders</strong>. They process the user query and the database documents independently, converting them into vectors to measure distance <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. While fast, this means the model cannot capture token-to-token interactions between the query and the candidate documents. </p>
 <p>A <strong>Cross-encoder</strong> (Reranker) takes the query and a document <em>together</em> as a single input, executing full self-attention across both. This produces a highly accurate relevancy score, but is too computationally expensive to run on millions of documents.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[User Query] --&gt; VectorSearch[1. Dense Vector Search &lt;br&gt; pgvector]
-    Query --&gt; KeywordSearch[2. Sparse Keyword Search &lt;br&gt; BM25]
+    Query[&quot;User Query&quot;] --&gt; VectorSearch[&quot;1. Dense Vector Search &lt;br&gt; pgvector&quot;]
+    Query --&gt; KeywordSearch[&quot;2. Sparse Keyword Search &lt;br&gt; BM25&quot;]
     
-    VectorSearch --&gt; RRF[3. Reciprocal Rank Fusion &lt;br&gt; Merge top 50 results]
+    VectorSearch --&gt; RRF[&quot;3. Reciprocal Rank Fusion &lt;br&gt; Merge top 50 results&quot;]
     KeywordSearch --&gt; RRF
     
     RRF --&gt; Reranker{4. Cross-Encoder Reranker &lt;br&gt; BGE-Reranker-Large}
-    Reranker --&gt;|Re-calculate token affinity| TopDocs[5. Isolated Top-3 Context]
-    TopDocs --&gt; LLM[LLM Generation]</div>
+    Reranker --&gt;|Re-calculate token affinity| TopDocs[&quot;5. Isolated Top-3 Context&quot;]
+    TopDocs --&gt; LLM[&quot;LLM Generation&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,LLM blue
+class VectorSearch green
+class KeywordSearch purple
+class RRF yellow
+class TopDocs red</div>
 <p>By using both, we get the best of both worlds:</p>
 <ol>
 <li>Use fast Bi-encoders (vector/keyword search) to retrieve the top 50 candidate documents.</li>
@@ -224,8 +236,20 @@ if __name__ == &quot;__main__&quot;:
 <li><input disabled="" type="checkbox"> <strong>Combine dense and sparse search</strong>: Use hybrid search (vector similarity + keyword matching) as your initial retrieval pass.</li>
 <li><input disabled="" type="checkbox"> <strong>Use Reciprocal Rank Fusion (RRF)</strong>: Blend results from different search indexes fairly before reranking.</li>
 <li><input disabled="" type="checkbox"> <strong>Deploy a Cross-encoder</strong>: Place a reranker (like BGE-Reranker or Cohere V3) in front of your LLM call.</li>
-<li><input disabled="" type="checkbox"> <strong>Measure latency tradeoffs</strong>: Keep your candidate list size (retrieval pool) limited to 50–100 documents to ensure reranking completes within 100ms.</li>
+<li><input disabled="" type="checkbox"> <strong>Measure latency tradeoffs</strong>: Keep your candidate list size (retrieval pool) limited to 50–100 documents to ensure reranking completes within 100ms. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>pgvector Authors (2024)</strong>. <em>pgvector: Open-source vector similarity search for Postgres</em>. GitHub. <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/pgvector/pgvector</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Robertson, S., &amp; Zaragoza, H. (2009)</strong>. <em>The Probabilistic Relevance Framework: BM25 and Beyond</em>. Foundations and Trends in Information Retrieval. <a href="https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf" target="_blank" rel="noopener">https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Edge, D., et al. (2024)</strong>. <em>From Local to Global: A Graph RAG Approach to Query-Focused Summarization</em>. arXiv. <a href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noopener">https://arxiv.org/abs/2404.16130</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -260,6 +284,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#the-limits-of-bi-encoders-vector-embeddings" class="toc-link">The Limits of Bi-Encoders (Vector Embeddings)</a></li>
               <li class="toc-item toc-h2"><a href="#step-by-step-implementation-hybrid-search-rrf-bge-reranker" class="toc-link">Step-by-Step Implementation: Hybrid Search + RRF + BGE Reranker</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

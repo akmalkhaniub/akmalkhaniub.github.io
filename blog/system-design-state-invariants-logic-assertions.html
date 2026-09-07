@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-state-invariants-logic-assertions.html">
   <meta property="og:title" content="State Invariants for Agentic Workflows: Enforcing Logic Assertions on Shared DB State">
   <meta property="og:description" content="Designing database-level invariants and transactional assertions to guarantee data integrity across asynchronous, concurrent agent blackboard updates.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-state-invariants-logic-assertions.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-05-11">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="State Invariants for Agentic Workflows: Enforcing Logic Assertions on Shared DB State">
   <meta name="twitter:description" content="Designing database-level invariants and transactional assertions to guarantee data integrity across asynchronous, concurrent agent blackboard updates.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-state-invariants-logic-assertions.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "State Invariants for Agentic Workflows: Enforcing Logic Assertions on Shared DB State",
   "description": "Designing database-level invariants and transactional assertions to guarantee data integrity across asynchronous, concurrent agent blackboard updates.",
   "url": "https://akmalkhaniub.github.io/blog/system-design-state-invariants-logic-assertions.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/system-design-state-invariants-logic-assertions.jpg",
   "datePublished": "2026-05-11",
   "keywords": "System Design, Database, Reliability, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/system-design-state-invariants-logic-assertions.jpg" class="article-cover-img" alt="State Invariants for Agentic Workflows: Enforcing Logic Assertions on Shared DB State Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">State Invariants for Agentic Workflows: Enforcing Logic Assertions on Shared DB State</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#2-implementing-row-locks-and-rollbacks">2. Implementing Row Locks and Rollbacks</a></li>
                 <li><a href="#code-demo-transactional-state-store-with-invariants">Code Demo: Transactional State Store with Invariants</a></li>
                 <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -123,20 +124,31 @@ Multi-agent systems often communicate using a shared state space, commonly model
 </div>
 <hr>
 <h2 id="the-blackboard-race-condition">The Blackboard Race Condition</h2>
-<p>When scaling multi-agent topologies, synchronizing agent context via direct messaging gets expensive and slow. Instead, we use a central database to store session state, letting agents query and write updates independently.</p>
+<p>When scaling multi-agent topologies, synchronizing agent context via direct messaging gets expensive and slow <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Instead, we use a central database to store session state, letting agents query and write updates independently.</p>
 <p>However, since agents execute asynchronous processes, they can write conflicting information. For example, if two worker agents try to assign the same task to themselves simultaneously, both might write their name to the task document, violating structural invariants.</p>
 <p>To guarantee system stability, we cannot rely on LLM prompts to behave. We must implement <strong>system state invariants</strong> at the application repository and database transaction level.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Agent State Update Request] --&gt; Begin[Begin Transaction]
-    Begin --&gt; Select[Acquire Row Lock: SELECT FOR UPDATE]
-    Select --&gt; Write[Write New State Data]
+    Agent[&quot;Agent State Update Request&quot;] --&gt; Begin[&quot;Begin Transaction&quot;]
+    Begin --&gt; Select[&quot;Acquire Row Lock: SELECT FOR UPDATE&quot;]
+    Select --&gt; Write[&quot;Write New State Data&quot;]
     Write --&gt; InvariantCheck{Run Invariant Assertions}
     
-    InvariantCheck --&gt;|Pass| Commit[Commit Transaction: Save State]
-    InvariantCheck --&gt;|Fail| Rollback[Rollback Transaction: Revert DB state]
+    InvariantCheck --&gt;|Pass| Commit[&quot;Commit Transaction: Save State&quot;]
+    InvariantCheck --&gt;|Fail| Rollback[&quot;Rollback Transaction: Revert DB state&quot;]
     
-    Rollback --&gt; Reject([Reject Agent Request &amp; Log Error])</div>
+    Rollback --&gt; Reject([Reject Agent Request &amp; Log Error])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent,Rollback blue
+class Begin green
+class Select purple
+class Write yellow
+class Commit red</div>
 <hr>
 <h2 id="1-defining-structural-state-invariants">1. Defining Structural State Invariants</h2>
 <p>State invariants represent absolute rules that the application state must satisfy at all times:</p>
@@ -259,8 +271,19 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Enforce Optimistic Concurrency</strong>: Include version metrics inside all state tables and blackboard schemas to prevent concurrent agent overwrites.</li>
 <li><strong>Isolate Logic Assertions</strong>: Run state invariant validations inside transaction boundaries. Ensure any validation failure triggers a full rollback.</li>
-<li><strong>Standardize State Transitions</strong>: Enforce permitted state change topologies inside code configurations rather than delegating state logic to LLMs.</li>
+<li><strong>Standardize State Transitions</strong>: Enforce permitted state change topologies inside code configurations rather than delegating state logic to LLMs. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -297,6 +320,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-implementing-row-locks-and-rollbacks" class="toc-link">2. Implementing Row Locks and Rollbacks</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-transactional-state-store-with-invariants" class="toc-link">Code Demo: Transactional State Store with Invariants</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

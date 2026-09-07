@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/object-storage-metadata-catalog-lsm-partitioning.html">
   <meta property="og:title" content="Object Storage Metadata Catalog Architecture: LSM Metadata Trees, Partitioning &amp; S3 API Semantics">
   <meta property="og:description" content="Billion-object metadata scaling: implementing data/metadata decoupling, LSM-tree key-value catalog stores, prefix-sharded partitioning, and strongly consistent S3 bucket listings.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/object-storage-metadata-catalog-lsm-partitioning.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Object Storage Metadata Catalog Architecture: LSM Metadata Trees, Partitioning &amp; S3 API Semantics">
   <meta name="twitter:description" content="Billion-object metadata scaling: implementing data/metadata decoupling, LSM-tree key-value catalog stores, prefix-sharded partitioning, and strongly consistent S3 bucket listings.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/object-storage-metadata-catalog-lsm-partitioning.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Object Storage Metadata Catalog Architecture: LSM Metadata Trees, Partitioning & S3 API Semantics",
   "description": "Billion-object metadata scaling: implementing data/metadata decoupling, LSM-tree key-value catalog stores, prefix-sharded partitioning, and strongly consistent S3 bucket listings.",
   "url": "https://akmalkhaniub.github.io/blog/object-storage-metadata-catalog-lsm-partitioning.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/object-storage-metadata-catalog-lsm-partitioning.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Object Storage, Metadata Catalog, LSM Tree, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Object Storage Metadata Catalog Architecture: LSM Metadata Trees, Partitioning &amp; S3 API Semantics Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/object-storage-metadata-catalog-lsm-partitioning.jpg" class="article-cover-img" alt="Object Storage Metadata Catalog Architecture: LSM Metadata Trees, Partitioning &amp; S3 API Semantics Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Object Storage Metadata Catalog Architecture: LSM Metadata Trees, Partitioning &amp; S3 API Semantics</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-lsm-metadata-catalog-s3-list-bucket-engine">Python Implementation: LSM Metadata Catalog &amp; S3 List Bucket Engine</a></li>
                 <li><a href="#metadata-catalog-gotchas-best-practices">Metadata Catalog Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In modern cloud data architectures, <strong>Object Storage</strong> (<strong>AWS S3</strong>, <strong>Google Cloud Storage</strong>, <strong>MinIO</strong>, <strong>Ceph RADOS</strong>) serves as the primary storage tier for datalakes, AI model checkpoints, and enterprise analytics.</p>
+<p>In modern cloud data architectures, <strong>Object Storage</strong> (<strong>AWS S3</strong>, <strong>Google Cloud Storage</strong>, <strong>MinIO</strong>, <strong>Ceph RADOS</strong>) serves as the primary storage tier for datalakes, AI model checkpoints, and enterprise analytics <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Managing trillions of objects requires storing two distinct types of data:</p>
 <ol>
 <li><strong>Unstructured Data Payloads</strong>: Large binary blobs ($100\text{ MB} - 5\text{ TB}$) written once and read frequently.</li>
@@ -129,18 +130,29 @@
 <p>How frontend S3 API gateways route requests to decoupled LSM Metadata Catalogs and Data Storage Nodes:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_ClientS3Api [&quot;Client S3 API Request&quot;]
-    Client[Client S3 Request] --&gt; S3Proxy[Frontend S3 API Gateway]
+    Client[&quot;Client S3 Request&quot;] --&gt; S3Proxy[&quot;Frontend S3 API Gateway&quot;]
   end
   
   subgraph SG2_DecoupledMetadataCatalog [&quot;Decoupled Metadata Catalog Layer (FoundationDB / RocksDB)&quot;]
-    S3Proxy --&gt;|Lookup Metadata - GET /bucket/photos/img.png| MetaCatalog[LSM Metadata Index Shards]
+    S3Proxy --&gt;|Lookup Metadata - GET /bucket/photos/img.png| MetaCatalog[&quot;LSM Metadata Index Shards&quot;]
     MetaCatalog --&gt;|Return Blob Data Location + ETag| S3Proxy
   end
   
   subgraph SG3_UnstructuredDataPayload [&quot;Unstructured Data Payload Storage Layer&quot;]
-    S3Proxy --&gt;|Read Raw Binary Payload Bytes| DataNode1[Data Storage Node 1: Block Offset 0x4F00]
-    S3Proxy --&gt;|Read Raw Binary Payload Bytes| DataNode2[Data Storage Node 2: Block Offset 0x9A00]
-  end</div>
+    S3Proxy --&gt;|Read Raw Binary Payload Bytes| DataNode1[&quot;Data Storage Node 1: Block Offset 0x4F00&quot;]
+    S3Proxy --&gt;|Read Raw Binary Payload Bytes| DataNode2[&quot;Data Storage Node 2: Block Offset 0x9A00&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client blue
+class S3Proxy green
+class MetaCatalog purple
+class DataNode1 yellow
+class DataNode2 red</div>
 <h3 id="core-object-storage-metadata-principles">Core Object Storage Metadata Principles</h3>
 <ol>
 <li><strong>Decoupling Data Payloads from Metadata</strong>:<ul>
@@ -266,8 +278,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Decoupled object storage metadata architectures (such as <strong>AWS S3</strong>, <strong>MinIO Enterprise</strong>, and <strong>Ceph RADOS Gateway</strong>) report:</p>
 <ul>
 <li><strong>Strong Read-After-Write Consistency</strong>: Immediate global visibility for newly uploaded objects without eventual consistency propagation delays.</li>
-<li><strong>Support for Trillions of Objects</strong>: Decoupling metadata into LSM key-value clusters allows object storage systems to scale metadata listing throughput independently of physical data storage capacity.</li>
+<li><strong>Support for Trillions of Objects</strong>: Decoupling metadata into LSM key-value clusters allows object storage systems to scale metadata listing throughput independently of physical data storage capacity. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Reed, D. P. (1978)</strong>. <em>Naming and Synchronization in a Decentralized Computer System</em>. MIT PhD Thesis. <a href="https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf" target="_blank" rel="noopener">https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Bayer, R., &amp; McCreight, E. (1972)</strong>. <em>Organization and Maintenance of Large Ordered Indexes</em>. Acta Informatica. <a href="https://doi.org/10.1007/BF00288683" target="_blank" rel="noopener">https://doi.org/10.1007/BF00288683</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -304,6 +327,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-lsm-metadata-catalog-s3-list-bucket-engine" class="toc-link">Python Implementation: LSM Metadata Catalog &amp; S3 List Bucket Engine</a></li>
               <li class="toc-item toc-h2"><a href="#metadata-catalog-gotchas-best-practices" class="toc-link">Metadata Catalog Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

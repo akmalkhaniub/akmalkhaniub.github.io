@@ -8,7 +8,7 @@
 
 ## The Model Selection Problem at Scale
 
-Every LLM request has a *complexity profile*. Some are trivial, some are moderate, some are genuinely hard:
+Every LLM request has a *complexity profile* [1]. Some are trivial, some are moderate, some are genuinely hard:
 
 | Task Type | Example | Required Model Tier |
 |-----------|---------|-------------------|
@@ -27,15 +27,15 @@ In most production systems, **100% of requests are routed to the same frontier m
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    U[Incoming Request] --> C{Complexity Classifier}
+    U["Incoming Request"] --> C{Complexity Classifier}
     
-    C -->|Score < 0.3 - Simple| T1[ Tier 1: Cheap<br/>GPT-4o-mini / Gemini Flash<br/>~$0.15/1M tokens]
-    C -->|Score 0.3–0.7 - Moderate| T2[ Tier 2: Mid<br/>Claude 3 Haiku / GPT-4o<br/>~$1.25/1M tokens]
-    C -->|Score > 0.7 - Complex| T3[ Tier 3: Frontier<br/>Claude 3.5 Sonnet / GPT-4o<br/>~$15/1M tokens]
+    C -->|Score < 0.3 - Simple| T1[" Tier 1: Cheap<br/>GPT-4o-mini / Gemini Flash<br/>~$0.15/1M tokens"]
+    C -->|Score 0.3–0.7 - Moderate| T2[" Tier 2: Mid<br/>Claude 3 Haiku / GPT-4o<br/>~$1.25/1M tokens"]
+    C -->|Score > 0.7 - Complex| T3[" Tier 3: Frontier<br/>Claude 3.5 Sonnet / GPT-4o<br/>~$15/1M tokens"]
     
     T1 --> QC{Quality Check<br/>Score > threshold?}
     T2 --> QC
-    T3 --> R[Final Response]
+    T3 --> R["Final Response"]
     
     QC -->|Pass| R
     QC -->|Fail — Escalate| T3
@@ -45,6 +45,17 @@ flowchart TD
     style T2 fill:#0c1a3a,stroke:#3b82f6,stroke-width:2px
     style T3 fill:#3b0764,stroke:#a855f7,stroke-width:2px
     style QC fill:#1e293b,stroke:#f59e0b,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class U blue
+class T1 green
+class T2 purple
+class T3 yellow
+class R red
 ```
 
 ---

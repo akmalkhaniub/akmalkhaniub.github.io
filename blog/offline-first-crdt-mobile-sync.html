@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/offline-first-crdt-mobile-sync.html">
   <meta property="og:title" content="Offline-First Mobile Apps: Syncing Data Natively with CRDTs">
   <meta property="og:description" content="The mechanics of Conflict-Free Replicated Data Types (CRDTs) on mobile clients, implementing local Yjs sync engines with SQLite database layers.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/offline-first-crdt-mobile-sync.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-04-04">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Offline-First Mobile Apps: Syncing Data Natively with CRDTs">
   <meta name="twitter:description" content="The mechanics of Conflict-Free Replicated Data Types (CRDTs) on mobile clients, implementing local Yjs sync engines with SQLite database layers.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/offline-first-crdt-mobile-sync.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Offline-First Mobile Apps: Syncing Data Natively with CRDTs",
   "description": "The mechanics of Conflict-Free Replicated Data Types (CRDTs) on mobile clients, implementing local Yjs sync engines with SQLite database layers.",
   "url": "https://akmalkhaniub.github.io/blog/offline-first-crdt-mobile-sync.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/offline-first-crdt-mobile-sync.jpg",
   "datePublished": "2026-04-04",
   "keywords": "Mobile, CRDTs, Architecture, Offline-First",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/offline-first-crdt-mobile-sync.jpg" class="article-cover-img" alt="Offline-First Mobile Apps: Syncing Data Natively with CRDTs Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Offline-First Mobile Apps: Syncing Data Natively with CRDTs</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#1-schema-design-for-the-sqlite-store">1. Schema Design for the SQLite Store</a></li>
                 <li><a href="#2-typescript-local-sync-manager">2. TypeScript Local Sync Manager</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -125,7 +126,7 @@ Designing mobile applications that operate offline is relatively simple when dat
 <h2 id="the-conflict-problem-in-distributed-state">The Conflict Problem in Distributed State</h2>
 <p>When two clients edit the same document offline, they generate conflicting versions:</p>
 <ul>
-<li><strong>Client A</strong> updates the project description.</li>
+<li><strong>Client A</strong> updates the project description <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Client B</strong> updates the project status.</li>
 </ul>
 <p>Under a naive Last-Write-Wins (LWW) strategy, whichever client connects last overwrites the other client&#39;s changes completely. CRDTs solve this by treating data structures as trees of operations. Every edit (character typed, property changed) is registered as a unique operation tagged with a logical clock. These operations can be merged in any order and will mathematically produce the exact same final state.</p>
@@ -251,8 +252,19 @@ console.log('Current Document Text:', syncManager.getDocumentText());</code></pr
 <li><input disabled="" type="checkbox"> <strong>Avoid Last-Write-Wins</strong>: Traditional database updates discard user data during offline sync cycles; CRDTs merge them mathematically.</li>
 <li><input disabled="" type="checkbox"> <strong>Store incremental updates locally</strong>: Store Yjs binary updates in a SQLite blob table, and merge them at startup to rebuild the active document state.</li>
 <li><input disabled="" type="checkbox"> <strong>Optimize network bandwidth</strong>: Use State Vectors (<code>Y.encodeStateVector</code>) to exchange only the missing updates during synchronization, keeping payload sizes small.</li>
-<li><input disabled="" type="checkbox"> <strong>Throttle database writes</strong>: Group rapid keypress updates into a single transaction to prevent SQLite connection pool write locks.</li>
+<li><input disabled="" type="checkbox"> <strong>Throttle database writes</strong>: Group rapid keypress updates into a single transaction to prevent SQLite connection pool write locks. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Shapiro, M., Preguiça, N., Baquero, C., &amp; Zawirski, M. (2011)</strong>. <em>Conflict-free Replicated Data Types</em>. SSS. <a href="https://hal.inria.fr/inria-00609399v1/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00609399v1/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (1978)</strong>. <em>Time, Clocks, and the Ordering of Events in a Distributed System</em>. CACM. <a href="https://lamport.azurewebsites.net/pubs/time-clocks.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/time-clocks.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Kubernetes Authors (2024)</strong>. <em>Kubernetes Documentation</em>. CNCF. <a href="https://kubernetes.io/docs/home/" target="_blank" rel="noopener">https://kubernetes.io/docs/home/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -289,6 +301,7 @@ console.log('Current Document Text:', syncManager.getDocumentText());</code></pr
               <li class="toc-item toc-h3"><a href="#1-schema-design-for-the-sqlite-store" class="toc-link">1. Schema Design for the SQLite Store</a></li>
               <li class="toc-item toc-h3"><a href="#2-typescript-local-sync-manager" class="toc-link">2. TypeScript Local Sync Manager</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -12,7 +12,7 @@
 
 ## The Latency Illusion: Optimizing Perceived Speed
 
-Large Language Models generate text sequentially (token-by-token). When querying an API (like Claude or OpenAI), the backend receives these tokens as a stream. 
+Large Language Models generate text sequentially (token-by-token) [1]. When querying an API (like Claude or OpenAI), the backend receives these tokens as a stream. 
 
 If your backend waits for the model to finish generating the entire response before returning it to the client, you introduce massive latency:
 *   **Time-to-First-Token (TTFT)**: With streaming, the user sees the model start typing within 200ms–500ms.
@@ -30,7 +30,7 @@ When designing a token gateway, two protocols dominate: **Server-Sent Events (SS
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 flowchart TD
     subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
-        A[Client Browser] -->|HTTP GET Request / Keep-Alive| B[Hono API Gateway]
+        A["Client Browser"] -->|HTTP GET Request / Keep-Alive| B["Hono API Gateway"]
         B -->|Keep Connection Open| A
         B -->|Stream Data Chunk 1| A
         B -->|Stream Data Chunk 2| A
@@ -38,7 +38,7 @@ flowchart TD
     end
     
     subgraph WebSockets
-        C[Client Browser] -->|HTTP Upgrade Handshake| D[Node.js Server]
+        C["Client Browser"] -->|HTTP Upgrade Handshake| D["Node.js Server"]
         D -->|Establish TCP Socket| C
         C <-->|Bidirectional Data Frame - Send Input| D
         D <-->|Bidirectional Data Frame - Stream Output| C
@@ -48,6 +48,16 @@ flowchart TD
     style B fill:#0f172a,stroke:#38bdf8,stroke-width:2px
     style C fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
     style D fill:#0f172a,stroke:#38bdf8,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class C purple
+class D yellow
 ```
 
 *   **Server-Sent Events (SSE)**: Runs over standard HTTP using the `text/event-stream` mime-type. It is **unidirectional** (server to client) and lightweight, making it ideal for standard chatbot outputs.

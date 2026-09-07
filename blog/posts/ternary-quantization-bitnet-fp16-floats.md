@@ -7,7 +7,7 @@
 
 ---
 
-Modern large language models are computationally heavy because they perform trillions of high-precision floating-point matrix multiplications. Standard models store weights in 16-bit floating-point (FP16) or 8-bit integer formats, consuming massive amounts of GPU memory and energy.
+Modern large language models are computationally heavy because they perform trillions of high-precision floating-point matrix multiplications [1]. Standard models store weights in 16-bit floating-point (FP16) or 8-bit integer formats, consuming massive amounts of GPU memory and energy.
 
 To bypass this hardware barrier, Microsoft Research introduced **BitNet 1.58b**, launching the **1.58-Bit Ternary Model Era**.
 
@@ -28,13 +28,13 @@ flowchart TD
     classDef ternaryStyle fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
     classDef label fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
 
-    Start[Inference Matrix Multiplication] --> Representation{Weight Representation}
+    Start["Inference Matrix Multiplication"] --> Representation{Weight Representation}
     
-    Representation -->|Standard FP16 / 16-Bit| FloatKernel[Floating-Point Multiply-Accumulate / MAC]
-    Representation -->|BitNet 1.58b / 1.58-Bit| TernaryKernel[Sign-Swap & Addition / Additive Accumulate]
+    Representation -->|Standard FP16 / 16-Bit| FloatKernel["Floating-Point Multiply-Accumulate / MAC"]
+    Representation -->|BitNet 1.58b / 1.58-Bit| TernaryKernel["Sign-Swap & Addition / Additive Accumulate"]
     
-    FloatKernel -->|High Cost| FP_Mult[Requires complex silicon GPU floating-point multipliers / High Wattage]
-    TernaryKernel -->|Low Cost| INT_Add[Requires simple integer additions / ~10x lower hardware power footprint]
+    FloatKernel -->|High Cost| FP_Mult["Requires complex silicon GPU floating-point multipliers / High Wattage"]
+    TernaryKernel -->|Low Cost| INT_Add["Requires simple integer additions / ~10x lower hardware power footprint"]
 
     class Start,Representation label;
     class FloatKernel,FP_Mult floatStyle;

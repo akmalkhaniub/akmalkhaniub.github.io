@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/edge-agents-shared-memory-ipc-latency.html">
   <meta property="og:title" content="Shared Memory on the Edge: Inter-Process Communication (IPC) for Local Agents">
   <meta property="og:description" content="Eliminating HTTP latency in local agent loops: designing shared memory structures and memory-mapped files to synchronize context arrays between inter-process agents.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/edge-agents-shared-memory-ipc-latency.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-05-14">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Shared Memory on the Edge: Inter-Process Communication (IPC) for Local Agents">
   <meta name="twitter:description" content="Eliminating HTTP latency in local agent loops: designing shared memory structures and memory-mapped files to synchronize context arrays between inter-process agents.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/edge-agents-shared-memory-ipc-latency.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Shared Memory on the Edge: Inter-Process Communication (IPC) for Local Agents",
   "description": "Eliminating HTTP latency in local agent loops: designing shared memory structures and memory-mapped files to synchronize context arrays between inter-process agents.",
   "url": "https://akmalkhaniub.github.io/blog/edge-agents-shared-memory-ipc-latency.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/edge-agents-shared-memory-ipc-latency.jpg",
   "datePublished": "2026-05-14",
   "keywords": "Local AI, IPC, Memory Management, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/edge-agents-shared-memory-ipc-latency.jpg" class="article-cover-img" alt="Shared Memory on the Edge: Inter-Process Communication (IPC) for Local Agents Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Shared Memory on the Edge: Inter-Process Communication (IPC) for Local Agents</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#2-memory-formats-protocol-buffers-vs-raw-json">2. Memory Formats: Protocol Buffers vs. Raw JSON</a></li>
                 <li><a href="#code-demo-inter-process-shared-memory-coordinator">Code Demo: Inter-Process Shared Memory Coordinator</a></li>
                 <li><a href="#mentorship-and-deployment-guidelines">Mentorship and Deployment Guidelines</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -125,20 +126,29 @@ In cloud-native systems, micro-agents communicate over HTTP REST endpoints, gRPC
 <h2 id="the-network-loopback-penalty">The Network Loopback Penalty</h2>
 <p>When calling a tool locally, serialization and network round-trips add overhead:</p>
 <ul>
-<li><strong>HTTP Latency</strong>: A local REST call takes 3 to 10 milliseconds of socket overhead, data serialization (JSON translation), and parsing.</li>
+<li><strong>HTTP Latency</strong>: A local REST call takes 3 to 10 milliseconds of socket overhead, data serialization (JSON translation), and parsing <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Massive Payloads</strong>: When Agent A passes a 100,000-token codebase context payload to Agent B, translating this block to JSON and piping it over TCP sockets degrades performance.</li>
 <li><strong>The Solution</strong>: <strong>Memory Mapping (mmap)</strong>. We allocate a shared region of the workstation&#39;s physical RAM. Agent processes read and write to this memory segment directly at memory bus speeds, eliminating network serialization.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     subgraph SG1_RamPhysicalRam [&quot;RAM [Physical RAM Coordinate Space]&quot;]
-        SharedBlock[Shared Memory Block / mmap file]
+        SharedBlock[&quot;Shared Memory Block / mmap file&quot;]
     end
 
-    AgentA[Agent Process A] --&gt;|Direct Write JSON payload| SharedBlock
-    AgentB[Agent Process B] --&gt;|Read payload instantly| SharedBlock
+    AgentA[&quot;Agent Process A&quot;] --&gt;|Direct Write JSON payload| SharedBlock
+    AgentB[&quot;Agent Process B&quot;] --&gt;|Read payload instantly| SharedBlock
     
-    style SharedBlock fill:#111827,stroke:#0db49b,stroke-width:2px</div>
+    style SharedBlock fill:#111827,stroke:#0db49b,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class SharedBlock blue
+class AgentA green
+class AgentB purple</div>
 <p>By reading directly from memory, Agent B receives the context block with zero TCP socket overhead.</p>
 <hr>
 <h2 id="1-under-the-hood-memory-mapping-with-python-mmap">1. Under the Hood: Memory Mapping with Python <code>mmap</code></h2>
@@ -247,8 +257,19 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Leverage WAL Mode</strong>: If shared memory complexity grows, replace custom <code>mmap</code> files with a local SQLite database configured in Write-Ahead Logging (WAL) mode for concurrency-safe local state storage.</li>
 <li><strong>Isolate IPC Paths</strong>: Restrict shared memory files to temporary mount directories (like <code>/dev/shm</code> on Linux) to run memory operations entirely in RAM, avoiding physical disk writes.</li>
-<li><strong>Implement Semaphores</strong>: Protect shared memory regions using system-level mutexes to prevent processes from mutating shared context concurrently.</li>
+<li><strong>Implement Semaphores</strong>: Protect shared memory regions using system-level mutexes to prevent processes from mutating shared context concurrently. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Belshe, M., Peon, R., &amp; Thomson, M. (2015)</strong>. <em>Hypertext Transfer Protocol Version 2 (HTTP/2)</em>. RFC 7540. <a href="https://www.rfc-editor.org/rfc/rfc7540" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7540</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>gRPC Authors (2024)</strong>. <em>gRPC Documentation</em>. grpc.io. <a href="https://grpc.io/docs/" target="_blank" rel="noopener">https://grpc.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Google (2024)</strong>. <em>Protocol Buffers Language Guide</em>. protobuf.dev. <a href="https://protobuf.dev/programming-guides/proto3/" target="_blank" rel="noopener">https://protobuf.dev/programming-guides/proto3/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -285,6 +306,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-memory-formats-protocol-buffers-vs-raw-json" class="toc-link">2. Memory Formats: Protocol Buffers vs. Raw JSON</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-inter-process-shared-memory-coordinator" class="toc-link">Code Demo: Inter-Process Shared Memory Coordinator</a></li>
               <li class="toc-item toc-h2"><a href="#mentorship-and-deployment-guidelines" class="toc-link">Mentorship and Deployment Guidelines</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

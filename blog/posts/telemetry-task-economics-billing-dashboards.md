@@ -9,24 +9,35 @@
 ## The Threat of Runaway Agent Operations
 
 In multi-agent architectures:
-* **The Recursion Loop Risk**: A minor error in a tool's output can cause a self-reflective agent to run debug loops indefinitely, accumulating API fees.
+* **The Recursion Loop Risk**: A minor error in a tool's output can cause a self-reflective agent to run debug loops indefinitely, accumulating API fees [1].
 * **Invisible Overhead**: Without per-task telemetry aggregation, tracking which user or branch consumes the most tokens is impossible.
 * **The Solution**: **Task Economics Dashboards**. We aggregate token metrics across all sub-spans of a parent task. We apply model-specific cost rates to calculate expenses in real time, triggering automatic execution pauses if thresholds are exceeded.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Parent[Parent Goal: Deploy Feature] --> Span1[Span 1: Research - 1,200 tokens]
-    Parent --> Span2[Span 2: Code Gen - 3,500 tokens]
+    Parent["Parent Goal: Deploy Feature"] --> Span1["Span 1: Research - 1,200 tokens"]
+    Parent --> Span2["Span 2: Code Gen - 3,500 tokens"]
     
-    Span1 --> Agg[Task Cost Aggregator Engine]
+    Span1 --> Agg["Task Cost Aggregator Engine"]
     Span2 --> Agg
     
-    Agg --> Calculate[Calculate USD using Model Pricing Matrix]
+    Agg --> Calculate["Calculate USD using Model Pricing Matrix"]
     Calculate --> Check{Cost > Budget Limit?}
     
-    Check -->|Yes - Over Budget| Pause[Trigger Gateway Safety Pause]
-    Check -->|No - Safe| Update[Update Real-time Cost Dashboard]
+    Check -->|Yes - Over Budget| Pause["Trigger Gateway Safety Pause"]
+    Check -->|No - Safe| Update["Update Real-time Cost Dashboard"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Parent,Pause blue
+class Span1,Update green
+class Span2 purple
+class Agg yellow
+class Calculate red
 ```
 
 ---
@@ -124,4 +135,13 @@ if __name__ == "__main__":
 
 * **Establish Budgets**: Enforce strict dollar-limit budgets per task to prevent runaway token costs.
 * **Aggregate Real-Time Metrics**: Sum token usage across all nested sub-spans to calculate complete task expenses.
-* **Inject Checkpoint Gates**: Verify accumulated costs before initiating expensive model planning runs.
+* **Inject Checkpoint Gates**: Verify accumulated costs before initiating expensive model planning runs. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

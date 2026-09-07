@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/zero-copy-linux-event-loops-io-uring-vs-epoll-10m-qps.html">
   <meta property="og:title" content="Zero-Copy Linux Event Loops: io_uring vs epoll — Architecting 10 Million QPS Network Engines">
   <meta property="og:description" content="Why modern 10M QPS systems are abandoning epoll: lock-free shared memory ring buffers in io_uring, zero-syscall submissions via SQPOLL, registered memory buffers, and asynchronous DMA execution.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/zero-copy-linux-event-loops-io-uring-vs-epoll-10m-qps.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-01">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Zero-Copy Linux Event Loops: io_uring vs epoll — Architecting 10 Million QPS Network Engines">
   <meta name="twitter:description" content="Why modern 10M QPS systems are abandoning epoll: lock-free shared memory ring buffers in io_uring, zero-syscall submissions via SQPOLL, registered memory buffers, and asynchronous DMA execution.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/zero-copy-linux-event-loops-io-uring-vs-epoll-10m-qps.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Zero-Copy Linux Event Loops: io_uring vs epoll — Architecting 10 Million QPS Network Engines",
   "description": "Why modern 10M QPS systems are abandoning epoll: lock-free shared memory ring buffers in io_uring, zero-syscall submissions via SQPOLL, registered memory buffers, and asynchronous DMA execution.",
   "url": "https://akmalkhaniub.github.io/blog/zero-copy-linux-event-loops-io-uring-vs-epoll-10m-qps.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/zero-copy-linux-event-loops-io-uring-vs-epoll-10m-qps.jpg",
   "datePublished": "2026-09-01",
   "keywords": "Linux Kernel, io_uring, epoll, Systems Engineering, Networking, Zero-Copy",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Zero-Copy Linux Event Loops: io_uring vs epoll — Architecting 10 Million QPS Network Engines Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/zero-copy-linux-event-loops-io-uring-vs-epoll-10m-qps.jpg" class="article-cover-img" alt="Zero-Copy Linux Event Loops: io_uring vs epoll — Architecting 10 Million QPS Network Engines Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Zero-Copy Linux Event Loops: io_uring vs epoll — Architecting 10 Million QPS Network Engines</h1>
             <div class="article-meta">
@@ -118,9 +118,10 @@
                 <li><a href="#python-simulation-the-lock-free-ring-engine">Python Simulation: The Lock-Free Ring Engine</a></li>
                 <li><a href="#architectural-comparison-epoll-vs-iouring">Architectural Comparison: epoll vs io_uring</a></li>
                 <li><a href="#the-paradigm-shift">The Paradigm Shift</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In the autumn of 2002, the Linux kernel received a patch from Davide Libenzi that changed the topology of the internet. It was called <code>epoll</code>.</p>
+<p>In the autumn of 2002, the Linux kernel received a patch from Davide Libenzi that changed the topology of the internet <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. It was called <code>epoll</code>.</p>
 <p>Until that moment, web servers buckled under the weight of ten thousand concurrent connections—the legendary C10K problem. Traditional system calls like <code>select()</code> and <code>poll()</code> were linear scavengers: to find out which socket had received a packet, the kernel had to traverse an $O(N)$ array of file descriptors on every single wake-up. <code>epoll</code> replaced this linear scan with an in-kernel red-black tree and an active ready-list. Sockets registered once; when packets arrived at the network interface card (NIC), hardware interrupts queued readiness events into the ready-list in $O(1)$ time.</p>
 <p>For twenty years, <code>epoll</code> was the load-bearing pillar beneath Nginx, Redis, Node.js (<code>libuv</code>), and Netty. But in high-throughput modern infrastructure—systems pushing ten million queries per second over 100GbE NICs and NVMe-over-Fabrics storage arrays—<code>epoll</code> has hit an insurmountable physical wall.</p>
 <p>The problem is not that <code>epoll</code> is slow. The problem is that <code>epoll</code> is fundamentally a <strong>readiness notification engine</strong>, not an <strong>asynchronous execution engine</strong>.</p>
@@ -129,19 +130,30 @@
 <div class="mermaid">flowchart TD
   subgraph SG1_EpollReadinessModel [&quot;epoll Readiness Model vs io_uring Zero-Copy Ring Geometry&quot;]
     subgraph SG2_1TraditionalEpoll [&quot;1. Traditional epoll (Syscall Heavy)&quot;]
-      UserApp[User Application] --&gt;|epoll_wait syscall| Kernel1[Kernel: Check Readiness]
+      UserApp[&quot;User Application&quot;] --&gt;|epoll_wait syscall| Kernel1[&quot;Kernel: Check Readiness&quot;]
       Kernel1 --&gt;|Context Switch Wakeup| UserApp
-      UserApp --&gt;|read/write syscall| Kernel2[Kernel: Copy Payload]
+      UserApp --&gt;|read/write syscall| Kernel2[&quot;Kernel: Copy Payload&quot;]
       Kernel2 --&gt;|Return Context Switch| UserApp
     end
 
     subgraph SG3_2IoUring [&quot;2. io_uring (Zero Syscall / Lock-Free Shared Rings)&quot;]
-      App[User Application] --&gt;|Push SQE - Non-blocking write| SQ[Shared Submission Queue Ring]
-      SQ --&gt;|Kernel Polling Worker - SQPOLL| KernelAsync[Kernel Worker Thread (Ring 0)]
-      KernelAsync --&gt;|Direct DMA Transfer| CQ[Shared Completion Queue Ring]
+      App[&quot;User Application&quot;] --&gt;|Push SQE - Non-blocking write| SQ[&quot;Shared Submission Queue Ring&quot;]
+      SQ --&gt;|Kernel Polling Worker - SQPOLL| KernelAsync[&quot;Kernel Worker Thread (Ring 0)&quot;]
+      KernelAsync --&gt;|Direct DMA Transfer| CQ[&quot;Shared Completion Queue Ring&quot;]
       CQ --&gt;|Pop CQE - Read Memory Pointer| App
     end
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserApp,KernelAsync blue
+class Kernel1,CQ green
+class Kernel2 purple
+class App yellow
+class SQ red</div>
 <hr>
 <h2 id="1-the-epoll-scalability-wall-the-c10m-barrier">1. The Epoll Scalability Wall (The C10M Barrier)</h2>
 <p>To understand why <code>epoll</code> cannot conquer ten million queries per second, examine the anatomy of a single x86_64 system call under modern CPU microarchitectures.</p>
@@ -341,7 +353,18 @@ if __name__ == &quot;__main__&quot;:
 <h2 id="the-paradigm-shift">The Paradigm Shift</h2>
 <p><code>epoll</code> solved the connection scale problem: it allowed a single thread to observe millions of idle connections without melting the CPU.</p>
 <p><code>io_uring</code> solves the throughput density problem: it allows a single CPU core to saturate modern 100-gigabit network interfaces and PCIe Gen5 NVMe arrays by dismantling the syscall barrier.</p>
-<p>For high-throughput systems architects, the era of polling readiness is over. The era of lock-free shared memory ring execution has arrived.</p>
+<p>For high-throughput systems architects, the era of polling readiness is over. The era of lock-free shared memory ring execution has arrived. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -383,6 +406,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-simulation-the-lock-free-ring-engine" class="toc-link">Python Simulation: The Lock-Free Ring Engine</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-comparison-epoll-vs-iouring" class="toc-link">Architectural Comparison: epoll vs io_uring</a></li>
               <li class="toc-item toc-h2"><a href="#the-paradigm-shift" class="toc-link">The Paradigm Shift</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

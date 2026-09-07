@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/sse-gotchas-production-llm-streaming.html">
   <meta property="og:title" content="SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production">
   <meta property="og:description" content="The battle-tested field guide to SSE production failures — Nginx buffering, Cloudflare timeouts, EventSource auth limits, reconnect storms, connection leaks, and more. With exact fixes in TypeScript and Python.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/sse-gotchas-production-llm-streaming.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-04-05">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production">
   <meta name="twitter:description" content="The battle-tested field guide to SSE production failures — Nginx buffering, Cloudflare timeouts, EventSource auth limits, reconnect storms, connection leaks, and more. With exact fixes in TypeScript and Python.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/sse-gotchas-production-llm-streaming.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production",
   "description": "The battle-tested field guide to SSE production failures — Nginx buffering, Cloudflare timeouts, EventSource auth limits, reconnect storms, connection leaks, and more. With exact fixes in TypeScript and Python.",
   "url": "https://akmalkhaniub.github.io/blog/sse-gotchas-production-llm-streaming.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/sse-gotchas-production-llm-streaming.jpg",
   "datePublished": "2026-04-05",
   "keywords": "SSE, Streaming, Node.js, Python, DevOps",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/sse-gotchas-production-llm-streaming.jpg" class="article-cover-img" alt="SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">SSE Gotchas: 10 Server-Sent Events Pitfalls That Will Break Your LLM Streaming in Production</h1>
             <div class="article-meta">
@@ -137,29 +137,29 @@ Server-Sent Events (SSE) look deceptively simple — open a connection, stream t
 <pre><code class="language-javascript">const source = new EventSource('/api/stream');
 source.onmessage = (e) =&gt; console.log(e.data);</code></pre>
 <p>The server side is barely more. But between your Node.js process and the browser sits a gauntlet: <strong>reverse proxies, CDNs, load balancers, middleware frameworks, and mobile network stacks</strong> — each with their own opinions about what a &quot;response&quot; looks like and when to flush it.</p>
-<p>The result: SSE that works perfectly in local development silently breaks in every production environment it touches.</p>
+<p>The result: SSE that works perfectly in local development silently breaks in every production environment it touches <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <hr>
 <h2 id="the-full-sse-failure-map">The Full SSE Failure Map</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    C[Browser EventSource] --&gt; P1{Proxy / CDN Layer}
+    C[&quot;Browser EventSource&quot;] --&gt; P1{Proxy / CDN Layer}
     
-    P1 --&gt;|Buffering ON| G1[ Gotcha 1&lt;br/&gt;Tokens buffer 30s&lt;br/&gt;then dump all at once]
-    P1 --&gt;|HTTP/1.1| G2[ Gotcha 2&lt;br/&gt;6-connection limit&lt;br/&gt;new tabs kill old streams]
-    P1 --&gt;|Auth via Header| G3[ Gotcha 3&lt;br/&gt;EventSource can't&lt;br/&gt;set Authorization header]
-    P1 --&gt;|Cloudflare timeout| G4[ Gotcha 4&lt;br/&gt;100s hard timeout&lt;br/&gt;kills long responses]
-    P1 --&gt;|Passed| S[Server]
+    P1 --&gt;|Buffering ON| G1[&quot; Gotcha 1&lt;br/&gt;Tokens buffer 30s&lt;br/&gt;then dump all at once&quot;]
+    P1 --&gt;|HTTP/1.1| G2[&quot; Gotcha 2&lt;br/&gt;6-connection limit&lt;br/&gt;new tabs kill old streams&quot;]
+    P1 --&gt;|Auth via Header| G3[&quot; Gotcha 3&lt;br/&gt;EventSource can't&lt;br/&gt;set Authorization header&quot;]
+    P1 --&gt;|Cloudflare timeout| G4[&quot; Gotcha 4&lt;br/&gt;100s hard timeout&lt;br/&gt;kills long responses&quot;]
+    P1 --&gt;|Passed| S[&quot;Server&quot;]
 
     S --&gt; P2{Framework Layer}
-    P2 --&gt;|Next.js middleware| G5[ Gotcha 5&lt;br/&gt;Edge runtime buffers&lt;br/&gt;full response body]
-    P2 --&gt;|Express compress()| G6[ Gotcha 6&lt;br/&gt;Gzip middleware&lt;br/&gt;swallows stream chunks]
-    P2 --&gt;|No keep-alive| G7[ Gotcha 7&lt;br/&gt;Connection closes after&lt;br/&gt;first event — client loops]
-    P2 --&gt;|Passed| L[LLM API]
+    P2 --&gt;|Next.js middleware| G5[&quot; Gotcha 5&lt;br/&gt;Edge runtime buffers&lt;br/&gt;full response body&quot;]
+    P2 --&gt;|Express compress()| G6[&quot; Gotcha 6&lt;br/&gt;Gzip middleware&lt;br/&gt;swallows stream chunks&quot;]
+    P2 --&gt;|No keep-alive| G7[&quot; Gotcha 7&lt;br/&gt;Connection closes after&lt;br/&gt;first event — client loops&quot;]
+    P2 --&gt;|Passed| L[&quot;LLM API&quot;]
 
     L --&gt; P3{Client Reconnect}
-    P3 --&gt;|No Last-Event-ID| G8[ Gotcha 8&lt;br/&gt;Reconnect replays&lt;br/&gt;full response from start]
-    P3 --&gt;|No exponential backoff| G9[ Gotcha 9&lt;br/&gt;Reconnect storm on&lt;br/&gt;server restart]
-    P3 --&gt;|No done signal| G10[ Gotcha 10&lt;br/&gt;Client never closes —&lt;br/&gt;connection leak]
+    P3 --&gt;|No Last-Event-ID| G8[&quot; Gotcha 8&lt;br/&gt;Reconnect replays&lt;br/&gt;full response from start&quot;]
+    P3 --&gt;|No exponential backoff| G9[&quot; Gotcha 9&lt;br/&gt;Reconnect storm on&lt;br/&gt;server restart&quot;]
+    P3 --&gt;|No done signal| G10[&quot; Gotcha 10&lt;br/&gt;Client never closes —&lt;br/&gt;connection leak&quot;]
 
     style G1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style G2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -170,7 +170,18 @@ flowchart TD
     style G7 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style G8 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style G9 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
-    style G10 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
+    style G10 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class C,S,G8 blue
+class G1,G5,G9 green
+class G2,G6,G10 purple
+class G3,G7 yellow
+class G4,L red</div>
 <hr>
 <h2 id="gotcha-1-your-proxy-is-buffering-everything">Gotcha 1: Your Proxy Is Buffering Everything</h2>
 <p><strong>Symptom</strong>: Works perfectly on <code>localhost:3000</code>. On production (behind Nginx or an AWS ALB), tokens don&#39;t appear until the full LLM response completes — then dump all at once. Streaming is completely broken.</p>

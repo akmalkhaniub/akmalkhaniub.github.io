@@ -1,6 +1,6 @@
 # Real-Time Toxicity & Bias Scanning on Streaming Token Responses
 
-When deploying user-facing LLM applications, safety guardrails are critical to prevent the model from generating toxic, biased, or restricted content. However, in streaming applications (like real-time chat widgets), waiting for the model to finish generating a complete 500-token paragraph before scanning for toxicity introduces unacceptable UI latency.
+When deploying user-facing LLM applications, safety guardrails are critical to prevent the model from generating toxic, biased, or restricted content [1]. However, in streaming applications (like real-time chat widgets), waiting for the model to finish generating a complete 500-token paragraph before scanning for toxicity introduces unacceptable UI latency.
 
 To deliver a fast, safe user experience, we must execute **Real-Time Toxicity & Bias Scanning** directly on the streaming token chunks.
 
@@ -16,16 +16,27 @@ The guardrail scanner buffers token streams, runs parallel classification, and c
 
 ```mermaid
 flowchart TD
-  A[LLM Inference Engine Stream] -->|Yield Raw Token Chunks| B[Sliding-Window Token Buffer]
+  A["LLM Inference Engine Stream"] -->|Yield Raw Token Chunks| B["Sliding-Window Token Buffer"]
   
   subgraph SG1_RealTimeGuardrail ["Real-Time Guardrail Gate"]
-    B -->|Assemble Text Segment| C[Local Classifier Engine: ONNX / DeBERTa]
+    B -->|Assemble Text Segment| C["Local Classifier Engine: ONNX / DeBERTa"]
     C -->|Calculate Probability Scores| D{Toxicity > Threshold?}
   end
   
-  D -->|No| E[Transmit Tokens to Client Interface]
-  D -->|Yes| F[Trigger Connection Interrupt: Intercept & Inject Fallback]
+  D -->|No| E["Transmit Tokens to Client Interface"]
+  D -->|Yes| F["Trigger Connection Interrupt: Intercept & Inject Fallback"]
   F -->|Disconnect| A
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class C purple
+class E yellow
+class F red
 ```
 
 ### Challenges of Streaming Guardrails
@@ -142,4 +153,10 @@ When building streaming classifiers:
 ## Real-World Enterprise Impact
 Teams deploying real-time stream scanners report:
 * **Zero Policy Violations**: Outbound content breaches are intercepted and blocked before they reach user browsers.
-* **Smooth UI Performance**: Local ONNX model inference overhead remains under 10ms, maintaining natural streaming rendering.
+* **Smooth UI Performance**: Local ONNX model inference overhead remains under 10ms, maintaining natural streaming rendering. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

@@ -9,21 +9,32 @@
 ## The Danger of Unbounded Buffering
 
 When an API gateway streams token responses to clients:
-* **Memory Exhaustion (OOM)**: If the client connection lags, the gateway holds open active connection buffers in RAM. With thousands of active sessions, memory bloat triggers Out-Of-Memory (OOM) failures.
+* **Memory Exhaustion (OOM)**: If the client connection lags, the gateway holds open active connection buffers in RAM [1]. With thousands of active sessions, memory bloat triggers Out-Of-Memory (OOM) failures.
 * **API Waste**: If the client disconnects due to lag, the LLM continues generating tokens in the background, consuming API credits for responses that will never be delivered.
 * **The Solution**: **Backpressure**. The gateway monitors the client's consumption speed. If the buffer queue exceeds a threshold, the gateway throttles the LLM generator stream, resuming only when the client queue drains.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    LLM[LLM API Stream] -->|Generate Tokens - 100/sec| Gateway[Gateway Buffer Queue]
-    Gateway -->|Consume Tokens - 15/sec| Client[Slow Client Socket]
+    LLM["LLM API Stream"] -->|Generate Tokens - 100/sec| Gateway["Gateway Buffer Queue"]
+    Gateway -->|Consume Tokens - 15/sec| Client["Slow Client Socket"]
     
     Gateway --> Check{Buffer Queue > Threshold?}
-    Check -->|Yes| Pause[Trigger Backpressure: Pause LLM Stream]
-    Check -->|No| Resume[Resume LLM Stream]
+    Check -->|Yes| Pause["Trigger Backpressure: Pause LLM Stream"]
+    Check -->|No| Resume["Resume LLM Stream"]
     
     Pause --> Resume
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class LLM blue
+class Gateway green
+class Client purple
+class Pause yellow
+class Resume red
 ```
 
 ---
@@ -116,4 +127,10 @@ if __name__ == "__main__":
 
 * **Enforce Queue Size Limits**: Set strict maximum size limits on async gateway queues (e.g. `maxsize = 20`) to prevent memory leak crashes.
 * **Stop Terminated Streams**: Monitor connection close events on client sockets and immediately cancel the corresponding LLM API requests.
-* **Throttle, Don't Disconnect**: Implement progressive delays rather than hard socket closures to preserve connection stability.
+* **Throttle, Don't Disconnect**: Implement progressive delays rather than hard socket closures to preserve connection stability. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

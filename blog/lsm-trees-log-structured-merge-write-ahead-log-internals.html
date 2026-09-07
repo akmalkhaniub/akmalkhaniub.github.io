@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/lsm-trees-log-structured-merge-write-ahead-log-internals.html">
   <meta property="og:title" content="Log-Structured Merge (LSM) Trees &amp; Write-Ahead Logs (WAL) Internals">
   <meta property="og:description" content="Write-optimized storage engine architecture: implementing Write-Ahead Logging (WAL), MemTable SkipLists, immutable SSTable flushes, Bloom filters, and leveled compaction.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/lsm-trees-log-structured-merge-write-ahead-log-internals.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Log-Structured Merge (LSM) Trees &amp; Write-Ahead Logs (WAL) Internals">
   <meta name="twitter:description" content="Write-optimized storage engine architecture: implementing Write-Ahead Logging (WAL), MemTable SkipLists, immutable SSTable flushes, Bloom filters, and leveled compaction.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/lsm-trees-log-structured-merge-write-ahead-log-internals.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Log-Structured Merge (LSM) Trees & Write-Ahead Logs (WAL) Internals",
   "description": "Write-optimized storage engine architecture: implementing Write-Ahead Logging (WAL), MemTable SkipLists, immutable SSTable flushes, Bloom filters, and leveled compaction.",
   "url": "https://akmalkhaniub.github.io/blog/lsm-trees-log-structured-merge-write-ahead-log-internals.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/lsm-trees-log-structured-merge-write-ahead-log-internals.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Storage Engines, LSM Tree, RocksDB, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Log-Structured Merge (LSM) Trees &amp; Write-Ahead Logs (WAL) Internals Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/lsm-trees-log-structured-merge-write-ahead-log-internals.jpg" class="article-cover-img" alt="Log-Structured Merge (LSM) Trees &amp; Write-Ahead Logs (WAL) Internals Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Log-Structured Merge (LSM) Trees &amp; Write-Ahead Logs (WAL) Internals</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-lsm-tree-storage-engine">Python Implementation: LSM-Tree Storage Engine</a></li>
                 <li><a href="#lsm-tree-gotchas-best-practices">LSM-Tree Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Traditional relational databases (like PostgreSQL or MySQL InnoDB) rely on <strong>B-Tree</strong> page structures for data storage. While B-Trees excel at fast read operations, they require modifying data pages <strong>in place</strong> on disk.</p>
+<p>Traditional relational databases (like PostgreSQL or MySQL InnoDB) rely on <strong>B-Tree</strong> page structures for data storage <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. While B-Trees excel at fast read operations, they require modifying data pages <strong>in place</strong> on disk.</p>
 <p>For write-heavy enterprise workloads (logging millions of metrics, processing financial transactions, or ingesting event streams), in-place disk updates cause heavy random write I/O, leading to severe storage performance bottlenecks.</p>
 <p>To achieve maximum write throughput, high-performance database engines (<strong>RocksDB</strong>, <strong>LevelDB</strong>, <strong>Apache Cassandra</strong>, <strong>ScyllaDB</strong>) utilize <strong>Log-Structured Merge (LSM) Trees</strong>.</p>
 <p>LSM Trees convert random write operations into sequential disk appends by buffering writes in memory and periodically flushing immutable <strong>Sorted String Tables (SSTables)</strong> to disk.</p>
@@ -124,23 +125,34 @@
 <h2 id="lsm-tree-write-compaction-pipeline-architecture">LSM-Tree Write &amp; Compaction Pipeline Architecture</h2>
 <p>How an LSM Tree processes writes via WAL + MemTable and flushes immutable SSTables to disk:</p>
 <div class="mermaid">flowchart TD
-  WriteReq[Client Write: SET key=val] --&gt;|Sequential Disk Append| WAL[(Write-Ahead Log WAL)]
-  WriteReq --&gt;|In-Memory Write| MemTable[MemTable: In-Memory SkipList]
+  WriteReq[&quot;Client Write: SET key=val&quot;] --&gt;|Sequential Disk Append| WAL[(Write-Ahead Log WAL)]
+  WriteReq --&gt;|In-Memory Write| MemTable[&quot;MemTable: In-Memory SkipList&quot;]
   
   subgraph SG1_MemorySpace [&quot;Memory Space&quot;]
-    MemTable --&gt;|MemTable Full Threshold Reached| ImmutableMemTable[Immutable MemTable]
+    MemTable --&gt;|MemTable Full Threshold Reached| ImmutableMemTable[&quot;Immutable MemTable&quot;]
   end
   
   subgraph SG2_DiskStorageLayers [&quot;Disk Storage Layers&quot;]
-    ImmutableMemTable --&gt;|Background Flush| SST_L0[Level 0 SSTables: Overlapping Key Ranges]
+    ImmutableMemTable --&gt;|Background Flush| SST_L0[&quot;Level 0 SSTables: Overlapping Key Ranges&quot;]
     
-    SST_L0 --&gt;|Leveled Compaction Merge| SST_L1[Level 1 SSTables: Sorted Non-Overlapping Files]
-    SST_L1 --&gt;|Leveled Compaction Merge| SST_L2[Level 2 SSTables: Larger Partition Ranges]
+    SST_L0 --&gt;|Leveled Compaction Merge| SST_L1[&quot;Level 1 SSTables: Sorted Non-Overlapping Files&quot;]
+    SST_L1 --&gt;|Leveled Compaction Merge| SST_L2[&quot;Level 2 SSTables: Larger Partition Ranges&quot;]
   end
   
   subgraph SG3_ReadAcceleration [&quot;Read Acceleration&quot;]
-    BloomFilter[Bloom Filters] -.-&gt;|Check Key Existence| SST_L0
-  end</div>
+    BloomFilter[&quot;Bloom Filters&quot;] -.-&gt;|Check Key Existence| SST_L0
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class WriteReq,SST_L2 blue
+class MemTable,BloomFilter green
+class ImmutableMemTable purple
+class SST_L0 yellow
+class SST_L1 red</div>
 <h3 id="core-lsm-tree-components">Core LSM-Tree Components</h3>
 <ol>
 <li><strong>Write-Ahead Log (WAL)</strong>: An append-only file on disk. Every incoming write operation is appended to the WAL before being inserted into memory. If the database crashes, the engine replays the WAL to reconstruct the in-memory state.</li>
@@ -305,8 +317,20 @@ if __name__ == &quot;__main__&quot;:
 <p>High-throughput storage engines utilizing LSM Trees (such as <strong>RocksDB</strong>) report:</p>
 <ul>
 <li><strong>Over 500,000 Writes per Second per Node</strong>: Transforming random disk I/O into sequential SSTable flushes saturates NVMe SSD write bandwidth.</li>
-<li><strong>$3\times$ Lower Disk Wear</strong>: Sequential appends reduce SSD flash write amplification compared to in-place page overwrites.</li>
+<li><strong>$3\times$ Lower Disk Wear</strong>: Sequential appends reduce SSD flash write amplification compared to in-place page overwrites. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Bayer, R., &amp; McCreight, E. (1972)</strong>. <em>Organization and Maintenance of Large Ordered Indexes</em>. Acta Informatica. <a href="https://doi.org/10.1007/BF00288683" target="_blank" rel="noopener">https://doi.org/10.1007/BF00288683</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -343,6 +367,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-lsm-tree-storage-engine" class="toc-link">Python Implementation: LSM-Tree Storage Engine</a></li>
               <li class="toc-item toc-h2"><a href="#lsm-tree-gotchas-best-practices" class="toc-link">LSM-Tree Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

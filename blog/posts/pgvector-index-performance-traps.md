@@ -13,21 +13,32 @@ pgvector supports two search modes: **exact k-NN** (sequential scan — always c
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    Q[Vector Query] --> P{Index exists<br/>and usable?}
-    P -->|No index| S1[ Trap 1: Sequential scan<br/>O-n — 4s on 1M rows]
-    P -->|Wrong operator| S2[ Trap 2: Wrong distance operator<br/>Index ignored silently]
-    P -->|Filter before ANN| S3[ Trap 3: WHERE filter kills<br/>index — exact scan fallback]
+    Q["Vector Query"] --> P{Index exists<br/>and usable?}
+    P -->|No index| S1[" Trap 1: Sequential scan<br/>O-n — 4s on 1M rows"]
+    P -->|Wrong operator| S2[" Trap 2: Wrong distance operator<br/>Index ignored silently"]
+    P -->|Filter before ANN| S3[" Trap 3: WHERE filter kills<br/>index — exact scan fallback"]
     P -->|Index exists| C{ef_search<br/>configured?}
-    C -->|Default ef_search=40| S4[ Trap 4: Poor recall<br/>missing relevant results]
+    C -->|Default ef_search=40| S4[" Trap 4: Poor recall<br/>missing relevant results"]
     C -->|OK| D{Vacuum run<br/>recently?}
-    D -->|No vacuum| S5[ Trap 5: Bloat degrades<br/>HNSW graph quality]
-    D -->|OK| R[ Fast ANN search<br/>< 10ms]
+    D -->|No vacuum| S5[" Trap 5: Bloat degrades<br/>HNSW graph quality"]
+    D -->|OK| R[" Fast ANN search<br/>< 10ms"]
 
     style S1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style S2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style S3 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style S4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style S5 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Q,S5 blue
+class S1,R green
+class S2 purple
+class S3 yellow
+class S4 red
 ```
 
 ---
@@ -279,7 +290,7 @@ async def search_and_rerank_good(
 
 ## Trap 7: Not Using `EXPLAIN ANALYZE` to Confirm Index Usage
 
-The single most important habit with pgvector: **always verify your index is being used** before declaring your setup correct.
+The single most important habit with pgvector: **always verify your index is being used** before declaring your setup correct [1].
 
 ```sql
 -- Full diagnostics query

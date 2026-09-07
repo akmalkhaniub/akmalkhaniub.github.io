@@ -1,4 +1,4 @@
-For over a decade, React maintained a strict, almost puritanical architectural boundary: **React was a view library, not a document orchestrator**.
+For over a decade, React maintained a strict, almost puritanical architectural boundary: **React was a view library, not a document orchestrator** [1].
 
 If you wanted to load an external stylesheet when a component mounted, React looked the other way. You installed third-party libraries (`react-helmet`), relied on framework-specific wrappers (`next/head`, `remix <Links>`), or manipulated the `document.head` directly inside an imperative `useEffect` hook.
 
@@ -31,6 +31,17 @@ flowchart TD
       ActivityWrapper --> DeferCPU["Background CPU priority lowered to Idle"]
     end
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ComponentA,Paint,DetachedFiber blue
+class DeclareStyle,ActiveTab,DeferCPU green
+class Dispatcher,RenderActive purple
+class HoistHead,InactiveTab yellow
+class SuspendRender,ActivityWrapper red
 ```
 *Figure 1: React 19 native resource hoisting and `<Activity>` virtual memory paging architecture. Stylesheets lift directly to `<head>` while hidden tabs maintain state without DOM footprint. Source: React 19 Architecture RFCs [1, 2, 3].*
 

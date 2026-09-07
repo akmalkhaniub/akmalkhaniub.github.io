@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/memory-allocator-internals-jemalloc-tcmalloc-arenas-slabs.html">
   <meta property="og:title" content="Memory Allocator Internals: jemalloc / tcmalloc Thread Caches, Arenas &amp; Slab Allocation">
   <meta property="og:description" content="High-throughput heap allocation: overcoming Glibc ptmalloc lock contention via jemalloc / tcmalloc Thread-Local Caches (tcache), Per-CPU Arenas, Slab/Bin size classes, and Extent management.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/memory-allocator-internals-jemalloc-tcmalloc-arenas-slabs.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Memory Allocator Internals: jemalloc / tcmalloc Thread Caches, Arenas &amp; Slab Allocation">
   <meta name="twitter:description" content="High-throughput heap allocation: overcoming Glibc ptmalloc lock contention via jemalloc / tcmalloc Thread-Local Caches (tcache), Per-CPU Arenas, Slab/Bin size classes, and Extent management.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/memory-allocator-internals-jemalloc-tcmalloc-arenas-slabs.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Memory Allocator Internals: jemalloc / tcmalloc Thread Caches, Arenas & Slab Allocation",
   "description": "High-throughput heap allocation: overcoming Glibc ptmalloc lock contention via jemalloc / tcmalloc Thread-Local Caches (tcache), Per-CPU Arenas, Slab/Bin size classes, and Extent management.",
   "url": "https://akmalkhaniub.github.io/blog/memory-allocator-internals-jemalloc-tcmalloc-arenas-slabs.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/memory-allocator-internals-jemalloc-tcmalloc-arenas-slabs.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Memory Allocator, jemalloc, tcmalloc, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Memory Allocator Internals: jemalloc / tcmalloc Thread Caches, Arenas &amp; Slab Allocation Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/memory-allocator-internals-jemalloc-tcmalloc-arenas-slabs.jpg" class="article-cover-img" alt="Memory Allocator Internals: jemalloc / tcmalloc Thread Caches, Arenas &amp; Slab Allocation Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Memory Allocator Internals: jemalloc / tcmalloc Thread Caches, Arenas &amp; Slab Allocation</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-thread-cache-memory-allocator-engine">Python Implementation: Thread-Cache Memory Allocator Engine</a></li>
                 <li><a href="#memory-allocator-gotchas-best-practices">Memory Allocator Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-concurrency systems infrastructure (<strong>Redis</strong>, <strong>RocksDB</strong>, <strong>MySQL</strong>, <strong>Rust Runtimes</strong>, <strong>Java HotSpot JVM</strong>), applications perform millions of dynamic memory allocations (<code>malloc()</code> / <code>free()</code>) per second.</p>
+<p>In high-concurrency systems infrastructure (<strong>Redis</strong>, <strong>RocksDB</strong>, <strong>MySQL</strong>, <strong>Rust Runtimes</strong>, <strong>Java HotSpot JVM</strong>), applications perform millions of dynamic memory allocations (<code>malloc()</code> / <code>free()</code>) per second <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>When running on multi-core servers (e.g. 128-core AMD EPYC machines), traditional C library memory allocators (such as glibc <strong><code>ptmalloc</code></strong>) suffer from severe <strong>Global Mutex Contention</strong>.</p>
 <p>When hundreds of concurrent worker threads request heap memory simultaneously, lock contention over shared heap arenas degrades multi-threaded CPU scaling.</p>
 <p>To achieve lock-free allocation performance, modern high-throughput systems replace <code>ptmalloc</code> with specialized memory allocators—led by <strong><code>jemalloc</code></strong> (developed by Jason Evans for FreeBSD and Facebook) and <strong><code>tcmalloc</code></strong> (Thread-Caching Malloc by Google).</p>
@@ -126,18 +127,29 @@
 <p>How <code>jemalloc</code> and <code>tcmalloc</code> use Lock-Free Thread-Local Caches (<code>tcache</code>) and Per-CPU Arenas to bypass global allocation locks:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_MultiThreadedAllocation [&quot;Multi-Threaded Allocation Flow&quot;]
-    Thread1[Worker Thread 1: malloc 32 Bytes] --&gt;|O(1) Lock-Free Path| TCache1[Thread 1 Local Cache: tcache]
-    TCache1 --&gt;|Fast-Path Success &lt; 5ns| ReturnPtr1[Return Memory Pointer]
+    Thread1[&quot;Worker Thread 1: malloc 32 Bytes&quot;] --&gt;|O(1) Lock-Free Path| TCache1[&quot;Thread 1 Local Cache: tcache&quot;]
+    TCache1 --&gt;|Fast-Path Success &lt; 5ns| ReturnPtr1[&quot;Return Memory Pointer&quot;]
     
-    Thread2[Worker Thread 2: malloc 32 Bytes] --&gt;|tcache Dry!| Arena1[Per-CPU Arena #1 (Mutex Lock)]
-    Arena1 --&gt;|Refill tcache Batch| TCache2[Thread 2 Local Cache: tcache]
+    Thread2[&quot;Worker Thread 2: malloc 32 Bytes&quot;] --&gt;|tcache Dry!| Arena1[&quot;Per-CPU Arena #1 (Mutex Lock)&quot;]
+    Arena1 --&gt;|Refill tcache Batch| TCache2[&quot;Thread 2 Local Cache: tcache&quot;]
   end
   
   subgraph SG2_SlabBinSize [&quot;Slab &amp; Bin Size Class Management&quot;]
     Arena1 --&gt; SmallBins[&quot;Small Size Classes (8B, 16B, 32B... Slab Pages)&quot;]
     Arena1 --&gt; LargeExtents[&quot;Large Extents (4 KB - 4 MB Red-Black Tree Pages)&quot;]
     Arena1 --&gt; HugeExtents[&quot;Huge Allocations (&gt; 4 MB Direct mmap)&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Thread1,TCache2 blue
+class TCache1,SmallBins green
+class ReturnPtr1,LargeExtents purple
+class Thread2,HugeExtents yellow
+class Arena1 red</div>
 <h3 id="core-memory-allocator-principles">Core Memory Allocator Principles</h3>
 <ol>
 <li><strong>The Lock Contention Problem of Standard Allocators</strong>:<ul>
@@ -285,8 +297,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Modern high-performance allocators (such as <strong><code>jemalloc</code></strong> and <strong><code>tcmalloc</code></strong>) report:</p>
 <ul>
 <li><strong>Over $3\times$ Higher Multi-Core Allocation Throughput</strong>: Fulfilling small allocations from lock-free <code>tcache</code> arrays avoids glibc <code>ptmalloc</code> mutex lock bottlenecks.</li>
-<li><strong>$50%$ Reduction in Memory Fragmentation</strong>: Fixed Bin size classes and Extent Red-Black tree page management prevent long-running server process memory leaks.</li>
+<li><strong>$50%$ Reduction in Memory Fragmentation</strong>: Fixed Bin size classes and Extent Red-Black tree page management prevent long-running server process memory leaks. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Fielding, R., Nottingham, M., &amp; Reschke, J. (2014)</strong>. <em>Hypertext Transfer Protocol (HTTP/1.1): Caching</em>. RFC 7234. <a href="https://www.rfc-editor.org/rfc/rfc7234" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7234</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -323,6 +346,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-thread-cache-memory-allocator-engine" class="toc-link">Python Implementation: Thread-Cache Memory Allocator Engine</a></li>
               <li class="toc-item toc-h2"><a href="#memory-allocator-gotchas-best-practices" class="toc-link">Memory Allocator Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

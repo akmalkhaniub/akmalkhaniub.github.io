@@ -1,6 +1,6 @@
 # The 1840s Railway Mania & The Model Commoditization Trap: Why Standardized Protocols (MCP & ONNX) Outlast Proprietary Steam Engines
 
-In the mid-1840s, Great Britain was gripped by **Railway Mania**—a speculative frenzy where Parliament authorized over 8,000 miles of new railway lines and investors poured the equivalent of billions of dollars into hundreds of competing locomotive and rail companies.
+In the mid-1840s, Great Britain was gripped by **Railway Mania**—a speculative frenzy where Parliament authorized over 8,000 miles of new railway lines and investors poured the equivalent of billions of dollars into hundreds of competing locomotive and rail companies [1].
 
 During this boom, an intense architectural battle emerged known as **The Battle of the Gauges**:
 * Chief Engineer **Isambard Kingdom Brunel** championed the massive **7-foot Broad Gauge** for the Great Western Railway, arguing it offered superior speed, stability, and carrying capacity.
@@ -22,6 +22,17 @@ flowchart TD
     R1840["1840s: National Standard Rail Gauge Mandate (1846 Act)"] <---> R2026["2026: Universal Tool Interoperability Standard (Model Context Protocol)"]
     V1840["1840s: Enduring Fortunes in Freight Logistics & Regional Commerce"] <---> V2026["2026: Enduring Fortunes in Enterprise Data Pipelines & Vertical Workflows"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class G1840,R2026 blue
+class G2026,V1840 green
+class L1840,V2026 purple
+class L2026 yellow
+class R1840 red
 ```
 
 ---
@@ -102,6 +113,15 @@ flowchart TD
   style Engine fill:#94a3b8,stroke:#475569,color:#ffffff
   style Track fill:#3b82f6,stroke:#1d4ed8,color:#ffffff
   style Freight fill:#22c55e,stroke:#15803d,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Engine blue
+class Track green
+class Freight purple
 ```
 
 ### The 3 Enterprise Value Pillars:
@@ -208,4 +228,13 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 The lesson of the 1840s Railway Mania is clear: **do not build your enterprise on proprietary track gauges**.
 
-By architecting systems around open, model-agnostic protocols like **MCP**, **ONNX**, and **OpenTelemetry**, engineering teams insulate themselves against foundation model commoditization and ensure their software assets remain agile, interoperable, and enduring.
+By architecting systems around open, model-agnostic protocols like **MCP**, **ONNX**, and **OpenTelemetry**, engineering teams insulate themselves against foundation model commoditization and ensure their software assets remain agile, interoperable, and enduring. [2]
+
+## References & Further Reading
+
+1. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+2. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+4. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+5. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+6. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

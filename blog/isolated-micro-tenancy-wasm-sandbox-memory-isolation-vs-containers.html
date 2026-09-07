@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/isolated-micro-tenancy-wasm-sandbox-memory-isolation-vs-containers.html">
   <meta property="og:title" content="Isolated Micro-Tenancy: Wasm Sandbox Memory Isolation vs Linux Containers">
   <meta property="og:description" content="Serverless multi-tenancy models: evaluating OS-level container isolation vs Software Fault Isolation (SFI), sub-millisecond cold starts, and low RAM footprints.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/isolated-micro-tenancy-wasm-sandbox-memory-isolation-vs-containers.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Isolated Micro-Tenancy: Wasm Sandbox Memory Isolation vs Linux Containers">
   <meta name="twitter:description" content="Serverless multi-tenancy models: evaluating OS-level container isolation vs Software Fault Isolation (SFI), sub-millisecond cold starts, and low RAM footprints.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/isolated-micro-tenancy-wasm-sandbox-memory-isolation-vs-containers.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Isolated Micro-Tenancy: Wasm Sandbox Memory Isolation vs Linux Containers",
   "description": "Serverless multi-tenancy models: evaluating OS-level container isolation vs Software Fault Isolation (SFI), sub-millisecond cold starts, and low RAM footprints.",
   "url": "https://akmalkhaniub.github.io/blog/isolated-micro-tenancy-wasm-sandbox-memory-isolation-vs-containers.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/isolated-micro-tenancy-wasm-sandbox-memory-isolation-vs-containers.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Serverless, Wasm, Multi-Tenancy, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Isolated Micro-Tenancy: Wasm Sandbox Memory Isolation vs Linux Containers Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/isolated-micro-tenancy-wasm-sandbox-memory-isolation-vs-containers.jpg" class="article-cover-img" alt="Isolated Micro-Tenancy: Wasm Sandbox Memory Isolation vs Linux Containers Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Isolated Micro-Tenancy: Wasm Sandbox Memory Isolation vs Linux Containers</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-software-fault-isolation-sfi-engine">Python Implementation: Software Fault Isolation (SFI) Engine</a></li>
                 <li><a href="#isolated-micro-tenancy-gotchas-best-practices">Isolated Micro-Tenancy Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In traditional serverless cloud platforms (like AWS Lambda or Google Cloud Functions), multi-tenancy is enforced using heavy OS-level container isolation primitives (<strong>Docker</strong>, <strong>containerd</strong>, or <strong>Firecracker MicroVMs</strong>).</p>
+<p>In traditional serverless cloud platforms (like AWS Lambda or Google Cloud Functions), multi-tenancy is enforced using heavy OS-level container isolation primitives (<strong>Docker</strong>, <strong>containerd</strong>, or <strong>Firecracker MicroVMs</strong>) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>While containers provide strong security guarantees using Linux kernel <strong>cgroups</strong>, <strong>namespaces</strong>, and <strong>seccomp</strong> filters, they present structural overhead for edge computing:</p>
 <ul>
 <li><strong>Memory Footprint</strong>: A minimal container or microVM requires $30\text{ MB} - 128\text{ MB}$ of base memory per function instance.</li>
@@ -129,20 +130,31 @@
 <p>Comparing OS process boundaries against single-process WebAssembly Software Fault Isolation:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_LinuxContainerArchitecture [&quot;Linux Container Architecture (OS-Level Isolation)&quot;]
-    HostOS[Linux Host Kernel &amp; cgroups] --&gt; Container1[Container 1: Guest OS / Namespaces (50MB RAM)]
-    HostOS --&gt; Container2[Container 2: Guest OS / Namespaces (50MB RAM)]
+    HostOS[&quot;Linux Host Kernel &amp; cgroups&quot;] --&gt; Container1[&quot;Container 1: Guest OS / Namespaces (50MB RAM)&quot;]
+    HostOS --&gt; Container2[&quot;Container 2: Guest OS / Namespaces (50MB RAM)&quot;]
     
-    Container1 --&gt; App1[Tenant Application 1]
-    Container2 --&gt; App2[Tenant Application 2]
+    Container1 --&gt; App1[&quot;Tenant Application 1&quot;]
+    Container2 --&gt; App2[&quot;Tenant Application 2&quot;]
   end
   
   subgraph SG2_WasmSoftwareFault [&quot;Wasm Software Fault Isolation SFI Architecture (Single Process)&quot;]
-    HostProcess[Single Host Process Runtime: Wasmtime / V8] --&gt; Sandbox1[Wasm Sandbox 1: Linear Memory Buffer 1 (1MB RAM)]
-    HostProcess --&gt; Sandbox2[Wasm Sandbox 2: Linear Memory Buffer 2 (1MB RAM)]
+    HostProcess[&quot;Single Host Process Runtime: Wasmtime / V8&quot;] --&gt; Sandbox1[&quot;Wasm Sandbox 1: Linear Memory Buffer 1 (1MB RAM)&quot;]
+    HostProcess --&gt; Sandbox2[&quot;Wasm Sandbox 2: Linear Memory Buffer 2 (1MB RAM)&quot;]
     
-    Sandbox1 --&gt; Guard1[SFI Bounds Checker: Pointers Gated 0x0 - 0xFFFFF]
-    Sandbox2 --&gt; Guard2[SFI Bounds Checker: Pointers Gated 0x0 - 0xFFFFF]
-  end</div>
+    Sandbox1 --&gt; Guard1[&quot;SFI Bounds Checker: Pointers Gated 0x0 - 0xFFFFF&quot;]
+    Sandbox2 --&gt; Guard2[&quot;SFI Bounds Checker: Pointers Gated 0x0 - 0xFFFFF&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class HostOS,HostProcess blue
+class Container1,Sandbox1 green
+class Container2,Sandbox2 purple
+class App1,Guard1 yellow
+class App2,Guard2 red</div>
 <h3 id="key-technical-trade-offs">Key Technical Trade-Offs</h3>
 <table>
 <thead>
@@ -267,8 +279,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Platforms adopting Wasm Isolated Micro-Tenancy (such as <strong>Fastly Compute@Edge</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Total Latency</strong>: Eliminating container cold-starts delivers end-to-end request latencies under $10\text{ms}$.</li>
-<li><strong>100x Lower Server Hardware Infrastructure Costs</strong>: Running $50,000$ active tenant sandboxes per host node reduces edge cloud server fleets by over $80%$.</li>
+<li><strong>100x Lower Server Hardware Infrastructure Costs</strong>: Running $50,000$ active tenant sandboxes per host node reduces edge cloud server fleets by over $80%$. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>W3C WebAssembly Working Group (2024)</strong>. <em>WebAssembly Core Specification</em>. W3C. <a href="https://www.w3.org/TR/wasm-core-2/" target="_blank" rel="noopener">https://www.w3.org/TR/wasm-core-2/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -305,6 +328,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-software-fault-isolation-sfi-engine" class="toc-link">Python Implementation: Software Fault Isolation (SFI) Engine</a></li>
               <li class="toc-item toc-h2"><a href="#isolated-micro-tenancy-gotchas-best-practices" class="toc-link">Isolated Micro-Tenancy Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

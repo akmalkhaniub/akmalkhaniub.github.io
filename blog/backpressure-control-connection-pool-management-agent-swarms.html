@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/backpressure-control-connection-pool-management-agent-swarms.html">
   <meta property="og:title" content="Backpressure Control &amp; Connection Pool Management in Agent Swarms">
   <meta property="og:description" content="Managing flow control and infrastructure resources in agent swarms: implementing high/low watermark backpressure, token bucket throttling, and WebSocket connection pool reapers.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/backpressure-control-connection-pool-management-agent-swarms.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Backpressure Control &amp; Connection Pool Management in Agent Swarms">
   <meta name="twitter:description" content="Managing flow control and infrastructure resources in agent swarms: implementing high/low watermark backpressure, token bucket throttling, and WebSocket connection pool reapers.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/backpressure-control-connection-pool-management-agent-swarms.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Backpressure Control & Connection Pool Management in Agent Swarms",
   "description": "Managing flow control and infrastructure resources in agent swarms: implementing high/low watermark backpressure, token bucket throttling, and WebSocket connection pool reapers.",
   "url": "https://akmalkhaniub.github.io/blog/backpressure-control-connection-pool-management-agent-swarms.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/backpressure-control-connection-pool-management-agent-swarms.jpg",
   "datePublished": "2026-08-02",
   "keywords": "Real-Time, Flow Control, Backpressure, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Backpressure Control &amp; Connection Pool Management in Agent Swarms Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/backpressure-control-connection-pool-management-agent-swarms.jpg" class="article-cover-img" alt="Backpressure Control &amp; Connection Pool Management in Agent Swarms Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Backpressure Control &amp; Connection Pool Management in Agent Swarms</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-backpressure-throttler-connection-pool-manager">Python Implementation: Backpressure Throttler &amp; Connection Pool Manager</a></li>
                 <li><a href="#important-flow-control-guardrails">Important Flow Control Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When building high-concurrency multi-agent software platforms, system stability depends on managing <strong>flow control</strong> across system boundaries. In a multi-agent swarm, different components operate at vastly different speeds: an orchestrator might generate hundreds of subtask nodes per second, while a database logging agent or web UI client can only consume a fraction of that event volume.</p>
+<p>When building high-concurrency multi-agent software platforms, system stability depends on managing <strong>flow control</strong> across system boundaries <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. In a multi-agent swarm, different components operate at vastly different speeds: an orchestrator might generate hundreds of subtask nodes per second, while a database logging agent or web UI client can only consume a fraction of that event volume.</p>
 <p>Without flow control, this speed mismatch causes <strong>fast producers to overwhelm slow consumers</strong>. Unbuffered queues inflate, RAM usage spikes out of control, and persistent WebSockets or HTTP/2 connection pools suffer catastrophic dropouts.</p>
 <p>To maintain system stability under heavy load, engineering teams implement <strong>Backpressure Control</strong> and <strong>Connection Pool Management</strong>.</p>
 <p>This article details how to design backpressure throttling engines and manage connection pools in agent swarms.</p>
@@ -123,19 +124,30 @@
 <h2 id="backpressure-flow-control-architecture">Backpressure Flow Control Architecture</h2>
 <p>Backpressure acts as a reactive brake pedal, slowing down upstream event producers when downstream consumer queues reach capacity:</p>
 <div class="mermaid">flowchart TD
-  A[Fast Producer: Agent Orchestration Engine] --&gt; B[Task Event Dispatch Queue]
+  A[&quot;Fast Producer: Agent Orchestration Engine&quot;] --&gt; B[&quot;Task Event Dispatch Queue&quot;]
   
   subgraph SG1_BackpressureFlowControl [&quot;Backpressure Flow Control Gateway&quot;]
     B --&gt; C{Queue Depth Check}
-    C --&gt;|Queue &gt; 80% High Watermark| D[PAUSE / THROTTLE Producer Signal]
-    C --&gt;|Queue &lt; 20% Low Watermark| E[RESUME Producer Signal]
+    C --&gt;|Queue &gt; 80% High Watermark| D[&quot;PAUSE / THROTTLE Producer Signal&quot;]
+    C --&gt;|Queue &lt; 20% Low Watermark| E[&quot;RESUME Producer Signal&quot;]
     D --&gt;|Pause Emission| A
   end
   
   subgraph SG2_ConnectionPoolManager [&quot;Connection Pool Manager&quot;]
-    B --&gt;|Flow-Controlled Emission| F[Connection Pool: WebSockets / gRPC]
-    F --&gt;|Bounded Worker Channels| G[Slow Consumer: UI / DB Logger]
-  end</div>
+    B --&gt;|Flow-Controlled Emission| F[&quot;Connection Pool: WebSockets / gRPC&quot;]
+    F --&gt;|Bounded Worker Channels| G[&quot;Slow Consumer: UI / DB Logger&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B green
+class D purple
+class E yellow
+class F red</div>
 <h3 id="core-flow-control-mechanisms">Core Flow Control Mechanisms</h3>
 <ol>
 <li><strong>High/Low Watermark Boundaries</strong>: Setting explicit queue capacity thresholds (<code>watermark_high = 80%</code>, <code>watermark_low = 20%</code>). When a consumer queue hits the high watermark, the orchestrator pauses task emission. When the queue drains below the low watermark, task emission resumes automatically.</li>
@@ -252,8 +264,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams implementing Backpressure Control &amp; Connection Pooling report:</p>
 <ul>
 <li><strong>100% Elimination of Out-Of-Memory (OOM) Crashes</strong>: Flow control prevents upstream orchestrators from flooding worker queues.</li>
-<li><strong>Stable Connection Pools under Peak Load</strong>: Connection reapers prevent socket leaks, maintaining reliable real-time streams during traffic spikes.</li>
+<li><strong>Stable Connection Pools under Peak Load</strong>: Connection reapers prevent socket leaks, maintaining reliable real-time streams during traffic spikes. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Belshe, M., Peon, R., &amp; Thomson, M. (2015)</strong>. <em>Hypertext Transfer Protocol Version 2 (HTTP/2)</em>. RFC 7540. <a href="https://www.rfc-editor.org/rfc/rfc7540" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7540</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>gRPC Authors (2024)</strong>. <em>gRPC Documentation</em>. grpc.io. <a href="https://grpc.io/docs/" target="_blank" rel="noopener">https://grpc.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Google (2024)</strong>. <em>Protocol Buffers Language Guide</em>. protobuf.dev. <a href="https://protobuf.dev/programming-guides/proto3/" target="_blank" rel="noopener">https://protobuf.dev/programming-guides/proto3/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -290,6 +313,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-backpressure-throttler-connection-pool-manager" class="toc-link">Python Implementation: Backpressure Throttler &amp; Connection Pool Manager</a></li>
               <li class="toc-item toc-h2"><a href="#important-flow-control-guardrails" class="toc-link">Important Flow Control Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

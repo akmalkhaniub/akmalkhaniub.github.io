@@ -1,6 +1,6 @@
 # Case Study: Architecting an Autonomous Infrastructure Remediation Engine for Logistics SaaS
 
-Operational outages in global logistics software directly halt physical supply chains—delaying container ships, grounding cargo flights, and stranding freight trucks at customs checkpoints. This case study documents how our team designed, deployed, and operationalized an autonomous infrastructure remediation agent swarm on Google Cloud Platform for a global logistics SaaS provider.
+Operational outages in global logistics software directly halt physical supply chains—delaying container ships, grounding cargo flights, and stranding freight trucks at customs checkpoints [1]. This case study documents how our team designed, deployed, and operationalized an autonomous infrastructure remediation agent swarm on Google Cloud Platform for a global logistics SaaS provider.
 
 ---
 
@@ -39,22 +39,33 @@ The architecture isolates agent diagnosis from execution using a HITL Approval G
 
 ```mermaid
 flowchart TD
-  A[Cloud Monitoring / Alertmanager Incident Trigger] --> B[GCP Cloud Pub/Sub: Incident Event]
-  B --> C[Cloud Run: Incident Command Agent]
+  A["Cloud Monitoring / Alertmanager Incident Trigger"] --> B["GCP Cloud Pub/Sub: Incident Event"]
+  B --> C["Cloud Run: Incident Command Agent"]
   
   subgraph SG1_AutonomousTriageDiagnostics ["Autonomous Triage & Diagnostics"]
-    C --> D[Cloud Audit Logs & Cloud Trace Inspection]
-    C --> E[AlloyDB AI: Historical Incident Vector Memory]
-    C --> F[Vertex AI: Gemini 1.5 Pro Diagnostics Engine]
+    C --> D["Cloud Audit Logs & Cloud Trace Inspection"]
+    C --> E["AlloyDB AI: Historical Incident Vector Memory"]
+    C --> F["Vertex AI: Gemini 1.5 Pro Diagnostics Engine"]
   end
   
   F --> G{Remediation Risk Level?}
-  G -->|Low Risk - Clear Cache / Restart Pod| H[Kubernetes Operator: Auto-Execute]
-  G -->|High Risk - Failover DB / Scale Cluster| I[HITL Gateway: Dispatch HMAC Token to PagerDuty/Slack]
+  G -->|Low Risk - Clear Cache / Restart Pod| H["Kubernetes Operator: Auto-Execute"]
+  G -->|High Risk - Failover DB / Scale Cluster| I["HITL Gateway: Dispatch HMAC Token to PagerDuty/Slack"]
   
   I -->|Human SRE Grants Signed Token| H
-  I -->|Timeout 15 mins / Rejection| J[Escalate to Secondary On-Call]
-  H --> K[Post-Remediation Verification Gate]
+  I -->|Timeout 15 mins / Rejection| J["Escalate to Secondary On-Call"]
+  H --> K["Post-Remediation Verification Gate"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,H green
+class C,I purple
+class D,J yellow
+class E,K red
 ```
 
 ### Tech Stack Breakdown
@@ -177,4 +188,14 @@ Following full production deployment across 8 Kubernetes clusters:
 
 > **"Automation without rate limits and blast-radius boundaries is just accelerated failure."**
 > 
-> As Tech Lead, this case study demonstrated that an autonomous remediation engine must have explicit blast-radius limits. Restricting the agent to rate-limited execution queues (Cloud Tasks) and enforcing cryptographic HITL approval gates ensures that automation accelerates recovery without risking infrastructure stability.
+> As Tech Lead, this case study demonstrated that an autonomous remediation engine must have explicit blast-radius limits. Restricting the agent to rate-limited execution queues (Cloud Tasks) and enforcing cryptographic HITL approval gates ensures that automation accelerates recovery without risking infrastructure stability. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+5. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+6. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+7. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

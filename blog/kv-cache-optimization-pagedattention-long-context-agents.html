@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/kv-cache-optimization-pagedattention-long-context-agents.html">
   <meta property="og:title" content="KV-Cache Optimization &amp; PagedAttention for Long-Context Agents">
   <meta property="og:description" content="Solving VRAM fragmentation in long-context agentic reasoning: evaluating PagedAttention virtual memory mapping, prefix caching prompt reuse, and INT8/FP8 KV-cache compression.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-optimization-pagedattention-long-context-agents.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-04">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="KV-Cache Optimization &amp; PagedAttention for Long-Context Agents">
   <meta name="twitter:description" content="Solving VRAM fragmentation in long-context agentic reasoning: evaluating PagedAttention virtual memory mapping, prefix caching prompt reuse, and INT8/FP8 KV-cache compression.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-optimization-pagedattention-long-context-agents.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "KV-Cache Optimization & PagedAttention for Long-Context Agents",
   "description": "Solving VRAM fragmentation in long-context agentic reasoning: evaluating PagedAttention virtual memory mapping, prefix caching prompt reuse, and INT8/FP8 KV-cache compression.",
   "url": "https://akmalkhaniub.github.io/blog/kv-cache-optimization-pagedattention-long-context-agents.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-optimization-pagedattention-long-context-agents.jpg",
   "datePublished": "2026-08-04",
   "keywords": "LLM Inference, KV Cache, PagedAttention, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="KV-Cache Optimization &amp; PagedAttention for Long-Context Agents Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/kv-cache-optimization-pagedattention-long-context-agents.jpg" class="article-cover-img" alt="KV-Cache Optimization &amp; PagedAttention for Long-Context Agents Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">KV-Cache Optimization &amp; PagedAttention for Long-Context Agents</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-paged-kv-cache-virtual-memory-simulator">Python Implementation: Paged KV-Cache Virtual Memory Simulator</a></li>
                 <li><a href="#important-kv-cache-optimization-guardrails">Important KV-Cache Optimization Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In long-running autonomous agent applications, subagents frequently process large context windows (32K to 128K tokens) containing codebase ASTs, retrieved RAG documents, and historical tool execution trajectories.</p>
+<p>In long-running autonomous agent applications, subagents frequently process large context windows (32K to 128K tokens) containing codebase ASTs, retrieved RAG documents, and historical tool execution trajectories <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>While model weight memory remains constant during generation, <strong>Key-Value (KV) cache memory grows dynamically with context length</strong>. For a 70B parameter model operating at a 64K context window, storing FP16 KV-cache tensors for a single request can consume upwards of <strong>16 GB of VRAM</strong>.</p>
 <p>Under traditional PyTorch allocation schemes, engines pre-allocated contiguous memory blocks for the maximum possible sequence length. This caused up to <strong>60% to 80% VRAM memory waste</strong> due to internal and external fragmentation.</p>
 <p>To solve this memory bottleneck, high-performance systems use <strong>PagedAttention</strong> and <strong>KV-Cache Quantization</strong>.</p>
@@ -125,26 +126,37 @@
 <p>PagedAttention adapts classic Operating System virtual memory paging to GPU VRAM management:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_VirtualContextPages [&quot;Virtual Context Pages (Logical Sequence)&quot;]
-    A[Logical Block 0: Tokens 0..15]
-    B[Logical Block 1: Tokens 16..31]
-    C[Logical Block 2: Tokens 32..47]
+    A[&quot;Logical Block 0: Tokens 0..15&quot;]
+    B[&quot;Logical Block 1: Tokens 16..31&quot;]
+    C[&quot;Logical Block 2: Tokens 32..47&quot;]
   end
   
   subgraph SG2_BlockTablePage [&quot;Block Table Page Map&quot;]
-    D[Logical 0  Physical Block #7]
-    E[Logical 1  Physical Block #3]
-    F[Logical 2  Physical Block #12]
+    D[&quot;Logical 0  Physical Block #7&quot;]
+    E[&quot;Logical 1  Physical Block #3&quot;]
+    F[&quot;Logical 2  Physical Block #12&quot;]
   end
   
   subgraph SG3_NonContiguousPhysical [&quot;Non-Contiguous Physical GPU VRAM Blocks&quot;]
-    G[Physical Block #3: VRAM Addr 0x3A00]
-    H[Physical Block #7: VRAM Addr 0x1F00]
-    I[Physical Block #12: VRAM Addr 0x8C00]
+    G[&quot;Physical Block #3: VRAM Addr 0x3A00&quot;]
+    H[&quot;Physical Block #7: VRAM Addr 0x1F00&quot;]
+    I[&quot;Physical Block #12: VRAM Addr 0x8C00&quot;]
   end
   
   A --&gt; D --&gt; H
   B --&gt; E --&gt; G
-  C --&gt; F --&gt; I</div>
+  C --&gt; F --&gt; I
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E red</div>
 <h3 id="key-kv-cache-optimization-principles">Key KV-Cache Optimization Principles</h3>
 <ol>
 <li><strong>Virtual Block Mapping</strong>: KV tensors are divided into fixed-size physical blocks (e.g. 16 tokens per block). Physical blocks do not need to be contiguous in VRAM. The engine dynamically allocates new 16-token physical blocks as the model generates text.</li>
@@ -268,8 +280,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams adopting PagedAttention and KV-Cache Quantization report:</p>
 <ul>
 <li><strong>96% Reduction in VRAM Memory Waste</strong>: Eliminating static pre-allocation drops KV memory waste from 80% down to under 4%.</li>
-<li><strong>3x Higher Subagent Concurrency</strong>: Prefix caching allows dozens of subagent workers to share system prompt KV blocks, tripling active concurrent sessions per GPU.</li>
+<li><strong>3x Higher Subagent Concurrency</strong>: Prefix caching allows dozens of subagent workers to share system prompt KV blocks, tripling active concurrent sessions per GPU. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Dao, T., et al. (2022)</strong>. <em>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</em>. NeurIPS. <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">https://arxiv.org/abs/2205.14135</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vaswani, A., et al. (2017)</strong>. <em>Attention Is All You Need</em>. NeurIPS. <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">https://arxiv.org/abs/1706.03762</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Kwon, W., et al. (2023)</strong>. <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em>. SOSP. <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">https://arxiv.org/abs/2309.06180</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Leviathan, Y., Kalman, M., &amp; Matias, Y. (2023)</strong>. <em>Fast Inference from Transformers via Speculative Decoding</em>. ICML. <a href="https://arxiv.org/abs/2211.17192" target="_blank" rel="noopener">https://arxiv.org/abs/2211.17192</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lin, J., et al. (2024)</strong>. <em>AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</em>. MLSys. <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">https://arxiv.org/abs/2306.00978</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Frantar, E., et al. (2023)</strong>. <em>GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</em>. ICLR. <a href="https://arxiv.org/abs/2210.17323" target="_blank" rel="noopener">https://arxiv.org/abs/2210.17323</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Wang, H., et al. (2023)</strong>. <em>BitNet: Scaling 1-bit Transformers for Large Language Models</em>. arXiv. <a href="https://arxiv.org/abs/2310.11453" target="_blank" rel="noopener">https://arxiv.org/abs/2310.11453</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -306,6 +330,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-paged-kv-cache-virtual-memory-simulator" class="toc-link">Python Implementation: Paged KV-Cache Virtual Memory Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#important-kv-cache-optimization-guardrails" class="toc-link">Important KV-Cache Optimization Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

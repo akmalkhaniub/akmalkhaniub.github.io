@@ -124,7 +124,7 @@
 <p>In 2010, Ryan Dahl created Node.js around a single, foundational principle: <strong>I/O should be non-blocking, and CPU execution should be minimal</strong>.</p>
 <p>Because Node.js operates on a single-threaded event loop (<code>libuv</code>), it excels at shuffling network packets: taking a request, firing an asynchronous database query, releasing the thread to serve thousands of other clients, and re-awakening when the database responds. As long as your JavaScript code does not perform heavy synchronous computation, a single Node.js process can handle tens of thousands of concurrent connections.</p>
 <p>Then came React Server Components.</p>
-<p>In traditional client-side React, component rendering takes place inside the user’s personal web browser. If an engineer writes an un-optimized component that performs an expensive array filter, parses a massive JSON document, or runs an un-memoized regular expression:</p>
+<p>In traditional client-side React, component rendering takes place inside the user’s personal web browser <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. If an engineer writes an un-optimized component that performs an expensive array filter, parses a massive JSON document, or runs an un-memoized regular expression:</p>
 <ul>
 <li>The user’s laptop fan spins up for 80 milliseconds.</li>
 <li>A single frame drops on one browser viewport.</li>
@@ -136,17 +136,28 @@
 <p>This is <strong>The Node.js Event Loop Trap in Server Components</strong>. Here is the systems engineering analysis of CPU starvation in modern full-stack React, and how to protect multi-tenant servers from collapse.</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_NodeJsSingle [&quot;Node.js Single-Threaded Event Loop Saturation&quot;]
-    Client1[User 1: GET /analytics] --&gt; Ingress[Single-Threaded Node.js Event Loop]
-    Client2[User 2: GET /healthz] --&gt; Ingress
-    Client3[User 3: GET /checkout] --&gt; Ingress
+    Client1[&quot;User 1: GET /analytics&quot;] --&gt; Ingress[&quot;Single-Threaded Node.js Event Loop&quot;]
+    Client2[&quot;User 2: GET /healthz&quot;] --&gt; Ingress
+    Client3[&quot;User 3: GET /checkout&quot;] --&gt; Ingress
 
     Ingress --&gt; HeavyRSC[&quot;Synchronous Server Component Rendering&lt;br/&gt;(Traversing 5,000 VDOM Fiber Nodes + JSON Serialization)&quot;]
     
-    HeavyRSC --&gt;|EVENT LOOP BLOCKED FOR 250ms| ThreadFreeze[CPU Execution Freeze: 100% Core Saturation]
+    HeavyRSC --&gt;|EVENT LOOP BLOCKED FOR 250ms| ThreadFreeze[&quot;CPU Execution Freeze: 100% Core Saturation&quot;]
     
     ThreadFreeze -.-&gt;|Health check timed out!| K8sKill[&quot;Kubernetes SIGKILL: Container Terminated&quot;]
     ThreadFreeze -.-&gt;|Client 3 socket buffer overflows!| SocketDrop[&quot;HTTP 504 Gateway Timeout on Checkout&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client1,ThreadFreeze blue
+class Ingress,K8sKill green
+class Client2,SocketDrop purple
+class Client3 yellow
+class HeavyRSC red</div>
 <p><em>Figure 1: The Node.js event loop phases and CPU thread starvation induced by synchronous Virtual DOM stringification and recursive Flight serialization. Source: Node.js Diagnostics Working Group <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a></sup>.</em></p>
 <hr>
 <h2 id="1-why-this-feature-the-false-equivalence-of-client-and-server-rendering">1. Why This Feature? The False Equivalence of Client and Server Rendering</h2>
@@ -199,7 +210,18 @@ export default async function ReportPage({ params }) {
   WorkerPool --&gt; Thread2[&quot;Worker Core 2&quot;]
   WorkerPool --&gt; Thread3[&quot;Worker Core 3&quot;]
   
-  MainThread --&gt;|Instant Non-Blocking Response| HealthCheck[&quot;Responds to K8s health check in under 2ms&quot;]</div>
+  MainThread --&gt;|Instant Non-Blocking Response| HealthCheck[&quot;Responds to K8s health check in under 2ms&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class MainThread,HealthCheck blue
+class WorkerPool green
+class Thread1 purple
+class Thread2 yellow
+class Thread3 red</div>
 <h3 id="pattern-1-worker-thread-offloading-workerthreads">Pattern 1: Worker Thread Offloading (<code>worker_threads</code>)</h3>
 <p>For complex data transformations, aggregations, or markdown/syntax parsing occurring within Server Components, delegate work to a worker thread pool using libraries like <code>piscina</code>:</p>
 <pre><code class="language-typescript">// lib/worker-pool.ts

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-blob-storage-haystack-seaweedfs-bitcask.html">
   <meta property="og:title" content="Distributed Blob Storage Engines: Haystack, SeaweedFS &amp; Bitcask Sequential Append Architecture">
   <meta property="og:description" content="Small-file storage optimization: overcoming OS inode bottlenecks (Facebook Haystack, SeaweedFS, Bitcask), bundling small photo blobs into append-only volume files, and in-memory KeyDir single-seek indexing.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-blob-storage-haystack-seaweedfs-bitcask.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Blob Storage Engines: Haystack, SeaweedFS &amp; Bitcask Sequential Append Architecture">
   <meta name="twitter:description" content="Small-file storage optimization: overcoming OS inode bottlenecks (Facebook Haystack, SeaweedFS, Bitcask), bundling small photo blobs into append-only volume files, and in-memory KeyDir single-seek indexing.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-blob-storage-haystack-seaweedfs-bitcask.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distributed Blob Storage Engines: Haystack, SeaweedFS & Bitcask Sequential Append Architecture",
   "description": "Small-file storage optimization: overcoming OS inode bottlenecks (Facebook Haystack, SeaweedFS, Bitcask), bundling small photo blobs into append-only volume files, and in-memory KeyDir single-seek indexing.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-blob-storage-haystack-seaweedfs-bitcask.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distributed-blob-storage-haystack-seaweedfs-bitcask.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Blob Storage, Haystack, Bitcask, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed Blob Storage Engines: Haystack, SeaweedFS &amp; Bitcask Sequential Append Architecture Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distributed-blob-storage-haystack-seaweedfs-bitcask.jpg" class="article-cover-img" alt="Distributed Blob Storage Engines: Haystack, SeaweedFS &amp; Bitcask Sequential Append Architecture Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed Blob Storage Engines: Haystack, SeaweedFS &amp; Bitcask Sequential Append Architecture</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-bitcask-seaweedfs-append-only-engine">Python Implementation: Bitcask / SeaweedFS Append-Only Engine</a></li>
                 <li><a href="#blob-storage-gotchas-best-practices">Blob Storage Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In social networks, e-commerce platforms, and messaging applications (<strong>Facebook</strong>, <strong>Instagram</strong>, <strong>Uber</strong>, <strong>LinkedIn</strong>), applications store billions of small files—such as user avatars, profile photos, receipts, and audio snippets ($10\text{ KB}$ to $500\text{ KB}$).</p>
+<p>In social networks, e-commerce platforms, and messaging applications (<strong>Facebook</strong>, <strong>Instagram</strong>, <strong>Uber</strong>, <strong>LinkedIn</strong>), applications store billions of small files—such as user avatars, profile photos, receipts, and audio snippets ($10\text{ KB}$ to $500\text{ KB}$) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Storing billions of small files in traditional POSIX filesystems (<strong>ext4</strong>, <strong>XFS</strong>) leads to severe performance degradation:</p>
 <ul>
 <li><strong>The OS Inode Bottleneck</strong>: Each small file consumes an OS inode block. Storing $1,000,000,000$ files exhausts filesystem metadata limits long before physical disk space fills up.</li>
@@ -129,16 +130,27 @@
 <p>How Facebook Haystack and Bitcask replace POSIX directory trees with single-seek Append-Only Volume Files:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_TraditionalPosixFilesystem [&quot;Traditional POSIX Filesystem Bottleneck (ext4 / XFS)&quot;]
-    ReadReq[Read /photos/user101/avatar.jpg] --&gt; Seek1[Seek 1: Directory Inode]
-    Seek1 --&gt; Seek2[Seek 2: Directory Data Block]
-    Seek2 --&gt; Seek3[Seek 3: File Inode Block]
-    Seek3 --&gt; Seek4[Seek 4: Read File Data Blocks (4 Disk Seeks!)]
+    ReadReq[&quot;Read /photos/user101/avatar.jpg&quot;] --&gt; Seek1[&quot;Seek 1: Directory Inode&quot;]
+    Seek1 --&gt; Seek2[&quot;Seek 2: Directory Data Block&quot;]
+    Seek2 --&gt; Seek3[&quot;Seek 3: File Inode Block&quot;]
+    Seek3 --&gt; Seek4[&quot;Seek 4: Read File Data Blocks (4 Disk Seeks!)&quot;]
   end
   
   subgraph SG2_HighDensityBlob [&quot;High-Density Blob Storage (Haystack / Bitcask)&quot;]
-    BlobReq[Read Photo ID 1042] --&gt;|O(1) RAM Lookup| KeyDir[&quot;In-Memory KeyDir: File #3 | Offset: 0x0F40 | Size: 16 KB&quot;]
+    BlobReq[&quot;Read Photo ID 1042&quot;] --&gt;|O(1) RAM Lookup| KeyDir[&quot;In-Memory KeyDir: File #3 | Offset: 0x0F40 | Size: 16 KB&quot;]
     KeyDir --&gt;|Issue pread() at Exact Offset| SingleSeek[&quot; Single Disk Seek on Volume File #3 (1 Seek!)&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ReadReq,BlobReq blue
+class Seek1,KeyDir green
+class Seek2,SingleSeek purple
+class Seek3 yellow
+class Seek4 red</div>
 <h3 id="core-blob-storage-mechanics">Core Blob Storage Mechanics</h3>
 <ol>
 <li><strong>The Small-File Inode Problem</strong>:<ul>
@@ -292,8 +304,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Distributed blob storage engines (such as <strong>Facebook Haystack</strong>, <strong>SeaweedFS</strong>, and <strong>Riak Bitcask</strong>) report:</p>
 <ul>
 <li><strong>Over $10\times$ Higher Photo Throughput</strong>: Bundling small files into large volume files eliminates OS inode lock contention and directory traversal penalties.</li>
-<li><strong>$O(1)$ Single Disk Seek Latency</strong>: Reading any small file from disk requires exactly 1 physical seek, serving billions of media files with sub-millisecond P99 response times.</li>
+<li><strong>$O(1)$ Single Disk Seek Latency</strong>: Reading any small file from disk requires exactly 1 physical seek, serving billions of media files with sub-millisecond P99 response times. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -330,6 +350,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-bitcask-seaweedfs-append-only-engine" class="toc-link">Python Implementation: Bitcask / SeaweedFS Append-Only Engine</a></li>
               <li class="toc-item toc-h2"><a href="#blob-storage-gotchas-best-practices" class="toc-link">Blob Storage Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

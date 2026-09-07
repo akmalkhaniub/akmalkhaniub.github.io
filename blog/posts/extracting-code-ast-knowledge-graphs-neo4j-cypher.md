@@ -1,6 +1,6 @@
 # Extracting Code AST Knowledge Graphs with Neo4j & Cypher
 
-To build software engineering agents capable of reasoning about multi-file codebases, we must provide them with a structured, queryable model of the code's architecture. While flat file vectors allow simple lexical lookups, they completely fail at tracking structural dependencies across modules.
+To build software engineering agents capable of reasoning about multi-file codebases, we must provide them with a structured, queryable model of the code's architecture [1]. While flat file vectors allow simple lexical lookups, they completely fail at tracking structural dependencies across modules.
 
 A robust solution is to parse source repositories into an **Abstract Syntax Tree (AST)** and ingest the resulting entity-relationship network into a graph database like **Neo4j**.
 
@@ -17,9 +17,9 @@ The code parser translates Abstract Syntax Tree components directly into nodes a
 ```mermaid
 flowchart TD
   subgraph SG1_CodebaseSourceFiles ["Codebase Source Files"]
-    A[Module: billing.py]
-    B[Class: UserBilling]
-    C[Method: process_payment]
+    A["Module: billing.py"]
+    B["Class: UserBilling"]
+    C["Method: process_payment"]
   end
   
   subgraph SG2_Neo4jPropertyGraph ["Neo4j Property Graph representation"]
@@ -37,6 +37,17 @@ flowchart TD
   A -.-> D
   B -.-> E
   C -.-> F
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C purple
+class D yellow
+class E red
 ```
 
 ### Ingestion Node & Edge Definitions
@@ -227,4 +238,10 @@ When extracting codebase knowledge graphs:
 ## Real-World Enterprise Impact
 Teams deploying AST Neo4j Code Graphs report:
 * **Instant Structural Auditing**: Agents track architectural side effects across thousands of files in milliseconds instead of reading file texts sequentially.
-* **Accurate Code Refactoring**: Visualizing call graphs helps prevent circular imports and broken references during codebase changes.
+* **Accurate Code Refactoring**: Visualizing call graphs helps prevent circular imports and broken references during codebase changes. [2]
+
+## References & Further Reading
+
+1. **Edge, D., et al. (2024)**. *From Local to Global: A Graph RAG Approach to Query-Focused Summarization*. arXiv. [https://arxiv.org/abs/2404.16130](https://arxiv.org/abs/2404.16130)
+2. **Francis, N., et al. (2018)**. *Cypher: An Evolving Query Language for Property Graphs*. SIGMOD. [https://doi.org/10.1145/3183713.3190657](https://doi.org/10.1145/3183713.3190657)
+3. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)

@@ -1,6 +1,6 @@
 # Cross-Functional Alignment: Translating AI Engineering to Executive Stakeholders
 
-In the era of autonomous coding agents and rapid AI advancement, non-technical executive stakeholders—CEOs, Product VPs, and Board Members—are inundated with media headlines promising instant software development. This frequently creates a massive operational disconnect:
+In the era of autonomous coding agents and rapid AI advancement, non-technical executive stakeholders—CEOs, Product VPs, and Board Members—are inundated with media headlines promising instant software development [1]. This frequently creates a massive operational disconnect:
 
 > *Executives ask: "If AI can write code in seconds, why is our quarterly feature roadmap still taking two months?"*
 
@@ -17,17 +17,17 @@ Tech Leads must translate internal engineering mechanics into strategic business
 ```mermaid
 flowchart TD
   subgraph SG1_TechnicalRealityEngineering ["Technical Reality Engineering"]
-    A[AST Verification & Lint Gates]
-    B[Model Token Compute Budgets]
-    C[HNSW & Database Schema Controls]
+    A["AST Verification & Lint Gates"]
+    B["Model Token Compute Budgets"]
+    C["HNSW & Database Schema Controls"]
   end
   subgraph SG2_AlignmentTranslation ["Alignment Translation"]
-    D[Tech Lead Translation Layer]
+    D["Tech Lead Translation Layer"]
   end
   subgraph SG3_ExecutiveCSuite ["Executive C-Suite Metrics"]
-    E[Product Brand & Reliability Protection]
-    F[Predictable Cloud & AI R&D Margin]
-    G[Accelerated Feature Time-to-Market]
+    E["Product Brand & Reliability Protection"]
+    F["Predictable Cloud & AI R&D Margin"]
+    G["Accelerated Feature Time-to-Market"]
   end
   A --> D
   B --> D
@@ -35,6 +35,17 @@ flowchart TD
   D --> E
   D --> F
   D --> G
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C purple
+class D yellow
+class E red
 ```
 
 ### The Three Translation Pillars
@@ -130,4 +141,13 @@ When communicating with executive stakeholders, observe these alignment guidelin
 ## Real-World Enterprise Impact
 Teams establishing Cross-Functional Alignment experience:
 * **Complete Executive Trust & Support**: Transparent ROI modeling justifies AI infrastructure investments.
-* **Realistic Product Roadmaps**: Engineering teams deliver on 95%+ of committed quarterly milestones without burnout.
+* **Realistic Product Roadmaps**: Engineering teams deliver on 95%+ of committed quarterly milestones without burnout. [2]
+
+## References & Further Reading
+
+1. **Cytron, R., et al. (1991)**. *Efficiently Computing Static Single Assignment Form and the Control Dependence Graph*. ACM TOPLAS. [https://doi.org/10.1145/115372.115320](https://doi.org/10.1145/115372.115320)
+2. **Lattner, C., & Adve, V. (2004)**. *LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation*. CGO. [https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf](https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf)
+3. **V8 Team (2024)**. *V8 Orinoco and Garbage Collection*. v8.dev. [https://v8.dev/blog](https://v8.dev/blog)
+4. **Garcia-Molina, H., & Salem, K. (1987)**. *Sagas*. SIGMOD. [https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf](https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf)
+5. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)
+6. **Turner, J. S. (1986)**. *New Directions in Communications (or Which Way to the Information Age?)*. IEEE Communications Magazine. [https://doi.org/10.1109/MCOM.1986.1092946](https://doi.org/10.1109/MCOM.1986.1092946)

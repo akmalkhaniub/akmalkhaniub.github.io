@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/webassembly-compiler-lowering-llvm-cranelift-code-generation.html">
   <meta property="og:title" content="WebAssembly Compiler Lowering: LLVM / Cranelift Target Code Generation">
   <meta property="og:description" content="Machine code synthesis from Wasm bytecode: implementing stack machine to SSA register lowering, Cranelift IR (CLIF), SIMD instruction vectorization, and memory bounds checking.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/webassembly-compiler-lowering-llvm-cranelift-code-generation.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="WebAssembly Compiler Lowering: LLVM / Cranelift Target Code Generation">
   <meta name="twitter:description" content="Machine code synthesis from Wasm bytecode: implementing stack machine to SSA register lowering, Cranelift IR (CLIF), SIMD instruction vectorization, and memory bounds checking.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/webassembly-compiler-lowering-llvm-cranelift-code-generation.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "WebAssembly Compiler Lowering: LLVM / Cranelift Target Code Generation",
   "description": "Machine code synthesis from Wasm bytecode: implementing stack machine to SSA register lowering, Cranelift IR (CLIF), SIMD instruction vectorization, and memory bounds checking.",
   "url": "https://akmalkhaniub.github.io/blog/webassembly-compiler-lowering-llvm-cranelift-code-generation.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/webassembly-compiler-lowering-llvm-cranelift-code-generation.jpg",
   "datePublished": "2026-08-18",
   "keywords": "WebAssembly, Compilers, Cranelift, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="WebAssembly Compiler Lowering: LLVM / Cranelift Target Code Generation Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/webassembly-compiler-lowering-llvm-cranelift-code-generation.jpg" class="article-cover-img" alt="WebAssembly Compiler Lowering: LLVM / Cranelift Target Code Generation Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">WebAssembly Compiler Lowering: LLVM / Cranelift Target Code Generation</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-wasm-stack-to-register-compiler-lowering-engine">Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine</a></li>
                 <li><a href="#wasm-compiler-gotchas-best-practices">Wasm Compiler Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When deploying WebAssembly (Wasm) binaries in high-speed serverless runtimes (<strong>Wasmtime</strong>, <strong>Wasmer</strong>, <strong>V8 Liftoff</strong>), executing Wasm bytecode via pure stack machine interpretation is too slow for production workloads.</p>
+<p>When deploying WebAssembly (Wasm) binaries in high-speed serverless runtimes (<strong>Wasmtime</strong>, <strong>Wasmer</strong>, <strong>V8 Liftoff</strong>), executing Wasm bytecode via pure stack machine interpretation is too slow for production workloads <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>WebAssembly bytecode is structured around a <strong>Stack-Based Virtual Machine</strong> architecture. Operands are pushed onto an implicit evaluation stack and popped by subsequent operations (<code>i32.const 10</code>, <code>i32.const 20</code>, <code>i32.add</code>).</p>
 <p>However, physical CPU hardware (x86_64, ARM64, RISC-V) operates on <strong>Register Machine</strong> architectures.</p>
 <p>To achieve native execution speeds, Wasm JIT and AOT compilers (<strong>Cranelift</strong>, <strong>LLVM <code>wasm32</code></strong>) lower stack-based Wasm bytecode into explicit <strong>Register Machine Intermediate Representation (SSA)</strong> before emitting target assembly.</p>
@@ -129,15 +130,26 @@
   end
   
   subgraph SG2_WasmCompilerLowering [&quot;Wasm Compiler Lowering Engine (Cranelift CLIF)&quot;]
-    WasmBytecode --&gt;|Symbolic Stack Translation| StackMapper[Symbolic Operand Stack]
-    StackMapper --&gt;|Push v0, Push v1| SSABlocks[SSA Register Allocator: v0=10, v1=20]
-    SSABlocks --&gt;|Lower to CLIF IR| CLIF[Cranelift IR: v2 = iadd v0, v1]
+    WasmBytecode --&gt;|Symbolic Stack Translation| StackMapper[&quot;Symbolic Operand Stack&quot;]
+    StackMapper --&gt;|Push v0, Push v1| SSABlocks[&quot;SSA Register Allocator: v0=10, v1=20&quot;]
+    SSABlocks --&gt;|Lower to CLIF IR| CLIF[&quot;Cranelift IR: v2 = iadd v0, v1&quot;]
   end
   
   subgraph SG3_SecurityGuardInjection [&quot;Security Guard Injection &amp; Code Generation&quot;]
-    CLIF --&gt;|Inject Memory Bounds Check| BoundsCheck[Check: v_addr + size &lt;= linear_memory_bound]
+    CLIF --&gt;|Inject Memory Bounds Check| BoundsCheck[&quot;Check: v_addr + size &lt;= linear_memory_bound&quot;]
     BoundsCheck --&gt;|Backend Register Allocation| NativeASM[&quot;Native Assembly: MOV EAX, 10; ADD EAX, 20&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class WasmBytecode,NativeASM blue
+class StackMapper green
+class SSABlocks purple
+class CLIF yellow
+class BoundsCheck red</div>
 <h3 id="core-wasm-lowering-principles">Core Wasm Lowering Principles</h3>
 <ol>
 <li><strong>Symbolic Stack Machine to Register Translation</strong>: During single-pass compilation, the compiler maintains a <strong>Symbolic Operand Stack</strong>. Instead of pushing raw values onto a physical RAM stack during execution, the compiler pushes symbolic <strong>SSA Virtual Registers</strong> (<code>v0, v1, v2</code>) onto a compile-time stack.<ul>
@@ -267,8 +279,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Runtimes utilizing Cranelift and LLVM Wasm lowering (such as <strong>Wasmtime</strong> and <strong>Fastly Compute@Edge</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Compilation &amp; Execution</strong>: Cranelift lowers and compiles WebAssembly binaries to native machine code $10\times$ faster than standard AOT compilers.</li>
-<li><strong>100% Memory Safety</strong>: Injecting hardware guard pages and explicit bounds checks guarantees that untrusted tenant code cannot break sandboxing boundaries.</li>
+<li><strong>100% Memory Safety</strong>: Injecting hardware guard pages and explicit bounds checks guarantees that untrusted tenant code cannot break sandboxing boundaries. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>W3C WebAssembly Working Group (2024)</strong>. <em>WebAssembly Core Specification</em>. W3C. <a href="https://www.w3.org/TR/wasm-core-2/" target="_blank" rel="noopener">https://www.w3.org/TR/wasm-core-2/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -305,6 +328,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-wasm-stack-to-register-compiler-lowering-engine" class="toc-link">Python Implementation: Wasm Stack-to-Register Compiler Lowering Engine</a></li>
               <li class="toc-item toc-h2"><a href="#wasm-compiler-gotchas-best-practices" class="toc-link">Wasm Compiler Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

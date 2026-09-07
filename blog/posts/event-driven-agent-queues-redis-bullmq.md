@@ -8,7 +8,7 @@
 
 ## The Request-Timeout Bottleneck in Agentic Systems
 
-In classic web applications, API responses are expected within milliseconds. However, modern AI agent loops are slow:
+In classic web applications, API responses are expected within milliseconds [1]. However, modern AI agent loops are slow:
 1.  **Multi-Step Reasoning**: Agents planning steps, executing tools, inspecting results, and writing files frequently require multiple sequential LLM calls.
 2.  **Latency Accumulation**: A single API call to a frontier model (like Claude 3.5 Sonnet) takes 2 to 5 seconds. If an agent loops 5 times, total transaction time easily exceeds 20 seconds.
 
@@ -25,14 +25,14 @@ An event-driven agent infrastructure maps jobs through waiting, active, complete
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 flowchart TD
-    A[Client User Interface] -->|POST /api/agent/run| B[API Gateway: Node.js/Hono]
-    B -->|Generate Job UUID & Push Job| C[Redis database]
+    A["Client User Interface"] -->|POST /api/agent/run| B["API Gateway: Node.js/Hono"]
+    B -->|Generate Job UUID & Push Job| C["Redis database"]
     B -->|Return 202 Accepted + Job UUID| A
     
     subgraph SG1_BullmqTaskCluster ["BullMQ Task Cluster"]
-        D[BullMQ Worker Pool] -->|Pull Job from Queue| C
-        D -->|Execute Step 1 - LLM Call| E[Frontier API: Claude]
-        D -->|Execute Step 2 - Tool Run| F[Sandbox Container]
+        D["BullMQ Worker Pool"] -->|Pull Job from Queue| C
+        D -->|Execute Step 1 - LLM Call| E["Frontier API: Claude"]
+        D -->|Execute Step 2 - Tool Run| F["Sandbox Container"]
         D -->|Save Result & Update Job Status| C
     end
     
@@ -44,6 +44,17 @@ flowchart TD
     style C fill:#0ea5e9,stroke:#0f172a,stroke-width:2px,color:#0f172a
     style D fill:#111827,stroke:#10b981,stroke-width:2px
     style E fill:#1e293b,stroke:#a855f7,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B green
+class C purple
+class D yellow
+class E red
 ```
 
 ### Key Queue Mechanics

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/nextjs-partial-prerendering-ppr-production.html">
   <meta property="og:title" content="Partial Prerendering (PPR) in Practice: Blending Static Shells and Dynamic Streams">
   <meta property="og:description" content="Fusing static layouts and dynamic execution in Next.js 15/16: compiling non-blocking shells that stream dynamic Suspense components at the edge.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nextjs-partial-prerendering-ppr-production.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-22">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Partial Prerendering (PPR) in Practice: Blending Static Shells and Dynamic Streams">
   <meta name="twitter:description" content="Fusing static layouts and dynamic execution in Next.js 15/16: compiling non-blocking shells that stream dynamic Suspense components at the edge.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nextjs-partial-prerendering-ppr-production.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Partial Prerendering (PPR) in Practice: Blending Static Shells and Dynamic Streams",
   "description": "Fusing static layouts and dynamic execution in Next.js 15/16: compiling non-blocking shells that stream dynamic Suspense components at the edge.",
   "url": "https://akmalkhaniub.github.io/blog/nextjs-partial-prerendering-ppr-production.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/nextjs-partial-prerendering-ppr-production.jpg",
   "datePublished": "2026-07-22",
   "keywords": "Next.js, Performance, Frontend, Architecture",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Partial Prerendering (PPR) in Practice: Blending Static Shells and Dynamic Streams Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/nextjs-partial-prerendering-ppr-production.jpg" class="article-cover-img" alt="Partial Prerendering (PPR) in Practice: Blending Static Shells and Dynamic Streams Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Partial Prerendering (PPR) in Practice: Blending Static Shells and Dynamic Streams</h1>
             <div class="article-meta">
@@ -114,6 +114,7 @@
                 <li><a href="#2-dynamic-segment-component-the-streamed-content">2. Dynamic Segment Component (The Streamed Content)</a></li>
                 <li><a href="#important-pitfalls-in-production">Important Pitfalls in Production</a></li>
                 <li><a href="#real-world-production-adoption">Real-World Production Adoption</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -123,7 +124,7 @@
 </div>
 <p>In the battle between static and dynamic web rendering, developers have historically faced a binary compromise:</p>
 <ul>
-<li><strong>Static Site Generation (SSG)</strong>: Insanely fast Time to First Byte (TTFB) and robust CDN edge caching, but completely incapable of displaying real-time user-specific content.</li>
+<li><strong>Static Site Generation (SSG)</strong>: Insanely fast Time to First Byte (TTFB) and robust CDN edge caching, but completely incapable of displaying real-time user-specific content <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Server-Side Rendering (SSR)</strong>: Capable of generating personalized pages, but blocks delivery of the entire document until every database call completes, degrading TTFB.</li>
 </ul>
 <p><strong>Partial Prerendering (PPR)</strong> in Next.js 15/16 eliminates this compromise. It allows developers to compile a static, cached HTML layout shell containing nested dynamic holes that stream real-time data over a single connection as it resolves.</p>
@@ -136,11 +137,22 @@
 <li><strong>The Dynamic Holes</strong>: Components wrapped in <code>&lt;Suspense&gt;</code> are compiled into dynamic execution instructions.</li>
 </ol>
 <div class="mermaid">flowchart TD
-  A[Client requests page] --&gt; B[Edge Server returns pre-rendered Static HTML Shell]
-  B --&gt; C[Client renders Navbar, Sidebar, Layout immediately]
-  A --&gt; D[Next.js Server executes dynamic database/API calls]
-  D --&gt; E[Stream dynamic HTML snippets over HTTP chunked transfer-encoding]
-  E --&gt; F[React hydration inserts dynamic content into Suspense placeholders]</div>
+  A[&quot;Client requests page&quot;] --&gt; B[&quot;Edge Server returns pre-rendered Static HTML Shell&quot;]
+  B --&gt; C[&quot;Client renders Navbar, Sidebar, Layout immediately&quot;]
+  A --&gt; D[&quot;Next.js Server executes dynamic database/API calls&quot;]
+  D --&gt; E[&quot;Stream dynamic HTML snippets over HTTP chunked transfer-encoding&quot;]
+  E --&gt; F[&quot;React hydration inserts dynamic content into Suspense placeholders&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B green
+class C purple
+class D yellow
+class E red</div>
 <p>When a user visits the URL, they receive the static HTML shell in under 15ms. In the background, the server continues executing dynamic DB queries and streams the resolved HTML snippets over the same connection using HTTP <code>transfer-encoding: chunked</code>.</p>
 <hr>
 <h2 id="implementing-a-dynamic-product-page">Implementing a Dynamic Product Page</h2>
@@ -235,8 +247,19 @@ export async function RealtimePricing({ slug }: PricingProps) {
 <p>Production dashboards and e-commerce platforms have adopted PPR to achieve sub-10ms TTFB while maintaining dynamic capabilities:</p>
 <ul>
 <li><strong>E-Commerce Detail Views</strong>: Pre-renders layout outlines, logos, footer maps, and description copy to CDNs, streaming real-time pricing and stock quantities on load.</li>
-<li><strong>SaaS Dashboards</strong>: Instantly renders the workspace sidebar and top bar layouts, streaming slow third-party API graphs asynchronously without loading spinners.</li>
+<li><strong>SaaS Dashboards</strong>: Instantly renders the workspace sidebar and top bar layouts, streaming slow third-party API graphs asynchronously without loading spinners. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Fielding, R., Nottingham, M., &amp; Reschke, J. (2014)</strong>. <em>Hypertext Transfer Protocol (HTTP/1.1): Caching</em>. RFC 7234. <a href="https://www.rfc-editor.org/rfc/rfc7234" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7234</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -274,6 +297,7 @@ export async function RealtimePricing({ slug }: PricingProps) {
               <li class="toc-item toc-h3"><a href="#2-dynamic-segment-component-the-streamed-content" class="toc-link">2. Dynamic Segment Component (The Streamed Content)</a></li>
               <li class="toc-item toc-h2"><a href="#important-pitfalls-in-production" class="toc-link">Important Pitfalls in Production</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-production-adoption" class="toc-link">Real-World Production Adoption</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

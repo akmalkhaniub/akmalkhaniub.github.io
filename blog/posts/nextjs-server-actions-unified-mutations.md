@@ -4,7 +4,7 @@
 > **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
 
 
-Historically, data mutations in React applications were characterized by architectural fragmentation. To update a simple record on a database, developers had to build and maintain multiple layers:
+Historically, data mutations in React applications were characterized by architectural fragmentation [1]. To update a simple record on a database, developers had to build and maintain multiple layers:
 1. **API Endpoints**: Creating a dedicated REST `/api/update-user` or GraphQL mutation schema.
 2. **Client-Side Fetching**: Writing asynchronous `fetch` wrappers inside component lifecycle handlers.
 3. **State Management**: Managing local component flags (`isLoading`, `hasError`) or global stores (Redux, Zustand) to coordinate UI updates.
@@ -20,9 +20,20 @@ To understand the value of Server Actions, we must look at how React mutations e
 
 ```mermaid
 flowchart TD
-  A[Legacy: PHP/Rails Form Submit] -->|Direct HTTP POST| B[Page reload & re-render]
-  C[Modern SPA: React + REST API] -->|useEffect + fetch + local state| D[No reload, but massive client boilerplate]
-  E[Unified: Server Actions] -->|Direct call to server function| F[Type-safe server execution + seamless hydration]
+  A["Legacy: PHP/Rails Form Submit"] -->|Direct HTTP POST| B["Page reload & re-render"]
+  C["Modern SPA: React + REST API"] -->|useEffect + fetch + local state| D["No reload, but massive client boilerplate"]
+  E["Unified: Server Actions"] -->|Direct call to server function| F["Type-safe server execution + seamless hydration"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B green
+class C purple
+class D yellow
+class E red
 ```
 
 Server Actions return to the simple PHP/Rails concept of direct form actions, but update it for single-page applications. They allow a client component to invoke a secure, compiled function that runs directly on the server under the hood, handling network transport, serialization, and page state updates behind the scenes.
@@ -185,4 +196,13 @@ Because Server Actions expose backend functions to the client-side bundle, devel
 ## Real-World Production Adoption
 High-traffic portals utilize Server Actions to simplify data mutations:
 * **E-Commerce Checkout Funnels**: Server Actions run secure transactions directly on edge runtimes, skipping public API latency.
-* **Rapid Form Feedback**: The combination of dynamic layouts and React 19's `useActionState` provides instant loading transitions and validation errors without separate client router management.
+* **Rapid Form Feedback**: The combination of dynamic layouts and React 19's `useActionState` provides instant loading transitions and validation errors without separate client router management. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+6. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

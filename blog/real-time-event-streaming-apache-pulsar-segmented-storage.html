@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/real-time-event-streaming-apache-pulsar-segmented-storage.html">
   <meta property="og:title" content="Real-Time Event Streaming Storage: Apache Pulsar Segmented Architecture &amp; Tiered Storage">
   <meta property="og:description" content="Decoupled streaming infrastructure: implementing Apache Pulsar stateless brokers, Apache BookKeeper ledger segments, quorum writes, and transparent S3 cloud object tiered storage.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/real-time-event-streaming-apache-pulsar-segmented-storage.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Real-Time Event Streaming Storage: Apache Pulsar Segmented Architecture &amp; Tiered Storage">
   <meta name="twitter:description" content="Decoupled streaming infrastructure: implementing Apache Pulsar stateless brokers, Apache BookKeeper ledger segments, quorum writes, and transparent S3 cloud object tiered storage.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/real-time-event-streaming-apache-pulsar-segmented-storage.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Real-Time Event Streaming Storage: Apache Pulsar Segmented Architecture & Tiered Storage",
   "description": "Decoupled streaming infrastructure: implementing Apache Pulsar stateless brokers, Apache BookKeeper ledger segments, quorum writes, and transparent S3 cloud object tiered storage.",
   "url": "https://akmalkhaniub.github.io/blog/real-time-event-streaming-apache-pulsar-segmented-storage.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/real-time-event-streaming-apache-pulsar-segmented-storage.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Apache Pulsar, BookKeeper, Tiered Storage, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Real-Time Event Streaming Storage: Apache Pulsar Segmented Architecture &amp; Tiered Storage Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/real-time-event-streaming-apache-pulsar-segmented-storage.jpg" class="article-cover-img" alt="Real-Time Event Streaming Storage: Apache Pulsar Segmented Architecture &amp; Tiered Storage Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Real-Time Event Streaming Storage: Apache Pulsar Segmented Architecture &amp; Tiered Storage</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-segmented-ledger-storage-tiered-offloader">Python Implementation: Segmented Ledger Storage &amp; Tiered Offloader</a></li>
                 <li><a href="#segmented-streaming-gotchas-best-practices">Segmented Streaming Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In enterprise messaging and event-driven architectures, event streaming brokers serve as the central nervous system for real-time data pipelines.</p>
+<p>In enterprise messaging and event-driven architectures, event streaming brokers serve as the central nervous system for real-time data pipelines <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>For over a decade, <strong>Apache Kafka</strong> set the standard for partition-based distributed log storage.</p>
 <p>However, traditional monolithic streaming brokers couple compute and storage onto the same physical node.</p>
 <p>When a Kafka partition grows to terabytes in size, scaling out the cluster or rebalancing topic partitions requires physically copying hundreds of gigabytes of historical log files across network links, causing severe CPU and disk I/O bottlenecks.</p>
@@ -127,8 +128,8 @@
 <p>How Pulsar separates stateless serve brokers from Apache BookKeeper ledger segments and S3 Tiered Storage:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_ClientProducersConsumers [&quot;Client Producers &amp; Consumers&quot;]
-    Prod[Event Producer] --&gt;|Publish Event| Broker1[Stateless Pulsar Broker 1]
-    Cons[Event Consumer] &lt;--|Subscribe / Read| Broker2[Stateless Pulsar Broker 2]
+    Prod[&quot;Event Producer&quot;] --&gt;|Publish Event| Broker1[&quot;Stateless Pulsar Broker 1&quot;]
+    Cons[&quot;Event Consumer&quot;] &lt;--|Subscribe / Read| Broker2[&quot;Stateless Pulsar Broker 2&quot;]
   end
   
   subgraph SG2_StatelessBrokerLayer [&quot;Stateless Broker Layer (Zero Local Disk Storage)&quot;]
@@ -136,15 +137,26 @@
   end
   
   subgraph SG3_SegmentCentricStorage [&quot;Segment-Centric Storage Layer (Apache BookKeeper)&quot;]
-    Broker1 --&gt;|Quorum Write (Ensemble=3, Write=3, Ack=2)| Seg1[Ledger Segment 1: Bookie Node A]
-    Broker1 --&gt;|Quorum Write| Seg2[Ledger Segment 1: Bookie Node B]
-    Broker1 --&gt;|Quorum Write| Seg3[Ledger Segment 1: Bookie Node C]
+    Broker1 --&gt;|Quorum Write (Ensemble=3, Write=3, Ack=2)| Seg1[&quot;Ledger Segment 1: Bookie Node A&quot;]
+    Broker1 --&gt;|Quorum Write| Seg2[&quot;Ledger Segment 1: Bookie Node B&quot;]
+    Broker1 --&gt;|Quorum Write| Seg3[&quot;Ledger Segment 1: Bookie Node C&quot;]
   end
   
   subgraph SG4_CloudObjectTiered [&quot;Cloud Object Tiered Storage (Infinite Retention)&quot;]
-    Seg1 --&gt;|Offload Sealed Cold Ledger Segments| S3[Cloud Object Storage: AWS S3 / GCS]
+    Seg1 --&gt;|Offload Sealed Cold Ledger Segments| S3[&quot;Cloud Object Storage: AWS S3 / GCS&quot;]
     Broker2 --&gt;|Transparent Historical Read| S3
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Prod,Seg2 blue
+class Broker1,Seg3 green
+class Cons,S3 purple
+class Broker2 yellow
+class Seg1 red</div>
 <h3 id="core-segmented-streaming-mechanics">Core Segmented Streaming Mechanics</h3>
 <ol>
 <li><strong>Coupled vs Decoupled Streaming Architectures</strong>:<ul>
@@ -297,8 +309,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Decoupled streaming architectures (such as <strong>Apache Pulsar</strong>, <strong>Splunk DSP</strong>, and <strong>WarpStream</strong>) report:</p>
 <ul>
 <li><strong>Zero-Rebalance Scaling</strong>: Adding or removing storage nodes takes seconds without re-replicating terabytes of historical partition logs across the network.</li>
-<li><strong>Over $80%$ Reduction in Storage Costs</strong>: Automatically tiering historical event logs to S3 object storage slashes cluster storage infrastructure expenses compared to holding all logs on local NVMe SSDs.</li>
+<li><strong>Over $80%$ Reduction in Storage Costs</strong>: Automatically tiering historical event logs to S3 object storage slashes cluster storage infrastructure expenses compared to holding all logs on local NVMe SSDs. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Carbone, P., et al. (2015)</strong>. <em>Apache Flink: Stream and Batch Processing in a Single Engine</em>. IEEE Data Engineering Bulletin. <a href="https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Zaharia, M., et al. (2012)</strong>. <em>Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing</em>. NSDI. <a href="https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf" target="_blank" rel="noopener">https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -335,6 +359,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-segmented-ledger-storage-tiered-offloader" class="toc-link">Python Implementation: Segmented Ledger Storage &amp; Tiered Offloader</a></li>
               <li class="toc-item toc-h2"><a href="#segmented-streaming-gotchas-best-practices" class="toc-link">Segmented Streaming Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/multi-raft-partitioning-dynamic-group-rebalancing.html">
   <meta property="og:title" content="Multi-Raft Partitioning &amp; Dynamic Group Rebalancing">
   <meta property="og:description" content="Scaling distributed consensus beyond single-leader limits: implementing Multi-Raft group partitioning, automated range splits, range routers, and leader transfer rebalancing.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/multi-raft-partitioning-dynamic-group-rebalancing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Multi-Raft Partitioning &amp; Dynamic Group Rebalancing">
   <meta name="twitter:description" content="Scaling distributed consensus beyond single-leader limits: implementing Multi-Raft group partitioning, automated range splits, range routers, and leader transfer rebalancing.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/multi-raft-partitioning-dynamic-group-rebalancing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Multi-Raft Partitioning & Dynamic Group Rebalancing",
   "description": "Scaling distributed consensus beyond single-leader limits: implementing Multi-Raft group partitioning, automated range splits, range routers, and leader transfer rebalancing.",
   "url": "https://akmalkhaniub.github.io/blog/multi-raft-partitioning-dynamic-group-rebalancing.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/multi-raft-partitioning-dynamic-group-rebalancing.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Multi-Raft, Distributed Systems, Sharding, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Multi-Raft Partitioning &amp; Dynamic Group Rebalancing Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/multi-raft-partitioning-dynamic-group-rebalancing.jpg" class="article-cover-img" alt="Multi-Raft Partitioning &amp; Dynamic Group Rebalancing Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Multi-Raft Partitioning &amp; Dynamic Group Rebalancing</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-multi-raft-router-range-split-engine">Python Implementation: Multi-Raft Router &amp; Range Split Engine</a></li>
                 <li><a href="#multi-raft-gotchas-best-practices">Multi-Raft Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>A single Raft consensus group consists of $N$ nodes maintaining a single replicated log driven by a single Raft Leader.</p>
+<p>A single Raft consensus group consists of $N$ nodes maintaining a single replicated log driven by a single Raft Leader <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>While a single Raft group guarantees strong consistency, it creates a fundamental scalability bottleneck: <strong>all write operations must pass through the single Raft Leader</strong>. A single Raft leader cannot scale past the I/O and network bandwidth capacity of a single physical server (typically bottlenecked at $\approx 50,000$ transactions per second).</p>
 <p>To scale distributed storage engines to petabytes of data and millions of transactions per second, modern distributed databases (<strong>CockroachDB</strong>, <strong>TiKV</strong>, <strong>YugabyteDB</strong>) utilize <strong>Multi-Raft Architecture</strong>.</p>
 <p>Multi-Raft partitions the entire dataset into contiguous key ranges (called <strong>Ranges</strong> or <strong>Shards</strong>) and assigns each range to its own independent Raft consensus group.</p>
@@ -124,31 +125,42 @@
 <h2 id="multi-raft-architecture-key-range-routing-topology">Multi-Raft Architecture &amp; Key-Range Routing Topology</h2>
 <p>How physical database nodes host hundreds of independent Raft consensus groups:</p>
 <div class="mermaid">flowchart TD
-  Client[Client SQL / KV Request] --&gt;|Route Key 'user_88'| Router[Multi-Raft Range Router]
+  Client[&quot;Client SQL / KV Request&quot;] --&gt;|Route Key 'user_88'| Router[&quot;Multi-Raft Range Router&quot;]
   
   Router --&gt;|Key 'user_88' falls in Range 2 ['g', 'p')| Node1
   
   subgraph SG1_PhysicalDatabaseCluster [&quot;Physical Database Cluster (3 Nodes)&quot;]
     subgraph SG2_ServerNode1 [&quot;Server Node 1&quot;]
-      R1_Leader[Range 1 Leader: 'a' - 'f']
-      R2_Leader[Range 2 Leader: 'g' - 'p']
-      R3_Follower[Range 3 Follower: 'q' - 'z']
+      R1_Leader[&quot;Range 1 Leader: 'a' - 'f'&quot;]
+      R2_Leader[&quot;Range 2 Leader: 'g' - 'p'&quot;]
+      R3_Follower[&quot;Range 3 Follower: 'q' - 'z'&quot;]
     end
     
     subgraph SG3_ServerNode2 [&quot;Server Node 2&quot;]
-      R1_Follower[Range 1 Follower]
-      R2_Follower2[Range 2 Follower]
-      R3_Leader[Range 3 Leader]
+      R1_Follower[&quot;Range 1 Follower&quot;]
+      R2_Follower2[&quot;Range 2 Follower&quot;]
+      R3_Leader[&quot;Range 3 Leader&quot;]
     end
     
     subgraph SG4_ServerNode3 [&quot;Server Node 3&quot;]
-      R1_Follower2[Range 1 Follower]
-      R2_Follower3[Range 2 Follower]
-      R3_Follower2[Range 3 Follower]
+      R1_Follower2[&quot;Range 1 Follower&quot;]
+      R2_Follower3[&quot;Range 2 Follower&quot;]
+      R3_Follower2[&quot;Range 3 Follower&quot;]
     end
   end
   
-  R2_Leader --&gt;|AppendEntries to Raft Group 2| R2_Follower2 &amp; R2_Follower3</div>
+  R2_Leader --&gt;|AppendEntries to Raft Group 2| R2_Follower2 &amp; R2_Follower3
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client,R1_Follower,R3_Follower2 blue
+class Router,R2_Follower2 green
+class R1_Leader,R3_Leader purple
+class R2_Leader,R1_Follower2 yellow
+class R3_Follower,R2_Follower3 red</div>
 <h3 id="core-multi-raft-principles">Core Multi-Raft Principles</h3>
 <ol>
 <li><strong>Contiguous Key-Range Partitioning</strong>: Data is partitioned into ordered key ranges (e.g. Range 1: <code>[&quot;a&quot;, &quot;f&quot;)</code>, Range 2: <code>[&quot;f&quot;, &quot;m&quot;)</code>, Range 3: <code>[&quot;m&quot;, &quot;z&quot;)</code>).</li>
@@ -290,8 +302,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Distributed databases utilizing Multi-Raft architecture (such as <strong>TiKV</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Linear Horizontal Scalability</strong>: Scaling write throughput linearly by adding physical server nodes, expanding beyond $1,000,000$ transactions per second.</li>
-<li><strong>Granular Failure Isolation</strong>: A hardware crash on a single server node only impacts leadership for a fraction of ranges, which re-elect new leaders in under $300\text{ms}$ while the rest of the cluster operates uninterrupted.</li>
+<li><strong>Granular Failure Isolation</strong>: A hardware crash on a single server node only impacts leadership for a fraction of ranges, which re-elect new leaders in under $300\text{ms}$ while the rest of the cluster operates uninterrupted. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (2001)</strong>. <em>Paxos Made Simple</em>. ACM SIGACT News. <a href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/paxos-simple.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -328,6 +351,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-multi-raft-router-range-split-engine" class="toc-link">Python Implementation: Multi-Raft Router &amp; Range Split Engine</a></li>
               <li class="toc-item toc-h2"><a href="#multi-raft-gotchas-best-practices" class="toc-link">Multi-Raft Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

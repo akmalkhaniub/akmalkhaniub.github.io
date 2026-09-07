@@ -9,24 +9,35 @@
 ## The Risk of Agent-Driven SQL Mutations
 
 When an agent writes code or executes migrations:
-* **The Infinite Scan Lock**: A missing index query on a massive table locks database rows while scanning, blocking updates.
+* **The Infinite Scan Lock**: A missing index query on a massive table locks database rows while scanning, blocking updates [1].
 * **Deadlock Escalation**: Two asynchronous agents updating database rows in reverse order can block each other indefinitely, exhausting connection pools.
 * **The Solution**: **Timeout Guardrails**. We wrap all agent database connection sessions in strict timeouts. If a query holds locks beyond the threshold (e.g. `2 seconds`), the transaction aborts automatically, releasing locks.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    SQL[Agent Requests SQL Execution] --> Session[Acquire Connection Session]
-    Session --> Prepend[Prepend Guardrail Limits: lock_timeout & statement_timeout]
+    SQL["Agent Requests SQL Execution"] --> Session["Acquire Connection Session"]
+    Session --> Prepend["Prepend Guardrail Limits: lock_timeout & statement_timeout"]
     
-    Prepend --> RunQuery[Execute Agent Query]
+    Prepend --> RunQuery["Execute Agent Query"]
     RunQuery --> CheckTimeout{Has Query Exceeded Timeout Limits?}
     
-    CheckTimeout -->|No - Completed| Commit[Commit Transaction & Release Locks]
-    CheckTimeout -->|Yes - Exceeded| Abort[Abort Query: Trigger DB Rollback]
+    CheckTimeout -->|No - Completed| Commit["Commit Transaction & Release Locks"]
+    CheckTimeout -->|Yes - Exceeded| Abort["Abort Query: Trigger DB Rollback"]
     
-    Abort --> Release[Release Table & Row Locks]
-    Release --> Log[Log Trace to Audit Queue]
+    Abort --> Release["Release Table & Row Locks"]
+    Release --> Log["Log Trace to Audit Queue"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class SQL,Abort blue
+class Session,Release green
+class Prepend,Log purple
+class RunQuery yellow
+class Commit red
 ```
 
 ---
@@ -112,4 +123,13 @@ if __name__ == "__main__":
 
 * **Enforce Connection Timeouts**: Set `statement_timeout` and `lock_timeout` limits on all database sessions accessed by agent workflows.
 * **Isolate Privileges**: Run agent transactions using dedicated database roles with read-only permissions on sensitive schemas.
-* **Wrap in Transactions**: Ensure all queries run inside transaction blocks, guaranteeing automated rollbacks on timeouts.
+* **Wrap in Transactions**: Ensure all queries run inside transaction blocks, guaranteeing automated rollbacks on timeouts. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+5. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+6. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

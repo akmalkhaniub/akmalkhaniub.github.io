@@ -4,7 +4,7 @@ When software engineering teams adopt AI coding assistants, code coverage metric
 
 An AI agent can easily write a test suite that executes every line of a function while failing to assert critical edge cases. For instance, an agent might call `process_transaction(payment)` inside a test block without asserting that the user's account balance was correctly updated or that database locks were released.
 
-Line coverage measures which lines of code were *executed*, not whether the test suite can actually **detect logic errors**.
+Line coverage measures which lines of code were *executed*, not whether the test suite can actually **detect logic errors** [1].
 
 To evaluate true test quality in AI-generated codebases, security and QA engineering teams deploy **Mutation Testing**.
 
@@ -18,25 +18,36 @@ The mutation engine acts as an automated adversary that attempts to break produc
 
 ```mermaid
 flowchart TD
-  A[Original Production Source Code AST] --> B[AST Mutation Generator Engine]
+  A["Original Production Source Code AST"] --> B["AST Mutation Generator Engine"]
   
   subgraph SG1_SyntheticMutationInjection ["Synthetic Mutation Injection"]
-    B -->|Mutant 1 - Swap > to <=| C[Mutated AST #1]
-    B -->|Mutant 2 - Flip True to False| D[Mutated AST #2]
-    B -->|Mutant 3 - Delete Log/Update Call| E[Mutated AST #3]
+    B -->|Mutant 1 - Swap > to <=| C["Mutated AST #1"]
+    B -->|Mutant 2 - Flip True to False| D["Mutated AST #2"]
+    B -->|Mutant 3 - Delete Log/Update Call| E["Mutated AST #3"]
   end
   
   subgraph SG2_TestSuiteExecution ["Test Suite Execution"]
-    C --> F[Execute Unit Test Runner]
-    D --> G[Execute Unit Test Runner]
-    E --> H[Execute Unit Test Runner]
+    C --> F["Execute Unit Test Runner"]
+    D --> G["Execute Unit Test Runner"]
+    E --> H["Execute Unit Test Runner"]
   end
   
-  F -->|Tests FAIL| I[ MUTANT KILLED (Strong Test)]
-  G -->|Tests FAIL| J[ MUTANT KILLED (Strong Test)]
-  H -->|Tests PASS| K[ MUTANT SURVIVED (Weak Test Alert)]
+  F -->|Tests FAIL| I[" MUTANT KILLED (Strong Test)"]
+  G -->|Tests FAIL| J[" MUTANT KILLED (Strong Test)"]
+  H -->|Tests PASS| K[" MUTANT SURVIVED (Weak Test Alert)"]
   
-  K --> L[Calculate Mutation Score = Killed / Total * 100%]
+  K --> L["Calculate Mutation Score = Killed / Total * 100%"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F,K blue
+class B,G,L green
+class C,H purple
+class D,I yellow
+class E,J red
 ```
 
 ### Core Mutation Operators
@@ -190,4 +201,10 @@ When running mutation testing on AI-generated codebases:
 ## Real-World Enterprise Impact
 Teams integrating Mutation Testing into AI agent pipelines report:
 * **Detection of Blind Test Suites**: Mutation testing uncovers tests with incomplete assertions that line coverage tools miss.
-* **Resilient Production Code**: Codebases validated against mutation engines exhibit 80% fewer post-release regression outages.
+* **Resilient Production Code**: Codebases validated against mutation engines exhibit 80% fewer post-release regression outages. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

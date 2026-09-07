@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/confidential-computing-secure-enclaves-intel-sgx-amd-sev.html">
   <meta property="og:title" content="Confidential Computing &amp; Secure Enclaves: Intel SGX, AMD SEV &amp; Hardware Attestation">
   <meta property="og:description" content="Hardware-level data-in-use encryption: implementing Intel SGX Enclave Page Cache (EPC), AMD SEV-SNP encrypted VMs, Remote Hardware Attestation, and side-channel protection.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/confidential-computing-secure-enclaves-intel-sgx-amd-sev.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Confidential Computing &amp; Secure Enclaves: Intel SGX, AMD SEV &amp; Hardware Attestation">
   <meta name="twitter:description" content="Hardware-level data-in-use encryption: implementing Intel SGX Enclave Page Cache (EPC), AMD SEV-SNP encrypted VMs, Remote Hardware Attestation, and side-channel protection.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/confidential-computing-secure-enclaves-intel-sgx-amd-sev.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Confidential Computing & Secure Enclaves: Intel SGX, AMD SEV & Hardware Attestation",
   "description": "Hardware-level data-in-use encryption: implementing Intel SGX Enclave Page Cache (EPC), AMD SEV-SNP encrypted VMs, Remote Hardware Attestation, and side-channel protection.",
   "url": "https://akmalkhaniub.github.io/blog/confidential-computing-secure-enclaves-intel-sgx-amd-sev.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/confidential-computing-secure-enclaves-intel-sgx-amd-sev.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Confidential Computing, Intel SGX, AMD SEV, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Confidential Computing &amp; Secure Enclaves: Intel SGX, AMD SEV &amp; Hardware Attestation Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/confidential-computing-secure-enclaves-intel-sgx-amd-sev.jpg" class="article-cover-img" alt="Confidential Computing &amp; Secure Enclaves: Intel SGX, AMD SEV &amp; Hardware Attestation Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Confidential Computing &amp; Secure Enclaves: Intel SGX, AMD SEV &amp; Hardware Attestation</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-hardware-attestation-enclave-encryption-engine">Python Implementation: Hardware Attestation &amp; Enclave Encryption Engine</a></li>
                 <li><a href="#confidential-computing-gotchas-best-practices">Confidential Computing Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In multi-tenant public cloud environments (AWS, Azure, Google Cloud), organizations deploy sensitive workloads (financial analytics, healthcare records, proprietary AI models).</p>
+<p>In multi-tenant public cloud environments (AWS, Azure, Google Cloud), organizations deploy sensitive workloads (financial analytics, healthcare records, proprietary AI models) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Standard security protocols encrypt <strong>Data-at-Rest</strong> (disk encryption) and <strong>Data-in-Transit</strong> (TLS encryption).</p>
 <p>However, during active execution, <strong>Data-in-Use</strong> remains exposed in plaintext RAM. A compromised host operating system, a rogue hypervisor administrator, or a malicious cloud tenant can inspect host memory buffers to extract secret cryptographic keys and customer data.</p>
 <p>To protect Data-in-Use from untrusted cloud infrastructure, modern hardware platforms employ <strong>Confidential Computing</strong>.</p>
@@ -126,20 +127,31 @@
 <p>How Secure Enclaves isolate memory and provide cryptographic Remote Attestation quotes to verify binary integrity:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_UntrustedCloudInfrastructure [&quot;Untrusted Cloud Infrastructure (Hypervisor / OS Kernel)&quot;]
-    UntrustedOS[Untrusted Host OS / Hypervisor] -.-&gt;|Attempt Memory Peeking| Blocked[ BLOCKED by Hardware Memory Encryption Engine!]
+    UntrustedOS[&quot;Untrusted Host OS / Hypervisor&quot;] -.-&gt;|Attempt Memory Peeking| Blocked[&quot; BLOCKED by Hardware Memory Encryption Engine!&quot;]
   end
   
   subgraph SG2_PhysicalCpuHardware [&quot;Physical CPU Hardware (Intel SGX / AMD SEV)&quot;]
-    MEE[Hardware Memory Encryption Engine: AES-XTS 128/256] &lt;--&gt; EPC[Enclave Page Cache EPC: Encrypted RAM]
-    EPC &lt;--&gt; Enclave[Secure Enclave Execution Context: MRENCLAVE Binary Hash]
+    MEE[&quot;Hardware Memory Encryption Engine: AES-XTS 128/256&quot;] &lt;--&gt; EPC[&quot;Enclave Page Cache EPC: Encrypted RAM&quot;]
+    EPC &lt;--&gt; Enclave[&quot;Secure Enclave Execution Context: MRENCLAVE Binary Hash&quot;]
   end
   
   subgraph SG3_RemoteHardwareAttestation [&quot;Remote Hardware Attestation Verification&quot;]
-    Enclave --&gt;|Generate Enclave Report| CPU_Key[CPU Hardware Attestation Secret Key]
-    CPU_Key --&gt;|Cryptographically Sign Quote| AttestationQuote[Signed Hardware Attestation Quote]
-    AttestationQuote --&gt;|Transmit Quote over TLS| RemoteClient[Remote Client / Verifier]
-    RemoteClient --&gt;|Verify Signature via Intel/AMD PKI| Trust[ VERIFIED: Code is running inside Genuine CPU Enclave!]
-  end</div>
+    Enclave --&gt;|Generate Enclave Report| CPU_Key[&quot;CPU Hardware Attestation Secret Key&quot;]
+    CPU_Key --&gt;|Cryptographically Sign Quote| AttestationQuote[&quot;Signed Hardware Attestation Quote&quot;]
+    AttestationQuote --&gt;|Transmit Quote over TLS| RemoteClient[&quot;Remote Client / Verifier&quot;]
+    RemoteClient --&gt;|Verify Signature via Intel/AMD PKI| Trust[&quot; VERIFIED: Code is running inside Genuine CPU Enclave!&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UntrustedOS,CPU_Key blue
+class Blocked,AttestationQuote green
+class MEE,RemoteClient purple
+class EPC,Trust yellow
+class Enclave red</div>
 <h3 id="core-confidential-computing-principles">Core Confidential Computing Principles</h3>
 <ol>
 <li><strong>Hardware Memory Encryption Engine (MEE)</strong>: The CPU contains a dedicated hardware encryption engine positioned between the L3 cache and external DRAM controllers. All memory reads and writes crossing the CPU die boundary are dynamically encrypted and decrypted using hardware AES-XTS keys, rendering physical RAM sniffing useless.</li>
@@ -274,8 +286,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Confidential Computing deployments (such as <strong>Azure Confidential VMs</strong>, <strong>AWS Nitro Enclaves</strong>, and <strong>Google Cloud Confidential Space</strong>) report:</p>
 <ul>
 <li><strong>Zero-Trust Cloud Processing</strong>: Processing sensitive healthcare and financial data in public clouds without trusting the cloud provider&#39;s infrastructure or personnel.</li>
-<li><strong>Multiparty Privacy-Preserving AI</strong>: Multiple competing financial institutions training joint machine learning models on combined private data without exposing raw data to any party.</li>
+<li><strong>Multiparty Privacy-Preserving AI</strong>: Multiple competing financial institutions training joint machine learning models on combined private data without exposing raw data to any party. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -312,6 +332,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-hardware-attestation-enclave-encryption-engine" class="toc-link">Python Implementation: Hardware Attestation &amp; Enclave Encryption Engine</a></li>
               <li class="toc-item toc-h2"><a href="#confidential-computing-gotchas-best-practices" class="toc-link">Confidential Computing Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

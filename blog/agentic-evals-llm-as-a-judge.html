@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/agentic-evals-llm-as-a-judge.html">
   <meta property="og:title" content="Evaluating Agentic Swarms: Setting up LLM-as-a-Judge Evals in CI">
   <meta property="og:description" content="A deep dive into continuous integration checks for multi-agent loops, using automated grader LLMs to score reasoning trajectories and output fidelity.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agentic-evals-llm-as-a-judge.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-04-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Evaluating Agentic Swarms: Setting up LLM-as-a-Judge Evals in CI">
   <meta name="twitter:description" content="A deep dive into continuous integration checks for multi-agent loops, using automated grader LLMs to score reasoning trajectories and output fidelity.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agentic-evals-llm-as-a-judge.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Evaluating Agentic Swarms: Setting up LLM-as-a-Judge Evals in CI",
   "description": "A deep dive into continuous integration checks for multi-agent loops, using automated grader LLMs to score reasoning trajectories and output fidelity.",
   "url": "https://akmalkhaniub.github.io/blog/agentic-evals-llm-as-a-judge.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/agentic-evals-llm-as-a-judge.jpg",
   "datePublished": "2026-04-02",
   "keywords": "Agents, Testing, LLM-as-a-Judge, CI/CD",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/agentic-evals-llm-as-a-judge.jpg" class="article-cover-img" alt="Evaluating Agentic Swarms: Setting up LLM-as-a-Judge Evals in CI Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Evaluating Agentic Swarms: Setting up LLM-as-a-Judge Evals in CI</h1>
             <div class="article-meta">
@@ -111,6 +111,7 @@
                 <li><a href="#the-challenge-of-testing-agentic-loops">The Challenge of Testing Agentic Loops</a></li>
                 <li><a href="#implementing-an-automated-llm-as-a-judge-ci-pipeline">Implementing an Automated LLM-as-a-Judge CI Pipeline</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -121,7 +122,7 @@ Unit testing standard software is straightforward: input goes in, assert stateme
 </div>
 <hr>
 <h2 id="the-challenge-of-testing-agentic-loops">The Challenge of Testing Agentic Loops</h2>
-<p>Unlike simple RAG pipelines, agents make choices. If you update a system prompt or tool schema, the agent might take a completely different path (e.g. calling Tool B instead of Tool A) to achieve the same result.</p>
+<p>Unlike simple RAG pipelines, agents make choices <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. If you update a system prompt or tool schema, the agent might take a completely different path (e.g. calling Tool B instead of Tool A) to achieve the same result.</p>
 <p>We cannot test this using hardcoded string matching. We need to evaluate:</p>
 <ol>
 <li><strong>Tool Usage Compliance</strong>: Did the agent invoke the correct tools in the correct order?</li>
@@ -130,16 +131,27 @@ Unit testing standard software is straightforward: input goes in, assert stateme
 </ol>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Git[Git Code Commit] --&gt; CI[CI Runner: pytest]
-    CI --&gt; Exec[1. Execute Agent Run]
-    Exec --&gt; Trace[2. Capture Agent Trajectory Logs]
+    Git[&quot;Git Code Commit&quot;] --&gt; CI[&quot;CI Runner: pytest&quot;]
+    CI --&gt; Exec[&quot;1. Execute Agent Run&quot;]
+    Exec --&gt; Trace[&quot;2. Capture Agent Trajectory Logs&quot;]
     
     Trace --&gt; Judge{3. LLM-as-a-Judge Grader}
-    Judge --&gt;|Evaluate JSON Schema Criteria| Scores[4. Grade: Faithfulness, Tool compliance]
+    Judge --&gt;|Evaluate JSON Schema Criteria| Scores[&quot;4. Grade: Faithfulness, Tool compliance&quot;]
     
     Scores --&gt; Assert{5. Assert Score &gt;= 0.85}
-    Assert -- Pass --&gt; Deploy[Deploy Code]
-    Assert -- Fail --&gt; Block[Block Build &amp; Alert Dev]</div>
+    Assert -- Pass --&gt; Deploy[&quot;Deploy Code&quot;]
+    Assert -- Fail --&gt; Block[&quot;Block Build &amp; Alert Dev&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Git,Deploy blue
+class CI,Block green
+class Exec purple
+class Trace yellow
+class Scores red</div>
 <hr>
 <h2 id="implementing-an-automated-llm-as-a-judge-ci-pipeline">Implementing an Automated LLM-as-a-Judge CI Pipeline</h2>
 <p>Below is a complete implementation using Python, <code>pydantic</code> for structured output constraint, and <code>pytest</code> for CI/CD pipeline assertion.</p>
@@ -236,8 +248,19 @@ pytest -s -v test_agent_evals.py</code></pre>
 <li><input disabled="" type="checkbox"> <strong>Log the execution trajectory</strong>: Design your agent framework (LangGraph, Autogen) to record all tool inputs, outputs, and internal thoughts.</li>
 <li><input disabled="" type="checkbox"> <strong>Verify schemas with Structured Outputs</strong>: Always force the Judge LLM to return scores in a strict JSON format (using Pydantic parser) to ensure assertion parsing never fails.</li>
 <li><input disabled="" type="checkbox"> <strong>Set quality thresholds in CI</strong>: Enforce quality gates (e.g. score &gt;= 0.85) in your pipeline to catch regression errors before they go to staging.</li>
-<li><input disabled="" type="checkbox"> <strong>Run evals in parallel</strong>: Run evaluation tests asynchronously to keep CI pipeline build times under 5 minutes.</li>
+<li><input disabled="" type="checkbox"> <strong>Run evals in parallel</strong>: Run evaluation tests asynchronously to keep CI pipeline build times under 5 minutes. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -272,6 +295,7 @@ pytest -s -v test_agent_evals.py</code></pre>
               <li class="toc-item toc-h2"><a href="#the-challenge-of-testing-agentic-loops" class="toc-link">The Challenge of Testing Agentic Loops</a></li>
               <li class="toc-item toc-h2"><a href="#implementing-an-automated-llm-as-a-judge-ci-pipeline" class="toc-link">Implementing an Automated LLM-as-a-Judge CI Pipeline</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

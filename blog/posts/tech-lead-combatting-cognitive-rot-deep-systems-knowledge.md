@@ -1,6 +1,6 @@
 # Combatting Cognitive Rot: Preserving Deep Systems Understanding in AI-Driven Teams
 
-As AI coding tools generate an increasing share of production software, engineering velocity reaches unprecedented heights. However, engineering leaders are discovering a subtle, insidious long-term risk: **Cognitive Rot** (or System Knowledge Atrophy).
+As AI coding tools generate an increasing share of production software, engineering velocity reaches unprecedented heights [1]. However, engineering leaders are discovering a subtle, insidious long-term risk: **Cognitive Rot** (or System Knowledge Atrophy).
 
 When developers delegate implementation details, debugging, and edge-case handling to AI agents, their **mental model of the codebase degrades**. Over time, engineers become reliant on AI to explain their own systems. When a complex zero-day incident or silent deadlock strikes production, the team struggles to diagnose the root cause because nobody deeply understands the system's underlying runtime mechanics.
 
@@ -14,16 +14,27 @@ Without deliberate intervention, delegating implementation leads to systemic men
 
 ```mermaid
 flowchart TD
-  A[AI Agent Generates Complex Module] --> B[Developer approves PR after high-level check]
-  B --> C[Loss of Mental Model of Internal Mechanics]
-  C --> D[Cognitive Rot: Ignorance of Edge Cases & Locks]
-  D -->|Production Outage Occurs| E[Diagnosis Paralysis & Delayed Incident Resolution]
+  A["AI Agent Generates Complex Module"] --> B["Developer approves PR after high-level check"]
+  B --> C["Loss of Mental Model of Internal Mechanics"]
+  C --> D["Cognitive Rot: Ignorance of Edge Cases & Locks"]
+  D -->|Production Outage Occurs| E["Diagnosis Paralysis & Delayed Incident Resolution"]
   
   subgraph SG1_TechLeadIntervention ["Tech Lead Intervention Loop"]
-    C --> F[Reverse Spec Drills & Adversarial PR Audits]
-    F --> G[Deep Systems Knowledge Preserved]
-    G --> H[Fast Incident Recovery]
+    C --> F["Reverse Spec Drills & Adversarial PR Audits"]
+    F --> G["Deep Systems Knowledge Preserved"]
+    G --> H["Fast Incident Recovery"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D yellow
+class E red
 ```
 
 ### The Three Symptoms of Cognitive Rot
@@ -124,4 +135,10 @@ When fighting cognitive rot, balance learning with engineering velocity:
 ## Real-World Enterprise Impact
 Teams implementing active anti-cognitive rot practices maintain strong operational capabilities:
 * **60% Faster Incident MTTR (Mean Time to Resolution)**: Engineers retain deep mental models of system internals, allowing them to diagnose production outages instantly.
-* **Higher Engineering Mastery**: Junior developers gain true architectural understanding rather than becoming mere "prompt operators."
+* **Higher Engineering Mastery**: Junior developers gain true architectural understanding rather than becoming mere "prompt operators." [2]
+
+## References & Further Reading
+
+1. **Forsgren, N., Humble, J., & Kim, G. (2018)**. *Accelerate: The Science of Lean Software and DevOps*. IT Revolution / DORA. [https://dora.dev/research/](https://dora.dev/research/)
+2. **Brooks, F. P. (1975)**. *The Mythical Man-Month*. Addison-Wesley. [https://en.wikipedia.org/wiki/The_Mythical_Man-Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
+3. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)

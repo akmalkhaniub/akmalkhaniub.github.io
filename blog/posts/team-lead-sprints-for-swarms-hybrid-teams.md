@@ -8,7 +8,7 @@
 
 ## The Ticket Pipeline Starvation
 
-In a standard two-week sprint, a team lead estimates, Refines, and distributes 15 to 20 tickets to human developers. This cycle is paced: writing, testing, and merging takes days.
+In a standard two-week sprint, a team lead estimates, Refines, and distributes 15 to 20 tickets to human developers [1]. This cycle is paced: writing, testing, and merging takes days.
 
 When a team mounts a swarm of coding agents to the repository, those 20 tickets can be consumed, written, and generated as pull requests in under an hour. This leads to **Ticket Starvation** (the backlog runs dry instantly) and a **Review Bottleneck** (the TL is flooded with dozens of complex PRs simultaneously).
 
@@ -17,16 +17,27 @@ To prevent this chaos, team leads must build a triage gateway that dynamically e
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Issue[Incoming Jira Ticket / Github Issue] --> Router{Semantic Issue Router}
+    Issue["Incoming Jira Ticket / Github Issue"] --> Router{Semantic Issue Router}
     
-    Router -->|Complexity - High / Architectural| Human[Assign to Human Developer]
-    Router -->|Complexity - Low / Boilerplate / Tests| AgentQueue[Enqueue to Agent Swarm]
+    Router -->|Complexity - High / Architectural| Human["Assign to Human Developer"]
+    Router -->|Complexity - Low / Boilerplate / Tests| AgentQueue["Enqueue to Agent Swarm"]
     
-    AgentQueue --> AgentWorker[Agent Coding Node]
-    AgentWorker --> PR[Agent PR Created]
-    PR --> AutoVerify[Defensive Verification Gate]
-    AutoVerify -->|Pass| HumanReview[TL / Human Peer Approval]
+    AgentQueue --> AgentWorker["Agent Coding Node"]
+    AgentWorker --> PR["Agent PR Created"]
+    PR --> AutoVerify["Defensive Verification Gate"]
+    AutoVerify -->|Pass| HumanReview["TL / Human Peer Approval"]
     Human --> PR
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Issue,AutoVerify blue
+class Human,HumanReview green
+class AgentQueue purple
+class AgentWorker yellow
+class PR red
 ```
 
 ---
@@ -127,4 +138,13 @@ if __name__ == "__main__":
 
 * **Establish Staging Buffers**: Never let agents target main developer branches. Buffer agent PRs in a dedicated environment.
 * **Implement Complexity Classification**: Use routers to screen tasks before they enter the queue. Protect architectural modules from agent write access.
-* **Redefine Sprint Velocity**: Stop measuring velocity in terms of story points completed. Instead, evaluate the team based on **system architecture stability** and **automated verification coverage**.
+* **Redefine Sprint Velocity**: Stop measuring velocity in terms of story points completed. Instead, evaluate the team based on **system architecture stability** and **automated verification coverage**. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Forsgren, N., Humble, J., & Kim, G. (2018)**. *Accelerate: The Science of Lean Software and DevOps*. IT Revolution / DORA. [https://dora.dev/research/](https://dora.dev/research/)
+5. **Brooks, F. P. (1975)**. *The Mythical Man-Month*. Addison-Wesley. [https://en.wikipedia.org/wiki/The_Mythical_Man-Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
+6. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)

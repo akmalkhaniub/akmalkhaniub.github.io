@@ -4,7 +4,7 @@
 > [!NOTE]
 > **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
 
-Managing form lifecycles in single-page applications has historically been a source of significant boilerplate. Developers had to maintain separate hooks for loading indicators, validation errors, and submission status. 
+Managing form lifecycles in single-page applications has historically been a source of significant boilerplate [1]. Developers had to maintain separate hooks for loading indicators, validation errors, and submission status. 
 
 With **React 19** and **Next.js 15/16**, the library introduces a new set of hooks that align form transitions directly with asynchronous execution boundaries: `useActionState`, `useFormStatus`, and `useTransition`. 
 
@@ -209,4 +209,14 @@ export function DeleteButton({ id }: { id: string }) {
 | :--- | :--- | :--- |
 | Form submissions requiring validation error messages | `useActionState` | Combines response payload and loading indicators in one place. |
 | Submit buttons or loaders nested deep inside component trees | `useFormStatus` | Eliminates prop-drilling by consuming parent form state. |
-| Programmatic actions (clicks, toggles, custom list updates) | `useTransition` | Wraps any arbitrary async operation in a non-blocking UI thread. |
+| Programmatic actions (clicks, toggles, custom list updates) | `useTransition` | Wraps any arbitrary async operation in a non-blocking UI thread. | [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+5. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+6. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+7. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

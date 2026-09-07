@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/quantization-vector-databases-product-scalar-quantization.html">
   <meta property="og:title" content="Quantization in Vector Databases: Product Quantization (PQ) &amp; Scalar Quantization (SQ)">
   <meta property="og:description" content="Billion-scale vector compression: implementing Scalar Quantization (SQ8), Product Quantization (PQ) sub-space codebooks, and Asymmetric Distance Computation (ADC).">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/quantization-vector-databases-product-scalar-quantization.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-17">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Quantization in Vector Databases: Product Quantization (PQ) &amp; Scalar Quantization (SQ)">
   <meta name="twitter:description" content="Billion-scale vector compression: implementing Scalar Quantization (SQ8), Product Quantization (PQ) sub-space codebooks, and Asymmetric Distance Computation (ADC).">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/quantization-vector-databases-product-scalar-quantization.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Quantization in Vector Databases: Product Quantization (PQ) & Scalar Quantization (SQ)",
   "description": "Billion-scale vector compression: implementing Scalar Quantization (SQ8), Product Quantization (PQ) sub-space codebooks, and Asymmetric Distance Computation (ADC).",
   "url": "https://akmalkhaniub.github.io/blog/quantization-vector-databases-product-scalar-quantization.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/quantization-vector-databases-product-scalar-quantization.jpg",
   "datePublished": "2026-08-17",
   "keywords": "Vector Databases, Quantization, Compression, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Quantization in Vector Databases: Product Quantization (PQ) &amp; Scalar Quantization (SQ) Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/quantization-vector-databases-product-scalar-quantization.jpg" class="article-cover-img" alt="Quantization in Vector Databases: Product Quantization (PQ) &amp; Scalar Quantization (SQ) Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Quantization in Vector Databases: Product Quantization (PQ) &amp; Scalar Quantization (SQ)</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-sq8-product-quantization-engine">Python Implementation: SQ8 &amp; Product Quantization Engine</a></li>
                 <li><a href="#vector-quantization-gotchas-best-practices">Vector Quantization Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Storing and searching billion-scale vector collections presents a formidable RAM infrastructure bottleneck.</p>
+<p>Storing and searching billion-scale vector collections presents a formidable RAM infrastructure bottleneck <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Each $1536$-dimensional vector embedding represented as 32-bit single-precision floating-point numbers (<code>float32</code>) consumes $6,144$ bytes ($1536 \times 4$ bytes). Storing 100 million uncompressed vectors requires <strong>$614.4$ GB of high-speed RAM</strong>—excluding graph index overhead!</p>
 <p>At scale, keeping raw floating-point vectors in memory becomes financially unviable.</p>
 <p>To reduce RAM consumption by up to $64\times$ while maintaining high search accuracy, vector database engines (<strong>Faiss</strong>, <strong>Milvus</strong>, <strong>Qdrant</strong>, <strong>Pinecone</strong>) utilize <strong>Vector Quantization</strong>.</p>
@@ -126,20 +127,31 @@
 <p>How Product Quantization splits high-dimensional vectors into sub-vectors and encodes them into byte codes:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_RawFloat32Vector [&quot;Raw Float32 Vector (D = 1536 dims, 6144 bytes)&quot;]
-    V[Raw Vector: 1536 float32 values] --&gt;|Decompose into M=8 Sub-vectors| SV1[Sub-vector 1: 192 dims]
-    V --&gt; SV2[Sub-vector 2: 192 dims]
-    V --&gt; SV8[Sub-vector 8: 192 dims]
+    V[&quot;Raw Vector: 1536 float32 values&quot;] --&gt;|Decompose into M=8 Sub-vectors| SV1[&quot;Sub-vector 1: 192 dims&quot;]
+    V --&gt; SV2[&quot;Sub-vector 2: 192 dims&quot;]
+    V --&gt; SV8[&quot;Sub-vector 8: 192 dims&quot;]
   end
   
   subgraph SG2_SubSpaceK [&quot;Sub-space K-Means Codebooks (256 Centroids per Sub-space)&quot;]
-    SV1 --&gt;|Find Nearest Centroid| CB1[Codebook 1: Centroid ID #42]
-    SV2 --&gt;|Find Nearest Centroid| CB2[Codebook 2: Centroid ID #189]
-    SV8 --&gt;|Find Nearest Centroid| CB8[Codebook 8: Centroid ID #7]
+    SV1 --&gt;|Find Nearest Centroid| CB1[&quot;Codebook 1: Centroid ID #42&quot;]
+    SV2 --&gt;|Find Nearest Centroid| CB2[&quot;Codebook 2: Centroid ID #189&quot;]
+    SV8 --&gt;|Find Nearest Centroid| CB8[&quot;Codebook 8: Centroid ID #7&quot;]
   end
   
   subgraph SG3_CompressedByteCode [&quot;Compressed Byte Code Output (8 bytes total! 99.87% Memory Savings)&quot;]
-    CB1 &amp; CB2 &amp; CB8 --&gt;|Assemble Byte Code| Quantized[Quantized Byte Array: [42, 189, ..., 7]]
-  end</div>
+    CB1 &amp; CB2 &amp; CB8 --&gt;|Assemble Byte Code| Quantized[&quot;Quantized Byte Array: [42, 189, ..., 7&quot;]]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class V,CB2 blue
+class SV1,CB8 green
+class SV2,Quantized purple
+class SV8 yellow
+class CB1 red</div>
 <h3 id="core-quantization-techniques">Core Quantization Techniques</h3>
 <ol>
 <li><strong>Scalar Quantization (SQ8)</strong>: Quantizes each individual 32-bit float component $v_i$ independently into an 8-bit unsigned integer ($int8$). It computes the global minimum ($\min$) and maximum ($\max$) across vector dimensions:
@@ -287,8 +299,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Vector database deployments utilizing Product Quantization report:</p>
 <ul>
 <li><strong>Over 90% RAM Cost Reduction</strong>: Compressing 100M float32 vectors from $614\text{ GB}$ down to $25\text{ GB}$ allows hosting billion-scale vector indexes on modest single-node servers.</li>
-<li><strong>$5\times$ Faster Query Latencies</strong>: Smaller byte code sizes fit entirely within CPU L3 cache lines, eliminating RAM bus memory bandwidth bottlenecks during SIMD matrix evaluations.</li>
+<li><strong>$5\times$ Faster Query Latencies</strong>: Smaller byte code sizes fit entirely within CPU L3 cache lines, eliminating RAM bus memory bandwidth bottlenecks during SIMD matrix evaluations. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Lin, J., et al. (2024)</strong>. <em>AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</em>. MLSys. <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">https://arxiv.org/abs/2306.00978</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Frantar, E., et al. (2023)</strong>. <em>GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</em>. ICLR. <a href="https://arxiv.org/abs/2210.17323" target="_blank" rel="noopener">https://arxiv.org/abs/2210.17323</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Wang, H., et al. (2023)</strong>. <em>BitNet: Scaling 1-bit Transformers for Large Language Models</em>. arXiv. <a href="https://arxiv.org/abs/2310.11453" target="_blank" rel="noopener">https://arxiv.org/abs/2310.11453</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -325,6 +348,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-sq8-product-quantization-engine" class="toc-link">Python Implementation: SQ8 &amp; Product Quantization Engine</a></li>
               <li class="toc-item toc-h2"><a href="#vector-quantization-gotchas-best-practices" class="toc-link">Vector Quantization Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

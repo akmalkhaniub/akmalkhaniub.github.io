@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/product-quantization-scalar-quantization-large-vector-indices.html">
   <meta property="og:title" content="Product Quantization (PQ) &amp; Scalar Quantization (SQ) for Large Vector Indices">
   <meta property="og:description" content="Reducing memory footprints of high-dimensional vector indices: implementing Scalar Quantization (SQ8), training Product Quantization (PQ) codebooks, and running Asymmetric Distance Computations.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/product-quantization-scalar-quantization-large-vector-indices.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-11">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Product Quantization (PQ) &amp; Scalar Quantization (SQ) for Large Vector Indices">
   <meta name="twitter:description" content="Reducing memory footprints of high-dimensional vector indices: implementing Scalar Quantization (SQ8), training Product Quantization (PQ) codebooks, and running Asymmetric Distance Computations.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/product-quantization-scalar-quantization-large-vector-indices.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Product Quantization (PQ) & Scalar Quantization (SQ) for Large Vector Indices",
   "description": "Reducing memory footprints of high-dimensional vector indices: implementing Scalar Quantization (SQ8), training Product Quantization (PQ) codebooks, and running Asymmetric Distance Computations.",
   "url": "https://akmalkhaniub.github.io/blog/product-quantization-scalar-quantization-large-vector-indices.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/product-quantization-scalar-quantization-large-vector-indices.jpg",
   "datePublished": "2026-08-11",
   "keywords": "Vector Database, Quantization, Compression, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Product Quantization (PQ) &amp; Scalar Quantization (SQ) for Large Vector Indices Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/product-quantization-scalar-quantization-large-vector-indices.jpg" class="article-cover-img" alt="Product Quantization (PQ) &amp; Scalar Quantization (SQ) for Large Vector Indices Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Product Quantization (PQ) &amp; Scalar Quantization (SQ) for Large Vector Indices</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-product-quantization-encoder">Python Implementation: Product Quantization Encoder</a></li>
                 <li><a href="#quantization-gotchas-guardrails">Quantization Gotchas &amp; Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Storing raw vectors in memory becomes cost-prohibitive at scale. For example, a dataset of 100 million vectors with 1536 dimensions stored as 32-bit floating points (FP32) requires approximately 614 GB of raw RAM—excluding HNSW graph indices, which double that memory footprint.</p>
+<p>Storing raw vectors in memory becomes cost-prohibitive at scale. For example, a dataset of 100 million vectors with 1536 dimensions stored as 32-bit floating points (FP32) requires approximately 614 GB of raw RAM—excluding HNSW graph indices, which double that memory footprint <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>To scale search systems efficiently, vector databases implement lossy compression techniques like <strong>Scalar Quantization (SQ)</strong> and <strong>Product Quantization (PQ)</strong>.</p>
 <p>By converting floating-point vectors into compact quantized representations, databases can compress indices by up to 95%, trading a small drop in search accuracy for massive hardware cost savings.</p>
 <p>This article details the mechanics of SQ and PQ compression algorithms.</p>
@@ -123,18 +124,29 @@
 <h2 id="product-quantization-compression-flow">Product Quantization Compression Flow</h2>
 <p>Product Quantization splits vectors into sub-spaces and encodes them using codebook cluster IDs:</p>
 <div class="mermaid">flowchart TD
-  A[Raw Vector: 1024-dim FP32 - 4096 Bytes] --&gt; B[Split into 8 Sub-Vectors of 128-dim]
+  A[&quot;Raw Vector: 1024-dim FP32 - 4096 Bytes&quot;] --&gt; B[&quot;Split into 8 Sub-Vectors of 128-dim&quot;]
   
   subgraph SG1_ProductQuantizationEncoding [&quot;Product Quantization Encoding&quot;]
-    B --&gt; C[Sub-Vector 1]
-    B --&gt; D[Sub-Vector 8]
+    B --&gt; C[&quot;Sub-Vector 1&quot;]
+    B --&gt; D[&quot;Sub-Vector 8&quot;]
     
-    C --&gt;|Assign Closest Centroid ID| E[Centroid 42: 1 Byte]
-    D --&gt;|Assign Closest Centroid ID| F[Centroid 192: 1 Byte]
+    C --&gt;|Assign Closest Centroid ID| E[&quot;Centroid 42: 1 Byte&quot;]
+    D --&gt;|Assign Closest Centroid ID| F[&quot;Centroid 192: 1 Byte&quot;]
   end
   
-  E --&gt; G[Quantized Vector: 8 Bytes total - 99.8% Compression]
-  F --&gt; G</div>
+  E --&gt; G[&quot;Quantized Vector: 8 Bytes total - 99.8% Compression&quot;]
+  F --&gt; G
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C purple
+class D yellow
+class E red</div>
 <h3 id="quantization-strategies">Quantization Strategies</h3>
 <ol>
 <li><strong>Scalar Quantization (SQ8)</strong>: Standardizes and clips float values to fit within a dynamic range of 256 values, mapping them to 8-bit integers (<code>INT8</code>). This cuts memory consumption by 75% while maintaining high recall (often $&gt;98%$).</li>
@@ -254,8 +266,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams deploying quantized index partitions report:</p>
 <ul>
 <li><strong>90% Infrastructure Cost Reductions</strong>: Compressing vector indices enables hosting a 1-billion vector dataset on a fraction of the hardware, avoiding massive RAM costs.</li>
-<li><strong>Stable Sub-10ms Query Latencies</strong>: Smaller memory footprint increases CPU L3 cache hits, accelerating asymmetric lookup speed.</li>
+<li><strong>Stable Sub-10ms Query Latencies</strong>: Smaller memory footprint increases CPU L3 cache hits, accelerating asymmetric lookup speed. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Lin, J., et al. (2024)</strong>. <em>AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</em>. MLSys. <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">https://arxiv.org/abs/2306.00978</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Frantar, E., et al. (2023)</strong>. <em>GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</em>. ICLR. <a href="https://arxiv.org/abs/2210.17323" target="_blank" rel="noopener">https://arxiv.org/abs/2210.17323</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Wang, H., et al. (2023)</strong>. <em>BitNet: Scaling 1-bit Transformers for Large Language Models</em>. arXiv. <a href="https://arxiv.org/abs/2310.11453" target="_blank" rel="noopener">https://arxiv.org/abs/2310.11453</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -292,6 +315,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-product-quantization-encoder" class="toc-link">Python Implementation: Product Quantization Encoder</a></li>
               <li class="toc-item toc-h2"><a href="#quantization-gotchas-guardrails" class="toc-link">Quantization Gotchas &amp; Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

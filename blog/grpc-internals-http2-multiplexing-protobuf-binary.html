@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/grpc-internals-http2-multiplexing-protobuf-binary.html">
   <meta property="og:title" content="gRPC Internals: HTTP/2 Multiplexing, Protobuf Binary Wire Format &amp; Streaming RPCs">
   <meta property="og:description" content="High-throughput inter-service RPCs: implementing HTTP/2 binary stream multiplexing, Protobuf Varint encoding, binary field tags, and full-duplex streaming RPC modes.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/grpc-internals-http2-multiplexing-protobuf-binary.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="gRPC Internals: HTTP/2 Multiplexing, Protobuf Binary Wire Format &amp; Streaming RPCs">
   <meta name="twitter:description" content="High-throughput inter-service RPCs: implementing HTTP/2 binary stream multiplexing, Protobuf Varint encoding, binary field tags, and full-duplex streaming RPC modes.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/grpc-internals-http2-multiplexing-protobuf-binary.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "gRPC Internals: HTTP/2 Multiplexing, Protobuf Binary Wire Format & Streaming RPCs",
   "description": "High-throughput inter-service RPCs: implementing HTTP/2 binary stream multiplexing, Protobuf Varint encoding, binary field tags, and full-duplex streaming RPC modes.",
   "url": "https://akmalkhaniub.github.io/blog/grpc-internals-http2-multiplexing-protobuf-binary.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/grpc-internals-http2-multiplexing-protobuf-binary.jpg",
   "datePublished": "2026-08-18",
   "keywords": "gRPC, HTTP2, Protobuf, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="gRPC Internals: HTTP/2 Multiplexing, Protobuf Binary Wire Format &amp; Streaming RPCs Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/grpc-internals-http2-multiplexing-protobuf-binary.jpg" class="article-cover-img" alt="gRPC Internals: HTTP/2 Multiplexing, Protobuf Binary Wire Format &amp; Streaming RPCs Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">gRPC Internals: HTTP/2 Multiplexing, Protobuf Binary Wire Format &amp; Streaming RPCs</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-protobuf-varint-http2-frame-simulator">Python Implementation: Protobuf Varint &amp; HTTP/2 Frame Simulator</a></li>
                 <li><a href="#grpc-gotchas-best-practices">gRPC Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-concurrency cloud-native microservice architectures (<strong>Google</strong>, <strong>Netflix</strong>, <strong>Uber</strong>, <strong>Lyft</strong>), thousands of backend services communicate millions of times per second.</p>
+<p>In high-concurrency cloud-native microservice architectures (<strong>Google</strong>, <strong>Netflix</strong>, <strong>Uber</strong>, <strong>Lyft</strong>), thousands of backend services communicate millions of times per second <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Traditional <strong>REST APIs over HTTP/1.1</strong> introduce two major performance bottlenecks:</p>
 <ol>
 <li><strong>Plaintext JSON Overhead</strong>: Serializing and parsing human-readable JSON strings consumes significant CPU cycles and inflates wire payload sizes.</li>
@@ -129,21 +130,32 @@
 <p>How gRPC multiplexes multiple concurrent streams over a single TCP connection using Protobuf binary frames:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_ClientServiceGrpc [&quot;Client Service (gRPC Stub)&quot;]
-    Client[Client App] --&gt;|Call Unary / Streaming RPC| Stub[Protobuf Generated Stub]
-    Stub --&gt;|Encode to Binary Payload - Varint + Field Tags| Encoder[Protobuf Binary Encoder]
+    Client[&quot;Client App&quot;] --&gt;|Call Unary / Streaming RPC| Stub[&quot;Protobuf Generated Stub&quot;]
+    Stub --&gt;|Encode to Binary Payload - Varint + Field Tags| Encoder[&quot;Protobuf Binary Encoder&quot;]
   end
   
   subgraph SG2_Http2Transport [&quot;HTTP/2 Transport Layer (Single Persistent TCP Connection)&quot;]
-    Encoder --&gt;|Wrap in HTTP/2 DATA Frame| Stream1[Stream ID 1: HEADERS + DATA (RPC Call A)]
-    Encoder --&gt;|Wrap in HTTP/2 DATA Frame| Stream3[Stream ID 3: HEADERS + DATA (RPC Call B)]
+    Encoder --&gt;|Wrap in HTTP/2 DATA Frame| Stream1[&quot;Stream ID 1: HEADERS + DATA (RPC Call A)&quot;]
+    Encoder --&gt;|Wrap in HTTP/2 DATA Frame| Stream3[&quot;Stream ID 3: HEADERS + DATA (RPC Call B)&quot;]
     
-    Stream1 &amp; Stream3 --&gt; TCP[Single TCP Connection Socket]
+    Stream1 &amp; Stream3 --&gt; TCP[&quot;Single TCP Connection Socket&quot;]
   end
   
   subgraph SG3_ServerServiceGrpc [&quot;Server Service (gRPC Handler)&quot;]
-    TCP --&gt;|HTTP/2 Frame Demultiplexing| Server[Server gRPC Daemon]
-    Server --&gt;|Decode Protobuf Payload| Handler[Execute Microservice Logic]
-  end</div>
+    TCP --&gt;|HTTP/2 Frame Demultiplexing| Server[&quot;Server gRPC Daemon&quot;]
+    Server --&gt;|Decode Protobuf Payload| Handler[&quot;Execute Microservice Logic&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client,TCP blue
+class Stub,Server green
+class Encoder,Handler purple
+class Stream1 yellow
+class Stream3 red</div>
 <h3 id="core-grpc-components-mechanics">Core gRPC Components &amp; Mechanics</h3>
 <ol>
 <li><strong>HTTP/2 Transport &amp; Binary Framing</strong>:<ul>
@@ -299,8 +311,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Microservice architectures transitioning to gRPC (such as <strong>Netflix</strong>, <strong>Uber</strong>, and <strong>Salesforce</strong>) report:</p>
 <ul>
 <li><strong>Over $70%$ Reduction in Network Payload Size</strong>: Protobuf binary Varint encoding slashes JSON wire payload bloat.</li>
-<li><strong>$10\times$ Higher Inter-Service RPC Throughput</strong>: HTTP/2 multiplexing handles thousands of parallel RPCs over single persistent TCP connections without connection creation overhead.</li>
+<li><strong>$10\times$ Higher Inter-Service RPC Throughput</strong>: HTTP/2 multiplexing handles thousands of parallel RPCs over single persistent TCP connections without connection creation overhead. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Belshe, M., Peon, R., &amp; Thomson, M. (2015)</strong>. <em>Hypertext Transfer Protocol Version 2 (HTTP/2)</em>. RFC 7540. <a href="https://www.rfc-editor.org/rfc/rfc7540" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7540</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>gRPC Authors (2024)</strong>. <em>gRPC Documentation</em>. grpc.io. <a href="https://grpc.io/docs/" target="_blank" rel="noopener">https://grpc.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Google (2024)</strong>. <em>Protocol Buffers Language Guide</em>. protobuf.dev. <a href="https://protobuf.dev/programming-guides/proto3/" target="_blank" rel="noopener">https://protobuf.dev/programming-guides/proto3/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -337,6 +357,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-protobuf-varint-http2-frame-simulator" class="toc-link">Python Implementation: Protobuf Varint &amp; HTTP/2 Frame Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#grpc-gotchas-best-practices" class="toc-link">gRPC Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

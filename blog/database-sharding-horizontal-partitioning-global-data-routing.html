@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/database-sharding-horizontal-partitioning-global-data-routing.html">
   <meta property="og:title" content="Database Sharding, Horizontal Partitioning &amp; Global Data Routing">
   <meta property="og:description" content="Designing scale-out database architectures: implementing sharding key selection, MurmurHash3 horizontal partitioning, Global Data Routers, and parallel Scatter-Gather cross-shard query engines.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/database-sharding-horizontal-partitioning-global-data-routing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-16">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Database Sharding, Horizontal Partitioning &amp; Global Data Routing">
   <meta name="twitter:description" content="Designing scale-out database architectures: implementing sharding key selection, MurmurHash3 horizontal partitioning, Global Data Routers, and parallel Scatter-Gather cross-shard query engines.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/database-sharding-horizontal-partitioning-global-data-routing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Database Sharding, Horizontal Partitioning & Global Data Routing",
   "description": "Designing scale-out database architectures: implementing sharding key selection, MurmurHash3 horizontal partitioning, Global Data Routers, and parallel Scatter-Gather cross-shard query engines.",
   "url": "https://akmalkhaniub.github.io/blog/database-sharding-horizontal-partitioning-global-data-routing.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/database-sharding-horizontal-partitioning-global-data-routing.jpg",
   "datePublished": "2026-08-16",
   "keywords": "Backend Architecture, Database Sharding, Distributed Systems, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Database Sharding, Horizontal Partitioning &amp; Global Data Routing Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/database-sharding-horizontal-partitioning-global-data-routing.jpg" class="article-cover-img" alt="Database Sharding, Horizontal Partitioning &amp; Global Data Routing Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Database Sharding, Horizontal Partitioning &amp; Global Data Routing</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-global-data-router-scatter-gather-engine">Python Implementation: Global Data Router &amp; Scatter-Gather Engine</a></li>
                 <li><a href="#sharding-gotchas-guardrails">Sharding Gotchas &amp; Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When a web application scales from thousands to tens of millions of active users, a single monolithic database instance—no matter how large the underlying cloud hardware—inevitably hits physical scaling limits. Read replicas can offload query volume, but all write transactions must still pass through a single primary database node, creating write bottleneck saturation.</p>
+<p>When a web application scales from thousands to tens of millions of active users, a single monolithic database instance—no matter how large the underlying cloud hardware—inevitably hits physical scaling limits <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Read replicas can offload query volume, but all write transactions must still pass through a single primary database node, creating write bottleneck saturation.</p>
 <p>To achieve virtually unlimited database scale, software architects implement <strong>Database Sharding</strong> (Horizontal Partitioning).</p>
 <p>Sharding splits a massive database table across multiple independent physical database instances (<strong>shards</strong>). A <strong>Global Data Router</strong> inspects incoming queries and routes transactions to the exact shard instance hosting the target record.</p>
 <p>This article details how to design and build a sharded database router with scatter-gather query capabilities.</p>
@@ -123,11 +124,11 @@
 <h2 id="sharded-database-data-routing-architecture">Sharded Database Data Routing Architecture</h2>
 <p>How the Global Data Router intercepts application queries and routes transactions across isolated shard nodes:</p>
 <div class="mermaid">flowchart TD
-  A[Client API Request] --&gt; B[Global Data Router]
+  A[&quot;Client API Request&quot;] --&gt; B[&quot;Global Data Router&quot;]
   
   subgraph SG1_GlobalDataRouter [&quot;Global Data Router &amp; Shard Directory&quot;]
     B --&gt;|Inspect Shard Key - user_id| C{Routing Engine}
-    C --&gt;|Hash Shard Key - MurmurHash3| D[Shard Directory / Hash Ring]
+    C --&gt;|Hash Shard Key - MurmurHash3| D[&quot;Shard Directory / Hash Ring&quot;]
   end
   
   subgraph SG2_DistributedShardCluster [&quot;Distributed Shard Cluster&quot;]
@@ -137,12 +138,23 @@
   end
   
   subgraph SG3_ScatterGatherCross [&quot;Scatter-Gather Cross-Shard Engine&quot;]
-    B --&gt;|Cross-Shard Query - List High-Spenders| H[Scatter-Gather Worker Pool]
+    B --&gt;|Cross-Shard Query - List High-Spenders| H[&quot;Scatter-Gather Worker Pool&quot;]
     H --&gt;|Parallel Execution| E
     H --&gt;|Parallel Execution| F
     H --&gt;|Parallel Execution| G
-    H --&gt;|Merge &amp; Sort Results| I[Return Consolidated Response]
-  end</div>
+    H --&gt;|Merge &amp; Sort Results| I[&quot;Return Consolidated Response&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class D purple
+class H yellow
+class I red</div>
 <h3 id="core-sharding-mechanics">Core Sharding Mechanics</h3>
 <ol>
 <li><strong>Sharding Key Selection</strong>: The most critical architectural choice in database sharding. Selecting a high-cardinality key (such as <code>user_id</code> or <code>tenant_id</code>) ensures uniform data distribution and avoids hotspot shards.</li>
@@ -283,8 +295,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams implementing database sharding report:</p>
 <ul>
 <li><strong>Linear Scale-Out Capability</strong>: Adding physical database shards increases write throughput linearly without hitting single-node hardware ceilings.</li>
-<li><strong>Blast Radius Isolation</strong>: If a physical database shard crashes, only a fraction ($1/N$) of users are impacted, keeping the remaining system operational.</li>
+<li><strong>Blast Radius Isolation</strong>: If a physical database shard crashes, only a fraction ($1/N$) of users are impacted, keeping the remaining system operational. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Reed, D. P. (1978)</strong>. <em>Naming and Synchronization in a Decentralized Computer System</em>. MIT PhD Thesis. <a href="https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf" target="_blank" rel="noopener">https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Bayer, R., &amp; McCreight, E. (1972)</strong>. <em>Organization and Maintenance of Large Ordered Indexes</em>. Acta Informatica. <a href="https://doi.org/10.1007/BF00288683" target="_blank" rel="noopener">https://doi.org/10.1007/BF00288683</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -321,6 +341,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-global-data-router-scatter-gather-engine" class="toc-link">Python Implementation: Global Data Router &amp; Scatter-Gather Engine</a></li>
               <li class="toc-item toc-h2"><a href="#sharding-gotchas-guardrails" class="toc-link">Sharding Gotchas &amp; Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -1,6 +1,6 @@
 # Local-First Architecture: CRDTs (Conflict-Free Replicated Data Types) vs Operational Transformation (OT)
 
-For two decades, modern web applications were architected around a single, centralized dogma: **the cloud server is the single source of truth**.
+For two decades, modern web applications were architected around a single, centralized dogma: **the cloud server is the single source of truth** [1].
 
 In traditional cloud apps (early Google Docs, Jira, Salesforce):
 * Every keystroke, mouse click, and state change requires a network round-trip to a centralized PostgreSQL or Redis instance.
@@ -15,18 +15,29 @@ By keeping data stored locally on device and synchronizing changes asynchronousl
 flowchart TD
   subgraph SG1_CentralizedCloudVs ["Centralized Cloud vs Local-First CRDTs"]
     subgraph SG2_1CentralizedCloud ["1. Centralized Cloud / Operational Transformation (OT)"]
-      ClientA[Client A] -->|100ms RTT| CentralServer[(Centralized Server / DB Lock)]
-      ClientB[Client B] -->|100ms RTT| CentralServer
-      Note1[Offline = Broken App]
+      ClientA["Client A"] -->|100ms RTT| CentralServer[(Centralized Server / DB Lock)]
+      ClientB["Client B"] -->|100ms RTT| CentralServer
+      Note1["Offline = Broken App"]
     end
 
     subgraph SG3_2LocalFirst ["2. Local-First CRDTs (Peer-to-Peer Convergence)"]
-      NodeA[Client A: Local SQLite / IndexedDB (0ms)] <-->|Async WebRTC / WebSocket Sync| NodeB[Client B: Local SQLite / IndexedDB (0ms)]
+      NodeA["Client A: Local SQLite / IndexedDB (0ms)"] <-->|Async WebRTC / WebSocket Sync| NodeB["Client B: Local SQLite / IndexedDB (0ms)"]
       NodeA --> MathSync["Join-Semilattice Merge (Commutative, Associative, Idempotent)"]
       NodeB --> MathSync
-      MathSync --> EqualState[Provably Identical Converged State!]
+      MathSync --> EqualState["Provably Identical Converged State!"]
     end
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ClientA,MathSync blue
+class ClientB,EqualState green
+class Note1 purple
+class NodeA yellow
+class NodeB red
 ```
 
 ---
@@ -86,6 +97,16 @@ flowchart TD
     
     MergeOp --> StateFinal["Converged State: {v1, v2, v3} (Equal on ALL Devices)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class StateA blue
+class StateB green
+class MergeOp purple
+class StateFinal yellow
 ```
 
 ---
@@ -232,4 +253,13 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 Local-First is not merely an optimization—**it is the future of collaborative software engineering**.
 
-By replacing fragile client-server request/response loops with **Conflict-Free Replicated Data Types**, developers deliver consumer software that feels instantaneous, operates reliably anywhere on Earth, and guarantees flawless mathematical data convergence.
+By replacing fragile client-server request/response loops with **Conflict-Free Replicated Data Types**, developers deliver consumer software that feels instantaneous, operates reliably anywhere on Earth, and guarantees flawless mathematical data convergence. [2]
+
+## References & Further Reading
+
+1. **Shapiro, M., Preguiça, N., Baquero, C., & Zawirski, M. (2011)**. *Conflict-free Replicated Data Types*. SSS. [https://hal.inria.fr/inria-00609399v1/document](https://hal.inria.fr/inria-00609399v1/document)
+2. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+3. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

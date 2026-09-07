@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-lock-managers-redlock-controversy-fencing-tokens.html">
   <meta property="og:title" content="Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks">
   <meta property="og:description" content="Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-lock-managers-redlock-controversy-fencing-tokens.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks">
   <meta name="twitter:description" content="Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-lock-managers-redlock-controversy-fencing-tokens.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, & Postgres Advisory Locks",
   "description": "Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-lock-managers-redlock-controversy-fencing-tokens.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distributed-lock-managers-redlock-controversy-fencing-tokens.jpg",
   "datePublished": "2026-09-02",
   "keywords": "Distributed Systems, Distributed Locks, Redis, Redlock, PostgreSQL, System Design",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distributed-lock-managers-redlock-controversy-fencing-tokens.jpg" class="article-cover-img" alt="Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, &amp; Postgres Advisory Locks</h1>
             <div class="article-meta">
@@ -120,9 +120,10 @@
                 <li><a href="#python-implementation-fencing-token-storage-engine">Python Implementation: Fencing Token Storage Engine</a></li>
                 <li><a href="#architectural-comparison-matrix">Architectural Comparison Matrix</a></li>
                 <li><a href="#the-distributed-systems-truth">The Distributed Systems Truth</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In February 2016, a debate broke out in the distributed systems community that should be required reading for every software engineer who has ever written code touching a shared database.</p>
+<p>In February 2016, a debate broke out in the distributed systems community that should be required reading for every software engineer who has ever written code touching a shared database <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>On one side was Salvatore Sanfilippo, known to the world as <strong>Antirez</strong>, the brilliant Italian creator of Redis. On the other was <strong>Martin Kleppmann</strong>, a distributed systems researcher at the University of Cambridge and author of <em>Designing Data-Intensive Applications</em>.</p>
 <p>At issue was <strong>Redlock</strong>: an algorithm proposed by Antirez to provide fault-tolerant distributed locking across multiple Redis instances without requiring consensus protocols like Paxos or Raft.</p>
 <p>Antirez argued that by acquiring a lock across a majority of independent Redis nodes with a time-to-live (TTL) expiration lease, engineers could safely coordinate distributed access to mission-critical resources.</p>
@@ -138,7 +139,18 @@
     GrantB --&gt; ClientB[&quot;Client 2: Writes to Shared Storage&quot;]
     GC --&gt; Wakeup[&quot;Client 1 Wakes Up at t=12s (Believes lease is still valid!)&quot;]
     Wakeup --&gt; Overwrite[&quot;Client 1 Overwrites Storage ( DATA CORRUPTION)&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ClientA,Wakeup blue
+class GC,Overwrite green
+class Expire purple
+class GrantB yellow
+class ClientB red</div>
 <hr>
 <h2 id="1-why-distributed-locking-is-fundamentally-difficult">1. Why Distributed Locking Is Fundamentally Difficult</h2>
 <p>Why can a distributed lock not be implemented simply by setting a key in Redis with a TTL (<code>SET resource_id client_uuid NX PX 10000</code>)?</p>
@@ -338,7 +350,19 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="the-distributed-systems-truth">The Distributed Systems Truth</h2>
 <p>A distributed lock cannot guarantee correctness in isolation. </p>
-<p>True safety in distributed architectures is an <strong>end-to-end contract between the lock coordinator and the storage layer</strong>. If your storage layer blindly accepts writes without validating version counters or fencing tokens, a single pause in a garbage collection thread will eventually corrupt your data.</p>
+<p>True safety in distributed architectures is an <strong>end-to-end contract between the lock coordinator and the storage layer</strong>. If your storage layer blindly accepts writes without validating version counters or fencing tokens, a single pause in a garbage collection thread will eventually corrupt your data. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (2001)</strong>. <em>Paxos Made Simple</em>. ACM SIGACT News. <a href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/paxos-simple.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Lamport, L. (1998)</strong>. <em>The Part-Time Parliament</em>. ACM TOCS. <a href="https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -382,6 +406,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-fencing-token-storage-engine" class="toc-link">Python Implementation: Fencing Token Storage Engine</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-comparison-matrix" class="toc-link">Architectural Comparison Matrix</a></li>
               <li class="toc-item toc-h2"><a href="#the-distributed-systems-truth" class="toc-link">The Distributed Systems Truth</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

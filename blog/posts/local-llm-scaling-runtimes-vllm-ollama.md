@@ -8,7 +8,7 @@
 
 ## The Economics of High-Volume Token Processing
 
-When building interactive applications (like chat interfaces or secure code executors), we require the highest possible reasoning capabilities. For these tasks, querying a cloud API makes sense.
+When building interactive applications (like chat interfaces or secure code executors), we require the highest possible reasoning capabilities [1]. For these tasks, querying a cloud API makes sense.
 
 However, for bulk offline data tasks:
 1.  **Batch Ingestion**: Parsing 10,000 PDF invoices, extracting key-value data, and indexing them.
@@ -27,17 +27,17 @@ A failover gateway routes inbound requests to cloud APIs based on priority, auto
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 flowchart TD
-    A[Incoming Task Request] --> B{Check Task Priority}
+    A["Incoming Task Request"] --> B{Check Task Priority}
     
-    B -->|Batch / Low-Priority| C[Local Inference Cluster]
-    B -->|High-Priority / User| D[Cloud API Gate: Claude]
+    B -->|Batch / Low-Priority| C["Local Inference Cluster"]
+    B -->|High-Priority / User| D["Cloud API Gate: Claude"]
     
-    C -->|vLLM / Ollama Node| E[Local GPU Cluster]
+    C -->|vLLM / Ollama Node| E["Local GPU Cluster"]
     
-    D -->|Success| F[Return Response]
+    D -->|Success| F["Return Response"]
     D -->|Timeout / Rate Limit 429| G{Fallback Activated?}
     G -->|Yes| C
-    G -->|No| H[Return Gateway Error]
+    G -->|No| H["Return Gateway Error"]
     
     E --> F
 
@@ -47,6 +47,17 @@ flowchart TD
     style D fill:#111827,stroke:#0ea5e9,stroke-width:2px
     style E fill:#0ea5e9,stroke:#0f172a,stroke-width:2px,color:#0f172a
     style F fill:#10b981,stroke:#0f172a,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class C green
+class D purple
+class E yellow
+class F red
 ```
 
 ### Local Runtimes Comparison

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/realtime-agent-protocols-websockets-sse-grpc-streams.html">
   <meta property="og:title" content="Real-Time Agent Protocols: WebSockets vs. SSE vs. gRPC Streams">
   <meta property="og:description" content="Comparing streaming protocol architectures for agentic applications: evaluating HTTP Server-Sent Events (SSE), full-duplex WebSockets, and bidirectional gRPC streams.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/realtime-agent-protocols-websockets-sse-grpc-streams.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Real-Time Agent Protocols: WebSockets vs. SSE vs. gRPC Streams">
   <meta name="twitter:description" content="Comparing streaming protocol architectures for agentic applications: evaluating HTTP Server-Sent Events (SSE), full-duplex WebSockets, and bidirectional gRPC streams.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/realtime-agent-protocols-websockets-sse-grpc-streams.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Real-Time Agent Protocols: WebSockets vs. SSE vs. gRPC Streams",
   "description": "Comparing streaming protocol architectures for agentic applications: evaluating HTTP Server-Sent Events (SSE), full-duplex WebSockets, and bidirectional gRPC streams.",
   "url": "https://akmalkhaniub.github.io/blog/realtime-agent-protocols-websockets-sse-grpc-streams.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/realtime-agent-protocols-websockets-sse-grpc-streams.jpg",
   "datePublished": "2026-08-02",
   "keywords": "Real-Time, WebSockets, SSE, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Real-Time Agent Protocols: WebSockets vs. SSE vs. gRPC Streams Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/realtime-agent-protocols-websockets-sse-grpc-streams.jpg" class="article-cover-img" alt="Real-Time Agent Protocols: WebSockets vs. SSE vs. gRPC Streams Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Real-Time Agent Protocols: WebSockets vs. SSE vs. gRPC Streams</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-hybrid-fastapi-sse-websocket-server">Python Implementation: Hybrid FastAPI SSE &amp; WebSocket Server</a></li>
                 <li><a href="#important-protocol-design-guardrails">Important Protocol Design Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When building modern agentic software platforms, legacy request-response HTTP architectures quickly become a primary bottleneck. A multi-step autonomous subagent execution can take anywhere from 10 seconds to several minutes to complete a complex task.</p>
+<p>When building modern agentic software platforms, legacy request-response HTTP architectures quickly become a primary bottleneck <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. A multi-step autonomous subagent execution can take anywhere from 10 seconds to several minutes to complete a complex task.</p>
 <p>Relying on traditional synchronous HTTP <code>POST</code> requests leads to <strong>connection timeouts</strong>, <strong>lack of user feedback</strong>, and <strong>poor operational visibility</strong>. Users and orchestrators need real-time, step-by-step trajectory streaming to inspect reasoning logs, monitor tool executions, and intervene when human approval is required.</p>
 <p>To build responsive agentic platforms, engineering teams choose between three primary streaming protocols: <strong>Server-Sent Events (SSE)</strong>, <strong>WebSockets (WS)</strong>, and <strong>gRPC Streams</strong>. </p>
 <p>This article analyzes the technical trade-offs of each protocol and details how to implement a hybrid real-time agent server.</p>
@@ -123,22 +124,33 @@
 <h2 id="real-time-streaming-architecture-matrix">Real-Time Streaming Architecture Matrix</h2>
 <p>Selecting the right streaming protocol depends on the directional requirements and client infrastructure of your agentic system:</p>
 <div class="mermaid">flowchart TD
-  A[Agent Server Event Core] --&gt; B{Client &amp; Topology Type?}
+  A[&quot;Agent Server Event Core&quot;] --&gt; B{Client &amp; Topology Type?}
   
   subgraph SG1_ServerSentEvents [&quot;Server-Sent Events SSE&quot;]
-    B --&gt;|Browser UI Stream - Read-Only| C[HTTP/2 SSE Endpoint]
-    C --&gt;|Unidirectional Token Stream| D[Web Dashboard / Frontend UI]
+    B --&gt;|Browser UI Stream - Read-Only| C[&quot;HTTP/2 SSE Endpoint&quot;]
+    C --&gt;|Unidirectional Token Stream| D[&quot;Web Dashboard / Frontend UI&quot;]
   end
   
   subgraph SG2_FullDuplexWebsockets [&quot;Full-Duplex WebSockets&quot;]
-    B --&gt;|Interactive Human-in-the-Loop| E[WebSocket Endpoint]
-    E &lt;--&gt;|Bidirectional Messaging &amp; Approvals| F[Interactive Client Session]
+    B --&gt;|Interactive Human-in-the-Loop| E[&quot;WebSocket Endpoint&quot;]
+    E &lt;--&gt;|Bidirectional Messaging &amp; Approvals| F[&quot;Interactive Client Session&quot;]
   end
   
   subgraph SG3_GrpcBinaryStreaming [&quot;gRPC Binary Streaming&quot;]
-    B --&gt;|Worker Swarm Inter-Agent IPC| G[gRPC HTTP/2 Protobuf Stream]
-    G &lt;--&gt;|Low Latency Binary Protocol| H[Microservice Worker Nodes]
-  end</div>
+    B --&gt;|Worker Swarm Inter-Agent IPC| G[&quot;gRPC HTTP/2 Protobuf Stream&quot;]
+    G &lt;--&gt;|Low Latency Binary Protocol| H[&quot;Microservice Worker Nodes&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class C,H green
+class D purple
+class E yellow
+class F red</div>
 <h3 id="protocol-comparison-matrix">Protocol Comparison Matrix</h3>
 <table>
 <thead>
@@ -284,8 +296,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams adopting hybrid real-time agent protocols report:</p>
 <ul>
 <li><strong>Zero HTTP Connection Timeouts</strong>: SSE and WebSockets eliminate 100% of 504 Gateway Timeouts during multi-minute subagent runs.</li>
-<li><strong>Superior User UX</strong>: Real-time trajectory streaming provides instant visual feedback to users, increasing developer trust in autonomous tool calls.</li>
+<li><strong>Superior User UX</strong>: Real-time trajectory streaming provides instant visual feedback to users, increasing developer trust in autonomous tool calls. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Belshe, M., Peon, R., &amp; Thomson, M. (2015)</strong>. <em>Hypertext Transfer Protocol Version 2 (HTTP/2)</em>. RFC 7540. <a href="https://www.rfc-editor.org/rfc/rfc7540" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7540</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>gRPC Authors (2024)</strong>. <em>gRPC Documentation</em>. grpc.io. <a href="https://grpc.io/docs/" target="_blank" rel="noopener">https://grpc.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Google (2024)</strong>. <em>Protocol Buffers Language Guide</em>. protobuf.dev. <a href="https://protobuf.dev/programming-guides/proto3/" target="_blank" rel="noopener">https://protobuf.dev/programming-guides/proto3/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -322,6 +346,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-hybrid-fastapi-sse-websocket-server" class="toc-link">Python Implementation: Hybrid FastAPI SSE &amp; WebSocket Server</a></li>
               <li class="toc-item toc-h2"><a href="#important-protocol-design-guardrails" class="toc-link">Important Protocol Design Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/cell-based-architecture-aws-stripe-slack-blast-radius-mitigation.html">
   <meta property="og:title" content="Cell-Based Architecture: How AWS, Stripe, and Slack Bound Blast Radiuses for 99.999% Availability">
   <meta property="og:description" content="How hyper-scale cloud platforms eliminate shared-fate outages: dividing monoliths into independent isolated cells, stateless thin cell routing, capping failure blast radiuses to 5%, and zero-downtime cell evacuation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/cell-based-architecture-aws-stripe-slack-blast-radius-mitigation.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Cell-Based Architecture: How AWS, Stripe, and Slack Bound Blast Radiuses for 99.999% Availability">
   <meta name="twitter:description" content="How hyper-scale cloud platforms eliminate shared-fate outages: dividing monoliths into independent isolated cells, stateless thin cell routing, capping failure blast radiuses to 5%, and zero-downtime cell evacuation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/cell-based-architecture-aws-stripe-slack-blast-radius-mitigation.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Cell-Based Architecture: How AWS, Stripe, and Slack Bound Blast Radiuses for 99.999% Availability",
   "description": "How hyper-scale cloud platforms eliminate shared-fate outages: dividing monoliths into independent isolated cells, stateless thin cell routing, capping failure blast radiuses to 5%, and zero-downtime cell evacuation.",
   "url": "https://akmalkhaniub.github.io/blog/cell-based-architecture-aws-stripe-slack-blast-radius-mitigation.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/cell-based-architecture-aws-stripe-slack-blast-radius-mitigation.jpg",
   "datePublished": "2026-09-02",
   "keywords": "Cloud Architecture, System Design, High Availability, AWS, Cell-Based, Reliability",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Cell-Based Architecture: How AWS, Stripe, and Slack Bound Blast Radiuses for 99.999% Availability Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/cell-based-architecture-aws-stripe-slack-blast-radius-mitigation.jpg" class="article-cover-img" alt="Cell-Based Architecture: How AWS, Stripe, and Slack Bound Blast Radiuses for 99.999% Availability Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Cell-Based Architecture: How AWS, Stripe, and Slack Bound Blast Radiuses for 99.999% Availability</h1>
             <div class="article-meta">
@@ -117,9 +117,10 @@
                 <li><a href="#python-implementation-cell-based-router-with-dynamic-evacuation">Python Implementation: Cell-Based Router with Dynamic Evacuation</a></li>
                 <li><a href="#architectural-comparison-matrix">Architectural Comparison Matrix</a></li>
                 <li><a href="#the-engineering-law-of-blast-radiuses">The Engineering Law of Blast Radiuses</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When naval architects design an ocean liner, their primary obsession is not preventing hull breaches. Icebergs, torpedoes, and submerged reefs are assumed to be inevitable. Their obsession is <strong>compartmentalization</strong>: dividing the hull with vertical steel bulkheads so that a catastrophic puncture in Compartment 3 cannot flood Compartments 4 through 12.</p>
+<p>When naval architects design an ocean liner, their primary obsession is not preventing hull breaches <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Icebergs, torpedoes, and submerged reefs are assumed to be inevitable. Their obsession is <strong>compartmentalization</strong>: dividing the hull with vertical steel bulkheads so that a catastrophic puncture in Compartment 3 cannot flood Compartments 4 through 12.</p>
 <p>In modern cloud engineering, most systems are built like the <em>Titanic</em> before its maiden voyage: proud, massively scaled, redundant across multiple availability zones, but fundamentally sharing a single continuous bilge.</p>
 <p>Consider a standard enterprise multi-tenant microservices architecture. One hundred thousand business customers share a regional Kubernetes cluster, an API gateway fleet, and a PostgreSQL primary. The marketing team celebrates having active-active deployment across three AWS Availability Zones.</p>
 <p>Then a single client in Berlin triggers a malformed GraphQL query. The query hits an unindexed edge case in the ORM, locking table rows and spiking database CPU to 100%. Upstream microservices experience elevated latency and trigger aggressive retries. Connection pools exhaust within eight seconds. The ingress gateway runs out of ephemeral ports.</p>
@@ -128,12 +129,12 @@
 <div class="mermaid">flowchart TD
   subgraph SG1_MonolithicRegionalCluster [&quot;Monolithic Regional Cluster vs Cell-Based Architecture&quot;]
     subgraph SG2_1MonolithicRegional [&quot;1. Monolithic Regional Cluster (100% Blast Radius)&quot;]
-      Clients1[100,000 Tenants] --&gt; BigCluster[Single Shared Kubernetes Cluster + PostgreSQL]
-      BigCluster --&gt;|Poison Pill Query / Config Crash| Outage[100% OF ALL CUSTOMERS DOWN]
+      Clients1[&quot;100,000 Tenants&quot;] --&gt; BigCluster[&quot;Single Shared Kubernetes Cluster + PostgreSQL&quot;]
+      BigCluster --&gt;|Poison Pill Query / Config Crash| Outage[&quot;100% OF ALL CUSTOMERS DOWN&quot;]
     end
 
     subgraph SG3_2CellBased [&quot;2. Cell-Based Architecture (Strict 5% Blast Radius)&quot;]
-      Clients2[100,000 Tenants] --&gt; CellRouter[Stateless Thin Cell Router]
+      Clients2[&quot;100,000 Tenants&quot;] --&gt; CellRouter[&quot;Stateless Thin Cell Router&quot;]
       CellRouter --&gt;|Tenants 1-5,000| Cell1[&quot;Cell 1: Isolated K8s + Dedicated DB&quot;]
       CellRouter --&gt;|Tenants 5,001-10,000| Cell2[&quot;Cell 2: Isolated K8s + Dedicated DB&quot;]
       CellRouter --&gt;|Tenants 10,001-15,000| Cell3[&quot;Cell 3: Isolated K8s + Dedicated DB (Degraded)&quot;]
@@ -141,7 +142,18 @@
       
       Cell3 --&gt; LimitedImpact[&quot;Strict Blast Radius: Only 5% impacted, 95% fully online&quot;]
     end
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Clients1,Cell1 blue
+class BigCluster,Cell2 green
+class Outage,Cell3 purple
+class Clients2,Cell4 yellow
+class CellRouter,LimitedImpact red</div>
 <hr>
 <h2 id="1-the-blast-radius-anatomy-why-multi-az-is-not-fault-isolation">1. The Blast Radius Anatomy: Why Multi-AZ Is Not Fault Isolation</h2>
 <p>Why do multi-zone regional deployments routinely collapse into total outages?</p>
@@ -193,12 +205,22 @@
 <h2 id="3-the-stateless-thin-cell-router">3. The Stateless Thin Cell Router</h2>
 <p>To direct incoming client traffic to the appropriate cell without introducing a single point of failure, the architecture deploys an ultra-lean <strong>Thin Cell Router</strong> layer:</p>
 <div class="mermaid">flowchart TD
-  Client[Inbound Request: tenant_id = 'org_402'] --&gt; Router[Stateless Thin Cell Router]
+  Client[&quot;Inbound Request: tenant_id = 'org_402'&quot;] --&gt; Router[&quot;Stateless Thin Cell Router&quot;]
   Router --&gt; Mapping[&quot;Consistent Hash: hash('org_402') -&gt; Cell 3&quot;]
-  Mapping --&gt; Cell3[Cell 3 Ingress Gateway]
+  Mapping --&gt; Cell3[&quot;Cell 3 Ingress Gateway&quot;]
   
   style Router fill:#1e293b,stroke:#3b82f6,color:#ffffff
-  style Cell3 fill:#064e3b,stroke:#10b981,color:#ffffff</div>
+  style Cell3 fill:#064e3b,stroke:#10b981,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client blue
+class Router green
+class Mapping purple
+class Cell3 yellow</div>
 <h3 id="core-invariants-of-the-cell-router">Core Invariants of the Cell Router:</h3>
 <ul>
 <li><strong>Zero Business Logic</strong>: The router performs no authentication checks, no database lookups, and no request body parsing. It only inspects routing tokens (e.g., URL subdomains, HTTP headers, or API keys).</li>
@@ -338,7 +360,18 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="the-engineering-law-of-blast-radiuses">The Engineering Law of Blast Radiuses</h2>
 <p>Complex systems will always fail in ways their designers could not foresee. Software bugs, configuration mistakes, and hardware faults are statistical certainties.</p>
-<p>The mark of mature cloud engineering is not the hubris of attempting to eliminate all errors; it is the wisdom of <strong>bounding the blast radius</strong>. By carving platforms into hermetic, self-sufficient cells, architects ensure that when the inevitable catastrophe strikes, ninety-five percent of their customers never even notice.</p>
+<p>The mark of mature cloud engineering is not the hubris of attempting to eliminate all errors; it is the wisdom of <strong>bounding the blast radius</strong>. By carving platforms into hermetic, self-sufficient cells, architects ensure that when the inevitable catastrophe strikes, ninety-five percent of their customers never even notice. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -379,6 +412,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-cell-based-router-with-dynamic-evacuation" class="toc-link">Python Implementation: Cell-Based Router with Dynamic Evacuation</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-comparison-matrix" class="toc-link">Architectural Comparison Matrix</a></li>
               <li class="toc-item toc-h2"><a href="#the-engineering-law-of-blast-radiuses" class="toc-link">The Engineering Law of Blast Radiuses</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

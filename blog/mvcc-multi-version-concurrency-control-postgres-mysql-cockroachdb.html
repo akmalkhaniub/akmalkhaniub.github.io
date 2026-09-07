@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/mvcc-multi-version-concurrency-control-postgres-mysql-cockroachdb.html">
   <meta property="og:title" content="MVCC (Multi-Version Concurrency Control) Deep Dive: PostgreSQL vs MySQL InnoDB vs CockroachDB">
   <meta property="og:description" content="How modern databases achieve lock-free concurrent reads: snapshot isolation, Write-Skew anomalies, PostgreSQL heap xmin/xmax versioning, MySQL InnoDB undo log chains, and CockroachDB timestamped keys.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/mvcc-multi-version-concurrency-control-postgres-mysql-cockroachdb.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="MVCC (Multi-Version Concurrency Control) Deep Dive: PostgreSQL vs MySQL InnoDB vs CockroachDB">
   <meta name="twitter:description" content="How modern databases achieve lock-free concurrent reads: snapshot isolation, Write-Skew anomalies, PostgreSQL heap xmin/xmax versioning, MySQL InnoDB undo log chains, and CockroachDB timestamped keys.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/mvcc-multi-version-concurrency-control-postgres-mysql-cockroachdb.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "MVCC (Multi-Version Concurrency Control) Deep Dive: PostgreSQL vs MySQL InnoDB vs CockroachDB",
   "description": "How modern databases achieve lock-free concurrent reads: snapshot isolation, Write-Skew anomalies, PostgreSQL heap xmin/xmax versioning, MySQL InnoDB undo log chains, and CockroachDB timestamped keys.",
   "url": "https://akmalkhaniub.github.io/blog/mvcc-multi-version-concurrency-control-postgres-mysql-cockroachdb.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/mvcc-multi-version-concurrency-control-postgres-mysql-cockroachdb.jpg",
   "datePublished": "2026-09-02",
   "keywords": "Database Internals, PostgreSQL, MySQL, CockroachDB, MVCC, System Design",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="MVCC (Multi-Version Concurrency Control) Deep Dive: PostgreSQL vs MySQL InnoDB vs CockroachDB Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/mvcc-multi-version-concurrency-control-postgres-mysql-cockroachdb.jpg" class="article-cover-img" alt="MVCC (Multi-Version Concurrency Control) Deep Dive: PostgreSQL vs MySQL InnoDB vs CockroachDB Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">MVCC (Multi-Version Concurrency Control) Deep Dive: PostgreSQL vs MySQL InnoDB vs CockroachDB</h1>
             <div class="article-meta">
@@ -117,10 +117,11 @@
                 <li><a href="#python-implementation-complete-mvcc-storage-engine-simulator">Python Implementation: Complete MVCC Storage Engine Simulator</a></li>
                 <li><a href="#summary-mvcc-engine-trade-offs">Summary: MVCC Engine Trade-Offs</a></li>
                 <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <p>In relational database engineering, the foundational golden rule of high-throughput transactional engines is:</p>
-<p>$$\mathbf{\text{Readers never block Writers, and Writers never block Readers.}}$$</p>
+<p>$$\mathbf{\text{Readers never block Writers, and Writers never block Readers <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.}}$$</p>
 <p>Under classic <strong>Two-Phase Locking (2PL)</strong>, reading a row required acquiring a shared read lock (<code>S-lock</code>), which immediately blocked any concurrent transaction attempting to acquire an exclusive write lock (<code>X-lock</code>). Under high-concurrency e-commerce workloads, 2PL resulted in catastrophic lock contention, query timeouts, and cascading deadlocks.</p>
 <p>To achieve lock-free concurrent reads without sacrificing ACID guarantees, modern relational and distributed database engines (<strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, <strong>CockroachDB</strong>, <strong>Oracle</strong>) implement <strong>Multi-Version Concurrency Control (MVCC)</strong>.</p>
 <p>However, each database engine chose a fundamentally different architectural strategy to store, index, and garbage-collect older tuple versions—resulting in drastically different performance trade-offs under heavy write workloads.</p>
@@ -129,7 +130,16 @@
     Postgres[&quot;1. PostgreSQL: Append-Only Heap Versioning\n• Updates insert new tuple in heap with (xmin, xmax)\n• Requires HOT &amp; Autovacuum cleanup&quot;]
     MySQL[&quot;2. MySQL InnoDB: In-Place Heap + Undo Logs\n• Updates modify heap page in-place\n• Prior versions stored in rollback Undo Segment chain&quot;]
     Cockroach[&quot;3. CockroachDB: Distributed Timestamped Keys\n• Keys stored as Key@Timestamp in LSM-Tree (Pebble)\n• Hybrid Logical Clocks (HLC) snapshot isolation&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Postgres blue
+class MySQL green
+class Cockroach purple</div>
 <hr>
 <h2 id="1-how-mvcc-achieves-snapshot-isolation">1. How MVCC Achieves Snapshot Isolation</h2>
 <p>When Transaction $T_1$ executes <code>BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ</code>:</p>
@@ -181,7 +191,16 @@
     
     ClusteredPage --&gt;|roll_ptr| Undo1
     Undo1 --&gt;|roll_ptr| Undo2
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ClusteredPage blue
+class Undo1 green
+class Undo2 purple</div>
 <ul>
 <li><strong>The Benefit</strong>: Zero heap table bloat! High write throughput on fresh pages.</li>
 <li><strong>The Downside</strong>: If a transaction runs for 4 hours, all intermediate undo logs must be retained, causing severe undo log contention.</li>
@@ -346,7 +365,18 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>MVCC is one of the most elegant triumphs in computer science: allowing high-throughput concurrent systems to operate without blocking locks.</p>
-<p>Understanding whether your database uses <strong>PostgreSQL heap versioning</strong>, <strong>MySQL undo log rollback segments</strong>, or <strong>distributed LSM timestamps</strong> is essential for optimizing query performance, preventing table bloat, and eliminating transactional concurrency bottlenecks.</p>
+<p>Understanding whether your database uses <strong>PostgreSQL heap versioning</strong>, <strong>MySQL undo log rollback segments</strong>, or <strong>distributed LSM timestamps</strong> is essential for optimizing query performance, preventing table bloat, and eliminating transactional concurrency bottlenecks. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Reed, D. P. (1978)</strong>. <em>Naming and Synchronization in a Decentralized Computer System</em>. MIT PhD Thesis. <a href="https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf" target="_blank" rel="noopener">https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Michael, M. M. (2004)</strong>. <em>Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects</em>. IEEE TPDS. <a href="https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf" target="_blank" rel="noopener">https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Bloom, B. H. (1970)</strong>. <em>Space/Time Trade-offs in Hash Coding with Allowable Errors</em>. CACM. <a href="https://doi.org/10.1145/362686.362692" target="_blank" rel="noopener">https://doi.org/10.1145/362686.362692</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -387,6 +417,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-complete-mvcc-storage-engine-simulator" class="toc-link">Python Implementation: Complete MVCC Storage Engine Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#summary-mvcc-engine-trade-offs" class="toc-link">Summary: MVCC Engine Trade-Offs</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

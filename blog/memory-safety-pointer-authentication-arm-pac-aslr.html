@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/memory-safety-pointer-authentication-arm-pac-aslr.html">
   <meta property="og:title" content="Memory Safety &amp; Pointer Authentication: ARM PAC (Pointer Authentication Code) &amp; ASLR Mechanics">
   <meta property="og:description" content="Low-level exploit mitigation: implementing Address Space Layout Randomization (ASLR), ROP gadget chain detection, ARMv8.3 Pointer Authentication Codes (PACIA/AUTIA), and Memory Tagging (MTE).">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/memory-safety-pointer-authentication-arm-pac-aslr.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Memory Safety &amp; Pointer Authentication: ARM PAC (Pointer Authentication Code) &amp; ASLR Mechanics">
   <meta name="twitter:description" content="Low-level exploit mitigation: implementing Address Space Layout Randomization (ASLR), ROP gadget chain detection, ARMv8.3 Pointer Authentication Codes (PACIA/AUTIA), and Memory Tagging (MTE).">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/memory-safety-pointer-authentication-arm-pac-aslr.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Memory Safety & Pointer Authentication: ARM PAC (Pointer Authentication Code) & ASLR Mechanics",
   "description": "Low-level exploit mitigation: implementing Address Space Layout Randomization (ASLR), ROP gadget chain detection, ARMv8.3 Pointer Authentication Codes (PACIA/AUTIA), and Memory Tagging (MTE).",
   "url": "https://akmalkhaniub.github.io/blog/memory-safety-pointer-authentication-arm-pac-aslr.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/memory-safety-pointer-authentication-arm-pac-aslr.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Memory Safety, ARM PAC, Security, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Memory Safety &amp; Pointer Authentication: ARM PAC (Pointer Authentication Code) &amp; ASLR Mechanics Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/memory-safety-pointer-authentication-arm-pac-aslr.jpg" class="article-cover-img" alt="Memory Safety &amp; Pointer Authentication: ARM PAC (Pointer Authentication Code) &amp; ASLR Mechanics Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Memory Safety &amp; Pointer Authentication: ARM PAC (Pointer Authentication Code) &amp; ASLR Mechanics</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-pointer-authentication-code-pac-simulator">Python Implementation: Pointer Authentication Code (PAC) Simulator</a></li>
                 <li><a href="#memory-security-gotchas-best-practices">Memory Security Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In systems programming (C, C++, assembly), memory safety bugs—such as stack buffer overflows, dangling pointers, and use-after-free vulnerabilities—account for over <strong>70% of all high-severity security exploits</strong> (documented by Microsoft Security Response Center and Google Chromium).</p>
+<p>In systems programming (C, C++, assembly), memory safety bugs—such as stack buffer overflows, dangling pointers, and use-after-free vulnerabilities—account for over <strong>70% of all high-severity security exploits</strong> (documented by Microsoft Security Response Center and Google Chromium) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Historically, operating systems introduced <strong>Address Space Layout Randomization (ASLR)</strong> and <strong>Non-Executable Memory ($W \oplus X$)</strong> to prevent attackers from executing injected shellcode.</p>
 <p>However, sophisticated exploit techniques—specifically <strong>Return-Oriented Programming (ROP)</strong> and <strong>Jump-Oriented Programming (JOP)</strong>—bypass ASLR by chaining together existing executable binary code fragments (&quot;gadgets&quot;).</p>
 <p>To defeat ROP/JOP exploit chains at the hardware instruction level, modern ARMv8.3+ architectures introduced <strong>Pointer Authentication Codes (PAC)</strong>.</p>
@@ -126,11 +127,11 @@
 <p>How ARM PAC signs 64-bit virtual pointers and catches pointer tampering before execution:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_FunctionEntryPrologue [&quot;Function Entry (Prologue: PACIA Instruction)&quot;]
-    RawPtr[Unsigned 64-Bit Pointer: 0x00007FFFF7A05000] --&gt;|Extract Unused Upper Bits 63..48| UnusedBits[Upper Bits Field]
-    SecretKey[Secret Hardware Key: APIAKey] &amp; Modifier[Context Modifier: SP] --&gt; QARMA[QARMA Cryptographic Hash Engine]
+    RawPtr[&quot;Unsigned 64-Bit Pointer: 0x00007FFFF7A05000&quot;] --&gt;|Extract Unused Upper Bits 63..48| UnusedBits[&quot;Upper Bits Field&quot;]
+    SecretKey[&quot;Secret Hardware Key: APIAKey&quot;] &amp; Modifier[&quot;Context Modifier: SP&quot;] --&gt; QARMA[&quot;QARMA Cryptographic Hash Engine&quot;]
     
     QARMA --&gt;|Compute 16-Bit MAC Signature| SignPtr[&quot;Signed Pointer: 0x4F8A7FFFF7A05000 (PAC Embedded!)&quot;]
-    SignPtr --&gt;|Push to Stack| Stack[Stack Frame Memory]
+    SignPtr --&gt;|Push to Stack| Stack[&quot;Stack Frame Memory&quot;]
   end
   
   subgraph SG2_AttackerExploitationAttempt [&quot;Attacker Exploitation Attempt (ROP Attack)&quot;]
@@ -139,9 +140,20 @@
   
   subgraph SG3_FunctionExitEpilogue [&quot;Function Exit (Epilogue: AUTIA Instruction)&quot;]
     CorruptPtr --&gt;|Verify Signature via AUTIA| PACCheck{Does Embedded PAC Match Recomputed QARMA Hash?}
-    PACCheck --&gt;|Match - Valid Pointer| Exec[Execute RET Instruction]
-    PACCheck --&gt;|Mismatch - Tampered!| Trap[ HARDWARE CPU FAULT TRAP! SIGSEGV]
-  end</div>
+    PACCheck --&gt;|Match - Valid Pointer| Exec[&quot;Execute RET Instruction&quot;]
+    PACCheck --&gt;|Mismatch - Tampered!| Trap[&quot; HARDWARE CPU FAULT TRAP! SIGSEGV&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class RawPtr,SignPtr blue
+class UnusedBits,Stack green
+class SecretKey,CorruptPtr purple
+class Modifier,Exec yellow
+class QARMA,Trap red</div>
 <h3 id="core-memory-protection-technologies">Core Memory Protection Technologies</h3>
 <ol>
 <li><strong>Address Space Layout Randomization (ASLR)</strong>: Randomizes the memory locations of the stack, heap, and shared libraries upon application startup. If an attacker attempts to hardcode a target jump address (e.g. <code>0x7fff5000</code>), ASLR causes the process to crash at an invalid randomized memory offset.</li>
@@ -259,8 +271,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Architectures incorporating ARM PAC and Memory Tagging (such as <strong>Apple Silicon M1/M2/M3</strong>, <strong>Android 14 on ARMv9</strong>, and <strong>AWS Graviton3</strong>):</p>
 <ul>
 <li><strong>Completely Neutralizes ROP/JOP Attack Vectors</strong>: Cryptographic pointer verification prevents attackers from hijacking program control flow.</li>
-<li><strong>Near-Zero Performance Penalty</strong>: Hardware-level <code>PACIA</code>/<code>AUTIA</code> CPU instructions execute with negligible latency overhead ($&lt;1%$).</li>
+<li><strong>Near-Zero Performance Penalty</strong>: Hardware-level <code>PACIA</code>/<code>AUTIA</code> CPU instructions execute with negligible latency overhead ($&lt;1%$). <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lidén, P., &amp; Karlsson, S. (2018)</strong>. <em>ZGC: A Scalable Low-Latency Garbage Collector</em>. Oracle / OpenJDK. <a href="https://openjdk.org/jeps/333" target="_blank" rel="noopener">https://openjdk.org/jeps/333</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -297,6 +317,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-pointer-authentication-code-pac-simulator" class="toc-link">Python Implementation: Pointer Authentication Code (PAC) Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#memory-security-gotchas-best-practices" class="toc-link">Memory Security Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

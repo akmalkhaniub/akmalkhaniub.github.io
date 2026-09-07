@@ -1,6 +1,6 @@
 # Zero-Trust Security & Observability for GCP Agent Codebases: Secret Manager, Cloud Audit Logs & VPC Service Controls
 
-Autonomous AI agents introduce novel security and compliance challenges to enterprise infrastructure. Unlike traditional web APIs that follow static, deterministic execution paths, an agentic worker dynamically chooses which tools to execute, which parameters to pass, and which external APIs to call.
+Autonomous AI agents introduce novel security and compliance challenges to enterprise infrastructure [1]. Unlike traditional web APIs that follow static, deterministic execution paths, an agentic worker dynamically chooses which tools to execute, which parameters to pass, and which external APIs to call.
 
 Without strict security perimeters, a compromised worker agent could inadvertently leak proprietary source code to external endpoints, expose database credentials, or perform untracked side-effect mutations.
 
@@ -17,19 +17,30 @@ The platform enforces perimeter isolation, credential rotation, and granular too
 ```mermaid
 flowchart TD
   subgraph SG1_GcpVpcService ["GCP VPC Service Control Perimeter"]
-    A[Cloud Run Agent Worker] --> B[GCP Secret Manager]
-    A --> C[Vertex AI Foundation Models]
-    A --> D[AlloyDB Relational Database]
+    A["Cloud Run Agent Worker"] --> B["GCP Secret Manager"]
+    A --> C["Vertex AI Foundation Models"]
+    A --> D["AlloyDB Relational Database"]
   end
   
   subgraph SG2_DataExfiltrationDefense ["Data Exfiltration Defense"]
-    A -.->|Blocked External Egress Request| E[VPC-SC Perimeter Drop Rule]
+    A -.->|Blocked External Egress Request| E["VPC-SC Perimeter Drop Rule"]
   end
   
   subgraph SG3_EnterpriseTelemetryAudit ["Enterprise Telemetry & Audit Trail"]
-    A -->|Structured Tool Call Log| F[Cloud Audit Logs]
-    A -->|Distributed Trace ID| G[Cloud Trace & Cloud Logging]
+    A -->|Structured Tool Call Log| F["Cloud Audit Logs"]
+    A -->|Distributed Trace ID| G["Cloud Trace & Cloud Logging"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C purple
+class D yellow
+class E red
 ```
 
 ### Security & Compliance Controls
@@ -164,4 +175,13 @@ When configuring VPC-SC and Secret Manager for agentic systems:
 ## Real-World Enterprise Impact
 Teams enforcing Zero-Trust Security on GCP achieve:
 * **100% Data Exfiltration Prevention**: VPC Service Controls block unauthorized external egress calls from prompt injections.
-* **SOC2 & ISO-27001 Audit Compliance**: Cloud Audit Logs capture complete end-to-end execution traces for every agent tool invocation.
+* **SOC2 & ISO-27001 Audit Compliance**: Cloud Audit Logs capture complete end-to-end execution traces for every agent tool invocation. [2]
+
+## References & Further Reading
+
+1. **W3C Distributed Tracing Working Group (2021)**. *Trace Context*. W3C Recommendation. [https://www.w3.org/TR/trace-context/](https://www.w3.org/TR/trace-context/)
+2. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+3. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/garbage-collection-mechanics-tricolor-marking-concurrent-compaction.html">
   <meta property="og:title" content="Garbage Collection Mechanics: Tri-Color Marking, Concurrent Compaction &amp; Generational GC">
   <meta property="og:description" content="Low-latency runtime memory management: implementing Tri-Color marking abstraction (White/Grey/Black), Dijkstra write barriers, generational GC, and ZGC colored pointers.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/garbage-collection-mechanics-tricolor-marking-concurrent-compaction.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Garbage Collection Mechanics: Tri-Color Marking, Concurrent Compaction &amp; Generational GC">
   <meta name="twitter:description" content="Low-latency runtime memory management: implementing Tri-Color marking abstraction (White/Grey/Black), Dijkstra write barriers, generational GC, and ZGC colored pointers.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/garbage-collection-mechanics-tricolor-marking-concurrent-compaction.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Garbage Collection Mechanics: Tri-Color Marking, Concurrent Compaction & Generational GC",
   "description": "Low-latency runtime memory management: implementing Tri-Color marking abstraction (White/Grey/Black), Dijkstra write barriers, generational GC, and ZGC colored pointers.",
   "url": "https://akmalkhaniub.github.io/blog/garbage-collection-mechanics-tricolor-marking-concurrent-compaction.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/garbage-collection-mechanics-tricolor-marking-concurrent-compaction.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Garbage Collection, Tri-Color, ZGC, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Garbage Collection Mechanics: Tri-Color Marking, Concurrent Compaction &amp; Generational GC Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/garbage-collection-mechanics-tricolor-marking-concurrent-compaction.jpg" class="article-cover-img" alt="Garbage Collection Mechanics: Tri-Color Marking, Concurrent Compaction &amp; Generational GC Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Garbage Collection Mechanics: Tri-Color Marking, Concurrent Compaction &amp; Generational GC</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-tri-color-gc-engine-with-write-barrier">Python Implementation: Tri-Color GC Engine with Write Barrier</a></li>
                 <li><a href="#garbage-collection-gotchas-best-practices">Garbage Collection Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In managed programming runtimes (such as Java JVM, Go, V8 JavaScript, and PyPy), automatic memory reclamation via <strong>Garbage Collection (GC)</strong> is essential for developer productivity and memory safety.</p>
+<p>In managed programming runtimes (such as Java JVM, Go, V8 JavaScript, and PyPy), automatic memory reclamation via <strong>Garbage Collection (GC)</strong> is essential for developer productivity and memory safety <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>However, early garbage collector designs relied on <strong>Stop-The-World (STW)</strong> pauses. During STW phases, the runtime freezes all user application threads (&quot;mutators&quot;) while scanning the heap. On large heaps ($64\text{ GB}$ to $512\text{ GB}$), STW pauses can last <strong>500ms to 5,000ms</strong>, destroying p99 SLA guarantees in high-frequency trading and real-time microservices.</p>
 <p>To achieve sub-millisecond GC pauses ($\le 1\text{ms}$) on multi-terabyte heaps, modern runtimes (<strong>Go GC</strong>, <strong>Java ZGC</strong>, <strong>Shenandoah GC</strong>) utilize <strong>Concurrent Tri-Color Marking</strong>, <strong>Write Barriers</strong>, and <strong>Colored Pointers</strong>.</p>
 <p>This article details the Tri-Color Abstraction, Write Barriers, and Generational GC compaction algorithms.</p>
@@ -124,17 +125,28 @@
 <p>How concurrent garbage collectors track live objects while mutator threads mutate heap references:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_TriColorGc [&quot;Tri-Color GC Graph Marking States&quot;]
-    Root[Root Pointers: Stack / Globals] --&gt;|Mark Roots Grey| GreySet[Grey Set: Objects Scanned, Children Unscanned]
+    Root[&quot;Root Pointers: Stack / Globals&quot;] --&gt;|Mark Roots Grey| GreySet[&quot;Grey Set: Objects Scanned, Children Unscanned&quot;]
     
-    GreySet --&gt;|Scan Children &amp; Move to Black| BlackSet[Black Set: Live Objects &amp; Children Fully Scanned]
+    GreySet --&gt;|Scan Children &amp; Move to Black| BlackSet[&quot;Black Set: Live Objects &amp; Children Fully Scanned&quot;]
     
-    WhiteSet[White Set: Unvisited Objects / Garbage Candidates] -.-&gt;|Unreachable at End of Phase| Sweep[Sweep / Reclaim Physical Memory]
+    WhiteSet[&quot;White Set: Unvisited Objects / Garbage Candidates&quot;] -.-&gt;|Unreachable at End of Phase| Sweep[&quot;Sweep / Reclaim Physical Memory&quot;]
   end
   
   subgraph SG2_ConcurrentMutatorWrite [&quot;Concurrent Mutator Write Barrier Interception&quot;]
-    Mutator[Mutator Thread: Mutates Reference] --&gt;|Writes Black -&gt; White Pointer| WriteBarrier[Write Barrier: Catch Mutation]
+    Mutator[&quot;Mutator Thread: Mutates Reference&quot;] --&gt;|Writes Black -&gt; White Pointer| WriteBarrier[&quot;Write Barrier: Catch Mutation&quot;]
     WriteBarrier --&gt;|Shade White Object Grey| GreySet
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Root,Mutator blue
+class GreySet,WriteBarrier green
+class BlackSet purple
+class WhiteSet yellow
+class Sweep red</div>
 <h3 id="core-garbage-collection-principles">Core Garbage Collection Principles</h3>
 <ol>
 <li><strong>Tri-Color Marking Abstraction</strong>: Objects in the heap are assigned one of three color states during GC marking:<ul>
@@ -287,8 +299,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Runtimes adopting Concurrent Tri-Color GC and Load Barriers (such as <strong>Java ZGC</strong> and <strong>Go GC</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Tail Pauses</strong>: Reducing maximum GC STW pauses from $2,500\text{ms}$ down to <strong>under $1\text{ms}$</strong> across $1\text{ TB}$ heaps.</li>
-<li><strong>Predictable p99.9 Service Latencies</strong>: Eliminating GC pause spikes stabilizes SLA guarantees for financial trading platforms and real-time streaming engines.</li>
+<li><strong>Predictable p99.9 Service Latencies</strong>: Eliminating GC pause spikes stabilizes SLA guarantees for financial trading platforms and real-time streaming engines. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -325,6 +348,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-tri-color-gc-engine-with-write-barrier" class="toc-link">Python Implementation: Tri-Color GC Engine with Write Barrier</a></li>
               <li class="toc-item toc-h2"><a href="#garbage-collection-gotchas-best-practices" class="toc-link">Garbage Collection Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

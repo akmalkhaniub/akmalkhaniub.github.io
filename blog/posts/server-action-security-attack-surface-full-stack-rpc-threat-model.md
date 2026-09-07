@@ -1,4 +1,4 @@
-In full-stack software development, security has historically relied on an unambiguous physical perimeter: the network boundary between the client browser and the backend server.
+In full-stack software development, security has historically relied on an unambiguous physical perimeter: the network boundary between the client browser and the backend server [1].
 
 If you wanted a client to mutate data on the server, you followed a disciplined ritual:
 1. You declared a specific HTTP endpoint in your router (`POST /api/v1/billing/cancel-subscription`).
@@ -44,6 +44,17 @@ flowchart TD
       PublicAction -.->|Captures Closed Scope?| SecretLeak["Leaked Environment Pointers"]
     end
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client1,Handler blue
+class Gateway,Client2 green
+class AuthMW,PublicAction purple
+class RBAC,SecretLeak yellow
+class Validator red
 ```
 *Figure 1: Server Action RPC invocation lifecycle, cryptographic action ID hash verification, and closed-over scope boundaries. Source: OWASP Full-Stack Security Taskforce & React Documentation [1, 2, 4].*
 

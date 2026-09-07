@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/linux-kernel-async-io-io-uring-architecture-ring-buffers.html">
   <meta property="og:title" content="Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers">
   <meta property="og:description" content="Revolutionizing Linux asynchronous I/O: implementing Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffers, SQPOLL mode, and zero-syscall async storage &amp; networking.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/linux-kernel-async-io-io-uring-architecture-ring-buffers.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-17">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers">
   <meta name="twitter:description" content="Revolutionizing Linux asynchronous I/O: implementing Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffers, SQPOLL mode, and zero-syscall async storage &amp; networking.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/linux-kernel-async-io-io-uring-architecture-ring-buffers.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Linux Kernel Async I/O: io_uring Architecture & High-Throughput Ring Buffers",
   "description": "Revolutionizing Linux asynchronous I/O: implementing Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffers, SQPOLL mode, and zero-syscall async storage & networking.",
   "url": "https://akmalkhaniub.github.io/blog/linux-kernel-async-io-io-uring-architecture-ring-buffers.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/linux-kernel-async-io-io-uring-architecture-ring-buffers.jpg",
   "datePublished": "2026-08-17",
   "keywords": "Linux Kernel, io_uring, Async I/O, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/linux-kernel-async-io-io-uring-architecture-ring-buffers.jpg" class="article-cover-img" alt="Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-iouring-lockless-ring-buffer-engine">Python Implementation: io_uring Lockless Ring Buffer Engine</a></li>
                 <li><a href="#iouring-implementation-gotchas">io_uring Implementation Gotchas</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>For decades, Linux high-performance networking relied on event loop mechanisms like <code>epoll</code> paired with non-blocking sockets. While <code>epoll</code> allows an application to monitor thousands of file descriptors, executing an actual read or write operation (<code>read()</code>, <code>write()</code>, <code>send()</code>, <code>recv()</code>) still requires making a <strong>system call (syscall)</strong>.</p>
+<p>For decades, Linux high-performance networking relied on event loop mechanisms like <code>epoll</code> paired with non-blocking sockets <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. While <code>epoll</code> allows an application to monitor thousands of file descriptors, executing an actual read or write operation (<code>read()</code>, <code>write()</code>, <code>send()</code>, <code>recv()</code>) still requires making a <strong>system call (syscall)</strong>.</p>
 <p>At millions of requests per second, CPU overhead is dominated by user-space to kernel-space context switches and Meltdown/Spectre page-table isolation (KPTI) mitigation overhead.</p>
 <p>In Linux 5.1, kernel developer Jens Axboe introduced <strong><code>io_uring</code></strong>—a fundamental redesign of Linux asynchronous I/O.</p>
 <p><code>io_uring</code> eliminates system call overhead by creating two lockless circular <strong>ring buffers</strong> shared directly between user memory and kernel memory: the <strong>Submission Queue (SQ)</strong> and the <strong>Completion Queue (CQ)</strong>.</p>
@@ -125,21 +126,32 @@
 <p>How user space and kernel space communicate asynchronously via shared memory ring buffers without syscalls:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_UserSpaceMemory [&quot;User Space Memory&quot;]
-    App[User Application] --&gt;|Write SQE Entries| SQ[Submission Queue Ring SQ]
-    CQ[Completion Queue Ring CQ] --&gt;|Read CQE Results| App
+    App[&quot;User Application&quot;] --&gt;|Write SQE Entries| SQ[&quot;Submission Queue Ring SQ&quot;]
+    CQ[&quot;Completion Queue Ring CQ&quot;] --&gt;|Read CQE Results| App
   end
   
   subgraph SG2_LocklessSharedRing [&quot;Lockless Shared Ring Buffers&quot;]
-    SQ -.-&gt;|Shared MMap Memory Region| SQ_K[Kernel Submission Queue]
-    CQ_K[Kernel Completion Queue] -.-&gt;|Shared MMap Memory Region| CQ
+    SQ -.-&gt;|Shared MMap Memory Region| SQ_K[&quot;Kernel Submission Queue&quot;]
+    CQ_K[&quot;Kernel Completion Queue&quot;] -.-&gt;|Shared MMap Memory Region| CQ
   end
   
   subgraph SG3_LinuxKernelSpace [&quot;Linux Kernel Space&quot;]
-    SQ_K --&gt;|SQPOLL Kernel Thread Reads SQEs| KernelThread[Kernel Async I/O Thread]
-    KernelThread --&gt;|Perform Async Storage/Socket I/O| NVMe[NVMe Storage / NIC Network Hardware]
+    SQ_K --&gt;|SQPOLL Kernel Thread Reads SQEs| KernelThread[&quot;Kernel Async I/O Thread&quot;]
+    KernelThread --&gt;|Perform Async Storage/Socket I/O| NVMe[&quot;NVMe Storage / NIC Network Hardware&quot;]
     NVMe --&gt;|Completion Event| KernelThread
     KernelThread --&gt;|Write CQE Entry| CQ_K
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class App,KernelThread blue
+class SQ,NVMe green
+class CQ purple
+class SQ_K yellow
+class CQ_K red</div>
 <h3 id="core-iouring-mechanics">Core <code>io_uring</code> Mechanics</h3>
 <ol>
 <li><strong>Submission Queue Entry (SQE)</strong>: A 64-byte descriptor submitted by user space containing the I/O opcode (<code>IORING_OP_READV</code>, <code>IORING_OP_ACCEPT</code>), file descriptor, memory buffer address, and user metadata tag.</li>
@@ -287,8 +299,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Databases and web servers adopting <code>io_uring</code> (such as <strong>RocksDB</strong>, <strong>Netty</strong>, and <strong>ScyllaDB</strong>) report:</p>
 <ul>
 <li><strong>Over 2,000,000 IOPS per CPU Core</strong>: Achieving more than double the IOPS of traditional <code>epoll</code> or <code>libaio</code> drivers.</li>
-<li><strong>50% Reduction in p99 Latency</strong>: Eliminating syscall context switches stabilizes tail latencies under extreme network concurrency.</li>
+<li><strong>50% Reduction in p99 Latency</strong>: Eliminating syscall context switches stabilizes tail latencies under extreme network concurrency. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Michael, M. M. (2004)</strong>. <em>Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects</em>. IEEE TPDS. <a href="https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf" target="_blank" rel="noopener">https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Bloom, B. H. (1970)</strong>. <em>Space/Time Trade-offs in Hash Coding with Allowable Errors</em>. CACM. <a href="https://doi.org/10.1145/362686.362692" target="_blank" rel="noopener">https://doi.org/10.1145/362686.362692</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -325,6 +348,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-iouring-lockless-ring-buffer-engine" class="toc-link">Python Implementation: io_uring Lockless Ring Buffer Engine</a></li>
               <li class="toc-item toc-h2"><a href="#iouring-implementation-gotchas" class="toc-link">io_uring Implementation Gotchas</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

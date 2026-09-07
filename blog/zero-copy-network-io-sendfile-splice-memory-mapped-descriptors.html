@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html">
   <meta property="og:title" content="Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors">
   <meta property="og:description" content="Eliminating CPU memory copy overhead: evaluating sendfile(), splice(), and mmap() syscalls, DMA Scatter-Gather transfers, and direct page-cache to socket network routing.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-17">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors">
   <meta name="twitter:description" content="Eliminating CPU memory copy overhead: evaluating sendfile(), splice(), and mmap() syscalls, DMA Scatter-Gather transfers, and direct page-cache to socket network routing.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Zero-Copy Network I/O: Sendfile, Splice & Memory-Mapped File Descriptors",
   "description": "Eliminating CPU memory copy overhead: evaluating sendfile(), splice(), and mmap() syscalls, DMA Scatter-Gather transfers, and direct page-cache to socket network routing.",
   "url": "https://akmalkhaniub.github.io/blog/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.jpg",
   "datePublished": "2026-08-17",
   "keywords": "Linux Kernel, Zero-Copy, Networking, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/zero-copy-network-io-sendfile-splice-memory-mapped-descriptors.jpg" class="article-cover-img" alt="Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Zero-Copy Network I/O: Sendfile, Splice &amp; Memory-Mapped File Descriptors</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-zero-copy-network-transfer-simulator">Python Implementation: Zero-Copy Network Transfer Simulator</a></li>
                 <li><a href="#zero-copy-gotchas-best-practices">Zero-Copy Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When building high-throughput web servers (like <strong>NGINX</strong>, <strong>Kafka</strong>, or <strong>HAProxy</strong>), a primary operation is reading static files from disk or proxying byte streams over network sockets.</p>
+<p>When building high-throughput web servers (like <strong>NGINX</strong>, <strong>Kafka</strong>, or <strong>HAProxy</strong>), a primary operation is reading static files from disk or proxying byte streams over network sockets <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>In a traditional file transfer implementation using standard <code>read()</code> and <code>write()</code> calls:</p>
 <ol>
 <li>The CPU copies data from disk to kernel page cache.</li>
@@ -132,17 +133,28 @@
 <p>Comparing the CPU memory overhead of traditional I/O vs <code>sendfile()</code> zero-copy transfers:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_Traditional4Copy [&quot;Traditional 4-Copy Path (read + write)&quot;]
-    Disk1[(Disk Storage)] --&gt;|DMA Copy| PageCache1[Kernel Page Cache]
-    PageCache1 --&gt;|CPU Copy| UserMem[User Application Memory]
-    UserMem --&gt;|CPU Copy| SocketBuf1[Kernel Socket Buffer]
-    SocketBuf1 --&gt;|DMA Copy| NIC1[Network NIC Hardware]
+    Disk1[(Disk Storage)] --&gt;|DMA Copy| PageCache1[&quot;Kernel Page Cache&quot;]
+    PageCache1 --&gt;|CPU Copy| UserMem[&quot;User Application Memory&quot;]
+    UserMem --&gt;|CPU Copy| SocketBuf1[&quot;Kernel Socket Buffer&quot;]
+    SocketBuf1 --&gt;|DMA Copy| NIC1[&quot;Network NIC Hardware&quot;]
   end
   
   subgraph SG2_ZeroCopyPath [&quot;Zero-Copy Path (sendfile / DMA Scatter-Gather)&quot;]
-    Disk2[(Disk Storage)] --&gt;|DMA Copy| PageCache2[Kernel Page Cache]
-    PageCache2 -.-&gt;|Pass Descriptor Pointers Only| SocketBuf2[Kernel Socket Buffer]
-    PageCache2 --&gt;|Direct DMA Gather Copy| NIC2[Network NIC Hardware]
-  end</div>
+    Disk2[(Disk Storage)] --&gt;|DMA Copy| PageCache2[&quot;Kernel Page Cache&quot;]
+    PageCache2 -.-&gt;|Pass Descriptor Pointers Only| SocketBuf2[&quot;Kernel Socket Buffer&quot;]
+    PageCache2 --&gt;|Direct DMA Gather Copy| NIC2[&quot;Network NIC Hardware&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class PageCache1,SocketBuf2 blue
+class UserMem,NIC2 green
+class SocketBuf1 purple
+class NIC1 yellow
+class PageCache2 red</div>
 <h3 id="zero-copy-linux-primitives">Zero-Copy Linux Primitives</h3>
 <ol>
 <li><strong><code>sendfile(out_fd, in_fd, offset, count)</code></strong>: Transfers up to <code>count</code> bytes directly from an open file input descriptor (<code>in_fd</code>) to a socket output descriptor (<code>out_fd</code>). When supported by NIC hardware featuring DMA Scatter-Gather, zero CPU copies are required.</li>
@@ -266,8 +278,19 @@ if __name__ == &quot;__main__&quot;:
 <p>High-throughput event streaming systems (like <strong>Apache Kafka</strong>) use <code>sendfile()</code> to stream topic logs directly from disk to network sockets, achieving:</p>
 <ul>
 <li><strong>Maxing Out 100Gbps Network Links</strong>: saturating physical network interfaces with minimal CPU usage.</li>
-<li><strong>60% Reduction in CPU Utilization</strong>: Eliminating CPU memory copies frees up CPU cycles for application logic.</li>
+<li><strong>60% Reduction in CPU Utilization</strong>: Eliminating CPU memory copies frees up CPU cycles for application logic. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Carbone, P., et al. (2015)</strong>. <em>Apache Flink: Stream and Batch Processing in a Single Engine</em>. IEEE Data Engineering Bulletin. <a href="https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -304,6 +327,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-zero-copy-network-transfer-simulator" class="toc-link">Python Implementation: Zero-Copy Network Transfer Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#zero-copy-gotchas-best-practices" class="toc-link">Zero-Copy Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -2,7 +2,7 @@
 
 In relational database engineering, the foundational golden rule of high-throughput transactional engines is:
 
-$$\mathbf{\text{Readers never block Writers, and Writers never block Readers.}}$$
+$$\mathbf{\text{Readers never block Writers, and Writers never block Readers [1].}}$$
 
 Under classic **Two-Phase Locking (2PL)**, reading a row required acquiring a shared read lock (`S-lock`), which immediately blocked any concurrent transaction attempting to acquire an exclusive write lock (`X-lock`). Under high-concurrency e-commerce workloads, 2PL resulted in catastrophic lock contention, query timeouts, and cascading deadlocks.
 
@@ -17,6 +17,15 @@ flowchart TD
     MySQL["2. MySQL InnoDB: In-Place Heap + Undo Logs\n• Updates modify heap page in-place\n• Prior versions stored in rollback Undo Segment chain"]
     Cockroach["3. CockroachDB: Distributed Timestamped Keys\n• Keys stored as Key@Timestamp in LSM-Tree (Pebble)\n• Hybrid Logical Clocks (HLC) snapshot isolation"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Postgres blue
+class MySQL green
+class Cockroach purple
 ```
 
 ---
@@ -80,6 +89,15 @@ flowchart TD
     ClusteredPage -->|roll_ptr| Undo1
     Undo1 -->|roll_ptr| Undo2
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ClusteredPage blue
+class Undo1 green
+class Undo2 purple
 ```
 
 * **The Benefit**: Zero heap table bloat! High write throughput on fresh pages.
@@ -235,4 +253,13 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 MVCC is one of the most elegant triumphs in computer science: allowing high-throughput concurrent systems to operate without blocking locks.
 
-Understanding whether your database uses **PostgreSQL heap versioning**, **MySQL undo log rollback segments**, or **distributed LSM timestamps** is essential for optimizing query performance, preventing table bloat, and eliminating transactional concurrency bottlenecks.
+Understanding whether your database uses **PostgreSQL heap versioning**, **MySQL undo log rollback segments**, or **distributed LSM timestamps** is essential for optimizing query performance, preventing table bloat, and eliminating transactional concurrency bottlenecks. [2]
+
+## References & Further Reading
+
+1. **Reed, D. P. (1978)**. *Naming and Synchronization in a Decentralized Computer System*. MIT PhD Thesis. [https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf](https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf)
+2. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Michael, M. M. (2004)**. *Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects*. IEEE TPDS. [https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf](https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf)
+5. **McKenney, P. E., & Slingwine, J. D. (1998)**. *Read-Copy Update: Using Execution History to Solve Concurrency Problems*. PDCS. [https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf](https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf)
+6. **Bloom, B. H. (1970)**. *Space/Time Trade-offs in Hash Coding with Allowable Errors*. CACM. [https://doi.org/10.1145/362686.362692](https://doi.org/10.1145/362686.362692)

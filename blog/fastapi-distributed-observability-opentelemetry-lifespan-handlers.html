@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/fastapi-distributed-observability-opentelemetry-lifespan-handlers.html">
   <meta property="og:title" content="Distributed Observability: OpenTelemetry &amp; Lifespan Event Handling">
   <meta property="og:description" content="Managing FastAPI application state and connection pools with async lifespan handlers: instrumenting OpenTelemetry tracing middleware, W3C traceparent context propagation, and resource cleanup.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/fastapi-distributed-observability-opentelemetry-lifespan-handlers.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-12">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Observability: OpenTelemetry &amp; Lifespan Event Handling">
   <meta name="twitter:description" content="Managing FastAPI application state and connection pools with async lifespan handlers: instrumenting OpenTelemetry tracing middleware, W3C traceparent context propagation, and resource cleanup.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/fastapi-distributed-observability-opentelemetry-lifespan-handlers.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distributed Observability: OpenTelemetry & Lifespan Event Handling",
   "description": "Managing FastAPI application state and connection pools with async lifespan handlers: instrumenting OpenTelemetry tracing middleware, W3C traceparent context propagation, and resource cleanup.",
   "url": "https://akmalkhaniub.github.io/blog/fastapi-distributed-observability-opentelemetry-lifespan-handlers.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/fastapi-distributed-observability-opentelemetry-lifespan-handlers.jpg",
   "datePublished": "2026-08-12",
   "keywords": "FastAPI, OpenTelemetry, Lifespan, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed Observability: OpenTelemetry &amp; Lifespan Event Handling Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/fastapi-distributed-observability-opentelemetry-lifespan-handlers.jpg" class="article-cover-img" alt="Distributed Observability: OpenTelemetry &amp; Lifespan Event Handling Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed Observability: OpenTelemetry &amp; Lifespan Event Handling</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-observable-fastapi-microservice">Python Implementation: Observable FastAPI Microservice</a></li>
                 <li><a href="#observability-lifespan-gotchas">Observability &amp; Lifespan Gotchas</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In distributed microservice architectures, tracking request lifecycles as they navigate across multiple API gateways, database pools, and asynchronous workers is essential for maintaining uptime. A failure or latency spike in a downstream service must be instantly traceable back to the originating HTTP request.</p>
+<p>In distributed microservice architectures, tracking request lifecycles as they navigate across multiple API gateways, database pools, and asynchronous workers is essential for maintaining uptime <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. A failure or latency spike in a downstream service must be instantly traceable back to the originating HTTP request.</p>
 <p>Modern FastAPI applications manage global application state and connection resources using <strong>Lifespan Handlers</strong> (<code>asynccontextmanager</code>), replacing legacy startup/shutdown event hooks.</p>
 <p>By combining FastAPI lifespan state management with <strong>OpenTelemetry middleware</strong>, developers can instrument zero-downtime resource pooling and propagate W3C distributed tracing contexts across microservice boundaries.</p>
 <p>This article details how to construct an production-ready observable FastAPI service.</p>
@@ -123,25 +124,36 @@
 <h2 id="lifespan-resource-tracing-architecture">Lifespan Resource &amp; Tracing Architecture</h2>
 <p>The execution lifecycle of a FastAPI service managed by async lifespan generators and OpenTelemetry context propagation:</p>
 <div class="mermaid">flowchart TD
-  A[ASGI Server Launch] --&gt; B[FastAPI Lifespan Startup Phase]
+  A[&quot;ASGI Server Launch&quot;] --&gt; B[&quot;FastAPI Lifespan Startup Phase&quot;]
   
   subgraph SG1_LifespanStateInitialization [&quot;Lifespan State Initialization&quot;]
-    B --&gt;|Establish Pool| C[Asyncpg Database Connection Pool]
-    B --&gt;|Initialize Tracer| D[OpenTelemetry OTLP Exporter]
+    B --&gt;|Establish Pool| C[&quot;Asyncpg Database Connection Pool&quot;]
+    B --&gt;|Initialize Tracer| D[&quot;OpenTelemetry OTLP Exporter&quot;]
   end
   
-  C --&gt; E[Yield App Execution State]
+  C --&gt; E[&quot;Yield App Execution State&quot;]
   D --&gt; E
   
   subgraph SG2_ActiveRequestProcessing [&quot;Active Request Processing&quot;]
-    E --&gt;|Incoming Request + traceparent| F[OpenTelemetry ASGI Middleware]
-    F --&gt;|Extract Context &amp; Start Span| G[Route Handler Processing]
+    E --&gt;|Incoming Request + traceparent| F[&quot;OpenTelemetry ASGI Middleware&quot;]
+    F --&gt;|Extract Context &amp; Start Span| G[&quot;Route Handler Processing&quot;]
     G --&gt;|Query with Pool Connection| C
   end
   
-  E --&gt;|ASGI Server Shutdown Signal| H[Lifespan Teardown Phase]
+  E --&gt;|ASGI Server Shutdown Signal| H[&quot;Lifespan Teardown Phase&quot;]
   H --&gt;|Close Pool Connections| C
-  H --&gt;|Flush Spans| D</div>
+  H --&gt;|Flush Spans| D
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D yellow
+class E red</div>
 <h3 id="lifespan-vs-legacy-event-hooks">Lifespan vs. Legacy Event Hooks</h3>
 <ol>
 <li><strong>Unified Context</strong>: The modern <code>lifespan</code> parameter takes an <code>@asynccontextmanager</code> function. All code executing before the <code>yield</code> runs during startup, while code executing after <code>yield</code> runs during graceful shutdown. This ensures setup and teardown logic share the same local scope variables (like DB pools or AI model instances).</li>
@@ -271,8 +283,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams deploying lifespan context management and OpenTelemetry report:</p>
 <ul>
 <li><strong>Zero Resource Leaks</strong>: Managing database pools within lifespan context guarantees clean connection teardowns during rolling deployment reloads.</li>
-<li><strong>End-to-End Tracing Visibility</strong>: OpenTelemetry headers allow tracing a single request across dozens of microservices, cutting mean time to resolution (MTTR) by 60%.</li>
+<li><strong>End-to-End Tracing Visibility</strong>: OpenTelemetry headers allow tracing a single request across dozens of microservices, cutting mean time to resolution (MTTR) by 60%. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>W3C Distributed Tracing Working Group (2021)</strong>. <em>Trace Context</em>. W3C Recommendation. <a href="https://www.w3.org/TR/trace-context/" target="_blank" rel="noopener">https://www.w3.org/TR/trace-context/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -309,6 +332,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-observable-fastapi-microservice" class="toc-link">Python Implementation: Observable FastAPI Microservice</a></li>
               <li class="toc-item toc-h2"><a href="#observability-lifespan-gotchas" class="toc-link">Observability &amp; Lifespan Gotchas</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

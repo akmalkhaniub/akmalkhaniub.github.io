@@ -1,4 +1,4 @@
-The software engineering landscape is undergoing a massive shift. We are moving from simple **single-prompt LLM utilities**—where a user sends a query and receives a text response—to **stateful, collaborative AI Agents and Workflows**. These systems plan execution paths, invoke specialized tools, evaluate intermediate outputs, and self-correct when errors occur.
+The software engineering landscape is undergoing a massive shift [1]. We are moving from simple **single-prompt LLM utilities**—where a user sends a query and receives a text response—to **stateful, collaborative AI Agents and Workflows**. These systems plan execution paths, invoke specialized tools, evaluate intermediate outputs, and self-correct when errors occur.
 
 > ### 📖 Article Overview
 > * **What this article is about:** This article delineates the critical differences between structured AI Workflows and autonomous AI Agents, exploring their respective architectural patterns.
@@ -23,17 +23,28 @@ Before coding, it is critical to distinguish between **Workflows** and **Agents*
 ```mermaid
 flowchart TD
     subgraph SG1_WorkflowsWorkflowsHigh ["Workflows [Workflows: High Predictability / Low Autonomy]"]
-        Chaining[Prompt Chaining] --> Routing[Routing]
-        Routing --> Parallel[Parallelization]
-        Parallel --> Orch[Orchestrator-Workers]
+        Chaining["Prompt Chaining"] --> Routing["Routing"]
+        Routing --> Parallel["Parallelization"]
+        Parallel --> Orch["Orchestrator-Workers"]
     end
     subgraph SG2_AutonomousAgentsHigh ["Autonomous [Agents: High Autonomy / Low Predictability]"]
-        Eval[Evaluator-Optimizer] --> ReAct[ReAct Loop]
-        ReAct --> Swarms[Multi-Agent Swarms]
+        Eval["Evaluator-Optimizer"] --> ReAct["ReAct Loop"]
+        ReAct --> Swarms["Multi-Agent Swarms"]
     end
     Workflows ===> Autonomous
     style Workflows fill:#f1f5f9,stroke:#94a3b8,stroke-width:2px
     style Autonomous fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Chaining,ReAct blue
+class Routing,Swarms green
+class Parallel purple
+class Orch yellow
+class Eval red
 ```
 
 ---
@@ -47,11 +58,22 @@ Prompt Chaining executes a sequence of LLM steps, where each step’s output bec
 
 ```mermaid
 flowchart TD
-    Query[User Query] --> Step1[Step 1: Extract Context]
-    Step1 --> Programmatic[Programmatic Sanitize]
-    Programmatic --> Step2[Step 2: Generate Draft]
-    Step2 --> Step3[Step 3: Format Output]
-    Step3 --> Response[Final Response]
+    Query["User Query"] --> Step1["Step 1: Extract Context"]
+    Step1 --> Programmatic["Programmatic Sanitize"]
+    Programmatic --> Step2["Step 2: Generate Draft"]
+    Step2 --> Step3["Step 3: Format Output"]
+    Step3 --> Response["Final Response"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,Response blue
+class Step1 green
+class Programmatic purple
+class Step2 yellow
+class Step3 red
 ```
 
 * **Best Used For**: Multi-stage generation where breaking the task down into sub-problems improves output quality (e.g., extracting key terms, then writing a summary, then translating).
@@ -63,14 +85,25 @@ Routing classifies a user query and directs it to a specialized downstream LLM p
 
 ```mermaid
 flowchart TD
-    Input[User Input] --> Router{Router LLM}
-    Router -->|Coding Query| Dev[Developer Prompt]
-    Router -->|Database Query| DB[SQL Writer Prompt]
-    Router -->|General Triage| General[Support Agent]
+    Input["User Input"] --> Router{Router LLM}
+    Router -->|Coding Query| Dev["Developer Prompt"]
+    Router -->|Database Query| DB["SQL Writer Prompt"]
+    Router -->|General Triage| General["Support Agent"]
     
-    Dev --> Output[Final Synthesized Output]
+    Dev --> Output["Final Synthesized Output"]
     DB --> Output
     General --> Output
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Input blue
+class Dev green
+class DB purple
+class General yellow
+class Output red
 ```
 
 * **Best Used For**: Customer support portals, query dispatch systems, and intent detection gates where a single prompt cannot handle all possible queries.
@@ -84,14 +117,25 @@ Parallelization runs multiple LLM tasks concurrently and aggregates their result
 
 ```mermaid
 flowchart TD
-    Input[Input Request] --> Split{Split Task}
-    Split --> TaskA[Task A: Security Check]
-    Split --> TaskB[Task B: Style Check]
-    Split --> TaskC[Task C: Performance Check]
+    Input["Input Request"] --> Split{Split Task}
+    Split --> TaskA["Task A: Security Check"]
+    Split --> TaskB["Task B: Style Check"]
+    Split --> TaskC["Task C: Performance Check"]
     TaskA --> Aggregate{Synthesizer}
     TaskB --> Aggregate
     TaskC --> Aggregate
-    Aggregate --> Output[Compiled Report]
+    Aggregate --> Output["Compiled Report"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Input blue
+class TaskA green
+class TaskB purple
+class TaskC yellow
+class Output red
 ```
 
 * **Best Used For**: Fast document summarization, security code auditing, and checking consensus on ambiguous classification tasks.
@@ -103,14 +147,25 @@ An Orchestrator LLM breaks a complex user query into dynamically-determined sub-
 
 ```mermaid
 flowchart TD
-    User[User Goal] --> Orch[Orchestrator LLM]
-    Orch -->|Plan subtasks| W1[Worker A: Fetch API]
-    Orch -->|Plan subtasks| W2[Worker B: SQL Query]
-    Orch -->|Plan subtasks| W3[Worker C: Compute Stats]
-    W1 --> Synth[Synthesizer LLM]
+    User["User Goal"] --> Orch["Orchestrator LLM"]
+    Orch -->|Plan subtasks| W1["Worker A: Fetch API"]
+    Orch -->|Plan subtasks| W2["Worker B: SQL Query"]
+    Orch -->|Plan subtasks| W3["Worker C: Compute Stats"]
+    W1 --> Synth["Synthesizer LLM"]
     W2 --> Synth
     W3 --> Synth
-    Synth --> Response[Final Answer]
+    Synth --> Response["Final Answer"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,Synth blue
+class Orch,Response green
+class W1 purple
+class W2 yellow
+class W3 red
 ```
 
 * **Best Used For**: Complex research projects, automated software engineering tasks, and large-scale data synthesis.
@@ -126,11 +181,21 @@ An Evaluator-Optimizer loop consists of a Generator that creates a draft, and an
 
 ```mermaid
 flowchart TD
-    Input[Goal] --> Gen[Generator LLM]
-    Gen --> Draft[Draft Output]
+    Input["Goal"] --> Gen["Generator LLM"]
+    Gen --> Draft["Draft Output"]
     Draft --> Eval{Evaluator LLM}
     Eval -->|Rejected - Critique| Gen
-    Eval -->|Approved| Out[Final Answer]
+    Eval -->|Approved| Out["Final Answer"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Input blue
+class Gen green
+class Draft purple
+class Out yellow
 ```
 
 * **Best Used For**: Code generation, rigorous copyediting, schema compliance checks, and translations where quality must be verified programmatically before delivery.
@@ -142,13 +207,24 @@ The ReAct paradigm combines reasoning (thoughts) and acting (tool execution) in 
 
 ```mermaid
 flowchart TD
-    Query[User Query] --> State[Agent State Manager]
-    State --> Reason[Reason: What is the next step?]
+    Query["User Query"] --> State["Agent State Manager"]
+    State --> Reason["Reason: What is the next step?"]
     Reason --> Action{Action: Call Tool?}
-    Action -->|Yes - Execute Tool| Tool[Run Tool / Sandbox]
-    Tool --> Observation[Observe Result]
+    Action -->|Yes - Execute Tool| Tool["Run Tool / Sandbox"]
+    Tool --> Observation["Observe Result"]
     Observation --> State
-    Action -->|No - Task Complete| Out[Return Output]
+    Action -->|No - Task Complete| Out["Return Output"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,Out blue
+class State green
+class Reason purple
+class Tool yellow
+class Observation red
 ```
 
 * **Best Used For**: Autonomous databases, filesystem managers, and systems that must interact with APIs dynamically to answer open-ended questions.
@@ -163,16 +239,27 @@ For complex environments, multiple independent agents coordinate their work. Two
 ```mermaid
 flowchart TD
     subgraph SG3_SupervisorHierarchicalSupervisor ["Supervisor [Hierarchical Supervisor]"]
-        S[Supervisor LLM] -->|Delegate| Worker1[Researcher Agent]
-        S -->|Delegate| Worker2[Writer Agent]
+        S["Supervisor LLM"] -->|Delegate| Worker1["Researcher Agent"]
+        S -->|Delegate| Worker2["Writer Agent"]
         Worker1 --> S
         Worker2 --> S
       end
       
       subgraph SG4_DebateColleagueDebate ["Debate [Colleague Debate Swarm]"]
-        D1[Proposer Agent] <-->|Debate Arguments| D2[Critic Agent]
-        D2 -->|Referees Consensus| Ref[Referee LLM]
+        D1["Proposer Agent"] <-->|Debate Arguments| D2["Critic Agent"]
+        D2 -->|Referees Consensus| Ref["Referee LLM"]
       end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class S,Ref blue
+class Worker1 green
+class Worker2 purple
+class D1 yellow
+class D2 red
 ```
 
 ---

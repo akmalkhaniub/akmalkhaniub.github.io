@@ -1,6 +1,6 @@
 # Consistent Hashing & Dynamic Cache Sharding with Virtual Nodes
 
-When scaling distributed cache clusters across multiple server nodes, data must be partitioned (sharded) so that read and write requests reach the correct cache node.
+When scaling distributed cache clusters across multiple server nodes, data must be partitioned (sharded) so that read and write requests reach the correct cache node [1].
 
 A naive sharding approach uses simple modulo hashing:
 $$\text{node\_index} = \text{hash}(\text{key}) \pmod N$$
@@ -30,11 +30,22 @@ flowchart TD
   end
   
   subgraph SG2_PhysicalCacheServers ["Physical Cache Servers"]
-    R1 -.-> ServerA[Physical Server A]
+    R1 -.-> ServerA["Physical Server A"]
     R6 -.-> ServerA
-    R3 -.-> ServerB[Physical Server B]
-    R5 -.-> ServerC[Physical Server C]
+    R3 -.-> ServerB["Physical Server B"]
+    R5 -.-> ServerC["Physical Server C"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class R1,R6 blue
+class R2,ServerA green
+class R3,ServerB purple
+class R4,ServerC yellow
+class R5 red
 ```
 
 ### Core Consistent Hashing Principles
@@ -179,4 +190,14 @@ When deploying consistent hashing rings:
 ## Real-World Enterprise Impact
 Teams deploying Consistent Hashing with Virtual Nodes report:
 * **Minimal Cache Invalidation During Cluster Resizing**: Adding or removing server nodes re-maps only $1/N$ of keys, preventing global cache misses.
-* **Uniform Traffic Balance**: Virtual nodes distribute key traffic evenly across all physical servers, eliminating hotspot nodes.
+* **Uniform Traffic Balance**: Virtual nodes distribute key traffic evenly across all physical servers, eliminating hotspot nodes. [2]
+
+## References & Further Reading
+
+1. **Karger, D., et al. (1997)**. *Consistent Hashing and Random Trees*. STOC. [https://www.cs.princeton.edu/courses/archive/fall09/cos521/Handouts/consistent-hashing.pdf](https://www.cs.princeton.edu/courses/archive/fall09/cos521/Handouts/consistent-hashing.pdf)
+2. **Eisenbud, D. E., et al. (2016)**. *Maglev: A Fast and Reliable Software Network Load Balancer*. NSDI. [https://research.google/pubs/pub44824/](https://research.google/pubs/pub44824/)
+3. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+4. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+5. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+6. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+7. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

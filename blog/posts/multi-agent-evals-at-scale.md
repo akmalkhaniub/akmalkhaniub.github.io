@@ -5,7 +5,7 @@
 
 ---
 
-In traditional software development, tests are deterministic: a specific input always yields the same output (pass or fail). In LLM-based agentic applications, outputs are probabilistic. A prompt change that improves Agent A’s output might cause Agent B to fail its downstream task, introducing silent regressions that are difficult to detect with standard unit tests.
+In traditional software development, tests are deterministic: a specific input always yields the same output (pass or fail) [1]. In LLM-based agentic applications, outputs are probabilistic. A prompt change that improves Agent A’s output might cause Agent B to fail its downstream task, introducing silent regressions that are difficult to detect with standard unit tests.
 
 To deploy multi-agent systems with confidence, you must transition to **Automated Evaluation Pipelines (Evals)**.
 
@@ -19,15 +19,26 @@ A production evaluation harness must measure four core system dimensions:
 
 ```mermaid
 flowchart TD
-    Metric[Agentic Metrics] --> Acc[1. Extraction Accuracy]
-    Metric --> Lat[2. Compounding Latency]
-    Metric --> Cost[3. Token Economics]
-    Metric --> Tool[4. Tool Failure Rate]
+    Metric["Agentic Metrics"] --> Acc["1. Extraction Accuracy"]
+    Metric --> Lat["2. Compounding Latency"]
+    Metric --> Cost["3. Token Economics"]
+    Metric --> Tool["4. Tool Failure Rate"]
     
-    Acc -->|Measure| LLMJudge[LLM-as-Judge / ROUGE / Code compile]
-    Lat -->|Measure| LatencyGate[Millisecond tracing per step]
-    Cost -->|Measure| TokenBill[Input/Output cost calculation]
-    Tool -->|Measure| ErrorRate[Regex parsing & connection errors]
+    Acc -->|Measure| LLMJudge["LLM-as-Judge / ROUGE / Code compile"]
+    Lat -->|Measure| LatencyGate["Millisecond tracing per step"]
+    Cost -->|Measure| TokenBill["Input/Output cost calculation"]
+    Tool -->|Measure| ErrorRate["Regex parsing & connection errors"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Metric,LLMJudge blue
+class Acc,LatencyGate green
+class Lat,TokenBill purple
+class Cost,ErrorRate yellow
+class Tool red
 ```
 
 ### 1. Task Success and Accuracy

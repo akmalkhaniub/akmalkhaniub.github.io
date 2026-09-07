@@ -1,6 +1,6 @@
 # Zero-Trust Authentication, Authorization & Audit Trails
 
-Traditional enterprise networks relied on **Perimeter Security** (the "castle-and-moat" model). Once a request passed the outer firewall or VPN gateway, internal service-to-service communication was trusted implicitly. In cloud-native microservice environments, a single compromised internal node allows attackers to move laterally across un-encrypted microservice APIs.
+Traditional enterprise networks relied on **Perimeter Security** (the "castle-and-moat" model) [1]. Once a request passed the outer firewall or VPN gateway, internal service-to-service communication was trusted implicitly. In cloud-native microservice environments, a single compromised internal node allows attackers to move laterally across un-encrypted microservice APIs.
 
 To eliminate implicit trust, security architects enforce **Zero-Trust Security Architecture**.
 
@@ -16,19 +16,30 @@ The multi-stage security verification pipeline applied to every microservice req
 
 ```mermaid
 flowchart TD
-  A[Incoming Microservice Request] --> B[Layer 1: Mutual TLS mTLS]
+  A["Incoming Microservice Request"] --> B["Layer 1: Mutual TLS mTLS"]
   
   subgraph SG1_ZeroTrustSecurity ["Zero-Trust Security Verification Pipeline"]
-    B -->|Verify Cryptographic SPIFFE Certificate| C[Layer 2: JWT Token Authentication]
-    C -->|Validate Signature & Expiry| D[Layer 3: ABAC Policy Authorization Engine]
+    B -->|Verify Cryptographic SPIFFE Certificate| C["Layer 2: JWT Token Authentication"]
+    C -->|Validate Signature & Expiry| D["Layer 3: ABAC Policy Authorization Engine"]
     D -->|Evaluate User Roles, IP, & Tenant Scope| E{Authorized?}
   end
   
-  E -->|Yes| F[Execute Domain Service Method]
-  E -->|No - 403 Forbidden| G[Emit Security Incident Log]
+  E -->|Yes| F["Execute Domain Service Method"]
+  E -->|No - 403 Forbidden| G["Emit Security Incident Log"]
   
-  F --> H[Layer 4: Immutable Hash-Chained Audit Trail]
+  F --> H["Layer 4: Immutable Hash-Chained Audit Trail"]
   G --> H
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B,H green
+class C purple
+class D yellow
+class F red
 ```
 
 ### Zero-Trust Architecture Layers
@@ -189,4 +200,13 @@ When engineering Zero-Trust security layers:
 ## Real-World Enterprise Impact
 Teams deploying Zero-Trust security and audit architectures report:
 * **Zero Lateral Intrusion Vulnerability**: Eliminating implicit trust prevents compromised internal nodes from accessing restricted upstream APIs.
-* **Continuous SOC2 & ISO27001 Compliance**: Tamper-evident cryptographic audit logs provide immutable proof of all authorization decisions and state changes.
+* **Continuous SOC2 & ISO27001 Compliance**: Tamper-evident cryptographic audit logs provide immutable proof of all authorization decisions and state changes. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

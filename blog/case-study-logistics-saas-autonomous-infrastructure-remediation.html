@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/case-study-logistics-saas-autonomous-infrastructure-remediation.html">
   <meta property="og:title" content="Case Study: Architecting an Autonomous Infrastructure Remediation Engine for Logistics SaaS">
   <meta property="og:description" content="A 10-part case study on autonomous SRE remediation on GCP: team layout, HITL HMAC approval gates, rate-limiting queue outages, and reducing MTTR from 42 to 1.8 minutes.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/case-study-logistics-saas-autonomous-infrastructure-remediation.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-31">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Case Study: Architecting an Autonomous Infrastructure Remediation Engine for Logistics SaaS">
   <meta name="twitter:description" content="A 10-part case study on autonomous SRE remediation on GCP: team layout, HITL HMAC approval gates, rate-limiting queue outages, and reducing MTTR from 42 to 1.8 minutes.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/case-study-logistics-saas-autonomous-infrastructure-remediation.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Case Study: Architecting an Autonomous Infrastructure Remediation Engine for Logistics SaaS",
   "description": "A 10-part case study on autonomous SRE remediation on GCP: team layout, HITL HMAC approval gates, rate-limiting queue outages, and reducing MTTR from 42 to 1.8 minutes.",
   "url": "https://akmalkhaniub.github.io/blog/case-study-logistics-saas-autonomous-infrastructure-remediation.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/case-study-logistics-saas-autonomous-infrastructure-remediation.jpg",
   "datePublished": "2026-07-31",
   "keywords": "Case Study, SRE, GCP, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Case Study: Architecting an Autonomous Infrastructure Remediation Engine for Logistics SaaS Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/case-study-logistics-saas-autonomous-infrastructure-remediation.jpg" class="article-cover-img" alt="Case Study: Architecting an Autonomous Infrastructure Remediation Engine for Logistics SaaS Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Case Study: Architecting an Autonomous Infrastructure Remediation Engine for Logistics SaaS</h1>
             <div class="article-meta">
@@ -119,9 +119,10 @@
                 <li><a href="#8-incident-or-failure">8. Incident or Failure</a></li>
                 <li><a href="#9-measured-result">9. Measured Result</a></li>
                 <li><a href="#10-lesson-learned">10. Lesson Learned</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Operational outages in global logistics software directly halt physical supply chains—delaying container ships, grounding cargo flights, and stranding freight trucks at customs checkpoints. This case study documents how our team designed, deployed, and operationalized an autonomous infrastructure remediation agent swarm on Google Cloud Platform for a global logistics SaaS provider.</p>
+<p>Operational outages in global logistics software directly halt physical supply chains—delaying container ships, grounding cargo flights, and stranding freight trucks at customs checkpoints <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. This case study documents how our team designed, deployed, and operationalized an autonomous infrastructure remediation agent swarm on Google Cloud Platform for a global logistics SaaS provider.</p>
 <hr>
 <h2 id="1-industry-and-problem">1. Industry and Problem</h2>
 <ul>
@@ -154,22 +155,33 @@
 <h2 id="4-architecture">4. Architecture</h2>
 <p>The architecture isolates agent diagnosis from execution using a HITL Approval Gateway on GCP:</p>
 <div class="mermaid">flowchart TD
-  A[Cloud Monitoring / Alertmanager Incident Trigger] --&gt; B[GCP Cloud Pub/Sub: Incident Event]
-  B --&gt; C[Cloud Run: Incident Command Agent]
+  A[&quot;Cloud Monitoring / Alertmanager Incident Trigger&quot;] --&gt; B[&quot;GCP Cloud Pub/Sub: Incident Event&quot;]
+  B --&gt; C[&quot;Cloud Run: Incident Command Agent&quot;]
   
   subgraph SG1_AutonomousTriageDiagnostics [&quot;Autonomous Triage &amp; Diagnostics&quot;]
-    C --&gt; D[Cloud Audit Logs &amp; Cloud Trace Inspection]
-    C --&gt; E[AlloyDB AI: Historical Incident Vector Memory]
-    C --&gt; F[Vertex AI: Gemini 1.5 Pro Diagnostics Engine]
+    C --&gt; D[&quot;Cloud Audit Logs &amp; Cloud Trace Inspection&quot;]
+    C --&gt; E[&quot;AlloyDB AI: Historical Incident Vector Memory&quot;]
+    C --&gt; F[&quot;Vertex AI: Gemini 1.5 Pro Diagnostics Engine&quot;]
   end
   
   F --&gt; G{Remediation Risk Level?}
-  G --&gt;|Low Risk - Clear Cache / Restart Pod| H[Kubernetes Operator: Auto-Execute]
-  G --&gt;|High Risk - Failover DB / Scale Cluster| I[HITL Gateway: Dispatch HMAC Token to PagerDuty/Slack]
+  G --&gt;|Low Risk - Clear Cache / Restart Pod| H[&quot;Kubernetes Operator: Auto-Execute&quot;]
+  G --&gt;|High Risk - Failover DB / Scale Cluster| I[&quot;HITL Gateway: Dispatch HMAC Token to PagerDuty/Slack&quot;]
   
   I --&gt;|Human SRE Grants Signed Token| H
-  I --&gt;|Timeout 15 mins / Rejection| J[Escalate to Secondary On-Call]
-  H --&gt; K[Post-Remediation Verification Gate]</div>
+  I --&gt;|Timeout 15 mins / Rejection| J[&quot;Escalate to Secondary On-Call&quot;]
+  H --&gt; K[&quot;Post-Remediation Verification Gate&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,H green
+class C,I purple
+class D,J yellow
+class E,K red</div>
 <h3 id="tech-stack-breakdown">Tech Stack Breakdown</h3>
 <ul>
 <li><strong>Incident Transport</strong>: GCP Cloud Monitoring Alerting Hooks + Cloud Pub/Sub.</li>
@@ -283,8 +295,20 @@ if __name__ == &quot;__main__&quot;:
 <h2 id="10-lesson-learned">10. Lesson Learned</h2>
 <blockquote>
 <p><strong>&quot;Automation without rate limits and blast-radius boundaries is just accelerated failure.&quot;</strong></p>
-<p>As Tech Lead, this case study demonstrated that an autonomous remediation engine must have explicit blast-radius limits. Restricting the agent to rate-limited execution queues (Cloud Tasks) and enforcing cryptographic HITL approval gates ensures that automation accelerates recovery without risking infrastructure stability.</p>
+<p>As Tech Lead, this case study demonstrated that an autonomous remediation engine must have explicit blast-radius limits. Restricting the agent to rate-limited execution queues (Cloud Tasks) and enforcing cryptographic HITL approval gates ensures that automation accelerates recovery without risking infrastructure stability. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
 </blockquote>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -327,6 +351,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#8-incident-or-failure" class="toc-link">8. Incident or Failure</a></li>
               <li class="toc-item toc-h2"><a href="#9-measured-result" class="toc-link">9. Measured Result</a></li>
               <li class="toc-item toc-h2"><a href="#10-lesson-learned" class="toc-link">10. Lesson Learned</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

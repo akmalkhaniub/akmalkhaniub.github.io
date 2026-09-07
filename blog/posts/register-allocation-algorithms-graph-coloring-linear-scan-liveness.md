@@ -1,6 +1,6 @@
 # Register Allocation Algorithms: Graph Coloring, Linear Scan & Liveness Analysis
 
-In the final stages of a compiler backend (such as **LLVM CodeGen**, **GCC**, or **Cranelift**), the compiler must translate Intermediate Representation (IR) instructions into native CPU assembly.
+In the final stages of a compiler backend (such as **LLVM CodeGen**, **GCC**, or **Cranelift**), the compiler must translate Intermediate Representation (IR) instructions into native CPU assembly [1].
 
 Compiler IR operates on an **unlimited abstraction of virtual registers** (`v0, v1, v2, ... v999`).
 
@@ -21,7 +21,7 @@ How compiler backends compute variable liveness intervals and allocate physical 
 ```mermaid
 flowchart TD
   subgraph SG1_CompilerIrLiveness ["Compiler IR & Liveness Analysis"]
-    IR[IR Code Sequence: v0, v1, v2, v3] --> Liveness[Liveness Analysis: Compute Live Intervals]
+    IR["IR Code Sequence: v0, v1, v2, v3"] --> Liveness["Liveness Analysis: Compute Live Intervals"]
     Liveness --> Intervals["Live Intervals: v0=[1..4], v1=[2..6], v2=[3..5], v3=[7..9]"]
   end
   
@@ -29,12 +29,23 @@ flowchart TD
     Intervals --> Allocator{Are Free CPU Registers Available?}
     
     Allocator -->|Yes - Assign Register| RegAssign["v0 -> RAX, v1 -> RBX, v2 -> RCX"]
-    Allocator -->|No - Register Exhaustion!| Spill[Register Spiller: Spill longest interval v1 to RAM Stack [RBP-8]]
+    Allocator -->|No - Register Exhaustion!| Spill["Register Spiller: Spill longest interval v1 to RAM Stack [RBP-8"]]
   end
   
   subgraph SG3_FinalTargetMachine ["Final Target Machine Code"]
-    RegAssign & Spill --> Assembly[Native Assembly Code: MOV RAX, 10; MOV [RBP-8], RBX]
+    RegAssign & Spill --> Assembly["Native Assembly Code: MOV RAX, 10; MOV [RBP-8"], RBX]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class IR,Assembly blue
+class Liveness green
+class Intervals purple
+class RegAssign yellow
+class Spill red
 ```
 
 ### Core Register Allocation Principles
@@ -172,4 +183,10 @@ When engineering compiler backends:
 ## Real-World Enterprise Impact
 Compiler backends using Linear Scan and Graph Coloring (such as **LLVM** and **V8 TurboFan**) report:
 * **Over 25% CPU Execution Speedup**: Keeping high-frequency loop variables inside physical CPU registers avoids slow RAM stack memory reads (`MOV EAX, [RBP-8]`).
-* **Microsecond JIT Compilation Latencies**: Linear Scan allocation allows JIT compilers (V8) to emit optimized machine code in a single fast pass.
+* **Microsecond JIT Compilation Latencies**: Linear Scan allocation allows JIT compilers (V8) to emit optimized machine code in a single fast pass. [2]
+
+## References & Further Reading
+
+1. **Cytron, R., et al. (1991)**. *Efficiently Computing Static Single Assignment Form and the Control Dependence Graph*. ACM TOPLAS. [https://doi.org/10.1145/115372.115320](https://doi.org/10.1145/115372.115320)
+2. **Lattner, C., & Adve, V. (2004)**. *LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation*. CGO. [https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf](https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf)
+3. **V8 Team (2024)**. *V8 Orinoco and Garbage Collection*. v8.dev. [https://v8.dev/blog](https://v8.dev/blog)

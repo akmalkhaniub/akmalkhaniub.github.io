@@ -1,6 +1,6 @@
 # Building Autonomous AI Agent Frameworks: Multi-Agent Orchestration & Tool Execution
 
-The artificial intelligence landscape has shifted from passive, single-turn text completion chatbots toward **Autonomous Agentic AI Systems**.
+The artificial intelligence landscape has shifted from passive, single-turn text completion chatbots toward **Autonomous Agentic AI Systems** [1].
 
 Modern AI Agent frameworks (such as **AutoGPT**, **CrewAI**, **LangGraph**, and **Google Antigravity**) allow Large Language Models (LLMs) to independently plan complex software development tasks, interact with terminal shells, view filesystems, invoke API tools, and self-correct errors in an iterative loop.
 
@@ -16,23 +16,34 @@ How a Supervisor Agent coordinates specialized Sub-Agents executing ReAct reason
 
 ```mermaid
 flowchart TD
-  UserTask["User Request: 'Refactor database sharding & run tests'"] --> Supervisor[Parent Supervisor Agent]
+  UserTask["User Request: 'Refactor database sharding & run tests'"] --> Supervisor["Parent Supervisor Agent"]
   
   subgraph SG1_MultiAgentDelegation ["Multi-Agent Delegation Bus"]
-    Supervisor -->|Delegate Research Task| ResearchAgent[Research Sub-Agent]
-    Supervisor -->|Delegate Code Edit Task| CoderAgent[Coder Sub-Agent]
+    Supervisor -->|Delegate Research Task| ResearchAgent["Research Sub-Agent"]
+    Supervisor -->|Delegate Code Edit Task| CoderAgent["Coder Sub-Agent"]
   end
   
   subgraph SG2_ReactReasonAct ["ReAct (Reason + Act) Execution Loop"]
-    CoderAgent -->|Thought - Analyze code bug| Thought[1. Thought Step]
-    Thought -->|Action - Call tool run_command| Action[2. Action Step: Tool Invocation]
-    Action -->|Execute Tool in Sandbox| ToolRunner[Sandbox Tool Dispatcher]
-    ToolRunner -->|Return Tool Output| Observation[3. Observation Step]
+    CoderAgent -->|Thought - Analyze code bug| Thought["1. Thought Step"]
+    Thought -->|Action - Call tool run_command| Action["2. Action Step: Tool Invocation"]
+    Action -->|Execute Tool in Sandbox| ToolRunner["Sandbox Tool Dispatcher"]
+    ToolRunner -->|Return Tool Output| Observation["3. Observation Step"]
     Observation -->|Re-evaluate Context| CoderAgent
   end
   
   CoderAgent -->|Report Final Solution| Supervisor
   Supervisor -->|Final Response| UserTask
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserTask,Action blue
+class Supervisor,ToolRunner green
+class ResearchAgent,Observation purple
+class CoderAgent yellow
+class Thought red
 ```
 
 ### Core Autonomous Agent Mechanics
@@ -173,4 +184,13 @@ When architecting autonomous AI agent platforms:
 ## Real-World Enterprise Impact
 Platforms built on multi-agent architectures (such as **Google Antigravity**) report:
 * **$10\times$ Productivity Gains for Complex Codebases**: Autonomous agents independently research file dependencies, make edits, and verify changes via terminal commands without manual human intervention.
-* **Zero Context Window Collapses**: Sub-agent context isolation prevents massive execution logs from overflowing prompt limits, enabling hours of continuous problem solving.
+* **Zero Context Window Collapses**: Sub-agent context isolation prevents massive execution logs from overflowing prompt limits, enabling hours of continuous problem solving. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

@@ -5,7 +5,7 @@
 
 The standard tutorial for Retrieval-Augmented Generation (RAG) is deceptively simple: chunk a few text files, generate vector embeddings, throw them into a vector database, and perform a Cosine Similarity search on the user's query.
 
-When you deploy this setup to production, however, it quickly falls apart.
+When you deploy this setup to production, however, it quickly falls apart [1].
 
 Users write short, keyword-dense search queries ("2024 billing code 99214") that semantic vector models struggle to rank correctly. Or they write long, complex comparative queries that retrieve irrelevant chunks, flooding the LLM context window with noise.
 
@@ -21,28 +21,39 @@ Rather than relying on a single retrieval method, our pipeline queries the datab
 
 ```mermaid
 flowchart TD
-    UserQuery[User Query: 'Billing code 99214 under audit'] --> InputProc{Input Process}
+    UserQuery["User Query: 'Billing code 99214 under audit'"] --> InputProc{Input Process}
     
     subgraph SG1_RetrievalParallelRetrieval ["Retrieval [Parallel Retrieval Layer]"]
-        InputProc -->|Vector Embeddings| VecSearch[pgvector Semantic Search]
-        InputProc -->|Text Tokenization| LexSearch[PostgreSQL Full-Text Search]
+        InputProc -->|Vector Embeddings| VecSearch["pgvector Semantic Search"]
+        InputProc -->|Text Tokenization| LexSearch["PostgreSQL Full-Text Search"]
     end
 
     subgraph SG2_FusionFusionFiltering ["Fusion [Fusion & Filtering Layer]"]
-        VecSearch -->|Top 50 Vector Matches| RRF[Reciprocal Rank Fusion RRF]
+        VecSearch -->|Top 50 Vector Matches| RRF["Reciprocal Rank Fusion RRF"]
         LexSearch -->|Top 50 Keyword Matches| RRF
-        RRF -->|Top 20 Merged Candidates| Reranker[Cross-Encoder Reranker]
+        RRF -->|Top 20 Merged Candidates| Reranker["Cross-Encoder Reranker"]
     end
 
     subgraph SG3_GenerationContextGeneration ["Generation [Context Generation]"]
-        Reranker -->|Top 5 Highly-Relevant Chunks| Context[Final Context Payload]
-        Context -->|Structured Prompt| LLM[Ollama / Anthropic Claude]
-        LLM -->|Accurate Answer| User[Final User Output]
+        Reranker -->|Top 5 Highly-Relevant Chunks| Context["Final Context Payload"]
+        Context -->|Structured Prompt| LLM["Ollama / Anthropic Claude"]
+        LLM -->|Accurate Answer| User["Final User Output"]
     end
 
     style Retrieval fill:#f8fafc,stroke:#64748b,stroke-width:2px
     style Fusion fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px
     style Generation fill:#fffbeb,stroke:#d97706,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserQuery,Context blue
+class VecSearch,LLM green
+class LexSearch,User purple
+class RRF yellow
+class Reranker red
 ```
 
 1. **Parallel Queries**: The query is embedded (e.g., via `text-embedding-3-small`) to search vector indices, while simultaneously being parsed into a lexeme query for text search.

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/nextjs-rsc-boundary-serialization.html">
   <meta property="og:title" content="The RSC Boundary: Deep Dive into Serialization, Shared State, and Thread Boundaries">
   <meta property="og:description" content="Analyzing the boundary between Server Components and Client Components in Next.js: examining serialization rules, data-passing constraints, and URL query-based state sharing patterns.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nextjs-rsc-boundary-serialization.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-24">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="The RSC Boundary: Deep Dive into Serialization, Shared State, and Thread Boundaries">
   <meta name="twitter:description" content="Analyzing the boundary between Server Components and Client Components in Next.js: examining serialization rules, data-passing constraints, and URL query-based state sharing patterns.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nextjs-rsc-boundary-serialization.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "The RSC Boundary: Deep Dive into Serialization, Shared State, and Thread Boundaries",
   "description": "Analyzing the boundary between Server Components and Client Components in Next.js: examining serialization rules, data-passing constraints, and URL query-based state sharing patterns.",
   "url": "https://akmalkhaniub.github.io/blog/nextjs-rsc-boundary-serialization.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/nextjs-rsc-boundary-serialization.jpg",
   "datePublished": "2026-07-24",
   "keywords": "Next.js, React 19, Frontend, Architecture",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="The RSC Boundary: Deep Dive into Serialization, Shared State, and Thread Boundaries Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/nextjs-rsc-boundary-serialization.jpg" class="article-cover-img" alt="The RSC Boundary: Deep Dive into Serialization, Shared State, and Thread Boundaries Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">The RSC Boundary: Deep Dive into Serialization, Shared State, and Thread Boundaries</h1>
             <div class="article-meta">
@@ -118,6 +118,7 @@
                 <li><a href="#4-state-sharing-moving-beyond-context-providers">4. State Sharing: Moving Beyond Context Providers</a></li>
                 <li><a href="#the-architectural-solution-url-state">The Architectural Solution: URL State</a></li>
                 <li><a href="#benefits-of-url-state">Benefits of URL State:</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -125,23 +126,33 @@
   <div class="alert-content"><p><strong>Update (September 2026)</strong>: Next.js <strong>16.3 is Active LTS</strong>. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See <a href="the-great-un-caching-nextjs-15-caching-architecture-defaults.html">The Great Un-Caching</a> for the 15 default inversion.</p>
 </div>
 </div>
-<p>Understanding the boundaries of React Server Components (RSC) is one of the most critical shifts when moving from traditional client-side SPA frameworks to Next.js App Router. </p>
+<p>Understanding the boundaries of React Server Components (RSC) is one of the most critical shifts when moving from traditional client-side SPA frameworks to Next.js App Router <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. </p>
 <p>Rather than executing all components in the browser, Next.js runs Server Components on the server and streams the resulting UI elements down to the client. This introduces a network and serialization boundary that dictates how we pass data, share state, and structure component trees.</p>
 <hr>
 <h2 id="1-visualizing-the-boundary">1. Visualizing the Boundary</h2>
 <p>The boundary is unidirectional: Server Components can import and render Client Components, but Client Components cannot directly import and render Server Components as components. They can, however, receive Server Components as <code>children</code> or <code>props</code>.</p>
 <div class="mermaid">flowchart TD
     subgraph SG1_ServerThread [&quot;Server Thread&quot;]
-        A[Layout.tsx - RSC] --&gt; B[Page.tsx - RSC]
+        A[&quot;Layout.tsx - RSC&quot;] --&gt; B[&quot;Page.tsx - RSC&quot;]
     end
 
     subgraph SG2_ClientThread [&quot;Client Thread&quot;]
-        C[Navbar.tsx - Client Component]
-        D[InteractiveCard.tsx - Client Component]
+        C[&quot;Navbar.tsx - Client Component&quot;]
+        D[&quot;InteractiveCard.tsx - Client Component&quot;]
     end
 
     B --&gt;|Renders &amp; Passes Serialized Props| D
-    A --&gt;|Renders| C</div>
+    A --&gt;|Renders| C
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class C purple
+class D yellow</div>
 <hr>
 <h2 id="2-serialization-rules-what-crosses-the-boundary">2. Serialization Rules: What Crosses the Boundary?</h2>
 <p>When a Server Component passes props to a Client Component, that data must be converted into a string-based protocol (the <strong>RSC Payload</strong>) that the browser can deserialize and reconstruct. This protocol is JSON-like but extends support for streaming elements.</p>
@@ -246,7 +257,18 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 <ol>
 <li><strong>Zero Client Javascript:</strong> The article cards remain pure Server Components; they don&#39;t load state engines in the browser.</li>
 <li><strong>Bookmarkable Pages:</strong> Users can bookmark or share the URL, and it will load the exact filtered layout instantly.</li>
-<li><strong>Instant SEO:</strong> Search engines index all filtered pages naturally because they render static HTML on load.</li>
+<li><strong>Instant SEO:</strong> Search engines index all filtered pages naturally because they render static HTML on load. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
+</ol>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
 </ol>
 
           </div>
@@ -289,6 +311,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
               <li class="toc-item toc-h2"><a href="#4-state-sharing-moving-beyond-context-providers" class="toc-link">4. State Sharing: Moving Beyond Context Providers</a></li>
               <li class="toc-item toc-h3"><a href="#the-architectural-solution-url-state" class="toc-link">The Architectural Solution: URL State</a></li>
               <li class="toc-item toc-h3"><a href="#benefits-of-url-state" class="toc-link">Benefits of URL State:</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

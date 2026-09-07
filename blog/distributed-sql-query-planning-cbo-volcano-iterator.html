@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-sql-query-planning-cbo-volcano-iterator.html">
   <meta property="og:title" content="Distributed SQL Query Planning: Cost-Based Optimization (CBO) &amp; Volcano Iterator Model">
   <meta property="og:description" content="Distributed query compilation: implementing Volcano open/next/close physical iterators, Cost-Based Optimizer (CBO) join cardinality estimation, Hash Joins, and Exchange operators.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-sql-query-planning-cbo-volcano-iterator.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed SQL Query Planning: Cost-Based Optimization (CBO) &amp; Volcano Iterator Model">
   <meta name="twitter:description" content="Distributed query compilation: implementing Volcano open/next/close physical iterators, Cost-Based Optimizer (CBO) join cardinality estimation, Hash Joins, and Exchange operators.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-sql-query-planning-cbo-volcano-iterator.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distributed SQL Query Planning: Cost-Based Optimization (CBO) & Volcano Iterator Model",
   "description": "Distributed query compilation: implementing Volcano open/next/close physical iterators, Cost-Based Optimizer (CBO) join cardinality estimation, Hash Joins, and Exchange operators.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-sql-query-planning-cbo-volcano-iterator.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distributed-sql-query-planning-cbo-volcano-iterator.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Distributed SQL, Query Optimizer, Volcano Model, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed SQL Query Planning: Cost-Based Optimization (CBO) &amp; Volcano Iterator Model Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distributed-sql-query-planning-cbo-volcano-iterator.jpg" class="article-cover-img" alt="Distributed SQL Query Planning: Cost-Based Optimization (CBO) &amp; Volcano Iterator Model Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed SQL Query Planning: Cost-Based Optimization (CBO) &amp; Volcano Iterator Model</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-distributed-sql-volcano-engine-with-hash-join">Python Implementation: Distributed SQL Volcano Engine with Hash Join</a></li>
                 <li><a href="#distributed-sql-gotchas-best-practices">Distributed SQL Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When an application submits a complex declarative SQL query to a distributed relational database (<strong>CockroachDB</strong>, <strong>Trino / Presto</strong>, <strong>TiDB</strong>, <strong>Apache Impala</strong>), the database face a major engineering challenge.</p>
+<p>When an application submits a complex declarative SQL query to a distributed relational database (<strong>CockroachDB</strong>, <strong>Trino / Presto</strong>, <strong>TiDB</strong>, <strong>Apache Impala</strong>), the database face a major engineering challenge <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>The user specifies <em>what</em> data they want—not <em>how</em> to fetch or join it across hundreds of storage shards.</p>
 <p>Transforming raw SQL text into an optimal distributed physical execution plan requires a multi-stage <strong>Query Compiler</strong>: parsing ASTs, rewriting logical plans, evaluating execution costs via a <strong>Cost-Based Optimizer (CBO)</strong>, and executing physical operators using the <strong>Volcano Iterator Model</strong>.</p>
 <p>By distributing <strong>Exchange Operators</strong> (<code>Scatter</code>, <code>Gather</code>, <code>Hash-Repartition</code>), distributed SQL engines execute complex multi-table joins at petabyte scale.</p>
@@ -124,23 +125,34 @@
 <h2 id="distributed-sql-query-planning-execution-architecture">Distributed SQL Query Planning &amp; Execution Architecture</h2>
 <p>How SQL queries are transformed from declarative text to a distributed Volcano execution graph:</p>
 <div class="mermaid">flowchart TD
-  SQLText[&quot;SQL: SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id&quot;] --&gt; AST[SQL Parser &amp; Logical Planner]
+  SQLText[&quot;SQL: SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id&quot;] --&gt; AST[&quot;SQL Parser &amp; Logical Planner&quot;]
   
   subgraph SG1_CostBasedOptimizer [&quot;Cost-Based Optimizer (CBO)&quot;]
     AST --&gt;|Generate Logical Plan| CBO{Cost-Based Optimizer}
-    CBO --&gt;|Estimate Cost - CPU + Memory + Network Shuffling| PlanEval[Evaluate Broadcast Join vs Distributed Hash Join]
+    CBO --&gt;|Estimate Cost - CPU + Memory + Network Shuffling| PlanEval[&quot;Evaluate Broadcast Join vs Distributed Hash Join&quot;]
   end
   
   subgraph SG2_DistributedPhysicalExecution [&quot;Distributed Physical Execution Plan (Volcano Iterator)&quot;]
-    PlanEval --&gt;|Selected Min-Cost Plan| RootGather[Root Node: Gather Exchange Operator]
+    PlanEval --&gt;|Selected Min-Cost Plan| RootGather[&quot;Root Node: Gather Exchange Operator&quot;]
     
-    RootGather --&gt;|Pull next() Tuples| HashJoin[Physical Hash Join Operator]
+    RootGather --&gt;|Pull next() Tuples| HashJoin[&quot;Physical Hash Join Operator&quot;]
     
     subgraph SG3_DistributedShardExecution [&quot;Distributed Shard Execution Nodes&quot;]
-      HashJoin --&gt;|Push Hash-Repartition Exchange| Node1[Node 1: Scan users Table - Range A-M]
-      HashJoin --&gt;|Push Hash-Repartition Exchange| Node2[Node 2: Scan orders Table - Shard 10]
+      HashJoin --&gt;|Push Hash-Repartition Exchange| Node1[&quot;Node 1: Scan users Table - Range A-M&quot;]
+      HashJoin --&gt;|Push Hash-Repartition Exchange| Node2[&quot;Node 2: Scan orders Table - Shard 10&quot;]
     end
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class SQLText,Node1 blue
+class AST,Node2 green
+class PlanEval purple
+class RootGather yellow
+class HashJoin red</div>
 <h3 id="core-query-engine-components">Core Query Engine Components</h3>
 <ol>
 <li><strong>Volcano Iterator Model (Pull-Based Processing)</strong>: Designed by Goetz Graefe, the Volcano model standardizes physical query operators (Scan, Filter, HashJoin, Aggregate) around three primary interface methods:<ul>
@@ -300,8 +312,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Query engines using CBO and Vectorized Volcano execution (such as <strong>Trino</strong>, <strong>ClickHouse</strong>, and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Over $20\times$ Faster Complex Multi-Join Queries</strong>: Cost-Based Optimization selects minimal-network physical join strategies.</li>
-<li><strong>Petabyte-Scale Interactive Analytics</strong>: Streaming Exchange operators execute queries across thousands of distributed cluster nodes with sub-second response times.</li>
+<li><strong>Petabyte-Scale Interactive Analytics</strong>: Streaming Exchange operators execute queries across thousands of distributed cluster nodes with sub-second response times. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Kubernetes Authors (2024)</strong>. <em>Kubernetes Documentation</em>. CNCF. <a href="https://kubernetes.io/docs/home/" target="_blank" rel="noopener">https://kubernetes.io/docs/home/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -338,6 +361,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-distributed-sql-volcano-engine-with-hash-join" class="toc-link">Python Implementation: Distributed SQL Volcano Engine with Hash Join</a></li>
               <li class="toc-item toc-h2"><a href="#distributed-sql-gotchas-best-practices" class="toc-link">Distributed SQL Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

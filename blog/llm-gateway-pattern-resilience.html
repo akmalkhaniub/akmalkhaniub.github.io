@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/llm-gateway-pattern-resilience.html">
   <meta property="og:title" content="The LLM Gateway Pattern: Building a Resilient Proxy Layer for Production APIs">
   <meta property="og:description" content="Designing a centralized LLM API Gateway — implementing semantic caching, provider fallback orchestration, client-side rate-limit queuing, and unified billing telemetry.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/llm-gateway-pattern-resilience.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-03-27">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="The LLM Gateway Pattern: Building a Resilient Proxy Layer for Production APIs">
   <meta name="twitter:description" content="Designing a centralized LLM API Gateway — implementing semantic caching, provider fallback orchestration, client-side rate-limit queuing, and unified billing telemetry.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/llm-gateway-pattern-resilience.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "The LLM Gateway Pattern: Building a Resilient Proxy Layer for Production APIs",
   "description": "Designing a centralized LLM API Gateway — implementing semantic caching, provider fallback orchestration, client-side rate-limit queuing, and unified billing telemetry.",
   "url": "https://akmalkhaniub.github.io/blog/llm-gateway-pattern-resilience.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/llm-gateway-pattern-resilience.jpg",
   "datePublished": "2026-03-27",
   "keywords": "Architecture, Python, Resilience, Gateways",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/llm-gateway-pattern-resilience.jpg" class="article-cover-img" alt="The LLM Gateway Pattern: Building a Resilient Proxy Layer for Production APIs Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">The LLM Gateway Pattern: Building a Resilient Proxy Layer for Production APIs</h1>
             <div class="article-meta">
@@ -115,6 +115,7 @@
                 <li><a href="#3-circuit-breaking">3. Circuit Breaking</a></li>
                 <li><a href="#implementation-typescript-llm-gateway-router">Implementation: TypeScript LLM Gateway Router</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -134,20 +135,31 @@ Embedding raw API calls to OpenAI, Anthropic, or DeepSeek directly into your pro
 </ol>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Client[Client App] --&gt; Gateway[LLM Gateway Router]
+    Client[&quot;Client App&quot;] --&gt; Gateway[&quot;LLM Gateway Router&quot;]
     Gateway --&gt; Cache{Redis Cache Check}
-    Cache -- Hit --&gt; ReturnCache[Return Cached Completion]
-    Cache -- Miss --&gt; Router[Circuit Breaker / Load Balancer]
-    Router --&gt; Primary[Primary Provider: OpenAI]
-    Primary -- Timeout / 429 / 500 --&gt; Secondary[Fallback Provider: Anthropic]
-    Primary -- Success --&gt; SaveCache[Save to Redis]
+    Cache -- Hit --&gt; ReturnCache[&quot;Return Cached Completion&quot;]
+    Cache -- Miss --&gt; Router[&quot;Circuit Breaker / Load Balancer&quot;]
+    Router --&gt; Primary[&quot;Primary Provider: OpenAI&quot;]
+    Primary -- Timeout / 429 / 500 --&gt; Secondary[&quot;Fallback Provider: Anthropic&quot;]
+    Primary -- Success --&gt; SaveCache[&quot;Save to Redis&quot;]
     Secondary -- Success --&gt; SaveCache
-    Secondary -- Fail --&gt; Local[Local Fallback: vLLM]</div>
+    Secondary -- Fail --&gt; Local[&quot;Local Fallback: vLLM&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client,Secondary blue
+class Gateway,SaveCache green
+class ReturnCache,Local purple
+class Router yellow
+class Primary red</div>
 <hr>
 <h2 id="core-pillars-of-the-gateway-pattern">Core Pillars of the Gateway Pattern</h2>
 <p>A production-grade LLM Gateway handles four essential operations:</p>
 <h3 id="1-semantic-caching">1. Semantic Caching</h3>
-<p>Before routing to the upstream API, the gateway runs a vector search on a cache database (like Redis or Qdrant) to see if a semantically identical query has already been answered. If the cosine similarity matches above <code>0.96</code>, it returns the cached response in <code>&lt;10ms</code>, bypassing LLM generation completely.</p>
+<p>Before routing to the upstream API, the gateway runs a vector search on a cache database (like Redis or Qdrant) to see if a semantically identical query has already been answered <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. If the cosine similarity matches above <code>0.96</code>, it returns the cached response in <code>&lt;10ms</code>, bypassing LLM generation completely.</p>
 <h3 id="2-failover-orchestration">2. Failover Orchestration</h3>
 <p>The gateway maintains a prioritised list of backup endpoints. If a request to OpenAI fails or times out (e.g. after 8 seconds), the router catches the exception, switches to Anthropic or a self-hosted vLLM engine, translates the payload schema, and completes the request seamlessly.</p>
 <h3 id="3-circuit-breaking">3. Circuit Breaking</h3>
@@ -292,8 +304,19 @@ gateway.executeChat({ prompt: 'Write an optimized quicksort algorithm in Rust.' 
 <li><input disabled="" type="checkbox"> <strong>Decouple upstream APIs</strong>: Never let your product code communicate directly with provider APIs. Route everything through a gateway layer.</li>
 <li><input disabled="" type="checkbox"> <strong>Enforce strict request timeouts</strong>: Upstream model latencies can stall connections indefinitely. Cap wait times between <code>6s</code> and <code>12s</code> and failover immediately.</li>
 <li><input disabled="" type="checkbox"> <strong>Implement semantic caching</strong>: Prevent duplicate queries from hitting LLMs. Save token costs and reduce round-trip latency to milliseconds.</li>
-<li><input disabled="" type="checkbox"> <strong>Add a circuit breaker</strong>: Detect consecutive failures and temporarily redirect traffic to prevent cascading app failures.</li>
+<li><input disabled="" type="checkbox"> <strong>Add a circuit breaker</strong>: Detect consecutive failures and temporarily redirect traffic to prevent cascading app failures. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Fielding, R., Nottingham, M., &amp; Reschke, J. (2014)</strong>. <em>Hypertext Transfer Protocol (HTTP/1.1): Caching</em>. RFC 7234. <a href="https://www.rfc-editor.org/rfc/rfc7234" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7234</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -332,6 +355,7 @@ gateway.executeChat({ prompt: 'Write an optimized quicksort algorithm in Rust.' 
               <li class="toc-item toc-h3"><a href="#3-circuit-breaking" class="toc-link">3. Circuit Breaking</a></li>
               <li class="toc-item toc-h2"><a href="#implementation-typescript-llm-gateway-router" class="toc-link">Implementation: TypeScript LLM Gateway Router</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

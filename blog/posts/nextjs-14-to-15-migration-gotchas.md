@@ -8,7 +8,7 @@
 
 ---
 
-Upgrading your framework is rarely as simple as running `npm install next@latest`. 
+Upgrading your framework is rarely as simple as running `npm install next@latest` [1]. 
 
 While Next.js 15 introduces massive performance improvements (thanks to stable **Turbopack** and the **React Compiler**), it also ships with several fundamental breaking changes. 
 
@@ -32,18 +32,18 @@ flowchart TD
     classDef db fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef route fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
 
-    Start[Inference: fetch '/api/data'] --> Choice{Framework Version}
+    Start["Inference: fetch '/api/data'"] --> Choice{Framework Version}
     
-    Choice -->|Next.js 14| Path14[Default: Force-Cache]
-    Choice -->|Next.js 15| Path15[Default: No-Store]
+    Choice -->|Next.js 14| Path14["Default: Force-Cache"]
+    Choice -->|Next.js 15| Path15["Default: No-Store"]
     
-    Path14 --> Hit[Read from Edge Cache]
-    Path15 --> Miss[Send Request directly to Server]
+    Path14 --> Hit["Read from Edge Cache"]
+    Path15 --> Miss["Send Request directly to Server"]
     
-    Hit --> Return1[Return Cached Payload]
-    Miss --> QueryDB[Execute Database Query]
+    Hit --> Return1["Return Cached Payload"]
+    Miss --> QueryDB["Execute Database Query"]
     
-    QueryDB --> Return2[Return fresh Database Rows]
+    QueryDB --> Return2["Return fresh Database Rows"]
 
     class Path14 v14;
     class Path15 v15;

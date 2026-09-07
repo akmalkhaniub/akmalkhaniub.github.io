@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distillation-model-serving-quantization-vllm-ollama.html">
   <meta property="og:title" content="Distilled SLM Serving: Quantization, PagedAttention, and Production Latency Tuning">
   <meta property="og:description" content="Optimizing local model latency: executing 4-bit AWQ model serving using vLLM, tuning PagedAttention parameters, and managing KV Cache utilization.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distillation-model-serving-quantization-vllm-ollama.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-25">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distilled SLM Serving: Quantization, PagedAttention, and Production Latency Tuning">
   <meta name="twitter:description" content="Optimizing local model latency: executing 4-bit AWQ model serving using vLLM, tuning PagedAttention parameters, and managing KV Cache utilization.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distillation-model-serving-quantization-vllm-ollama.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distilled SLM Serving: Quantization, PagedAttention, and Production Latency Tuning",
   "description": "Optimizing local model latency: executing 4-bit AWQ model serving using vLLM, tuning PagedAttention parameters, and managing KV Cache utilization.",
   "url": "https://akmalkhaniub.github.io/blog/distillation-model-serving-quantization-vllm-ollama.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distillation-model-serving-quantization-vllm-ollama.jpg",
   "datePublished": "2026-07-25",
   "keywords": "AI Platform, Model Serving, vLLM, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distilled SLM Serving: Quantization, PagedAttention, and Production Latency Tuning Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distillation-model-serving-quantization-vllm-ollama.jpg" class="article-cover-img" alt="Distilled SLM Serving: Quantization, PagedAttention, and Production Latency Tuning Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distilled SLM Serving: Quantization, PagedAttention, and Production Latency Tuning</h1>
             <div class="article-meta">
@@ -112,9 +112,10 @@
                 <li><a href="#production-grade-vllm-serving-configuration">Production-Grade vLLM Serving Configuration</a></li>
                 <li><a href="#quantization-trade-offs-awq-vs-gguf-vs-gptq">Quantization Trade-offs (AWQ vs. GGUF vs. GPTQ)</a></li>
                 <li><a href="#important-pitfalls-in-model-serving">Important Pitfalls in Model Serving</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>After validating and fine-tuning your Small Language Model (SLM) on agent execution datasets, the final challenge is deploying the model into production. Unlike large-scale API endpoints that run on massive server clusters, SLMs are typically hosted on single-GPU instances or edge servers.</p>
+<p>After validating and fine-tuning your Small Language Model (SLM) on agent execution datasets, the final challenge is deploying the model into production <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Unlike large-scale API endpoints that run on massive server clusters, SLMs are typically hosted on single-GPU instances or edge servers.</p>
 <p>To support high-throughput agent loops under 50ms per token, we must optimize serving latency. This article covers <strong>quantization formats (AWQ, GPTQ, GGUF)</strong>, <strong>PagedAttention memory management</strong>, and production configuration tuning inside high-performance inference engines like <strong>vLLM</strong>.</p>
 <hr>
 <h2 id="the-production-bottleneck-kv-cache-allocation">The Production Bottleneck: KV Cache Allocation</h2>
@@ -125,13 +126,24 @@
 <li><strong>External Fragmentation</strong>: Virtual memory slots cannot be shared across concurrent requests.</li>
 </ol>
 <div class="mermaid">flowchart TD
-  A[Client Request] --&gt; B[vLLM Inference Engine]
+  A[&quot;Client Request&quot;] --&gt; B[&quot;vLLM Inference Engine&quot;]
   B --&gt; C{PagedAttention Router}
-  C --&gt;|Divide KV Cache into physical blocks| D[Non-contiguous VRAM allocation]
-  C --&gt;|Dynamic lookup table mapping| E[Dynamic virtual block memory mapping]
-  D --&gt; F[Eliminate 96% of memory waste]
+  C --&gt;|Divide KV Cache into physical blocks| D[&quot;Non-contiguous VRAM allocation&quot;]
+  C --&gt;|Dynamic lookup table mapping| E[&quot;Dynamic virtual block memory mapping&quot;]
+  D --&gt; F[&quot;Eliminate 96% of memory waste&quot;]
   E --&gt; F
-  F --&gt; G[Supports 4x higher concurrency]</div>
+  F --&gt; G[&quot;Supports 4x higher concurrency&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B green
+class D purple
+class E yellow
+class F red</div>
 <p><strong>vLLM</strong> solves this by introducing <strong>PagedAttention</strong>, which partitions the KV cache into logical blocks mapped to non-contiguous physical pages in VRAM, mimicking virtual memory paging in operating systems. This reduces VRAM waste to near zero, enabling 2–4× higher batch sizes and concurrency.</p>
 <hr>
 <h2 id="production-grade-vllm-serving-configuration">Production-Grade vLLM Serving Configuration</h2>
@@ -219,9 +231,21 @@ if __name__ == &quot;__main__&quot;:
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Context Window Flooding</strong>: If an agent outputs massive execution loops, it will flood the KV cache. Implement strict token counters on input prompt lengths to avoid hitting the context limit and dropping requests.</p>
+  <div class="alert-content"><p><strong>Context Window Flooding</strong>: If an agent outputs massive execution loops, it will flood the KV cache. Implement strict token counters on input prompt lengths to avoid hitting the context limit and dropping requests. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
 </div>
 </div>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Dao, T., et al. (2022)</strong>. <em>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</em>. NeurIPS. <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">https://arxiv.org/abs/2205.14135</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vaswani, A., et al. (2017)</strong>. <em>Attention Is All You Need</em>. NeurIPS. <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">https://arxiv.org/abs/1706.03762</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Kwon, W., et al. (2023)</strong>. <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em>. SOSP. <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">https://arxiv.org/abs/2309.06180</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Leviathan, Y., Kalman, M., &amp; Matias, Y. (2023)</strong>. <em>Fast Inference from Transformers via Speculative Decoding</em>. ICML. <a href="https://arxiv.org/abs/2211.17192" target="_blank" rel="noopener">https://arxiv.org/abs/2211.17192</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Hu, E. J., et al. (2021)</strong>. <em>LoRA: Low-Rank Adaptation of Large Language Models</em>. ICLR. <a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noopener">https://arxiv.org/abs/2106.09685</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Dettmers, T., et al. (2023)</strong>. <em>QLoRA: Efficient Finetuning of Quantized LLMs</em>. NeurIPS. <a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noopener">https://arxiv.org/abs/2305.14314</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Lin, J., et al. (2024)</strong>. <em>AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</em>. MLSys. <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">https://arxiv.org/abs/2306.00978</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -257,6 +281,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#production-grade-vllm-serving-configuration" class="toc-link">Production-Grade vLLM Serving Configuration</a></li>
               <li class="toc-item toc-h2"><a href="#quantization-trade-offs-awq-vs-gguf-vs-gptq" class="toc-link">Quantization Trade-offs (AWQ vs. GGUF vs. GPTQ)</a></li>
               <li class="toc-item toc-h2"><a href="#important-pitfalls-in-model-serving" class="toc-link">Important Pitfalls in Model Serving</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

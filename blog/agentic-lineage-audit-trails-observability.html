@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/agentic-lineage-audit-trails-observability.html">
   <meta property="og:title" content="Agentic Lineage &amp; Audit Trails: Tracing Non-Deterministic Decision Trees for Compliance">
   <meta property="og:description" content="Designing an audit-ready observability pipeline that structures and records agent swarm trajectories, thoughts, tool invocations, and corrections in PostgreSQL JSON trees.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agentic-lineage-audit-trails-observability.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-04-16">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Agentic Lineage &amp; Audit Trails: Tracing Non-Deterministic Decision Trees for Compliance">
   <meta name="twitter:description" content="Designing an audit-ready observability pipeline that structures and records agent swarm trajectories, thoughts, tool invocations, and corrections in PostgreSQL JSON trees.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agentic-lineage-audit-trails-observability.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Agentic Lineage & Audit Trails: Tracing Non-Deterministic Decision Trees for Compliance",
   "description": "Designing an audit-ready observability pipeline that structures and records agent swarm trajectories, thoughts, tool invocations, and corrections in PostgreSQL JSON trees.",
   "url": "https://akmalkhaniub.github.io/blog/agentic-lineage-audit-trails-observability.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/agentic-lineage-audit-trails-observability.jpg",
   "datePublished": "2026-04-16",
   "keywords": "Observability, Compliance, PostgreSQL, System Design",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/agentic-lineage-audit-trails-observability.jpg" class="article-cover-img" alt="Agentic Lineage &amp; Audit Trails: Tracing Non-Deterministic Decision Trees for Compliance Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Agentic Lineage &amp; Audit Trails: Tracing Non-Deterministic Decision Trees for Compliance</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#implementing-an-audit-logger-in-python">Implementing an Audit Logger in Python</a></li>
                 <li><a href="#database-design-storing-and-querying-lineage">Database Design: Storing and Querying Lineage</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -123,7 +124,7 @@ Single-prompt LLM calls are simple to trace. However, when an agentic swarm star
 </div>
 <hr>
 <h2 id="the-auditing-challenge-in-ai-swarms">The Auditing Challenge in AI Swarms</h2>
-<p>Unlike standard software systems with deterministic code paths, AI swarms navigate complex, dynamic decision trees. During a single user request, an agent might:</p>
+<p>Unlike standard software systems with deterministic code paths, AI swarms navigate complex, dynamic decision trees <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. During a single user request, an agent might:</p>
 <ol>
 <li>Parse the prompt and split it into three sub-tasks.</li>
 <li>Call a database tool, encounter a connection error, and retry.</li>
@@ -132,22 +133,33 @@ Single-prompt LLM calls are simple to trace. However, when an agentic swarm star
 <p>If the final output is incorrect, diagnosing the root cause is impossible without a structured history. We need to capture <strong>Lineage</strong>:</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#d97706', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f59e0b', 'lineColor': '#d97706', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Root[Root: User Request] --&gt; Plan[Plan: Task Decomposition]
-    Plan --&gt; SubTask1[Task 1: SQL Retrieval]
-    Plan --&gt; SubTask2[Task 2: Financial Aggregation]
+    Root[&quot;Root: User Request&quot;] --&gt; Plan[&quot;Plan: Task Decomposition&quot;]
+    Plan --&gt; SubTask1[&quot;Task 1: SQL Retrieval&quot;]
+    Plan --&gt; SubTask2[&quot;Task 2: Financial Aggregation&quot;]
     
-    SubTask1 --&gt; ToolCall1[Tool Call: run_sql]
-    ToolCall1 --&gt; ToolResult1[Result: Connection Timeout]
+    SubTask1 --&gt; ToolCall1[&quot;Tool Call: run_sql&quot;]
+    ToolCall1 --&gt; ToolResult1[&quot;Result: Connection Timeout&quot;]
     
-    ToolResult1 --&gt; SelfReflect[Self-Correction Node]
-    SelfReflect --&gt; ToolCall2[Tool Call: run_sql retry]
-    ToolCall2 --&gt; ToolResult2[Result: Active Data]
+    ToolResult1 --&gt; SelfReflect[&quot;Self-Correction Node&quot;]
+    SelfReflect --&gt; ToolCall2[&quot;Tool Call: run_sql retry&quot;]
+    ToolCall2 --&gt; ToolResult2[&quot;Result: Active Data&quot;]
     
-    SubTask2 --&gt; Aggregator[Tool Call: compute_stats]
+    SubTask2 --&gt; Aggregator[&quot;Tool Call: compute_stats&quot;]
     
-    ToolResult2 --&gt; Merge[Final Merge Node]
+    ToolResult2 --&gt; Merge[&quot;Final Merge Node&quot;]
     Aggregator --&gt; Merge
-    Merge --&gt; FinalOutput[Final Answer Output]</div>
+    Merge --&gt; FinalOutput[&quot;Final Answer Output&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Root,ToolResult1,Merge blue
+class Plan,SelfReflect,FinalOutput green
+class SubTask1,ToolCall2 purple
+class SubTask2,ToolResult2 yellow
+class ToolCall1,Aggregator red</div>
 <p>To reconstruct this path, we must store logs as a <strong>Tree of Node Executions</strong>, rather than flat, sequential logs.</p>
 <hr>
 <h2 id="the-anatomy-of-an-agentic-trace">The Anatomy of an Agentic Trace</h2>
@@ -310,8 +322,19 @@ WHERE x.node_type = 'TOOL_CALL'
 <li><input disabled="" type="checkbox"> <strong>Enforce parent-child keys</strong>: Ensure every action node captures a <code>parent_id</code> reference to preserve the non-linear execution path.</li>
 <li><input disabled="" type="checkbox"> <strong>Log raw inputs and outputs</strong>: Never allow agents to mutate data without logging the raw input payloads and returned server responses.</li>
 <li><input disabled="" type="checkbox"> <strong>Capture token metrics</strong>: Track tokens and execution latencies at every node to monitor efficiency and plan resource budgets.</li>
-<li><input disabled="" type="checkbox"> <strong>Structure with JSONB</strong>: Store execution lineages in queryable JSONB columns to enable easy auditing of failures or security compromises.</li>
+<li><input disabled="" type="checkbox"> <strong>Structure with JSONB</strong>: Store execution lineages in queryable JSONB columns to enable easy auditing of failures or security compromises. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>W3C Distributed Tracing Working Group (2021)</strong>. <em>Trace Context</em>. W3C Recommendation. <a href="https://www.w3.org/TR/trace-context/" target="_blank" rel="noopener">https://www.w3.org/TR/trace-context/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -348,6 +371,7 @@ WHERE x.node_type = 'TOOL_CALL'
               <li class="toc-item toc-h2"><a href="#implementing-an-audit-logger-in-python" class="toc-link">Implementing an Audit Logger in Python</a></li>
               <li class="toc-item toc-h2"><a href="#database-design-storing-and-querying-lineage" class="toc-link">Database Design: Storing and Querying Lineage</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

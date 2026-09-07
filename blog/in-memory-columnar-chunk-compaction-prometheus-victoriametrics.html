@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.html">
   <meta property="og:title" content="In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts">
   <meta property="og:description" content="Time-series storage engine layouts: implementing 2-hour head memory chunks, write-ahead logs (WAL), append-only active chunks, and background merging compaction into immutable historical block segments (Prometheus TSDB &amp; VictoriaMetrics).">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts">
   <meta name="twitter:description" content="Time-series storage engine layouts: implementing 2-hour head memory chunks, write-ahead logs (WAL), append-only active chunks, and background merging compaction into immutable historical block segments (Prometheus TSDB &amp; VictoriaMetrics).">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "In-Memory Columnar Chunk Compaction: Prometheus TSDB & VictoriaMetrics Segment Layouts",
   "description": "Time-series storage engine layouts: implementing 2-hour head memory chunks, write-ahead logs (WAL), append-only active chunks, and background merging compaction into immutable historical block segments (Prometheus TSDB & VictoriaMetrics).",
   "url": "https://akmalkhaniub.github.io/blog/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Prometheus, VictoriaMetrics, TSDB Compaction, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/in-memory-columnar-chunk-compaction-prometheus-victoriametrics.jpg" class="article-cover-img" alt="In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">In-Memory Columnar Chunk Compaction: Prometheus TSDB &amp; VictoriaMetrics Segment Layouts</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-tsdb-head-block-compaction-engine">Python Implementation: TSDB Head Block &amp; Compaction Engine</a></li>
                 <li><a href="#tsdb-storage-engine-gotchas-best-practices">TSDB Storage Engine Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In cloud-native observability systems (<strong>Prometheus</strong>, <strong>VictoriaMetrics</strong>, <strong>Thanos</strong>, <strong>Cortex</strong>), time-series storage engines must sustain relentless ingestion workloads while serving instant range queries over months of historical telemetry.</p>
+<p>In cloud-native observability systems (<strong>Prometheus</strong>, <strong>VictoriaMetrics</strong>, <strong>Thanos</strong>, <strong>Cortex</strong>), time-series storage engines must sustain relentless ingestion workloads while serving instant range queries over months of historical telemetry <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>A major engineering challenge in time-series database (TSDB) design is balancing <strong>Low-Latency Write Ingestion</strong> (append-only streaming) with <strong>High-Performance Query Execution</strong> (columnar block scans).</p>
 <p>To optimize memory usage and query throughput, modern engines split metric storage into two distinct tiers: an <strong>In-Memory Head Block</strong> (for real-time ingestion) and <strong>Compacted Block Segments</strong> (for historical disk storage).</p>
 <p>Pioneered by <strong>Prometheus TSDB</strong> and optimized by <strong>VictoriaMetrics</strong>, this architecture uses 2-hour memory chunk freezing and multi-stage background compaction.</p>
@@ -125,7 +126,7 @@
 <p>How time-series databases handle real-time RAM ingestion, 2-hour block cutting, and multi-tier background compaction:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_InMemoryReal [&quot;In-Memory Real-Time Tier (0 - 2 Hours)&quot;]
-    Metric[Incoming Metric Write] --&gt; WAL[&quot;1. Write-Ahead Log (WAL) on NVMe SSD&quot;]
+    Metric[&quot;Incoming Metric Write&quot;] --&gt; WAL[&quot;1. Write-Ahead Log (WAL) on NVMe SSD&quot;]
     Metric --&gt; HeadBlock[&quot;2. In-Memory Head Block (RAM Gorilla Chunks)&quot;]
   end
   
@@ -139,7 +140,18 @@
     BlockDir --&gt; Compactor[&quot;4. Background Compactor Thread&quot;]
     Compactor --&gt; Block6h[&quot;Compacted 6-Hour Block Segment&quot;]
     Block6h --&gt; Block24h[&quot;Compacted 24-Hour Block Segment&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Metric,InvertedIndex blue
+class WAL,Compactor green
+class HeadBlock,Block6h purple
+class BlockDir,Block24h yellow
+class Chunks red</div>
 <h3 id="core-tsdb-storage-engine-mechanics">Core TSDB Storage Engine Mechanics</h3>
 <ol>
 <li><strong>The Prometheus 2-Hour Head Block</strong>:<ul>
@@ -312,8 +324,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Time-series storage engines (such as <strong>Prometheus TSDB</strong> and <strong>VictoriaMetrics</strong>) report:</p>
 <ul>
 <li><strong>Sub-Second Range Query Speeds</strong>: Compacted 24-hour block layouts and inverted postings indices allow Prometheus to scan millions of time series per second.</li>
-<li><strong>$10\times$ Lower Disk I/O Overhead</strong>: Batching RAM chunks into 2-hour immutable block cuts eliminates continuous disk write amplification.</li>
+<li><strong>$10\times$ Lower Disk I/O Overhead</strong>: Batching RAM chunks into 2-hour immutable block cuts eliminates continuous disk write amplification. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Pelkonen, T., et al. (2015)</strong>. <em>Gorilla: A Fast, Scalable, In-Memory Time Series Database</em>. VLDB. <a href="https://www.vldb.org/pvldb/vol8/p1816-teller.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1816-teller.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Prometheus Authors (2024)</strong>. <em>Prometheus Documentation</em>. CNCF. <a href="https://prometheus.io/docs/introduction/overview/" target="_blank" rel="noopener">https://prometheus.io/docs/introduction/overview/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -350,6 +374,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-tsdb-head-block-compaction-engine" class="toc-link">Python Implementation: TSDB Head Block &amp; Compaction Engine</a></li>
               <li class="toc-item toc-h2"><a href="#tsdb-storage-engine-gotchas-best-practices" class="toc-link">TSDB Storage Engine Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

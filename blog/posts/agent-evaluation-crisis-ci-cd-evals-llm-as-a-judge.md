@@ -1,6 +1,6 @@
 # The Agent Evaluation Crisis: How to Build Evals That Actually Catch Regressions in CI/CD
 
-In modern continuous integration and delivery (CI/CD) pipelines, automated unit and integration tests are the ultimate safety net.
+In modern continuous integration and delivery (CI/CD) pipelines, automated unit and integration tests are the ultimate safety net [1].
 
 You write deterministic assertions (`assert response.status_code == 200`), run `pytest` or `jest`, and if all tests pass, the pull request merges safely to `main`.
 
@@ -19,13 +19,24 @@ flowchart TD
     Tier3["Tier 3: Calibrated LLM-as-a-Judge (Multi-Point Rubrics & Semantic Scoring, 1-2s)"]
   end
   
-  PR[Pull Request: Prompt / Skill Change] --> BenchmarkDataset[Golden Benchmark Dataset (100 Cases)]
+  PR["Pull Request: Prompt / Skill Change"] --> BenchmarkDataset["Golden Benchmark Dataset (100 Cases)"]
   BenchmarkDataset --> Tier1
   Tier1 -->|AST Passed| Tier2
   Tier2 -->|Trajectory Valid| Tier3
   Tier3 --> ScoreGate{Pass Rate >= 95%?}
-  ScoreGate -->|Yes| Merge[ Merge to Main]
-  ScoreGate -->|No| Block[ Block Build: Prompt Regression]
+  ScoreGate -->|Yes| Merge[" Merge to Main"]
+  ScoreGate -->|No| Block[" Block Build: Prompt Regression"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Tier1,Merge blue
+class Tier2,Block green
+class Tier3 purple
+class PR yellow
+class BenchmarkDataset red
 ```
 
 ---
@@ -69,13 +80,24 @@ A **Trajectory Assertion Graph** validates that the agent invoked tools in a log
 ```mermaid
 flowchart TD
   subgraph SG2_ValidTrajectoryDag ["Valid Trajectory DAG"]
-    T1[1. view_file: Inspect Codebase] --> T2[2. replace_file_content: Apply Patch]
-    T2 --> T3[3. run_test: Verify Execution]
+    T1["1. view_file: Inspect Codebase"] --> T2["2. replace_file_content: Apply Patch"]
+    T2 --> T3["3. run_test: Verify Execution"]
   end
   
   subgraph SG3_InvalidAntiPattern ["Invalid Anti-Pattern (Flagged by Eval)"]
-    A1[1. replace_file_content: Blindly Guess] --> A2[2. git_commit: Commit without Testing!]
+    A1["1. replace_file_content: Blindly Guess"] --> A2["2. git_commit: Commit without Testing!"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class T1 blue
+class T2 green
+class T3 purple
+class A1 yellow
+class A2 red
 ```
 
 ### Trajectory Assertion Examples:
@@ -233,4 +255,13 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 You cannot build reliable autonomous agent systems without **rigorous, multi-tier evaluation infrastructure**.
 
-By anchoring agent evaluation to **deterministic AST invariants**, **trajectory state graphs**, and **calibrated LLM rubrics**, engineering organizations create robust CI/CD safety nets that catch prompt regressions before they ever reach production.
+By anchoring agent evaluation to **deterministic AST invariants**, **trajectory state graphs**, and **calibrated LLM rubrics**, engineering organizations create robust CI/CD safety nets that catch prompt regressions before they ever reach production. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

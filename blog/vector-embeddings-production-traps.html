@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/vector-embeddings-production-traps.html">
   <meta property="og:title" content="What Nobody Tells You About Vector Embeddings in Production">
   <meta property="og:description" content="8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-embeddings-production-traps.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-04-06">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="What Nobody Tells You About Vector Embeddings in Production">
   <meta name="twitter:description" content="8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-embeddings-production-traps.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "What Nobody Tells You About Vector Embeddings in Production",
   "description": "8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.",
   "url": "https://akmalkhaniub.github.io/blog/vector-embeddings-production-traps.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/vector-embeddings-production-traps.jpg",
   "datePublished": "2026-04-06",
   "keywords": "Embeddings, RAG, pgvector, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/vector-embeddings-production-traps.jpg" class="article-cover-img" alt="What Nobody Tells You About Vector Embeddings in Production Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">What Nobody Tells You About Vector Embeddings in Production</h1>
             <div class="article-meta">
@@ -129,28 +129,28 @@ Vector embeddings are the foundation of every RAG system, semantic search engine
 <hr>
 <h2 id="why-embedding-bugs-are-the-hardest-to-find">Why Embedding Bugs Are the Hardest to Find</h2>
 <p>A broken SQL query throws an exception. A broken embedding pipeline returns results — just wrong ones. Cosine similarity between a garbage vector and a real one is still a number. Your API returns 200 OK. Your users get irrelevant answers. Your eval metrics don&#39;t catch it because the eval dataset was embedded with the same broken model.</p>
-<p>This is the danger zone: <strong>silent correctness failures</strong> with no stack traces.</p>
+<p>This is the danger zone: <strong>silent correctness failures</strong> with no stack traces <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <hr>
 <h2 id="the-embedding-production-failure-map">The Embedding Production Failure Map</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    D[Document] --&gt; T[Tokeniser]
-    T --&gt;|Truncated silently| F1[ Trap 1: Silent truncation&lt;br/&gt;at 512 tokens]
-    T --&gt;|OK| E[Embedding Model]
+    D[&quot;Document&quot;] --&gt; T[&quot;Tokeniser&quot;]
+    T --&gt;|Truncated silently| F1[&quot; Trap 1: Silent truncation&lt;br/&gt;at 512 tokens&quot;]
+    T --&gt;|OK| E[&quot;Embedding Model&quot;]
     
-    E --&gt;|Model version changed| F2[ Trap 2: Stale index&lt;br/&gt;after model upgrade]
+    E --&gt;|Model version changed| F2[&quot; Trap 2: Stale index&lt;br/&gt;after model upgrade&quot;]
     E --&gt;|OK| V[(Vector Store)]
     
-    V --&gt;|Wrong metric configured| F3[ Trap 3: Cosine vs&lt;br/&gt;dot product mismatch]
-    V --&gt;|No normalisation| F4[ Trap 4: L2 distance&lt;br/&gt;on unnormalised vectors]
-    V --&gt;|OK| Q[Query Embedding]
+    V --&gt;|Wrong metric configured| F3[&quot; Trap 3: Cosine vs&lt;br/&gt;dot product mismatch&quot;]
+    V --&gt;|No normalisation| F4[&quot; Trap 4: L2 distance&lt;br/&gt;on unnormalised vectors&quot;]
+    V --&gt;|OK| Q[&quot;Query Embedding&quot;]
     
-    Q --&gt;|Different model than index| F5[ Trap 5: Query/index&lt;br/&gt;model mismatch]
-    Q --&gt;|OK| R[Search Results]
+    Q --&gt;|Different model than index| F5[&quot; Trap 5: Query/index&lt;br/&gt;model mismatch&quot;]
+    Q --&gt;|OK| R[&quot;Search Results&quot;]
     
-    R --&gt;|No re-embedding on update| F6[ Trap 6: Stale doc&lt;br/&gt;embeddings after edit]
-    R --&gt;|Multilingual mismatch| F7[ Trap 7: Cross-lingual&lt;br/&gt;query on mono model]
-    R --&gt;|Batch dim mismatch| F8[ Trap 8: Dimension&lt;br/&gt;mismatch on insert]
+    R --&gt;|No re-embedding on update| F6[&quot; Trap 6: Stale doc&lt;br/&gt;embeddings after edit&quot;]
+    R --&gt;|Multilingual mismatch| F7[&quot; Trap 7: Cross-lingual&lt;br/&gt;query on mono model&quot;]
+    R --&gt;|Batch dim mismatch| F8[&quot; Trap 8: Dimension&lt;br/&gt;mismatch on insert&quot;]
 
     style F1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style F2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -159,7 +159,18 @@ flowchart TD
     style F5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style F6 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style F7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
-    style F8 fill:#78350f,stroke:#f59e0b,stroke-width:2px</div>
+    style F8 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class D,F3,F6 blue
+class T,F4,F7 green
+class F1,Q,F8 purple
+class E,F5 yellow
+class F2,R red</div>
 <hr>
 <h2 id="trap-1-silent-truncation-at-512-tokens">Trap 1: Silent Truncation at 512 Tokens</h2>
 <p><strong>Symptom</strong>: Long documents return poor search results despite being highly relevant. No errors thrown.</p>

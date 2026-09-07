@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-ephemeral-sandbox-lifecycles-garbage-collection.html">
   <meta property="og:title" content="Ephemeral Sandbox Lifecycles: Garbage Collection and State Teardown">
   <meta property="og:description" content="Zero-trust agent execution: orchestrating automated sandbox teardown lifecycles to prevent credential leaks and file system contamination.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-ephemeral-sandbox-lifecycles-garbage-collection.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-20">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Ephemeral Sandbox Lifecycles: Garbage Collection and State Teardown">
   <meta name="twitter:description" content="Zero-trust agent execution: orchestrating automated sandbox teardown lifecycles to prevent credential leaks and file system contamination.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-ephemeral-sandbox-lifecycles-garbage-collection.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Ephemeral Sandbox Lifecycles: Garbage Collection and State Teardown",
   "description": "Zero-trust agent execution: orchestrating automated sandbox teardown lifecycles to prevent credential leaks and file system contamination.",
   "url": "https://akmalkhaniub.github.io/blog/system-design-ephemeral-sandbox-lifecycles-garbage-collection.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/system-design-ephemeral-sandbox-lifecycles-garbage-collection.jpg",
   "datePublished": "2026-07-20",
   "keywords": "Architecture, System Design, Security, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Ephemeral Sandbox Lifecycles: Garbage Collection and State Teardown Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/system-design-ephemeral-sandbox-lifecycles-garbage-collection.jpg" class="article-cover-img" alt="Ephemeral Sandbox Lifecycles: Garbage Collection and State Teardown Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Ephemeral Sandbox Lifecycles: Garbage Collection and State Teardown</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#2-automating-background-garbage-collection">2. Automating Background Garbage Collection</a></li>
                 <li><a href="#code-demo-ephemeral-sandbox-lifecycle-controller">Code Demo: Ephemeral Sandbox Lifecycle Controller</a></li>
                 <li><a href="#sandbox-lifecycle-takeaways">Sandbox Lifecycle Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -125,21 +126,32 @@ Reusing execution sandboxes across multiple agent tasks introduces severe securi
 <h2 id="the-threat-of-dirty-container-reuse">The Threat of Dirty Container Reuse</h2>
 <p>In basic container reuse models:</p>
 <ul>
-<li><strong>Credential &amp; Token Leakage</strong>: Environment variables containing DB passkeys or API tokens persist in bash history files, accessible to subsequent tasks.</li>
+<li><strong>Credential &amp; Token Leakage</strong>: Environment variables containing DB passkeys or API tokens persist in bash history files, accessible to subsequent tasks <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Orphan Instance Accumulation</strong>: Unhandled container timeouts leave stale instances consuming RAM and CPU resources indefinitely.</li>
 <li><strong>The Solution</strong>: <strong>Single-Use Ephemeral Lifecycles</strong>. Containers process a single tool payload, after which the lifecycle controller destroys the container layer and releases host resources.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Task[Agent Execution Task Completed] --&gt; Lifecycle[Sandbox Lifecycle Controller]
+    Task[&quot;Agent Execution Task Completed&quot;] --&gt; Lifecycle[&quot;Sandbox Lifecycle Controller&quot;]
     
     subgraph SG1_GarbageCollectionPipeline [&quot;Garbage Collection Pipeline&quot;]
-        Lifecycle --&gt; Destroy[Issue Hard Teardown Signal: SIGKILL]
-        Destroy --&gt; PurgeVolume[Purge Ephemeral Disk Volume]
-        PurgeVolume --&gt; GC[Garbage Collector: Free Host RAM &amp; CPU]
+        Lifecycle --&gt; Destroy[&quot;Issue Hard Teardown Signal: SIGKILL&quot;]
+        Destroy --&gt; PurgeVolume[&quot;Purge Ephemeral Disk Volume&quot;]
+        PurgeVolume --&gt; GC[&quot;Garbage Collector: Free Host RAM &amp; CPU&quot;]
     end
     
-    GC --&gt; Replenish([Signal Pre-Warmed Pool Replenishment])</div>
+    GC --&gt; Replenish([Signal Pre-Warmed Pool Replenishment])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Task blue
+class Lifecycle green
+class Destroy purple
+class PurgeVolume yellow
+class GC red</div>
 <hr>
 <h2 id="1-enforcing-single-use-execution-contracts">1. Enforcing Single-Use Execution Contracts</h2>
 <p>To maintain isolation:</p>
@@ -220,8 +232,19 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Enforce Single-Use Lifecycles</strong>: Destroy sandboxes immediately after task execution to prevent credential and file leakages.</li>
 <li><strong>Run Background Janitor Passes</strong>: Implement garbage collection loops to terminate orphan containers exceeding TTL limits.</li>
-<li><strong>Purge Overlay Volumes</strong>: Delete container disk layers completely upon teardown to reclaim host disk space.</li>
+<li><strong>Purge Overlay Volumes</strong>: Delete container disk layers completely upon teardown to reclaim host disk space. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lidén, P., &amp; Karlsson, S. (2018)</strong>. <em>ZGC: A Scalable Low-Latency Garbage Collector</em>. Oracle / OpenJDK. <a href="https://openjdk.org/jeps/333" target="_blank" rel="noopener">https://openjdk.org/jeps/333</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -258,6 +281,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-automating-background-garbage-collection" class="toc-link">2. Automating Background Garbage Collection</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-ephemeral-sandbox-lifecycle-controller" class="toc-link">Code Demo: Ephemeral Sandbox Lifecycle Controller</a></li>
               <li class="toc-item toc-h2"><a href="#sandbox-lifecycle-takeaways" class="toc-link">Sandbox Lifecycle Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

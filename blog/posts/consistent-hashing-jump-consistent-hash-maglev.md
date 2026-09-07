@@ -1,6 +1,6 @@
 # Consistent Hashing Algorithms: Jump Consistent Hash & Maglev Hash Routers
 
-In large-scale distributed caching clusters (**Memcached**, **Redis Cluster**, **DynamoDB**, **Cassandra**), horizontal scaling requires partitioning millions of keys across hundreds of cache storage nodes.
+In large-scale distributed caching clusters (**Memcached**, **Redis Cluster**, **DynamoDB**, **Cassandra**), horizontal scaling requires partitioning millions of keys across hundreds of cache storage nodes [1].
 
 If a cluster uses naive **Modulo Hashing** ($\text{node} = \text{hash}(\text{key}) \pmod N$), adding or removing a single cache node changes $N → N+1$.
 
@@ -21,17 +21,28 @@ How Hash Rings with Virtual Nodes and Google Jump Consistent Hash route keys to 
 ```mermaid
 flowchart TD
   subgraph SG1_RingBasedConsistent ["Ring-Based Consistent Hashing (2^32 Hash Space)"]
-    Ring[Hash Ring: 0 .. 2^32-1] --> NodeA_v1[Node A - Vnode 1: Hash 1000]
-    Ring --> NodeB_v1[Node B - Vnode 1: Hash 5000]
-    Ring --> NodeA_v2[Node A - Vnode 2: Hash 9000]
+    Ring["Hash Ring: 0 .. 2^32-1"] --> NodeA_v1["Node A - Vnode 1: Hash 1000"]
+    Ring --> NodeB_v1["Node B - Vnode 1: Hash 5000"]
+    Ring --> NodeA_v2["Node A - Vnode 2: Hash 9000"]
     
     KeyHash["Key 'user_101' Hash = 4200"] -->|Walk Clockwise on Ring| NodeB_v1
   end
   
   subgraph SG2_GoogleJumpConsistent ["Google Jump Consistent Hash (Zero Memory Storage)"]
-    KeyID[64-Bit Key Hash] --> JumpAlgo[Jump Hash Loop: b = -1, j = 0]
-    JumpAlgo -->|Pseudo-Random Probability Jumps| BucketResult[Calculated Target Bucket Index in O(ln N) Time!]
+    KeyID["64-Bit Key Hash"] --> JumpAlgo["Jump Hash Loop: b = -1, j = 0"]
+    JumpAlgo -->|Pseudo-Random Probability Jumps| BucketResult["Calculated Target Bucket Index in O(ln N) Time!"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Ring,KeyID blue
+class NodeA_v1,JumpAlgo green
+class NodeB_v1,BucketResult purple
+class NodeA_v2 yellow
+class KeyHash red
 ```
 
 ### Core Consistent Hashing Algorithms
@@ -188,4 +199,14 @@ When engineering distributed hash routers:
 ## Real-World Enterprise Impact
 Consistent hashing deployment (such as in **Amazon DynamoDB**, **Apache Cassandra**, and **Google Maglev routers**) reports:
 * **Over 90% Remapping Reduction**: Adding a 10th node to a 9-node cluster remaps only $10\%$ of cached keys, keeping $90\%$ of cache entries active and preventing database load spikes.
-* **$O(1)$ Memory Routing**: Jump Consistent Hash routes billions of network requests using 0 bytes of hash ring memory storage.
+* **$O(1)$ Memory Routing**: Jump Consistent Hash routes billions of network requests using 0 bytes of hash ring memory storage. [2]
+
+## References & Further Reading
+
+1. **Karger, D., et al. (1997)**. *Consistent Hashing and Random Trees*. STOC. [https://www.cs.princeton.edu/courses/archive/fall09/cos521/Handouts/consistent-hashing.pdf](https://www.cs.princeton.edu/courses/archive/fall09/cos521/Handouts/consistent-hashing.pdf)
+2. **Eisenbud, D. E., et al. (2016)**. *Maglev: A Fast and Reliable Software Network Load Balancer*. NSDI. [https://research.google/pubs/pub44824/](https://research.google/pubs/pub44824/)
+3. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+4. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+5. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+6. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+7. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)

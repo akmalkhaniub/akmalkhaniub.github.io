@@ -5,7 +5,7 @@
 
 ---
 
-In software engineering, letting developers run their own manual QA on their code without testing standards is a known path to bug-ridden deployments. Yet, in generative AI systems, developers routinely instruct a single agent to write code and verify its correctness in the same context window.
+In software engineering, letting developers run their own manual QA on their code without testing standards is a known path to bug-ridden deployments [1]. Yet, in generative AI systems, developers routinely instruct a single agent to write code and verify its correctness in the same context window.
 
 This self-evaluation pattern fails because Large Language Models suffer from a systemic **confirmation bias**. Once a model outputs a generation, it tends to read past its own bugs in subsequent steps, declaring its own work "valid."
 
@@ -19,15 +19,26 @@ A validator agent is a dedicated node in your system design whose sole responsib
 
 ```mermaid
 flowchart TD
-    Output[Worker Output] --> Layer1[1. Programmatic Validator]
-    Layer1 -->|Passes| Layer2[2. Model-Based Validator]
-    Layer1 -->|Fails - Syntax/Type Error| Fail[Reject & Critique]
+    Output["Worker Output"] --> Layer1["1. Programmatic Validator"]
+    Layer1 -->|Passes| Layer2["2. Model-Based Validator"]
+    Layer1 -->|Fails - Syntax/Type Error| Fail["Reject & Critique"]
     
-    Layer2 -->|Passes| Pass[Approved Output]
+    Layer2 -->|Passes| Pass["Approved Output"]
     Layer2 -->|Fails - Content/Safety Drift| Fail
     
     style Layer1 fill:#f8fafc,stroke:#64748b,stroke-width:2px
     style Layer2 fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Output blue
+class Layer1 green
+class Layer2 purple
+class Fail yellow
+class Pass red
 ```
 
 ### 1. Programmatic Validators (Rule-Based Gates)

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/erasure-coding-reed-solomon-galois-field-reconstruction.html">
   <meta property="og:title" content="Erasure Coding Internals: Reed-Solomon Encoding, Galois Field GF(2^8) Arithmetic &amp; Chunk Reconstruction">
   <meta property="og:description" content="High-efficiency data durability: implementing Reed-Solomon K+M erasure coding, Galois Field GF(2^8) finite field arithmetic, Vandermonde matrices, and linear algebra missing chunk reconstruction.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/erasure-coding-reed-solomon-galois-field-reconstruction.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Erasure Coding Internals: Reed-Solomon Encoding, Galois Field GF(2^8) Arithmetic &amp; Chunk Reconstruction">
   <meta name="twitter:description" content="High-efficiency data durability: implementing Reed-Solomon K+M erasure coding, Galois Field GF(2^8) finite field arithmetic, Vandermonde matrices, and linear algebra missing chunk reconstruction.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/erasure-coding-reed-solomon-galois-field-reconstruction.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Erasure Coding Internals: Reed-Solomon Encoding, Galois Field GF(2^8) Arithmetic & Chunk Reconstruction",
   "description": "High-efficiency data durability: implementing Reed-Solomon K+M erasure coding, Galois Field GF(2^8) finite field arithmetic, Vandermonde matrices, and linear algebra missing chunk reconstruction.",
   "url": "https://akmalkhaniub.github.io/blog/erasure-coding-reed-solomon-galois-field-reconstruction.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/erasure-coding-reed-solomon-galois-field-reconstruction.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Erasure Coding, Reed-Solomon, Storage, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Erasure Coding Internals: Reed-Solomon Encoding, Galois Field GF(2^8) Arithmetic &amp; Chunk Reconstruction Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/erasure-coding-reed-solomon-galois-field-reconstruction.jpg" class="article-cover-img" alt="Erasure Coding Internals: Reed-Solomon Encoding, Galois Field GF(2^8) Arithmetic &amp; Chunk Reconstruction Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Erasure Coding Internals: Reed-Solomon Encoding, Galois Field GF(2^8) Arithmetic &amp; Chunk Reconstruction</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-reed-solomon-erasure-coding-engine">Python Implementation: Reed-Solomon Erasure Coding Engine</a></li>
                 <li><a href="#erasure-coding-gotchas-best-practices">Erasure Coding Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In petabyte-scale cloud storage infrastructure (<strong>AWS S3</strong>, <strong>Google Cloud Storage</strong>, <strong>Ceph</strong>, <strong>MinIO</strong>), data durability is non-negotiable.</p>
+<p>In petabyte-scale cloud storage infrastructure (<strong>AWS S3</strong>, <strong>Google Cloud Storage</strong>, <strong>Ceph</strong>, <strong>MinIO</strong>), data durability is non-negotiable <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>For decades, storage systems relied on <strong>3-Way Replication</strong>—storing three complete copies of every file across separate racks or availability zones.</p>
 <p>While simple, 3-way replication incurs a massive <strong>$200%$ storage overhead penalty</strong> (storing $1\text{ PB}$ requires buying $3\text{ PB}$ of physical raw drives).</p>
 <p>To achieve 11 Nines of durability ($99.999999999%$) with dramatically lower hardware costs, modern object stores deploy <strong>Erasure Coding</strong>.</p>
@@ -126,16 +127,27 @@
 <p>How Reed-Solomon encoding generates parity blocks and reconstructs missing data chunks following drive failures:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_ReedSolomon4 [&quot;Reed-Solomon 4+2 Encoding (K=4 Data, M=2 Parity)&quot;]
-    File[Original File Bytes] --&gt;|Split into K=4 Chunks| D1[Data Chunk D1] &amp; D2[Data Chunk D2] &amp; D3[Data Chunk D3] &amp; D4[Data Chunk D4]
+    File[&quot;Original File Bytes&quot;] --&gt;|Split into K=4 Chunks| D1[&quot;Data Chunk D1&quot;] &amp; D2[&quot;Data Chunk D2&quot;] &amp; D3[&quot;Data Chunk D3&quot;] &amp; D4[&quot;Data Chunk D4&quot;]
     
-    D1 &amp; D2 &amp; D3 &amp; D4 --&gt;|Multiply by Encoding Matrix G over GF(2^8)| MatrixMult[Vandermonde Matrix Multiplication]
-    MatrixMult --&gt; P1[Parity Chunk P1] &amp; P2[Parity Chunk P2]
+    D1 &amp; D2 &amp; D3 &amp; D4 --&gt;|Multiply by Encoding Matrix G over GF(2^8)| MatrixMult[&quot;Vandermonde Matrix Multiplication&quot;]
+    MatrixMult --&gt; P1[&quot;Parity Chunk P1&quot;] &amp; P2[&quot;Parity Chunk P2&quot;]
   end
   
   subgraph SG2_DriveFailureReconstruction [&quot;Drive Failure &amp; Reconstruction (D2 &amp; P1 Lost!)&quot;]
-    D1 &amp; D3 &amp; D4 &amp; P2 --&gt;|Read Any K=4 Available Chunks| InvertMatrix[Invert Sub-Matrix G' via Gaussian Elimination]
-    InvertMatrix --&gt;|Reconstruct Lost Chunks| RestoredD2[ Reconstructed Data Chunk D2!]
-  end</div>
+    D1 &amp; D3 &amp; D4 &amp; P2 --&gt;|Read Any K=4 Available Chunks| InvertMatrix[&quot;Invert Sub-Matrix G' via Gaussian Elimination&quot;]
+    InvertMatrix --&gt;|Reconstruct Lost Chunks| RestoredD2[&quot; Reconstructed Data Chunk D2!&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class File,MatrixMult blue
+class D1,P1 green
+class D2,P2 purple
+class D3,InvertMatrix yellow
+class D4,RestoredD2 red</div>
 <h3 id="core-erasure-coding-mechanics">Core Erasure Coding Mechanics</h3>
 <ol>
 <li><strong>$K + M$ Erasure Coding Configuration</strong>:<ul>
@@ -293,8 +305,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Erasure coding deployments (such as <strong>AWS S3</strong>, <strong>MinIO</strong>, <strong>Ceph</strong>, and <strong>Google Cloud Storage</strong>) report:</p>
 <ul>
 <li><strong>Over $60%$ Storage Cost Reduction</strong>: Replacing 3-way replication ($200%$ overhead) with $8+4$ erasure coding ($50%$ overhead) slashes raw disk hardware expenses by millions of dollars.</li>
-<li><strong>11 Nines of Durability ($99.999999999%$)</strong>: Mathematically surviving up to 4 concurrent server rack failures without data loss.</li>
+<li><strong>11 Nines of Durability ($99.999999999%$)</strong>: Mathematically surviving up to 4 concurrent server rack failures without data loss. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Reed, I. S., &amp; Solomon, G. (1960)</strong>. <em>Polynomial Codes Over Certain Finite Fields</em>. Journal of the Society for Industrial and Applied Mathematics. <a href="https://doi.org/10.1137/0108018" target="_blank" rel="noopener">https://doi.org/10.1137/0108018</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Ghemawat, S., Gobioff, H., &amp; Leung, S.-T. (2003)</strong>. <em>The Google File System</em>. SOSP. <a href="https://research.google/pubs/pub51/" target="_blank" rel="noopener">https://research.google/pubs/pub51/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -331,6 +351,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-reed-solomon-erasure-coding-engine" class="toc-link">Python Implementation: Reed-Solomon Erasure Coding Engine</a></li>
               <li class="toc-item toc-h2"><a href="#erasure-coding-gotchas-best-practices" class="toc-link">Erasure Coding Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

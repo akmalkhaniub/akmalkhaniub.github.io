@@ -7,7 +7,7 @@
 
 ---
 
-In our previous post, [Advanced Context Engineering: Ephemeral Sandbox Containment & Dynamic Tool Masking](post.html?post=context-engineering-ephemeral-sandboxing), we discussed how to isolate untrusted agent tools within temporary sandboxes to safeguard host machines. 
+In our previous post, [Advanced Context Engineering: Ephemeral Sandbox Containment & Dynamic Tool Masking](post [1].html?post=context-engineering-ephemeral-sandboxing), we discussed how to isolate untrusted agent tools within temporary sandboxes to safeguard host machines. 
 
 But execution security is only half the battle when building production-grade agents. The other critical challenge is **resource management**. If your agent queries an MCP resource containing a massive payroll database or codebase repository, sending those thousands of lines of code back and forth to the LLM on every agent cycle will quickly consume your token budget, hit API rate limits, and slow down user response times to a crawl.
 
@@ -26,24 +26,24 @@ flowchart TD
     classDef llm fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef db fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
 
-    User[User Prompt / Agent Task] -->|Request| Gateway[Context Gateway Proxy]
-    Gateway -->|Generate Embedding| Embedder[Embeddings API / text-embedding-004]
+    User["User Prompt / Agent Task"] -->|Request| Gateway["Context Gateway Proxy"]
+    Gateway -->|Generate Embedding| Embedder["Embeddings API / text-embedding-004"]
     
     Embedder -->|Query Vector Index| RedisVec[(Redis Vector Cache)]
     RedisVec -->|Similarity Match| MatchCheck{Cosine Similarity > 0.92?}
     
-    MatchCheck -->|Yes - Cache Hit| ReturnCached[Retrieve Cached LLM Output]
+    MatchCheck -->|Yes - Cache Hit| ReturnCached["Retrieve Cached LLM Output"]
     ReturnCached -->|Fast Path / ~50ms| Gateway
     
     MatchCheck -->|No - Cache Miss| TokenCheck{Payload Size > Token Budget?}
     
-    TokenCheck -->|Yes| ContextPruner[Prune Context / Summarize Logs]
-    TokenCheck -->|No| PromptAssembler[Assemble Prompt Bundle]
+    TokenCheck -->|Yes| ContextPruner["Prune Context / Summarize Logs"]
+    TokenCheck -->|No| PromptAssembler["Assemble Prompt Bundle"]
     
     ContextPruner --> PromptAssembler
-    PromptAssembler -->|Run Inference| LLM[LLM / Gemini 1.5 Pro]
+    PromptAssembler -->|Run Inference| LLM["LLM / Gemini 1.5 Pro"]
     
-    LLM -->|Return Output| SaveCache[Store Prompt Embedding & LLM Output]
+    LLM -->|Return Output| SaveCache["Store Prompt Embedding & LLM Output"]
     SaveCache -->|Write Async| RedisVec
     SaveCache --> Gateway
     

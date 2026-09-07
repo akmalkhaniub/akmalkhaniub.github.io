@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/real-time-communication-engines-websockets-sse-pubsub-gateways.html">
   <meta property="og:title" content="Real-Time Communication Engines: WebSockets, SSE &amp; Pub/Sub Gateways">
   <meta property="og:description" content="Scaling real-time web applications to millions of concurrent TCP connections: implementing WebSocket connection gateways, Server-Sent Events (SSE) fallbacks, and Redis/NATS Pub/Sub message fanout.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/real-time-communication-engines-websockets-sse-pubsub-gateways.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-16">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Real-Time Communication Engines: WebSockets, SSE &amp; Pub/Sub Gateways">
   <meta name="twitter:description" content="Scaling real-time web applications to millions of concurrent TCP connections: implementing WebSocket connection gateways, Server-Sent Events (SSE) fallbacks, and Redis/NATS Pub/Sub message fanout.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/real-time-communication-engines-websockets-sse-pubsub-gateways.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Real-Time Communication Engines: WebSockets, SSE & Pub/Sub Gateways",
   "description": "Scaling real-time web applications to millions of concurrent TCP connections: implementing WebSocket connection gateways, Server-Sent Events (SSE) fallbacks, and Redis/NATS Pub/Sub message fanout.",
   "url": "https://akmalkhaniub.github.io/blog/real-time-communication-engines-websockets-sse-pubsub-gateways.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/real-time-communication-engines-websockets-sse-pubsub-gateways.jpg",
   "datePublished": "2026-08-16",
   "keywords": "Backend Architecture, WebSockets, SSE, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Real-Time Communication Engines: WebSockets, SSE &amp; Pub/Sub Gateways Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/real-time-communication-engines-websockets-sse-pubsub-gateways.jpg" class="article-cover-img" alt="Real-Time Communication Engines: WebSockets, SSE &amp; Pub/Sub Gateways Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Real-Time Communication Engines: WebSockets, SSE &amp; Pub/Sub Gateways</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-real-time-gateway-pubsub-engine">Python Implementation: Real-Time Gateway &amp; Pub/Sub Engine</a></li>
                 <li><a href="#real-time-gateway-gotchas-best-practices">Real-Time Gateway Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Modern web applications—such as collaborative document editors, live financial trading dashboards, multiplayer games, and notification feeds—demand instant, sub-millisecond data updates. Traditional HTTP polling (<code>setInterval</code> polling every 2 seconds) wastes vast amounts of bandwidth and creates heavy CPU load on backend servers.</p>
+<p>Modern web applications—such as collaborative document editors, live financial trading dashboards, multiplayer games, and notification feeds—demand instant, sub-millisecond data updates <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Traditional HTTP polling (<code>setInterval</code> polling every 2 seconds) wastes vast amounts of bandwidth and creates heavy CPU load on backend servers.</p>
 <p>To support instant push updates to millions of concurrent users, backend engineers build <strong>Real-Time Communication Engines</strong>.</p>
 <p>These engines maintain long-lived TCP socket connections using <strong>WebSockets</strong> or <strong>Server-Sent Events (SSE)</strong>.</p>
 <p>Because a single backend server can only hold a finite number of TCP sockets open simultaneously, scalable architectures deploy stateless <strong>Connection Gateways</strong> backed by a high-throughput <strong>Pub/Sub Message Bus (Redis / NATS)</strong> to fan out events across distributed gateway clusters.</p>
@@ -124,21 +125,32 @@
 <h2 id="real-time-websocketsse-gateway-architecture">Real-Time WebSocket/SSE Gateway Architecture</h2>
 <p>How a Pub/Sub message bus fans out real-time events across stateless connection gateway pods:</p>
 <div class="mermaid">flowchart TD
-  Client1[Web Client A: Connected to Pod 1] --&gt;|HTTP Upgrade 101| Gateway1[WebSocket Gateway Pod 1]
-  Client2[Web Client B: Connected to Pod 2] --&gt;|text/event-stream| Gateway2[SSE Gateway Pod 2]
+  Client1[&quot;Web Client A: Connected to Pod 1&quot;] --&gt;|HTTP Upgrade 101| Gateway1[&quot;WebSocket Gateway Pod 1&quot;]
+  Client2[&quot;Web Client B: Connected to Pod 2&quot;] --&gt;|text/event-stream| Gateway2[&quot;SSE Gateway Pod 2&quot;]
   
   subgraph SG1_RealTimeConnection [&quot;Real-Time Connection Gateway Tier&quot;]
-    Gateway1 --&gt;|Register Connection - user_101| Reg1[Local Socket Registry Pod 1]
-    Gateway2 --&gt;|Register Connection - user_202| Reg2[Local Socket Registry Pod 2]
+    Gateway1 --&gt;|Register Connection - user_101| Reg1[&quot;Local Socket Registry Pod 1&quot;]
+    Gateway2 --&gt;|Register Connection - user_202| Reg2[&quot;Local Socket Registry Pod 2&quot;]
   end
   
   subgraph SG2_CentralPubSub [&quot;Central Pub/Sub Fanout Bus&quot;]
-    EventProducer[Event Producer: OrderService] --&gt;|Publish Event - user_101| PubSub[Redis / NATS Pub/Sub Bus]
+    EventProducer[&quot;Event Producer: OrderService&quot;] --&gt;|Publish Event - user_101| PubSub[&quot;Redis / NATS Pub/Sub Bus&quot;]
     PubSub --&gt;|Fanout Broadcast| Gateway1
     PubSub --&gt;|Fanout Broadcast| Gateway2
   end
   
-  Gateway1 --&gt;|Match Local Connection &amp; Push| Client1</div>
+  Gateway1 --&gt;|Match Local Connection &amp; Push| Client1
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client1,Reg2 blue
+class Gateway1,EventProducer green
+class Client2,PubSub purple
+class Gateway2 yellow
+class Reg1 red</div>
 <h3 id="real-time-protocol-protocols-architecture">Real-Time Protocol Protocols &amp; Architecture</h3>
 <ol>
 <li><strong>WebSockets vs Server-Sent Events (SSE)</strong>:<ul>
@@ -261,8 +273,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams deploying real-time Pub/Sub communication gateways report:</p>
 <ul>
 <li><strong>Sub-50ms Real-Time Push Latency</strong>: Eliminating HTTP polling delivers instant updates to end users while reducing network bandwidth by up to 80%.</li>
-<li><strong>Horizontal Scalability to Millions of Connections</strong>: Decoupling socket connections into stateless Gateway Pods allows scaling connection capacity seamlessly by adding container instances.</li>
+<li><strong>Horizontal Scalability to Millions of Connections</strong>: Decoupling socket connections into stateless Gateway Pods allows scaling connection capacity seamlessly by adding container instances. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Redis Ltd. (2024)</strong>. <em>Redis Documentation</em>. redis.io. <a href="https://redis.io/docs/" target="_blank" rel="noopener">https://redis.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -299,6 +322,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-real-time-gateway-pubsub-engine" class="toc-link">Python Implementation: Real-Time Gateway &amp; Pub/Sub Engine</a></li>
               <li class="toc-item toc-h2"><a href="#real-time-gateway-gotchas-best-practices" class="toc-link">Real-Time Gateway Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

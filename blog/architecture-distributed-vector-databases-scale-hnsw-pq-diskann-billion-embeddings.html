@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/architecture-distributed-vector-databases-scale-hnsw-pq-diskann-billion-embeddings.html">
   <meta property="og:title" content="The Architecture of Distributed Vector Databases at Scale: HNSW Graphs, Product Quantization (PQ) &amp; DiskANN across 1 Billion Embeddings">
   <meta property="og:description" content="Billion-scale vector search architecture: Product Quantization (PQ) centroid distance math (95% RAM reduction), DiskANN Vamana graph SSD traversal via io_uring, and distributed compute-storage disaggregation in Milvus and Qdrant.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/architecture-distributed-vector-databases-scale-hnsw-pq-diskann-billion-embeddings.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-23">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="The Architecture of Distributed Vector Databases at Scale: HNSW Graphs, Product Quantization (PQ) &amp; DiskANN across 1 Billion Embeddings">
   <meta name="twitter:description" content="Billion-scale vector search architecture: Product Quantization (PQ) centroid distance math (95% RAM reduction), DiskANN Vamana graph SSD traversal via io_uring, and distributed compute-storage disaggregation in Milvus and Qdrant.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/architecture-distributed-vector-databases-scale-hnsw-pq-diskann-billion-embeddings.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "The Architecture of Distributed Vector Databases at Scale: HNSW Graphs, Product Quantization (PQ) & DiskANN across 1 Billion Embeddings",
   "description": "Billion-scale vector search architecture: Product Quantization (PQ) centroid distance math (95% RAM reduction), DiskANN Vamana graph SSD traversal via io_uring, and distributed compute-storage disaggregation in Milvus and Qdrant.",
   "url": "https://akmalkhaniub.github.io/blog/architecture-distributed-vector-databases-scale-hnsw-pq-diskann-billion-embeddings.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/architecture-distributed-vector-databases-scale-hnsw-pq-diskann-billion-embeddings.jpg",
   "datePublished": "2026-08-23",
   "keywords": "Vector Databases, HNSW, Product Quantization, DiskANN, Milvus, Qdrant",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="The Architecture of Distributed Vector Databases at Scale: HNSW Graphs, Product Quantization (PQ) &amp; DiskANN across 1 Billion Embeddings Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/architecture-distributed-vector-databases-scale-hnsw-pq-diskann-billion-embeddings.jpg" class="article-cover-img" alt="The Architecture of Distributed Vector Databases at Scale: HNSW Graphs, Product Quantization (PQ) &amp; DiskANN across 1 Billion Embeddings Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">The Architecture of Distributed Vector Databases at Scale: HNSW Graphs, Product Quantization (PQ) &amp; DiskANN across 1 Billion Embeddings</h1>
             <div class="article-meta">
@@ -118,9 +118,10 @@
                 <li><a href="#python-implementation-product-quantization-pq-adc-search-engine">Python Implementation: Product Quantization (PQ) &amp; ADC Search Engine</a></li>
                 <li><a href="#summary-vector-indexing-trade-offs">Summary: Vector Indexing Trade-Offs</a></li>
                 <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In the modern AI infrastructure stack (<strong>Milvus</strong>, <strong>Qdrant</strong>, <strong>Pinecone</strong>, <strong>pgvector</strong>, <strong>Weaviate</strong>), vector similarity search has transformed from an experimental research tool into the foundational layer powering Retrieval-Augmented Generation (RAG), multimodal search, and recommendation engines.</p>
+<p>In the modern AI infrastructure stack (<strong>Milvus</strong>, <strong>Qdrant</strong>, <strong>Pinecone</strong>, <strong>pgvector</strong>, <strong>Weaviate</strong>), vector similarity search has transformed from an experimental research tool into the foundational layer powering Retrieval-Augmented Generation (RAG), multimodal search, and recommendation engines <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>However, scaling vector search from $100,000$ embeddings to <strong>1 Billion high-dimensional vectors</strong> introduces a massive infrastructure bottleneck.</p>
 <p>One billion 1536-dimensional <code>float32</code> embeddings (the standard OpenAI embedding dimensionality) require:</p>
 <p>$$\text{Raw Embedding Footprint} = 10^9 \times 1536 \times 4 \text{ bytes} \approx \mathbf{6.14 \text{ Terabytes of uncompressed data}}$$</p>
@@ -128,8 +129,8 @@
 <p>This article details how modern distributed vector databases achieve sub-$10\text{ms}$ recall across 1 billion vectors using <strong>Product Quantization (PQ)</strong>, <strong>Asymmetric Distance Computation (ADC)</strong>, <strong>DiskANN SSD-optimized graph traversal</strong>, and <strong>disaggregated compute-storage architectures</strong>.</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_BillionScaleVector [&quot;Billion-Scale Vector Search Pipeline&quot;]
-    Query[Query Vector: 1536-dim float32] --&gt; Coordinator[Distributed Query Coordinator]
-    Coordinator --&gt; Shards[Parallel Query Shard Nodes]
+    Query[&quot;Query Vector: 1536-dim float32&quot;] --&gt; Coordinator[&quot;Distributed Query Coordinator&quot;]
+    Coordinator --&gt; Shards[&quot;Parallel Query Shard Nodes&quot;]
     
     subgraph SG2_QuantizationTraversalEngine [&quot;Quantization &amp; Traversal Engine&quot;]
       Shards --&gt; ADC[&quot;1. Asymmetric Distance Computation (Precomputed Lookup Tables)&quot;]
@@ -137,8 +138,19 @@
       Shards --&gt; Rerank[&quot;3. Top-K Full Precision Re-Ranking (Float32 Vector Cache)&quot;]
     end
     
-    Rerank --&gt; Reduce[K-Way Merge &amp; Top-K Results]
-  end</div>
+    Rerank --&gt; Reduce[&quot;K-Way Merge &amp; Top-K Results&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,Rerank blue
+class Coordinator,Reduce green
+class Shards purple
+class ADC yellow
+class DiskANN red</div>
 <hr>
 <h2 id="1-product-quantization-pq-asymmetric-distance-math">1. Product Quantization (PQ) &amp; Asymmetric Distance Math</h2>
 <p><strong>Product Quantization (PQ)</strong> (Jégou et al.) is the algorithmic cornerstone of vector compression, reducing RAM footprints by up to <strong>$95%$</strong> with minimal loss in search recall.</p>
@@ -173,16 +185,26 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 <p>To completely overcome the RAM ceiling, <strong>DiskANN</strong> (Microsoft Research, Subramanya et al.) stores the graph structure and compressed vectors on fast <strong>NVMe SSDs</strong> rather than in RAM.</p>
 <div class="mermaid">flowchart TD
   subgraph SG3_InMemoryCache [&quot;In-Memory Cache (~10% RAM)&quot;]
-    Mem[Compressed PQ Vectors + Fast Entry Point Index]
+    Mem[&quot;Compressed PQ Vectors + Fast Entry Point Index&quot;]
   end
   
   subgraph SG4_NvmeSsdDisk [&quot;NVMe SSD Disk Layout (90% Cold)&quot;]
-    SSD[Vamana Graph Nodes + Full Precision 1536-dim Vectors]
+    SSD[&quot;Vamana Graph Nodes + Full Precision 1536-dim Vectors&quot;]
   end
   
-  Query[Query Vector] --&gt; Mem
+  Query[&quot;Query Vector&quot;] --&gt; Mem
   Mem --&gt;|Greedy Beam Search Routing| SSD
-  SSD --&gt;|Zero-Copy io_uring Asynchronous Sector Reads| TopK[Top-K Nearest Neighbors]</div>
+  SSD --&gt;|Zero-Copy io_uring Asynchronous Sector Reads| TopK[&quot;Top-K Nearest Neighbors&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Mem blue
+class SSD green
+class Query purple
+class TopK yellow</div>
 <h3 id="the-vamana-graph-advantage-over-hnsw">The Vamana Graph Advantage over HNSW:</h3>
 <ul>
 <li><strong>HNSW Limitation</strong>: HNSW maintains multiple hierarchical layers (Layer 0, Layer 1, Layer 2), requiring random memory pointer dereferences that cause catastrophic disk thrashing if stored on SSDs.</li>
@@ -197,22 +219,33 @@ $$\text{Original Size} = 1536 \times 4 = 6,144 \text{ bytes} \longrightarrow \te
 <p>At enterprise scale, vector databases decouple stateful storage from stateless compute nodes:</p>
 <div class="mermaid">flowchart TD
   subgraph SG5_ClientIngestionQuery [&quot;Client Ingestion &amp; Query Layer&quot;]
-    Client[Client App] --&gt; Proxy[Stateless Query / Ingest Proxy]
+    Client[&quot;Client App&quot;] --&gt; Proxy[&quot;Stateless Query / Ingest Proxy&quot;]
   end
   
   subgraph SG6_StorageConsensusBrokers [&quot;Storage &amp; Consensus Brokers&quot;]
-    Proxy --&gt;|Append Insert WAL| LogBroker[Apache Kafka / Pulsar WAL Broker]
-    Proxy --&gt;|Parallel Scatter Search| QueryNode1[Query Worker Node 1]
-    Proxy --&gt;|Parallel Scatter Search| QueryNode2[Query Worker Node 2]
+    Proxy --&gt;|Append Insert WAL| LogBroker[&quot;Apache Kafka / Pulsar WAL Broker&quot;]
+    Proxy --&gt;|Parallel Scatter Search| QueryNode1[&quot;Query Worker Node 1&quot;]
+    Proxy --&gt;|Parallel Scatter Search| QueryNode2[&quot;Query Worker Node 2&quot;]
   end
   
   subgraph SG7_BackgroundProcessingObject [&quot;Background Processing &amp; Object Store&quot;]
-    LogBroker --&gt; DataNode[Data Node: Segment Flusher]
+    LogBroker --&gt; DataNode[&quot;Data Node: Segment Flusher&quot;]
     DataNode --&gt; S3[(Cloud Object Storage: AWS S3 / MinIO)]
-    S3 --&gt; IndexNode[Indexer Node: Builds DiskANN / HNSW SSTs]
+    S3 --&gt; IndexNode[&quot;Indexer Node: Builds DiskANN / HNSW SSTs&quot;]
     IndexNode --&gt; S3
     S3 -.-&gt;|Mmap / Cache Segments| QueryNode1 &amp; QueryNode2
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client,DataNode blue
+class Proxy,IndexNode green
+class LogBroker purple
+class QueryNode1 yellow
+class QueryNode2 red</div>
 <h3 id="architectural-responsibilities">Architectural Responsibilities:</h3>
 <ol>
 <li><strong>Stateless Query Nodes</strong>: Hold cached DiskANN/PQ segments in local NVMe storage and execute ADC beam searches in parallel across assigned shards.</li>
@@ -379,7 +412,18 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>Scaling vector databases to 1 billion embeddings is fundamentally a problem of <strong>memory economics and I/O layout</strong>.</p>
-<p>By combining <strong>Product Quantization</strong> to reduce vector dimensionality in memory with <strong>DiskANN Vamana graphs</strong> on high-throughput NVMe SSDs, modern AI engineering platforms achieve sub-10ms similarity search at a fraction of traditional cloud infrastructure costs.</p>
+<p>By combining <strong>Product Quantization</strong> to reduce vector dimensionality in memory with <strong>DiskANN Vamana graphs</strong> on high-throughput NVMe SSDs, modern AI engineering platforms achieve sub-10ms similarity search at a fraction of traditional cloud infrastructure costs. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Subramanya, S. J., et al. (2019)</strong>. <em>DiskANN: Fast Accurate Billion-point Nearest Neighbor Search on a Single Node</em>. NeurIPS. <a href="https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf" target="_blank" rel="noopener">https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>pgvector Authors (2024)</strong>. <em>pgvector: Open-source vector similarity search for Postgres</em>. GitHub. <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/pgvector/pgvector</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -421,6 +465,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-product-quantization-pq-adc-search-engine" class="toc-link">Python Implementation: Product Quantization (PQ) &amp; ADC Search Engine</a></li>
               <li class="toc-item toc-h2"><a href="#summary-vector-indexing-trade-offs" class="toc-link">Summary: Vector Indexing Trade-Offs</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

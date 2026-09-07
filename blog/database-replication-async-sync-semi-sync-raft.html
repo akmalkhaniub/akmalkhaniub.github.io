@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/database-replication-async-sync-semi-sync-raft.html">
   <meta property="og:title" content="Distributed Database Replication Mechanics: Async vs Sync vs Semi-Sync &amp; Raft Log Replication">
   <meta property="og:description" content="High-availability data replication: implementing Asynchronous replication lag, Synchronous durability penalties, Semi-Synchronous relay logs, and Raft consensus majority quorum commits.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/database-replication-async-sync-semi-sync-raft.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Database Replication Mechanics: Async vs Sync vs Semi-Sync &amp; Raft Log Replication">
   <meta name="twitter:description" content="High-availability data replication: implementing Asynchronous replication lag, Synchronous durability penalties, Semi-Synchronous relay logs, and Raft consensus majority quorum commits.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/database-replication-async-sync-semi-sync-raft.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distributed Database Replication Mechanics: Async vs Sync vs Semi-Sync & Raft Log Replication",
   "description": "High-availability data replication: implementing Asynchronous replication lag, Synchronous durability penalties, Semi-Synchronous relay logs, and Raft consensus majority quorum commits.",
   "url": "https://akmalkhaniub.github.io/blog/database-replication-async-sync-semi-sync-raft.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/database-replication-async-sync-semi-sync-raft.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Replication, Raft, Distributed Systems, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed Database Replication Mechanics: Async vs Sync vs Semi-Sync &amp; Raft Log Replication Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/database-replication-async-sync-semi-sync-raft.jpg" class="article-cover-img" alt="Distributed Database Replication Mechanics: Async vs Sync vs Semi-Sync &amp; Raft Log Replication Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed Database Replication Mechanics: Async vs Sync vs Semi-Sync &amp; Raft Log Replication</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-multi-mode-replication-engine">Python Implementation: Multi-Mode Replication Engine</a></li>
                 <li><a href="#database-replication-gotchas-best-practices">Database Replication Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-availability data infrastructure, running a single primary database node introduces a <strong>Single Point of Failure (SPOF)</strong>. If the primary database hardware fails, all application writes stall, and un-replicated data is lost.</p>
+<p>In high-availability data infrastructure, running a single primary database node introduces a <strong>Single Point of Failure (SPOF)</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. If the primary database hardware fails, all application writes stall, and un-replicated data is lost.</p>
 <p>To achieve fault tolerance and scale read throughput, databases replicate mutations across multiple replica nodes (<strong>PostgreSQL</strong>, <strong>MySQL</strong>, <strong>CockroachDB</strong>, <strong>YugabyteDB</strong>).</p>
 <p>However, database replication introduces a fundamental trade-off between <strong>Write Latency</strong>, <strong>Data Loss ($RPO$)</strong>, and <strong>Availability</strong>.</p>
 <p>From legacy <strong>Asynchronous</strong> and <strong>Synchronous</strong> primary-replica setups to modern <strong>Semi-Synchronous</strong> and <strong>Raft Majority Quorum</strong> consensus groups, choosing the right replication model dictates database resilience.</p>
@@ -125,25 +126,36 @@
 <p>How Asynchronous, Semi-Synchronous, and Raft Majority Quorum replication models process client write requests:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_ClientWriteRequest [&quot;Client Write Request&quot;]
-    Client[Client Tx Write Request] --&gt; Primary[Primary Database Node]
+    Client[&quot;Client Tx Write Request&quot;] --&gt; Primary[&quot;Primary Database Node&quot;]
   end
   
   subgraph SG2_AsynchronousReplicationZero [&quot;Asynchronous Replication (Zero Latency Penalty)&quot;]
     Primary --&gt;|Commit Locally &amp; Return Ack &lt; 1ms| Client
-    Primary -.-&gt;|Async WAL Stream| Replica1[Replica Node 1 (Replication Lag)]
+    Primary -.-&gt;|Async WAL Stream| Replica1[&quot;Replica Node 1 (Replication Lag)&quot;]
   end
   
   subgraph SG3_SemiSynchronousReplication [&quot;Semi-Synchronous Replication (1 Slave Ack)&quot;]
-    Primary --&gt;|Stream Binlog| RelayLog[Replica 1 Relay Log]
+    Primary --&gt;|Stream Binlog| RelayLog[&quot;Replica 1 Relay Log&quot;]
     RelayLog --&gt;|Ack Received| Primary
     Primary --&gt;|Return Ack to Client| Client
   end
   
   subgraph SG4_RaftConsensusMajority [&quot;Raft Consensus Majority Quorum (CockroachDB / TiKV)&quot;]
-    Primary --&gt;|Broadcast AppendEntries| NodeB[Raft Node B] &amp; NodeC[Raft Node C]
+    Primary --&gt;|Broadcast AppendEntries| NodeB[&quot;Raft Node B&quot;] &amp; NodeC[&quot;Raft Node C&quot;]
     NodeB --&gt;|Majority Ack (2 of 3 Nodes)| Primary
     Primary --&gt;|Commit Majority Entry!| Client
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client,NodeC blue
+class Primary green
+class Replica1 purple
+class RelayLog yellow
+class NodeB red</div>
 <h3 id="core-replication-modes-mechanics">Core Replication Modes &amp; Mechanics</h3>
 <ol>
 <li><strong>Asynchronous Replication</strong>:<ul>
@@ -291,8 +303,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Replication engine deployments (such as <strong>CockroachDB</strong>, <strong>TiKV</strong>, and <strong>MySQL InnoDB Cluster</strong>) report:</p>
 <ul>
 <li><strong>Zero Data Loss ($RPO = 0$)</strong>: Raft majority quorum replication guarantees that committed transactions survive the crash of any single server node.</li>
-<li><strong>Automatic Sub-5 Second Failover</strong>: Conserved consensus groups elect a new leader automatically without human operator intervention.</li>
+<li><strong>Automatic Sub-5 Second Failover</strong>: Conserved consensus groups elect a new leader automatically without human operator intervention. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (2001)</strong>. <em>Paxos Made Simple</em>. ACM SIGACT News. <a href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/paxos-simple.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Reed, D. P. (1978)</strong>. <em>Naming and Synchronization in a Decentralized Computer System</em>. MIT PhD Thesis. <a href="https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf" target="_blank" rel="noopener">https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Bayer, R., &amp; McCreight, E. (1972)</strong>. <em>Organization and Maintenance of Large Ordered Indexes</em>. Acta Informatica. <a href="https://doi.org/10.1007/BF00288683" target="_blank" rel="noopener">https://doi.org/10.1007/BF00288683</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -329,6 +352,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-multi-mode-replication-engine" class="toc-link">Python Implementation: Multi-Mode Replication Engine</a></li>
               <li class="toc-item toc-h2"><a href="#database-replication-gotchas-best-practices" class="toc-link">Database Replication Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

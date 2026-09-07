@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/apache-spark-catalyst-optimizer-whole-stage-codegen.html">
   <meta property="og:title" content="Apache Spark Catalyst Optimizer Internals: Logical Plans, Expression Trees &amp; Whole-Stage Code Generation">
   <meta property="og:description" content="Distributed query optimization: implementing Catalyst rule-based transformations (predicate pushdown, column pruning, constant folding), physical planning, and Tungsten Whole-Stage Java bytecode generation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/apache-spark-catalyst-optimizer-whole-stage-codegen.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Apache Spark Catalyst Optimizer Internals: Logical Plans, Expression Trees &amp; Whole-Stage Code Generation">
   <meta name="twitter:description" content="Distributed query optimization: implementing Catalyst rule-based transformations (predicate pushdown, column pruning, constant folding), physical planning, and Tungsten Whole-Stage Java bytecode generation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/apache-spark-catalyst-optimizer-whole-stage-codegen.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Apache Spark Catalyst Optimizer Internals: Logical Plans, Expression Trees & Whole-Stage Code Generation",
   "description": "Distributed query optimization: implementing Catalyst rule-based transformations (predicate pushdown, column pruning, constant folding), physical planning, and Tungsten Whole-Stage Java bytecode generation.",
   "url": "https://akmalkhaniub.github.io/blog/apache-spark-catalyst-optimizer-whole-stage-codegen.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/apache-spark-catalyst-optimizer-whole-stage-codegen.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Apache Spark, Catalyst Optimizer, Big Data, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Apache Spark Catalyst Optimizer Internals: Logical Plans, Expression Trees &amp; Whole-Stage Code Generation Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/apache-spark-catalyst-optimizer-whole-stage-codegen.jpg" class="article-cover-img" alt="Apache Spark Catalyst Optimizer Internals: Logical Plans, Expression Trees &amp; Whole-Stage Code Generation Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Apache Spark Catalyst Optimizer Internals: Logical Plans, Expression Trees &amp; Whole-Stage Code Generation</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-catalyst-logical-optimizer-codegen-engine">Python Implementation: Catalyst Logical Optimizer &amp; Codegen Engine</a></li>
                 <li><a href="#catalyst-optimizer-gotchas-best-practices">Catalyst Optimizer Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In modern big data engines (<strong>Apache Spark</strong>, <strong>Databricks</strong>, <strong>Snowflake</strong>, <strong>Trino</strong>), distributed query optimization determines whether a petabyte-scale ETL job finishes in minutes or runs out of memory (OOM).</p>
+<p>In modern big data engines (<strong>Apache Spark</strong>, <strong>Databricks</strong>, <strong>Snowflake</strong>, <strong>Trino</strong>), distributed query optimization determines whether a petabyte-scale ETL job finishes in minutes or runs out of memory (OOM) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>When developers write high-level DataFrame or SQL queries (<code>df.select().where().groupBy().join()</code>), the query execution engine must compile that declarative code into a high-performance distributed physical execution graph.</p>
 <p>At the heart of Apache Spark lies the <strong>Catalyst Optimizer</strong> and the <strong>Project Tungsten Execution Engine</strong>.</p>
 <p>Using functional Scala pattern matching, Catalyst applies <strong>Rule-Based Optimizations (RBO)</strong>—such as Predicate Pushdown, Column Pruning, and Constant Folding—before the <strong>Cost-Based Optimizer (CBO)</strong> selects optimal join algorithms.</p>
@@ -126,18 +127,29 @@
 <p>How Apache Spark translates SQL/DataFrame ASTs through Catalyst logical transformations into JIT-compiled Whole-Stage Java Loops:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_CatalystQueryCompilation [&quot;Catalyst Query Compilation Pipeline&quot;]
-    SQL[SQL / DataFrame Query] --&gt; Unresolved[1. Unresolved Logical Plan AST]
-    Catalog[Spark Catalog Schema] --&gt; Analysis[2. Analysis Phase: Resolve Columns &amp; Types]
+    SQL[&quot;SQL / DataFrame Query&quot;] --&gt; Unresolved[&quot;1. Unresolved Logical Plan AST&quot;]
+    Catalog[&quot;Spark Catalog Schema&quot;] --&gt; Analysis[&quot;2. Analysis Phase: Resolve Columns &amp; Types&quot;]
     Unresolved --&gt; Analysis
     
-    Analysis --&gt; LogOpt[3. Logical Optimization: Predicate Pushdown &amp; Column Pruning]
-    LogOpt --&gt; Physical[4. Physical Planning &amp; Cost-Based Optimizer: Selection of Joins]
+    Analysis --&gt; LogOpt[&quot;3. Logical Optimization: Predicate Pushdown &amp; Column Pruning&quot;]
+    LogOpt --&gt; Physical[&quot;4. Physical Planning &amp; Cost-Based Optimizer: Selection of Joins&quot;]
   end
   
   subgraph SG2_ProjectTungstenExecution [&quot;Project Tungsten Execution Engine&quot;]
     Physical --&gt; Codegen[&quot; Whole-Stage Code Generation (JIT Java Loop)&quot;]
     Codegen --&gt; OffHeap[&quot;Binary Off-Heap Memory (Unsafe Memory Registers)&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class SQL,Physical blue
+class Unresolved,Codegen green
+class Catalog,OffHeap purple
+class Analysis yellow
+class LogOpt red</div>
 <h3 id="core-catalyst-tungsten-concepts">Core Catalyst &amp; Tungsten Concepts</h3>
 <ol>
 <li><strong>The 4 Phases of Catalyst Optimization</strong>:<ul>
@@ -270,8 +282,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Apache Spark Catalyst and Tungsten whole-stage codegen engines (powering <strong>Databricks</strong>, <strong>AWS EMR</strong>, and <strong>Snowflake</strong>) report:</p>
 <ul>
 <li><strong>Over $10\times$ Execution Speedup</strong>: Fusing operator trees into single Whole-Stage Java loops eliminates virtual function call overhead.</li>
-<li><strong>$100\times$ Reduction in Memory Payload</strong>: Pushing down predicates directly into Parquet/ORC file metadata pruning avoids reading petabytes of unneeded raw data from cloud storage.</li>
+<li><strong>$100\times$ Reduction in Memory Payload</strong>: Pushing down predicates directly into Parquet/ORC file metadata pruning avoids reading petabytes of unneeded raw data from cloud storage. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Zaharia, M., et al. (2012)</strong>. <em>Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing</em>. NSDI. <a href="https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf" target="_blank" rel="noopener">https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Dean, J., &amp; Ghemawat, S. (2004)</strong>. <em>MapReduce: Simplified Data Processing on Large Clusters</em>. OSDI. <a href="https://research.google/pubs/pub62/" target="_blank" rel="noopener">https://research.google/pubs/pub62/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Ghemawat, S., Gobioff, H., &amp; Leung, S.-T. (2003)</strong>. <em>The Google File System</em>. SOSP. <a href="https://research.google/pubs/pub51/" target="_blank" rel="noopener">https://research.google/pubs/pub51/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Kubernetes Authors (2024)</strong>. <em>Kubernetes Documentation</em>. CNCF. <a href="https://kubernetes.io/docs/home/" target="_blank" rel="noopener">https://kubernetes.io/docs/home/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -308,6 +331,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-catalyst-logical-optimizer-codegen-engine" class="toc-link">Python Implementation: Catalyst Logical Optimizer &amp; Codegen Engine</a></li>
               <li class="toc-item toc-h2"><a href="#catalyst-optimizer-gotchas-best-practices" class="toc-link">Catalyst Optimizer Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

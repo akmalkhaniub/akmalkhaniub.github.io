@@ -8,7 +8,7 @@
 
 ## Why Standard APM Tools Fall Short for AI Systems
 
-Classic Application Performance Monitoring (APM) tools like Datadog, New Relic, or AWS CloudWatch capture request latency, error rates, and CPU utilisation. These metrics are necessary but fundamentally insufficient for AI applications. The failure modes in LLM systems are semantic, not structural:
+Classic Application Performance Monitoring (APM) tools like Datadog, New Relic, or AWS CloudWatch capture request latency, error rates, and CPU utilisation [1]. These metrics are necessary but fundamentally insufficient for AI applications. The failure modes in LLM systems are semantic, not structural:
 
 *   **A 200 OK response** can contain a hallucinated fact, a wrong code block, or a harmful output.
 *   **A 500ms latency** might be acceptable for a tool call but unacceptable for a streaming response.
@@ -24,30 +24,30 @@ LLM Observability adds a **semantic layer** on top of infrastructure metrics: tr
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 graph TB
     subgraph SG1_Layer3Evaluation ["Layer 3 — Evaluation"]
-        E1[Faithfulness Score]
-        E2[Answer Relevance]
-        E3[Hallucination Detector]
+        E1["Faithfulness Score"]
+        E2["Answer Relevance"]
+        E3["Hallucination Detector"]
     end
 
     subgraph SG2_Layer2Llm ["Layer 2 — LLM Traces"]
-        T1[Span: System Prompt]
-        T2[Span: RAG Retrieval]
-        T3[Span: LLM Generation]
-        T4[Span: Tool Call]
-        T5[Span: Final Output]
+        T1["Span: System Prompt"]
+        T2["Span: RAG Retrieval"]
+        T3["Span: LLM Generation"]
+        T4["Span: Tool Call"]
+        T5["Span: Final Output"]
     end
 
     subgraph SG3_Layer1Infrastructure ["Layer 1 — Infrastructure"]
-        I1[Request Latency P50/P99]
-        I2[Token Usage per Model]
-        I3[API Error Rates]
-        I4[Cost per Request]
+        I1["Request Latency P50/P99"]
+        I2["Token Usage per Model"]
+        I3["API Error Rates"]
+        I4["Cost per Request"]
     end
 
     subgraph Platforms
-        P1[Langfuse<br/>Semantic Tracing]
-        P2[OpenTelemetry<br/>OTEL Collector]
-        P3[Grafana / Datadog<br/>Dashboards]
+        P1["Langfuse<br/>Semantic Tracing"]
+        P2["OpenTelemetry<br/>OTEL Collector"]
+        P3["Grafana / Datadog<br/>Dashboards"]
     end
 
     Layer 3 --> P1

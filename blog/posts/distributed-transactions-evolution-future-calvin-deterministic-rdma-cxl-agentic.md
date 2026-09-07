@@ -11,10 +11,21 @@ This article examines the cutting-edge architectural frontiers that define the f
 ```mermaid
 flowchart TD
   subgraph SG1_TheFutureFrontier ["The Future Frontier (2026 & Beyond)"]
-    F1[1. Deterministic Scheduling] --> Calvin["Calvin / FaunaDB: Pre-Sequencing Log (Zero 2PC Aborts)"]
-    F2[2. Hardware Acceleration] --> RDMA["RDMA & CXL 3.0: Pooled Memory (1µs Atomic Commits)"]
-    F3[3. Autonomous Agentic Sagas] --> Agents["Multi-Agent Swarm DAGs: Dynamic Semantic Compensation"]
+    F1["1. Deterministic Scheduling"] --> Calvin["Calvin / FaunaDB: Pre-Sequencing Log (Zero 2PC Aborts)"]
+    F2["2. Hardware Acceleration"] --> RDMA["RDMA & CXL 3.0: Pooled Memory (1µs Atomic Commits)"]
+    F3["3. Autonomous Agentic Sagas"] --> Agents["Multi-Agent Swarm DAGs: Dynamic Semantic Compensation"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class F1,Agents blue
+class Calvin green
+class F2 purple
+class RDMA yellow
+class F3 red
 ```
 
 ---
@@ -97,19 +108,30 @@ Unlike database rows that can simply be rolled back with `pg_wal`, real-world ag
 ```mermaid
 flowchart TD
   subgraph SG2_AutonomousAgenticTransaction ["Autonomous Agentic Transaction Swarm"]
-    Mission[User Business Mission] --> AgentCoordinator[Agent Transaction Supervisor]
-    AgentCoordinator --> TaskA[1. Provision AWS GPU Cluster]
-    AgentCoordinator --> TaskB[2. Charge Corporate Credit Card]
-    AgentCoordinator --> TaskC[3. Send Email Confirmation]
-    AgentCoordinator --> TaskD[4. Deploy Containerized Microservices]
+    Mission["User Business Mission"] --> AgentCoordinator["Agent Transaction Supervisor"]
+    AgentCoordinator --> TaskA["1. Provision AWS GPU Cluster"]
+    AgentCoordinator --> TaskB["2. Charge Corporate Credit Card"]
+    AgentCoordinator --> TaskC["3. Send Email Confirmation"]
+    AgentCoordinator --> TaskD["4. Deploy Containerized Microservices"]
     
-    TaskD -->|API Deployment Error 500| Failure[Failure Detection]
-    Failure --> SemanticPlanner[LLM Semantic Compensation Planner]
+    TaskD -->|API Deployment Error 500| Failure["Failure Detection"]
+    Failure --> SemanticPlanner["LLM Semantic Compensation Planner"]
     
-    SemanticPlanner --> CompA[↩ Terminate AWS GPU Cluster]
-    SemanticPlanner --> CompB[↩ Issue Stripe Partial Refund]
-    SemanticPlanner --> CompC[↩ Send Apology & Status Email]
+    SemanticPlanner --> CompA["↩ Terminate AWS GPU Cluster"]
+    SemanticPlanner --> CompB["↩ Issue Stripe Partial Refund"]
+    SemanticPlanner --> CompC["↩ Send Apology & Status Email"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Mission,TaskD,CompC blue
+class AgentCoordinator,Failure green
+class TaskA,SemanticPlanner purple
+class TaskB,CompA yellow
+class TaskC,CompB red
 ```
 
 ### The Autonomous Dynamic Compensation Pattern
@@ -246,4 +268,14 @@ if __name__ == "__main__":
 ## Conclusion
 Distributed transactions have evolved from monolithic synchronous lock managers to planetary NewSQL consensus, and now toward **hardware-accelerated, deterministic, and self-healing agentic workflows**.
 
-By understanding the historical failure modes of 2PC and the modern principles of deterministic sequencing, engineers can design distributed architectures that are fast, resilient, and mathematically sound.
+By understanding the historical failure modes of 2PC and the modern principles of deterministic sequencing, engineers can design distributed architectures that are fast, resilient, and mathematically sound. [2]
+
+## References & Further Reading
+
+1. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+2. **Lamport, L. (2001)**. *Paxos Made Simple*. ACM SIGACT News. [https://lamport.azurewebsites.net/pubs/paxos-simple.pdf](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf)
+3. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)
+4. **Lamport, L. (1998)**. *The Part-Time Parliament*. ACM TOCS. [https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf](https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf)
+5. **Peng, D., & Dabek, F. (2010)**. *Large-scale Incremental Processing Using Distributed Transactions and Notifications*. OSDI. [https://research.google/pubs/pub36726/](https://research.google/pubs/pub36726/)
+6. **Thomson, A., et al. (2012)**. *Calvin: Fast Distributed Transactions for Partitioned Database Systems*. SIGMOD. [https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf](https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf)
+7. **Corbett, J. C., et al. (2012)**. *Spanner: Google's Globally-Distributed Database*. OSDI. [https://research.google/pubs/pub39966/](https://research.google/pubs/pub39966/)

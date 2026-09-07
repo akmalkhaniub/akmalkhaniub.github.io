@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/hitl-state-machine-ttl-escalation-timeouts.html">
   <meta property="og:title" content="TTL Escalation &amp; Fallback: Managing Timed-Out Approvals in Agent Pipelines">
   <meta property="og:description" content="How to handle ignored agent approval requests: implementing Time-To-Live (TTL) escalations, automated rollback transactions, and re-routing trees.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/hitl-state-machine-ttl-escalation-timeouts.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-05-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="TTL Escalation &amp; Fallback: Managing Timed-Out Approvals in Agent Pipelines">
   <meta name="twitter:description" content="How to handle ignored agent approval requests: implementing Time-To-Live (TTL) escalations, automated rollback transactions, and re-routing trees.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/hitl-state-machine-ttl-escalation-timeouts.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "TTL Escalation & Fallback: Managing Timed-Out Approvals in Agent Pipelines",
   "description": "How to handle ignored agent approval requests: implementing Time-To-Live (TTL) escalations, automated rollback transactions, and re-routing trees.",
   "url": "https://akmalkhaniub.github.io/blog/hitl-state-machine-ttl-escalation-timeouts.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/hitl-state-machine-ttl-escalation-timeouts.jpg",
   "datePublished": "2026-05-18",
   "keywords": "Reliability, State Machines, Error Handling, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/hitl-state-machine-ttl-escalation-timeouts.jpg" class="article-cover-img" alt="TTL Escalation &amp; Fallback: Managing Timed-Out Approvals in Agent Pipelines Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">TTL Escalation &amp; Fallback: Managing Timed-Out Approvals in Agent Pipelines</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#2-setting-up-reliable-daemon-schedulers">2. Setting up Reliable Daemon Schedulers</a></li>
                 <li><a href="#code-demo-automated-timeout-monitor-and-rollback-manager">Code Demo: Automated Timeout Monitor and Rollback Manager</a></li>
                 <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -125,20 +126,31 @@ Designing human-in-the-loop (HITL) gates inside agent workflows introduces opera
 <h2 id="the-operational-risk-of-suspended-state-locks">The Operational Risk of Suspended State Locks</h2>
 <p>When an agent halts mid-transaction to await validation:</p>
 <ul>
-<li><strong>Active Resource Locking</strong>: The agent might hold open database connections, pessimistic row locks, or staged branch files.</li>
+<li><strong>Active Resource Locking</strong>: The agent might hold open database connections, pessimistic row locks, or staged branch files <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Pipeline Staging</strong>: Staged feature branches remain unmerged, blocking subsequent developer deployments.</li>
 <li><strong>The Solution</strong>: <strong>TTL Expirations</strong>. We assign a strict Time-to-Live limit to every human approval request. If the TTL expires without validation, a daemon process triggers a fallback plan, rolls back database transactions, and alerts backup managers.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Pause[Agent pauses: Starts TTL Clock] --&gt; Check{Has TTL Expired?}
+    Pause[&quot;Agent pauses: Starts TTL Clock&quot;] --&gt; Check{Has TTL Expired?}
     
-    Check --&gt;|No - Callback Received| Resume[Resume Agent: Commit Changes]
-    Check --&gt;|Yes - Expired| Fallback[Trigger Timeout Fallback Handler]
+    Check --&gt;|No - Callback Received| Resume[&quot;Resume Agent: Commit Changes&quot;]
+    Check --&gt;|Yes - Expired| Fallback[&quot;Trigger Timeout Fallback Handler&quot;]
     
-    Fallback --&gt; Rollback[Execute Compensating Transaction Rollback]
-    Rollback --&gt; Release[Release DB &amp; Git Row Locks]
-    Release --&gt; Notify[Escalate to Secondary Slack / Email Alert]</div>
+    Fallback --&gt; Rollback[&quot;Execute Compensating Transaction Rollback&quot;]
+    Rollback --&gt; Release[&quot;Release DB &amp; Git Row Locks&quot;]
+    Release --&gt; Notify[&quot;Escalate to Secondary Slack / Email Alert&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Pause,Notify blue
+class Resume green
+class Fallback purple
+class Rollback yellow
+class Release red</div>
 <hr>
 <h2 id="1-designing-escalation-topologies">1. Designing Escalation Topologies</h2>
 <p>When a TTL expires, we choose between two main fallback topologies:</p>
@@ -227,8 +239,17 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Set Strict TTL Limits</strong>: Never allow agent processes to pause indefinitely. Always attach a Time-To-Live expiration limit to every human review request.</li>
 <li><strong>Design Compensating Actions</strong>: For every state modification executed in Phase 1, define a reverse compensating action to clean up changes upon timeout.</li>
-<li><strong>Escalate, Don&#39;t Fail Silently</strong>: Configure email or PagerDuty alerts to flag escalated timeouts, ensuring critical tasks are not forgotten in the queue.</li>
+<li><strong>Escalate, Don&#39;t Fail Silently</strong>: Configure email or PagerDuty alerts to flag escalated timeouts, ensuring critical tasks are not forgotten in the queue. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -265,6 +286,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-setting-up-reliable-daemon-schedulers" class="toc-link">2. Setting up Reliable Daemon Schedulers</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-automated-timeout-monitor-and-rollback-manager" class="toc-link">Code Demo: Automated Timeout Monitor and Rollback Manager</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

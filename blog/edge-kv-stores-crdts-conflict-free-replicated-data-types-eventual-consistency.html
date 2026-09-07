@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/edge-kv-stores-crdts-conflict-free-replicated-data-types-eventual-consistency.html">
   <meta property="og:title" content="Edge Key-Value Stores: Conflict-Free Replicated Data Types (CRDTs) &amp; Eventual Consistency">
   <meta property="og:description" content="Globally distributed edge state: implementing State-Based vs Operation-Based CRDTs, LWW-Element-Sets, join semi-lattice operators, and eventual consistency.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/edge-kv-stores-crdts-conflict-free-replicated-data-types-eventual-consistency.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Edge Key-Value Stores: Conflict-Free Replicated Data Types (CRDTs) &amp; Eventual Consistency">
   <meta name="twitter:description" content="Globally distributed edge state: implementing State-Based vs Operation-Based CRDTs, LWW-Element-Sets, join semi-lattice operators, and eventual consistency.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/edge-kv-stores-crdts-conflict-free-replicated-data-types-eventual-consistency.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Edge Key-Value Stores: Conflict-Free Replicated Data Types (CRDTs) & Eventual Consistency",
   "description": "Globally distributed edge state: implementing State-Based vs Operation-Based CRDTs, LWW-Element-Sets, join semi-lattice operators, and eventual consistency.",
   "url": "https://akmalkhaniub.github.io/blog/edge-kv-stores-crdts-conflict-free-replicated-data-types-eventual-consistency.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/edge-kv-stores-crdts-conflict-free-replicated-data-types-eventual-consistency.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Edge Computing, CRDTs, Distributed Systems, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Edge Key-Value Stores: Conflict-Free Replicated Data Types (CRDTs) &amp; Eventual Consistency Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/edge-kv-stores-crdts-conflict-free-replicated-data-types-eventual-consistency.jpg" class="article-cover-img" alt="Edge Key-Value Stores: Conflict-Free Replicated Data Types (CRDTs) &amp; Eventual Consistency Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Edge Key-Value Stores: Conflict-Free Replicated Data Types (CRDTs) &amp; Eventual Consistency</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-lww-element-set-crdt-engine">Python Implementation: LWW-Element-Set CRDT Engine</a></li>
                 <li><a href="#edge-crdt-gotchas-best-practices">Edge CRDT Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In global edge computing architectures (such as <strong>Cloudflare KV</strong>, <strong>Fastly Fanout</strong>, and <strong>AWS DynamoDB Global Tables</strong>), servicing user requests with sub-10ms latency requires reading and writing state at local Edge Points of Presence (PoPs) distributed across Europe, Asia, and the Americas.</p>
+<p>In global edge computing architectures (such as <strong>Cloudflare KV</strong>, <strong>Fastly Fanout</strong>, and <strong>AWS DynamoDB Global Tables</strong>), servicing user requests with sub-10ms latency requires reading and writing state at local Edge Points of Presence (PoPs) distributed across Europe, Asia, and the Americas <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Routing every write back to a single primary database region in <code>us-east-1</code> introduces $200\text{ms} - 400\text{ms}$ cross-continental network round-trips, defeating the purpose of edge compute.</p>
 <p>However, accepting local writes at multiple global edge nodes simultaneously creates <strong>concurrent state conflicts</strong>.</p>
 <p>Under the <strong>CAP Theorem</strong>, high-availability edge databases prioritize <strong>Availability</strong> and <strong>Partition Tolerance</strong> (AP systems). To guarantee that edge replicas converge to identical states without centralized locking, systems engineers utilize <strong>Conflict-Free Replicated Data Types (CRDTs)</strong>.</p>
@@ -125,11 +126,11 @@
 <p>How concurrent writes at global edge nodes merge deterministically via CRDTs:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_EdgeNodeTokyo [&quot;Edge Node: Tokyo PoP (Asia)&quot;]
-    ClientA[User A in Tokyo] --&gt;|Write - SET key='theme', val='dark' @ T1| TokyoKV[Tokyo Edge KV Replica]
+    ClientA[&quot;User A in Tokyo&quot;] --&gt;|Write - SET key='theme', val='dark' @ T1| TokyoKV[&quot;Tokyo Edge KV Replica&quot;]
   end
   
   subgraph SG2_EdgeNodeLondon [&quot;Edge Node: London PoP (Europe)&quot;]
-    ClientB[User B in London] --&gt;|Concurrent Write - SET key='theme', val='light' @ T2| LondonKV[London Edge KV Replica]
+    ClientB[&quot;User B in London&quot;] --&gt;|Concurrent Write - SET key='theme', val='light' @ T2| LondonKV[&quot;London Edge KV Replica&quot;]
   end
   
   subgraph SG3_AsynchronousPeerTo [&quot;Asynchronous Peer-to-Peer Synchronization&quot;]
@@ -137,7 +138,17 @@
     LondonKV --&gt;|Async Gossip State Merge - LWW Join Semi-Lattice| SyncEngine
   end
   
-  SyncEngine --&gt;|Deterministic Convergence - T2 &gt; T1 -&gt; val='light'| ConvergedState[(Converged Global Edge State: 'light')]</div>
+  SyncEngine --&gt;|Deterministic Convergence - T2 &gt; T1 -&gt; val='light'| ConvergedState[(Converged Global Edge State: 'light')]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ClientA blue
+class TokyoKV green
+class ClientB purple
+class LondonKV yellow</div>
 <h3 id="core-crdt-mathematical-properties">Core CRDT Mathematical Properties</h3>
 <ol>
 <li><strong>Strong Eventual Consistency (SEC)</strong>: If two edge replicas have received the same set of updates (regardless of the order in which updates were received), they are guaranteed to be in identical states.</li>
@@ -278,8 +289,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Global edge databases utilizing CRDT eventual consistency (such as <strong>Cloudflare KV</strong>) report:</p>
 <ul>
 <li><strong>Sub-10ms Global Read &amp; Write Latency</strong>: Servicing user requests locally from over 300 global edge locations.</li>
-<li><strong>100% High Availability under Cloud Outages</strong>: Edge locations continue accepting reads and writes even during complete transoceanic fiber-optic cable cuts.</li>
+<li><strong>100% High Availability under Cloud Outages</strong>: Edge locations continue accepting reads and writes even during complete transoceanic fiber-optic cable cuts. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Shapiro, M., Preguiça, N., Baquero, C., &amp; Zawirski, M. (2011)</strong>. <em>Conflict-free Replicated Data Types</em>. SSS. <a href="https://hal.inria.fr/inria-00609399v1/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00609399v1/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (1978)</strong>. <em>Time, Clocks, and the Ordering of Events in a Distributed System</em>. CACM. <a href="https://lamport.azurewebsites.net/pubs/time-clocks.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/time-clocks.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Kubernetes Authors (2024)</strong>. <em>Kubernetes Documentation</em>. CNCF. <a href="https://kubernetes.io/docs/home/" target="_blank" rel="noopener">https://kubernetes.io/docs/home/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -316,6 +338,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-lww-element-set-crdt-engine" class="toc-link">Python Implementation: LWW-Element-Set CRDT Engine</a></li>
               <li class="toc-item toc-h2"><a href="#edge-crdt-gotchas-best-practices" class="toc-link">Edge CRDT Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

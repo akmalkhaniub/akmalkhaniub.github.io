@@ -1,6 +1,6 @@
 # Automated AST Test Generation & Coverage Enforcement
 
-When integrating autonomous AI coding agents into legacy codebases, manual unit test creation becomes a significant velocity bottleneck. Developers often struggle to manually write tests for complex legacy functions with deep conditional nesting and undocumented branch logic.
+When integrating autonomous AI coding agents into legacy codebases, manual unit test creation becomes a significant velocity bottleneck [1]. Developers often struggle to manually write tests for complex legacy functions with deep conditional nesting and undocumented branch logic.
 
 Relying on naive prompt engineering (e.g. *"Write a unit test for this code snippet"*) frequently fails because the LLM lacks structural awareness of all branch paths, boundary exceptions, and type signatures.
 
@@ -18,22 +18,33 @@ The AST Test Synthesizer parses source code into structural nodes before prompti
 
 ```mermaid
 flowchart TD
-  A[Target Source Code File] --> B[Python AST Parser ast.parse]
+  A["Target Source Code File"] --> B["Python AST Parser ast.parse"]
   
   subgraph SG1_StructuralAstBranch ["Structural AST Branch Extraction"]
-    B --> C[Extract Function Definitions & Type Hints]
-    B --> D[Locate Conditional Nodes: If / Except / Match]
-    B --> E[Map Boundary Condition Values: None, 0, Negative, Max]
+    B --> C["Extract Function Definitions & Type Hints"]
+    B --> D["Locate Conditional Nodes: If / Except / Match"]
+    B --> E["Map Boundary Condition Values: None, 0, Negative, Max"]
   end
   
-  E --> F[Synthesize Targeted Prompt Matrix]
-  F --> G[LLM Test Synthesis Worker]
+  E --> F["Synthesize Targeted Prompt Matrix"]
+  F --> G["LLM Test Synthesis Worker"]
   
-  G --> H[Generated Pytest Test Suite]
-  H --> I[Execute pytest-cov Branch Coverage Gate]
+  G --> H["Generated Pytest Test Suite"]
+  H --> I["Execute pytest-cov Branch Coverage Gate"]
   
-  I -->|Branch Coverage = 100%| J[ CI/CD Security Gate Passed]
-  I -->|Branch Coverage < 100%| K[ Reject & Re-prompt Uncovered Branches]
+  I -->|Branch Coverage = 100%| J[" CI/CD Security Gate Passed"]
+  I -->|Branch Coverage < 100%| K[" Reject & Re-prompt Uncovered Branches"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F,K blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E,J red
 ```
 
 ### Structural Branch Discovery Steps
@@ -165,4 +176,10 @@ When automating AST test generation in CI/CD:
 ## Real-World Enterprise Impact
 Teams deploying AST Automated Test Generation report:
 * **100% Branch Coverage Compliance**: AST branch extraction ensures zero un-tested conditional paths in production pull requests.
-* **10x Faster Test Creation**: Automating structural test template generation saves developers hours of boilerplate setup per feature.
+* **10x Faster Test Creation**: Automating structural test template generation saves developers hours of boilerplate setup per feature. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

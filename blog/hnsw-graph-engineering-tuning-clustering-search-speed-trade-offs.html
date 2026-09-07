@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/hnsw-graph-engineering-tuning-clustering-search-speed-trade-offs.html">
   <meta property="og:title" content="HNSW Graph Engineering: Tuning Clustering &amp; Search Speed Trade-offs">
   <meta property="og:description" content="Hyperparameter optimization for Hierarchical Navigable Small World (HNSW) graphs: tuning M, efConstruction, and efSearch values to balance query latencies against index build metrics.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/hnsw-graph-engineering-tuning-clustering-search-speed-trade-offs.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-11">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="HNSW Graph Engineering: Tuning Clustering &amp; Search Speed Trade-offs">
   <meta name="twitter:description" content="Hyperparameter optimization for Hierarchical Navigable Small World (HNSW) graphs: tuning M, efConstruction, and efSearch values to balance query latencies against index build metrics.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/hnsw-graph-engineering-tuning-clustering-search-speed-trade-offs.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "HNSW Graph Engineering: Tuning Clustering & Search Speed Trade-offs",
   "description": "Hyperparameter optimization for Hierarchical Navigable Small World (HNSW) graphs: tuning M, efConstruction, and efSearch values to balance query latencies against index build metrics.",
   "url": "https://akmalkhaniub.github.io/blog/hnsw-graph-engineering-tuning-clustering-search-speed-trade-offs.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/hnsw-graph-engineering-tuning-clustering-search-speed-trade-offs.jpg",
   "datePublished": "2026-08-11",
   "keywords": "Vector Database, HNSW, Search Indexing, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="HNSW Graph Engineering: Tuning Clustering &amp; Search Speed Trade-offs Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/hnsw-graph-engineering-tuning-clustering-search-speed-trade-offs.jpg" class="article-cover-img" alt="HNSW Graph Engineering: Tuning Clustering &amp; Search Speed Trade-offs Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">HNSW Graph Engineering: Tuning Clustering &amp; Search Speed Trade-offs</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-simulation-analyzing-hnsw-tuning-configurations">Python Simulation: Analyzing HNSW Tuning Configurations</a></li>
                 <li><a href="#parameter-tuning-guardrails">Parameter Tuning Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Approximate Nearest Neighbor (ANN) search is the core retrieval mechanism of vector databases. Among the various indexing approaches, the <strong>Hierarchical Navigable Small World (HNSW)</strong> graph algorithm has emerged as the state-of-the-art method due to its combination of sub-millisecond search latencies and high recall accuracy.</p>
+<p>Approximate Nearest Neighbor (ANN) search is the core retrieval mechanism of vector databases <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Among the various indexing approaches, the <strong>Hierarchical Navigable Small World (HNSW)</strong> graph algorithm has emerged as the state-of-the-art method due to its combination of sub-millisecond search latencies and high recall accuracy.</p>
 <p>HNSW constructs a multi-layer graph where the top layer contains sparse long-range connections (navigable paths) and the bottom layer contains dense short-range connections (representing local vector neighborhoods).</p>
 <p>However, achieving optimal performance requires carefully tuning graph hyperparameters—namely <strong>$M$</strong>, <strong>$efConstruction$</strong>, and <strong>$efSearch$</strong>—to balance query latencies against index construction time and retrieval recall.</p>
 <p>This article details the mechanics of HNSW parameters and how to tune them.</p>
@@ -145,7 +146,14 @@
   A1 -.-&gt; A1_0
   A2 -.-&gt; A2_0
   B1 -.-&gt; B1_0
-  B2 -.-&gt; B2_0</div>
+  B2 -.-&gt; B2_0
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+</div>
 <h3 id="the-three-hyperparameter-control-knobs">The Three Hyperparameter Control Knobs</h3>
 <ol>
 <li><strong>$M$ (Max Outgoing Connections)</strong>: The maximum number of bidirectional link connections established for each new node at every graph layer. Larger values of $M$ are required for high-dimensional vector datasets or complex distance spaces, though they increase memory usage.</li>
@@ -251,8 +259,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams profiling HNSW graph tuning report:</p>
 <ul>
 <li><strong>Tailored Performance Profiles</strong>: Tuning search parameters allows hosting platforms to serve high-speed queries (90% recall at 1ms TTFB) and high-accuracy queries (99% recall at 8ms TTFB) using the same index.</li>
-<li><strong>40% Index Size Reduction</strong>: Adjusting $M$ parameters based on dimensionality constraints reduces index memory consumption by gigabytes across shards.</li>
+<li><strong>40% Index Size Reduction</strong>: Adjusting $M$ parameters based on dimensionality constraints reduces index memory consumption by gigabytes across shards. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -289,6 +309,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-simulation-analyzing-hnsw-tuning-configurations" class="toc-link">Python Simulation: Analyzing HNSW Tuning Configurations</a></li>
               <li class="toc-item toc-h2"><a href="#parameter-tuning-guardrails" class="toc-link">Parameter Tuning Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

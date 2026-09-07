@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/out-of-order-event-processing-windowing-watermarks.html">
   <meta property="og:title" content="Out-of-Order Event Processing: Tumbling, Sliding &amp; Session Windows with Allowed Lateness">
   <meta property="og:description" content="Event-time processing mechanics: implementing Bounded-Out-Of-Orderness Watermarks, Tumbling/Sliding/Session windowing, Allowed Lateness grace periods, and late-data side-outputs.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/out-of-order-event-processing-windowing-watermarks.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Out-of-Order Event Processing: Tumbling, Sliding &amp; Session Windows with Allowed Lateness">
   <meta name="twitter:description" content="Event-time processing mechanics: implementing Bounded-Out-Of-Orderness Watermarks, Tumbling/Sliding/Session windowing, Allowed Lateness grace periods, and late-data side-outputs.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/out-of-order-event-processing-windowing-watermarks.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Out-of-Order Event Processing: Tumbling, Sliding & Session Windows with Allowed Lateness",
   "description": "Event-time processing mechanics: implementing Bounded-Out-Of-Orderness Watermarks, Tumbling/Sliding/Session windowing, Allowed Lateness grace periods, and late-data side-outputs.",
   "url": "https://akmalkhaniub.github.io/blog/out-of-order-event-processing-windowing-watermarks.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/out-of-order-event-processing-windowing-watermarks.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Event Time, Watermarks, Windowing, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Out-of-Order Event Processing: Tumbling, Sliding &amp; Session Windows with Allowed Lateness Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/out-of-order-event-processing-windowing-watermarks.jpg" class="article-cover-img" alt="Out-of-Order Event Processing: Tumbling, Sliding &amp; Session Windows with Allowed Lateness Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Out-of-Order Event Processing: Tumbling, Sliding &amp; Session Windows with Allowed Lateness</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-event-time-watermark-session-window-engine">Python Implementation: Event Time Watermark &amp; Session Window Engine</a></li>
                 <li><a href="#windowing-watermark-gotchas-best-practices">Windowing &amp; Watermark Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In distributed systems, physical network latency, mobile offline mode, and IoT device reconnections cause event streams to arrive <strong>out-of-order</strong>.</p>
+<p>In distributed systems, physical network latency, mobile offline mode, and IoT device reconnections cause event streams to arrive <strong>out-of-order</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>For example, a mobile gaming app registers a user purchase at $12:00:00$ PM (Event Time). Due to cellular disconnectivity in a tunnel, the event is uploaded to the cloud server at $12:05:00$ PM (Processing Time).</p>
 <p>If a real-time stream engine aggregates data based on server wall-clock time (<strong>Processing Time</strong>), financial metrics and analytics reports become completely inaccurate.</p>
 <p>To compute deterministic results despite network delays, modern stream engines (<strong>Apache Flink</strong>, <strong>Apache Beam</strong>, <strong>Google Cloud Dataflow</strong>) process data strictly in <strong>Event Time</strong> using <strong>Watermarks</strong>, <strong>Windowing</strong>, and <strong>Allowed Lateness</strong>.</p>
@@ -125,23 +126,34 @@
 <p>How Watermarks track Event Time progress and trigger window computations despite out-of-order arrivals:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_RealWorldOut [&quot;Real-World Out-of-Order Event Arrival (Event Time)&quot;]
-    E1[&quot;Event 1 (t=10:00)&quot;] --&gt; Broker[Kafka Stream Topic]
+    E1[&quot;Event 1 (t=10:00)&quot;] --&gt; Broker[&quot;Kafka Stream Topic&quot;]
     E3[&quot;Event 3 (t=10:04)&quot;] --&gt; Broker
     E2[&quot;Event 2 (t=10:02 - Out-of-Order!)&quot;] --&gt; Broker
   end
   
   subgraph SG2_WatermarkGeneratorBounded [&quot;Watermark Generator (Bounded Out-of-Orderness: 2 mins)&quot;]
-    Broker --&gt;|Generate Watermark - W = Max(t) - 2 mins| WMEngine[Watermark Generator Node]
-    WMEngine --&gt;|Emit WM - W(10 -02)| StreamDAG[Stream Operator Window Processor]
+    Broker --&gt;|Generate Watermark - W = Max(t) - 2 mins| WMEngine[&quot;Watermark Generator Node&quot;]
+    WMEngine --&gt;|Emit WM - W(10 -02)| StreamDAG[&quot;Stream Operator Window Processor&quot;]
   end
   
   subgraph SG3_WindowEvaluationLate [&quot;Window Evaluation &amp; Late Data Handling&quot;]
-    StreamDAG --&gt;|Evaluate Window [10 -00 .. 10 -05]| WindowResult[Calculate 5-Min Aggregate]
+    StreamDAG --&gt;|Evaluate Window [10 -00 .. 10 -05]| WindowResult[&quot;Calculate 5-Min Aggregate&quot;]
     StreamDAG --&gt;|Check Late Event (t &lt; Current Watermark)| LateCheck{Is Event Timestamp &lt; W(10:02)?}
     
-    LateCheck --&gt;|No - On-Time| NormalEval[Process in Window State]
-    LateCheck --&gt;|Yes - LATE DATA!| SideOutput[ Emit to Allowed Lateness Side-Output Stream]
-  end</div>
+    LateCheck --&gt;|No - On-Time| NormalEval[&quot;Process in Window State&quot;]
+    LateCheck --&gt;|Yes - LATE DATA!| SideOutput[&quot; Emit to Allowed Lateness Side-Output Stream&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class E1,StreamDAG blue
+class Broker,WindowResult green
+class E3,NormalEval purple
+class E2,SideOutput yellow
+class WMEngine red</div>
 <h3 id="core-time-windowing-concepts">Core Time &amp; Windowing Concepts</h3>
 <ol>
 <li><strong>The Three Notions of Time</strong>:<ul>
@@ -286,8 +298,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Event Time streaming architectures (such as <strong>Apache Flink</strong>, <strong>Google Cloud Dataflow</strong>, and <strong>Apache Beam</strong>) report:</p>
 <ul>
 <li><strong>100% Deterministic Financial Analytics</strong>: Achieving identical aggregation results during historical data replaying and real-time streaming despite network delays.</li>
-<li><strong>Resilience to Mobile Disconnects</strong>: Seamlessly absorbing out-of-order telemetry from millions of connected vehicle sensors and mobile apps without data corruption.</li>
+<li><strong>Resilience to Mobile Disconnects</strong>: Seamlessly absorbing out-of-order telemetry from millions of connected vehicle sensors and mobile apps without data corruption. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Carbone, P., et al. (2015)</strong>. <em>Apache Flink: Stream and Batch Processing in a Single Engine</em>. IEEE Data Engineering Bulletin. <a href="https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Zaharia, M., et al. (2012)</strong>. <em>Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing</em>. NSDI. <a href="https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf" target="_blank" rel="noopener">https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -324,6 +347,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-event-time-watermark-session-window-engine" class="toc-link">Python Implementation: Event Time Watermark &amp; Session Window Engine</a></li>
               <li class="toc-item toc-h2"><a href="#windowing-watermark-gotchas-best-practices" class="toc-link">Windowing &amp; Watermark Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

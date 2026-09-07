@@ -1,6 +1,6 @@
 # The Agentic Rush: Why Selling Picks & Shovels Wins the Multi-Agent Gold Rush
 
-In January 1848, James W. Marshall spotted flakes of gold in the American River at Sutter’s Mill, igniting the historic **California Gold Rush**.
+In January 1848, James W. Marshall spotted flakes of gold in the American River at Sutter’s Mill, igniting the historic **California Gold Rush** [1].
 
 Over the next seven years, more than 300,000 hopeful prospectors ("Forty-Niners") flooded the West, risking everything to pan for raw nuggets.
 
@@ -18,6 +18,17 @@ flowchart TD
     A1849["1849: Assayers & Escrow Vaults"] <---> A2026["2026: Deterministic Guardrails, Token Metering & Evals"]
     S1849["1849: Agriculture, Cities & Manufacturing"] <---> S2026["2026: Deep Vertical Moats (Legal, Insurance, Healthcare)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class P1849,A2026 blue
+class P2026,S1849 green
+class I1849,S2026 purple
+class I2026 yellow
+class A1849 red
 ```
 
 ---
@@ -72,12 +83,22 @@ In the Agentic Rush, the assayers are the **deterministic verification and gover
 
 ```mermaid
 flowchart TD
-  AgentCore[Probabilistic LLM Core] --> Guardrail[Deterministic AST Guardrail / Assayer]
-  Guardrail -->|Passed Policy Check| Sandbox[Tool Sandbox Execution]
-  Guardrail -->|Policy Violation| CircuitBreaker[Halt & Escalate to Human]
+  AgentCore["Probabilistic LLM Core"] --> Guardrail["Deterministic AST Guardrail / Assayer"]
+  Guardrail -->|Passed Policy Check| Sandbox["Tool Sandbox Execution"]
+  Guardrail -->|Policy Violation| CircuitBreaker["Halt & Escalate to Human"]
   
   style Guardrail fill:#3b82f6,stroke:#1d4ed8,color:#ffffff
   style CircuitBreaker fill:#ef4444,stroke:#7f1d1d,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class AgentCore blue
+class Guardrail green
+class Sandbox purple
+class CircuitBreaker yellow
 ```
 
 * **Deterministic Code Parsing**: Validating agent-generated code with Abstract Syntax Tree (AST) parsers before execution to ensure no destructive system calls exist.
@@ -202,4 +223,13 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 The lesson of the California Gold Rush is not that gold lacked value—it was that **sustainable wealth accrued to the builders of foundational infrastructure**.
 
-In the Agentic Rush, the ultimate winners will not be the developers building brittle, unconstrained chatbots, but the engineers building the **resilient, verifiable, and economically governed infrastructure** that powers the autonomous enterprise.
+In the Agentic Rush, the ultimate winners will not be the developers building brittle, unconstrained chatbots, but the engineers building the **resilient, verifiable, and economically governed infrastructure** that powers the autonomous enterprise. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+5. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

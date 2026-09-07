@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.html">
   <meta property="og:title" content="Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization">
   <meta property="og:description" content="High-speed runtime compilation: implementing V8 / PyPy style hot loop profiling, speculative type specialization, inline type guards, and deoptimization bailouts.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization">
   <meta name="twitter:description" content="High-speed runtime compilation: implementing V8 / PyPy style hot loop profiling, speculative type specialization, inline type guards, and deoptimization bailouts.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) & Deoptimization",
   "description": "High-speed runtime compilation: implementing V8 / PyPy style hot loop profiling, speculative type specialization, inline type guards, and deoptimization bailouts.",
   "url": "https://akmalkhaniub.github.io/blog/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.jpg",
   "datePublished": "2026-08-18",
   "keywords": "JIT, Compilers, V8, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/dynamic-jit-compilation-tracing-jits-pgo-deoptimization.jpg" class="article-cover-img" alt="Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Dynamic JIT Compilation: Tracing JITs, Profile-Guided Optimization (PGO) &amp; Deoptimization</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-tracing-jit-engine-with-deoptimization-guards">Python Implementation: Tracing JIT Engine with Deoptimization Guards</a></li>
                 <li><a href="#jit-compiler-gotchas-best-practices">JIT Compiler Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Dynamically typed programming languages (such as JavaScript, Python, Lua, and Ruby) provide immense developer ergonomics.</p>
+<p>Dynamically typed programming languages (such as JavaScript, Python, Lua, and Ruby) provide immense developer ergonomics <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>However, executing dynamic languages via traditional interpreters introduces severe performance penalties. The interpreter must repeatedly inspect variable types, unbox integer values, and perform virtual method lookups inside tight loops, running <strong>$10\times$ to $50\times$ slower than compiled C code</strong>.</p>
 <p>To achieve near-native execution speeds without sacrificing dynamic language flexibility, modern runtimes (<strong>V8</strong>, <strong>PyPy</strong>, <strong>LuaJIT</strong>, <strong>JVM C2</strong>) employ <strong>Just-In-Time (JIT) Compilation</strong>.</p>
 <p>JIT compilers dynamically monitor program execution, identify &quot;hot&quot; loop traces, speculatively compile specialized native machine code based on runtime types, and insert <strong>Deoptimization (Deopt)</strong> guardrails.</p>
@@ -125,23 +126,34 @@
 <p>How JIT engines profile hot loops, emit specialized machine code, and deoptimize when type guards fail:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_Phase1Baseline [&quot;Phase 1: Baseline Execution &amp; Profiling&quot;]
-    Interpreter[Baseline Interpreter / Bytecode Loop] --&gt;|Increment Loop Counter| Profiler{Hot Loop Threshold Exceeded? &gt; 1000 iter}
+    Interpreter[&quot;Baseline Interpreter / Bytecode Loop&quot;] --&gt;|Increment Loop Counter| Profiler{Hot Loop Threshold Exceeded? &gt; 1000 iter}
     Profiler --&gt;|No - Stay in Interpreter| Interpreter
   end
   
   subgraph SG2_Phase2Speculative [&quot;Phase 2: Speculative JIT Machine Code Emission&quot;]
-    Profiler --&gt;|Yes - Hot Loop Identified!| TracingJIT[Tracing JIT Compiler]
-    TracingJIT --&gt;|Inspect Observed Types - e.g. a=INT32, b=INT32| TypeSpec[Speculative Type Specializer]
-    TypeSpec --&gt;|Emit Assembly - ADD EAX, EBX| MachineCode[Optimized Native Machine Code]
+    Profiler --&gt;|Yes - Hot Loop Identified!| TracingJIT[&quot;Tracing JIT Compiler&quot;]
+    TracingJIT --&gt;|Inspect Observed Types - e.g. a=INT32, b=INT32| TypeSpec[&quot;Speculative Type Specializer&quot;]
+    TypeSpec --&gt;|Emit Assembly - ADD EAX, EBX| MachineCode[&quot;Optimized Native Machine Code&quot;]
   end
   
   subgraph SG3_Phase3High [&quot;Phase 3: High-Speed Execution &amp; Deoptimization&quot;]
     MachineCode --&gt;|Execute Native Loop (50x Faster!)| TypeGuard{Type Guard Check: Are inputs still INT32?}
     TypeGuard --&gt;|Pass - Continue Fast Path| MachineCode
-    TypeGuard --&gt;|Fail - Input is String!| Deopt[ DEOPTIMIZATION BAILOUT!]
+    TypeGuard --&gt;|Fail - Input is String!| Deopt[&quot; DEOPTIMIZATION BAILOUT!&quot;]
     
     Deopt --&gt;|Reconstruct Interpreter Frame &amp; Revert| Interpreter
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Interpreter blue
+class TracingJIT green
+class TypeSpec purple
+class MachineCode yellow
+class Deopt red</div>
 <h3 id="core-jit-compiler-principles">Core JIT Compiler Principles</h3>
 <ol>
 <li><strong>Hot Loop Profiling</strong>: Runtimes start execution in a lightweight interpreter. Execution counters monitor loop iterations and function calls. When an execution count breaches a threshold (e.g. $1,000$ iterations), the loop is flagged as <strong>Hot</strong> and scheduled for JIT compilation.</li>
@@ -258,8 +270,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Runtimes adopting dynamic JIT compilation (such as <strong>V8 TurboFan</strong>, <strong>PyPy</strong>, and <strong>Java HotSpot C2</strong>) report:</p>
 <ul>
 <li><strong>$10\times$ to $50\times$ Execution Speedup</strong>: Accelerating dynamic scripting languages to match compiled C/C++ execution speeds.</li>
-<li><strong>Seamless Dynamic Flexibility</strong>: Developers retain high-level dynamic language features while benefiting from hardware-level CPU instruction optimizations.</li>
+<li><strong>Seamless Dynamic Flexibility</strong>: Developers retain high-level dynamic language features while benefiting from hardware-level CPU instruction optimizations. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>W3C Distributed Tracing Working Group (2021)</strong>. <em>Trace Context</em>. W3C Recommendation. <a href="https://www.w3.org/TR/trace-context/" target="_blank" rel="noopener">https://www.w3.org/TR/trace-context/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -296,6 +319,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-tracing-jit-engine-with-deoptimization-guards" class="toc-link">Python Implementation: Tracing JIT Engine with Deoptimization Guards</a></li>
               <li class="toc-item toc-h2"><a href="#jit-compiler-gotchas-best-practices" class="toc-link">JIT Compiler Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

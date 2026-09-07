@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/scaling-event-driven-subagent-swarms-redis-streams.html">
   <meta property="og:title" content="Scaling Event-Driven Subagent Swarms with Redis Streams">
   <meta property="og:description" content="Architecting distributed worker agent swarms: leveraging Redis Streams consumer groups, pending entries lists (PEL), message acknowledgments (XACK), and automatic orphan recovery (XCLAIM).">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/scaling-event-driven-subagent-swarms-redis-streams.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Scaling Event-Driven Subagent Swarms with Redis Streams">
   <meta name="twitter:description" content="Architecting distributed worker agent swarms: leveraging Redis Streams consumer groups, pending entries lists (PEL), message acknowledgments (XACK), and automatic orphan recovery (XCLAIM).">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/scaling-event-driven-subagent-swarms-redis-streams.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Scaling Event-Driven Subagent Swarms with Redis Streams",
   "description": "Architecting distributed worker agent swarms: leveraging Redis Streams consumer groups, pending entries lists (PEL), message acknowledgments (XACK), and automatic orphan recovery (XCLAIM).",
   "url": "https://akmalkhaniub.github.io/blog/scaling-event-driven-subagent-swarms-redis-streams.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/scaling-event-driven-subagent-swarms-redis-streams.jpg",
   "datePublished": "2026-08-02",
   "keywords": "Real-Time, Redis Streams, Architecture, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Scaling Event-Driven Subagent Swarms with Redis Streams Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/scaling-event-driven-subagent-swarms-redis-streams.jpg" class="article-cover-img" alt="Scaling Event-Driven Subagent Swarms with Redis Streams Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Scaling Event-Driven Subagent Swarms with Redis Streams</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-redis-streams-agent-swarm-engine">Python Implementation: Redis Streams Agent Swarm Engine</a></li>
                 <li><a href="#important-redis-streams-architecture-guardrails">Important Redis Streams Architecture Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When scaling multi-agent applications from single-process scripts to distributed cloud clusters, orchestrating task events across containerized worker nodes becomes a core infrastructure challenge.</p>
+<p>When scaling multi-agent applications from single-process scripts to distributed cloud clusters, orchestrating task events across containerized worker nodes becomes a core infrastructure challenge <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>In-memory task queues (such as Python&#39;s <code>asyncio.Queue</code>) cannot cross container boundaries. If an agent worker container crashes mid-task, in-flight execution events are lost forever. Traditional heavyweight message brokers (such as RabbitMQ or Kafka) add significant operational complexity and lack lightweight pub/sub stream semantics needed for real-time trajectory fan-out.</p>
 <p>To build scalable, fault-tolerant agent swarms, engineering teams utilize <strong>Redis Streams</strong>. Redis Streams combines append-only log durability, distributed <strong>Consumer Groups</strong> (<code>XREADGROUP</code>), explicit message acknowledgments (<code>XACK</code>), and automatic orphan recovery (<code>XCLAIM</code>).</p>
 <p>This article details how to architect and scale an event-driven subagent swarm using Redis Streams.</p>
@@ -123,24 +124,35 @@
 <h2 id="redis-streams-swarm-architecture">Redis Streams Swarm Architecture</h2>
 <p>The architecture decouples task dispatchers, subagent worker pools, and result aggregators using Redis Streams Consumer Groups:</p>
 <div class="mermaid">flowchart TD
-  A[Orchestrator Task Dispatcher] --&gt;|XADD agent -tasks -stream| B[(Redis Stream: agent:tasks:stream)]
+  A[&quot;Orchestrator Task Dispatcher&quot;] --&gt;|XADD agent -tasks -stream| B[(Redis Stream: agent:tasks:stream)]
   
   subgraph SG1_DistributedConsumerGroup [&quot;Distributed Consumer Group: swarm_workers&quot;]
-    B --&gt;|XREADGROUP Consumer 1| C[Worker Container A]
-    B --&gt;|XREADGROUP Consumer 2| D[Worker Container B]
-    B --&gt;|XREADGROUP Consumer 3| E[Worker Container C]
+    B --&gt;|XREADGROUP Consumer 1| C[&quot;Worker Container A&quot;]
+    B --&gt;|XREADGROUP Consumer 2| D[&quot;Worker Container B&quot;]
+    B --&gt;|XREADGROUP Consumer 3| E[&quot;Worker Container C&quot;]
   end
   
   C --&gt;|Task Complete - XACK| B
   D --&gt;|Task Complete - XACK| B
   
   subgraph SG2_OrphanRecoveryEngine [&quot;Orphan Recovery Engine&quot;]
-    E -.-&gt;|Container Crashes Mid-Task| F[Pending Entries List PEL Timeout]
+    E -.-&gt;|Container Crashes Mid-Task| F[&quot;Pending Entries List PEL Timeout&quot;]
     F --&gt;|XCLAIM Claim Orphaned Task| C
   end
   
   C --&gt;|XADD agent -results -stream| G[(Redis Stream: agent:results:stream)]
-  G --&gt; H[Orchestrator Result Aggregator]</div>
+  G --&gt; H[&quot;Orchestrator Result Aggregator&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class C green
+class D purple
+class E yellow
+class F red</div>
 <h3 id="core-redis-streams-operations-for-agent-swarms">Core Redis Streams Operations for Agent Swarms</h3>
 <ol>
 <li><strong><code>XADD</code> (Task Event Publishing)</strong>: Dispatches a new task payload onto the stream with an auto-generated millisecond ID (<code>1722567000000-0</code>).</li>
@@ -301,8 +313,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams deploying Redis Streams for subagent orchestration report:</p>
 <ul>
 <li><strong>100% Zero-Loss Fault Tolerance</strong>: Pending Entries List (PEL) and <code>XCLAIM</code> automatically recover 100% of tasks from crashed worker containers.</li>
-<li><strong>Massive Horizontal Scalability</strong>: Adding 20 new Cloud Run worker containers automatically scales task throughput without reconfiguring the orchestrator.</li>
+<li><strong>Massive Horizontal Scalability</strong>: Adding 20 new Cloud Run worker containers automatically scales task throughput without reconfiguring the orchestrator. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Carbone, P., et al. (2015)</strong>. <em>Apache Flink: Stream and Batch Processing in a Single Engine</em>. IEEE Data Engineering Bulletin. <a href="https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -339,6 +362,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-redis-streams-agent-swarm-engine" class="toc-link">Python Implementation: Redis Streams Agent Swarm Engine</a></li>
               <li class="toc-item toc-h2"><a href="#important-redis-streams-architecture-guardrails" class="toc-link">Important Redis Streams Architecture Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

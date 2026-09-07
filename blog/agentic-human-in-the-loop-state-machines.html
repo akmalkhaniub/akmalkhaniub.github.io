@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/agentic-human-in-the-loop-state-machines.html">
   <meta property="og:title" content="Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates">
   <meta property="og:description" content="How to design resilient agent checkpointers that pause execution, persist state to database storage, and resume upon receiving secure human approval callbacks.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agentic-human-in-the-loop-state-machines.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-04-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates">
   <meta name="twitter:description" content="How to design resilient agent checkpointers that pause execution, persist state to database storage, and resume upon receiving secure human approval callbacks.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agentic-human-in-the-loop-state-machines.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption & Approval Gates",
   "description": "How to design resilient agent checkpointers that pause execution, persist state to database storage, and resume upon receiving secure human approval callbacks.",
   "url": "https://akmalkhaniub.github.io/blog/agentic-human-in-the-loop-state-machines.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/agentic-human-in-the-loop-state-machines.jpg",
   "datePublished": "2026-04-18",
   "keywords": "AI Agents, State Machines, LangGraph, Architecture",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/agentic-human-in-the-loop-state-machines.jpg" class="article-cover-img" alt="Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Human-in-the-Loop (HITL) State Machines: Implementing Asynchronous Interruption &amp; Approval Gates</h1>
             <div class="article-meta">
@@ -112,6 +112,7 @@
                 <li><a href="#designing-thread-checkpointing">Designing Thread Checkpointing</a></li>
                 <li><a href="#implementing-checkpoint-persistence-in-python">Implementing Checkpoint Persistence in Python</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -122,25 +123,36 @@ While autonomous agent swarms excel at processing data and planning tasks, fully
 </div>
 <hr>
 <h2 id="the-autonomy-problem-in-the-enterprise">The Autonomy Problem in the Enterprise</h2>
-<p>When an agent plans and runs a series of actions, it operates in a loop: planning, executing tools, inspecting results, and deciding the next step. If one of these steps involves a sensitive transaction—like spending money or emailing a client—we cannot let the agent run unsupervised. </p>
+<p>When an agent plans and runs a series of actions, it operates in a loop: planning, executing tools, inspecting results, and deciding the next step <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. If one of these steps involves a sensitive transaction—like spending money or emailing a client—we cannot let the agent run unsupervised. </p>
 <p>We need a way to insert a <strong>Human Gate</strong>:</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Start[User Prompt] --&gt; Step1[Plan Generation]
-    Step1 --&gt; Node1[Action Node: Create Draft invoice]
+    Start[&quot;User Prompt&quot;] --&gt; Step1[&quot;Plan Generation&quot;]
+    Step1 --&gt; Node1[&quot;Action Node: Create Draft invoice&quot;]
     Node1 --&gt; Check{Is sensitive action?}
     
-    Check --&gt;|Yes| Pause[Pause Execution &amp; Serialize State]
+    Check --&gt;|Yes| Pause[&quot;Pause Execution &amp; Serialize State&quot;]
     Pause --&gt; DB[(PostgreSQL Checkpoint DB)]
-    Pause --&gt; Notify[Send Slack/Email Notification with Approval Link]
+    Pause --&gt; Notify[&quot;Send Slack/Email Notification with Approval Link&quot;]
     
-    Notify --&gt; Await[Await Human Action Callback]
-    Await --&gt; Webhook[Receive Webhook: Approve / Edit]
+    Notify --&gt; Await[&quot;Await Human Action Callback&quot;]
+    Await --&gt; Webhook[&quot;Receive Webhook: Approve / Edit&quot;]
     
-    Webhook --&gt; Deserialize[Reload State from DB]
-    Deserialize --&gt; Node2[Action Node: Execute payment]
+    Webhook --&gt; Deserialize[&quot;Reload State from DB&quot;]
+    Deserialize --&gt; Node2[&quot;Action Node: Execute payment&quot;]
     Check --&gt;|No| Node2
-    Node2 --&gt; End[Deliver Output]</div>
+    Node2 --&gt; End[&quot;Deliver Output&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Start,Await blue
+class Step1,Webhook green
+class Node1,Deserialize purple
+class Pause,Node2 yellow
+class Notify,End red</div>
 <p>To achieve this without blocking active server thread pools, we design an <strong>Asynchronous Checkpointed State Machine</strong>. The system serializes the agent&#39;s memory stack and current graph position, saves it to a persistent database, and releases the CPU resource.</p>
 <hr>
 <h2 id="designing-thread-checkpointing">Designing Thread Checkpointing</h2>
@@ -294,8 +306,20 @@ if __name__ == &quot;__main__&quot;:
 <li><input disabled="" type="checkbox"> <strong>Define clear threshold gates</strong>: Never allow agents to make un-audited state updates or calls for sensitive tasks. Enforce gates at the configuration level.</li>
 <li><input disabled="" type="checkbox"> <strong>Decouple state from memory</strong>: Do not keep active execution processes running during human review. Serialize the state to a database and spin down resources.</li>
 <li><input disabled="" type="checkbox"> <strong>Generate unique secure URLs</strong>: Include a cryptographically signed token in the human feedback notification to prevent spoofing or unauthorized approvals.</li>
-<li><input disabled="" type="checkbox"> <strong>Log human interventions</strong>: Ensure comments, overrides, and approval details are recorded into the conversation thread to maintain strict audit integrity.</li>
+<li><input disabled="" type="checkbox"> <strong>Log human interventions</strong>: Ensure comments, overrides, and approval details are recorded into the conversation thread to maintain strict audit integrity. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -331,6 +355,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#designing-thread-checkpointing" class="toc-link">Designing Thread Checkpointing</a></li>
               <li class="toc-item toc-h2"><a href="#implementing-checkpoint-persistence-in-python" class="toc-link">Implementing Checkpoint Persistence in Python</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -4,7 +4,7 @@
 > **Catalog note**: This post overlaps [Lock-Free Data Structures: CAS, ABA, and Hazard Pointers](lock-free-data-structures-cas-aba-hazard-pointers.html). Read them as a pair, not as two competing introductions.
 
 
-In high-concurrency systems (such as high-frequency trading engines, kernel task schedulers, and event loops), utilizing traditional mutex locks (`pthread_mutex_t` or `std::mutex`) introduces severe performance penalties.
+In high-concurrency systems (such as high-frequency trading engines, kernel task schedulers, and event loops), utilizing traditional mutex locks (`pthread_mutex_t` or `std::mutex`) introduces severe performance penalties [1].
 
 Mutexes rely on kernel-level thread blocking. When lock contention occurs, the OS kernel context switches the thread off the CPU, incurring **$1,000\text{ns}$ to $3,000\text{ns}$ context switch overheads**, priority inversion, and potential deadlocks.
 
@@ -25,22 +25,33 @@ How Lock-Free Queues use Compare-And-Swap (CAS) and Hazard Pointers to prevent m
 ```mermaid
 flowchart TD
   subgraph SG1_LockFreeCas ["Lock-Free CAS Retry Loop"]
-    ThreadA[Thread A: Enqueue / Dequeue] -->|Read Current Head Pointer A| ReadHead[Read Head -> Pointer A]
-    ReadHead -->|Compute Next Pointer B| ComputeNext[Compute Next Node -> Pointer B]
+    ThreadA["Thread A: Enqueue / Dequeue"] -->|Read Current Head Pointer A| ReadHead["Read Head -> Pointer A"]
+    ReadHead -->|Compute Next Pointer B| ComputeNext["Compute Next Node -> Pointer B"]
     ComputeNext -->|Atomic CAS(Head, Expected A, New B)| CASAttempt{Hardware CAS Instruction}
     
-    CASAttempt -->|Success - Updated atomically| Complete[Operation Complete]
+    CASAttempt -->|Success - Updated atomically| Complete["Operation Complete"]
     CASAttempt -->|Failure - Interrupted by Thread B| ReadHead
   end
   
   subgraph SG2_HazardPointerMemory ["Hazard Pointer Memory Protection (Prevents ABA & Use-After-Free)"]
-    ThreadA -->|Publish Active Pointer to Hazard Array| HazardPointer[Hazard Pointer: 'Pointer A in Use!']
-    HazardPointer -.->|Guard Node Memory| NodeA[Queue Node A Memory]
+    ThreadA -->|Publish Active Pointer to Hazard Array| HazardPointer["Hazard Pointer: 'Pointer A in Use!'"]
+    HazardPointer -.->|Guard Node Memory| NodeA["Queue Node A Memory"]
     
-    ThreadB[Thread B: Retires Node A] -->|Check Hazard Array| GuardCheck{Is Pointer A in Hazard Array?}
-    GuardCheck -->|Yes - Reader active!| DeferFree[Defer Free to Retirement List]
-    GuardCheck -->|No - Safe to delete| FreeMemory[Reclaim Memory Page]
+    ThreadB["Thread B: Retires Node A"] -->|Check Hazard Array| GuardCheck{Is Pointer A in Hazard Array?}
+    GuardCheck -->|Yes - Reader active!| DeferFree["Defer Free to Retirement List"]
+    GuardCheck -->|No - Safe to delete| FreeMemory["Reclaim Memory Page"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ThreadA,NodeA blue
+class ReadHead,ThreadB green
+class ComputeNext,DeferFree purple
+class Complete,FreeMemory yellow
+class HazardPointer red
 ```
 
 ### Core Lock-Free Concurrency Mechanics
@@ -203,4 +214,10 @@ When designing lock-free data structures:
 ## Real-World Enterprise Impact
 High-concurrency systems utilizing lock-free data structures (such as **LMAX Disruptor**, **Linux Kernel RCU**, and **Jellyfish**) report:
 * **$10\times$ Higher Multi-Core Throughput**: Processing tens of millions of concurrent operations per second without lock acquisition delays.
-* **Zero Deadlocks or Priority Inversion**: Lock-free progress guarantees ensure high-priority threads are never blocked by low-priority worker threads.
+* **Zero Deadlocks or Priority Inversion**: Lock-free progress guarantees ensure high-priority threads are never blocked by low-priority worker threads. [2]
+
+## References & Further Reading
+
+1. **Michael, M. M. (2004)**. *Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects*. IEEE TPDS. [https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf](https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf)
+2. **McKenney, P. E., & Slingwine, J. D. (1998)**. *Read-Copy Update: Using Execution History to Solve Concurrency Problems*. PDCS. [https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf](https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf)
+3. **Bloom, B. H. (1970)**. *Space/Time Trade-offs in Hash Coding with Allowable Errors*. CACM. [https://doi.org/10.1145/362686.362692](https://doi.org/10.1145/362686.362692)

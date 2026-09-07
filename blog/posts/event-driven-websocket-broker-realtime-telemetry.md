@@ -9,21 +9,31 @@
 ## The Efficiency of WebSocket Gateways
 
 In legacy status tracking configurations:
-* **Database Thrashing**: Hundreds of UI clients polling HTTP status endpoints every second degrades database read speeds.
+* **Database Thrashing**: Hundreds of UI clients polling HTTP status endpoints every second degrades database read speeds [1].
 * **Delayed Feedback**: Users see execution updates seconds after they occur, degrading the interactive feel.
 * **The Solution**: **WebSocket Event Brokers**. We establish persistent TCP sockets using WebSockets. When an agent emits a step execution trace event, the gateway routes the event payload immediately to all subscribed clients.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Agent Execution Worker] -->|Emits log trace event| Gateway[WebSocket Broker Gateway]
+    Agent["Agent Execution Worker"] -->|Emits log trace event| Gateway["WebSocket Broker Gateway"]
     
     subgraph SG1_ClientSubscriptionHub ["Client Subscription Hub"]
-        Gateway -->|Multiplex payload| Client1[UI Dashboard Client 1]
-        Gateway -->|Multiplex payload| Client2[UI Dashboard Client 2]
+        Gateway -->|Multiplex payload| Client1["UI Dashboard Client 1"]
+        Gateway -->|Multiplex payload| Client2["UI Dashboard Client 2"]
     end
     
     Client1 -->|Subscribe - task_session_101| Gateway
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent blue
+class Gateway green
+class Client1 purple
+class Client2 yellow
 ```
 
 ---
@@ -114,4 +124,10 @@ if __name__ == "__main__":
 
 * **Decouple Ingestion from Broadcast**: Buffer agent log traces in queues before routing them to client connections.
 * **Manage Connection Registries**: De-allocate inactive sockets immediately to protect server memory.
-* **Provide Structured Channels**: Partition subscriptions by task session IDs to avoid routing irrelevant logs to users.
+* **Provide Structured Channels**: Partition subscriptions by task session IDs to avoid routing irrelevant logs to users. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

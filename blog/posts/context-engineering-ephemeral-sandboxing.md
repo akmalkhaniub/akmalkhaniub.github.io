@@ -7,7 +7,7 @@
 
 ---
 
-In our foundational article, [Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)](post.html?post=context-engineering-mcp), we explored how to sanitize inputs and restrict LLM arguments using static regex constraints and schema types. 
+In our foundational article, [Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)](post [1].html?post=context-engineering-mcp), we explored how to sanitize inputs and restrict LLM arguments using static regex constraints and schema types. 
 
 However, when building advanced developer agents or database write co-pilots, input sanitization alone is insufficient. If a model must write and execute custom scripts to parse data, compile code, or audit spreadsheets, a single prompt injection can bypass sanitization rules, allowing adversarial instructions to run shell commands (like `rm -rf` or environment file extraction) directly on your host machine.
 
@@ -28,18 +28,18 @@ flowchart TD
     classDef sandbox fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef secure fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
 
-    User[User Request + JWT] -->|Dispatch| Gateway[FastAPI Gateway proxy]
+    User["User Request + JWT"] -->|Dispatch| Gateway["FastAPI Gateway proxy"]
     Gateway -->|Check User Role| RoleFilter{Admin or Developer?}
     
-    RoleFilter -->|No - Mask Write Tools| AgentPrompt[Expose Read-Only Tools to LLM]
+    RoleFilter -->|No - Mask Write Tools| AgentPrompt["Expose Read-Only Tools to LLM"]
     RoleFilter -->|Yes - Expose All Tools| AgentPrompt
     
     AgentPrompt -->|Call Code Exec Tool| CodeCheck{Contains System Injection?}
-    CodeCheck -->|Always| DockerLaunch[Spawn Ephemeral Docker Container]
+    CodeCheck -->|Always| DockerLaunch["Spawn Ephemeral Docker Container"]
     
     subgraph SG1_ContainersandboxIsolatedEnvironment ["ContainerSandbox [Isolated Environment]"]
-        DockerLaunch -->|Mount Temp Volume| RunScript[Execute Code / RAM & CPU Limited]
-        RunScript -->|Harvest Output| OutputCheck[Parse and Truncate Result]
+        DockerLaunch -->|Mount Temp Volume| RunScript["Execute Code / RAM & CPU Limited"]
+        RunScript -->|Harvest Output| OutputCheck["Parse and Truncate Result"]
     end
     
     OutputCheck -->|Destroy Container| Gateway

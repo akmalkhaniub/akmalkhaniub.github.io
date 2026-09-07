@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/concurrent-garbage-collection-zgc-shenandoah-colored-pointers.html">
   <meta property="og:title" content="Concurrent Garbage Collection: Java ZGC &amp; Shenandoah Colored Pointers &amp; Load Barriers">
   <meta property="og:description" content="Ultra-low latency garbage collection: implementing Java ZGC sub-millisecond pause times, 64-bit Colored Pointers (Marked0, Marked1, Remapped), JIT-compiled Load Barriers, and self-healing pointer relocation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/concurrent-garbage-collection-zgc-shenandoah-colored-pointers.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Concurrent Garbage Collection: Java ZGC &amp; Shenandoah Colored Pointers &amp; Load Barriers">
   <meta name="twitter:description" content="Ultra-low latency garbage collection: implementing Java ZGC sub-millisecond pause times, 64-bit Colored Pointers (Marked0, Marked1, Remapped), JIT-compiled Load Barriers, and self-healing pointer relocation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/concurrent-garbage-collection-zgc-shenandoah-colored-pointers.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Concurrent Garbage Collection: Java ZGC & Shenandoah Colored Pointers & Load Barriers",
   "description": "Ultra-low latency garbage collection: implementing Java ZGC sub-millisecond pause times, 64-bit Colored Pointers (Marked0, Marked1, Remapped), JIT-compiled Load Barriers, and self-healing pointer relocation.",
   "url": "https://akmalkhaniub.github.io/blog/concurrent-garbage-collection-zgc-shenandoah-colored-pointers.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/concurrent-garbage-collection-zgc-shenandoah-colored-pointers.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Garbage Collection, ZGC, Memory Management, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Concurrent Garbage Collection: Java ZGC &amp; Shenandoah Colored Pointers &amp; Load Barriers Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/concurrent-garbage-collection-zgc-shenandoah-colored-pointers.jpg" class="article-cover-img" alt="Concurrent Garbage Collection: Java ZGC &amp; Shenandoah Colored Pointers &amp; Load Barriers Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Concurrent Garbage Collection: Java ZGC &amp; Shenandoah Colored Pointers &amp; Load Barriers</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-zgc-colored-pointer-load-barrier-engine">Python Implementation: ZGC Colored Pointer &amp; Load Barrier Engine</a></li>
                 <li><a href="#low-latency-gc-gotchas-best-practices">Low-Latency GC Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-scale enterprise applications (<strong>Fintech Trading Engines</strong>, <strong>Real-Time Data Streaming</strong>, <strong>Multi-Terabyte In-Memory Caches</strong>), application response time SLAs require sub-millisecond latencies.</p>
+<p>In high-scale enterprise applications (<strong>Fintech Trading Engines</strong>, <strong>Real-Time Data Streaming</strong>, <strong>Multi-Terabyte In-Memory Caches</strong>), application response time SLAs require sub-millisecond latencies <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>For decades, traditional Java Garbage Collectors (<strong>Parallel GC</strong>, <strong>CMS</strong>, <strong>G1 GC</strong>) suffered from a fatal flaw: <strong>Stop-The-World (STW) Pauses</strong>.</p>
 <p>During memory compaction, traditional collectors freeze all application worker threads while moving live objects across heap pages. On terabyte-sized heaps, STW pauses take seconds or even minutes, triggering downstream timeout outages.</p>
 <p>To eliminate STW latency spikes, modern low-latency garbage collectors—led by <strong>Java ZGC (Z Garbage Collector)</strong> and <strong>Red Hat Shenandoah</strong>—execute object marking, relocation, and pointer updating <strong>concurrently alongside application threads</strong>.</p>
@@ -126,8 +127,8 @@
 <p>How ZGC uses 64-bit Colored Pointers and JIT Load Barriers to achieve concurrent, self-healing memory compaction:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_Zgc64Bit [&quot;ZGC 64-bit Colored Pointer Memory Layout&quot;]
-    Ptr[64-bit Pointer] --&gt; Final42[Bits 0..41: Object Virtual Address Space (Up to 16 TB)]
-    Ptr --&gt; ColorBits[Bits 42..45: Metadata Color Bits]
+    Ptr[&quot;64-bit Pointer&quot;] --&gt; Final42[&quot;Bits 0..41: Object Virtual Address Space (Up to 16 TB)&quot;]
+    Ptr --&gt; ColorBits[&quot;Bits 42..45: Metadata Color Bits&quot;]
     
     ColorBits --&gt; M0[&quot;Bit 42: Marked0 (Live Object in GC Cycle A)&quot;]
     ColorBits --&gt; M1[&quot;Bit 43: Marked1 (Live Object in GC Cycle B)&quot;]
@@ -135,13 +136,24 @@
   end
   
   subgraph SG2_JitLoadBarrier [&quot;JIT Load Barrier (Self-Healing Pointer Execution)&quot;]
-    Mutator[Application Thread: Dereference Pointer 'obj.field'] --&gt; CheckRemapped{Is Pointer Bit 'Remapped' == 1?}
-    CheckRemapped --&gt;|Yes - Fast Path &lt; 1ns| ReturnObj[Return Object Address]
+    Mutator[&quot;Application Thread: Dereference Pointer 'obj.field'&quot;] --&gt; CheckRemapped{Is Pointer Bit 'Remapped' == 1?}
+    CheckRemapped --&gt;|Yes - Fast Path &lt; 1ns| ReturnObj[&quot;Return Object Address&quot;]
     
-    CheckRemapped --&gt;|No - Slow Path - Pointer Points to Old Relocated Page!| LookupTable[Lookup New Address in ZGC Forwarding Table]
-    LookupTable --&gt;|Update Reference In-Place| SelfHeal[ Self-Healing Pointer Updated: Remapped = 1]
+    CheckRemapped --&gt;|No - Slow Path - Pointer Points to Old Relocated Page!| LookupTable[&quot;Lookup New Address in ZGC Forwarding Table&quot;]
+    LookupTable --&gt;|Update Reference In-Place| SelfHeal[&quot; Self-Healing Pointer Updated: Remapped = 1&quot;]
     SelfHeal --&gt; ReturnObj
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Ptr,Remapped blue
+class Final42,Mutator green
+class ColorBits,ReturnObj purple
+class M0,LookupTable yellow
+class M1,SelfHeal red</div>
 <h3 id="core-zgc-shenandoah-concepts">Core ZGC &amp; Shenandoah Concepts</h3>
 <ol>
 <li><strong>The Concurrent Compaction Challenge</strong>:<ul>
@@ -295,8 +307,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Low-latency concurrent garbage collectors (such as <strong>Java ZGC</strong>, <strong>Shenandoah</strong>, and <strong>Azul C4</strong>) report:</p>
 <ul>
 <li><strong>Sub-Millisecond Max Pause Times ($&lt; 1\text{ms}$)</strong>: On terabyte heaps, STW pauses drop from multi-second disruptions to sub-millisecond blips.</li>
-<li><strong>100% Predictable P99.99 Latency SLAs</strong>: Eliminates garbage collection response time spikes in high-frequency trading platforms and real-time streaming engines.</li>
+<li><strong>100% Predictable P99.99 Latency SLAs</strong>: Eliminates garbage collection response time spikes in high-frequency trading platforms and real-time streaming engines. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -333,6 +356,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-zgc-colored-pointer-load-barrier-engine" class="toc-link">Python Implementation: ZGC Colored Pointer &amp; Load Barrier Engine</a></li>
               <li class="toc-item toc-h2"><a href="#low-latency-gc-gotchas-best-practices" class="toc-link">Low-Latency GC Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

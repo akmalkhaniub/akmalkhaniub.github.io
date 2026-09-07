@@ -5,7 +5,7 @@
 > * **Why it matters:** Agentic RAG addresses critical limitations of standard RAG, such as semantic bottlenecks and hallucination propagation, enabling more robust and scalable AI systems for complex enterprise data.
 > * **What we synthesized:** We explore the Agentic RAG loop, review cutting-edge research on hierarchical interfaces and logical retrieval, and provide a practical TypeScript implementation of a routing agent.
 
-In standard Retrieval-Augmented Generation (RAG) setups, the retrieval process is completely passive. The user submits a query, a vector database runs a cosine similarity match in a single shot, and the raw text chunks are stuffed into the model's context window.
+In standard Retrieval-Augmented Generation (RAG) setups, the retrieval process is completely passive [1]. The user submits a query, a vector database runs a cosine similarity match in a single shot, and the raw text chunks are stuffed into the model's context window.
 
 This passive paradigm suffers from two major limitations:
 1. **The Semantic Bottleneck**: Pure vector similarity fails on complex comparative queries (e.g., *"Find all contract versions where liability caps exceed $50,000, and cross-reference them with audit summaries"*).

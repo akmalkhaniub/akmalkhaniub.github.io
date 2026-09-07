@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html">
   <meta property="og:title" content="Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale)">
   <meta property="og:description" content="How hyper-scale platforms govern 1M RPS traffic: Token Bucket vs Leaky Bucket vs Sliding Window Counter math, Tier-1 in-memory fast paths with async Redis batching, and client-side Full Jitter exponential backoff.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale)">
   <meta name="twitter:description" content="How hyper-scale platforms govern 1M RPS traffic: Token Bucket vs Leaky Bucket vs Sliding Window Counter math, Tier-1 in-memory fast paths with async Redis batching, and client-side Full Jitter exponential backoff.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe & Cloudflare Scale)",
   "description": "How hyper-scale platforms govern 1M RPS traffic: Token Bucket vs Leaky Bucket vs Sliding Window Counter math, Tier-1 in-memory fast paths with async Redis batching, and client-side Full Jitter exponential backoff.",
   "url": "https://akmalkhaniub.github.io/blog/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.jpg",
   "datePublished": "2026-09-02",
   "keywords": "Rate Limiting, System Design, High Availability, Redis, Cloudflare, API Gateway",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale) Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/adaptive-rate-limiting-1m-rps-token-bucket-sliding-window-redis.jpg" class="article-cover-img" alt="Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale) Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Adaptive Rate Limiting at 1,000,000 RPS: Token Bucket vs Leaky Bucket vs Sliding Window Log (Stripe &amp; Cloudflare Scale)</h1>
             <div class="article-meta">
@@ -118,17 +118,18 @@
                 <li><a href="#python-implementation-high-throughput-token-bucket-with-jitter">Python Implementation: High-Throughput Token Bucket with Jitter</a></li>
                 <li><a href="#architectural-comparison-centralized-vs-hierarchical-rate-limiting">Architectural Comparison: Centralized vs Hierarchical Rate Limiting</a></li>
                 <li><a href="#the-distributed-systems-law">The Distributed Systems Law</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When an API gateway processes one million requests per second, the math of distributed state becomes unforgiving.</p>
+<p>When an API gateway processes one million requests per second, the math of distributed state becomes unforgiving <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Consider what happens if you implement a classic, naive rate limiter. Every incoming HTTP connection reaches an edge proxy; the edge proxy extracts an API token, serializes a command, and sends an atomic <code>INCR</code> or <code>ZADD</code> to a centralized Redis cluster.</p>
 <p>At one million requests per second, your rate-limiting layer is now generating one million queries per second of internal network traffic. Even with Redis running in-memory on high-performance bare metal, the network interface cards choke on packet serialization. The TCP round-trip between proxy and Redis adds two to five milliseconds of latency to every single client call. If Redis stutters for three hundred milliseconds during a background snapshot, one million inbound HTTP requests pile up in proxy socket buffers. Memory explodes. Cascading timeouts ripple upstream. Your rate limiter, designed to protect your infrastructure from crashing, becomes the single point of failure that destroys it.</p>
 <p>Now consider the opposite extreme: enforce rate limits entirely in local proxy memory. If you have one hundred proxy pods behind an anycast load balancer, each pod tracks its own local counter. But load balancers do not distribute requests with mathematical symmetry. A distributed botnet spraying credential-stuffing attacks across your cluster can easily send eighty percent of its traffic through five specific proxies, completely bypassing tenant quotas while each individual pod remains below its local threshold.</p>
 <p>Solving rate limiting at one million requests per second requires <strong>Hierarchical Adaptive Rate Limiting</strong>: decoupling local microsecond validation from asynchronous global quota reconciliation.</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_HierarchicalAdaptiveRate [&quot;Hierarchical Adaptive Rate Limiting at Scale&quot;]
-    Traffic[1,000,000 Inbound RPS] --&gt; Proxy1[Edge Proxy Node A]
-    Traffic --&gt; Proxy2[Edge Proxy Node B]
+    Traffic[&quot;1,000,000 Inbound RPS&quot;] --&gt; Proxy1[&quot;Edge Proxy Node A&quot;]
+    Traffic --&gt; Proxy2[&quot;Edge Proxy Node B&quot;]
     
     subgraph SG2_Tier1Local [&quot;Tier 1: Local In-Memory Fast Path&quot;]
       Proxy1 --&gt; Bucket1[&quot;Local Memory Token Bucket (Zero Network Latency)&quot;]
@@ -141,7 +142,18 @@
     
     Bucket1 --&gt;|Quota Depleted| Reject429[&quot;HTTP 429 Too Many Requests (Retry-After)&quot;]
     Bucket1 --&gt;|Permitted| Upstream[&quot;Downstream Services&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Traffic,Reject429 blue
+class Proxy1,Upstream green
+class Proxy2 purple
+class Bucket1 yellow
+class Bucket2 red</div>
 <hr>
 <h2 id="1-algorithm-anatomy-token-bucket-vs-leaky-bucket-vs-sliding-windows">1. Algorithm Anatomy: Token Bucket vs Leaky Bucket vs Sliding Windows</h2>
 <p>Before architecting the distributed synchronization layer, systems engineers must select the right rate-limiting primitive for the traffic profile:</p>
@@ -246,13 +258,23 @@ end</code></pre>
 <div class="mermaid">flowchart TD
   subgraph SG4_RegularExponentialBackoff [&quot;Regular Exponential Backoff vs Full Jitter Backoff&quot;]
     subgraph SG5_1RegularExponential [&quot;1. Regular Exponential Backoff (Thundering Herd)&quot;]
-      F1[10,000 Concurrent 429 Failures] --&gt;|All Sleep Exactly 4.0s| Spike[&quot;Spike: 10,000 Retries at t=4.0s (System Meltdown)&quot;]
+      F1[&quot;10,000 Concurrent 429 Failures&quot;] --&gt;|All Sleep Exactly 4.0s| Spike[&quot;Spike: 10,000 Retries at t=4.0s (System Meltdown)&quot;]
     end
 
     subgraph SG6_2FullJitter [&quot;2. Full Jitter Exponential Backoff (Decorrelated)&quot;]
-      F2[10,000 Concurrent 429 Failures] --&gt;|Sleep Uniform Random 0..4.0s| Smooth[&quot;Smooth: Retries distributed evenly across 4000ms&quot;]
+      F2[&quot;10,000 Concurrent 429 Failures&quot;] --&gt;|Sleep Uniform Random 0..4.0s| Smooth[&quot;Smooth: Retries distributed evenly across 4000ms&quot;]
     end
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class F1 blue
+class Spike green
+class F2 purple
+class Smooth yellow</div>
 <hr>
 <h2 id="python-implementation-high-throughput-token-bucket-with-jitter">Python Implementation: High-Throughput Token Bucket with Jitter</h2>
 <p>The following Python module demonstrates a thread-safe in-memory token bucket rate limiter paired with client-side Full Jitter retry calculation:</p>
@@ -370,7 +392,18 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="the-distributed-systems-law">The Distributed Systems Law</h2>
 <p>Rate limiting at scale is fundamentally about <strong>failure domains and latency physics</strong>.</p>
-<p>If rate-limiting decisions require synchronous network hops across the datacenter, your rate limiter will inevitably collapse your service during the exact traffic spikes it was designed to absorb. By validating traffic in local proxy memory and synchronizing state through asynchronous batch reconciliation, systems engineers build architectures that remain rock solid under millions of requests per second.</p>
+<p>If rate-limiting decisions require synchronous network hops across the datacenter, your rate limiter will inevitably collapse your service during the exact traffic spikes it was designed to absorb. By validating traffic in local proxy memory and synchronizing state through asynchronous batch reconciliation, systems engineers build architectures that remain rock solid under millions of requests per second. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -412,6 +445,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-high-throughput-token-bucket-with-jitter" class="toc-link">Python Implementation: High-Throughput Token Bucket with Jitter</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-comparison-centralized-vs-hierarchical-rate-limiting" class="toc-link">Architectural Comparison: Centralized vs Hierarchical Rate Limiting</a></li>
               <li class="toc-item toc-h2"><a href="#the-distributed-systems-law" class="toc-link">The Distributed Systems Law</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

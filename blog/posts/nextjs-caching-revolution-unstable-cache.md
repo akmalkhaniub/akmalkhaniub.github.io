@@ -6,7 +6,7 @@
 
 For years, Next.js was notorious for its aggressive caching behavior. If you ran a standard `fetch` call in an App Router page, Next.js would automatically intercept and cache the response statically forever unless you explicitly configured dynamic routing parameters. In production, this resulted in countless "stale dashboard" and "out-of-sync product list" bugs that developers struggled to debug.
 
-Next.js 15 flipped this model on its head by introducing **uncached-by-default** behavior. This article explores the architectural rationale behind this shift, the performance benefits, and how high-volume production platforms safely configure explicit, predictable caching.
+Next.js 15 flipped this model on its head by introducing **uncached-by-default** behavior [1]. This article explores the architectural rationale behind this shift, the performance benefits, and how high-volume production platforms safely configure explicit, predictable caching.
 
 ---
 
@@ -109,16 +109,36 @@ Production sites have adapted to the uncached-by-default shift by implementing t
 
 ```mermaid
 flowchart TD
-  A[Client Request] --> B[Next.js Server Component]
+  A["Client Request"] --> B["Next.js Server Component"]
   B --> C{Cache Hit in unstable_cache?}
-  C -- Yes --> D[Serve from Next.js Memory Cache]
-  C -- No --> E[Execute Raw Database Query]
-  E --> F[Store Result in Redis / Memory Cache]
+  C -- Yes --> D["Serve from Next.js Memory Cache"]
+  C -- No --> E["Execute Raw Database Query"]
+  E --> F["Store Result in Redis / Memory Cache"]
   F --> D
-  G[Admin Event / Webhook] --> H[Server Action / API Route]
-  H --> I[Trigger revalidateTag]
-  I --> J[Purge memory keys]
+  G["Admin Event / Webhook"] --> H["Server Action / API Route"]
+  H --> I["Trigger revalidateTag"]
+  I --> J["Purge memory keys"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B,H green
+class D,I purple
+class E,J yellow
+class F red
 ```
 
 1. **Static Shells, Dynamic Components**: Pages use Partial Prerendering (PPR) to server static layouts instantly, using `unstable_cache` to fetch dynamic components cleanly.
-2. **CDN Bypass**: By relying on on-demand invalidation rather than global CDN caching, platforms keep dashboard views fresh down to the second while keeping server performance high.
+2. **CDN Bypass**: By relying on on-demand invalidation rather than global CDN caching, platforms keep dashboard views fresh down to the second while keeping server performance high. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+6. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/cache-eviction-algorithms-lru-k-2q-segmented-lru.html">
   <meta property="og:title" content="Cache Eviction Algorithms: LRU-K, 2Q &amp; Segmented LRU (SLRU) Implementation">
   <meta property="og:description" content="Scan-resistant cache eviction: implementing LRU-K backward reference distances, 2Q two-queue FIFO/LRU separation, and Segmented LRU (SLRU) probationary state transitions.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/cache-eviction-algorithms-lru-k-2q-segmented-lru.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Cache Eviction Algorithms: LRU-K, 2Q &amp; Segmented LRU (SLRU) Implementation">
   <meta name="twitter:description" content="Scan-resistant cache eviction: implementing LRU-K backward reference distances, 2Q two-queue FIFO/LRU separation, and Segmented LRU (SLRU) probationary state transitions.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/cache-eviction-algorithms-lru-k-2q-segmented-lru.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Cache Eviction Algorithms: LRU-K, 2Q & Segmented LRU (SLRU) Implementation",
   "description": "Scan-resistant cache eviction: implementing LRU-K backward reference distances, 2Q two-queue FIFO/LRU separation, and Segmented LRU (SLRU) probationary state transitions.",
   "url": "https://akmalkhaniub.github.io/blog/cache-eviction-algorithms-lru-k-2q-segmented-lru.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/cache-eviction-algorithms-lru-k-2q-segmented-lru.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Cache Eviction, SLRU, 2Q, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Cache Eviction Algorithms: LRU-K, 2Q &amp; Segmented LRU (SLRU) Implementation Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/cache-eviction-algorithms-lru-k-2q-segmented-lru.jpg" class="article-cover-img" alt="Cache Eviction Algorithms: LRU-K, 2Q &amp; Segmented LRU (SLRU) Implementation Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Cache Eviction Algorithms: LRU-K, 2Q &amp; Segmented LRU (SLRU) Implementation</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-segmented-lru-slru-eviction-engine">Python Implementation: Segmented LRU (SLRU) Eviction Engine</a></li>
                 <li><a href="#eviction-algorithm-gotchas-best-practices">Eviction Algorithm Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When an in-memory cache reaches its maximum memory allocation, it must decide which key to <strong>evict</strong> to make room for newly requested data.</p>
+<p>When an in-memory cache reaches its maximum memory allocation, it must decide which key to <strong>evict</strong> to make room for newly requested data <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>For decades, systems relied on <strong>Classic LRU (Least Recently Used)</strong>.</p>
 <p>However, classic LRU suffers from a critical vulnerability known as <strong>Scan Pollution</strong>.</p>
 <p>A single sequential database table scan or batch report query reads millions of cold rows into memory once, pushing out all hot, frequently accessed application items.</p>
@@ -126,20 +127,31 @@
 <p>How Segmented LRU (SLRU) isolates cold single-access scan items from hot protected items:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_ClientReadRequest [&quot;Client Read Request&quot;]
-    Req[Incoming Key Read Request] --&gt; Check{Key in Cache?}
+    Req[&quot;Incoming Key Read Request&quot;] --&gt; Check{Key in Cache?}
   end
   
   subgraph SG2_SegmentedLruSlru [&quot;Segmented LRU (SLRU) State Machine&quot;]
-    Check --&gt;|Miss - First Access| Prob[Probationary Segment LRU - 20% Capacity]
+    Check --&gt;|Miss - First Access| Prob[&quot;Probationary Segment LRU - 20% Capacity&quot;]
     
-    Prob --&gt;|Hit - Second Access!| Promoted[PROMOTED to Protected Segment!]
-    Promoted --&gt; Prot[Protected Segment LRU - 80% Capacity]
+    Prob --&gt;|Hit - Second Access!| Promoted[&quot;PROMOTED to Protected Segment!&quot;]
+    Promoted --&gt; Prot[&quot;Protected Segment LRU - 80% Capacity&quot;]
     
-    Prot --&gt;|Evicted from Protected| Demoted[Demoted back to Probationary]
+    Prot --&gt;|Evicted from Protected| Demoted[&quot;Demoted back to Probationary&quot;]
     Demoted --&gt; Prob
     
-    Prob --&gt;|Evicted from Probationary| Evict[ PERMANENTLY EVICTED FROM CACHE]
-  end</div>
+    Prob --&gt;|Evicted from Probationary| Evict[&quot; PERMANENTLY EVICTED FROM CACHE&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Req,Evict blue
+class Prob green
+class Promoted purple
+class Prot yellow
+class Demoted red</div>
 <h3 id="core-advanced-eviction-algorithms">Core Advanced Eviction Algorithms</h3>
 <ol>
 <li><strong>Classic LRU Weakness (Scan Pollution)</strong>: Classic LRU maintains a single doubly-linked list. Every read moves the requested key to the MRU (Most Recently Used) head. A single batch query reading $N$ un-cached items pushes all $N$ items to the head, evicting frequently accessed hot items to the tail.</li>
@@ -317,8 +329,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Databases and caching frameworks deploying SLRU / 2Q (such as <strong>PostgreSQL Buffer Pool</strong>, <strong>SQLite Page Cache</strong>, and <strong>Caffeine Cache</strong>) report:</p>
 <ul>
 <li><strong>Over $30%$ Increase in Cache Hit Ratios</strong>: Preventing scan pollution keeps hot frequency data pinned in RAM during heavy background batch runs.</li>
-<li><strong>$O(1)$ Constant Time Operations</strong>: 2Q and SLRU execute gets, puts, and promotions in constant time without locks.</li>
+<li><strong>$O(1)$ Constant Time Operations</strong>: 2Q and SLRU execute gets, puts, and promotions in constant time without locks. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Fielding, R., Nottingham, M., &amp; Reschke, J. (2014)</strong>. <em>Hypertext Transfer Protocol (HTTP/1.1): Caching</em>. RFC 7234. <a href="https://www.rfc-editor.org/rfc/rfc7234" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7234</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Reed, D. P. (1978)</strong>. <em>Naming and Synchronization in a Decentralized Computer System</em>. MIT PhD Thesis. <a href="https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf" target="_blank" rel="noopener">https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Bayer, R., &amp; McCreight, E. (1972)</strong>. <em>Organization and Maintenance of Large Ordered Indexes</em>. Acta Informatica. <a href="https://doi.org/10.1007/BF00288683" target="_blank" rel="noopener">https://doi.org/10.1007/BF00288683</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -355,6 +378,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-segmented-lru-slru-eviction-engine" class="toc-link">Python Implementation: Segmented LRU (SLRU) Eviction Engine</a></li>
               <li class="toc-item toc-h2"><a href="#eviction-algorithm-gotchas-best-practices" class="toc-link">Eviction Algorithm Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

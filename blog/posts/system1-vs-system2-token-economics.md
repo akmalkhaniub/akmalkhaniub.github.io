@@ -7,7 +7,7 @@
 
 ---
 
-In the first years of the generative AI boom, the industry was governed by **Pre-training Scaling Laws**. As established by Kaplan et al. (2020), model performance scaled predictably with parameter counts, dataset tokens, and training compute. To build a smarter model, you spent millions pre-training a larger dense network.
+In the first years of the generative AI boom, the industry was governed by **Pre-training Scaling Laws** [1]. As established by Kaplan et al. (2020), model performance scaled predictably with parameter counts, dataset tokens, and training compute. To build a smarter model, you spent millions pre-training a larger dense network.
 
 By 2025–2026, the paradigm has shifted. We have hit the limits of high-quality human text data, forcing a transition to **Inference-Time Scaling (System 2 Thinking)**.
 
@@ -29,24 +29,24 @@ flowchart TD
     classDef system2 fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#92400e;
     classDef error fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
 
-    Input[User Query Input] --> ModeCheck{Requires Reasoning?}
+    Input["User Query Input"] --> ModeCheck{Requires Reasoning?}
     
-    ModeCheck -->|No - System 1| DirectGen[Direct Token Generation]
-    ModeCheck -->|Yes - System 2| InitPlan[Initialize Step-by-Step Plan]
+    ModeCheck -->|No - System 1| DirectGen["Direct Token Generation"]
+    ModeCheck -->|Yes - System 2| InitPlan["Initialize Step-by-Step Plan"]
     
     subgraph SG1_ThinkingloopInferenceTime ["ThinkingLoop [Inference-Time Search]"]
-        InitPlan --> RunStep[Generate Thinking Tokens / Step N]
+        InitPlan --> RunStep["Generate Thinking Tokens / Step N"]
         RunStep --> EvalStep{Self-Correct / Grade Step?}
-        EvalStep -->|Contradiction Found| Backtrack[Backtrack and Rewrite Step]
+        EvalStep -->|Contradiction Found| Backtrack["Backtrack and Rewrite Step"]
         Backtrack --> RunStep
         EvalStep -->|Step Validated| NextStep{Is Goal Achieved?}
         NextStep -->|No| RunStep
     end
     
-    NextStep -->|Yes| FormatOut[Format User-Facing Answer]
+    NextStep -->|Yes| FormatOut["Format User-Facing Answer"]
     
-    DirectGen --> Return1[Instant Output / Low Latency]
-    FormatOut --> Return2[Grounded Output / High Latency]
+    DirectGen --> Return1["Instant Output / Low Latency"]
+    FormatOut --> Return2["Grounded Output / High Latency"]
 
     class Input start;
     class ModeCheck,EvalStep,NextStep check;

@@ -9,23 +9,34 @@
 ## The Challenge of Swarm Divergence
 
 When scaling parallel agent runs:
-* **The Variance Risk**: LLM generation is inherently probabilistic. Running the same task across parallel workers yields slightly different parameter outputs.
+* **The Variance Risk**: LLM generation is inherently probabilistic [1]. Running the same task across parallel workers yields slightly different parameter outputs.
 * **Deterministic Requirements**: External tool integrations (such as committing schema changes to databases) require a single, validated action payload.
 * **The Solution**: **Majority Voting Gates**. We buffer parallel execution responses, count occurrences of critical variables, and only execute the tool payload if a majority consensus is reached.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Task[Task Input: Format data] --> Worker1[Worker Agent 1: Proposes Scheme A]
-    Task --> Worker2[Worker Agent 2: Proposes Scheme A]
-    Task --> Worker3[Worker Agent 3: Proposes Scheme B]
+    Task["Task Input: Format data"] --> Worker1["Worker Agent 1: Proposes Scheme A"]
+    Task --> Worker2["Worker Agent 2: Proposes Scheme A"]
+    Task --> Worker3["Worker Agent 3: Proposes Scheme B"]
     
     Worker1 --> Gate{Majority Voting Gate}
     Worker2 --> Gate
     Worker3 --> Gate
     
-    Gate -->|Consensus - Scheme A has 2/3 votes| Execute[Execute API Write Tool with Scheme A]
-    Gate -->|Alternative - Tie| Fallback[Trigger Tie-breaker Exception Route]
+    Gate -->|Consensus - Scheme A has 2/3 votes| Execute["Execute API Write Tool with Scheme A"]
+    Gate -->|Alternative - Tie| Fallback["Trigger Tie-breaker Exception Route"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Task,Fallback blue
+class Worker1 green
+class Worker2 purple
+class Worker3 yellow
+class Execute red
 ```
 
 ---
@@ -120,4 +131,13 @@ if __name__ == "__main__":
 
 * **Standardize Output Formats**: Require all voting agents to conform to identical JSON schemas.
 * **Define Consensus Thresholds**: Require at least a 50% majority (or higher for critical operations) before executing tool payloads.
-* **Isolate Key Variables**: Run matching operations on specific execution variables rather than entire raw string outputs.
+* **Isolate Key Variables**: Run matching operations on specific execution variables rather than entire raw string outputs. [2]
+
+## References & Further Reading
+
+1. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+2. **Lamport, L. (2001)**. *Paxos Made Simple*. ACM SIGACT News. [https://lamport.azurewebsites.net/pubs/paxos-simple.pdf](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf)
+3. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

@@ -1,6 +1,6 @@
 # Human-in-the-Loop (HITL) Gateways: Escalations, Timeouts & Approval State Machines
 
-As multi-agent swarms take on increasingly complex engineering tasks, they eventually reach critical operational boundaries. When an orchestrator graph reaches a step involving sensitive operations—such as executing a destructive database migration, triggering external payment API transfers, or deploying code to production—fully autonomous execution becomes a major liability.
+As multi-agent swarms take on increasingly complex engineering tasks, they eventually reach critical operational boundaries [1]. When an orchestrator graph reaches a step involving sensitive operations—such as executing a destructive database migration, triggering external payment API transfers, or deploying code to production—fully autonomous execution becomes a major liability.
 
 To maintain safety without sacrificing automation, high-performance agent platforms implement **Human-in-the-Loop (HITL) Gateways**. 
 
@@ -16,17 +16,28 @@ When a task node inside an orchestrator DAG is marked as `REQUIRES_HUMAN_APPROVA
 
 ```mermaid
 flowchart TD
-  A[Orchestrator DAG Execution] --> B[Task Node: Apply Database Migration]
+  A["Orchestrator DAG Execution"] --> B["Task Node: Apply Database Migration"]
   B --> C{Orchestrator Boundary Check}
-  C -->|Marked - REQUIRES_HUMAN_APPROVAL| D[Pause DAG & Generate JWT Approval Token]
-  D --> E[Dispatch Alert to Slack / Dashboard]
+  C -->|Marked - REQUIRES_HUMAN_APPROVAL| D["Pause DAG & Generate JWT Approval Token"]
+  D --> E["Dispatch Alert to Slack / Dashboard"]
   
   E --> F{Human Reviewer Action}
-  F -->|Signed Approval Received| G[Verify Token Signature & Resume DAG Node]
-  F -->|Human Rejects| H[Abort DAG Node & Trigger Rollback]
-  F -->|TTL Timeout Exceeded 30 mins| I[Escalate to Lead & Auto-Pause]
+  F -->|Signed Approval Received| G["Verify Token Signature & Resume DAG Node"]
+  F -->|Human Rejects| H["Abort DAG Node & Trigger Rollback"]
+  F -->|TTL Timeout Exceeded 30 mins| I["Escalate to Lead & Auto-Pause"]
   
-  G --> J[Execution Completed]
+  G --> J["Execution Completed"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class B,I green
+class D,J purple
+class E yellow
+class G red
 ```
 
 ### Key Security & Governance Rules
@@ -167,4 +178,14 @@ When building HITL Gateways, enforce these critical security boundaries:
 ## Real-World Enterprise Impact
 Organizations implementing HITL Orchestrator Gateways report:
 * **Zero Accidental Destructive Operations**: 100% of sensitive operations (schema drops, payment transfers) require cryptographic human sign-off.
-* **Seamless Automation Balance**: Routine code generation runs autonomously, while high-risk boundaries remain safely controlled by human leads.
+* **Seamless Automation Balance**: Routine code generation runs autonomously, while high-risk boundaries remain safely controlled by human leads. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+5. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+6. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+7. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

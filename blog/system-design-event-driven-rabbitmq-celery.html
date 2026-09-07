@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-event-driven-rabbitmq-celery.html">
   <meta property="og:title" content="Event-Driven Agent Swarms: Architecting RabbitMQ &amp; Celery Pipelines for Asynchronous Execution">
   <meta property="og:description" content="Moving beyond synchronous REST calls: how to build event-driven agent pipelines using RabbitMQ and Celery, manage task backpressure, and configure dead-letter queues (DLQ) for parsing failures.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-event-driven-rabbitmq-celery.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-05-02">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Event-Driven Agent Swarms: Architecting RabbitMQ &amp; Celery Pipelines for Asynchronous Execution">
   <meta name="twitter:description" content="Moving beyond synchronous REST calls: how to build event-driven agent pipelines using RabbitMQ and Celery, manage task backpressure, and configure dead-letter queues (DLQ) for parsing failures.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-event-driven-rabbitmq-celery.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Event-Driven Agent Swarms: Architecting RabbitMQ & Celery Pipelines for Asynchronous Execution",
   "description": "Moving beyond synchronous REST calls: how to build event-driven agent pipelines using RabbitMQ and Celery, manage task backpressure, and configure dead-letter queues (DLQ) for parsing failures.",
   "url": "https://akmalkhaniub.github.io/blog/system-design-event-driven-rabbitmq-celery.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/system-design-event-driven-rabbitmq-celery.jpg",
   "datePublished": "2026-05-02",
   "keywords": "System Design, RabbitMQ, Asynchronous, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/system-design-event-driven-rabbitmq-celery.jpg" class="article-cover-img" alt="Event-Driven Agent Swarms: Architecting RabbitMQ &amp; Celery Pipelines for Asynchronous Execution Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Event-Driven Agent Swarms: Architecting RabbitMQ &amp; Celery Pipelines for Asynchronous Execution</h1>
             <div class="article-meta">
@@ -114,6 +114,7 @@
                 <li><a href="#2-quarantining-malformed-outputs-with-dlqs">2. Quarantining Malformed Outputs with DLQs</a></li>
                 <li><a href="#code-demo-mocking-an-event-driven-queue-dlq-handler">Code Demo: Mocking an Event-Driven Queue &amp; DLQ Handler</a></li>
                 <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,7 +125,7 @@ As agent workloads scale, relying on synchronous HTTP or gRPC request chains int
 </div>
 <hr>
 <h2 id="why-synchronous-http-fails-agent-swarms">Why Synchronous HTTP Fails Agent Swarms</h2>
-<p>In standard web applications, a user action triggers a short request-response loop (often under 200ms). When an LLM agent executes, it loops through reflection, tool invocation, and API execution—a process that can take anywhere from 5 seconds to 5 minutes.</p>
+<p>In standard web applications, a user action triggers a short request-response loop (often under 200ms) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. When an LLM agent executes, it loops through reflection, tool invocation, and API execution—a process that can take anywhere from 5 seconds to 5 minutes.</p>
 <p>If Agent A calls Agent B synchronously over HTTP, Agent A&#39;s connection pool remains blocked waiting for a response. At scale, this quickly leads to:</p>
 <ul>
 <li><strong>Connection Exhaustion</strong>: Socket blocks dry up, preventing new incoming requests.</li>
@@ -136,15 +137,26 @@ As agent workloads scale, relying on synchronous HTTP or gRPC request chains int
 <p>Transitioning to a message broker (like RabbitMQ) solves these challenges by decoupling the task creator from the executor:</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0b8489', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#14b8a6', 'lineColor': '#0b8489', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Orchestrator[Orchestrator Agent] --&gt;|Publish task event| Exchange{Agent Exchange}
-    Exchange --&gt;|Routing Key - research| QueueR[Research Queue]
-    Exchange --&gt;|Routing Key - code| QueueC[Code Queue]
+    Orchestrator[&quot;Orchestrator Agent&quot;] --&gt;|Publish task event| Exchange{Agent Exchange}
+    Exchange --&gt;|Routing Key - research| QueueR[&quot;Research Queue&quot;]
+    Exchange --&gt;|Routing Key - code| QueueC[&quot;Code Queue&quot;]
     
-    QueueR --&gt; WorkerR[Research Agent Workers]
-    QueueC --&gt; WorkerC[Coding Agent Workers]
+    QueueR --&gt; WorkerR[&quot;Research Agent Workers&quot;]
+    QueueC --&gt; WorkerC[&quot;Coding Agent Workers&quot;]
     
     WorkerR --&gt;|Error/Malformed payload| DLX{Dead-Letter Exchange}
-    DLX --&gt;|Quarantine| DLQ[Dead-Letter Queue - DLQ]</div>
+    DLX --&gt;|Quarantine| DLQ[&quot;Dead-Letter Queue - DLQ&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Orchestrator,DLQ blue
+class QueueR green
+class QueueC purple
+class WorkerR yellow
+class WorkerC red</div>
 <p>Using queues ensures that if an agent is overwhelmed, messages simply queue up in the broker (backpressure management) rather than causing server crashes.</p>
 <hr>
 <h2 id="1-managing-backpressure-and-worker-concurrency">1. Managing Backpressure and Worker Concurrency</h2>
@@ -253,8 +265,20 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Always Decouple Long Tasks</strong>: Never call a reasoning agent synchronously inside a human request thread. Return a <code>202 Accepted</code> status with a task ID and handle the execution in background broker workers.</li>
 <li><strong>Establish Dedicated DLQs</strong>: Always hook up a Dead-Letter Queue to your agent exchanges. When parser nodes fail due to non-deterministic model outputs, the system must quarantine the state payload rather than crashing the pipeline.</li>
-<li><strong>Tune Prefetch Limits</strong>: Enforce strict prefetch bounds on agent workers to manage resource allocation and GPU memory consumption.</li>
+<li><strong>Tune Prefetch Limits</strong>: Enforce strict prefetch bounds on agent workers to manage resource allocation and GPU memory consumption. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Belshe, M., Peon, R., &amp; Thomson, M. (2015)</strong>. <em>Hypertext Transfer Protocol Version 2 (HTTP/2)</em>. RFC 7540. <a href="https://www.rfc-editor.org/rfc/rfc7540" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7540</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>gRPC Authors (2024)</strong>. <em>gRPC Documentation</em>. grpc.io. <a href="https://grpc.io/docs/" target="_blank" rel="noopener">https://grpc.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Google (2024)</strong>. <em>Protocol Buffers Language Guide</em>. protobuf.dev. <a href="https://protobuf.dev/programming-guides/proto3/" target="_blank" rel="noopener">https://protobuf.dev/programming-guides/proto3/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Bishop, M., Ed. (2022)</strong>. <em>HTTP/3</em>. RFC 7541 / RFC 9114. <a href="https://www.rfc-editor.org/rfc/rfc9114" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9114</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -292,6 +316,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-quarantining-malformed-outputs-with-dlqs" class="toc-link">2. Quarantining Malformed Outputs with DLQs</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-mocking-an-event-driven-queue-dlq-handler" class="toc-link">Code Demo: Mocking an Event-Driven Queue &amp; DLQ Handler</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

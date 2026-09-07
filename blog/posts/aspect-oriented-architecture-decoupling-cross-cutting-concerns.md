@@ -1,6 +1,6 @@
 # Aspect-Oriented Architecture: Decoupling Cross-Cutting Concerns in Microservices
 
-In software engineering, a primary goal when designing microservices is maintaining high **cohesion** and low **coupling**. However, non-functional requirements—such as structured logging, input validation, execution timing, rate limiting, exception handling, and transaction management—inevitably permeate every layer of an application.
+In software engineering, a primary goal when designing microservices is maintaining high **cohesion** and low **coupling** [1]. However, non-functional requirements—such as structured logging, input validation, execution timing, rate limiting, exception handling, and transaction management—inevitably permeate every layer of an application.
 
 When non-functional concerns are embedded directly inside core business domain methods, two major architectural antipatterns emerge:
 1. **Code Tangling**: Core business methods become cluttered with unrelated boilerplate code.
@@ -20,24 +20,35 @@ How Aspect interceptors wrap business domain methods without altering core busin
 
 ```mermaid
 flowchart TD
-  A[Client API Request] --> B[Middleware / Aspect Interceptor Stack]
+  A["Client API Request"] --> B["Middleware / Aspect Interceptor Stack"]
   
   subgraph SG1_CrossCuttingAspect ["Cross-Cutting Aspect Interceptors"]
-    B -->|@before - Validate Token & Schema| C[Security & Validation Aspect]
-    C -->|@around - Start Timer & Trace| D[Telemetry & Profiling Aspect]
-    D -->|@around - Open DB Transaction| E[Transaction Management Aspect]
+    B -->|@before - Validate Token & Schema| C["Security & Validation Aspect"]
+    C -->|@around - Start Timer & Trace| D["Telemetry & Profiling Aspect"]
+    D -->|@around - Open DB Transaction| E["Transaction Management Aspect"]
   end
   
   subgraph SG2_CleanCoreBusiness ["Clean Core Business Domain"]
-    E -->|Invoke Join Point| F[Business Logic: ProcessPayment]
+    E -->|Invoke Join Point| F["Business Logic: ProcessPayment"]
     F -->|Return Result| E
   end
   
   subgraph SG3_AspectPostProcessing ["Aspect Post-Processing"]
     E -->|Commit Transaction| D
     D -->|Calculate Latency & Record Metrics| C
-    C -->|Format Clean JSON Response| G[Client Response]
+    C -->|Format Clean JSON Response| G["Client Response"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C purple
+class D yellow
+class E red
 ```
 
 ### Core AOP Concepts
@@ -159,4 +170,10 @@ When applying Aspect-Oriented Architecture:
 ## Real-World Enterprise Impact
 Teams adopting Aspect-Oriented Architecture report:
 * **75% Reduction in Boilerplate Code**: Removing repetitive logging, validation, and error-handling code from domain services makes business logic dramatically cleaner and easier to read.
-* **100% Consistent Observability**: Centralized Aspects ensure that every single microservice endpoint emits identical structured telemetry and error formats.
+* **100% Consistent Observability**: Centralized Aspects ensure that every single microservice endpoint emits identical structured telemetry and error formats. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

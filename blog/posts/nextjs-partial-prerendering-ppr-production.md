@@ -5,7 +5,7 @@
 
 
 In the battle between static and dynamic web rendering, developers have historically faced a binary compromise:
-* **Static Site Generation (SSG)**: Insanely fast Time to First Byte (TTFB) and robust CDN edge caching, but completely incapable of displaying real-time user-specific content.
+* **Static Site Generation (SSG)**: Insanely fast Time to First Byte (TTFB) and robust CDN edge caching, but completely incapable of displaying real-time user-specific content [1].
 * **Server-Side Rendering (SSR)**: Capable of generating personalized pages, but blocks delivery of the entire document until every database call completes, degrading TTFB.
 
 **Partial Prerendering (PPR)** in Next.js 15/16 eliminates this compromise. It allows developers to compile a static, cached HTML layout shell containing nested dynamic holes that stream real-time data over a single connection as it resolves.
@@ -22,11 +22,22 @@ It splits the component tree at every **React Suspense Boundary**:
 
 ```mermaid
 flowchart TD
-  A[Client requests page] --> B[Edge Server returns pre-rendered Static HTML Shell]
-  B --> C[Client renders Navbar, Sidebar, Layout immediately]
-  A --> D[Next.js Server executes dynamic database/API calls]
-  D --> E[Stream dynamic HTML snippets over HTTP chunked transfer-encoding]
-  E --> F[React hydration inserts dynamic content into Suspense placeholders]
+  A["Client requests page"] --> B["Edge Server returns pre-rendered Static HTML Shell"]
+  B --> C["Client renders Navbar, Sidebar, Layout immediately"]
+  A --> D["Next.js Server executes dynamic database/API calls"]
+  D --> E["Stream dynamic HTML snippets over HTTP chunked transfer-encoding"]
+  E --> F["React hydration inserts dynamic content into Suspense placeholders"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B green
+class C purple
+class D yellow
+class E red
 ```
 
 When a user visits the URL, they receive the static HTML shell in under 15ms. In the background, the server continues executing dynamic DB queries and streams the resolved HTML snippets over the same connection using HTTP `transfer-encoding: chunked`.
@@ -133,4 +144,13 @@ While PPR provides massive UX improvements, developers must design layouts with 
 
 Production dashboards and e-commerce platforms have adopted PPR to achieve sub-10ms TTFB while maintaining dynamic capabilities:
 * **E-Commerce Detail Views**: Pre-renders layout outlines, logos, footer maps, and description copy to CDNs, streaming real-time pricing and stock quantities on load.
-* **SaaS Dashboards**: Instantly renders the workspace sidebar and top bar layouts, streaming slow third-party API graphs asynchronously without loading spinners.
+* **SaaS Dashboards**: Instantly renders the workspace sidebar and top bar layouts, streaming slow third-party API graphs asynchronously without loading spinners. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+6. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

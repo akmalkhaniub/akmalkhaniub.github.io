@@ -8,7 +8,7 @@
 
 ## Why Single-Agent Loops Hit a Ceiling
 
-A naive agent loop looks like this: one LLM receives a task, calls tools, observes results, and repeats until done. For isolated, well-scoped problems this is sufficient. But in enterprise production environments, single-agent loops suffer from three critical failure modes:
+A naive agent loop looks like this: one LLM receives a task, calls tools, observes results, and repeats until done [1]. For isolated, well-scoped problems this is sufficient. But in enterprise production environments, single-agent loops suffer from three critical failure modes:
 
 1.  **Context Window Saturation**: A 128K context window sounds large, but a 10-step research agent accumulates tool outputs, observations, and reasoning traces rapidly — often exceeding limits mid-task.
 2.  **Capability Mismatch**: A generalist agent asked to write code, validate its security posture, and summarise findings is performing three cognitively distinct roles with a single prompt. Performance degrades across all three.
@@ -25,13 +25,13 @@ In this pattern, a **Supervisor** (also called an Orchestrator) receives the hig
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    U[User Request] --> S[ Supervisor Agent<br/>Task Decomposer & Synthesiser]
+    U["User Request"] --> S[" Supervisor Agent<br/>Task Decomposer & Synthesiser"]
     
-    S -->|Sub-Task A - Research| W1[ Research Worker<br/>Web Search + RAG Retrieval]
-    S -->|Sub-Task B - Code| W2[ Code Worker<br/>Python Sandbox Execution]
-    S -->|Sub-Task C - Review| W3[ Critic Worker<br/>Security & Accuracy Validator]
+    S -->|Sub-Task A - Research| W1[" Research Worker<br/>Web Search + RAG Retrieval"]
+    S -->|Sub-Task B - Code| W2[" Code Worker<br/>Python Sandbox Execution"]
+    S -->|Sub-Task C - Review| W3[" Critic Worker<br/>Security & Accuracy Validator"]
     
-    W1 -->|Structured Result A| M[ Message Bus / State Graph]
+    W1 -->|Structured Result A| M[" Message Bus / State Graph"]
     W2 -->|Structured Result B| M
     W3 -->|Structured Result C| M
     
@@ -44,6 +44,17 @@ flowchart TD
     style W2 fill:#0f172a,stroke:#10b981,stroke-width:2px
     style W3 fill:#0f172a,stroke:#f59e0b,stroke-width:2px
     style M fill:#1e293b,stroke:#6b7280,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class U,M blue
+class S green
+class W1 purple
+class W2 yellow
+class W3 red
 ```
 
 ### Role Contracts

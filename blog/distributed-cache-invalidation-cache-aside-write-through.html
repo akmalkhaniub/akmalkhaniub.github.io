@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-cache-invalidation-cache-aside-write-through.html">
   <meta property="og:title" content="Distributed In-Memory Cache Invalidation: Cache-Aside, Write-Through &amp; Write-Behind">
   <meta property="og:description" content="High-scale cache synchronization: implementing Cache-Aside lazy loading, Write-Through, Write-Behind async batching, and XFetch probabilistic early expiration to prevent cache stampedes.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-cache-invalidation-cache-aside-write-through.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed In-Memory Cache Invalidation: Cache-Aside, Write-Through &amp; Write-Behind">
   <meta name="twitter:description" content="High-scale cache synchronization: implementing Cache-Aside lazy loading, Write-Through, Write-Behind async batching, and XFetch probabilistic early expiration to prevent cache stampedes.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-cache-invalidation-cache-aside-write-through.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distributed In-Memory Cache Invalidation: Cache-Aside, Write-Through & Write-Behind",
   "description": "High-scale cache synchronization: implementing Cache-Aside lazy loading, Write-Through, Write-Behind async batching, and XFetch probabilistic early expiration to prevent cache stampedes.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-cache-invalidation-cache-aside-write-through.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distributed-cache-invalidation-cache-aside-write-through.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Distributed Caching, Cache Invalidation, XFetch, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed In-Memory Cache Invalidation: Cache-Aside, Write-Through &amp; Write-Behind Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distributed-cache-invalidation-cache-aside-write-through.jpg" class="article-cover-img" alt="Distributed In-Memory Cache Invalidation: Cache-Aside, Write-Through &amp; Write-Behind Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed In-Memory Cache Invalidation: Cache-Aside, Write-Through &amp; Write-Behind</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-cache-engine-with-xfetch-early-expiration">Python Implementation: Cache Engine with XFetch Early Expiration</a></li>
                 <li><a href="#cache-architecture-gotchas-best-practices">Cache Architecture Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-concurrency distributed systems (<strong>Redis</strong>, <strong>Memcached</strong>, <strong>Dragonfly</strong>), in-memory caching is essential for shielding relational databases from heavy read traffic and delivering sub-millisecond API responses.</p>
+<p>In high-concurrency distributed systems (<strong>Redis</strong>, <strong>Memcached</strong>, <strong>Dragonfly</strong>), in-memory caching is essential for shielding relational databases from heavy read traffic and delivering sub-millisecond API responses <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>However, keeping an in-memory cache synchronized with persistent storage is a complex challenge. As Phil Karlton famously noted:</p>
 <blockquote>
 <p><em>&quot;There are only two hard things in Computer Science: cache invalidation and naming things.&quot;</em></p>
@@ -127,22 +128,33 @@
 <p>How Cache-Aside (Lazy Loading) and Write-Behind (Async Batching) handle database synchronization:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_CacheAsideRead [&quot;Cache-Aside Read Flow&quot;]
-    ClientR[Client Read] --&gt;|Check Cache| RedisR[In-Memory Cache Redis]
-    RedisR --&gt;|Cache Hit| ReturnData[Return Data &lt; 1ms]
-    RedisR --&gt;|Cache Miss| DBR[Backend Database]
+    ClientR[&quot;Client Read&quot;] --&gt;|Check Cache| RedisR[&quot;In-Memory Cache Redis&quot;]
+    RedisR --&gt;|Cache Hit| ReturnData[&quot;Return Data &lt; 1ms&quot;]
+    RedisR --&gt;|Cache Miss| DBR[&quot;Backend Database&quot;]
     DBR --&gt;|Populate Cache| RedisR
   end
   
   subgraph SG2_WriteBehindAsync [&quot;Write-Behind Async Batching Flow&quot;]
-    ClientW[Client Write] --&gt;|Write to In-Memory Ring Buffer| CacheQueue[Cache Layer Async Write Queue]
+    ClientW[&quot;Client Write&quot;] --&gt;|Write to In-Memory Ring Buffer| CacheQueue[&quot;Cache Layer Async Write Queue&quot;]
     CacheQueue --&gt;|Instant Ack &lt; 100us| ClientW
-    CacheQueue --&gt;|Background Worker Batch Flush| DBW[Persistent Database]
+    CacheQueue --&gt;|Background Worker Batch Flush| DBW[&quot;Persistent Database&quot;]
   end
   
   subgraph SG3_XfetchProbabilisticEarly [&quot;XFetch Probabilistic Early Expiration&quot;]
     RedisR --&gt;|Check ttl - delta * beta * log(rnd)| XFetchCheck{Is Early Recompute Triggered?}
-    XFetchCheck --&gt;|Yes - Pre-empt Expiration| AsyncRefresh[Asynchronously Refresh Cache BEFORE Expiration!]
-  end</div>
+    XFetchCheck --&gt;|Yes - Pre-empt Expiration| AsyncRefresh[&quot;Asynchronously Refresh Cache BEFORE Expiration!&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ClientR,CacheQueue blue
+class RedisR,DBW green
+class ReturnData,AsyncRefresh purple
+class DBR yellow
+class ClientW red</div>
 <h3 id="core-caching-patterns-mechanics">Core Caching Patterns &amp; Mechanics</h3>
 <ol>
 <li><strong>Cache-Aside (Lazy Loading)</strong>:<ul>
@@ -288,8 +300,19 @@ if __name__ == &quot;__main__&quot;:
 <p>High-scale caching architectures (such as <strong>Redis Enterprise</strong>, <strong>Dragonfly</strong>, and <strong>Meta Memcached clusters</strong>) report:</p>
 <ul>
 <li><strong>Over $100\times$ Latency Improvement</strong>: In-memory cache hits deliver sub-millisecond responses ($&lt;200\mu\text{s}$) compared to relational database disk I/O ($20\text{ms}$).</li>
-<li><strong>Zero Database Crashes from Stampedes</strong>: XFetch probabilistic early expiration smooths out cache refreshment spikes, maintaining flat database CPU load during viral traffic events.</li>
+<li><strong>Zero Database Crashes from Stampedes</strong>: XFetch probabilistic early expiration smooths out cache refreshment spikes, maintaining flat database CPU load during viral traffic events. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Fielding, R., Nottingham, M., &amp; Reschke, J. (2014)</strong>. <em>Hypertext Transfer Protocol (HTTP/1.1): Caching</em>. RFC 7234. <a href="https://www.rfc-editor.org/rfc/rfc7234" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7234</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -326,6 +349,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-cache-engine-with-xfetch-early-expiration" class="toc-link">Python Implementation: Cache Engine with XFetch Early Expiration</a></li>
               <li class="toc-item toc-h2"><a href="#cache-architecture-gotchas-best-practices" class="toc-link">Cache Architecture Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

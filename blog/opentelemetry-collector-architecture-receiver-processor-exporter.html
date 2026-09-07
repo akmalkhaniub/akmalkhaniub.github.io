@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/opentelemetry-collector-architecture-receiver-processor-exporter.html">
   <meta property="og:title" content="OpenTelemetry Collector Architecture: Receiver, Processor &amp; Exporter Pipelines">
   <meta property="og:description" content="Unified vendor-agnostic telemetry ingestion: implementing OTLP protocol receivers, memory limiters, attribute scrubbers, batch processors, and fan-out exporters.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/opentelemetry-collector-architecture-receiver-processor-exporter.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="OpenTelemetry Collector Architecture: Receiver, Processor &amp; Exporter Pipelines">
   <meta name="twitter:description" content="Unified vendor-agnostic telemetry ingestion: implementing OTLP protocol receivers, memory limiters, attribute scrubbers, batch processors, and fan-out exporters.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/opentelemetry-collector-architecture-receiver-processor-exporter.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "OpenTelemetry Collector Architecture: Receiver, Processor & Exporter Pipelines",
   "description": "Unified vendor-agnostic telemetry ingestion: implementing OTLP protocol receivers, memory limiters, attribute scrubbers, batch processors, and fan-out exporters.",
   "url": "https://akmalkhaniub.github.io/blog/opentelemetry-collector-architecture-receiver-processor-exporter.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/opentelemetry-collector-architecture-receiver-processor-exporter.jpg",
   "datePublished": "2026-08-18",
   "keywords": "OpenTelemetry, Observability, OTLP, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="OpenTelemetry Collector Architecture: Receiver, Processor &amp; Exporter Pipelines Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/opentelemetry-collector-architecture-receiver-processor-exporter.jpg" class="article-cover-img" alt="OpenTelemetry Collector Architecture: Receiver, Processor &amp; Exporter Pipelines Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">OpenTelemetry Collector Architecture: Receiver, Processor &amp; Exporter Pipelines</h1>
             <div class="article-meta">
@@ -113,10 +113,11 @@
                 <li><a href="#python-implementation-opentelemetry-collector-pipeline-engine">Python Implementation: OpenTelemetry Collector Pipeline Engine</a></li>
                 <li><a href="#otel-collector-gotchas-best-practices">OTel Collector Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <p>In modern cloud-native systems, monitoring microservice platforms required deploying fragmented, proprietary agent daemons for each observability vendor (e.g. Datadog agent, New Relic agent, Jaeger collector). This created vendor lock-in, inflated CPU memory overhead, and forced complex application instrumentation changes.</p>
-<p>To establish a unified open standard, the Cloud Native Computing Foundation (CNCF) formed <strong>OpenTelemetry (OTel)</strong>.</p>
+<p>To establish a unified open standard, the Cloud Native Computing Foundation (CNCF) formed <strong>OpenTelemetry (OTel)</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>At the core of OpenTelemetry is the <strong>OTel Collector</strong>—a vendor-agnostic proxy daemon that receives, processes, and exports telemetry data (metrics, logs, and traces).</p>
 <p>The OTel Collector decouples application telemetry instrumentation from storage backends, allowing platform teams to route telemetry streams dynamically.</p>
 <p>This article details the internal Receiver, Processor, and Exporter pipeline architecture of the OpenTelemetry Collector.</p>
@@ -125,24 +126,35 @@
 <p>How the OTel Collector ingests, transforms, batches, and exports telemetry streams:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_IngestionLayerReceivers [&quot;Ingestion Layer: Receivers&quot;]
-    AppTraces[App Traces: OTLP / gRPC] --&gt; Receiver1[OTLP gRPC Receiver]
-    AppLogs[App Logs: FluentBit / HTTP] --&gt; Receiver2[OTLP HTTP Receiver]
-    PromMetrics[Prometheus Scrape Targets] --&gt; Receiver3[Prometheus Receiver]
+    AppTraces[&quot;App Traces: OTLP / gRPC&quot;] --&gt; Receiver1[&quot;OTLP gRPC Receiver&quot;]
+    AppLogs[&quot;App Logs: FluentBit / HTTP&quot;] --&gt; Receiver2[&quot;OTLP HTTP Receiver&quot;]
+    PromMetrics[&quot;Prometheus Scrape Targets&quot;] --&gt; Receiver3[&quot;Prometheus Receiver&quot;]
   end
   
   subgraph SG2_TransformationLayerPipelines [&quot;Transformation Layer: Pipelines &amp; Processors&quot;]
-    Receiver1 &amp; Receiver2 &amp; Receiver3 --&gt; InternalOTLP[Internal OTLP Data Model]
+    Receiver1 &amp; Receiver2 &amp; Receiver3 --&gt; InternalOTLP[&quot;Internal OTLP Data Model&quot;]
     
-    InternalOTLP --&gt; Proc1[Memory Limiter Processor: Backpressure Guard]
-    Proc1 --&gt; Proc2[Attributes Processor: Add env='prod', Scrub PII]
-    Proc2 --&gt; Proc3[Batch Processor: Queue &amp; Flush Buffers]
+    InternalOTLP --&gt; Proc1[&quot;Memory Limiter Processor: Backpressure Guard&quot;]
+    Proc1 --&gt; Proc2[&quot;Attributes Processor: Add env='prod', Scrub PII&quot;]
+    Proc2 --&gt; Proc3[&quot;Batch Processor: Queue &amp; Flush Buffers&quot;]
   end
   
   subgraph SG3_ExportationLayerExporters [&quot;Exportation Layer: Exporters&quot;]
-    Proc3 --&gt; Exp1[OTLP gRPC Exporter -&gt; Jaeger / Tempo]
-    Proc3 --&gt; Exp2[Prometheus Exporter -&gt; Thanos / M3DB]
-    Proc3 --&gt; Exp3[Kafka Exporter -&gt; Long-Term Archive]
-  end</div>
+    Proc3 --&gt; Exp1[&quot;OTLP gRPC Exporter -&gt; Jaeger / Tempo&quot;]
+    Proc3 --&gt; Exp2[&quot;Prometheus Exporter -&gt; Thanos / M3DB&quot;]
+    Proc3 --&gt; Exp3[&quot;Kafka Exporter -&gt; Long-Term Archive&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class AppTraces,Receiver3,Exp1 blue
+class Receiver1,InternalOTLP,Exp2 green
+class AppLogs,Proc1,Exp3 purple
+class Receiver2,Proc2 yellow
+class PromMetrics,Proc3 red</div>
 <h3 id="core-collector-component-architecture">Core Collector Component Architecture</h3>
 <ol>
 <li><strong>Receivers</strong>: Ingestion endpoints configured to accept telemetry data in specific protocols (e.g., <code>otlp/grpc</code> on port <code>4317</code>, <code>otlp/http</code> on port <code>4318</code>, <code>prometheus</code>, <code>jaeger</code>). Receivers convert incoming raw protocol payloads into OpenTelemetry&#39;s internal <strong>OTLP Data Model</strong>.</li>
@@ -270,8 +282,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Organizations adopting the OpenTelemetry Collector report:</p>
 <ul>
 <li><strong>Zero Vendor Lock-In</strong>: Switching telemetry backends (e.g. from Datadog to Grafana Tempo) requires only updating collector exporter YAML configs without altering application code.</li>
-<li><strong>40% Reduction in Telemetry Egress Costs</strong>: Pre-scrubbing unused metrics and batching trace payloads at the collector layer reduces network egress fees significantly.</li>
+<li><strong>40% Reduction in Telemetry Egress Costs</strong>: Pre-scrubbing unused metrics and batching trace payloads at the collector layer reduces network egress fees significantly. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>W3C Distributed Tracing Working Group (2021)</strong>. <em>Trace Context</em>. W3C Recommendation. <a href="https://www.w3.org/TR/trace-context/" target="_blank" rel="noopener">https://www.w3.org/TR/trace-context/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -308,6 +331,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-opentelemetry-collector-pipeline-engine" class="toc-link">Python Implementation: OpenTelemetry Collector Pipeline Engine</a></li>
               <li class="toc-item toc-h2"><a href="#otel-collector-gotchas-best-practices" class="toc-link">OTel Collector Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

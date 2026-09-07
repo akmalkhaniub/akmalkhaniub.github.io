@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/memory-consistency-models-tso-acquire-release-barriers.html">
   <meta property="og:title" content="Memory Consistency Models &amp; Hardware Memory Barriers: Sequential Consistency, Total Store Order (TSO) &amp; Acquire-Release">
   <meta property="og:description" content="Hardware architecture &amp; memory ordering: implementing x86 Total Store Order (TSO) store buffers, ARM weak memory ordering, C++11 Acquire-Release synchronization, and CPU assembly memory fences.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/memory-consistency-models-tso-acquire-release-barriers.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Memory Consistency Models &amp; Hardware Memory Barriers: Sequential Consistency, Total Store Order (TSO) &amp; Acquire-Release">
   <meta name="twitter:description" content="Hardware architecture &amp; memory ordering: implementing x86 Total Store Order (TSO) store buffers, ARM weak memory ordering, C++11 Acquire-Release synchronization, and CPU assembly memory fences.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/memory-consistency-models-tso-acquire-release-barriers.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Memory Consistency Models & Hardware Memory Barriers: Sequential Consistency, Total Store Order (TSO) & Acquire-Release",
   "description": "Hardware architecture & memory ordering: implementing x86 Total Store Order (TSO) store buffers, ARM weak memory ordering, C++11 Acquire-Release synchronization, and CPU assembly memory fences.",
   "url": "https://akmalkhaniub.github.io/blog/memory-consistency-models-tso-acquire-release-barriers.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/memory-consistency-models-tso-acquire-release-barriers.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Memory Model, Acquire Release, TSO, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Memory Consistency Models &amp; Hardware Memory Barriers: Sequential Consistency, Total Store Order (TSO) &amp; Acquire-Release Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/memory-consistency-models-tso-acquire-release-barriers.jpg" class="article-cover-img" alt="Memory Consistency Models &amp; Hardware Memory Barriers: Sequential Consistency, Total Store Order (TSO) &amp; Acquire-Release Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Memory Consistency Models &amp; Hardware Memory Barriers: Sequential Consistency, Total Store Order (TSO) &amp; Acquire-Release</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-memory-store-buffer-acquire-release-simulator">Python Implementation: Memory Store Buffer &amp; Acquire-Release Simulator</a></li>
                 <li><a href="#memory-model-gotchas-best-practices">Memory Model Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-performance multi-core software engineering (C++20, Rust, Go runtime, Linux Kernel), developers write concurrent programs assuming that memory operations execute in exact source-code order.</p>
+<p>In high-performance multi-core software engineering (C++20, Rust, Go runtime, Linux Kernel), developers write concurrent programs assuming that memory operations execute in exact source-code order <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>However, modern CPUs (x86-64, ARM64, Apple Silicon) and optimizing compilers aggressively <strong>reorder memory loads and stores</strong> to keep hardware instruction execution pipelines saturated.</p>
 <p>Without proper synchronization, a write performed by Core 0 may not become visible to Core 1 for hundreds of clock cycles, causing subtle race conditions and memory corruption.</p>
 <p>To build lock-free algorithms correctly without sacrificing CPU hardware performance, engineers must master <strong>Hardware Memory Models</strong>, <strong>C++11 Memory Orders</strong>, and <strong>CPU Memory Fences</strong>.</p>
@@ -125,15 +126,26 @@
 <p>How CPU Store Buffers cause Store-Load reordering and how Acquire-Release semantics establish synchronization barriers:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_CpuCore0 [&quot;CPU Core 0 (Producer Thread)&quot;]
-    W1[Write Data: data = 42] --&gt; W2[&quot;Release Store: flag.store(1, memory_order_release)&quot;]
-    W1 &amp; W2 --&gt; SB0[Core 0 Store Buffer]
-    SB0 --&gt;|Hardware Memory Fence - mfence / dmb| RAM[Main System Memory RAM]
+    W1[&quot;Write Data: data = 42&quot;] --&gt; W2[&quot;Release Store: flag.store(1, memory_order_release)&quot;]
+    W1 &amp; W2 --&gt; SB0[&quot;Core 0 Store Buffer&quot;]
+    SB0 --&gt;|Hardware Memory Fence - mfence / dmb| RAM[&quot;Main System Memory RAM&quot;]
   end
   
   subgraph SG2_CpuCore1 [&quot;CPU Core 1 (Consumer Thread)&quot;]
     RAM --&gt;|Sync Pair Established| R1[&quot;Acquire Load: flag.load(memory_order_acquire) == 1&quot;]
-    R1 --&gt;|Prevents reordering reads BEFORE acquire| R2[Read Data: r1 = data]
-  end</div>
+    R1 --&gt;|Prevents reordering reads BEFORE acquire| R2[&quot;Read Data: r1 = data&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class W1,R2 blue
+class W2 green
+class SB0 purple
+class RAM yellow
+class R1 red</div>
 <h3 id="core-memory-model-concepts">Core Memory Model Concepts</h3>
 <ol>
 <li><strong>The Three Hardware Memory Consistency Models</strong>:<ul>
@@ -260,8 +272,16 @@ if __name__ == &quot;__main__&quot;:
 <p>High-performance runtimes mastering hardware memory models (such as <strong>Rust Tokio</strong>, <strong>Go Runtime Garbage Collector</strong>, and <strong>JVM C2 Compiler</strong>) report:</p>
 <ul>
 <li><strong>Up to $40%$ Lower Lock-Free Overhead</strong>: Replacing expensive <code>seq_cst</code> memory fences with lightweight <code>acquire-release</code> atomic operations eliminates CPU pipeline flush stalls.</li>
-<li><strong>100% Cross-Platform Concurrency Correctness</strong>: Eliminates subtle multi-core data races when compiling low-level code across x86-64 and ARM64 servers.</li>
+<li><strong>100% Cross-Platform Concurrency Correctness</strong>: Eliminates subtle multi-core data races when compiling low-level code across x86-64 and ARM64 servers. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Michael, M. M. (2004)</strong>. <em>Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects</em>. IEEE TPDS. <a href="https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf" target="_blank" rel="noopener">https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Bloom, B. H. (1970)</strong>. <em>Space/Time Trade-offs in Hash Coding with Allowable Errors</em>. CACM. <a href="https://doi.org/10.1145/362686.362692" target="_blank" rel="noopener">https://doi.org/10.1145/362686.362692</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -298,6 +318,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-memory-store-buffer-acquire-release-simulator" class="toc-link">Python Implementation: Memory Store Buffer &amp; Acquire-Release Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#memory-model-gotchas-best-practices" class="toc-link">Memory Model Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

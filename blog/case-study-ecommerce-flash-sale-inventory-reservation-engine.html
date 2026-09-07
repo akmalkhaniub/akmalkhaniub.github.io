@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/case-study-ecommerce-flash-sale-inventory-reservation-engine.html">
   <meta property="og:title" content="Case Study: Architecting a Distributed Flash Sale Inventory Reservation Engine">
   <meta property="og:description" content="Flash sale inventory locking using Redis Lua scripts: handling 150K requests per second under peak load, mitigating database connection exhaustion, and Cloud Tasks rate-limiting.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/case-study-ecommerce-flash-sale-inventory-reservation-engine.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-09">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Case Study: Architecting a Distributed Flash Sale Inventory Reservation Engine">
   <meta name="twitter:description" content="Flash sale inventory locking using Redis Lua scripts: handling 150K requests per second under peak load, mitigating database connection exhaustion, and Cloud Tasks rate-limiting.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/case-study-ecommerce-flash-sale-inventory-reservation-engine.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Case Study: Architecting a Distributed Flash Sale Inventory Reservation Engine",
   "description": "Flash sale inventory locking using Redis Lua scripts: handling 150K requests per second under peak load, mitigating database connection exhaustion, and Cloud Tasks rate-limiting.",
   "url": "https://akmalkhaniub.github.io/blog/case-study-ecommerce-flash-sale-inventory-reservation-engine.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/case-study-ecommerce-flash-sale-inventory-reservation-engine.jpg",
   "datePublished": "2026-08-09",
   "keywords": "Case Study, E-Commerce, Redis Lua, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Case Study: Architecting a Distributed Flash Sale Inventory Reservation Engine Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/case-study-ecommerce-flash-sale-inventory-reservation-engine.jpg" class="article-cover-img" alt="Case Study: Architecting a Distributed Flash Sale Inventory Reservation Engine Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Case Study: Architecting a Distributed Flash Sale Inventory Reservation Engine</h1>
             <div class="article-meta">
@@ -115,9 +115,10 @@
                 <li><a href="#the-incident-connection-pool-starvation-the-black-friday-outage">The Incident: Connection Pool Starvation &amp; The Black Friday Outage</a></li>
                 <li><a href="#the-remediation">The Remediation</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>During high-concurrency retail events—such as Black Friday flash sales—e-commerce platforms experience sudden traffic surges that easily overwhelm traditional database systems. If millions of users attempt to purchase a highly limited item simultaneously, standard database row locking leads to connection pool starvation, transaction timeout storms, and catastrophic double-selling outages.</p>
+<p>During high-concurrency retail events—such as Black Friday flash sales—e-commerce platforms experience sudden traffic surges that easily overwhelm traditional database systems <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. If millions of users attempt to purchase a highly limited item simultaneously, standard database row locking leads to connection pool starvation, transaction timeout storms, and catastrophic double-selling outages.</p>
 <p>This case study details the architecture, deployment, and operational gotchas of a high-throughput <strong>Distributed Flash Sale Inventory Reservation Engine</strong> designed to handle extreme transactional concurrency.</p>
 <hr>
 <h2 id="case-study-overview-the-10-part-framework">Case Study Overview: The 10-Part Framework</h2>
@@ -139,20 +140,31 @@
 <h2 id="system-architecture-data-flow">System Architecture &amp; Data Flow</h2>
 <p>The reservation engine separates the high-speed reservation check from the transactional checkout write pathway:</p>
 <div class="mermaid">flowchart TD
-  A[User Flash Sale Request] --&gt; B[API Gateway / Load Balancer]
-  B --&gt; C[GKE Inventory Reservation Microservice]
+  A[&quot;User Flash Sale Request&quot;] --&gt; B[&quot;API Gateway / Load Balancer&quot;]
+  B --&gt; C[&quot;GKE Inventory Reservation Microservice&quot;]
   
   subgraph SG1_HighSpeedFast [&quot;High-Speed Fast Path&quot;]
     C --&gt;|Execute Atomic Lua Script| D[(Redis Memorystore Cluster)]
   end
   
-  D --&gt;|Lease Approved| E[GCP Cloud Tasks Buffer Queue]
-  D --&gt;|Sold Out| F[Instant Client Reject: HTTP 429 / 409]
+  D --&gt;|Lease Approved| E[&quot;GCP Cloud Tasks Buffer Queue&quot;]
+  D --&gt;|Sold Out| F[&quot;Instant Client Reject: HTTP 429 / 409&quot;]
   
   subgraph SG2_EventualConsistencySlow [&quot;Eventual Consistency Slow Path&quot;]
-    E --&gt;|Rate-Limited Dispatch| G[GKE Checkout Microservice]
+    E --&gt;|Rate-Limited Dispatch| G[&quot;GKE Checkout Microservice&quot;]
     G --&gt;|Commit Order &amp; Decrement| H[(PostgreSQL Inventory Database)]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B green
+class C purple
+class E yellow
+class F red</div>
 <h3 id="high-throughput-strategy">High-Throughput Strategy</h3>
 <ol>
 <li><strong>Atomic Redis Lua Scripting</strong>: By running stock check and decrement actions in a single atomic Lua script directly inside the Redis execution thread, we eliminate race conditions (double-selling) without database locks.</li>
@@ -267,8 +279,19 @@ if __name__ == &quot;__main__&quot;:
 <p>By transitioning from relational row-locking to memory-based Lua reservations:</p>
 <ul>
 <li><strong>Zero Double-Selling Cases</strong>: 100% atomic Lua stock decrements eliminated item over-allocation errors entirely.</li>
-<li><strong>Stable Database Loads</strong>: Decoupled write-back queue controls reduced PostgreSQL average CPU utilization from 98% down to a stable 35% during high traffic.</li>
+<li><strong>Stable Database Loads</strong>: Decoupled write-back queue controls reduced PostgreSQL average CPU utilization from 98% down to a stable 35% during high traffic. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Kubernetes Authors (2024)</strong>. <em>Kubernetes Documentation</em>. CNCF. <a href="https://kubernetes.io/docs/home/" target="_blank" rel="noopener">https://kubernetes.io/docs/home/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -307,6 +330,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#the-incident-connection-pool-starvation-the-black-friday-outage" class="toc-link">The Incident: Connection Pool Starvation &amp; The Black Friday Outage</a></li>
               <li class="toc-item toc-h3"><a href="#the-remediation" class="toc-link">The Remediation</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

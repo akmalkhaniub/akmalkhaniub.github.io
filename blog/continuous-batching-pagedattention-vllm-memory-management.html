@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/continuous-batching-pagedattention-vllm-memory-management.html">
   <meta property="og:title" content="Continuous Batching &amp; PagedAttention: vLLM Memory Management Architecture">
   <meta property="og:description" content="High-throughput LLM serving: implementing virtual memory PagedAttention block tables, non-contiguous GPU KV caching, and iteration-level continuous batching.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/continuous-batching-pagedattention-vllm-memory-management.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Continuous Batching &amp; PagedAttention: vLLM Memory Management Architecture">
   <meta name="twitter:description" content="High-throughput LLM serving: implementing virtual memory PagedAttention block tables, non-contiguous GPU KV caching, and iteration-level continuous batching.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/continuous-batching-pagedattention-vllm-memory-management.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Continuous Batching & PagedAttention: vLLM Memory Management Architecture",
   "description": "High-throughput LLM serving: implementing virtual memory PagedAttention block tables, non-contiguous GPU KV caching, and iteration-level continuous batching.",
   "url": "https://akmalkhaniub.github.io/blog/continuous-batching-pagedattention-vllm-memory-management.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/continuous-batching-pagedattention-vllm-memory-management.jpg",
   "datePublished": "2026-08-18",
   "keywords": "LLM Inference, vLLM, PagedAttention, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Continuous Batching &amp; PagedAttention: vLLM Memory Management Architecture Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/continuous-batching-pagedattention-vllm-memory-management.jpg" class="article-cover-img" alt="Continuous Batching &amp; PagedAttention: vLLM Memory Management Architecture Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Continuous Batching &amp; PagedAttention: vLLM Memory Management Architecture</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-pagedattention-block-manager-scheduler-engine">Python Implementation: PagedAttention Block Manager &amp; Scheduler Engine</a></li>
                 <li><a href="#llm-serving-engine-gotchas-best-practices">LLM Serving Engine Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Deploying Large Language Models (LLMs like Llama-3, Mistral, and Claude) in high-throughput production environments introduces a critical bottleneck: <strong>GPU Memory Allocation for the Key-Value (KV) Cache</strong>.</p>
+<p>Deploying Large Language Models (LLMs like Llama-3, Mistral, and Claude) in high-throughput production environments introduces a critical bottleneck: <strong>GPU Memory Allocation for the Key-Value (KV) Cache</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>During autoregressive generation, LLMs store previous token attention Key and Value vectors in GPU VRAM (the KV Cache) to avoid recomputing past tokens.</p>
 <p>In traditional serving frameworks (such as standard Hugging Face Transformers), allocating contiguous GPU VRAM for maximum output sequence lengths results in <strong>60% to 80% VRAM waste</strong> due to internal and external memory fragmentation.</p>
 <p>To solve this GPU memory crisis, researchers at UC Berkeley created <strong>PagedAttention</strong> and <strong>vLLM</strong>.</p>
@@ -131,17 +132,28 @@
   end
   
   subgraph SG2_PagedattentionBlockTable [&quot;PagedAttention Block Table Mapper&quot;]
-    Req1 --&gt;|Logical Block 0 (Tokens 0..15)| BlockTable1[Block Table: Logical 0 -&gt; Physical Block #7]
-    Req1 --&gt;|Logical Block 1 (Tokens 16..31)| BlockTable1_2[Block Table: Logical 1 -&gt; Physical Block #2]
+    Req1 --&gt;|Logical Block 0 (Tokens 0..15)| BlockTable1[&quot;Block Table: Logical 0 -&gt; Physical Block #7&quot;]
+    Req1 --&gt;|Logical Block 1 (Tokens 16..31)| BlockTable1_2[&quot;Block Table: Logical 1 -&gt; Physical Block #2&quot;]
     
-    Req2 --&gt;|Logical Block 0 (Tokens 0..15)| BlockTable2[Block Table: Logical 0 -&gt; Physical Block #9]
+    Req2 --&gt;|Logical Block 0 (Tokens 0..15)| BlockTable2[&quot;Block Table: Logical 0 -&gt; Physical Block #9&quot;]
   end
   
   subgraph SG3_PhysicalGpuVram [&quot;Physical GPU VRAM Memory Pool (Non-Contiguous Pages)&quot;]
-    BlockTable1 --&gt; PhysBlock7[Physical GPU Block #7 (16 Key/Value Vectors)]
-    BlockTable1_2 --&gt; PhysBlock2[Physical GPU Block #2 (16 Key/Value Vectors)]
-    BlockTable2 --&gt; PhysBlock9[Physical GPU Block #9 (16 Key/Value Vectors)]
-  end</div>
+    BlockTable1 --&gt; PhysBlock7[&quot;Physical GPU Block #7 (16 Key/Value Vectors)&quot;]
+    BlockTable1_2 --&gt; PhysBlock2[&quot;Physical GPU Block #2 (16 Key/Value Vectors)&quot;]
+    BlockTable2 --&gt; PhysBlock9[&quot;Physical GPU Block #9 (16 Key/Value Vectors)&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Req1,PhysBlock7 blue
+class Req2,PhysBlock2 green
+class BlockTable1,PhysBlock9 purple
+class BlockTable1_2 yellow
+class BlockTable2 red</div>
 <h3 id="core-pagedattention-mechanics">Core PagedAttention Mechanics</h3>
 <ol>
 <li><strong>Virtual Memory Block Tables</strong>: PagedAttention divides the KV cache into fixed-capacity physical memory blocks (e.g. each block holds KV vectors for $16$ tokens). Physical blocks do not need to be contiguous in GPU VRAM. A <strong>Block Table</strong> maintains a mapping from logical sequence token positions to physical GPU block IDs.</li>
@@ -285,8 +297,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Platforms adopting PagedAttention and continuous batching (such as <strong>vLLM</strong> and <strong>TGI</strong>) report:</p>
 <ul>
 <li><strong>$3.8\times$ Throughput Increase</strong>: Serving $4\times$ more user requests per GPU node compared to traditional static batching.</li>
-<li><strong>Over 80% Reduction in GPU Memory Waste</strong>: Eliminating external fragmentation allows maxing out GPU compute utilization cleanly.</li>
+<li><strong>Over 80% Reduction in GPU Memory Waste</strong>: Eliminating external fragmentation allows maxing out GPU compute utilization cleanly. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Dao, T., et al. (2022)</strong>. <em>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</em>. NeurIPS. <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">https://arxiv.org/abs/2205.14135</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vaswani, A., et al. (2017)</strong>. <em>Attention Is All You Need</em>. NeurIPS. <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">https://arxiv.org/abs/1706.03762</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Kwon, W., et al. (2023)</strong>. <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em>. SOSP. <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">https://arxiv.org/abs/2309.06180</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Leviathan, Y., Kalman, M., &amp; Matias, Y. (2023)</strong>. <em>Fast Inference from Transformers via Speculative Decoding</em>. ICML. <a href="https://arxiv.org/abs/2211.17192" target="_blank" rel="noopener">https://arxiv.org/abs/2211.17192</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -323,6 +347,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-pagedattention-block-manager-scheduler-engine" class="toc-link">Python Implementation: PagedAttention Block Manager &amp; Scheduler Engine</a></li>
               <li class="toc-item toc-h2"><a href="#llm-serving-engine-gotchas-best-practices" class="toc-link">LLM Serving Engine Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

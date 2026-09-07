@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/pgvector-index-performance-traps.html">
   <meta property="og:title" content="Why Your pgvector Index Is 10× Slower Than It Should Be">
   <meta property="og:description" content="7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/pgvector-index-performance-traps.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-03-08">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Why Your pgvector Index Is 10× Slower Than It Should Be">
   <meta name="twitter:description" content="7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/pgvector-index-performance-traps.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Why Your pgvector Index Is 10× Slower Than It Should Be",
   "description": "7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.",
   "url": "https://akmalkhaniub.github.io/blog/pgvector-index-performance-traps.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/pgvector-index-performance-traps.jpg",
   "datePublished": "2026-03-08",
   "keywords": "pgvector, PostgreSQL, RAG, Performance",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/pgvector-index-performance-traps.jpg" class="article-cover-img" alt="Why Your pgvector Index Is 10× Slower Than It Should Be Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Why Your pgvector Index Is 10× Slower Than It Should Be</h1>
             <div class="article-meta">
@@ -131,21 +131,32 @@ pgvector is the most accessible path to production vector search — it lives in
 <p>pgvector supports two search modes: <strong>exact k-NN</strong> (sequential scan — always correct, O(n) cost) and <strong>approximate nearest neighbour / ANN</strong> (index-based — fast, slightly approximate). The danger is that pgvector silently falls back to exact scan in ways that produce no errors — just a query that takes 4 seconds instead of 4 milliseconds.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    Q[Vector Query] --&gt; P{Index exists&lt;br/&gt;and usable?}
-    P --&gt;|No index| S1[ Trap 1: Sequential scan&lt;br/&gt;O-n — 4s on 1M rows]
-    P --&gt;|Wrong operator| S2[ Trap 2: Wrong distance operator&lt;br/&gt;Index ignored silently]
-    P --&gt;|Filter before ANN| S3[ Trap 3: WHERE filter kills&lt;br/&gt;index — exact scan fallback]
+    Q[&quot;Vector Query&quot;] --&gt; P{Index exists&lt;br/&gt;and usable?}
+    P --&gt;|No index| S1[&quot; Trap 1: Sequential scan&lt;br/&gt;O-n — 4s on 1M rows&quot;]
+    P --&gt;|Wrong operator| S2[&quot; Trap 2: Wrong distance operator&lt;br/&gt;Index ignored silently&quot;]
+    P --&gt;|Filter before ANN| S3[&quot; Trap 3: WHERE filter kills&lt;br/&gt;index — exact scan fallback&quot;]
     P --&gt;|Index exists| C{ef_search&lt;br/&gt;configured?}
-    C --&gt;|Default ef_search=40| S4[ Trap 4: Poor recall&lt;br/&gt;missing relevant results]
+    C --&gt;|Default ef_search=40| S4[&quot; Trap 4: Poor recall&lt;br/&gt;missing relevant results&quot;]
     C --&gt;|OK| D{Vacuum run&lt;br/&gt;recently?}
-    D --&gt;|No vacuum| S5[ Trap 5: Bloat degrades&lt;br/&gt;HNSW graph quality]
-    D --&gt;|OK| R[ Fast ANN search&lt;br/&gt;&lt; 10ms]
+    D --&gt;|No vacuum| S5[&quot; Trap 5: Bloat degrades&lt;br/&gt;HNSW graph quality&quot;]
+    D --&gt;|OK| R[&quot; Fast ANN search&lt;br/&gt;&lt; 10ms&quot;]
 
     style S1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style S2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style S3 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style S4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
-    style S5 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px</div>
+    style S5 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Q,S5 blue
+class S1,R green
+class S2 purple
+class S3 yellow
+class S4 red</div>
 <hr>
 <h2 id="trap-1-no-index-silent-sequential-scan">Trap 1: No Index — Silent Sequential Scan</h2>
 <p><strong>Symptom</strong>: Queries work on 10K rows. After you load 500K documents, the same query takes 8 seconds. No errors.</p>
@@ -369,7 +380,7 @@ async def search_and_rerank_good(
     return reranked[:top_k]</code></pre>
 <hr>
 <h2 id="trap-7-not-using-explain-analyze-to-confirm-index-usage">Trap 7: Not Using <code>EXPLAIN ANALYZE</code> to Confirm Index Usage</h2>
-<p>The single most important habit with pgvector: <strong>always verify your index is being used</strong> before declaring your setup correct.</p>
+<p>The single most important habit with pgvector: <strong>always verify your index is being used</strong> before declaring your setup correct <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <pre><code class="language-sql">-- Full diagnostics query
 EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
 SELECT id, content, embedding &lt;=&gt; '[0.1, 0.2, ...]'::vector AS distance

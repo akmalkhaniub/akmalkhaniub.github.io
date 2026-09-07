@@ -12,20 +12,20 @@
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     subgraph SG1_TutorialDockerfile ["Tutorial Dockerfile"]
-        T1[FROM python:3.11]
-        T2[COPY . .]
-        T3[RUN pip install -r requirements.txt]
-        T4[CMD python app.py]
+        T1["FROM python:3.11"]
+        T2["COPY . ."]
+        T3["RUN pip install -r requirements.txt"]
+        T4["CMD python app.py"]
     end
 
     subgraph SG2_ProductionReality ["Production Reality"]
-        P1[ PID 1 ignores SIGTERM]
-        P2[ node_modules copied into image]
-        P3[ pip cache busted on every build]
-        P4[ Running as root user]
-        P5[ Secrets baked into layers]
-        P6[ No health check]
-        P7[ Image is 2.4GB]
+        P1[" PID 1 ignores SIGTERM"]
+        P2[" node_modules copied into image"]
+        P3[" pip cache busted on every build"]
+        P4[" Running as root user"]
+        P5[" Secrets baked into layers"]
+        P6[" No health check"]
+        P7[" Image is 2.4GB"]
     end
 
     Tutorial Dockerfile --> Production Reality
@@ -37,6 +37,17 @@ flowchart TD
     style P5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style P6 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style P7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class T1,P2,P7 blue
+class T2,P3 green
+class T3,P4 purple
+class T4,P5 yellow
+class P1,P6 red
 ```
 
 ---
@@ -381,7 +392,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", 
 
 ## Conclusion & Key Takeaways
 
-Docker's simplicity is a double-edged sword — it hides complexity that resurfaces as production incidents. The failures above follow a pattern: they're invisible in development (fast machine, no proxy, running as you) and catastrophic in production (slow CI, proxied, rootless Kubernetes).
+Docker's simplicity is a double-edged sword — it hides complexity that resurfaces as production incidents [1]. The failures above follow a pattern: they're invisible in development (fast machine, no proxy, running as you) and catastrophic in production (slow CI, proxied, rootless Kubernetes).
 
 - **Always use exec form `CMD ["executable", "arg"]`** — never shell form `CMD executable arg`. Exec form is PID 1, receives signals correctly, and is the only form that enables graceful shutdown.
 - **Copy dependency manifests before source code** — this single change often cuts CI build times by 80% by preserving the package-install cache layer.

@@ -1,4 +1,4 @@
-We are currently in the peak of the agentic AI hype cycle. Startups and enterprise engineering teams are rushing to replace linear, deterministic code with networks of autonomous agents. 
+We are currently in the peak of the agentic AI hype cycle [1]. Startups and enterprise engineering teams are rushing to replace linear, deterministic code with networks of autonomous agents. 
 
 > ### 📖 Article Overview
 > * **What this article is about:** This article evaluates the true costs and engineering trade-offs of multi-agent AI systems compared to simpler code or single-agent solutions.

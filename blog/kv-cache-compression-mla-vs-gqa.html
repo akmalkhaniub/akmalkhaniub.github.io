@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/kv-cache-compression-mla-vs-gqa.html">
   <meta property="og:title" content="Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)">
   <meta property="og:description" content="Analyzing KV-cache optimizations, comparing low-rank Multi-head Latent Attention (MLA) in DeepSeek V3 against Grouped-Query Attention (GQA) in LLaMA-3.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-compression-mla-vs-gqa.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-03-17">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)">
   <meta name="twitter:description" content="Analyzing KV-cache optimizations, comparing low-rank Multi-head Latent Attention (MLA) in DeepSeek V3 against Grouped-Query Attention (GQA) in LLaMA-3.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-compression-mla-vs-gqa.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)",
   "description": "Analyzing KV-cache optimizations, comparing low-rank Multi-head Latent Attention (MLA) in DeepSeek V3 against Grouped-Query Attention (GQA) in LLaMA-3.",
   "url": "https://akmalkhaniub.github.io/blog/kv-cache-compression-mla-vs-gqa.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-compression-mla-vs-gqa.jpg",
   "datePublished": "2026-03-17",
   "keywords": "MLA, GQA, KV Cache, System Design",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/kv-cache-compression-mla-vs-gqa.jpg" class="article-cover-img" alt="Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA) Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Compressing the KV Cache: DeepSeek's Latent Projections (MLA) vs. Meta's Grouped Queries (GQA)</h1>
             <div class="article-meta">
@@ -128,7 +128,7 @@
 </ul>
 </blockquote>
 <hr>
-<p>The primary bottleneck in serving large language models is not compute capability—it is memory bandwidth. </p>
+<p>The primary bottleneck in serving large language models is not compute capability—it is memory bandwidth <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. </p>
 <p>When generating text, the model must store the Key-Value (KV) tensors of all past tokens in GPU memory. This is called the <strong>KV Cache</strong>. For a 70B parameter model processing a 32K context window, the KV Cache for a single user request can consume over <strong>12GB of VRAM</strong>, severely limiting the number of concurrent requests a server can process.</p>
 <p>To resolve this bottleneck, framework developers use key cache compression strategies: Meta&#39;s <strong>Grouped-Query Attention (GQA)</strong> and DeepSeek&#39;s <strong>Multi-head Latent Attention (MLA)</strong>.</p>
 <p>This article synthesizes the trade-offs of MLA vs. GQA, detailing <strong>what is good (pros)</strong>, <strong>what is not (cons)</strong>, and how to write a TypeScript telemetry profiling script, drawing from high-throughput optimization designs modeled in my async engine, <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a>.</p>
@@ -141,13 +141,13 @@
     classDef mlaStyle fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
     classDef label fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
 
-    Start[Inference: Parse Keys &amp; Values] --&gt; Compression{Attention Method}
+    Start[&quot;Inference: Parse Keys &amp; Values&quot;] --&gt; Compression{Attention Method}
     
-    Compression --&gt;|Meta GQA - LLaMA-3| PathGQA[Grouped-Query Attention]
-    Compression --&gt;|DeepSeek MLA - V3/R1| PathMLA[Multi-head Latent Attention]
+    Compression --&gt;|Meta GQA - LLaMA-3| PathGQA[&quot;Grouped-Query Attention&quot;]
+    Compression --&gt;|DeepSeek MLA - V3/R1| PathMLA[&quot;Multi-head Latent Attention&quot;]
     
-    PathGQA --&gt;|8 -1 Ratio| HBM_Save1[Key-Value heads grouped / Reduces cache size by 8x]
-    PathMLA --&gt;|Low-Rank Latent| HBM_Save2[Compresses K &amp; V into latent vector dc / Reduces cache size by 14x]
+    PathGQA --&gt;|8 -1 Ratio| HBM_Save1[&quot;Key-Value heads grouped / Reduces cache size by 8x&quot;]
+    PathMLA --&gt;|Low-Rank Latent| HBM_Save2[&quot;Compresses K &amp; V into latent vector dc / Reduces cache size by 14x&quot;]
 
     class Start,Compression check;
     class PathGQA,HBM_Save1 gqaStyle;

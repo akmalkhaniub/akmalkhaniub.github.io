@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/slm-parameter-efficient-fine-tuning-lora-qlora.html">
   <meta property="og:title" content="Parameter-Efficient Fine-Tuning: Training SLMs on Custom Trajectory Trees">
   <meta property="og:description" content="Exploring Low-Rank Adaptation (LoRA/QLoRA) parameters and executing model training on multi-step agent trajectory trees using Hugging Face SFTTrainer.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/slm-parameter-efficient-fine-tuning-lora-qlora.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-25">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Parameter-Efficient Fine-Tuning: Training SLMs on Custom Trajectory Trees">
   <meta name="twitter:description" content="Exploring Low-Rank Adaptation (LoRA/QLoRA) parameters and executing model training on multi-step agent trajectory trees using Hugging Face SFTTrainer.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/slm-parameter-efficient-fine-tuning-lora-qlora.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Parameter-Efficient Fine-Tuning: Training SLMs on Custom Trajectory Trees",
   "description": "Exploring Low-Rank Adaptation (LoRA/QLoRA) parameters and executing model training on multi-step agent trajectory trees using Hugging Face SFTTrainer.",
   "url": "https://akmalkhaniub.github.io/blog/slm-parameter-efficient-fine-tuning-lora-qlora.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/slm-parameter-efficient-fine-tuning-lora-qlora.jpg",
   "datePublished": "2026-07-25",
   "keywords": "AI Platform, Machine Learning, PEFT, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Parameter-Efficient Fine-Tuning: Training SLMs on Custom Trajectory Trees Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/slm-parameter-efficient-fine-tuning-lora-qlora.jpg" class="article-cover-img" alt="Parameter-Efficient Fine-Tuning: Training SLMs on Custom Trajectory Trees Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Parameter-Efficient Fine-Tuning: Training SLMs on Custom Trajectory Trees</h1>
             <div class="article-meta">
@@ -112,9 +112,10 @@
                 <li><a href="#python-trajectory-training-script">Python Trajectory Training Script</a></li>
                 <li><a href="#important-pitfalls-in-fine-tuning">Important Pitfalls in Fine-Tuning</a></li>
                 <li><a href="#real-world-production-adoption">Real-World Production Adoption</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>To deploy highly specialized AI agents in production, we do not need massive, expensive 70B+ models. Instead, we can distill execution expertise into <strong>Small Language Models (SLMs)</strong> ranging from 1.5B to 8B parameters (such as Llama-3-8B or Qwen-2.5-7B). </p>
+<p>To deploy highly specialized AI agents in production, we do not need massive, expensive 70B+ models <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Instead, we can distill execution expertise into <strong>Small Language Models (SLMs)</strong> ranging from 1.5B to 8B parameters (such as Llama-3-8B or Qwen-2.5-7B). </p>
 <p>To teach an SLM how to reason and call tools without losing its general language capabilities, we perform <strong>Parameter-Efficient Fine-Tuning (PEFT)</strong>. This article details the mathematical foundations of Low-Rank Adaptation (LoRA/QLoRA) and provides a production-grade Python script to train an SLM on multi-step agent trajectory trees.</p>
 <hr>
 <h2 id="the-mathematics-of-lora-and-qlora">The Mathematics of LoRA and QLoRA</h2>
@@ -123,12 +124,22 @@
 <p>$$\Delta W = B \cdot A$$</p>
 <p>Where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$, with the rank $r \ll \min(d, k)$ (typically $r = 8$ or $16$).</p>
 <div class="mermaid">flowchart TD
-  Input([Input Vector x]) --&gt; |Freeze W0| BaseProduct[W0 * x]
-  Input --&gt; |Trainable A| MatrixA[A * x]
-  MatrixA --&gt; |Trainable B| MatrixB[B * A * x]
-  BaseProduct --&gt; Sum[Combine: W0 * x + B * A * x]
+  Input([Input Vector x]) --&gt; |Freeze W0| BaseProduct[&quot;W0 * x&quot;]
+  Input --&gt; |Trainable A| MatrixA[&quot;A * x&quot;]
+  MatrixA --&gt; |Trainable B| MatrixB[&quot;B * A * x&quot;]
+  BaseProduct --&gt; Sum[&quot;Combine: W0 * x + B * A * x&quot;]
   MatrixB --&gt; Sum
-  Sum --&gt; Output([Output Vector y])</div>
+  Sum --&gt; Output([Output Vector y])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class BaseProduct blue
+class MatrixA green
+class MatrixB purple
+class Sum yellow</div>
 <p>By only updating $B$ and $A$, we reduce the number of trainable parameters by <strong>99.9%</strong>, enabling fine-tuning on a single consumer GPU (e.g., 24GB VRAM). <strong>QLoRA</strong> takes this further by quantizing the base model weights ($W_0$) into a specialized 4-bit NormalFloat (NF4) format, reducing memory usage even more.</p>
 <hr>
 <h2 id="python-trajectory-training-script">Python Trajectory Training Script</h2>
@@ -242,8 +253,19 @@ trainer.model.save_pretrained(OUTPUT_DIR)</code></pre>
 <p>High-performance AI platforms utilize QLoRA to customize micro-models:</p>
 <ul>
 <li><strong>Edge Diagnostics Swarms</strong>: Train 3B parameter models that interpret local system telemetry, running QLoRA fine-tuning in under 4 hours on commercial workstation GPUs.</li>
-<li><strong>Specialized Code Generators</strong>: Fine-tune SLMs to generate SQL queries matching specific enterprise database schemas, achieving 95% execution accuracy while completely ignoring out-of-domain knowledge.</li>
+<li><strong>Specialized Code Generators</strong>: Fine-tune SLMs to generate SQL queries matching specific enterprise database schemas, achieving 95% execution accuracy while completely ignoring out-of-domain knowledge. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Hu, E. J., et al. (2021)</strong>. <em>LoRA: Low-Rank Adaptation of Large Language Models</em>. ICLR. <a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noopener">https://arxiv.org/abs/2106.09685</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Dettmers, T., et al. (2023)</strong>. <em>QLoRA: Efficient Finetuning of Quantized LLMs</em>. NeurIPS. <a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noopener">https://arxiv.org/abs/2305.14314</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Lin, J., et al. (2024)</strong>. <em>AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</em>. MLSys. <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">https://arxiv.org/abs/2306.00978</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -279,6 +301,7 @@ trainer.model.save_pretrained(OUTPUT_DIR)</code></pre>
               <li class="toc-item toc-h2"><a href="#python-trajectory-training-script" class="toc-link">Python Trajectory Training Script</a></li>
               <li class="toc-item toc-h2"><a href="#important-pitfalls-in-fine-tuning" class="toc-link">Important Pitfalls in Fine-Tuning</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-production-adoption" class="toc-link">Real-World Production Adoption</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

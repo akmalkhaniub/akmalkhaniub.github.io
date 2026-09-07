@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-transactions-two-phase-commit-percolator-protocol.html">
   <meta property="og:title" content="Distributed Transaction Protocols: 2-Phase Commit (2PC) &amp; Percolator">
   <meta property="og:description" content="ACID transactions across distributed shards: implementing 2-Phase Commit (2PC), Google Percolator primary lock columns, Timestamp Oracle (TSO) MVCC, and crash recovery.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-transactions-two-phase-commit-percolator-protocol.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Transaction Protocols: 2-Phase Commit (2PC) &amp; Percolator">
   <meta name="twitter:description" content="ACID transactions across distributed shards: implementing 2-Phase Commit (2PC), Google Percolator primary lock columns, Timestamp Oracle (TSO) MVCC, and crash recovery.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-transactions-two-phase-commit-percolator-protocol.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Distributed Transaction Protocols: 2-Phase Commit (2PC) & Percolator",
   "description": "ACID transactions across distributed shards: implementing 2-Phase Commit (2PC), Google Percolator primary lock columns, Timestamp Oracle (TSO) MVCC, and crash recovery.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-transactions-two-phase-commit-percolator-protocol.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distributed-transactions-two-phase-commit-percolator-protocol.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Distributed Transactions, 2PC, Percolator, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed Transaction Protocols: 2-Phase Commit (2PC) &amp; Percolator Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distributed-transactions-two-phase-commit-percolator-protocol.jpg" class="article-cover-img" alt="Distributed Transaction Protocols: 2-Phase Commit (2PC) &amp; Percolator Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed Transaction Protocols: 2-Phase Commit (2PC) &amp; Percolator</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#python-implementation-google-percolator-transaction-engine">Python Implementation: Google Percolator Transaction Engine</a></li>
                 <li><a href="#percolator-2pc-gotchas-best-practices">Percolator &amp; 2PC Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -120,7 +121,7 @@
   <div class="alert-content"><p><strong>Catalog note</strong>: This post overlaps <a href="distributed-transactions-two-phase-commit-percolator.html">Distributed Transactions: Two-Phase Commit and Percolator</a>. Prefer that sibling for the primary-lock walkthrough; keep this one for the TSO / prewrite packet sequence.</p>
 </div>
 </div>
-<p>When building sharded distributed databases (<strong>TiDB</strong>, <strong>CockroachDB</strong>, <strong>Google Spanner</strong>), executing single-shard operations using Raft is straightforward. However, modern applications require <strong>ACID transactions</strong> that span across multiple database shards (e.g. transferring money from Account A on Shard 1 to Account B on Shard 2).</p>
+<p>When building sharded distributed databases (<strong>TiDB</strong>, <strong>CockroachDB</strong>, <strong>Google Spanner</strong>), executing single-shard operations using Raft is straightforward <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. However, modern applications require <strong>ACID transactions</strong> that span across multiple database shards (e.g. transferring money from Account A on Shard 1 to Account B on Shard 2).</p>
 <p>Executing cross-shard transactions introduces severe consistency risks: if Shard 1 commits while Shard 2 crashes, the system suffers data corruption and lost funds.</p>
 <p>Historically, systems used the <strong>Two-Phase Commit (2PC)</strong> protocol. However, traditional 2PC suffers from a fatal flaw: if the Central Coordinator node crashes during Phase 2, participant nodes remain <strong>blocked holding locks indefinitely</strong>.</p>
 <p>To eliminate blocking coordinator bugs, Google introduced the <strong>Percolator Protocol</strong> (used in <strong>Google Bigtable</strong> and <strong>TiDB</strong>).</p>
@@ -130,11 +131,11 @@
 <h2 id="google-percolator-distributed-transaction-architecture">Google Percolator Distributed Transaction Architecture</h2>
 <p>How Percolator uses a Timestamp Oracle (TSO) and Primary Lock pointers to execute non-blocking distributed transactions:</p>
 <div class="mermaid">flowchart TD
-  Client[Transaction Client] --&gt;|Get Start Timestamp T_start=100| TSO[Timestamp Oracle TSO]
+  Client[&quot;Transaction Client&quot;] --&gt;|Get Start Timestamp T_start=100| TSO[&quot;Timestamp Oracle TSO&quot;]
   
   subgraph SG1_Phase1Prewrite [&quot;Phase 1: Prewrite (Acquire Locks)&quot;]
-    Client --&gt;|Lock &amp; Prewrite Primary Key A| ShardA[Shard A: Primary Lock Column -&gt; Primary A]
-    Client --&gt;|Lock &amp; Prewrite Secondary Key B| ShardB[Shard B: Secondary Lock -&gt; Pointer to Primary A]
+    Client --&gt;|Lock &amp; Prewrite Primary Key A| ShardA[&quot;Shard A: Primary Lock Column -&gt; Primary A&quot;]
+    Client --&gt;|Lock &amp; Prewrite Secondary Key B| ShardB[&quot;Shard B: Secondary Lock -&gt; Pointer to Primary A&quot;]
   end
   
   subgraph SG2_Phase2Commit [&quot;Phase 2: Commit (Get Commit Timestamp T_commit=105)&quot;]
@@ -144,7 +145,17 @@
     ShardA -.-&gt;|Primary A Committed! Transaction SUCCESS| Client
     
     Client --&gt;|Async Commit Secondary Key B| ShardB
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client blue
+class TSO green
+class ShardA purple
+class ShardB yellow</div>
 <h3 id="core-percolator-transaction-mechanisms">Core Percolator Transaction Mechanisms</h3>
 <ol>
 <li><strong>Timestamp Oracle (TSO)</strong>: A centralized, high-throughput service that dispenses strictly monotonically increasing timestamps ($T_{\text{start}}$, $T_{\text{commit}}$). Timestamps define Multi-Version Concurrency Control (MVCC) snapshot versions.</li>
@@ -325,8 +336,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Distributed databases utilizing Percolator transactions (such as <strong>TiDB</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Zero Coordinator Lock Deadlocks</strong>: Eliminating traditional 2PC blocking bugs allows automatic self-healing crash recovery.</li>
-<li><strong>Full ACID Snapshot Isolation</strong>: Supporting multi-key distributed transactions across thousands of server nodes with zero read-lock contention.</li>
+<li><strong>Full ACID Snapshot Isolation</strong>: Supporting multi-key distributed transactions across thousands of server nodes with zero read-lock contention. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (2001)</strong>. <em>Paxos Made Simple</em>. ACM SIGACT News. <a href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/paxos-simple.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Corbett, J. C., et al. (2012)</strong>. <em>Spanner: Google&#39;s Globally-Distributed Database</em>. OSDI. <a href="https://research.google/pubs/pub39966/" target="_blank" rel="noopener">https://research.google/pubs/pub39966/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lamport, L. (1978)</strong>. <em>Time, Clocks, and the Ordering of Events in a Distributed System</em>. CACM. <a href="https://lamport.azurewebsites.net/pubs/time-clocks.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/time-clocks.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Thomson, A., et al. (2012)</strong>. <em>Calvin: Fast Distributed Transactions for Partitioned Database Systems</em>. SIGMOD. <a href="https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf" target="_blank" rel="noopener">https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -363,6 +385,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-google-percolator-transaction-engine" class="toc-link">Python Implementation: Google Percolator Transaction Engine</a></li>
               <li class="toc-item toc-h2"><a href="#percolator-2pc-gotchas-best-practices" class="toc-link">Percolator &amp; 2PC Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

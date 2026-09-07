@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/orchestrator-hitl-gateways-escalation-approval-state-machines.html">
   <meta property="og:title" content="Human-in-the-Loop (HITL) Gateways: Escalations, Timeouts &amp; Approval State Machines">
   <meta property="og:description" content="Building secure orchestrator escalation gateways: defining boundary checkpoints, generating HMAC/JWT signed human verification tokens, and enforcing TTL escalation timeouts.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/orchestrator-hitl-gateways-escalation-approval-state-machines.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-29">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Human-in-the-Loop (HITL) Gateways: Escalations, Timeouts &amp; Approval State Machines">
   <meta name="twitter:description" content="Building secure orchestrator escalation gateways: defining boundary checkpoints, generating HMAC/JWT signed human verification tokens, and enforcing TTL escalation timeouts.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/orchestrator-hitl-gateways-escalation-approval-state-machines.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Human-in-the-Loop (HITL) Gateways: Escalations, Timeouts & Approval State Machines",
   "description": "Building secure orchestrator escalation gateways: defining boundary checkpoints, generating HMAC/JWT signed human verification tokens, and enforcing TTL escalation timeouts.",
   "url": "https://akmalkhaniub.github.io/blog/orchestrator-hitl-gateways-escalation-approval-state-machines.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/orchestrator-hitl-gateways-escalation-approval-state-machines.jpg",
   "datePublished": "2026-07-29",
   "keywords": "Agentic Engineering, Human-in-the-Loop, State Machines, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Human-in-the-Loop (HITL) Gateways: Escalations, Timeouts &amp; Approval State Machines Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/orchestrator-hitl-gateways-escalation-approval-state-machines.jpg" class="article-cover-img" alt="Human-in-the-Loop (HITL) Gateways: Escalations, Timeouts &amp; Approval State Machines Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Human-in-the-Loop (HITL) Gateways: Escalations, Timeouts &amp; Approval State Machines</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-hitl-approval-gateway-state-machine">Python Implementation: HITL Approval Gateway &amp; State Machine</a></li>
                 <li><a href="#important-security-guardrails">Important Security Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>As multi-agent swarms take on increasingly complex engineering tasks, they eventually reach critical operational boundaries. When an orchestrator graph reaches a step involving sensitive operations—such as executing a destructive database migration, triggering external payment API transfers, or deploying code to production—fully autonomous execution becomes a major liability.</p>
+<p>As multi-agent swarms take on increasingly complex engineering tasks, they eventually reach critical operational boundaries <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. When an orchestrator graph reaches a step involving sensitive operations—such as executing a destructive database migration, triggering external payment API transfers, or deploying code to production—fully autonomous execution becomes a major liability.</p>
 <p>To maintain safety without sacrificing automation, high-performance agent platforms implement <strong>Human-in-the-Loop (HITL) Gateways</strong>. </p>
 <p>Instead of halting the entire system or running unsupervised, the Orchestrator State Machine pauses execution at designated safety checkpoints, generates a secure, signed approval request for a human engineer, and waits for cryptographic verification before resuming graph traversal.</p>
 <p>This article details how to design <strong>HITL Gateways</strong>, manage <strong>JWT-signed approval tokens</strong>, and handle <strong>TTL escalation timeouts</strong> in agentic state machines.</p>
@@ -123,17 +124,28 @@
 <h2 id="the-hitl-approval-state-machine">The HITL Approval State Machine</h2>
 <p>When a task node inside an orchestrator DAG is marked as <code>REQUIRES_HUMAN_APPROVAL</code>, the execution engine transitions into a <code>WAITING_FOR_APPROVAL</code> state:</p>
 <div class="mermaid">flowchart TD
-  A[Orchestrator DAG Execution] --&gt; B[Task Node: Apply Database Migration]
+  A[&quot;Orchestrator DAG Execution&quot;] --&gt; B[&quot;Task Node: Apply Database Migration&quot;]
   B --&gt; C{Orchestrator Boundary Check}
-  C --&gt;|Marked - REQUIRES_HUMAN_APPROVAL| D[Pause DAG &amp; Generate JWT Approval Token]
-  D --&gt; E[Dispatch Alert to Slack / Dashboard]
+  C --&gt;|Marked - REQUIRES_HUMAN_APPROVAL| D[&quot;Pause DAG &amp; Generate JWT Approval Token&quot;]
+  D --&gt; E[&quot;Dispatch Alert to Slack / Dashboard&quot;]
   
   E --&gt; F{Human Reviewer Action}
-  F --&gt;|Signed Approval Received| G[Verify Token Signature &amp; Resume DAG Node]
-  F --&gt;|Human Rejects| H[Abort DAG Node &amp; Trigger Rollback]
-  F --&gt;|TTL Timeout Exceeded 30 mins| I[Escalate to Lead &amp; Auto-Pause]
+  F --&gt;|Signed Approval Received| G[&quot;Verify Token Signature &amp; Resume DAG Node&quot;]
+  F --&gt;|Human Rejects| H[&quot;Abort DAG Node &amp; Trigger Rollback&quot;]
+  F --&gt;|TTL Timeout Exceeded 30 mins| I[&quot;Escalate to Lead &amp; Auto-Pause&quot;]
   
-  G --&gt; J[Execution Completed]</div>
+  G --&gt; J[&quot;Execution Completed&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class B,I green
+class D,J purple
+class E yellow
+class G red</div>
 <h3 id="key-security-governance-rules">Key Security &amp; Governance Rules</h3>
 <ol>
 <li><strong>Cryptographic Token Verification</strong>: Approval requests must emit time-bound JSON Web Tokens (JWTs) containing the exact task node hash, preventing unauthorized or tampered approvals.</li>
@@ -268,8 +280,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Organizations implementing HITL Orchestrator Gateways report:</p>
 <ul>
 <li><strong>Zero Accidental Destructive Operations</strong>: 100% of sensitive operations (schema drops, payment transfers) require cryptographic human sign-off.</li>
-<li><strong>Seamless Automation Balance</strong>: Routine code generation runs autonomously, while high-risk boundaries remain safely controlled by human leads.</li>
+<li><strong>Seamless Automation Balance</strong>: Routine code generation runs autonomously, while high-risk boundaries remain safely controlled by human leads. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -306,6 +330,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-hitl-approval-gateway-state-machine" class="toc-link">Python Implementation: HITL Approval Gateway &amp; State Machine</a></li>
               <li class="toc-item toc-h2"><a href="#important-security-guardrails" class="toc-link">Important Security Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

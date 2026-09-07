@@ -8,7 +8,7 @@
 
 ## How One Blocking Call Destroys Async Performance
 
-The event loop is a single-threaded scheduler. When you call a blocking function inside a coroutine, the entire loop stalls — **no other coroutines run until the blocking call returns**. In a server handling 100 concurrent requests, one accidental `time.sleep(2)` inside a coroutine stalls all 100 requests for 2 seconds.
+The event loop is a single-threaded scheduler [1]. When you call a blocking function inside a coroutine, the entire loop stalls — **no other coroutines run until the blocking call returns**. In a server handling 100 concurrent requests, one accidental `time.sleep(2)` inside a coroutine stalls all 100 requests for 2 seconds.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%

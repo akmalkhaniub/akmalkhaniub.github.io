@@ -17,7 +17,7 @@ source.onmessage = (e) => console.log(e.data);
 
 The server side is barely more. But between your Node.js process and the browser sits a gauntlet: **reverse proxies, CDNs, load balancers, middleware frameworks, and mobile network stacks** — each with their own opinions about what a "response" looks like and when to flush it.
 
-The result: SSE that works perfectly in local development silently breaks in every production environment it touches.
+The result: SSE that works perfectly in local development silently breaks in every production environment it touches [1].
 
 ---
 
@@ -26,24 +26,24 @@ The result: SSE that works perfectly in local development silently breaks in eve
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    C[Browser EventSource] --> P1{Proxy / CDN Layer}
+    C["Browser EventSource"] --> P1{Proxy / CDN Layer}
     
-    P1 -->|Buffering ON| G1[ Gotcha 1<br/>Tokens buffer 30s<br/>then dump all at once]
-    P1 -->|HTTP/1.1| G2[ Gotcha 2<br/>6-connection limit<br/>new tabs kill old streams]
-    P1 -->|Auth via Header| G3[ Gotcha 3<br/>EventSource can't<br/>set Authorization header]
-    P1 -->|Cloudflare timeout| G4[ Gotcha 4<br/>100s hard timeout<br/>kills long responses]
-    P1 -->|Passed| S[Server]
+    P1 -->|Buffering ON| G1[" Gotcha 1<br/>Tokens buffer 30s<br/>then dump all at once"]
+    P1 -->|HTTP/1.1| G2[" Gotcha 2<br/>6-connection limit<br/>new tabs kill old streams"]
+    P1 -->|Auth via Header| G3[" Gotcha 3<br/>EventSource can't<br/>set Authorization header"]
+    P1 -->|Cloudflare timeout| G4[" Gotcha 4<br/>100s hard timeout<br/>kills long responses"]
+    P1 -->|Passed| S["Server"]
 
     S --> P2{Framework Layer}
-    P2 -->|Next.js middleware| G5[ Gotcha 5<br/>Edge runtime buffers<br/>full response body]
-    P2 -->|Express compress()| G6[ Gotcha 6<br/>Gzip middleware<br/>swallows stream chunks]
-    P2 -->|No keep-alive| G7[ Gotcha 7<br/>Connection closes after<br/>first event — client loops]
-    P2 -->|Passed| L[LLM API]
+    P2 -->|Next.js middleware| G5[" Gotcha 5<br/>Edge runtime buffers<br/>full response body"]
+    P2 -->|Express compress()| G6[" Gotcha 6<br/>Gzip middleware<br/>swallows stream chunks"]
+    P2 -->|No keep-alive| G7[" Gotcha 7<br/>Connection closes after<br/>first event — client loops"]
+    P2 -->|Passed| L["LLM API"]
 
     L --> P3{Client Reconnect}
-    P3 -->|No Last-Event-ID| G8[ Gotcha 8<br/>Reconnect replays<br/>full response from start]
-    P3 -->|No exponential backoff| G9[ Gotcha 9<br/>Reconnect storm on<br/>server restart]
-    P3 -->|No done signal| G10[ Gotcha 10<br/>Client never closes —<br/>connection leak]
+    P3 -->|No Last-Event-ID| G8[" Gotcha 8<br/>Reconnect replays<br/>full response from start"]
+    P3 -->|No exponential backoff| G9[" Gotcha 9<br/>Reconnect storm on<br/>server restart"]
+    P3 -->|No done signal| G10[" Gotcha 10<br/>Client never closes —<br/>connection leak"]
 
     style G1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style G2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -55,6 +55,17 @@ flowchart TD
     style G8 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style G9 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style G10 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class C,S,G8 blue
+class G1,G5,G9 green
+class G2,G6,G10 purple
+class G3,G7 yellow
+class G4,L red
 ```
 
 ---

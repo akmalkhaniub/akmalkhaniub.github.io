@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/high-cardinality-metrics-distributed-tsdb-indexing.html">
   <meta property="og:title" content="High-Cardinality Metrics &amp; Distributed TSDB Indexing">
   <meta property="og:description" content="Scaling time series databases: solving label explosion with inverted index series mapping, Gorilla float XOR compression (1.37 bytes/sample), and 2-hour head chunks.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/high-cardinality-metrics-distributed-tsdb-indexing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="High-Cardinality Metrics &amp; Distributed TSDB Indexing">
   <meta name="twitter:description" content="Scaling time series databases: solving label explosion with inverted index series mapping, Gorilla float XOR compression (1.37 bytes/sample), and 2-hour head chunks.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/high-cardinality-metrics-distributed-tsdb-indexing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "High-Cardinality Metrics & Distributed TSDB Indexing",
   "description": "Scaling time series databases: solving label explosion with inverted index series mapping, Gorilla float XOR compression (1.37 bytes/sample), and 2-hour head chunks.",
   "url": "https://akmalkhaniub.github.io/blog/high-cardinality-metrics-distributed-tsdb-indexing.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/high-cardinality-metrics-distributed-tsdb-indexing.jpg",
   "datePublished": "2026-08-18",
   "keywords": "TSDB, Prometheus, Gorilla, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="High-Cardinality Metrics &amp; Distributed TSDB Indexing Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/high-cardinality-metrics-distributed-tsdb-indexing.jpg" class="article-cover-img" alt="High-Cardinality Metrics &amp; Distributed TSDB Indexing Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">High-Cardinality Metrics &amp; Distributed TSDB Indexing</h1>
             <div class="article-meta">
@@ -113,10 +113,11 @@
                 <li><a href="#python-implementation-gorilla-xor-tsdb-compressor-engine">Python Implementation: Gorilla XOR TSDB Compressor Engine</a></li>
                 <li><a href="#high-cardinality-tsdb-gotchas-best-practices">High-Cardinality TSDB Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <p>In modern cloud-native platforms monitoring microservices (using <strong>Prometheus</strong>, <strong>Thanos</strong>, <strong>M3DB</strong>, or <strong>VictoriaMetrics</strong>), time series data streams are defined as key-value metric labels:
-<code>http_requests_total{service=&quot;payment&quot;, status=&quot;500&quot;, user_id=&quot;89123&quot;}</code>.</p>
+<code>http_requests_total{service=&quot;payment&quot;, status=&quot;500&quot;, user_id=&quot;89123&quot;}</code> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>While metric labels enable flexible querying, adding high-cardinality labels (such as <code>user_id</code>, <code>order_id</code>, or container <code>instance_id</code>) creates <strong>High-Cardinality Explosion</strong>.</p>
 <p>Every unique combination of metric label pairs instantiates an independent, persistent time series stream. If 1,000,000 unique users make requests, the TSDB must manage $1,000,000$ distinct time series streams, causing massive memory bloat and index degradation in traditional TSDBs.</p>
 <p>To store billions of data points per second with sub-millisecond query latencies, Time Series Databases rely on <strong>Gorilla XOR Compression</strong> and <strong>Inverted Label Index Chunks</strong>.</p>
@@ -125,20 +126,31 @@
 <h2 id="tsdb-inverted-label-index-gorilla-compression-architecture">TSDB Inverted Label Index &amp; Gorilla Compression Architecture</h2>
 <p>How Time Series Databases compress metrics and index label combinations:</p>
 <div class="mermaid">flowchart TD
-  MetricStream[&quot;Metric Stream: http_requests_total{service='payment', status='500'}&quot;] --&gt; LabelIdx[TSDB Inverted Label Index]
+  MetricStream[&quot;Metric Stream: http_requests_total{service='payment', status='500'}&quot;] --&gt; LabelIdx[&quot;TSDB Inverted Label Index&quot;]
   
   subgraph SG1_InvertedIndexLabel [&quot;Inverted Index Label Lookup&quot;]
     LabelIdx --&gt;|Map 'service=payment'| SeriesList[&quot;Series ID Set: [Series #101, Series #102]&quot;]
   end
   
   subgraph SG2_TimeSeriesChunk [&quot;Time Series Chunk Compressor (2-Hour Head Block)&quot;]
-    SeriesList --&gt; HeadChunk[2-Hour Head Chunk Memory Buffer]
+    SeriesList --&gt; HeadChunk[&quot;2-Hour Head Chunk Memory Buffer&quot;]
     
-    HeadChunk --&gt;|Double-Delta Timestamp Encoding| Timestamps[Timestamps: 1-bit / 7-bit deltas]
-    HeadChunk --&gt;|XOR Bitwise Value Compression| GorillaVal[Gorilla XOR Float Compression]
+    HeadChunk --&gt;|Double-Delta Timestamp Encoding| Timestamps[&quot;Timestamps: 1-bit / 7-bit deltas&quot;]
+    HeadChunk --&gt;|XOR Bitwise Value Compression| GorillaVal[&quot;Gorilla XOR Float Compression&quot;]
   end
   
-  GorillaVal --&gt;|Compressed Block (1.37 bytes / sample)| BlockFile[(Immutable TSDB Block File on Disk)]</div>
+  GorillaVal --&gt;|Compressed Block (1.37 bytes / sample)| BlockFile[(Immutable TSDB Block File on Disk)]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class MetricStream,GorillaVal blue
+class LabelIdx green
+class SeriesList purple
+class HeadChunk yellow
+class Timestamps red</div>
 <h3 id="core-tsdb-compression-indexing-mechanics">Core TSDB Compression &amp; Indexing Mechanics</h3>
 <ol>
 <li><strong>Inverted Label Indexing</strong>: Similar to search engines, TSDBs maintain an inverted index mapping each <code>label_name=label_value</code> pair (e.g. <code>service=auth</code>) to a sorted list of integer <code>series_id</code> pointers.</li>
@@ -267,8 +279,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Platforms implementing Gorilla XOR TSDB compression report:</p>
 <ul>
 <li><strong>Over 85% Disk Storage Savings</strong>: Compressing float64 metrics down to $1.37$ bytes per sample allows storing petabytes of telemetry at low cost.</li>
-<li><strong>$10\times$ Faster Metric Graphing</strong>: Compact compressed blocks fit directly into CPU L3 memory caches, executing PromQL queries across millions of series in under $50\text{ms}$.</li>
+<li><strong>$10\times$ Faster Metric Graphing</strong>: Compact compressed blocks fit directly into CPU L3 memory caches, executing PromQL queries across millions of series in under $50\text{ms}$. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Pelkonen, T., et al. (2015)</strong>. <em>Gorilla: A Fast, Scalable, In-Memory Time Series Database</em>. VLDB. <a href="https://www.vldb.org/pvldb/vol8/p1816-teller.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1816-teller.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Prometheus Authors (2024)</strong>. <em>Prometheus Documentation</em>. CNCF. <a href="https://prometheus.io/docs/introduction/overview/" target="_blank" rel="noopener">https://prometheus.io/docs/introduction/overview/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -305,6 +325,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-gorilla-xor-tsdb-compressor-engine" class="toc-link">Python Implementation: Gorilla XOR TSDB Compressor Engine</a></li>
               <li class="toc-item toc-h2"><a href="#high-cardinality-tsdb-gotchas-best-practices" class="toc-link">High-Cardinality TSDB Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

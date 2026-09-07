@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/vector-db-metadata-filtering-pre-vs-post-optimization.html">
   <meta property="og:title" content="Hybrid Index Traversal: Pre-Filtering vs. Post-Filtering in pgvector and Qdrant">
   <meta property="og:description" content="Evaluating metadata constraint models in vector queries: comparing pre-filtering, post-filtering, and single-stage in-graph HNSW traversal.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-db-metadata-filtering-pre-vs-post-optimization.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-25">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Hybrid Index Traversal: Pre-Filtering vs. Post-Filtering in pgvector and Qdrant">
   <meta name="twitter:description" content="Evaluating metadata constraint models in vector queries: comparing pre-filtering, post-filtering, and single-stage in-graph HNSW traversal.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-db-metadata-filtering-pre-vs-post-optimization.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Hybrid Index Traversal: Pre-Filtering vs. Post-Filtering in pgvector and Qdrant",
   "description": "Evaluating metadata constraint models in vector queries: comparing pre-filtering, post-filtering, and single-stage in-graph HNSW traversal.",
   "url": "https://akmalkhaniub.github.io/blog/vector-db-metadata-filtering-pre-vs-post-optimization.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/vector-db-metadata-filtering-pre-vs-post-optimization.jpg",
   "datePublished": "2026-07-25",
   "keywords": "Vector Database, Hybrid Search, pgvector, System Design",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Hybrid Index Traversal: Pre-Filtering vs. Post-Filtering in pgvector and Qdrant Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/vector-db-metadata-filtering-pre-vs-post-optimization.jpg" class="article-cover-img" alt="Hybrid Index Traversal: Pre-Filtering vs. Post-Filtering in pgvector and Qdrant Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Hybrid Index Traversal: Pre-Filtering vs. Post-Filtering in pgvector and Qdrant</h1>
             <div class="article-meta">
@@ -116,9 +116,10 @@
                 <li><a href="#1-single-stage-filtering-in-qdrant">1. Single-Stage Filtering in Qdrant</a></li>
                 <li><a href="#2-hybrid-querying-in-pgvector-postgresql">2. Hybrid Querying in pgvector (PostgreSQL)</a></li>
                 <li><a href="#important-pitfalls-in-hybrid-search">Important Pitfalls in Hybrid Search</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In production Retrieval-Augmented Generation (RAG) systems, vector similarity queries are rarely executed in isolation. Most enterprise applications require queries constrained by strict metadata filters, such as:</p>
+<p>In production Retrieval-Augmented Generation (RAG) systems, vector similarity queries are rarely executed in isolation <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Most enterprise applications require queries constrained by strict metadata filters, such as:</p>
 <ul>
 <li><em>Locating document chunks matching a user query</em> <strong>AND</strong> <em>belonging strictly to <code>tenant_id = 45</code></em>.</li>
 <li><em>Finding customer support logs from the last 30 days</em> <strong>AND</strong> <em>tagged with <code>status = &#39;critical&#39;</code></em>.</li>
@@ -128,17 +129,28 @@
 <h2 id="the-three-filtering-paradigms">The Three Filtering Paradigms</h2>
 <div class="mermaid">flowchart TD
   subgraph SG1_PostFiltering [&quot;Post-Filtering&quot;]
-    A[HNSW Vector Search] --&gt;|Get top 100| B[Filter out non-matching metadata]
-    B --&gt;|Problem - Result set collapses| C[Return remaining 2-3 items]
+    A[&quot;HNSW Vector Search&quot;] --&gt;|Get top 100| B[&quot;Filter out non-matching metadata&quot;]
+    B --&gt;|Problem - Result set collapses| C[&quot;Return remaining 2-3 items&quot;]
   end
   subgraph SG2_PreFiltering [&quot;Pre-Filtering&quot;]
-    D[Relational Metadata Scan] --&gt;|Isolate IDs| E[Flat Vector Search on subset]
-    E --&gt;|Problem - Slow for large subsets| F[Return top 10 items]
+    D[&quot;Relational Metadata Scan&quot;] --&gt;|Isolate IDs| E[&quot;Flat Vector Search on subset&quot;]
+    E --&gt;|Problem - Slow for large subsets| F[&quot;Return top 10 items&quot;]
   end
   subgraph SG3_InGraphFiltering [&quot;In-Graph Filtering Single-Stage&quot;]
-    G[HNSW Graph Traversal] --&gt;|Evaluate metadata on graph hops| H[Only route through matching nodes]
-    H --&gt;|Optimal - Fast &amp; complete| I[Return top 10 matching items]
-  end</div>
+    G[&quot;HNSW Graph Traversal&quot;] --&gt;|Evaluate metadata on graph hops| H[&quot;Only route through matching nodes&quot;]
+    H --&gt;|Optimal - Fast &amp; complete| I[&quot;Return top 10 matching items&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E red</div>
 <h3 id="1-post-filtering">1. Post-Filtering</h3>
 <p>In Post-Filtering, the database executes a standard HNSW vector search first, retrieves the top $K$ results (e.g. $K=100$), and then discards any items that do not match the metadata filter.</p>
 <ul>
@@ -206,9 +218,21 @@ LIMIT 5;</code></pre>
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Index Building Order</strong>: Always create your metadata indexes <em>before</em> generating HNSW indexes on large tables. If pgvector cannot find a metadata index, it may default to a sequential table scan, bypassing the HNSW graph entirely.</p>
+  <div class="alert-content"><p><strong>Index Building Order</strong>: Always create your metadata indexes <em>before</em> generating HNSW indexes on large tables. If pgvector cannot find a metadata index, it may default to a sequential table scan, bypassing the HNSW graph entirely. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
 </div>
 </div>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>pgvector Authors (2024)</strong>. <em>pgvector: Open-source vector similarity search for Postgres</em>. GitHub. <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/pgvector/pgvector</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -248,6 +272,7 @@ LIMIT 5;</code></pre>
               <li class="toc-item toc-h3"><a href="#1-single-stage-filtering-in-qdrant" class="toc-link">1. Single-Stage Filtering in Qdrant</a></li>
               <li class="toc-item toc-h3"><a href="#2-hybrid-querying-in-pgvector-postgresql" class="toc-link">2. Hybrid Querying in pgvector (PostgreSQL)</a></li>
               <li class="toc-item toc-h2"><a href="#important-pitfalls-in-hybrid-search" class="toc-link">Important Pitfalls in Hybrid Search</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

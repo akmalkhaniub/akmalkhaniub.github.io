@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/event-driven-agent-trajectories-event-sourcing.html">
   <meta property="og:title" content="Event-Sourced Agent Trajectories: Immutable Auditing for Distributed Swarms">
   <meta property="og:description" content="Designing event-sourced architectures for agent swarms: recording execution steps as immutable delta events and projecting aggregate state.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/event-driven-agent-trajectories-event-sourcing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-07-25">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Event-Sourced Agent Trajectories: Immutable Auditing for Distributed Swarms">
   <meta name="twitter:description" content="Designing event-sourced architectures for agent swarms: recording execution steps as immutable delta events and projecting aggregate state.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/event-driven-agent-trajectories-event-sourcing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Event-Sourced Agent Trajectories: Immutable Auditing for Distributed Swarms",
   "description": "Designing event-sourced architectures for agent swarms: recording execution steps as immutable delta events and projecting aggregate state.",
   "url": "https://akmalkhaniub.github.io/blog/event-driven-agent-trajectories-event-sourcing.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/event-driven-agent-trajectories-event-sourcing.jpg",
   "datePublished": "2026-07-25",
   "keywords": "System Design, Event Sourcing, Agent Swarms, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Event-Sourced Agent Trajectories: Immutable Auditing for Distributed Swarms Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/event-driven-agent-trajectories-event-sourcing.jpg" class="article-cover-img" alt="Event-Sourced Agent Trajectories: Immutable Auditing for Distributed Swarms Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Event-Sourced Agent Trajectories: Immutable Auditing for Distributed Swarms</h1>
             <div class="article-meta">
@@ -112,9 +112,10 @@
                 <li><a href="#key-architectural-benefits">Key Architectural Benefits</a></li>
                 <li><a href="#python-trajectory-event-store-projection">Python Trajectory Event Store &amp; Projection</a></li>
                 <li><a href="#important-pitfalls-in-event-sourcing">Important Pitfalls in Event Sourcing</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In traditional software architectures, database state is typically managed using CRUD (Create, Read, Update, Delete) patterns. In this model, the database only stores the <strong>current state</strong> of a record. If a row is updated, the previous state is overwritten and lost forever.</p>
+<p>In traditional software architectures, database state is typically managed using CRUD (Create, Read, Update, Delete) patterns <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. In this model, the database only stores the <strong>current state</strong> of a record. If a row is updated, the previous state is overwritten and lost forever.</p>
 <p>When designing complex multi-agent swarms, CRUD database patterns are a major liability. If an agent fails after 15 tool execution steps, a simple state table cannot answer critical questions:</p>
 <ul>
 <li><em>Why did the agent decide to call a specific tool at Step 8?</em></li>
@@ -126,13 +127,24 @@
 <h2 id="the-event-sourcing-model">The Event Sourcing Model</h2>
 <p>In an event-sourced agent architecture, the system state is reconstructed dynamically by reading the event stream from the beginning and applying each event to a blank state object—a process called <strong>Projection</strong>:</p>
 <div class="mermaid">flowchart TD
-  A[TaskStartedEvent] --&gt;|Project| State1[State: Active]
-  State1 --&gt; B[ThoughtEmittedEvent]
-  B --&gt;|Project| State2[State: Rationale Added]
-  State2 --&gt; C[ToolCalledEvent]
-  C --&gt;|Project| State3[State: Awaiting Tool Output]
-  State3 --&gt; D[ToolCompletedEvent]
-  D --&gt;|Project| CurrentState[Final Reconstructed Agent State]</div>
+  A[&quot;TaskStartedEvent&quot;] --&gt;|Project| State1[&quot;State: Active&quot;]
+  State1 --&gt; B[&quot;ThoughtEmittedEvent&quot;]
+  B --&gt;|Project| State2[&quot;State: Rationale Added&quot;]
+  State2 --&gt; C[&quot;ToolCalledEvent&quot;]
+  C --&gt;|Project| State3[&quot;State: Awaiting Tool Output&quot;]
+  State3 --&gt; D[&quot;ToolCompletedEvent&quot;]
+  D --&gt;|Project| CurrentState[&quot;Final Reconstructed Agent State&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,State3 blue
+class State1,D green
+class B,CurrentState purple
+class State2 yellow
+class C red</div>
 <h3 id="key-architectural-benefits">Key Architectural Benefits</h3>
 <ol>
 <li><strong>100% Audit Trace</strong>: Full execution history is preserved. Every decision is auditable down to the millisecond.</li>
@@ -240,9 +252,20 @@ if __name__ == &quot;__main__&quot;:
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Schema Versioning</strong>: As your agent tools change, event payloads will change. Never modify existing historical events in your database. Instead, implement versioned event adapters (e.g. <code>ToolExecutedV2</code>) to handle old event schemas during projection loops.</p>
+  <div class="alert-content"><p><strong>Schema Versioning</strong>: As your agent tools change, event payloads will change. Never modify existing historical events in your database. Instead, implement versioned event adapters (e.g. <code>ToolExecutedV2</code>) to handle old event schemas during projection loops. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
 </div>
 </div>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -278,6 +301,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h3"><a href="#key-architectural-benefits" class="toc-link">Key Architectural Benefits</a></li>
               <li class="toc-item toc-h2"><a href="#python-trajectory-event-store-projection" class="toc-link">Python Trajectory Event Store &amp; Projection</a></li>
               <li class="toc-item toc-h2"><a href="#important-pitfalls-in-event-sourcing" class="toc-link">Important Pitfalls in Event Sourcing</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

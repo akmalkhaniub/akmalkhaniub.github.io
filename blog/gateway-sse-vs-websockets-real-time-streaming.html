@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/gateway-sse-vs-websockets-real-time-streaming.html">
   <meta property="og:title" content="SSE vs. WebSockets: Architectural Choices for Real-Time Token Streaming">
   <meta property="og:description" content="Engineering real-time agent output: comparing Server-Sent Events (SSE) and WebSockets for streaming token chunks in web interfaces.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/gateway-sse-vs-websockets-real-time-streaming.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-06-07">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="SSE vs. WebSockets: Architectural Choices for Real-Time Token Streaming">
   <meta name="twitter:description" content="Engineering real-time agent output: comparing Server-Sent Events (SSE) and WebSockets for streaming token chunks in web interfaces.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/gateway-sse-vs-websockets-real-time-streaming.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "SSE vs. WebSockets: Architectural Choices for Real-Time Token Streaming",
   "description": "Engineering real-time agent output: comparing Server-Sent Events (SSE) and WebSockets for streaming token chunks in web interfaces.",
   "url": "https://akmalkhaniub.github.io/blog/gateway-sse-vs-websockets-real-time-streaming.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/gateway-sse-vs-websockets-real-time-streaming.jpg",
   "datePublished": "2026-06-07",
   "keywords": "System Design, Gateways, API Design, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/gateway-sse-vs-websockets-real-time-streaming.jpg" class="article-cover-img" alt="SSE vs. WebSockets: Architectural Choices for Real-Time Token Streaming Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">SSE vs. WebSockets: Architectural Choices for Real-Time Token Streaming</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#2-decoupling-streaming-gateways">2. Decoupling Streaming Gateways</a></li>
                 <li><a href="#code-demo-fastapi-sse-websocket-streaming-server">Code Demo: FastAPI SSE &amp; WebSocket Streaming Server</a></li>
                 <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -125,24 +126,34 @@ When building agentic web applications, displaying the final output after the ag
 <h2 id="streaming-real-time-agent-outputs">Streaming Real-Time Agent Outputs</h2>
 <p>Traditional HTTP request-response cycles are built for static content:</p>
 <ul>
-<li><strong>The Latency Bottleneck</strong>: Waiting for a complete LLM generation before sending a response frustrates users.</li>
+<li><strong>The Latency Bottleneck</strong>: Waiting for a complete LLM generation before sending a response frustrates users <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Bi-directional vs. Uni-directional Needs</strong>: Agents stream data to the client, but clients occasionally need to interrupt execution threads mid-stream.</li>
 <li><strong>The Options</strong>: <strong>SSE</strong> (Server-Sent Events) and <strong>WebSockets</strong>. While SSE is simple and built on standard HTTP, WebSockets supports full-duplex, bi-directional communication channels.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     subgraph SG1_ServerSentEvents [&quot;Server-Sent Events SSE&quot;]
-        Client1[Client] --&gt;|HTTP GET Request| Server1[FastAPI Server]
+        Client1[&quot;Client&quot;] --&gt;|HTTP GET Request| Server1[&quot;FastAPI Server&quot;]
         Server1 --&gt;|Keep-Alive Stream Header| Client1
         Server1 --&gt;|Stream Token Chunk 1| Client1
         Server1 --&gt;|Stream Token Chunk 2| Client1
     end
     
     subgraph SG2_WebsocketsWs [&quot;WebSockets WS&quot;]
-        Client2[Client] --&gt;|Upgrade Request| Server2[FastAPI Server]
+        Client2[&quot;Client&quot;] --&gt;|Upgrade Request| Server2[&quot;FastAPI Server&quot;]
         Server2 --&gt;|Establish Bi-directional socket| Client2
         Server2 &lt;--&gt;|Send / Receive frames concurrently| Client2
-    end</div>
+    end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client1 blue
+class Server1 green
+class Client2 purple
+class Server2 yellow</div>
 <hr>
 <h2 id="1-comparing-topologies-sse-vs-websockets">1. Comparing Topologies: SSE vs. WebSockets</h2>
 <p>Choose the correct protocol based on your application&#39;s communication requirements:</p>
@@ -216,8 +227,16 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Default to SSE for Text</strong>: Use Server-Sent Events (SSE) as your default protocol for simple streaming text outputs to minimize connection setup overhead.</li>
 <li><strong>Use WebSockets for Interactive Swarms</strong>: Implement WebSockets when you need bi-directional communication to support real-time client interrupts.</li>
-<li><strong>Adjust Gateway Timeouts</strong>: Configure proxy server timeouts (e.g. <code>proxy_read_timeout</code> in Nginx) to match maximum planning latencies.</li>
+<li><strong>Adjust Gateway Timeouts</strong>: Configure proxy server timeouts (e.g. <code>proxy_read_timeout</code> in Nginx) to match maximum planning latencies. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -254,6 +273,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-decoupling-streaming-gateways" class="toc-link">2. Decoupling Streaming Gateways</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-fastapi-sse-websocket-streaming-server" class="toc-link">Code Demo: FastAPI SSE &amp; WebSocket Streaming Server</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

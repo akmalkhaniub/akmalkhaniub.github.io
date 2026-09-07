@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/v8-javascript-engine-memory-management-orinoco-scavenger.html">
   <meta property="og:title" content="V8 JavaScript Engine Memory Management: Generational Garbage Collection, Orinoco &amp; Scavenger">
   <meta property="og:description" content="Web browser runtime memory engineering: implementing V8 generational memory spaces (New Space vs Old Space), Cheney's Copying Scavenger algorithm, Orinoco parallel worker threads, and 32-bit Pointer Compression.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/v8-javascript-engine-memory-management-orinoco-scavenger.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="V8 JavaScript Engine Memory Management: Generational Garbage Collection, Orinoco &amp; Scavenger">
   <meta name="twitter:description" content="Web browser runtime memory engineering: implementing V8 generational memory spaces (New Space vs Old Space), Cheney's Copying Scavenger algorithm, Orinoco parallel worker threads, and 32-bit Pointer Compression.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/v8-javascript-engine-memory-management-orinoco-scavenger.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "V8 JavaScript Engine Memory Management: Generational Garbage Collection, Orinoco & Scavenger",
   "description": "Web browser runtime memory engineering: implementing V8 generational memory spaces (New Space vs Old Space), Cheney's Copying Scavenger algorithm, Orinoco parallel worker threads, and 32-bit Pointer Compression.",
   "url": "https://akmalkhaniub.github.io/blog/v8-javascript-engine-memory-management-orinoco-scavenger.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/v8-javascript-engine-memory-management-orinoco-scavenger.jpg",
   "datePublished": "2026-08-18",
   "keywords": "V8 Engine, Garbage Collection, Orinoco, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="V8 JavaScript Engine Memory Management: Generational Garbage Collection, Orinoco &amp; Scavenger Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/v8-javascript-engine-memory-management-orinoco-scavenger.jpg" class="article-cover-img" alt="V8 JavaScript Engine Memory Management: Generational Garbage Collection, Orinoco &amp; Scavenger Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">V8 JavaScript Engine Memory Management: Generational Garbage Collection, Orinoco &amp; Scavenger</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-v8-generational-heap-cheneys-scavenger-engine">Python Implementation: V8 Generational Heap &amp; Cheney's Scavenger Engine</a></li>
                 <li><a href="#v8-memory-gotchas-best-practices">V8 Memory Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In web browsers and server-side runtimes (<strong>Google Chrome</strong>, <strong>Node.js</strong>, <strong>Deno</strong>, <strong>Electron</strong>), the <strong>V8 JavaScript Engine</strong> executes billions of JavaScript functions per second.</p>
+<p>In web browsers and server-side runtimes (<strong>Google Chrome</strong>, <strong>Node.js</strong>, <strong>Deno</strong>, <strong>Electron</strong>), the <strong>V8 JavaScript Engine</strong> executes billions of JavaScript functions per second <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>JavaScript developers never manually call <code>malloc()</code> or <code>free()</code>. Memory allocation and deallocation are handled automatically by V8&#39;s memory management subsystem.</p>
 <p>To maintain 60 FPS smooth web animations and handle high-concurrency Node.js API streams without jank, V8 utilizes a <strong>Generational Garbage Collector</strong> project named <strong>Orinoco</strong>.</p>
 <p>By leveraging the <strong>Weak Generational Hypothesis</strong>, <strong>Cheney&#39;s Copying Scavenger</strong>, <strong>Concurrent Mark-Sweep-Compact</strong>, and <strong>V8 Pointer Compression</strong>, Orinoco reclaims short-lived objects in milliseconds.</p>
@@ -125,7 +126,7 @@
 <p>How V8 organizes New Space semi-spaces and executes Cheney&#39;s Copying Scavenger to promote surviving objects to Old Space:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_V8HeapGeneration [&quot;V8 Heap Generation Layout&quot;]
-    Heap[V8 Isolate Heap Memory] --&gt; NewSpace[&quot;Baby Objects: New Space (Nursery 1-64 MB)&quot;]
+    Heap[&quot;V8 Isolate Heap Memory&quot;] --&gt; NewSpace[&quot;Baby Objects: New Space (Nursery 1-64 MB)&quot;]
     Heap --&gt; OldSpace[&quot;Adult Objects: Old Space (Promoted Long-Lived Data)&quot;]
     
     subgraph SG2_NewSpaceSemi [&quot;New Space Semi-Spaces&quot;]
@@ -135,10 +136,21 @@
   end
   
   subgraph SG3_CheneySCopying [&quot;Cheney's Copying Scavenger Algorithm (Minor GC)&quot;]
-    FromSpace --&gt;|Traverse Live Roots| Copy[Copy Live Objects Contiguously to To-Space]
-    Copy --&gt;|Object Survived 2 Scavenge Cycles?| Promote[Promote Object to Old Space]
+    FromSpace --&gt;|Traverse Live Roots| Copy[&quot;Copy Live Objects Contiguously to To-Space&quot;]
+    Copy --&gt;|Object Survived 2 Scavenge Cycles?| Promote[&quot;Promote Object to Old Space&quot;]
     Copy --&gt;|Swap Roles| Flip[&quot; Flip Semi-Spaces: To-Space becomes NEW From-Space!&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Heap,Copy blue
+class NewSpace,Promote green
+class OldSpace,Flip purple
+class FromSpace yellow
+class ToSpace red</div>
 <h3 id="core-v8-memory-management-mechanics">Core V8 Memory Management Mechanics</h3>
 <ol>
 <li><strong>The Weak Generational Hypothesis</strong>:<ul>
@@ -287,8 +299,16 @@ if __name__ == &quot;__main__&quot;:
 <p>V8&#39;s Orinoco generational garbage collector (powering <strong>Google Chrome</strong>, <strong>Node.js</strong>, and <strong>Electron</strong>) reports:</p>
 <ul>
 <li><strong>Over $90%$ Faster Minor GC Times</strong>: Cheney&#39;s Copying Scavenger reclaims short-lived nursery objects in under $1\text{ millisecond}$.</li>
-<li><strong>$40%$ Reduced Heap Footprint</strong>: 32-bit Pointer Compression slashes RAM utilization across millions of active Chrome browser tabs.</li>
+<li><strong>$40%$ Reduced Heap Footprint</strong>: 32-bit Pointer Compression slashes RAM utilization across millions of active Chrome browser tabs. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lidén, P., &amp; Karlsson, S. (2018)</strong>. <em>ZGC: A Scalable Low-Latency Garbage Collector</em>. Oracle / OpenJDK. <a href="https://openjdk.org/jeps/333" target="_blank" rel="noopener">https://openjdk.org/jeps/333</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -325,6 +345,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-v8-generational-heap-cheneys-scavenger-engine" class="toc-link">Python Implementation: V8 Generational Heap &amp; Cheney's Scavenger Engine</a></li>
               <li class="toc-item toc-h2"><a href="#v8-memory-gotchas-best-practices" class="toc-link">V8 Memory Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

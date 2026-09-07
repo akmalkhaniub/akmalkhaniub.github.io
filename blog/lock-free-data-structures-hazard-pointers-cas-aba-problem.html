@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/lock-free-data-structures-hazard-pointers-cas-aba-problem.html">
   <meta property="og:title" content="Lock-Free Data Structures: Hazard Pointers, Atomic Compare-And-Swap (CAS) &amp; ABA Problem">
   <meta property="og:description" content="Multi-core lockless concurrency: implementing atomic Compare-And-Swap (CAS) loops, Treiber stacks, ABA tagged pointers, and Hazard Pointer safe memory reclamation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/lock-free-data-structures-hazard-pointers-cas-aba-problem.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Lock-Free Data Structures: Hazard Pointers, Atomic Compare-And-Swap (CAS) &amp; ABA Problem">
   <meta name="twitter:description" content="Multi-core lockless concurrency: implementing atomic Compare-And-Swap (CAS) loops, Treiber stacks, ABA tagged pointers, and Hazard Pointer safe memory reclamation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/lock-free-data-structures-hazard-pointers-cas-aba-problem.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Lock-Free Data Structures: Hazard Pointers, Atomic Compare-And-Swap (CAS) & ABA Problem",
   "description": "Multi-core lockless concurrency: implementing atomic Compare-And-Swap (CAS) loops, Treiber stacks, ABA tagged pointers, and Hazard Pointer safe memory reclamation.",
   "url": "https://akmalkhaniub.github.io/blog/lock-free-data-structures-hazard-pointers-cas-aba-problem.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/lock-free-data-structures-hazard-pointers-cas-aba-problem.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Lock-Free, CAS, Hazard Pointers, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Lock-Free Data Structures: Hazard Pointers, Atomic Compare-And-Swap (CAS) &amp; ABA Problem Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/lock-free-data-structures-hazard-pointers-cas-aba-problem.jpg" class="article-cover-img" alt="Lock-Free Data Structures: Hazard Pointers, Atomic Compare-And-Swap (CAS) &amp; ABA Problem Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Lock-Free Data Structures: Hazard Pointers, Atomic Compare-And-Swap (CAS) &amp; ABA Problem</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#python-implementation-lock-free-stack-with-aba-protection-hazard-pointers">Python Implementation: Lock-Free Stack with ABA Protection &amp; Hazard Pointers</a></li>
                 <li><a href="#lock-free-concurrency-gotchas-best-practices">Lock-Free Concurrency Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -120,7 +121,7 @@
   <div class="alert-content"><p><strong>Catalog note</strong>: This post overlaps <a href="lock-free-data-structures-cas-aba-hazard-pointers.html">Lock-Free Data Structures: CAS, ABA, and Hazard Pointers</a>. Read them as a pair, not as two competing introductions.</p>
 </div>
 </div>
-<p>In high-concurrency systems (such as high-frequency trading engines, kernel task schedulers, and event loops), utilizing traditional mutex locks (<code>pthread_mutex_t</code> or <code>std::mutex</code>) introduces severe performance penalties.</p>
+<p>In high-concurrency systems (such as high-frequency trading engines, kernel task schedulers, and event loops), utilizing traditional mutex locks (<code>pthread_mutex_t</code> or <code>std::mutex</code>) introduces severe performance penalties <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Mutexes rely on kernel-level thread blocking. When lock contention occurs, the OS kernel context switches the thread off the CPU, incurring <strong>$1,000\text{ns}$ to $3,000\text{ns}$ context switch overheads</strong>, priority inversion, and potential deadlocks.</p>
 <p>To achieve non-blocking, multi-core scalability, systems engineers design <strong>Lock-Free Data Structures</strong>.</p>
 <p>Lock-free algorithms guarantee that at least one thread makes continuous progress in a finite number of steps, operating directly on CPU hardware atomic instructions like <strong>Compare-And-Swap (CAS)</strong>.</p>
@@ -131,22 +132,33 @@
 <p>How Lock-Free Queues use Compare-And-Swap (CAS) and Hazard Pointers to prevent memory corruption:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_LockFreeCas [&quot;Lock-Free CAS Retry Loop&quot;]
-    ThreadA[Thread A: Enqueue / Dequeue] --&gt;|Read Current Head Pointer A| ReadHead[Read Head -&gt; Pointer A]
-    ReadHead --&gt;|Compute Next Pointer B| ComputeNext[Compute Next Node -&gt; Pointer B]
+    ThreadA[&quot;Thread A: Enqueue / Dequeue&quot;] --&gt;|Read Current Head Pointer A| ReadHead[&quot;Read Head -&gt; Pointer A&quot;]
+    ReadHead --&gt;|Compute Next Pointer B| ComputeNext[&quot;Compute Next Node -&gt; Pointer B&quot;]
     ComputeNext --&gt;|Atomic CAS(Head, Expected A, New B)| CASAttempt{Hardware CAS Instruction}
     
-    CASAttempt --&gt;|Success - Updated atomically| Complete[Operation Complete]
+    CASAttempt --&gt;|Success - Updated atomically| Complete[&quot;Operation Complete&quot;]
     CASAttempt --&gt;|Failure - Interrupted by Thread B| ReadHead
   end
   
   subgraph SG2_HazardPointerMemory [&quot;Hazard Pointer Memory Protection (Prevents ABA &amp; Use-After-Free)&quot;]
-    ThreadA --&gt;|Publish Active Pointer to Hazard Array| HazardPointer[Hazard Pointer: 'Pointer A in Use!']
-    HazardPointer -.-&gt;|Guard Node Memory| NodeA[Queue Node A Memory]
+    ThreadA --&gt;|Publish Active Pointer to Hazard Array| HazardPointer[&quot;Hazard Pointer: 'Pointer A in Use!'&quot;]
+    HazardPointer -.-&gt;|Guard Node Memory| NodeA[&quot;Queue Node A Memory&quot;]
     
-    ThreadB[Thread B: Retires Node A] --&gt;|Check Hazard Array| GuardCheck{Is Pointer A in Hazard Array?}
-    GuardCheck --&gt;|Yes - Reader active!| DeferFree[Defer Free to Retirement List]
-    GuardCheck --&gt;|No - Safe to delete| FreeMemory[Reclaim Memory Page]
-  end</div>
+    ThreadB[&quot;Thread B: Retires Node A&quot;] --&gt;|Check Hazard Array| GuardCheck{Is Pointer A in Hazard Array?}
+    GuardCheck --&gt;|Yes - Reader active!| DeferFree[&quot;Defer Free to Retirement List&quot;]
+    GuardCheck --&gt;|No - Safe to delete| FreeMemory[&quot;Reclaim Memory Page&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ThreadA,NodeA blue
+class ReadHead,ThreadB green
+class ComputeNext,DeferFree purple
+class Complete,FreeMemory yellow
+class HazardPointer red</div>
 <h3 id="core-lock-free-concurrency-mechanics">Core Lock-Free Concurrency Mechanics</h3>
 <ol>
 <li><strong>Atomic Compare-And-Swap (CAS)</strong>: A hardware-level atomic instruction (<code>LOCK CMPXCHG</code> on x86, <code>LDREX/STREX</code> or <code>CAS</code> on ARM64) that performs an atomic read-modify-write:
@@ -305,8 +317,16 @@ if __name__ == &quot;__main__&quot;:
 <p>High-concurrency systems utilizing lock-free data structures (such as <strong>LMAX Disruptor</strong>, <strong>Linux Kernel RCU</strong>, and <strong>Jellyfish</strong>) report:</p>
 <ul>
 <li><strong>$10\times$ Higher Multi-Core Throughput</strong>: Processing tens of millions of concurrent operations per second without lock acquisition delays.</li>
-<li><strong>Zero Deadlocks or Priority Inversion</strong>: Lock-free progress guarantees ensure high-priority threads are never blocked by low-priority worker threads.</li>
+<li><strong>Zero Deadlocks or Priority Inversion</strong>: Lock-free progress guarantees ensure high-priority threads are never blocked by low-priority worker threads. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Michael, M. M. (2004)</strong>. <em>Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects</em>. IEEE TPDS. <a href="https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf" target="_blank" rel="noopener">https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Bloom, B. H. (1970)</strong>. <em>Space/Time Trade-offs in Hash Coding with Allowable Errors</em>. CACM. <a href="https://doi.org/10.1145/362686.362692" target="_blank" rel="noopener">https://doi.org/10.1145/362686.362692</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -343,6 +363,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-lock-free-stack-with-aba-protection-hazard-pointers" class="toc-link">Python Implementation: Lock-Free Stack with ABA Protection &amp; Hazard Pointers</a></li>
               <li class="toc-item toc-h2"><a href="#lock-free-concurrency-gotchas-best-practices" class="toc-link">Lock-Free Concurrency Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

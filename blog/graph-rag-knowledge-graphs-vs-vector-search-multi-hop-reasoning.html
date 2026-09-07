@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/graph-rag-knowledge-graphs-vs-vector-search-multi-hop-reasoning.html">
   <meta property="og:title" content="Graph-RAG: Why Knowledge Graph Traversal Beats Naive Vector Search for Multi-Hop Agent Reasoning">
   <meta property="og:description" content="Why baseline vector RAG fails on global questions: Microsoft Graph-RAG architecture, entity-relationship extraction, Leiden community clustering, and multi-hop graph traversal for enterprise AI agents.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/graph-rag-knowledge-graphs-vs-vector-search-multi-hop-reasoning.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-09-01">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Graph-RAG: Why Knowledge Graph Traversal Beats Naive Vector Search for Multi-Hop Agent Reasoning">
   <meta name="twitter:description" content="Why baseline vector RAG fails on global questions: Microsoft Graph-RAG architecture, entity-relationship extraction, Leiden community clustering, and multi-hop graph traversal for enterprise AI agents.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/graph-rag-knowledge-graphs-vs-vector-search-multi-hop-reasoning.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Graph-RAG: Why Knowledge Graph Traversal Beats Naive Vector Search for Multi-Hop Agent Reasoning",
   "description": "Why baseline vector RAG fails on global questions: Microsoft Graph-RAG architecture, entity-relationship extraction, Leiden community clustering, and multi-hop graph traversal for enterprise AI agents.",
   "url": "https://akmalkhaniub.github.io/blog/graph-rag-knowledge-graphs-vs-vector-search-multi-hop-reasoning.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/graph-rag-knowledge-graphs-vs-vector-search-multi-hop-reasoning.jpg",
   "datePublished": "2026-09-01",
   "keywords": "Graph-RAG, Knowledge Graphs, Vector Search, AI Agents, System Design, RAG",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Graph-RAG: Why Knowledge Graph Traversal Beats Naive Vector Search for Multi-Hop Agent Reasoning Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/graph-rag-knowledge-graphs-vs-vector-search-multi-hop-reasoning.jpg" class="article-cover-img" alt="Graph-RAG: Why Knowledge Graph Traversal Beats Naive Vector Search for Multi-Hop Agent Reasoning Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Graph-RAG: Why Knowledge Graph Traversal Beats Naive Vector Search for Multi-Hop Agent Reasoning</h1>
             <div class="article-meta">
@@ -118,9 +118,10 @@
                 <li><a href="#python-implementation-in-memory-multi-hop-graph-rag-engine">Python Implementation: In-Memory Multi-Hop Graph-RAG Engine</a></li>
                 <li><a href="#architectural-comparison-flat-vector-rag-vs-graph-rag">Architectural Comparison: Flat Vector RAG vs Graph-RAG</a></li>
                 <li><a href="#the-architectural-horizon">The Architectural Horizon</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>If you ask a standard enterprise Retrieval-Augmented Generation (RAG) system a localized question—<em>&quot;What is the severance multiplier in Section 4.2 of the employee handbook?&quot;</em>—it succeeds with surgical precision. It calculates cosine similarities between your query and thousands of 512-token chunks, extracts the top three snippets, and summarizes them cleanly.</p>
+<p>If you ask a standard enterprise Retrieval-Augmented Generation (RAG) system a localized question—<em>&quot;What is the severance multiplier in Section 4 <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.2 of the employee handbook?&quot;</em>—it succeeds with surgical precision. It calculates cosine similarities between your query and thousands of 512-token chunks, extracts the top three snippets, and summarizes them cleanly.</p>
 <p>Now ask that same system a question that actually matters to executive leadership:</p>
 <blockquote>
 <p><em>&quot;Across our eighty microservices and four years of architecture incident reviews, what single dependency represents our highest systemic risk of cascading failure?&quot;</em></p>
@@ -132,7 +133,7 @@
 <div class="mermaid">flowchart TD
   subgraph SG1_VectorRagVs [&quot;Vector RAG vs Graph-RAG Architecture&quot;]
     subgraph SG2_1FlatVector [&quot;1. Flat Vector RAG (Isolated Chunks)&quot;]
-      Q1[&quot;Holistic Query: 'Identify cross-service failure modes'&quot;] --&gt; VectorSearch[Top-K Cosine Similarity]
+      Q1[&quot;Holistic Query: 'Identify cross-service failure modes'&quot;] --&gt; VectorSearch[&quot;Top-K Cosine Similarity&quot;]
       VectorSearch --&gt; ChunkA[&quot;Chunk 42 (Unlinked)&quot;]
       VectorSearch --&gt; ChunkB[&quot;Chunk 118 (Unlinked)&quot;]
       VectorSearch --&gt; ChunkC[&quot;Chunk 804 (Unlinked)&quot;]
@@ -140,13 +141,24 @@
     end
 
     subgraph SG3_2GraphRag [&quot;2. Graph-RAG (Connected Knowledge Graph)&quot;]
-      Q2[&quot;Holistic Query: 'Identify cross-service failure modes'&quot;] --&gt; GraphEngine[Graph Retrieval Engine]
+      Q2[&quot;Holistic Query: 'Identify cross-service failure modes'&quot;] --&gt; GraphEngine[&quot;Graph Retrieval Engine&quot;]
       GraphEngine --&gt; Nodes[&quot;Entity Extraction: Services, Databases, Gateways&quot;]
       Nodes --&gt; Edges[&quot;Directed Edges: CALLS, DEPENDS_ON, WRITES_TO&quot;]
       Edges --&gt; Clusters[&quot;Leiden Community Summaries&quot;]
       Clusters --&gt; SynthesizedAnswer[&quot;Synthesized Multi-Hop Causal Discovery&quot;]
     end
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Q1,FailNote,Clusters blue
+class VectorSearch,Q2,SynthesizedAnswer green
+class ChunkA,GraphEngine purple
+class ChunkB,Nodes yellow
+class ChunkC,Edges red</div>
 <hr>
 <h2 id="1-the-three-structural-blindspots-of-vector-chunking">1. The Three Structural Blindspots of Vector Chunking</h2>
 <p>Splitting documents into fixed-width sliding windows of 512 tokens was an expedient hack from the early days of semantic search. In enterprise corpora, this strategy produces three fatal failure modes:</p>
@@ -349,7 +361,19 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="the-architectural-horizon">The Architectural Horizon</h2>
 <p>Vector embeddings treat human knowledge as a bag of coordinates in high-dimensional space. But human knowledge is not a cloud of points; it is a web of relationships, hierarchies, and causal laws.</p>
-<p>For production AI agents tasked with navigating enterprise architectures, codebases, or legal contracts, <strong>connectivity is intelligence</strong>. By anchoring agent memory in structured knowledge graphs, engineers replace stochastic guessing with deterministic, traversable truth.</p>
+<p>For production AI agents tasked with navigating enterprise architectures, codebases, or legal contracts, <strong>connectivity is intelligence</strong>. By anchoring agent memory in structured knowledge graphs, engineers replace stochastic guessing with deterministic, traversable truth. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Edge, D., et al. (2024)</strong>. <em>From Local to Global: A Graph RAG Approach to Query-Focused Summarization</em>. arXiv. <a href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noopener">https://arxiv.org/abs/2404.16130</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Francis, N., et al. (2018)</strong>. <em>Cypher: An Evolving Query Language for Property Graphs</em>. SIGMOD. <a href="https://doi.org/10.1145/3183713.3190657" target="_blank" rel="noopener">https://doi.org/10.1145/3183713.3190657</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Redis Ltd. (2024)</strong>. <em>Redis Documentation</em>. redis.io. <a href="https://redis.io/docs/" target="_blank" rel="noopener">https://redis.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -391,6 +415,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-in-memory-multi-hop-graph-rag-engine" class="toc-link">Python Implementation: In-Memory Multi-Hop Graph-RAG Engine</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-comparison-flat-vector-rag-vs-graph-rag" class="toc-link">Architectural Comparison: Flat Vector RAG vs Graph-RAG</a></li>
               <li class="toc-item toc-h2"><a href="#the-architectural-horizon" class="toc-link">The Architectural Horizon</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

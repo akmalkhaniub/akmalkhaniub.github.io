@@ -1,6 +1,6 @@
 # Google Spanner Architecture: TrueTime Atomic Clocks, External Consistency & Multi-Region Distributed Transactions
 
-In globally-distributed enterprise infrastructure (**Google Cloud Spanner**, **Global Banking Core**, **AdTech Exchange**), databases must execute ACID transactions across continents while guaranteeing strict serializability.
+In globally-distributed enterprise infrastructure (**Google Cloud Spanner**, **Global Banking Core**, **AdTech Exchange**), databases must execute ACID transactions across continents while guaranteeing strict serializability [1].
 
 In classical distributed systems (governed by the **CAP Theorem**), achieving global serializable isolation across multi-region clusters required expensive central lock managers or incurred read latency spikes.
 
@@ -21,7 +21,7 @@ How Google TrueTime bounds clock uncertainty $\epsilon$ and uses the Commit Wait
 ```mermaid
 flowchart TD
   subgraph SG1_GoogleDatacenterHardware ["Google Datacenter Hardware Infrastructure"]
-    GPS[Datacenter GPS Receivers] & Atomic[Rubidium Atomic Clocks] --> TrueTimeEngine[TrueTime Master Daemon]
+    GPS["Datacenter GPS Receivers"] & Atomic["Rubidium Atomic Clocks"] --> TrueTimeEngine["TrueTime Master Daemon"]
   end
   
   subgraph SG2_TruetimeApiInterval ["TrueTime API & Interval Bounds: TT.now() = [t_earliest, t_latest]"]
@@ -34,6 +34,17 @@ flowchart TD
     WaitCheck -->|No - Wait 2 * ε| Sleep["⏳ Commit Wait Sleep (e.g. 4ms)"]
     WaitCheck -->|Yes - Safe!| CommitSuccess[" Transaction T1 Committed! (Guarantees T2 > T1 Globally)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class GPS,WaitCheck blue
+class Atomic,Sleep green
+class TrueTimeEngine,CommitSuccess purple
+class TT yellow
+class Ts1 red
 ```
 
 ### Core Google Spanner Mechanics
@@ -166,4 +177,13 @@ When building globally-distributed database systems:
 ## Real-World Enterprise Impact
 Google Spanner's TrueTime architecture reports:
 * **Global External Consistency (Linearizability)**: Guarantees strict causality for multi-region transactional workloads across global datacenters.
-* **$100\%$ Lock-Free Multi-Region Reads**: Snapshot reads execute at physical TrueTime timestamps without acquiring any write locks.
+* **$100\%$ Lock-Free Multi-Region Reads**: Snapshot reads execute at physical TrueTime timestamps without acquiring any write locks. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1998)**. *The Part-Time Parliament*. ACM TOCS. [https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf](https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf)
+2. **Lamport, L. (2001)**. *Paxos Made Simple*. ACM SIGACT News. [https://lamport.azurewebsites.net/pubs/paxos-simple.pdf](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf)
+3. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+4. **Corbett, J. C., et al. (2012)**. *Spanner: Google's Globally-Distributed Database*. OSDI. [https://research.google/pubs/pub39966/](https://research.google/pubs/pub39966/)
+5. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+6. **Thomson, A., et al. (2012)**. *Calvin: Fast Distributed Transactions for Partitioned Database Systems*. SIGMOD. [https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf](https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf)

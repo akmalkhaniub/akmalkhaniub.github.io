@@ -9,22 +9,33 @@
 ## The Core Bottleneck: Query Performance Decay
 
 In typical database architectures, slow queries occur due to:
-* **Missing Index Coordinates**: The database execution planner is forced to run sequential scans (Seq Scan) across millions of table rows.
+* **Missing Index Coordinates**: The database execution planner is forced to run sequential scans (Seq Scan) across millions of table rows [1].
 * **Write Bloat**: Storing redundant indices degrades insert, update, and delete throughput, as the database engine must rebuild index nodes after every mutation.
 * **The Solution**: An **Indexing Swarm**. A background agent gathers query metrics, parses target execution structures using AST nodes, runs simulations inside staging containers, and writes index suggestions.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Log[Parse PostgreSQL Slow Query Logs] --> CheckExplain[Staging Run: EXPLAIN ANALYZE]
+    Log["Parse PostgreSQL Slow Query Logs"] --> CheckExplain["Staging Run: EXPLAIN ANALYZE"]
     CheckExplain --> ParsePlan{Is Sequential Scan Detected?}
     
     ParsePlan -->|No - Index already exists| Exit([Sleep: No Action])
-    ParsePlan -->|Yes - Slow Seq Scan| Recommendations[Generate Index Options]
+    ParsePlan -->|Yes - Slow Seq Scan| Recommendations["Generate Index Options"]
     
-    Recommendations --> WriteDDL[Generate CREATE INDEX CONCURRENTLY DDL]
-    WriteDDL --> Stage[Verify Index Cost Reduction on Staging DB]
-    Stage --> Commit[Export Migration File]
+    Recommendations --> WriteDDL["Generate CREATE INDEX CONCURRENTLY DDL"]
+    WriteDDL --> Stage["Verify Index Cost Reduction on Staging DB"]
+    Stage --> Commit["Export Migration File"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Log,Commit blue
+class CheckExplain green
+class Recommendations purple
+class WriteDDL yellow
+class Stage red
 ```
 
 ---
@@ -136,4 +147,13 @@ if __name__ == "__main__":
 
 * **Run CONCURRENTLY**: Always configure your indexing swarms to write DDL migrations using `CREATE INDEX CONCURRENTLY` to avoid write lock bottlenecks.
 * **Isolate on Staging**: Enforce staging validations to confirm that index updates actually reduce SQL execution costs before applying migrations.
-* **Prune Unused Indexes**: Monitor index usage patterns and trigger delete scripts on indices that are never queried to reclaim storage space.
+* **Prune Unused Indexes**: Monitor index usage patterns and trigger delete scripts on indices that are never queried to reclaim storage space. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

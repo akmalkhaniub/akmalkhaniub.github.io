@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/register-allocation-algorithms-graph-coloring-linear-scan-liveness.html">
   <meta property="og:title" content="Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis">
   <meta property="og:description" content="Compiler backend code generation: implementing variable liveness analysis, Chaitin-Briggs graph coloring, single-pass linear scan allocation, and CPU register spilling.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/register-allocation-algorithms-graph-coloring-linear-scan-liveness.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis">
   <meta name="twitter:description" content="Compiler backend code generation: implementing variable liveness analysis, Chaitin-Briggs graph coloring, single-pass linear scan allocation, and CPU register spilling.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/register-allocation-algorithms-graph-coloring-linear-scan-liveness.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Register Allocation Algorithms: Graph Coloring, Linear Scan & Liveness Analysis",
   "description": "Compiler backend code generation: implementing variable liveness analysis, Chaitin-Briggs graph coloring, single-pass linear scan allocation, and CPU register spilling.",
   "url": "https://akmalkhaniub.github.io/blog/register-allocation-algorithms-graph-coloring-linear-scan-liveness.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/register-allocation-algorithms-graph-coloring-linear-scan-liveness.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Compiler Design, Register Allocation, Code Generation, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/register-allocation-algorithms-graph-coloring-linear-scan-liveness.jpg" class="article-cover-img" alt="Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Register Allocation Algorithms: Graph Coloring, Linear Scan &amp; Liveness Analysis</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-linear-scan-register-allocator-engine">Python Implementation: Linear Scan Register Allocator Engine</a></li>
                 <li><a href="#register-allocation-gotchas-best-practices">Register Allocation Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In the final stages of a compiler backend (such as <strong>LLVM CodeGen</strong>, <strong>GCC</strong>, or <strong>Cranelift</strong>), the compiler must translate Intermediate Representation (IR) instructions into native CPU assembly.</p>
+<p>In the final stages of a compiler backend (such as <strong>LLVM CodeGen</strong>, <strong>GCC</strong>, or <strong>Cranelift</strong>), the compiler must translate Intermediate Representation (IR) instructions into native CPU assembly <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Compiler IR operates on an <strong>unlimited abstraction of virtual registers</strong> (<code>v0, v1, v2, ... v999</code>).</p>
 <p>However, physical CPU hardware possesses a small, fixed number of physical registers—for example, x86_64 provides only <strong>16 general-purpose registers</strong> (<code>RAX</code>, <code>RBX</code>, <code>RCX</code>, <code>RDX</code>, <code>RSI</code>, <code>RDI</code>, <code>R8</code>–<code>R15</code>).</p>
 <p>Mapping an arbitrary number of virtual registers onto $K$ physical CPU registers without data corruption is the task of <strong>Register Allocation</strong>.</p>
@@ -126,7 +127,7 @@
 <p>How compiler backends compute variable liveness intervals and allocate physical CPU registers:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_CompilerIrLiveness [&quot;Compiler IR &amp; Liveness Analysis&quot;]
-    IR[IR Code Sequence: v0, v1, v2, v3] --&gt; Liveness[Liveness Analysis: Compute Live Intervals]
+    IR[&quot;IR Code Sequence: v0, v1, v2, v3&quot;] --&gt; Liveness[&quot;Liveness Analysis: Compute Live Intervals&quot;]
     Liveness --&gt; Intervals[&quot;Live Intervals: v0=[1..4], v1=[2..6], v2=[3..5], v3=[7..9]&quot;]
   end
   
@@ -134,12 +135,23 @@
     Intervals --&gt; Allocator{Are Free CPU Registers Available?}
     
     Allocator --&gt;|Yes - Assign Register| RegAssign[&quot;v0 -&gt; RAX, v1 -&gt; RBX, v2 -&gt; RCX&quot;]
-    Allocator --&gt;|No - Register Exhaustion!| Spill[Register Spiller: Spill longest interval v1 to RAM Stack [RBP-8]]
+    Allocator --&gt;|No - Register Exhaustion!| Spill[&quot;Register Spiller: Spill longest interval v1 to RAM Stack [RBP-8&quot;]]
   end
   
   subgraph SG3_FinalTargetMachine [&quot;Final Target Machine Code&quot;]
-    RegAssign &amp; Spill --&gt; Assembly[Native Assembly Code: MOV RAX, 10; MOV [RBP-8], RBX]
-  end</div>
+    RegAssign &amp; Spill --&gt; Assembly[&quot;Native Assembly Code: MOV RAX, 10; MOV [RBP-8&quot;], RBX]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class IR,Assembly blue
+class Liveness green
+class Intervals purple
+class RegAssign yellow
+class Spill red</div>
 <h3 id="core-register-allocation-principles">Core Register Allocation Principles</h3>
 <ol>
 <li><strong>Liveness Analysis</strong>: Computes the exact instruction range <code>[start, end]</code> where each virtual register is &quot;live&quot; (from its first definition statement until its final usage statement).</li>
@@ -273,8 +285,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Compiler backends using Linear Scan and Graph Coloring (such as <strong>LLVM</strong> and <strong>V8 TurboFan</strong>) report:</p>
 <ul>
 <li><strong>Over 25% CPU Execution Speedup</strong>: Keeping high-frequency loop variables inside physical CPU registers avoids slow RAM stack memory reads (<code>MOV EAX, [RBP-8]</code>).</li>
-<li><strong>Microsecond JIT Compilation Latencies</strong>: Linear Scan allocation allows JIT compilers (V8) to emit optimized machine code in a single fast pass.</li>
+<li><strong>Microsecond JIT Compilation Latencies</strong>: Linear Scan allocation allows JIT compilers (V8) to emit optimized machine code in a single fast pass. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -311,6 +331,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-linear-scan-register-allocator-engine" class="toc-link">Python Implementation: Linear Scan Register Allocator Engine</a></li>
               <li class="toc-item toc-h2"><a href="#register-allocation-gotchas-best-practices" class="toc-link">Register Allocation Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -5,13 +5,13 @@ Following the collapse of monolithic synchronous Two-Phase Commit (2PC) at inter
 1. **Global NewSQL Distributed Databases (Google Spanner, CockroachDB, YugabyteDB)**: Re-architecting distributed ACID transactions using **atomic clocks (TrueTime)**, **Hybrid Logical Clocks (HLC)**, and **Multi-Raft consensus**.
 2. **Event-Driven Saga Orchestration in Microservices (Uber, Netflix, Shopify, DoorDash)**: Decoupling business workflows into asynchronous choreographies and orchestrations using **Transactional Outbox**, **Idempotency Keys**, and **Compensating Transactions**.
 
-This article examines how Google, Uber, Netflix, and modern e-commerce engineering teams solved distributed consistency at planetary scale.
+This article examines how Google, Uber, Netflix, and modern e-commerce engineering teams solved distributed consistency at planetary scale [1].
 
 ```mermaid
 flowchart TD
   subgraph SG1_TheModernDistributed ["The Modern Distributed Transaction Landscape (2010s - 2020s)"]
-    Direction[Two Modern Paradigms] --> NewSQL[Planetary NewSQL DBs]
-    Direction --> MicroSagas[Event-Driven Microservice Sagas]
+    Direction["Two Modern Paradigms"] --> NewSQL["Planetary NewSQL DBs"]
+    Direction --> MicroSagas["Event-Driven Microservice Sagas"]
     
     NewSQL --> Spanner["Google Spanner: TrueTime & Commit-Wait Rule (2ε)"]
     NewSQL --> Cockroach["CockroachDB / YugabyteDB: Multi-Raft & HLC MVCC"]
@@ -20,6 +20,17 @@ flowchart TD
     MicroSagas --> Netflix["Netflix Conductor: Outbox CDC & Billing Sagas"]
     MicroSagas --> Shopify["Shopify / DoorDash: Idempotency Keys & Capture"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Direction,Uber blue
+class NewSQL,Netflix green
+class MicroSagas,Shopify purple
+class Spanner yellow
+class Cockroach red
 ```
 
 ---
@@ -133,19 +144,30 @@ To eliminate the dual-write bug (writing to a database and publishing to Apache 
 ```mermaid
 flowchart TD
   subgraph SG2_LocalAtomicDb ["Local Atomic DB Transaction"]
-    Service[Subscription Service] -->|Update Account & Insert Outbox| DB[(PostgreSQL Database)]
-    DB --> Tables[Subscription Table + Outbox Table]
+    Service["Subscription Service"] -->|Update Account & Insert Outbox| DB[(PostgreSQL Database)]
+    DB --> Tables["Subscription Table + Outbox Table"]
   end
   
   subgraph SG3_ChangeDataCapture ["Change Data Capture CDC"]
-    DB -->|Read WAL Log| Debezium[Debezium CDC Connector]
-    Debezium -->|At-Least-Once Delivery| Kafka[Apache Kafka Cluster]
+    DB -->|Read WAL Log| Debezium["Debezium CDC Connector"]
+    Debezium -->|At-Least-Once Delivery| Kafka["Apache Kafka Cluster"]
   end
   
   subgraph SG4_ConsumersIdempotency ["Consumers & Idempotency"]
-    Kafka -->|Consume Event| BillingWorker[Billing Worker]
+    Kafka -->|Consume Event| BillingWorker["Billing Worker"]
     BillingWorker -->|Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Service blue
+class Tables green
+class Debezium purple
+class Kafka yellow
+class BillingWorker red
 ```
 
 ### Key Guarantees:
@@ -313,4 +335,13 @@ if (require.main === module) {
 ---
 
 ## Next in the Series
-In **Part 3**, we will explore **The Future (2026 & Beyond)**: How **Deterministic Scheduling (Calvin & FaunaDB)** eliminates 2PC and lock aborts entirely, how hardware-accelerated **RDMA & CXL Pooled Memory** enable sub-microsecond atomic commits, and how **Autonomous AI Agent Swarms** execute self-healing multi-step transactional compensations.
+In **Part 3**, we will explore **The Future (2026 & Beyond)**: How **Deterministic Scheduling (Calvin & FaunaDB)** eliminates 2PC and lock aborts entirely, how hardware-accelerated **RDMA & CXL Pooled Memory** enable sub-microsecond atomic commits, and how **Autonomous AI Agent Swarms** execute self-healing multi-step transactional compensations. [2]
+
+## References & Further Reading
+
+1. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+2. **Lamport, L. (2001)**. *Paxos Made Simple*. ACM SIGACT News. [https://lamport.azurewebsites.net/pubs/paxos-simple.pdf](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf)
+3. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)
+4. **Corbett, J. C., et al. (2012)**. *Spanner: Google's Globally-Distributed Database*. OSDI. [https://research.google/pubs/pub39966/](https://research.google/pubs/pub39966/)
+5. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+6. **Thomson, A., et al. (2012)**. *Calvin: Fast Distributed Transactions for Partitioned Database Systems*. SIGMOD. [https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf](https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf)

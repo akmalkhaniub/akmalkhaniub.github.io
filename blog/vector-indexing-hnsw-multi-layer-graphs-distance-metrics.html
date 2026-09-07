@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/vector-indexing-hnsw-multi-layer-graphs-distance-metrics.html">
   <meta property="og:title" content="Vector Indexing Internals: Hierarchical Navigable Small World (HNSW) Multi-Layer Graphs &amp; Distance Metrics">
   <meta property="og:description" content="High-dimensional similarity search: implementing Hierarchical Navigable Small World (HNSW) proximity graphs, multi-layer skip-list graph structures, M link constraints, efSearch candidate expansion, and distance metrics.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-indexing-hnsw-multi-layer-graphs-distance-metrics.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Vector Indexing Internals: Hierarchical Navigable Small World (HNSW) Multi-Layer Graphs &amp; Distance Metrics">
   <meta name="twitter:description" content="High-dimensional similarity search: implementing Hierarchical Navigable Small World (HNSW) proximity graphs, multi-layer skip-list graph structures, M link constraints, efSearch candidate expansion, and distance metrics.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-indexing-hnsw-multi-layer-graphs-distance-metrics.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Vector Indexing Internals: Hierarchical Navigable Small World (HNSW) Multi-Layer Graphs & Distance Metrics",
   "description": "High-dimensional similarity search: implementing Hierarchical Navigable Small World (HNSW) proximity graphs, multi-layer skip-list graph structures, M link constraints, efSearch candidate expansion, and distance metrics.",
   "url": "https://akmalkhaniub.github.io/blog/vector-indexing-hnsw-multi-layer-graphs-distance-metrics.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/vector-indexing-hnsw-multi-layer-graphs-distance-metrics.jpg",
   "datePublished": "2026-08-18",
   "keywords": "HNSW, Vector Indexing, ANN Search, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Vector Indexing Internals: Hierarchical Navigable Small World (HNSW) Multi-Layer Graphs &amp; Distance Metrics Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/vector-indexing-hnsw-multi-layer-graphs-distance-metrics.jpg" class="article-cover-img" alt="Vector Indexing Internals: Hierarchical Navigable Small World (HNSW) Multi-Layer Graphs &amp; Distance Metrics Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Vector Indexing Internals: Hierarchical Navigable Small World (HNSW) Multi-Layer Graphs &amp; Distance Metrics</h1>
             <div class="article-meta">
@@ -113,6 +113,7 @@
                 <li><a href="#python-implementation-hnsw-multi-layer-vector-graph-engine">Python Implementation: HNSW Multi-Layer Vector Graph Engine</a></li>
                 <li><a href="#vector-indexing-gotchas-best-practices">Vector Indexing Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <p>In enterprise Generative AI systems (<strong>Retrieval-Augmented Generation / RAG</strong>, <strong>Vector Search Engines</strong>, <strong>Recommendation Systems</strong>), applications query millions of high-dimensional embedding vectors (e.g., 1536-dimensional OpenAI embeddings).</p>
@@ -125,20 +126,31 @@
 <p>How HNSW navigates top-layer sparse express lanes down to dense Layer 0 local clusters for logarithmic ANN search:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_Layer2Sparse [&quot;Layer 2: Sparse Long-Range Express Lane&quot;]
-    StartNode[Top Entry Point: Vector 101] --&gt;|Long-Range Hop| Node202[Vector 202]
+    StartNode[&quot;Top Entry Point: Vector 101&quot;] --&gt;|Long-Range Hop| Node202[&quot;Vector 202&quot;]
   end
   
   subgraph SG2_Layer1Intermediate [&quot;Layer 1: Intermediate Regional Hops&quot;]
-    Node202 --&gt;|Drop Down to Layer 1| Node202_L1[Vector 202]
-    Node202_L1 --&gt;|Regional Hop| Node305[Vector 305]
+    Node202 --&gt;|Drop Down to Layer 1| Node202_L1[&quot;Vector 202&quot;]
+    Node202_L1 --&gt;|Regional Hop| Node305[&quot;Vector 305&quot;]
   end
   
   subgraph SG3_Layer0Dense [&quot;Layer 0: Dense Local Proximity Graph&quot;]
-    Node305 --&gt;|Drop Down to Layer 0| Node305_L0[Vector 305]
-    Node305_L0 --&gt;|Dense Local Neighbors| NN1[Nearest Neighbor 1]
-    Node305_L0 --&gt;|Dense Local Neighbors| NN2[Nearest Neighbor 2]
-    Node305_L0 --&gt;|Dense Local Neighbors| NN3[Nearest Neighbor 3]
-  end</div>
+    Node305 --&gt;|Drop Down to Layer 0| Node305_L0[&quot;Vector 305&quot;]
+    Node305_L0 --&gt;|Dense Local Neighbors| NN1[&quot;Nearest Neighbor 1&quot;]
+    Node305_L0 --&gt;|Dense Local Neighbors| NN2[&quot;Nearest Neighbor 2&quot;]
+    Node305_L0 --&gt;|Dense Local Neighbors| NN3[&quot;Nearest Neighbor 3&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class StartNode,NN1 blue
+class Node202,NN2 green
+class Node202_L1,NN3 purple
+class Node305 yellow
+class Node305_L0 red</div>
 <h3 id="core-vector-indexing-mechanics">Core Vector Indexing Mechanics</h3>
 <ol>
 <li><strong>The Brute-Force Flat Search Problem</strong>:<ul>
@@ -307,8 +319,20 @@ if __name__ == &quot;__main__&quot;:
 <p>HNSW vector indexing (in <strong>Qdrant</strong>, <strong>Milvus</strong>, <strong>Pinecone</strong>, and <strong>pgvector</strong>) reports:</p>
 <ul>
 <li><strong>Sub-10ms Query Latency across Millions of Vectors</strong>: Achieves $O(\log N)$ search complexity via multi-layer skip-graph traversal.</li>
-<li><strong>Over $98%$ Recall Accuracy</strong>: <code>efSearch</code> candidate expansion ensures near-exact search quality without brute-force computation.</li>
+<li><strong>Over $98%$ Recall Accuracy</strong>: <code>efSearch</code> candidate expansion ensures near-exact search quality without brute-force computation. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>pgvector Authors (2024)</strong>. <em>pgvector: Open-source vector similarity search for Postgres</em>. GitHub. <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/pgvector/pgvector</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -345,6 +369,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-hnsw-multi-layer-vector-graph-engine" class="toc-link">Python Implementation: HNSW Multi-Layer Vector Graph Engine</a></li>
               <li class="toc-item toc-h2"><a href="#vector-indexing-gotchas-best-practices" class="toc-link">Vector Indexing Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/compaction-strategies-size-tiered-vs-leveled-compaction.html">
   <meta property="og:title" content="Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra">
   <meta property="og:description" content="Write amplification mitigation: implementing Size-Tiered Compaction Strategy (STCS), Leveled Compaction Strategy (LCS), N-way priority queue merge-sorting, and tombstone purging.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/compaction-strategies-size-tiered-vs-leveled-compaction.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-18">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra">
   <meta name="twitter:description" content="Write amplification mitigation: implementing Size-Tiered Compaction Strategy (STCS), Leveled Compaction Strategy (LCS), N-way priority queue merge-sorting, and tombstone purging.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/compaction-strategies-size-tiered-vs-leveled-compaction.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB & Cassandra",
   "description": "Write amplification mitigation: implementing Size-Tiered Compaction Strategy (STCS), Leveled Compaction Strategy (LCS), N-way priority queue merge-sorting, and tombstone purging.",
   "url": "https://akmalkhaniub.github.io/blog/compaction-strategies-size-tiered-vs-leveled-compaction.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/compaction-strategies-size-tiered-vs-leveled-compaction.jpg",
   "datePublished": "2026-08-18",
   "keywords": "Compaction, RocksDB, Cassandra, Python",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/compaction-strategies-size-tiered-vs-leveled-compaction.jpg" class="article-cover-img" alt="Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Compaction Strategies: Size-Tiered vs Leveled Compaction in RocksDB &amp; Cassandra</h1>
             <div class="article-meta">
@@ -113,9 +113,10 @@
                 <li><a href="#python-implementation-n-way-merge-sort-compaction-engine">Python Implementation: N-Way Merge-Sort Compaction Engine</a></li>
                 <li><a href="#compaction-gotchas-best-practices">Compaction Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In Log-Structured Merge-Tree (LSM-Tree) databases (<strong>RocksDB</strong>, <strong>LevelDB</strong>, <strong>Apache Cassandra</strong>), flushing in-memory MemTables creates a continuous stream of immutable <strong>Sorted String Table (SSTable)</strong> files on disk.</p>
+<p>In Log-Structured Merge-Tree (LSM-Tree) databases (<strong>RocksDB</strong>, <strong>LevelDB</strong>, <strong>Apache Cassandra</strong>), flushing in-memory MemTables creates a continuous stream of immutable <strong>Sorted String Table (SSTable)</strong> files on disk <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Over time, this accumulation introduces severe performance penalties:</p>
 <ol>
 <li><strong>Read Amplification</strong>: A single point lookup (<code>GET user_101</code>) may require searching across dozens of un-compacted SSTables on disk.</li>
@@ -129,21 +130,32 @@
 <p>How Leveled Compaction (LCS) organizes SSTables into non-overlapping exponential levels:</p>
 <div class="mermaid">flowchart TD
   subgraph SG1_Level0Overlapping [&quot;Level 0 (Overlapping Key Ranges from Flushes)&quot;]
-    L0_1[SST File 1: Keys 'a'..'z'] --- L0_2[SST File 2: Keys 'c'..'m']
+    L0_1[&quot;SST File 1: Keys 'a'..'z'&quot;] --- L0_2[&quot;SST File 2: Keys 'c'..'m'&quot;]
   end
   
   subgraph SG2_Level1Max [&quot;Level 1 (Max 10MB, Strict Non-Overlapping Ranges)&quot;]
-    L1_1[SST File 3: Keys 'a'..'g'] --- L1_2[SST File 4: Keys 'h'..'p'] --- L1_3[SST File 5: Keys 'q'..'z']
+    L1_1[&quot;SST File 3: Keys 'a'..'g'&quot;] --- L1_2[&quot;SST File 4: Keys 'h'..'p'&quot;] --- L1_3[&quot;SST File 5: Keys 'q'..'z'&quot;]
   end
   
   subgraph SG3_CompactionPriorityQueue [&quot;Compaction Priority Queue Engine&quot;]
-    L0_1 &amp; L0_2 --&gt;|N-Way Merge-Sort Stream| PriorityQueue[Heap Priority Queue: Stream K-V Pairs]
+    L0_1 &amp; L0_2 --&gt;|N-Way Merge-Sort Stream| PriorityQueue[&quot;Heap Priority Queue: Stream K-V Pairs&quot;]
     PriorityQueue --&gt;|Purge Obsolete Keys &amp; Tombstones| L1_1 &amp; L1_2 &amp; L1_3
   end
   
   subgraph SG4_Level2Max [&quot;Level 2 (Max 100MB, Non-Overlapping Ranges)&quot;]
-    L1_3 --&gt;|Level 1 Overflow (&gt;10MB)| L2_1[SST File 6: Keys 'a'..'m']
-  end</div>
+    L1_3 --&gt;|Level 1 Overflow (&gt;10MB)| L2_1[&quot;SST File 6: Keys 'a'..'m'&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class L0_1,PriorityQueue blue
+class L0_2,L2_1 green
+class L1_1 purple
+class L1_2 yellow
+class L1_3 red</div>
 <h3 id="core-compaction-strategies">Core Compaction Strategies</h3>
 <ol>
 <li><strong>Size-Tiered Compaction Strategy (STCS)</strong>:<ul>
@@ -283,8 +295,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Storage engines employing Leveled Compaction (such as <strong>RocksDB</strong> and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Over 70% Reduction in Space Amplification</strong>: Purging obsolete key versions keeps disk utilization within $1.1\times$ to $1.2\times$ of raw data size.</li>
-<li><strong>Predictable p99 Read Latencies</strong>: Guaranteeing non-overlapping key ranges bounds point lookups to a fixed number of disk files per query.</li>
+<li><strong>Predictable p99 Read Latencies</strong>: Guaranteeing non-overlapping key ranges bounds point lookups to a fixed number of disk files per query. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -321,6 +344,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-implementation-n-way-merge-sort-compaction-engine" class="toc-link">Python Implementation: N-Way Merge-Sort Compaction Engine</a></li>
               <li class="toc-item toc-h2"><a href="#compaction-gotchas-best-practices" class="toc-link">Compaction Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

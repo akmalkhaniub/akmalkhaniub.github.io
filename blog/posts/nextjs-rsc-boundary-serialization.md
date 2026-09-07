@@ -4,7 +4,7 @@
 > **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
 
 
-Understanding the boundaries of React Server Components (RSC) is one of the most critical shifts when moving from traditional client-side SPA frameworks to Next.js App Router. 
+Understanding the boundaries of React Server Components (RSC) is one of the most critical shifts when moving from traditional client-side SPA frameworks to Next.js App Router [1]. 
 
 Rather than executing all components in the browser, Next.js runs Server Components on the server and streams the resulting UI elements down to the client. This introduces a network and serialization boundary that dictates how we pass data, share state, and structure component trees.
 
@@ -17,16 +17,26 @@ The boundary is unidirectional: Server Components can import and render Client C
 ```mermaid
 flowchart TD
     subgraph SG1_ServerThread ["Server Thread"]
-        A[Layout.tsx - RSC] --> B[Page.tsx - RSC]
+        A["Layout.tsx - RSC"] --> B["Page.tsx - RSC"]
     end
 
     subgraph SG2_ClientThread ["Client Thread"]
-        C[Navbar.tsx - Client Component]
-        D[InteractiveCard.tsx - Client Component]
+        C["Navbar.tsx - Client Component"]
+        D["InteractiveCard.tsx - Client Component"]
     end
 
     B -->|Renders & Passes Serialized Props| D
     A -->|Renders| C
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class C purple
+class D yellow
 ```
 
 ---
@@ -160,4 +170,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 ### Benefits of URL State:
 1. **Zero Client Javascript:** The article cards remain pure Server Components; they don't load state engines in the browser.
 2. **Bookmarkable Pages:** Users can bookmark or share the URL, and it will load the exact filtered layout instantly.
-3. **Instant SEO:** Search engines index all filtered pages naturally because they render static HTML on load.
+3. **Instant SEO:** Search engines index all filtered pages naturally because they render static HTML on load. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+5. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+6. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

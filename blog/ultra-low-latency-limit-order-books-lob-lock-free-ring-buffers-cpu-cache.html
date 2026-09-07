@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/ultra-low-latency-limit-order-books-lob-lock-free-ring-buffers-cpu-cache.html">
   <meta property="og:title" content="Designing Ultra-Low Latency Limit Order Books (LOB): Lock-Free Ring Buffers &amp; CPU Cache Optimization in High-Frequency Trading">
   <meta property="og:description" content="High-frequency matching engine architecture: Price-Time Priority (FIFO) order book ladders, 64-byte CPU cache line padding to prevent False Sharing, lock-free SPSC circular ring buffers (LMAX Disruptor), and kernel-bypass zero-allocation determinism.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/ultra-low-latency-limit-order-books-lob-lock-free-ring-buffers-cpu-cache.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-08-23">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Designing Ultra-Low Latency Limit Order Books (LOB): Lock-Free Ring Buffers &amp; CPU Cache Optimization in High-Frequency Trading">
   <meta name="twitter:description" content="High-frequency matching engine architecture: Price-Time Priority (FIFO) order book ladders, 64-byte CPU cache line padding to prevent False Sharing, lock-free SPSC circular ring buffers (LMAX Disruptor), and kernel-bypass zero-allocation determinism.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/ultra-low-latency-limit-order-books-lob-lock-free-ring-buffers-cpu-cache.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Designing Ultra-Low Latency Limit Order Books (LOB): Lock-Free Ring Buffers & CPU Cache Optimization in High-Frequency Trading",
   "description": "High-frequency matching engine architecture: Price-Time Priority (FIFO) order book ladders, 64-byte CPU cache line padding to prevent False Sharing, lock-free SPSC circular ring buffers (LMAX Disruptor), and kernel-bypass zero-allocation determinism.",
   "url": "https://akmalkhaniub.github.io/blog/ultra-low-latency-limit-order-books-lob-lock-free-ring-buffers-cpu-cache.html",
-  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/ultra-low-latency-limit-order-books-lob-lock-free-ring-buffers-cpu-cache.jpg",
   "datePublished": "2026-08-23",
   "keywords": "High Frequency Trading, Limit Order Books, Low Latency, Lock-Free, CPU Cache, Performance",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Designing Ultra-Low Latency Limit Order Books (LOB): Lock-Free Ring Buffers &amp; CPU Cache Optimization in High-Frequency Trading Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/ultra-low-latency-limit-order-books-lob-lock-free-ring-buffers-cpu-cache.jpg" class="article-cover-img" alt="Designing Ultra-Low Latency Limit Order Books (LOB): Lock-Free Ring Buffers &amp; CPU Cache Optimization in High-Frequency Trading Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Designing Ultra-Low Latency Limit Order Books (LOB): Lock-Free Ring Buffers &amp; CPU Cache Optimization in High-Frequency Trading</h1>
             <div class="article-meta">
@@ -117,9 +117,10 @@
                 <li><a href="#python-c-architecture-simulation-zero-allocation-limit-order-book">Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book</a></li>
                 <li><a href="#summary-low-latency-optimization-techniques">Summary: Low-Latency Optimization Techniques</a></li>
                 <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In modern electronic financial exchanges (<strong>Nasdaq</strong>, <strong>CME Group</strong>, <strong>Binance</strong>, <strong>Jane Street</strong>, <strong>Citadel Securities</strong>), the performance of a <strong>Limit Order Book (LOB)</strong> matching engine is measured not in milliseconds, but in <strong>sub-microsecond tick-to-trade cycles</strong>.</p>
+<p>In modern electronic financial exchanges (<strong>Nasdaq</strong>, <strong>CME Group</strong>, <strong>Binance</strong>, <strong>Jane Street</strong>, <strong>Citadel Securities</strong>), the performance of a <strong>Limit Order Book (LOB)</strong> matching engine is measured not in milliseconds, but in <strong>sub-microsecond tick-to-trade cycles</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>At high-frequency trading (HFT) scale, standard software engineering conventions break down completely:</p>
 <ul>
 <li>A single Linux kernel context switch incurs a <strong>$1\text{ to }3\text{ microsecond}$ penalty</strong>—an eternity when arbitrage opportunities disappear in $500\text{ nanoseconds}$.</li>
@@ -140,7 +141,18 @@
     
     Matcher --&gt; ExecutionRing[&quot;3. Outbound Execution Ring Buffer&quot;]
     ExecutionRing --&gt; Gateway[&quot;Market Feed Gateway (Zero-Copy Multicast)&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class NIC,ExecutionRing blue
+class RingBuffer,Gateway green
+class Matcher purple
+class Bids yellow
+class Asks red</div>
 <hr>
 <h2 id="1-the-physics-of-hardware-latency-cpu-caches">1. The Physics of Hardware Latency &amp; CPU Caches</h2>
 <p>To optimize matching engines, engineers must design with <strong>Mechanical Sympathy</strong>—aligning software data access patterns with the physical microarchitecture of modern CPUs.</p>
@@ -178,7 +190,16 @@ Cache-Aligned Fix (64-byte Padding):
     Asks[&quot;ASKS (Ascending)\n$100.60 (Qty: 300) -&gt; [Ord5] &lt;-&gt; [Ord6]\n$100.70 (Qty: 1500) -&gt; [Ord7]\n$100.80 (Qty: 2000) -&gt; [Ord8]&quot;]
   end
   
-  Bids --- Spread --- Asks</div>
+  Bids --- Spread --- Asks
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Bids blue
+class Spread green
+class Asks purple</div>
 <h3 id="optimal-data-structure-selection">Optimal Data Structure Selection:</h3>
 <ul>
 <li><strong>Naive Approach (Red-Black Tree / <code>std::map</code>)</strong>: Pointer chasing causes continuous L1/L2 cache misses. Dynamic node allocations trigger memory fragmentation.</li>
@@ -195,7 +216,16 @@ Cache-Aligned Fix (64-byte Padding):
   subgraph SG4_LockFreeCircular [&quot;Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)&quot;]
     Head[&quot;Producer Head Sequence (Padded 64B)&quot;] --&gt;|Writes Next Event| Slot[&quot;Slot [head &amp; (Size - 1)]&quot;]
     Slot --&gt; Tail[&quot;Consumer Tail Sequence (Padded 64B)&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Head blue
+class Slot green
+class Tail purple</div>
 <h3 id="key-invariants">Key Invariants:</h3>
 <ol>
 <li><strong>Power-of-Two Capacity</strong>: Using bitwise AND for modulo indexing (<code>index = sequence &amp; (BUFFER_SIZE - 1)</code>), avoiding the expensive CPU division instruction (<code>%</code>).</li>
@@ -385,7 +415,15 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>In high-frequency limit order books, <strong>software design is hardware design</strong>.</p>
-<p>By structuring data structures to fit entirely within L1/L2 caches, eliminating lock contention through power-of-two ring buffers, and enforcing zero runtime heap allocations, engineers achieve the sub-microsecond determinism required by global financial exchanges.</p>
+<p>By structuring data structures to fit entirely within L1/L2 caches, eliminating lock contention through power-of-two ring buffers, and enforcing zero runtime heap allocations, engineers achieve the sub-microsecond determinism required by global financial exchanges. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Michael, M. M. (2004)</strong>. <em>Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects</em>. IEEE TPDS. <a href="https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf" target="_blank" rel="noopener">https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Bloom, B. H. (1970)</strong>. <em>Space/Time Trade-offs in Hash Coding with Allowable Errors</em>. CACM. <a href="https://doi.org/10.1145/362686.362692" target="_blank" rel="noopener">https://doi.org/10.1145/362686.362692</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -426,6 +464,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#python-c-architecture-simulation-zero-allocation-limit-order-book" class="toc-link">Python / C++ Architecture Simulation: Zero-Allocation Limit Order Book</a></li>
               <li class="toc-item toc-h2"><a href="#summary-low-latency-optimization-techniques" class="toc-link">Summary: Low-Latency Optimization Techniques</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

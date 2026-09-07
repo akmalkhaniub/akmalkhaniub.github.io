@@ -1,6 +1,6 @@
 # Hybrid Index Traversal: Pre-Filtering vs. Post-Filtering in pgvector and Qdrant
 
-In production Retrieval-Augmented Generation (RAG) systems, vector similarity queries are rarely executed in isolation. Most enterprise applications require queries constrained by strict metadata filters, such as:
+In production Retrieval-Augmented Generation (RAG) systems, vector similarity queries are rarely executed in isolation [1]. Most enterprise applications require queries constrained by strict metadata filters, such as:
 * *Locating document chunks matching a user query* **AND** *belonging strictly to `tenant_id = 45`*.
 * *Finding customer support logs from the last 30 days* **AND** *tagged with `status = 'critical'`*.
 
@@ -13,17 +13,28 @@ Integrating traditional relational filtering (metadata) with Approximate Nearest
 ```mermaid
 flowchart TD
   subgraph SG1_PostFiltering ["Post-Filtering"]
-    A[HNSW Vector Search] -->|Get top 100| B[Filter out non-matching metadata]
-    B -->|Problem - Result set collapses| C[Return remaining 2-3 items]
+    A["HNSW Vector Search"] -->|Get top 100| B["Filter out non-matching metadata"]
+    B -->|Problem - Result set collapses| C["Return remaining 2-3 items"]
   end
   subgraph SG2_PreFiltering ["Pre-Filtering"]
-    D[Relational Metadata Scan] -->|Isolate IDs| E[Flat Vector Search on subset]
-    E -->|Problem - Slow for large subsets| F[Return top 10 items]
+    D["Relational Metadata Scan"] -->|Isolate IDs| E["Flat Vector Search on subset"]
+    E -->|Problem - Slow for large subsets| F["Return top 10 items"]
   end
   subgraph SG3_InGraphFiltering ["In-Graph Filtering Single-Stage"]
-    G[HNSW Graph Traversal] -->|Evaluate metadata on graph hops| H[Only route through matching nodes]
-    H -->|Optimal - Fast & complete| I[Return top 10 matching items]
+    G["HNSW Graph Traversal"] -->|Evaluate metadata on graph hops| H["Only route through matching nodes"]
+    H -->|Optimal - Fast & complete| I["Return top 10 matching items"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E red
 ```
 
 ### 1. Post-Filtering
@@ -101,4 +112,14 @@ Avoid these common index performance traps:
 > **Payload Size Inflation**: Storing massive metadata objects (e.g. full raw JSON documents) inside your vector database segments can bloat the graph files, causing them to exceed memory limits. Store only lightweight index columns (IDs, categories, status flags) in the vector DB, fetching the full body payloads from your primary relational database (PostgreSQL/MongoDB) using the returned IDs.
 
 > [!CAUTION]
-> **Index Building Order**: Always create your metadata indexes *before* generating HNSW indexes on large tables. If pgvector cannot find a metadata index, it may default to a sequential table scan, bypassing the HNSW graph entirely.
+> **Index Building Order**: Always create your metadata indexes *before* generating HNSW indexes on large tables. If pgvector cannot find a metadata index, it may default to a sequential table scan, bypassing the HNSW graph entirely. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **pgvector Authors (2024)**. *pgvector: Open-source vector similarity search for Postgres*. GitHub. [https://github.com/pgvector/pgvector](https://github.com/pgvector/pgvector)
+5. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+6. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+7. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)

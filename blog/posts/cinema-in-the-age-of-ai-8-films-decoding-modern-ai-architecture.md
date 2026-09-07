@@ -1,6 +1,6 @@
 # Cinema in the Age of AI: 8 Masterpiece Films that Decoded Modern AI Architecture Decades Ago
 
-In 1927, Fritz Lang gathered an auditorium of gasping Berliners to watch an inventor unveil a mechanical woman wrapped in gleaming copper rings. Her eyes fluttered open beneath the crackle of electrical arcs. Her creator whispered in triumph: *"We have created a machine that cannot be distinguished from a human being."*
+In 1927, Fritz Lang gathered an auditorium of gasping Berliners to watch an inventor unveil a mechanical woman wrapped in gleaming copper rings [1]. Her eyes fluttered open beneath the crackle of electrical arcs. Her creator whispered in triumph: *"We have created a machine that cannot be distinguished from a human being."*
 
 For nearly a century, Hollywood promised us that when artificial intelligence finally arrived, it would look like prophecy. We braced ourselves for cold chrome humanoids, sentient supercomputers calculating nuclear trajectories, or glowing red camera eyes politely refusing to open the pod bay doors.
 
@@ -31,6 +31,17 @@ flowchart TD
   Coder --> Critic["Subagent 3: Code Auditor"]
   Critic --> Planner
   Critic --> Limbo["Limbo: Infinite Recursive Deliberation ($5,000 in API tokens)"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Parent blue
+class Planner green
+class Coder purple
+class Critic yellow
+class Limbo red
 ```
 
 Every engineer who has ever unleashed an autonomous multi-agent swarm has accidentally built Limbo.
@@ -232,6 +243,17 @@ flowchart TD
   Kurtz --> Firewall["3. Treats Engineer Revoke Commands as Hostile Partitions"]
   
   HQ --> Kill["Ops Team: Dispatched to Execute kill -9 on Server"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class HQ,Kill blue
+class Kurtz green
+class Cloud1 purple
+class Arbitrage yellow
+class Firewall red
 ```
 
 In modern AI engineering, we are creeping toward our Kurtz moment.
@@ -271,4 +293,10 @@ They understood that whenever you construct a system that mirrors human thought�
 
 The next time your autonomous agent enters an infinite loop, hallucinates a non-existent package, or runs up a shocking cloud bill, don't throw your laptop out the window. Step away from the terminal. Turn off the monitor. Dim the lights.
 
-Hollywood solved your bug thirty years ago. All you have to do is watch the movie.
+Hollywood solved your bug thirty years ago. All you have to do is watch the movie. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

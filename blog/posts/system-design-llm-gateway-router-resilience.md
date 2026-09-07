@@ -8,7 +8,7 @@
 
 ## The Provider Outage Threat
 
-For agentic systems, LLM inference API calls are the core execution dependencies. When these calls fail, the entire application fails. 
+For agentic systems, LLM inference API calls are the core execution dependencies. When these calls fail, the entire application fails [1]. 
 
 Three main issues threaten inference connections:
 1. **Rate Limiting (429)**: High-throughput swarms exceed token-per-minute (TPM) allocations.
@@ -20,17 +20,28 @@ To prevent outages, developers wrap their LLM calls inside a resilient **LLM Gat
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#4c1d95', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#8b5cf6', 'lineColor': '#4c1d95', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Request[Agent Prompt Request] --> Gate[LLM Gateway Router]
+    Request["Agent Prompt Request"] --> Gate["LLM Gateway Router"]
     
     subgraph SG1_CircuitBreakerStates ["Circuit Breaker States"]
-        Gate -->|State - CLOSED| CallPrimary[Try Primary Provider: Claude 3.5]
-        Gate -->|State - OPEN| Failover[Route straight to Backup: Gemini 2.0]
+        Gate -->|State - CLOSED| CallPrimary["Try Primary Provider: Claude 3.5"]
+        Gate -->|State - OPEN| Failover["Route straight to Backup: Gemini 2.0"]
         
-        CallPrimary -->|Success| Reset[Reset Error Counter]
-        CallPrimary -->|Consecutive Failures > Limit| OpenBreaker[Switch State to OPEN & Start Cooldown]
+        CallPrimary -->|Success| Reset["Reset Error Counter"]
+        CallPrimary -->|Consecutive Failures > Limit| OpenBreaker["Switch State to OPEN & Start Cooldown"]
         
         OpenBreaker --> Failover
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Request,OpenBreaker blue
+class Gate green
+class CallPrimary purple
+class Failover yellow
+class Reset red
 ```
 
 ---
@@ -156,4 +167,10 @@ if __name__ == "__main__":
 
 * **Propagate Status Codes**: Do not hide error types inside your gateway logs. Expose detailed error details (`429 Rate Limit`, `503 Service Unavailable`, `ConnectionTimeout`) to allow downstream routers to make informed fallback decisions.
 * **Map Token Metrics**: Maintain a token-usage counter inside the gateway. If a backup model is much cheaper or has higher limits, route bulk background jobs (e.g. vector embedding indexing) directly to the backup.
-* **Implement Cooldown Policies**: Keep breaker open states short during development but scale them to 60-120 seconds in production to allow remote provider server queues to clear.
+* **Implement Cooldown Policies**: Keep breaker open states short during development but scale them to 60-120 seconds in production to allow remote provider server queues to clear. [2]
+
+## References & Further Reading
+
+1. **Michael, M. M. (2004)**. *Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects*. IEEE TPDS. [https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf](https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf)
+2. **McKenney, P. E., & Slingwine, J. D. (1998)**. *Read-Copy Update: Using Execution History to Solve Concurrency Problems*. PDCS. [https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf](https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf)
+3. **Bloom, B. H. (1970)**. *Space/Time Trade-offs in Hash Coding with Allowable Errors*. CACM. [https://doi.org/10.1145/362686.362692](https://doi.org/10.1145/362686.362692)

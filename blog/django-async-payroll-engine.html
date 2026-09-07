@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/django-async-payroll-engine.html">
   <meta property="og:title" content="Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django">
   <meta property="og:description" content="How to design a scale-tested, transactionally secure payroll engine that solves float inaccuracies, database deadlocks, and CPU-bound worker bottlenecks using Django, Celery, and PostgreSQL.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/django-async-payroll-engine.jpg">
   <meta property="og:site_name" content="Akmal Khan">
   <meta property="article:published_time" content="2026-03-03">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django">
   <meta name="twitter:description" content="How to design a scale-tested, transactionally secure payroll engine that solves float inaccuracies, database deadlocks, and CPU-bound worker bottlenecks using Django, Celery, and PostgreSQL.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/django-async-payroll-engine.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,7 @@
   "headline": "Engineering a High-Throughput Async Payroll Engine with Celery & Django",
   "description": "How to design a scale-tested, transactionally secure payroll engine that solves float inaccuracies, database deadlocks, and CPU-bound worker bottlenecks using Django, Celery, and PostgreSQL.",
   "url": "https://akmalkhaniub.github.io/blog/django-async-payroll-engine.html",
-  "image": "https://github.com/akmalkhaniub.png",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/django-async-payroll-engine.jpg",
   "datePublished": "2026-03-03",
   "keywords": "Python, Django, Celery, Architecture",
   "author": {
@@ -93,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/django-async-payroll-engine.jpg" class="article-cover-img" alt="Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django</h1>
             <div class="article-meta">
@@ -115,6 +115,7 @@
                 <li><a href="#3-high-throughput-scaling-parallel-pdf-compiles-via-celery">3. High-Throughput Scaling: Parallel PDF Compiles via Celery</a></li>
                 <li><a href="#key-performance-metrics">Key Performance Metrics</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <blockquote>
@@ -126,7 +127,7 @@
 </ul>
 </blockquote>
 <hr>
-<p>In financial technology, computational accuracy and transactional integrity are absolute. If a system rounds a dollar up or down incorrectly, or if a database query fails halfway through processing a bulk payout, it compromises the core security of the ledger.</p>
+<p>In financial technology, computational accuracy and transactional integrity are absolute <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. If a system rounds a dollar up or down incorrectly, or if a database query fails halfway through processing a bulk payout, it compromises the core security of the ledger.</p>
 <p>When designing a <strong>High-Throughput Asynchronous Payroll Engine</strong>, developers face three major engineering challenges:</p>
 <ol>
 <li><strong>Mathematical Precision</strong>: Standard binary floating-point numbers (<code>float</code>) introduce rounding errors that compound over thousands of calculations.</li>
@@ -145,17 +146,28 @@
 <li>Once completed, a fan-out task is dispatched, triggering dozens of separate, concurrent PDF compilers.</li>
 </ol>
 <div class="mermaid">flowchart TD
-    A[Django API] --&gt;|Trigger Run| B(Redis Queue)
+    A[&quot;Django API&quot;] --&gt;|Trigger Run| B(Redis Queue)
     B --&gt;|Pull Task| C(Celery Worker)
-    C --&gt;|Calculate &amp; Lock Row| D[Database]
+    C --&gt;|Calculate &amp; Lock Row| D[&quot;Database&quot;]
     C --&gt;|Update Status to Completed| D
     C --&gt;|Dispatch Fan-Out| B
-    B --&gt;|Parallel Invoices| E[Celery PDF Worker 1]
-    B --&gt;|Parallel Invoices| F[Celery PDF Worker 2]
-    B --&gt;|Parallel Invoices| G[Celery PDF Worker 3]
+    B --&gt;|Parallel Invoices| E[&quot;Celery PDF Worker 1&quot;]
+    B --&gt;|Parallel Invoices| F[&quot;Celery PDF Worker 2&quot;]
+    B --&gt;|Parallel Invoices| G[&quot;Celery PDF Worker 3&quot;]
     E --&gt;|Upload Pay Statement| H[(Persistent Media Storage)]
     F --&gt;|Upload Pay Statement| H
-    G --&gt;|Upload Pay Statement| H</div>
+    G --&gt;|Upload Pay Statement| H
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class D green
+class E purple
+class F yellow
+class G red</div>
 <hr>
 <h2 id="1-mathematical-accuracy-enforcing-currency-precision">1. Mathematical Accuracy: Enforcing Currency Precision</h2>
 <p>Computers represent floats in binary (base 2), which makes it impossible to store numbers like <code>0.1</code> exactly. This results in precision anomalies (e.g., <code>0.1 + 0.2</code> returning <code>0.30000000000000004</code> instead of exactly <code>0.3</code>). </p>
@@ -285,7 +297,15 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
 <li><strong>High-Throughput Scaling:</strong> Asynchronous worker queues (Celery) with dynamic fan-out enable parallel processing of CPU-intensive tasks like PDF generation, significantly boosting system throughput and responsiveness.</li>
 </ol>
 <p><em>Takeaway: A combination of precise data types, robust transaction management, and asynchronous architecture is essential for building high-performance, reliable financial systems.</em></p>
-<p><em>The full source code, deployment scripts, and local test suites are available in the public <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a> repository.</em></p>
+<p><em>The full source code, deployment scripts, and local test suites are available in the public <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a> repository.</em> <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Redis Ltd. (2024)</strong>. <em>Redis Documentation</em>. redis.io. <a href="https://redis.io/docs/" target="_blank" rel="noopener">https://redis.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -324,6 +344,7 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
               <li class="toc-item toc-h2"><a href="#3-high-throughput-scaling-parallel-pdf-compiles-via-celery" class="toc-link">3. High-Throughput Scaling: Parallel PDF Compiles via Celery</a></li>
               <li class="toc-item toc-h2"><a href="#key-performance-metrics" class="toc-link">Key Performance Metrics</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

@@ -1,6 +1,6 @@
 # Raft Consensus for Decentralized Agent Registries
 
-In autonomous multi-agent networks, individual agent workers must coordinate their available capabilities, active task assignments, and routing directories. If agent nodes maintain localized, un-synchronized state views, the swarm risks **split-brain conditions**, where two different agents assume control of the same resource or execute conflicting tasks.
+In autonomous multi-agent networks, individual agent workers must coordinate their available capabilities, active task assignments, and routing directories [1]. If agent nodes maintain localized, un-synchronized state views, the swarm risks **split-brain conditions**, where two different agents assume control of the same resource or execute conflicting tasks.
 
 To achieve fault-tolerant consistency across a cluster of agent workers, systems engineering teams deploy **Raft Consensus Engine** nodes.
 
@@ -16,10 +16,10 @@ The lifecycle states and transition pathways of a Raft cluster node:
 
 ```mermaid
 flowchart TD
-  A[Follower Node] -->|Election Timeout Expires| B[Candidate Node]
+  A["Follower Node"] -->|Election Timeout Expires| B["Candidate Node"]
   
   subgraph SG1_LeaderElectionPhase ["Leader Election Phase"]
-    B -->|Receives Majority Votes| C[Leader Node]
+    B -->|Receives Majority Votes| C["Leader Node"]
     B -->|Discovers Higher Term / Leader| A
     B -->|Split Vote Timeout| B
   end
@@ -28,6 +28,15 @@ flowchart TD
     C -->|Broadcast Heartbeats & Log Entries| A
     A -->|Acknowledge AppendEntries| C
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class C purple
 ```
 
 ### Raft Core Components
@@ -172,4 +181,13 @@ When deploying Raft consensus in agent networks:
 ## Real-World Enterprise Impact
 Teams building Raft-backed agent clusters report:
 * **Zero Split-Brain Outages**: Strict quorum requirements prevent isolated network partitions from executing conflicting agent operations.
-* **Fault-Tolerant Registration**: The agent registry remains fully operational as long as a majority of nodes ($\lfloor N/2 \rfloor + 1$) remain online.
+* **Fault-Tolerant Registration**: The agent registry remains fully operational as long as a majority of nodes ($\lfloor N/2 \rfloor + 1$) remain online. [2]
+
+## References & Further Reading
+
+1. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+2. **Lamport, L. (2001)**. *Paxos Made Simple*. ACM SIGACT News. [https://lamport.azurewebsites.net/pubs/paxos-simple.pdf](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf)
+3. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

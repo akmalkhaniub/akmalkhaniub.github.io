@@ -5,7 +5,7 @@
 
 In resource-constrained clinics or highly regulated medical environments, deploying cloud-hosted models (like Claude or GPT) is often impossible due to lack of stable internet connectivity or strict HIPAA patient data privacy standards.
 
-To build reliable clinical assistants, we must shift from cloud APIs to **Local-First AI Architectures**. This means deploying open-weight models (like Gemma 2 or Mistral 7B) directly on local edge hardware and managing database synchronization locally.
+To build reliable clinical assistants, we must shift from cloud APIs to **Local-First AI Architectures** [1]. This means deploying open-weight models (like Gemma 2 or Mistral 7B) directly on local edge hardware and managing database synchronization locally.
 
 This article reviews the setup, performance tradeoffs, and offline-first database synchronization strategies modeled on my clinical decision assistant, [MedEdge](https://github.com/akmalkhaniub/MedEdge).
 
@@ -49,14 +49,25 @@ Deploying local models requires understanding the performance and resource trade
 ```mermaid
 flowchart TD
     subgraph SG1_CloudCloudApis ["Cloud [Cloud APIs: Claude / GPT]"]
-        C_Cap[High Parameters / 100B+] --> C_Lat[Sub-second Latency / 80+ tps]
-        C_Lat --> C_Sec[Vulnerable to Network / HIPAA overhead]
+        C_Cap["High Parameters / 100B+"] --> C_Lat["Sub-second Latency / 80+ tps"]
+        C_Lat --> C_Sec["Vulnerable to Network / HIPAA overhead"]
     end
     
     subgraph SG2_LocalLocalEdge ["Local [Local Edge: Ollama / Gemma / Mistral]"]
-        L_Cap[Small Parameters / 7B-9B] --> L_Lat[Hardware Dependent / 15-40 tps]
-        L_Lat --> L_Sec[100% Offline / High Privacy]
+        L_Cap["Small Parameters / 7B-9B"] --> L_Lat["Hardware Dependent / 15-40 tps"]
+        L_Lat --> L_Sec["100% Offline / High Privacy"]
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class C_Cap,L_Sec blue
+class C_Lat green
+class C_Sec purple
+class L_Cap yellow
+class L_Lat red
 ```
 
 *   **Accuracy**: Frontier cloud models outperform local 7B models on open-ended logic. However, for specialized structured extraction (like parsing transcription into a standard SOAP note template), fine-tuned 7B models match or exceed general cloud models while costing $0 in API fees.

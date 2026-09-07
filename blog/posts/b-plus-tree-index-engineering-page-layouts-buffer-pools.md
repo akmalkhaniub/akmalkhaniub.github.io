@@ -1,6 +1,6 @@
 # B+ Tree Index Engineering: Page Layouts, Buffer Pools & Slotted Pages
 
-Relational database management systems (RDBMS) like **PostgreSQL**, **MySQL (InnoDB)**, and **SQLite** have relied on **B+ Trees** as their core storage engine representation for over four decades. Unlike standard binary search trees, B+ Trees are self-balancing, high-fanout $N$-ary trees specifically optimized for block-based disk storage hardware.
+Relational database management systems (RDBMS) like **PostgreSQL**, **MySQL (InnoDB)**, and **SQLite** have relied on **B+ Trees** as their core storage engine representation for over four decades [1]. Unlike standard binary search trees, B+ Trees are self-balancing, high-fanout $N$-ary trees specifically optimized for block-based disk storage hardware.
 
 In a B+ Tree, all actual table records reside exclusively in doubly-linked **leaf nodes**, while **internal nodes** hold only routing keys.
 
@@ -17,21 +17,32 @@ The binary memory layout of an 8KB/16KB slotted page and leaf node linkage:
 ```mermaid
 flowchart TD
   subgraph SG1_SlottedPageBinary ["Slotted Page Binary Layout (8KB / 16KB Page)"]
-    A[Page Header: LSN, Slot Count, Free Space Offset] --> B[Slot Array: Offset & Length Pointers]
-    B -->|Unused Free Space Window| C[Tuple Data Storage: Grows Bottom-Up]
+    A["Page Header: LSN, Slot Count, Free Space Offset"] --> B["Slot Array: Offset & Length Pointers"]
+    B -->|Unused Free Space Window| C["Tuple Data Storage: Grows Bottom-Up"]
   end
   
   subgraph SG2_BTreeIndex ["B+ Tree Index Hierarchy"]
-    D[Root Node: Internal Routing Keys] --> E[Child Node 1: Internal]
-    D --> F[Child Node 2: Internal]
+    D["Root Node: Internal Routing Keys"] --> E["Child Node 1: Internal"]
+    D --> F["Child Node 2: Internal"]
     
-    E --> G[Leaf Page 101: Data Records]
-    E --> H[Leaf Page 102: Data Records]
-    F --> I[Leaf Page 103: Data Records]
+    E --> G["Leaf Page 101: Data Records"]
+    E --> H["Leaf Page 102: Data Records"]
+    F --> I["Leaf Page 103: Data Records"]
     
     G <-->|Doubly-Linked Range Scan| H
     H <-->|Doubly-Linked Range Scan| I
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E red
 ```
 
 ### Core B+ Tree Engineering Primitives
@@ -157,4 +168,11 @@ When configuring B+ Tree storage engines:
 ## Real-World Enterprise Impact
 Teams leveraging B+ Tree index optimizations report:
 * **Sub-Millisecond Single-Key Lookups**: High fanout internal nodes enable reaching target leaf tuples in 3 to 4 page hops across multi-gigabyte tables.
-* **Efficient Range Scans**: Doubly-linked leaf nodes allow executing SQL range queries (`WHERE id BETWEEN 100 AND 500`) without traversing root index nodes repeatedly.
+* **Efficient Range Scans**: Doubly-linked leaf nodes allow executing SQL range queries (`WHERE id BETWEEN 100 AND 500`) without traversing root index nodes repeatedly. [2]
+
+## References & Further Reading
+
+1. **Bayer, R., & McCreight, E. (1972)**. *Organization and Maintenance of Large Ordered Indexes*. Acta Informatica. [https://doi.org/10.1007/BF00288683](https://doi.org/10.1007/BF00288683)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Reed, D. P. (1978)**. *Naming and Synchronization in a Decentralized Computer System*. MIT PhD Thesis. [https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf](https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf)

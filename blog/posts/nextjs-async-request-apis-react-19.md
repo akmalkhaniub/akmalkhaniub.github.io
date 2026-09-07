@@ -8,7 +8,7 @@
 > **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
 
 
-In Next.js 15 and 16, a major breaking change required developers to refactor how they access request-specific properties on the server: properties like dynamic routing parameters (`params`), query parameters (`searchParams`), cookies (`cookies()`), and headers (`headers()`) transitioned into **asynchronous** calls.
+In Next.js 15 and 16, a major breaking change required developers to refactor how they access request-specific properties on the server: properties like dynamic routing parameters (`params`), query parameters (`searchParams`), cookies (`cookies()`), and headers (`headers()`) transitioned into **asynchronous** calls [1].
 
 This article details the architectural reasons behind this change, why it is critical for React 19's concurrent rendering capabilities, and how to safely implement these changes in your production codebase.
 
@@ -131,4 +131,14 @@ To migrate large codebases with hundreds of routes to the new async paradigms, p
 ## Production Adoption Case Studies
 High-traffic applications have adopted the async request APIs to maximize server efficiency:
 1. **Parallel Layout Streaming**: Sub-sections of dashboards (sidebar, top bar, user status) fetch headers and cookies in parallel, avoiding waterfall rendering bottlenecks.
-2. **Predictable Edge Routing**: Edge middleware and layout renderers compile static page shells instantly, resolving route query parameters concurrently as dynamic content finishes loading.
+2. **Predictable Edge Routing**: Edge middleware and layout renderers compile static page shells instantly, resolving route query parameters concurrently as dynamic content finishes loading. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **React Team (2024)**. *React 19 Blog Post*. react.dev. [https://react.dev/blog/2024/12/05/react-19](https://react.dev/blog/2024/12/05/react-19)
+6. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+7. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

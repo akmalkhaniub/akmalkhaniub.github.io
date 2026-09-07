@@ -1,6 +1,6 @@
 # Architecting LeaseLogic: Tabular Real Estate Clause Extraction, Multi-Tenant pgvector RAG & NPV Cashflow Modeling
 
-In commercial real estate (CRE) asset management and private equity (**LeaseLogic**, **JLL**, **CBRE**, **Blackstone Real Estate**), evaluating 100+ page institutional commercial lease agreements is one of the most high-stakes, time-consuming analytical tasks.
+In commercial real estate (CRE) asset management and private equity (**LeaseLogic**, **JLL**, **CBRE**, **Blackstone Real Estate**), evaluating 100+ page institutional commercial lease agreements is one of the most high-stakes, time-consuming analytical tasks [1].
 
 A single overlooked clause—such as a un-capped Operating Expense (OpEx) pass-through, a $3.5\%$ compounding annual rent step-up, or a Tenant Improvement (TI) clawback—can introduce millions of dollars in unexpected portfolio liabilities.
 
@@ -21,8 +21,8 @@ How LeaseLogic processes 120-page commercial lease contracts, verifies clause ci
 ```mermaid
 flowchart TD
   subgraph SG1_DocumentIngestionSpatial ["Document Ingestion & Spatial Layout Recovery"]
-    PDF[100+ Page Commercial Lease PDF] --> Parser[Layout-Aware PDF Engine: pdfplumber Bounding Boxes]
-    Parser --> Tables[Extracted Tabular Rent Schedules + Text Blocks]
+    PDF["100+ Page Commercial Lease PDF"] --> Parser["Layout-Aware PDF Engine: pdfplumber Bounding Boxes"]
+    Parser --> Tables["Extracted Tabular Rent Schedules + Text Blocks"]
   end
   
   subgraph SG2_Claude35 ["Claude 3.5 Structured Extraction Engine"]
@@ -36,6 +36,17 @@ flowchart TD
     Terms --> NPVEngine["Financial Cashflow Engine: 10-Yr Cashflow, NER & NPV Modeling"]
     NPVEngine --> Dashboard["Interactive Executive Analytics Dashboard"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class PDF,PGVector blue
+class Parser,AuditUI green
+class Tables,NPVEngine purple
+class ClaudePrompt,Dashboard yellow
+class Terms red
 ```
 
 ### Core Architecture Highlights
@@ -184,4 +195,12 @@ LeaseLogic accelerates institutional real estate workflows:
 * **$100\%$ Verifiable Audit Trail**: Instant interactive bounding-box overlays eliminate manual page searching during due diligence.
 * **Automated Portfolio Risk Modeling**: Multi-lease aggregations identify expiration cliffs and un-hedged OpEx liabilities in real time.
 
-You can explore the open-source codebase on GitHub: **[`akmalkhaniub/leaselogic`](https://github.com/akmalkhaniub/leaselogic)**.
+You can explore the open-source codebase on GitHub: **[`akmalkhaniub/leaselogic`](https://github.com/akmalkhaniub/leaselogic)**. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **pgvector Authors (2024)**. *pgvector: Open-source vector similarity search for Postgres*. GitHub. [https://github.com/pgvector/pgvector](https://github.com/pgvector/pgvector)
+5. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)

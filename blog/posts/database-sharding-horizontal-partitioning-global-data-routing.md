@@ -1,6 +1,6 @@
 # Database Sharding, Horizontal Partitioning & Global Data Routing
 
-When a web application scales from thousands to tens of millions of active users, a single monolithic database instance—no matter how large the underlying cloud hardware—inevitably hits physical scaling limits. Read replicas can offload query volume, but all write transactions must still pass through a single primary database node, creating write bottleneck saturation.
+When a web application scales from thousands to tens of millions of active users, a single monolithic database instance—no matter how large the underlying cloud hardware—inevitably hits physical scaling limits [1]. Read replicas can offload query volume, but all write transactions must still pass through a single primary database node, creating write bottleneck saturation.
 
 To achieve virtually unlimited database scale, software architects implement **Database Sharding** (Horizontal Partitioning).
 
@@ -16,11 +16,11 @@ How the Global Data Router intercepts application queries and routes transaction
 
 ```mermaid
 flowchart TD
-  A[Client API Request] --> B[Global Data Router]
+  A["Client API Request"] --> B["Global Data Router"]
   
   subgraph SG1_GlobalDataRouter ["Global Data Router & Shard Directory"]
     B -->|Inspect Shard Key - user_id| C{Routing Engine}
-    C -->|Hash Shard Key - MurmurHash3| D[Shard Directory / Hash Ring]
+    C -->|Hash Shard Key - MurmurHash3| D["Shard Directory / Hash Ring"]
   end
   
   subgraph SG2_DistributedShardCluster ["Distributed Shard Cluster"]
@@ -30,12 +30,23 @@ flowchart TD
   end
   
   subgraph SG3_ScatterGatherCross ["Scatter-Gather Cross-Shard Engine"]
-    B -->|Cross-Shard Query - List High-Spenders| H[Scatter-Gather Worker Pool]
+    B -->|Cross-Shard Query - List High-Spenders| H["Scatter-Gather Worker Pool"]
     H -->|Parallel Execution| E
     H -->|Parallel Execution| F
     H -->|Parallel Execution| G
-    H -->|Merge & Sort Results| I[Return Consolidated Response]
+    H -->|Merge & Sort Results| I["Return Consolidated Response"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class D purple
+class H yellow
+class I red
 ```
 
 ### Core Sharding Mechanics
@@ -182,4 +193,10 @@ When architecture sharded database systems:
 ## Real-World Enterprise Impact
 Teams implementing database sharding report:
 * **Linear Scale-Out Capability**: Adding physical database shards increases write throughput linearly without hitting single-node hardware ceilings.
-* **Blast Radius Isolation**: If a physical database shard crashes, only a fraction ($1/N$) of users are impacted, keeping the remaining system operational.
+* **Blast Radius Isolation**: If a physical database shard crashes, only a fraction ($1/N$) of users are impacted, keeping the remaining system operational. [2]
+
+## References & Further Reading
+
+1. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+2. **Reed, D. P. (1978)**. *Naming and Synchronization in a Decentralized Computer System*. MIT PhD Thesis. [https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf](https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf)
+3. **Bayer, R., & McCreight, E. (1972)**. *Organization and Maintenance of Large Ordered Indexes*. Acta Informatica. [https://doi.org/10.1007/BF00288683](https://doi.org/10.1007/BF00288683)

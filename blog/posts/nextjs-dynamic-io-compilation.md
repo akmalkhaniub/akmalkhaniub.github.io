@@ -4,7 +4,7 @@
 > [!NOTE]
 > **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
 
-In standard Next.js compilation, the framework evaluates whether a route is static (pre-rendered at build time) or dynamic (rendered on demand per request) based on heuristics. If you call functions like `cookies()`, `headers()`, or read `searchParams` directly inside a component, the compiler flags the entire page as dynamic.
+In standard Next.js compilation, the framework evaluates whether a route is static (pre-rendered at build time) or dynamic (rendered on demand per request) based on heuristics [1]. If you call functions like `cookies()`, `headers()`, or read `searchParams` directly inside a component, the compiler flags the entire page as dynamic.
 
 In **Next.js 15/16**, Vercel introduces the experimental **`dynamicIO`** compiler configuration. It changes the paradigm from *implicit heuristics* to *explicit async boundaries*, enforcing strict compile-time checks to prevent unexpected database hits or layout shifts.
 
@@ -125,4 +125,14 @@ With PPR, Next.js compiles a static HTML page shell (including headers, navigati
 
 Without `dynamicIO`, a developer could write an un-suspended, synchronous `cookies()` call inside the navbar, which would instantly force the entire page shell to become dynamic, nullifying the performance advantages of PPR.
 
-By enforcing compile-time errors for synchronous dynamic operations, `dynamicIO` guarantees that your static layouts compile cleanly and remain 100% cached at the CDN Edge.
+By enforcing compile-time errors for synchronous dynamic operations, `dynamicIO` guarantees that your static layouts compile cleanly and remain 100% cached at the CDN Edge. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+5. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+6. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+7. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

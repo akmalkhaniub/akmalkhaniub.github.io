@@ -12,7 +12,7 @@
 
 ## What is Optimistic UI?
 
-Optimistic UI is a design pattern where the client interface behaves as if a server operation was successful before it actually completes. 
+Optimistic UI is a design pattern where the client interface behaves as if a server operation was successful before it actually completes [1]. 
 
 In standard architectures, updating state requires a round-trip:
 
@@ -160,4 +160,14 @@ The combination of Server Actions and `useOptimistic` provides desktop-like spee
 * [ ] **Enforce `startTransition`**: Remember that `useOptimistic` triggers *must* be wrapped inside a React transition scope to run correctly.
 * [ ] **Retain a base state**: Always maintain the server-confirmed state separately (using `useState`); the optimistic hook depends on this baseline to compute values and rollback.
 * [ ] **Design error boundaries**: When actions fail, present user-friendly alerts or toast notifications explaining the rollback.
-* [ ] **Prevent duplicate triggers**: Disable button clicks or throttle actions while the optimistic transition is pending to avoid double submission bugs.
+* [ ] **Prevent duplicate triggers**: Disable button clicks or throttle actions while the optimistic transition is pending to avoid double submission bugs. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **React Team (2024)**. *React 19 Blog Post*. react.dev. [https://react.dev/blog/2024/12/05/react-19](https://react.dev/blog/2024/12/05/react-19)
+6. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+7. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
