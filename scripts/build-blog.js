@@ -353,7 +353,10 @@ ${sidebarContent}
 let built = 0;
 const failures = [];
 for (const post of posts) {
-  const mdPath = join(ROOT, 'blog', 'posts', `${post.slug}.md`);
+  let mdPath = join(ROOT, 'blog', 'articles', post.slug, 'article.md');
+  if (!existsSync(mdPath)) {
+    mdPath = join(ROOT, 'blog', 'posts', `${post.slug}.md`);
+  }
   if (!existsSync(mdPath)) {
     failures.push(`${post.slug}: markdown file missing`);
     continue;
