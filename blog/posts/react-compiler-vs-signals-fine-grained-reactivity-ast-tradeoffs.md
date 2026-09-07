@@ -14,16 +14,16 @@ To trace how state mutations propagate through these two disparate runtimes, exa
 
 ```mermaid
 graph TD
-  subgraph CompilerMemo ["Top-Down Compiler Memoization: React 19 and Compiler"]
+  subgraph SG1_CompilerMemo ["Top-Down Compiler Memoization (React 19 & Compiler)"]
     StateChange1["State Mutation: setCount"] --> ReRenderTree["Re-evaluate Component Function Scope"]
-    ReRenderTree --> CacheCheck{"HIR Memo Cache Hit: slot equals dep?"}
-    CacheCheck -->|Cache Hit: 0 Allocations| SkipVDOM["Bypass Subtree VDOM Allocation"]
-    CacheCheck -->|Cache Miss: Value Mutated| UpdateVDOM["Reconcile Fiber Subtree and Emit DOM Patch"]
+    ReRenderTree --> CacheCheck["HIR Memo Cache Hit Check"]
+    CacheCheck -->|Cache Hit| SkipVDOM["Bypass Subtree VDOM Allocation"]
+    CacheCheck -->|Cache Miss| UpdateVDOM["Reconcile Fiber Subtree & Emit DOM Patch"]
   end
 
-  subgraph ReactiveGraphs ["Fine-Grained Reactive Graphs: SolidJS, Svelte 5, Signals"]
-    StateChange2["Signal Mutation: count.set"] --> DirectGraph["Traverse Directed Reactive Dependency Graph"]
-    DirectGraph --> ZeroVDOM["0 Component Function Re-executions"]
+  subgraph SG2_ReactiveGraphs ["Fine-Grained Reactive Graphs (SolidJS, Svelte 5, Signals)"]
+    StateChange2["Signal Mutation: count.set"] --> DirectGraph["Traverse Reactive Dependency Graph"]
+    DirectGraph --> ZeroVDOM["Zero Component Function Re-executions"]
     ZeroVDOM --> SurgicalDOM["Direct In-Place Mutation of Bound Text Node"]
   end
 ```

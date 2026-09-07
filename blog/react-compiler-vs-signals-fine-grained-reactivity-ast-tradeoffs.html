@@ -124,16 +124,16 @@
 <p>Why did React refuse the signals train? Why bet the future of the world&#39;s most dominant UI library on compiler static analysis? And what are the physical runtime trade-offs between compile-time dependency analysis and runtime reactive subscriber graphs?</p>
 <p>To trace how state mutations propagate through these two disparate runtimes, examine the data-flow topology illustrated in Figure 1 below.</p>
 <div class="mermaid">graph TD
-  subgraph CompilerMemo [&quot;Top-Down Compiler Memoization: React 19 and Compiler&quot;]
+  subgraph SG1_CompilerMemo [&quot;Top-Down Compiler Memoization (React 19 &amp; Compiler)&quot;]
     StateChange1[&quot;State Mutation: setCount&quot;] --&gt; ReRenderTree[&quot;Re-evaluate Component Function Scope&quot;]
-    ReRenderTree --&gt; CacheCheck{&quot;HIR Memo Cache Hit: slot equals dep?&quot;}
-    CacheCheck --&gt;|Cache Hit: 0 Allocations| SkipVDOM[&quot;Bypass Subtree VDOM Allocation&quot;]
-    CacheCheck --&gt;|Cache Miss: Value Mutated| UpdateVDOM[&quot;Reconcile Fiber Subtree and Emit DOM Patch&quot;]
+    ReRenderTree --&gt; CacheCheck[&quot;HIR Memo Cache Hit Check&quot;]
+    CacheCheck --&gt;|Cache Hit| SkipVDOM[&quot;Bypass Subtree VDOM Allocation&quot;]
+    CacheCheck --&gt;|Cache Miss| UpdateVDOM[&quot;Reconcile Fiber Subtree &amp; Emit DOM Patch&quot;]
   end
 
-  subgraph ReactiveGraphs [&quot;Fine-Grained Reactive Graphs: SolidJS, Svelte 5, Signals&quot;]
-    StateChange2[&quot;Signal Mutation: count.set&quot;] --&gt; DirectGraph[&quot;Traverse Directed Reactive Dependency Graph&quot;]
-    DirectGraph --&gt; ZeroVDOM[&quot;0 Component Function Re-executions&quot;]
+  subgraph SG2_ReactiveGraphs [&quot;Fine-Grained Reactive Graphs (SolidJS, Svelte 5, Signals)&quot;]
+    StateChange2[&quot;Signal Mutation: count.set&quot;] --&gt; DirectGraph[&quot;Traverse Reactive Dependency Graph&quot;]
+    DirectGraph --&gt; ZeroVDOM[&quot;Zero Component Function Re-executions&quot;]
     ZeroVDOM --&gt; SurgicalDOM[&quot;Direct In-Place Mutation of Bound Text Node&quot;]
   end</div>
 <p><em>Figure 1: Comparative data-flow topologies of Top-Down Compiler Memoization versus Fine-Grained Reactive Subscriber Graphs. In the compiler model, execution remains top-down but is arrested by memoization slots; in the signal model, component scopes execute only once, and signals notify DOM bindings directly. Source: Adapted from Savona &amp; Hanlon (2024) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup> and Carniato (2021) <sup class="citation-ref"><a href="#ref-3" class="citation-link" data-ref="3" title="Reference [3]">[3]</a></sup>.</em></p>
