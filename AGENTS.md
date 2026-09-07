@@ -11,9 +11,10 @@ Whenever the user asks to write, research, draft, or publish a blog post or tech
    - **Gate 2 (Visual Blueprint & Outline)**: Present the vertical diagrams and 5-beat narrative outline. STOP and wait for user confirmation.
    - **Gate 3 (Pre-Deploy Greenlight)**: Present the live preview, benchmark results, and Red Team audit report. STOP and wait for final authorization to push.
 
-2. **The Strict Vertical-First Diagram Rule (`flowchart TD`)**:
-   - **BANNED**: `flowchart LR` or `graph LR` (horizontal diagrams cause SVG squishing and illegible micro-fonts).
-   - **MANDATORY**: `flowchart TD` or `graph TD` for all architectural workflows, request journeys, and compilation pipelines.
+2. **The Balanced 2-Column Spine Diagram Standard (`flowchart TD`)**:
+   - **BANNED**: `flowchart LR` or `graph LR` (causes horizontal SVG shrinking and illegible micro-fonts).
+   - **BANNED**: 100% single-file vertical "totem poles" that waste horizontal space.
+   - **MANDATORY**: Top-Down macro spine (`flowchart TD`) with a maximum of **2 balanced parallel columns** side-by-side (e.g. Partition A vs Partition B, or Memory Guard vs Storage Guard). This guarantees $\approx 350\text{px}$ node width and full 14px–16px typography without zooming.
    - Nodes must use square brackets with quotes: `NodeID["Clean Title"]`. Never put quotes inside curly braces (`Node{"..."}` is banned).
    - Clean edge labels: `-->|Cache Hit| Node` (no colons or digits in edge labels).
 

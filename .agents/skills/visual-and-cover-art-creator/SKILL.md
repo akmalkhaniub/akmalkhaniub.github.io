@@ -14,14 +14,20 @@ This skill governs the **visual aesthetics, cover art generation, and diagram sy
 
 ---
 
-## 📱 The Strict Vertical-First Diagram Rule (`flowchart TD`)
+## 📱 The Balanced 2-Column Spine Standard (`flowchart TD`)
 
 > [!IMPORTANT]
-> **BANNED: Wide Horizontal Layouts (`flowchart LR`)**.
-> Horizontal diagrams cause the browser to scale down the SVG to fit container width, shrinking text into illegible micro-font and forcing readers to zoom in.
-> 
-> **MANDATORY: Strict Vertical-First Layouts (`flowchart TD`)**.
-> All architectural request journeys, state transitions, compilation pipelines, and data-flow sequences MUST flow from **Top to Down (`TD`)**. This allows nodes to maintain full 14px-16px readable typography, preserves comfortable padding, and flows naturally with vertical page scrolling.
+> **The Problem with 100% Horizontal (`flowchart LR`)**:
+> Horizontal sprawling trees force the browser SVG renderer to scale down width to fit the 800px column, shrinking typography to illegible 8px micro-text and forcing readers to zoom in.
+>
+> **The Problem with 100% Single-Column Vertical**:
+> A rigid, single-file vertical line creates an unnaturally tall, awkward "totem pole" that wastes horizontal space.
+>
+> **The Golden ByteByteGo Standard: Balanced 2-Column Spine**:
+> 1. **Top-Down Macro Flow (`TD`)**: The overall system timeline and lifecycle always progress vertically.
+> 2. **Max 2 Parallel Columns**: Whenever comparing two systems, partitions, branches, or actors (e.g. *Minority Partition vs Majority Partition*, *Client A vs Client B*, or *Memory Guard vs Storage Guard*), place them **side-by-side in 2 symmetrical parallel columns**.
+> 3. **Minimum Readable Node Width**: By limiting concurrency to **2 columns**, each branch maintains $\approx 350\text{px}$ width—safely fitting inside 780px–800px containers with **zero SVG downscaling** and full 14px–16px readable typography.
+> 4. **Never exceed 2 parallel columns** (3 or 4 columns will trigger browser downscaling).
 
 ### Vertical Template Example:
 ```mermaid
