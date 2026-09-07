@@ -17,7 +17,7 @@
   <meta property="og:description" content="Petabyte-scale distributed data movement: implementing Map-side shuffle file partitioning, Sort Shuffle vs Hash Shuffle memory overhead, External Shuffle Service (ESS), and Remote Shuffle Services (Apache Uniffle, Celeborn).">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Distributed Shuffle Engine Architecture: Sort Shuffle, Hash Shuffle & Remote Shuffle Services (RSS)",
   "description": "Petabyte-scale distributed data movement: implementing Map-side shuffle file partitioning, Sort Shuffle vs Hash Shuffle memory overhead, External Shuffle Service (ESS), and Remote Shuffle Services (Apache Uniffle, Celeborn).",
   "url": "https://akmalkhaniub.github.io/blog/distributed-shuffle-engine-sort-hash-remote-shuffle-service.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-18",
   "keywords": "Distributed Shuffle, Sort Shuffle, Remote Shuffle, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#distributed-shuffle-architecture-hash-vs-sort-vs-remote-shuffle">Distributed Shuffle Architecture: Hash vs Sort vs Remote Shuffle</a></li>
+                <li><a href="#core-distributed-shuffle-mechanics">Core Distributed Shuffle Mechanics</a></li>
                 <li><a href="#python-implementation-map-side-sort-shuffle-engine-indexer">Python Implementation: Map-Side Sort Shuffle Engine &amp; Indexer</a></li>
                 <li><a href="#distributed-shuffle-gotchas-best-practices">Distributed Shuffle Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -122,15 +124,15 @@
 <hr>
 <h2 id="distributed-shuffle-architecture-hash-vs-sort-vs-remote-shuffle">Distributed Shuffle Architecture: Hash vs Sort vs Remote Shuffle</h2>
 <p>How distributed engines manage map-side shuffle output files and how Remote Shuffle Services eliminate executor disk dependencies:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_LegacyHashShuffle [&quot;Legacy Hash Shuffle (M Mappers x R Reducers File Explosion)&quot;]
     Map1[Map Task 1] --&gt; File1[Partition File 1] &amp; File2[Partition File 2] &amp; File3[Partition File R (M x R Files!)]
   end
   
   subgraph SG2_ModernSortShuffle [&quot;Modern Sort Shuffle (Single Data File + Index File)&quot;]
     MapSort[Map Task] --&gt;|Sort Records by Reducer ID| InMemBuffer[In-Memory Sorter Buffer]
-    InMemBuffer --&gt; SingleDataFile[&quot;📄 Single Data File: [Part 0 Data | Part 1 Data | Part 2 Data]&quot;]
-    InMemBuffer --&gt; IndexFile[&quot;📑 Index File: [Part 0: Offset 0..1024 | Part 1: Offset 1024..4096]&quot;]
+    InMemBuffer --&gt; SingleDataFile[&quot; Single Data File: [Part 0 Data | Part 1 Data | Part 2 Data]&quot;]
+    InMemBuffer --&gt; IndexFile[&quot; Index File: [Part 0: Offset 0..1024 | Part 1: Offset 1024..4096]&quot;]
   end
   
   subgraph SG3_DisaggregatedRemoteShuffle [&quot;Disaggregated Remote Shuffle Service (RSS: Apache Uniffle / Celeborn)&quot;]
@@ -305,6 +307,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#distributed-shuffle-architecture-hash-vs-sort-vs-remote-shuffle" class="toc-link">Distributed Shuffle Architecture: Hash vs Sort vs Remote Shuffle</a></li>
+              <li class="toc-item toc-h3"><a href="#core-distributed-shuffle-mechanics" class="toc-link">Core Distributed Shuffle Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-map-side-sort-shuffle-engine-indexer" class="toc-link">Python Implementation: Map-Side Sort Shuffle Engine &amp; Indexer</a></li>
               <li class="toc-item toc-h2"><a href="#distributed-shuffle-gotchas-best-practices" class="toc-link">Distributed Shuffle Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1146,13 +1149,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1221,13 +1218,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1269,13 +1260,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

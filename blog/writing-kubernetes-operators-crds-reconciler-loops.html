@@ -17,7 +17,7 @@
   <meta property="og:description" content="Extending the Kubernetes API: defining Custom Resource Definitions (CRDs), writing controller Informer watches, and building idempotent Reconciler loops for automated cluster self-healing.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-16">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Writing Kubernetes Operators: Custom Resource Definitions (CRDs) & Reconciler Loops",
   "description": "Extending the Kubernetes API: defining Custom Resource Definitions (CRDs), writing controller Informer watches, and building idempotent Reconciler loops for automated cluster self-healing.",
   "url": "https://akmalkhaniub.github.io/blog/writing-kubernetes-operators-crds-reconciler-loops.html",
-  "datePublished": "2026-08-16",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-17",
   "keywords": "Kubernetes, Operators, IaC, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#kubernetes-operator-control-loop-architecture">Kubernetes Operator Control Loop Architecture</a></li>
+                <li><a href="#core-operator-components">Core Operator Components</a></li>
                 <li><a href="#python-implementation-custom-kubernetes-operator-reconciler">Python Implementation: Custom Kubernetes Operator Reconciler</a></li>
                 <li><a href="#operator-gotchas-best-practices">Operator Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -121,22 +123,22 @@
 <hr>
 <h2 id="kubernetes-operator-control-loop-architecture">Kubernetes Operator Control Loop Architecture</h2>
 <p>How a Custom Controller watches CRD events and drives cluster convergence:</p>
-<div class="mermaid">graph TD
-  User[Platform Engineer] --&gt;|1. kubectl apply -f db.yaml| API[Kubernetes API Server]
+<div class="mermaid">flowchart TD
+  User[Platform Engineer] --&gt;|kubectl apply -f db.yaml| API[Kubernetes API Server]
   
   subgraph SG1_CustomResourceDefinition [&quot;Custom Resource Definition CRD&quot;]
-    API --&gt;|2. Persist Spec| ETCD[(etcd State Store)]
+    API --&gt;|Persist Spec| ETCD[(etcd State Store)]
   end
   
   subgraph SG2_CustomOperatorController [&quot;Custom Operator Controller&quot;]
-    API --&gt;|3. Watch Event Notification| Informer[Informer / Watch Cache]
-    Informer --&gt;|4. Push Key to WorkQueue| Queue[WorkQueue]
-    Queue --&gt;|5. Pop Key| Reconciler[Reconciler Loop]
+    API --&gt;|Watch Event Notification| Informer[Informer / Watch Cache]
+    Informer --&gt;|Push Key to WorkQueue| Queue[WorkQueue]
+    Queue --&gt;|Pop Key| Reconciler[Reconciler Loop]
   end
   
   subgraph SG3_AutomatedReconciliationLogic [&quot;Automated Reconciliation Logic&quot;]
-    Reconciler --&gt;|6. Query Actual Cluster State| Pods[Live Kubernetes Pods &amp; StatefulSets]
-    Reconciler --&gt;|7. Calculate Delta: Desired vs Actual| Engine{State Delta?}
+    Reconciler --&gt;|Query Actual Cluster State| Pods[Live Kubernetes Pods &amp; StatefulSets]
+    Reconciler --&gt;|Calculate Delta - Desired vs Actual| Engine{State Delta?}
     Engine --&gt;|Out of Sync| Action[Create / Update / Delete Pods]
     Engine --&gt;|In Sync| Status[Update CRD status.conditions]
     Action --&gt; Pods
@@ -313,6 +315,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#kubernetes-operator-control-loop-architecture" class="toc-link">Kubernetes Operator Control Loop Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-operator-components" class="toc-link">Core Operator Components</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-custom-kubernetes-operator-reconciler" class="toc-link">Python Implementation: Custom Kubernetes Operator Reconciler</a></li>
               <li class="toc-item toc-h2"><a href="#operator-gotchas-best-practices" class="toc-link">Operator Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1154,13 +1157,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1229,13 +1226,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1277,13 +1268,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

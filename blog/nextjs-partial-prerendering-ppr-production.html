@@ -17,7 +17,7 @@
   <meta property="og:description" content="Fusing static layouts and dynamic execution in Next.js 15/16: compiling non-blocking shells that stream dynamic Suspense components at the edge.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-21">
+  <meta property="article:published_time" content="2026-07-22">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Partial Prerendering (PPR) in Practice: Blending Static Shells and Dynamic Streams",
   "description": "Fusing static layouts and dynamic execution in Next.js 15/16: compiling non-blocking shells that stream dynamic Suspense components at the edge.",
   "url": "https://akmalkhaniub.github.io/blog/nextjs-partial-prerendering-ppr-production.html",
-  "datePublished": "2026-07-21",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-07-22",
   "keywords": "Next.js, Performance, Frontend, Architecture",
   "author": {
     "@type": "Person",
@@ -109,10 +110,17 @@
               <ul class="mobile-toc-list">
                 <li><a href="#under-the-hood-the-ppr-compiler-model">Under the Hood: The PPR Compiler Model</a></li>
                 <li><a href="#implementing-a-dynamic-product-page">Implementing a Dynamic Product Page</a></li>
+                <li><a href="#1-main-page-layout-static-shell">1. Main Page Layout (Static Shell)</a></li>
+                <li><a href="#2-dynamic-segment-component-the-streamed-content">2. Dynamic Segment Component (The Streamed Content)</a></li>
                 <li><a href="#important-pitfalls-in-production">Important Pitfalls in Production</a></li>
                 <li><a href="#real-world-production-adoption">Real-World Production Adoption</a></li>
               </ul>
             </details>
+<div class="alert alert-note">
+  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
+  <div class="alert-content"><p><strong>Update (September 2026)</strong>: Next.js <strong>16.3 is Active LTS</strong>. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See <a href="the-great-un-caching-nextjs-15-caching-architecture-defaults.html">The Great Un-Caching</a> for the 15 default inversion.</p>
+</div>
+</div>
 <p>In the battle between static and dynamic web rendering, developers have historically faced a binary compromise:</p>
 <ul>
 <li><strong>Static Site Generation (SSG)</strong>: Insanely fast Time to First Byte (TTFB) and robust CDN edge caching, but completely incapable of displaying real-time user-specific content.</li>
@@ -127,7 +135,7 @@
 <li><strong>The Static Shell</strong>: Everything outside of <code>&lt;Suspense&gt;</code> is immediately pre-rendered into static HTML and cached globally at edge nodes.</li>
 <li><strong>The Dynamic Holes</strong>: Components wrapped in <code>&lt;Suspense&gt;</code> are compiled into dynamic execution instructions.</li>
 </ol>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   A[Client requests page] --&gt; B[Edge Server returns pre-rendered Static HTML Shell]
   B --&gt; C[Client renders Navbar, Sidebar, Layout immediately]
   A --&gt; D[Next.js Server executes dynamic database/API calls]
@@ -262,6 +270,8 @@ export async function RealtimePricing({ slug }: PricingProps) {
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#under-the-hood-the-ppr-compiler-model" class="toc-link">Under the Hood: The PPR Compiler Model</a></li>
               <li class="toc-item toc-h2"><a href="#implementing-a-dynamic-product-page" class="toc-link">Implementing a Dynamic Product Page</a></li>
+              <li class="toc-item toc-h3"><a href="#1-main-page-layout-static-shell" class="toc-link">1. Main Page Layout (Static Shell)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-dynamic-segment-component-the-streamed-content" class="toc-link">2. Dynamic Segment Component (The Streamed Content)</a></li>
               <li class="toc-item toc-h2"><a href="#important-pitfalls-in-production" class="toc-link">Important Pitfalls in Production</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-production-adoption" class="toc-link">Real-World Production Adoption</a></li>
             </ul>

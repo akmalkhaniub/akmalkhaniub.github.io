@@ -17,7 +17,7 @@
   <meta property="og:description" content="Foundational atomic commit protocols: 2PC coordinator blocking vulnerability, Skeen's 3PC network partition failure, X/Open XA distributed 2PL deadlocks, and why early e-commerce monoliths (Amazon, eBay) abandoned synchronous ACID.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-19">
+  <meta property="article:published_time" content="2026-08-20">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "The Evolution of Distributed Transactions Part 1: The Past — Classical 2PC/3PC, X/Open XA, Distributed 2PL & Why E-Commerce Abandoned Monolithic Coordination",
   "description": "Foundational atomic commit protocols: 2PC coordinator blocking vulnerability, Skeen's 3PC network partition failure, X/Open XA distributed 2PL deadlocks, and why early e-commerce monoliths (Amazon, eBay) abandoned synchronous ACID.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-transactions-evolution-past-2pc-3pc-xa-distributed-2pl.html",
-  "datePublished": "2026-08-19",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-20",
   "keywords": "Distributed Systems, 2PC, 3PC, XA Transactions, Database Internals",
   "author": {
     "@type": "Person",
@@ -108,9 +109,17 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-jim-grays-atomic-commit-two-phase-commit-2pc">1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</a></li>
+                <li><a href="#the-two-phase-commit-protocol-mechanics">The Two-Phase Commit Protocol Mechanics</a></li>
+                <li><a href="#the-fatal-flaw-the-blocking-coordinator-vulnerability">The Fatal Flaw: The Blocking Coordinator Vulnerability</a></li>
                 <li><a href="#2-three-phase-commit-3pc-skeens-non-blocking-attempt">2. Three-Phase Commit (3PC): Skeen's Non-Blocking Attempt</a></li>
+                <li><a href="#the-3pc-state-invariant">The 3PC State Invariant</a></li>
+                <li><a href="#why-3pc-failed-in-practice-network-partitions-p-in-cap">Why 3PC Failed in Practice: Network Partitions ($P$ in CAP)</a></li>
                 <li><a href="#3-xopen-xa-distributed-two-phase-locking-2pl">3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</a></li>
+                <li><a href="#distributed-two-phase-locking-2pl-distributed-deadlocks">Distributed Two-Phase Locking (2PL) &amp; Distributed Deadlocks</a></li>
+                <li><a href="#the-distributed-deadlock-problem">The Distributed Deadlock Problem</a></li>
                 <li><a href="#4-why-large-scale-e-commerce-abandoned-monolithic-2pc">4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC</a></li>
+                <li><a href="#the-early-amazon-gurupa-bottleneck">The Early Amazon &quot;Gurupa&quot; Bottleneck</a></li>
+                <li><a href="#ebays-architectural-shift-randy-shoup-dan-pritchett">eBay's Architectural Shift: Randy Shoup &amp; Dan Pritchett</a></li>
                 <li><a href="#python-simulation-distributed-deadlock-detection-3pc-state-machine">Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</a></li>
                 <li><a href="#engineering-lessons-from-the-classical-era">Engineering Lessons from the Classical Era</a></li>
                 <li><a href="#next-in-the-series">Next in the Series</a></li>
@@ -120,15 +129,15 @@
 <p>Engineers demanded the same strict <strong>ACID</strong> guarantees (Atomicity, Consistency, Isolation, Durability) across distributed networks that they enjoyed on a single mainframe.</p>
 <p>However, as internet-scale e-commerce platforms scaled from thousands to millions of concurrent shoppers in the late 1990s and early 2000s, classical distributed transaction protocols—specifically <strong>Two-Phase Commit (2PC)</strong>, <strong>Three-Phase Commit (3PC)</strong>, and <strong>X/Open XA Distributed Two-Phase Locking (2PL)</strong>—collapsed under their own synchronization overhead.</p>
 <p>This article examines the foundational mathematical protocols of distributed transactions, analyzes why the coordinator blocking vulnerability paralyzed early e-commerce architectures, and uncovers the real-world lessons that forced the industry to rethink data consistency.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_TheClassicalDistributed [&quot;The Classical Distributed Transaction Era (1970s - 2000s)&quot;]
     App[Monolithic Application Server] --&gt; TM[XA Transaction Manager / Coordinator]
-    TM --&gt;|1. PREPARE| DB1[(Database 1: Order DB)]
-    TM --&gt;|1. PREPARE| DB2[(Database 2: Inventory DB)]
-    TM --&gt;|1. PREPARE| DB3[(Database 3: Payment DB)]
+    TM --&gt;|PREPARE| DB1[(Database 1: Order DB)]
+    TM --&gt;|PREPARE| DB2[(Database 2: Inventory DB)]
+    TM --&gt;|PREPARE| DB3[(Database 3: Payment DB)]
     DB1 &amp; DB2 &amp; DB3 --&gt;|Acquire Strict Exclusive Locks 2PL| Locks[Held Exclusive Row Locks]
-    DB1 &amp; DB2 &amp; DB3 --&gt;|2. VOTE COMMIT| TM
-    TM --&gt;|3. GLOBAL COMMIT| DB1 &amp; DB2 &amp; DB3
+    DB1 &amp; DB2 &amp; DB3 --&gt;|VOTE COMMIT| TM
+    TM --&gt;|GLOBAL COMMIT| DB1 &amp; DB2 &amp; DB3
   end
   
   style Locks fill:#f43f5e,stroke:#881337,color:#ffffff</div>
@@ -212,7 +221,7 @@
 <h2 id="3-xopen-xa-distributed-two-phase-locking-2pl">3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</h2>
 <p>In 1991, the Open Group published the <strong>X/Open Distributed Transaction Processing (DTP) XA Specification</strong>.</p>
 <p>XA standardized the interface between an AP (Application Program), a TM (Transaction Manager, like BEA Tuxedo or IBM CICS), and multiple RMs (Resource Managers, like Oracle, DB2, or Sybase).</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   AP[&quot;Application Program (AP)&quot;] --&gt;|tx_begin / tx_commit| TM[&quot;Transaction Manager (TM)&quot;]
   AP --&gt;|SQL Queries| RM1[&quot;Resource Manager 1 (Oracle)&quot;]
   AP --&gt;|SQL Queries| RM2[&quot;Resource Manager 2 (DB2)&quot;]
@@ -226,7 +235,7 @@
 </ul>
 <h3 id="the-distributed-deadlock-problem">The Distributed Deadlock Problem</h3>
 <p>In a single database, deadlocks are detected via an in-memory Wait-For-Graph (WFG) cycle detector. In distributed XA transactions across distinct database instances, deadlocks form <strong>distributed cycles</strong>:</p>
-<div class="mermaid">graph LR
+<div class="mermaid">flowchart TD
   Tx1((Tx 1)) --&gt;|Holds Lock on Table A, Waits for Table B| DB2[(Oracle Node 2)]
   DB2 --&gt;|Holds Lock on Table B| Tx2((Tx 2))
   Tx2 --&gt;|Holds Lock on Table C, Waits for Table A| DB1[(Oracle Node 1)]
@@ -395,9 +404,17 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-jim-grays-atomic-commit-two-phase-commit-2pc" class="toc-link">1. Jim Gray’s Atomic Commit &amp; Two-Phase Commit (2PC)</a></li>
+              <li class="toc-item toc-h3"><a href="#the-two-phase-commit-protocol-mechanics" class="toc-link">The Two-Phase Commit Protocol Mechanics</a></li>
+              <li class="toc-item toc-h3"><a href="#the-fatal-flaw-the-blocking-coordinator-vulnerability" class="toc-link">The Fatal Flaw: The Blocking Coordinator Vulnerability</a></li>
               <li class="toc-item toc-h2"><a href="#2-three-phase-commit-3pc-skeens-non-blocking-attempt" class="toc-link">2. Three-Phase Commit (3PC): Skeen's Non-Blocking Attempt</a></li>
+              <li class="toc-item toc-h3"><a href="#the-3pc-state-invariant" class="toc-link">The 3PC State Invariant</a></li>
+              <li class="toc-item toc-h3"><a href="#why-3pc-failed-in-practice-network-partitions-p-in-cap" class="toc-link">Why 3PC Failed in Practice: Network Partitions ($P$ in CAP)</a></li>
               <li class="toc-item toc-h2"><a href="#3-xopen-xa-distributed-two-phase-locking-2pl" class="toc-link">3. X/Open XA &amp; Distributed Two-Phase Locking (2PL)</a></li>
+              <li class="toc-item toc-h3"><a href="#distributed-two-phase-locking-2pl-distributed-deadlocks" class="toc-link">Distributed Two-Phase Locking (2PL) &amp; Distributed Deadlocks</a></li>
+              <li class="toc-item toc-h3"><a href="#the-distributed-deadlock-problem" class="toc-link">The Distributed Deadlock Problem</a></li>
               <li class="toc-item toc-h2"><a href="#4-why-large-scale-e-commerce-abandoned-monolithic-2pc" class="toc-link">4. Why Large-Scale E-Commerce Abandoned Monolithic 2PC</a></li>
+              <li class="toc-item toc-h3"><a href="#the-early-amazon-gurupa-bottleneck" class="toc-link">The Early Amazon &quot;Gurupa&quot; Bottleneck</a></li>
+              <li class="toc-item toc-h3"><a href="#ebays-architectural-shift-randy-shoup-dan-pritchett" class="toc-link">eBay's Architectural Shift: Randy Shoup &amp; Dan Pritchett</a></li>
               <li class="toc-item toc-h2"><a href="#python-simulation-distributed-deadlock-detection-3pc-state-machine" class="toc-link">Python Simulation: Distributed Deadlock Detection &amp; 3PC State Machine</a></li>
               <li class="toc-item toc-h2"><a href="#engineering-lessons-from-the-classical-era" class="toc-link">Engineering Lessons from the Classical Era</a></li>
               <li class="toc-item toc-h2"><a href="#next-in-the-series" class="toc-link">Next in the Series</a></li>
@@ -1239,13 +1256,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1314,13 +1325,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1362,13 +1367,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

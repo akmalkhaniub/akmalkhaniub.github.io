@@ -17,7 +17,7 @@
   <meta property="og:description" content="Achieving sub-microsecond cache lookups: designing two-tier caching architectures with in-memory process L1 caches, distributed Redis L2 clusters, and Redis Pub/Sub invalidation channels.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-14">
+  <meta property="article:published_time" content="2026-08-15">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Multi-Tier Hybrid Caching: In-Memory L1 + Distributed L2 Clusters",
   "description": "Achieving sub-microsecond cache lookups: designing two-tier caching architectures with in-memory process L1 caches, distributed Redis L2 clusters, and Redis Pub/Sub invalidation channels.",
   "url": "https://akmalkhaniub.github.io/blog/multi-tier-hybrid-caching-in-memory-l1-distributed-l2-clusters.html",
-  "datePublished": "2026-08-14",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-15",
   "keywords": "Caching, Redis, Multi-Tier, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#multi-tier-l1l2-caching-invalidation-architecture">Multi-Tier L1/L2 Caching &amp; Invalidation Architecture</a></li>
+                <li><a href="#multi-tier-engine-characteristics">Multi-Tier Engine Characteristics</a></li>
                 <li><a href="#python-implementation-multi-tier-l1l2-caching-engine">Python Implementation: Multi-Tier L1/L2 Caching Engine</a></li>
                 <li><a href="#multi-tier-caching-gotchas-best-practices">Multi-Tier Caching Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -121,23 +123,23 @@
 <hr>
 <h2 id="multi-tier-l1l2-caching-invalidation-architecture">Multi-Tier L1/L2 Caching &amp; Invalidation Architecture</h2>
 <p>The read path hierarchy and cross-node L1 invalidation bus:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   A[Client Request] --&gt; B[L1 In-Memory Process Cache: Sub-microsecond RAM]
   
   subgraph SG1_LocalMicroserviceInstance [&quot;Local Microservice Instance 1&quot;]
-    B --&gt;|1. L1 Hit| C[Return Instant Result: &lt; 0.01ms]
-    B --&gt;|2. L1 Miss| D[L2 Distributed Cache: Redis Cluster]
+    B --&gt;|L1 Hit| C[Return Instant Result: &lt; 0.01ms]
+    B --&gt;|L1 Miss| D[L2 Distributed Cache: Redis Cluster]
   end
   
   subgraph SG2_DistributedCacheStorage [&quot;Distributed Cache &amp; Storage&quot;]
-    D --&gt;|3. L2 Hit| E[Populate L1 &amp; Return Result: 1-2ms]
-    D --&gt;|4. L2 Miss| F[(Primary Database Storage)]
-    F --&gt;|5. DB Result| G[Populate L2 &amp; L1]
+    D --&gt;|L2 Hit| E[Populate L1 &amp; Return Result: 1-2ms]
+    D --&gt;|L2 Miss| F[(Primary Database Storage)]
+    F --&gt;|DB Result| G[Populate L2 &amp; L1]
   end
   
   subgraph SG3_CrossNodeL1 [&quot;Cross-Node L1 Invalidation&quot;]
-    H[Data Updated in Node 2] --&gt;|6. Publish Event| I[Redis Pub/Sub Channel]
-    I --&gt;|7. Broadcast Invalidation| B
+    H[Data Updated in Node 2] --&gt;|Publish Event| I[Redis Pub/Sub Channel]
+    I --&gt;|Broadcast Invalidation| B
   end</div>
 <h3 id="multi-tier-engine-characteristics">Multi-Tier Engine Characteristics</h3>
 <ol>
@@ -325,6 +327,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#multi-tier-l1l2-caching-invalidation-architecture" class="toc-link">Multi-Tier L1/L2 Caching &amp; Invalidation Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#multi-tier-engine-characteristics" class="toc-link">Multi-Tier Engine Characteristics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-multi-tier-l1l2-caching-engine" class="toc-link">Python Implementation: Multi-Tier L1/L2 Caching Engine</a></li>
               <li class="toc-item toc-h2"><a href="#multi-tier-caching-gotchas-best-practices" class="toc-link">Multi-Tier Caching Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1166,13 +1169,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1241,13 +1238,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1289,13 +1280,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

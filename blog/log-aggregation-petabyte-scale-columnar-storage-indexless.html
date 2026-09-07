@@ -17,7 +17,7 @@
   <meta property="og:description" content="High-throughput log processing: implementing Loki-style stream label partitioning, compressed log chunk archiving, and parallelized regex query scanners.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Log Aggregation at Petabyte Scale: Columnar Storage & Indexless Logs",
   "description": "High-throughput log processing: implementing Loki-style stream label partitioning, compressed log chunk archiving, and parallelized regex query scanners.",
   "url": "https://akmalkhaniub.github.io/blog/log-aggregation-petabyte-scale-columnar-storage-indexless.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-18",
   "keywords": "Log Aggregation, Loki, Columnar Storage, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#indexless-log-aggregation-architecture">Indexless Log Aggregation Architecture</a></li>
+                <li><a href="#core-indexless-log-engine-principles">Core Indexless Log Engine Principles</a></li>
                 <li><a href="#python-implementation-indexless-log-aggregation-engine">Python Implementation: Indexless Log Aggregation Engine</a></li>
                 <li><a href="#indexless-log-engine-gotchas-best-practices">Indexless Log Engine Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -125,26 +127,26 @@
 <hr>
 <h2 id="indexless-log-aggregation-architecture">Indexless Log Aggregation Architecture</h2>
 <p>How Loki-style indexless log engines partition streams and execute parallel query scans:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   LogStream[&quot;Log Stream: 2026-08-18 10:00:00 [ERROR] Connection Timeout&quot;] --&gt; Ingestor[Log Ingestor Daemon]
   
   subgraph SG1_MetadataIndexingOnly [&quot;Metadata Indexing Only (Loki Model)&quot;]
-    Ingestor --&gt;|1. Extract High-Level Labels| LabelIndex[&quot;Stream Label Index: {app='payment', env='prod'}&quot;]
+    Ingestor --&gt;|Extract High-Level Labels| LabelIndex[&quot;Stream Label Index: {app='payment', env='prod'}&quot;]
   end
   
   subgraph SG2_CompressedChunkStorage [&quot;Compressed Chunk Storage (No Inverted Token Index!)&quot;]
-    Ingestor --&gt;|2. Append to Stream Chunk Buffer| Chunk[2MB Compressed Log Chunk Block]
-    Chunk --&gt;|3. Flush to Object Storage| S3[(Cloud Object Storage: S3 / GCS)]
+    Ingestor --&gt;|Append to Stream Chunk Buffer| Chunk[2MB Compressed Log Chunk Block]
+    Chunk --&gt;|Flush to Object Storage| S3[(Cloud Object Storage: S3 / GCS)]
   end
   
   subgraph SG3_ParallelizedMapreduceQuery [&quot;Parallelized MapReduce Query Scanner (LogQL)&quot;]
     Query[&quot;User Query: {app='payment'} |= 'Connection Timeout'&quot;] --&gt; Querier[Distributed Query Engine]
-    LabelIndex --&gt;|4. Lookup Chunks for Stream| Querier
+    LabelIndex --&gt;|Lookup Chunks for Stream| Querier
     
-    Querier --&gt;|5. Fetch &amp; Parallel Decompress Chunks| Worker1[Query Worker 1: Regex Scan Chunk A]
-    Querier --&gt;|5. Fetch &amp; Parallel Decompress Chunks| Worker2[Query Worker 2: Regex Scan Chunk B]
+    Querier --&gt;|Fetch &amp; Parallel Decompress Chunks| Worker1[Query Worker 1: Regex Scan Chunk A]
+    Querier --&gt;|Fetch &amp; Parallel Decompress Chunks| Worker2[Query Worker 2: Regex Scan Chunk B]
     
-    Worker1 &amp; Worker2 --&gt;|6. Merge Matching Lines| UserOutput[User Log Results Output]
+    Worker1 &amp; Worker2 --&gt;|Merge Matching Lines| UserOutput[User Log Results Output]
   end</div>
 <h3 id="core-indexless-log-engine-principles">Core Indexless Log Engine Principles</h3>
 <ol>
@@ -335,6 +337,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#indexless-log-aggregation-architecture" class="toc-link">Indexless Log Aggregation Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-indexless-log-engine-principles" class="toc-link">Core Indexless Log Engine Principles</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-indexless-log-aggregation-engine" class="toc-link">Python Implementation: Indexless Log Aggregation Engine</a></li>
               <li class="toc-item toc-h2"><a href="#indexless-log-engine-gotchas-best-practices" class="toc-link">Indexless Log Engine Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1176,13 +1179,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1251,13 +1248,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1299,13 +1290,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

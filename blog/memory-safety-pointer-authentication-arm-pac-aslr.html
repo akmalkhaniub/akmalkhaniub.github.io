@@ -17,7 +17,7 @@
   <meta property="og:description" content="Low-level exploit mitigation: implementing Address Space Layout Randomization (ASLR), ROP gadget chain detection, ARMv8.3 Pointer Authentication Codes (PACIA/AUTIA), and Memory Tagging (MTE).">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Memory Safety & Pointer Authentication: ARM PAC (Pointer Authentication Code) & ASLR Mechanics",
   "description": "Low-level exploit mitigation: implementing Address Space Layout Randomization (ASLR), ROP gadget chain detection, ARMv8.3 Pointer Authentication Codes (PACIA/AUTIA), and Memory Tagging (MTE).",
   "url": "https://akmalkhaniub.github.io/blog/memory-safety-pointer-authentication-arm-pac-aslr.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-18",
   "keywords": "Memory Safety, ARM PAC, Security, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#arm-pointer-authentication-pac-rop-prevention-architecture">ARM Pointer Authentication (PAC) &amp; ROP Prevention Architecture</a></li>
+                <li><a href="#core-memory-protection-technologies">Core Memory Protection Technologies</a></li>
                 <li><a href="#python-implementation-pointer-authentication-code-pac-simulator">Python Implementation: Pointer Authentication Code (PAC) Simulator</a></li>
                 <li><a href="#memory-security-gotchas-best-practices">Memory Security Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -122,23 +124,23 @@
 <hr>
 <h2 id="arm-pointer-authentication-pac-rop-prevention-architecture">ARM Pointer Authentication (PAC) &amp; ROP Prevention Architecture</h2>
 <p>How ARM PAC signs 64-bit virtual pointers and catches pointer tampering before execution:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_FunctionEntryPrologue [&quot;Function Entry (Prologue: PACIA Instruction)&quot;]
-    RawPtr[Unsigned 64-Bit Pointer: 0x00007FFFF7A05000] --&gt;|1. Extract Unused Upper Bits 63..48| UnusedBits[Upper Bits Field]
+    RawPtr[Unsigned 64-Bit Pointer: 0x00007FFFF7A05000] --&gt;|Extract Unused Upper Bits 63..48| UnusedBits[Upper Bits Field]
     SecretKey[Secret Hardware Key: APIAKey] &amp; Modifier[Context Modifier: SP] --&gt; QARMA[QARMA Cryptographic Hash Engine]
     
-    QARMA --&gt;|2. Compute 16-Bit MAC Signature| SignPtr[&quot;Signed Pointer: 0x4F8A7FFFF7A05000 (PAC Embedded!)&quot;]
-    SignPtr --&gt;|3. Push to Stack| Stack[Stack Frame Memory]
+    QARMA --&gt;|Compute 16-Bit MAC Signature| SignPtr[&quot;Signed Pointer: 0x4F8A7FFFF7A05000 (PAC Embedded!)&quot;]
+    SignPtr --&gt;|Push to Stack| Stack[Stack Frame Memory]
   end
   
   subgraph SG2_AttackerExploitationAttempt [&quot;Attacker Exploitation Attempt (ROP Attack)&quot;]
-    Stack --&gt;|4. Buffer Overflow Mutates Pointer Bytes| CorruptPtr[&quot;Tampered Pointer: 0x4F8A7FFFF7B09999&quot;]
+    Stack --&gt;|Buffer Overflow Mutates Pointer Bytes| CorruptPtr[&quot;Tampered Pointer: 0x4F8A7FFFF7B09999&quot;]
   end
   
   subgraph SG3_FunctionExitEpilogue [&quot;Function Exit (Epilogue: AUTIA Instruction)&quot;]
-    CorruptPtr --&gt;|5. Verify Signature via AUTIA| PACCheck{Does Embedded PAC Match Recomputed QARMA Hash?}
-    PACCheck --&gt;|Match: Valid Pointer| Exec[Execute RET Instruction]
-    PACCheck --&gt;|Mismatch: Tampered!| Trap[🚨 HARDWARE CPU FAULT TRAP! SIGSEGV]
+    CorruptPtr --&gt;|Verify Signature via AUTIA| PACCheck{Does Embedded PAC Match Recomputed QARMA Hash?}
+    PACCheck --&gt;|Match - Valid Pointer| Exec[Execute RET Instruction]
+    PACCheck --&gt;|Mismatch - Tampered!| Trap[ HARDWARE CPU FAULT TRAP! SIGSEGV]
   end</div>
 <h3 id="core-memory-protection-technologies">Core Memory Protection Technologies</h3>
 <ol>
@@ -291,6 +293,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#arm-pointer-authentication-pac-rop-prevention-architecture" class="toc-link">ARM Pointer Authentication (PAC) &amp; ROP Prevention Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-memory-protection-technologies" class="toc-link">Core Memory Protection Technologies</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-pointer-authentication-code-pac-simulator" class="toc-link">Python Implementation: Pointer Authentication Code (PAC) Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#memory-security-gotchas-best-practices" class="toc-link">Memory Security Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1132,13 +1135,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1207,13 +1204,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1255,13 +1246,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

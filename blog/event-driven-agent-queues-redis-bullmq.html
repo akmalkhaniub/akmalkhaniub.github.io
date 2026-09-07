@@ -17,7 +17,7 @@
   <meta property="og:description" content="Moving beyond synchronous request blocks. Decoupling multi-step agent runs using Redis queues, message workers, and persistent state transitions.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-24">
+  <meta property="article:published_time" content="2026-03-25">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Event-Driven Agent Queues: Decoupling LLM API Calls with Redis & BullMQ",
   "description": "Moving beyond synchronous request blocks. Decoupling multi-step agent runs using Redis queues, message workers, and persistent state transitions.",
   "url": "https://akmalkhaniub.github.io/blog/event-driven-agent-queues-redis-bullmq.html",
-  "datePublished": "2026-03-24",
+  "image": "https://github.com/akmalkhaniub.png",
+  "datePublished": "2026-03-25",
   "keywords": "Redis, BullMQ, Node.js, Architecture",
   "author": {
     "@type": "Person",
@@ -109,9 +110,11 @@
               <ul class="mobile-toc-list">
                 <li><a href="#the-request-timeout-bottleneck-in-agentic-systems">The Request-Timeout Bottleneck in Agentic Systems</a></li>
                 <li><a href="#decoupled-agent-queue-lifecycle">Decoupled Agent Queue Lifecycle</a></li>
+                <li><a href="#key-queue-mechanics">Key Queue Mechanics</a></li>
                 <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
                 <li><a href="#technical-implementation-decoupling-agent-tasks-with-bullmq">Technical Implementation: Decoupling Agent Tasks with BullMQ</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -133,20 +136,20 @@ Running multi-step AI agents inside synchronous HTTP request/response loops is a
 <h2 id="decoupled-agent-queue-lifecycle">Decoupled Agent Queue Lifecycle</h2>
 <p>An event-driven agent infrastructure maps jobs through waiting, active, completed, and failed queues, storing progress and intermediate steps in a shared Redis backend.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
-    A[Client User Interface] --&gt;|1. POST /api/agent/run| B[API Gateway: Node.js/Hono]
-    B --&gt;|2. Generate Job UUID &amp; Push Job| C[Redis database]
-    B --&gt;|3. Return 202 Accepted + Job UUID| A
+flowchart TD
+    A[Client User Interface] --&gt;|POST /api/agent/run| B[API Gateway: Node.js/Hono]
+    B --&gt;|Generate Job UUID &amp; Push Job| C[Redis database]
+    B --&gt;|Return 202 Accepted + Job UUID| A
     
     subgraph SG1_BullmqTaskCluster [&quot;BullMQ Task Cluster&quot;]
-        D[BullMQ Worker Pool] --&gt;|4. Pull Job from Queue| C
-        D --&gt;|5. Execute Step 1: LLM Call| E[Frontier API: Claude]
-        D --&gt;|6. Execute Step 2: Tool Run| F[Sandbox Container]
-        D --&gt;|7. Save Result &amp; Update Job Status| C
+        D[BullMQ Worker Pool] --&gt;|Pull Job from Queue| C
+        D --&gt;|Execute Step 1 - LLM Call| E[Frontier API: Claude]
+        D --&gt;|Execute Step 2 - Tool Run| F[Sandbox Container]
+        D --&gt;|Save Result &amp; Update Job Status| C
     end
     
-    A --&gt;|8. Poll GET /api/jobs/:id| B
-    B --&gt;|9. Query Job Status| C
+    A --&gt;|Poll GET /api/jobs/ -id| B
+    B --&gt;|Query Job Status| C
 
     style A fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
     style B fill:#0f172a,stroke:#38bdf8,stroke-width:2px
@@ -273,7 +276,7 @@ if (require.main === module) {
 </ul>
 <p>In our next article, <a href="file:///G:/ReplitProjects/akmalkhaniub.github.io/blog/real-time-token-streaming-sse-websockets.html">Real-Time Token Streaming: Designing SSE and WebSocket Gateways in Node/Hono</a>, we will discuss how to stream these background queue updates back to your frontend in real-time.</p>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>BullMQ Documentation</strong>: <a href="https://docs.bullmq.io/" target="_blank" rel="noopener">Task Queue Manager for Node.js</a></li>
 <li><strong>Redis Architecture</strong>: <a href="https://redis.io/" target="_blank" rel="noopener">How to configure Redis for high-durability caching</a></li>
@@ -312,9 +315,11 @@ if (require.main === module) {
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#the-request-timeout-bottleneck-in-agentic-systems" class="toc-link">The Request-Timeout Bottleneck in Agentic Systems</a></li>
               <li class="toc-item toc-h2"><a href="#decoupled-agent-queue-lifecycle" class="toc-link">Decoupled Agent Queue Lifecycle</a></li>
+              <li class="toc-item toc-h3"><a href="#key-queue-mechanics" class="toc-link">Key Queue Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
               <li class="toc-item toc-h2"><a href="#technical-implementation-decoupling-agent-tasks-with-bullmq" class="toc-link">Technical Implementation: Decoupling Agent Tasks with BullMQ</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1153,13 +1158,7 @@ if (require.main === module) {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1228,13 +1227,7 @@ if (require.main === module) {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1276,13 +1269,7 @@ if (require.main === module) {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

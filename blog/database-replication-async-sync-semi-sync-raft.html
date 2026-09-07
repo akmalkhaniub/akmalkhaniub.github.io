@@ -17,7 +17,7 @@
   <meta property="og:description" content="High-availability data replication: implementing Asynchronous replication lag, Synchronous durability penalties, Semi-Synchronous relay logs, and Raft consensus majority quorum commits.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Distributed Database Replication Mechanics: Async vs Sync vs Semi-Sync & Raft Log Replication",
   "description": "High-availability data replication: implementing Asynchronous replication lag, Synchronous durability penalties, Semi-Synchronous relay logs, and Raft consensus majority quorum commits.",
   "url": "https://akmalkhaniub.github.io/blog/database-replication-async-sync-semi-sync-raft.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-18",
   "keywords": "Replication, Raft, Distributed Systems, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#database-replication-modes-raft-consensus-architecture">Database Replication Modes &amp; Raft Consensus Architecture</a></li>
+                <li><a href="#core-replication-modes-mechanics">Core Replication Modes &amp; Mechanics</a></li>
                 <li><a href="#python-implementation-multi-mode-replication-engine">Python Implementation: Multi-Mode Replication Engine</a></li>
                 <li><a href="#database-replication-gotchas-best-practices">Database Replication Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -121,26 +123,26 @@
 <hr>
 <h2 id="database-replication-modes-raft-consensus-architecture">Database Replication Modes &amp; Raft Consensus Architecture</h2>
 <p>How Asynchronous, Semi-Synchronous, and Raft Majority Quorum replication models process client write requests:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_ClientWriteRequest [&quot;Client Write Request&quot;]
     Client[Client Tx Write Request] --&gt; Primary[Primary Database Node]
   end
   
   subgraph SG2_AsynchronousReplicationZero [&quot;Asynchronous Replication (Zero Latency Penalty)&quot;]
-    Primary --&gt;|1. Commit Locally &amp; Return Ack &lt; 1ms| Client
-    Primary -.-&gt;|2. Async WAL Stream| Replica1[Replica Node 1 (Replication Lag)]
+    Primary --&gt;|Commit Locally &amp; Return Ack &lt; 1ms| Client
+    Primary -.-&gt;|Async WAL Stream| Replica1[Replica Node 1 (Replication Lag)]
   end
   
   subgraph SG3_SemiSynchronousReplication [&quot;Semi-Synchronous Replication (1 Slave Ack)&quot;]
-    Primary --&gt;|1. Stream Binlog| RelayLog[Replica 1 Relay Log]
-    RelayLog --&gt;|2. Ack Received| Primary
-    Primary --&gt;|3. Return Ack to Client| Client
+    Primary --&gt;|Stream Binlog| RelayLog[Replica 1 Relay Log]
+    RelayLog --&gt;|Ack Received| Primary
+    Primary --&gt;|Return Ack to Client| Client
   end
   
   subgraph SG4_RaftConsensusMajority [&quot;Raft Consensus Majority Quorum (CockroachDB / TiKV)&quot;]
-    Primary --&gt;|1. Broadcast AppendEntries| NodeB[Raft Node B] &amp; NodeC[Raft Node C]
-    NodeB --&gt;|2. Majority Ack (2 of 3 Nodes)| Primary
-    Primary --&gt;|3. Commit Majority Entry!| Client
+    Primary --&gt;|Broadcast AppendEntries| NodeB[Raft Node B] &amp; NodeC[Raft Node C]
+    NodeB --&gt;|Majority Ack (2 of 3 Nodes)| Primary
+    Primary --&gt;|Commit Majority Entry!| Client
   end</div>
 <h3 id="core-replication-modes-mechanics">Core Replication Modes &amp; Mechanics</h3>
 <ol>
@@ -323,6 +325,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#database-replication-modes-raft-consensus-architecture" class="toc-link">Database Replication Modes &amp; Raft Consensus Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-replication-modes-mechanics" class="toc-link">Core Replication Modes &amp; Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-multi-mode-replication-engine" class="toc-link">Python Implementation: Multi-Mode Replication Engine</a></li>
               <li class="toc-item toc-h2"><a href="#database-replication-gotchas-best-practices" class="toc-link">Database Replication Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1164,13 +1167,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1239,13 +1236,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1287,13 +1278,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

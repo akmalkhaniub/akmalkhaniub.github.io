@@ -17,7 +17,7 @@
   <meta property="og:description" content="How hyper-scale cloud platforms eliminate shared-fate outages: dividing monoliths into independent isolated cells, stateless thin cell routing, capping failure blast radiuses to 5%, and zero-downtime cell evacuation.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-09-01">
+  <meta property="article:published_time" content="2026-09-02">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Cell-Based Architecture: How AWS, Stripe, and Slack Bound Blast Radiuses for 99.999% Availability",
   "description": "How hyper-scale cloud platforms eliminate shared-fate outages: dividing monoliths into independent isolated cells, stateless thin cell routing, capping failure blast radiuses to 5%, and zero-downtime cell evacuation.",
   "url": "https://akmalkhaniub.github.io/blog/cell-based-architecture-aws-stripe-slack-blast-radius-mitigation.html",
-  "datePublished": "2026-09-01",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-09-02",
   "keywords": "Cloud Architecture, System Design, High Availability, AWS, Cell-Based, Reliability",
   "author": {
     "@type": "Person",
@@ -109,7 +110,9 @@
               <ul class="mobile-toc-list">
                 <li><a href="#1-the-blast-radius-anatomy-why-multi-az-is-not-fault-isolation">1. The Blast Radius Anatomy: Why Multi-AZ Is Not Fault Isolation</a></li>
                 <li><a href="#2-anatomy-of-an-isolated-cell">2. Anatomy of an Isolated Cell</a></li>
+                <li><a href="#the-sizing-invariant-fixed-maximum-cell-scale">The Sizing Invariant: Fixed Maximum Cell Scale</a></li>
                 <li><a href="#3-the-stateless-thin-cell-router">3. The Stateless Thin Cell Router</a></li>
+                <li><a href="#core-invariants-of-the-cell-router">Core Invariants of the Cell Router:</a></li>
                 <li><a href="#4-zero-downtime-cell-evacuation">4. Zero-Downtime Cell Evacuation</a></li>
                 <li><a href="#python-implementation-cell-based-router-with-dynamic-evacuation">Python Implementation: Cell-Based Router with Dynamic Evacuation</a></li>
                 <li><a href="#architectural-comparison-matrix">Architectural Comparison Matrix</a></li>
@@ -122,7 +125,7 @@
 <p>Then a single client in Berlin triggers a malformed GraphQL query. The query hits an unindexed edge case in the ORM, locking table rows and spiking database CPU to 100%. Upstream microservices experience elevated latency and trigger aggressive retries. Connection pools exhaust within eight seconds. The ingress gateway runs out of ephemeral ports.</p>
 <p>Within ninety seconds, the entire region is dark. The multi-AZ setup did not protect the platform because Availability Zones share state, share databases, and share network routing. <strong>Every single customer experiences a simultaneous global outage.</strong></p>
 <p>To break this shared-fate trap and deliver true <strong>99.999% availability (Five Nines)</strong>, hyper-scale cloud platforms—AWS Route 53, AWS Lambda, Stripe, and Slack—abandon monolithic regional clusters in favor of <strong>Cell-Based Architecture</strong>.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_MonolithicRegionalCluster [&quot;Monolithic Regional Cluster vs Cell-Based Architecture&quot;]
     subgraph SG2_1MonolithicRegional [&quot;1. Monolithic Regional Cluster (100% Blast Radius)&quot;]
       Clients1[100,000 Tenants] --&gt; BigCluster[Single Shared Kubernetes Cluster + PostgreSQL]
@@ -189,7 +192,7 @@
 <hr>
 <h2 id="3-the-stateless-thin-cell-router">3. The Stateless Thin Cell Router</h2>
 <p>To direct incoming client traffic to the appropriate cell without introducing a single point of failure, the architecture deploys an ultra-lean <strong>Thin Cell Router</strong> layer:</p>
-<div class="mermaid">graph LR
+<div class="mermaid">flowchart TD
   Client[Inbound Request: tenant_id = 'org_402'] --&gt; Router[Stateless Thin Cell Router]
   Router --&gt; Mapping[&quot;Consistent Hash: hash('org_402') -&gt; Cell 3&quot;]
   Mapping --&gt; Cell3[Cell 3 Ingress Gateway]
@@ -369,7 +372,9 @@ if __name__ == &quot;__main__&quot;:
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-the-blast-radius-anatomy-why-multi-az-is-not-fault-isolation" class="toc-link">1. The Blast Radius Anatomy: Why Multi-AZ Is Not Fault Isolation</a></li>
               <li class="toc-item toc-h2"><a href="#2-anatomy-of-an-isolated-cell" class="toc-link">2. Anatomy of an Isolated Cell</a></li>
+              <li class="toc-item toc-h3"><a href="#the-sizing-invariant-fixed-maximum-cell-scale" class="toc-link">The Sizing Invariant: Fixed Maximum Cell Scale</a></li>
               <li class="toc-item toc-h2"><a href="#3-the-stateless-thin-cell-router" class="toc-link">3. The Stateless Thin Cell Router</a></li>
+              <li class="toc-item toc-h3"><a href="#core-invariants-of-the-cell-router" class="toc-link">Core Invariants of the Cell Router:</a></li>
               <li class="toc-item toc-h2"><a href="#4-zero-downtime-cell-evacuation" class="toc-link">4. Zero-Downtime Cell Evacuation</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-cell-based-router-with-dynamic-evacuation" class="toc-link">Python Implementation: Cell-Based Router with Dynamic Evacuation</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-comparison-matrix" class="toc-link">Architectural Comparison Matrix</a></li>
@@ -1212,13 +1217,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1287,13 +1286,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1335,13 +1328,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

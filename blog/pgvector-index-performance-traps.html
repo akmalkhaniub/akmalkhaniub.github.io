@@ -17,7 +17,7 @@
   <meta property="og:description" content="7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-07">
+  <meta property="article:published_time" content="2026-03-08">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Why Your pgvector Index Is 10× Slower Than It Should Be",
   "description": "7 pgvector performance and correctness traps — missing indexes causing silent sequential scans, wrong distance operators, WHERE filter fallbacks, low ef_search recall, and table bloat degrading HNSW graph quality.",
   "url": "https://akmalkhaniub.github.io/blog/pgvector-index-performance-traps.html",
-  "datePublished": "2026-03-07",
+  "image": "https://github.com/akmalkhaniub.png",
+  "datePublished": "2026-03-08",
   "keywords": "pgvector, PostgreSQL, RAG, Performance",
   "author": {
     "@type": "Person",
@@ -116,6 +117,7 @@
                 <li><a href="#trap-6-limit-without-enough-candidates-for-reranking">Trap 6: LIMIT Without Enough Candidates for Reranking</a></li>
                 <li><a href="#trap-7-not-using-explain-analyze-to-confirm-index-usage">Trap 7: Not Using EXPLAIN ANALYZE to Confirm Index Usage</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -130,14 +132,14 @@ pgvector is the most accessible path to production vector search — it lives in
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
     Q[Vector Query] --&gt; P{Index exists&lt;br/&gt;and usable?}
-    P --&gt;|No index| S1[💥 Trap 1: Sequential scan&lt;br/&gt;O-n — 4s on 1M rows]
-    P --&gt;|Wrong operator| S2[💥 Trap 2: Wrong distance operator&lt;br/&gt;Index ignored silently]
-    P --&gt;|Filter before ANN| S3[💥 Trap 3: WHERE filter kills&lt;br/&gt;index — exact scan fallback]
+    P --&gt;|No index| S1[ Trap 1: Sequential scan&lt;br/&gt;O-n — 4s on 1M rows]
+    P --&gt;|Wrong operator| S2[ Trap 2: Wrong distance operator&lt;br/&gt;Index ignored silently]
+    P --&gt;|Filter before ANN| S3[ Trap 3: WHERE filter kills&lt;br/&gt;index — exact scan fallback]
     P --&gt;|Index exists| C{ef_search&lt;br/&gt;configured?}
-    C --&gt;|Default ef_search=40| S4[💥 Trap 4: Poor recall&lt;br/&gt;missing relevant results]
+    C --&gt;|Default ef_search=40| S4[ Trap 4: Poor recall&lt;br/&gt;missing relevant results]
     C --&gt;|OK| D{Vacuum run&lt;br/&gt;recently?}
-    D --&gt;|No vacuum| S5[💥 Trap 5: Bloat degrades&lt;br/&gt;HNSW graph quality]
-    D --&gt;|OK| R[✅ Fast ANN search&lt;br/&gt;&lt; 10ms]
+    D --&gt;|No vacuum| S5[ Trap 5: Bloat degrades&lt;br/&gt;HNSW graph quality]
+    D --&gt;|OK| R[ Fast ANN search&lt;br/&gt;&lt; 10ms]
 
     style S1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style S2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -414,7 +416,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
 <li><strong>Retrieve 10–20× more candidates than you need when reranking</strong> — ANN approximation errors can only be corrected if the correct results are in the candidate set.</li>
 </ul>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>pgvector GitHub</strong>: <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> pgvector: Open-source vector similarity search for Postgres</a></li>
 <li><strong>pgvector HNSW Parameters</strong>: <a href="https://github.com/pgvector/pgvector#hnsw" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> Indexing configuration guide</a></li>
@@ -461,6 +463,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
               <li class="toc-item toc-h2"><a href="#trap-6-limit-without-enough-candidates-for-reranking" class="toc-link">Trap 6: LIMIT Without Enough Candidates for Reranking</a></li>
               <li class="toc-item toc-h2"><a href="#trap-7-not-using-explain-analyze-to-confirm-index-usage" class="toc-link">Trap 7: Not Using EXPLAIN ANALYZE to Confirm Index Usage</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1299,13 +1302,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1374,13 +1371,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1422,13 +1413,7 @@ async def audit_query_plan(session, query_embedding: list[float]) -&gt; str:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

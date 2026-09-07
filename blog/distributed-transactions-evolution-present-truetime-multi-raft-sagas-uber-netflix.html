@@ -17,7 +17,7 @@
   <meta property="og:description" content="Planetary-scale transaction architectures: Google Spanner TrueTime commit-wait rule (2ε), CockroachDB/YugabyteDB Multi-Raft HLC MVCC, and Uber/Netflix Saga orchestration with transactional outbox and idempotency keys.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-19">
+  <meta property="article:published_time" content="2026-08-20">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "The Evolution of Distributed Transactions Part 2: The Present — TrueTime, Hybrid Logical Clocks, Multi-Raft & Event-Driven Sagas at Google, Uber & Netflix",
   "description": "Planetary-scale transaction architectures: Google Spanner TrueTime commit-wait rule (2ε), CockroachDB/YugabyteDB Multi-Raft HLC MVCC, and Uber/Netflix Saga orchestration with transactional outbox and idempotency keys.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-transactions-evolution-present-truetime-multi-raft-sagas-uber-netflix.html",
-  "datePublished": "2026-08-19",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-20",
   "keywords": "Google Spanner, TrueTime, Multi-Raft, Sagas, Uber, Netflix",
   "author": {
     "@type": "Person",
@@ -108,9 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-google-spanner-truetime-external-consistency">1. Google Spanner: TrueTime &amp; External Consistency</a></li>
+                <li><a href="#the-truetime-api-bounded-clock-uncertainty">The TrueTime API &amp; Bounded Clock Uncertainty</a></li>
+                <li><a href="#the-commit-wait-rule">The Commit Wait Rule</a></li>
                 <li><a href="#2-cockroachdb-yugabytedb-hybrid-logical-clocks-hlc-multi-raft">2. CockroachDB &amp; YugabyteDB: Hybrid Logical Clocks (HLC) &amp; Multi-Raft</a></li>
+                <li><a href="#multi-raft-range-splits-distributed-mvcc-write-intents">Multi-Raft Range Splits &amp; Distributed MVCC Write Intents</a></li>
                 <li><a href="#3-uber-engineering-trip-lifecycle-sagas-with-cadence-temporal">3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal</a></li>
+                <li><a href="#ubers-orchestrated-saga-principles">Uber's Orchestrated Saga Principles:</a></li>
                 <li><a href="#4-netflix-engineering-conductor-transactional-outbox-with-debezium">4. Netflix Engineering: Conductor &amp; Transactional Outbox with Debezium</a></li>
+                <li><a href="#key-guarantees">Key Guarantees:</a></li>
                 <li><a href="#typescript-implementation-orchestrated-trip-saga-with-state-compensations-idempotency">TypeScript Implementation: Orchestrated Trip Saga with State Compensations &amp; Idempotency</a></li>
                 <li><a href="#modern-architecture-gotchas-best-practices">Modern Architecture Gotchas &amp; Best Practices</a></li>
                 <li><a href="#next-in-the-series">Next in the Series</a></li>
@@ -122,7 +128,7 @@
 <li><strong>Event-Driven Saga Orchestration in Microservices (Uber, Netflix, Shopify, DoorDash)</strong>: Decoupling business workflows into asynchronous choreographies and orchestrations using <strong>Transactional Outbox</strong>, <strong>Idempotency Keys</strong>, and <strong>Compensating Transactions</strong>.</li>
 </ol>
 <p>This article examines how Google, Uber, Netflix, and modern e-commerce engineering teams solved distributed consistency at planetary scale.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_TheModernDistributed [&quot;The Modern Distributed Transaction Landscape (2010s - 2020s)&quot;]
     Direction[Two Modern Paradigms] --&gt; NewSQL[Planetary NewSQL DBs]
     Direction --&gt; MicroSagas[Event-Driven Microservice Sagas]
@@ -216,20 +222,20 @@
 <h2 id="4-netflix-engineering-conductor-transactional-outbox-with-debezium">4. Netflix Engineering: Conductor &amp; Transactional Outbox with Debezium</h2>
 <p>At <strong>Netflix</strong>, subscription renewals, video transcoding pipelines, and digital rights management (DRM) licensing are orchestrated by <strong>Netflix Conductor</strong>.</p>
 <p>To eliminate the dual-write bug (writing to a database and publishing to Apache Kafka without 2PC), Netflix and large e-commerce platforms employ the <strong>Transactional Outbox Pattern</strong>:</p>
-<div class="mermaid">graph LR
+<div class="mermaid">flowchart TD
   subgraph SG2_LocalAtomicDb [&quot;Local Atomic DB Transaction&quot;]
-    Service[Subscription Service] --&gt;|1. Update Account &amp; Insert Outbox| DB[(PostgreSQL Database)]
+    Service[Subscription Service] --&gt;|Update Account &amp; Insert Outbox| DB[(PostgreSQL Database)]
     DB --&gt; Tables[Subscription Table + Outbox Table]
   end
   
   subgraph SG3_ChangeDataCapture [&quot;Change Data Capture CDC&quot;]
-    DB --&gt;|2. Read WAL Log| Debezium[Debezium CDC Connector]
-    Debezium --&gt;|3. At-Least-Once Delivery| Kafka[Apache Kafka Cluster]
+    DB --&gt;|Read WAL Log| Debezium[Debezium CDC Connector]
+    Debezium --&gt;|At-Least-Once Delivery| Kafka[Apache Kafka Cluster]
   end
   
   subgraph SG4_ConsumersIdempotency [&quot;Consumers &amp; Idempotency&quot;]
-    Kafka --&gt;|4. Consume Event| BillingWorker[Billing Worker]
-    BillingWorker --&gt;|5. Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
+    Kafka --&gt;|Consume Event| BillingWorker[Billing Worker]
+    BillingWorker --&gt;|Deduplicate Idempotency Key| Redis[(Redis Idempotency Store)]
   end</div>
 <h3 id="key-guarantees">Key Guarantees:</h3>
 <ul>
@@ -425,9 +431,14 @@ if (require.main === module) {
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-google-spanner-truetime-external-consistency" class="toc-link">1. Google Spanner: TrueTime &amp; External Consistency</a></li>
+              <li class="toc-item toc-h3"><a href="#the-truetime-api-bounded-clock-uncertainty" class="toc-link">The TrueTime API &amp; Bounded Clock Uncertainty</a></li>
+              <li class="toc-item toc-h3"><a href="#the-commit-wait-rule" class="toc-link">The Commit Wait Rule</a></li>
               <li class="toc-item toc-h2"><a href="#2-cockroachdb-yugabytedb-hybrid-logical-clocks-hlc-multi-raft" class="toc-link">2. CockroachDB &amp; YugabyteDB: Hybrid Logical Clocks (HLC) &amp; Multi-Raft</a></li>
+              <li class="toc-item toc-h3"><a href="#multi-raft-range-splits-distributed-mvcc-write-intents" class="toc-link">Multi-Raft Range Splits &amp; Distributed MVCC Write Intents</a></li>
               <li class="toc-item toc-h2"><a href="#3-uber-engineering-trip-lifecycle-sagas-with-cadence-temporal" class="toc-link">3. Uber Engineering: Trip Lifecycle Sagas with Cadence / Temporal</a></li>
+              <li class="toc-item toc-h3"><a href="#ubers-orchestrated-saga-principles" class="toc-link">Uber's Orchestrated Saga Principles:</a></li>
               <li class="toc-item toc-h2"><a href="#4-netflix-engineering-conductor-transactional-outbox-with-debezium" class="toc-link">4. Netflix Engineering: Conductor &amp; Transactional Outbox with Debezium</a></li>
+              <li class="toc-item toc-h3"><a href="#key-guarantees" class="toc-link">Key Guarantees:</a></li>
               <li class="toc-item toc-h2"><a href="#typescript-implementation-orchestrated-trip-saga-with-state-compensations-idempotency" class="toc-link">TypeScript Implementation: Orchestrated Trip Saga with State Compensations &amp; Idempotency</a></li>
               <li class="toc-item toc-h2"><a href="#modern-architecture-gotchas-best-practices" class="toc-link">Modern Architecture Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#next-in-the-series" class="toc-link">Next in the Series</a></li>
@@ -1269,13 +1280,7 @@ if (require.main === module) {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1344,13 +1349,7 @@ if (require.main === module) {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1392,13 +1391,7 @@ if (require.main === module) {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

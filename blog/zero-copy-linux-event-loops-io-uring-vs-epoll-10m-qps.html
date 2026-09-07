@@ -17,7 +17,7 @@
   <meta property="og:description" content="Why modern 10M QPS systems are abandoning epoll: lock-free shared memory ring buffers in io_uring, zero-syscall submissions via SQPOLL, registered memory buffers, and asynchronous DMA execution.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-31">
+  <meta property="article:published_time" content="2026-09-01">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Zero-Copy Linux Event Loops: io_uring vs epoll — Architecting 10 Million QPS Network Engines",
   "description": "Why modern 10M QPS systems are abandoning epoll: lock-free shared memory ring buffers in io_uring, zero-syscall submissions via SQPOLL, registered memory buffers, and asynchronous DMA execution.",
   "url": "https://akmalkhaniub.github.io/blog/zero-copy-linux-event-loops-io-uring-vs-epoll-10m-qps.html",
-  "datePublished": "2026-08-31",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-09-01",
   "keywords": "Linux Kernel, io_uring, epoll, Systems Engineering, Networking, Zero-Copy",
   "author": {
     "@type": "Person",
@@ -109,7 +110,11 @@
               <ul class="mobile-toc-list">
                 <li><a href="#1-the-epoll-scalability-wall-the-c10m-barrier">1. The Epoll Scalability Wall (The C10M Barrier)</a></li>
                 <li><a href="#2-the-iouring-architecture-shared-ring-geometry">2. The io_uring Architecture: Shared Ring Geometry</a></li>
+                <li><a href="#the-invariants-of-the-submission-and-completion-rings">The Invariants of the Submission and Completion Rings</a></li>
                 <li><a href="#3-high-throughput-kernel-modes-sqpoll-and-fixed-buffers">3. High-Throughput Kernel Modes: SQPOLL and Fixed Buffers</a></li>
+                <li><a href="#1-kernel-polling-ioringsetupsqpoll">1. Kernel Polling (IORING_SETUP_SQPOLL)</a></li>
+                <li><a href="#2-registered-zero-copy-buffers-ioringregisterbuffers">2. Registered Zero-Copy Buffers (IORING_REGISTER_BUFFERS)</a></li>
+                <li><a href="#3-registered-file-descriptors-ioringregisterfiles">3. Registered File Descriptors (IORING_REGISTER_FILES)</a></li>
                 <li><a href="#python-simulation-the-lock-free-ring-engine">Python Simulation: The Lock-Free Ring Engine</a></li>
                 <li><a href="#architectural-comparison-epoll-vs-iouring">Architectural Comparison: epoll vs io_uring</a></li>
                 <li><a href="#the-paradigm-shift">The Paradigm Shift</a></li>
@@ -121,20 +126,20 @@
 <p>The problem is not that <code>epoll</code> is slow. The problem is that <code>epoll</code> is fundamentally a <strong>readiness notification engine</strong>, not an <strong>asynchronous execution engine</strong>.</p>
 <p>To service a single client request under <code>epoll</code>, an application still has to execute multiple synchronous system calls: <code>epoll_wait()</code> to learn that data is ready, <code>read()</code> to pull bytes across the kernel boundary, and <code>write()</code> to push the response back out. At line rate, the CPU ceases to be a computational engine; it becomes a traffic cop spending its life trapped in the toll booths of kernel context transitions.</p>
 <p>Enter <strong><code>io_uring</code></strong>. Introduced by Jens Axboe in Linux 5.1, <code>io_uring</code> re-architects Linux I/O from first principles by eliminating system calls entirely from the hot path.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_EpollReadinessModel [&quot;epoll Readiness Model vs io_uring Zero-Copy Ring Geometry&quot;]
     subgraph SG2_1TraditionalEpoll [&quot;1. Traditional epoll (Syscall Heavy)&quot;]
-      UserApp[User Application] --&gt;|1. epoll_wait syscall| Kernel1[Kernel: Check Readiness]
-      Kernel1 --&gt;|2. Context Switch Wakeup| UserApp
-      UserApp --&gt;|3. read/write syscall| Kernel2[Kernel: Copy Payload]
-      Kernel2 --&gt;|4. Return Context Switch| UserApp
+      UserApp[User Application] --&gt;|epoll_wait syscall| Kernel1[Kernel: Check Readiness]
+      Kernel1 --&gt;|Context Switch Wakeup| UserApp
+      UserApp --&gt;|read/write syscall| Kernel2[Kernel: Copy Payload]
+      Kernel2 --&gt;|Return Context Switch| UserApp
     end
 
     subgraph SG3_2IoUring [&quot;2. io_uring (Zero Syscall / Lock-Free Shared Rings)&quot;]
-      App[User Application] --&gt;|Push SQE: Non-blocking write| SQ[Shared Submission Queue Ring]
-      SQ --&gt;|Kernel Polling Worker: SQPOLL| KernelAsync[Kernel Worker Thread (Ring 0)]
+      App[User Application] --&gt;|Push SQE - Non-blocking write| SQ[Shared Submission Queue Ring]
+      SQ --&gt;|Kernel Polling Worker - SQPOLL| KernelAsync[Kernel Worker Thread (Ring 0)]
       KernelAsync --&gt;|Direct DMA Transfer| CQ[Shared Completion Queue Ring]
-      CQ --&gt;|Pop CQE: Read Memory Pointer| App
+      CQ --&gt;|Pop CQE - Read Memory Pointer| App
     end
   end</div>
 <hr>
@@ -370,7 +375,11 @@ if __name__ == &quot;__main__&quot;:
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-the-epoll-scalability-wall-the-c10m-barrier" class="toc-link">1. The Epoll Scalability Wall (The C10M Barrier)</a></li>
               <li class="toc-item toc-h2"><a href="#2-the-iouring-architecture-shared-ring-geometry" class="toc-link">2. The io_uring Architecture: Shared Ring Geometry</a></li>
+              <li class="toc-item toc-h3"><a href="#the-invariants-of-the-submission-and-completion-rings" class="toc-link">The Invariants of the Submission and Completion Rings</a></li>
               <li class="toc-item toc-h2"><a href="#3-high-throughput-kernel-modes-sqpoll-and-fixed-buffers" class="toc-link">3. High-Throughput Kernel Modes: SQPOLL and Fixed Buffers</a></li>
+              <li class="toc-item toc-h3"><a href="#1-kernel-polling-ioringsetupsqpoll" class="toc-link">1. Kernel Polling (IORING_SETUP_SQPOLL)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-registered-zero-copy-buffers-ioringregisterbuffers" class="toc-link">2. Registered Zero-Copy Buffers (IORING_REGISTER_BUFFERS)</a></li>
+              <li class="toc-item toc-h3"><a href="#3-registered-file-descriptors-ioringregisterfiles" class="toc-link">3. Registered File Descriptors (IORING_REGISTER_FILES)</a></li>
               <li class="toc-item toc-h2"><a href="#python-simulation-the-lock-free-ring-engine" class="toc-link">Python Simulation: The Lock-Free Ring Engine</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-comparison-epoll-vs-iouring" class="toc-link">Architectural Comparison: epoll vs io_uring</a></li>
               <li class="toc-item toc-h2"><a href="#the-paradigm-shift" class="toc-link">The Paradigm Shift</a></li>
@@ -1212,13 +1221,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1287,13 +1290,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1335,13 +1332,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

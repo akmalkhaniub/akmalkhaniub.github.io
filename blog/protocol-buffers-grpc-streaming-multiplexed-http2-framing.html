@@ -17,7 +17,7 @@
   <meta property="og:description" content="High-speed inter-service RPC communication: implementing Protobuf 7-bit Varint encoding, gRPC 5-byte framing headers, and multiplexed HTTP/2 binary streams.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-16">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Protocol Buffers & gRPC Streaming: Multiplexed HTTP/2 Framing Internals",
   "description": "High-speed inter-service RPC communication: implementing Protobuf 7-bit Varint encoding, gRPC 5-byte framing headers, and multiplexed HTTP/2 binary streams.",
   "url": "https://akmalkhaniub.github.io/blog/protocol-buffers-grpc-streaming-multiplexed-http2-framing.html",
-  "datePublished": "2026-08-16",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-17",
   "keywords": "gRPC, Protobuf, HTTP2, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#grpc-binary-framing-http2-stream-architecture">gRPC Binary Framing &amp; HTTP/2 Stream Architecture</a></li>
+                <li><a href="#core-serialization-protocol-mechanics">Core Serialization &amp; Protocol Mechanics</a></li>
                 <li><a href="#python-implementation-protobuf-varint-grpc-framing-engine">Python Implementation: Protobuf Varint &amp; gRPC Framing Engine</a></li>
                 <li><a href="#grpc-protobuf-gotchas-best-practices">gRPC &amp; Protobuf Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -125,20 +127,20 @@
 <hr>
 <h2 id="grpc-binary-framing-http2-stream-architecture">gRPC Binary Framing &amp; HTTP/2 Stream Architecture</h2>
 <p>How gRPC packages Protobuf payloads into 5-byte framed messages over HTTP/2 streams:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_UserApplicationLayer [&quot;User Application Layer&quot;]
-    Req[gRPC Service Request Struct] --&gt;|1. Protobuf Binary Serialization| ProtoBytes[Protobuf Binary Bytes]
+    Req[gRPC Service Request Struct] --&gt;|Protobuf Binary Serialization| ProtoBytes[Protobuf Binary Bytes]
   end
   
   subgraph SG2_Grpc5Byte [&quot;gRPC 5-Byte Framing Layer&quot;]
-    ProtoBytes --&gt;|2. Prepend 1-byte Compression Flag + 4-byte Length| FramedMsg[gRPC Framed Message: 5-byte Prefix + Payload]
+    ProtoBytes --&gt;|Prepend 1-byte Compression Flag + 4-byte Length| FramedMsg[gRPC Framed Message: 5-byte Prefix + Payload]
   end
   
   subgraph SG3_Http2Transport [&quot;HTTP/2 Transport Layer&quot;]
-    FramedMsg --&gt;|3. Slice into HTTP/2 DATA Frames| H2_Stream[HTTP/2 Stream ID #3]
+    FramedMsg --&gt;|Slice into HTTP/2 DATA Frames| H2_Stream[HTTP/2 Stream ID #3]
     H2_Headers[HTTP/2 HEADERS Frame: HPACK Compressed] --&gt; H2_Stream
     
-    H2_Stream --&gt;|4. Multiplex Streams over Single TCP Connection| TCP[Single Persistent TCP Connection]
+    H2_Stream --&gt;|Multiplex Streams over Single TCP Connection| TCP[Single Persistent TCP Connection]
   end
   
   TCP --&gt; Server[gRPC Server Processing]</div>
@@ -311,6 +313,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#grpc-binary-framing-http2-stream-architecture" class="toc-link">gRPC Binary Framing &amp; HTTP/2 Stream Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-serialization-protocol-mechanics" class="toc-link">Core Serialization &amp; Protocol Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-protobuf-varint-grpc-framing-engine" class="toc-link">Python Implementation: Protobuf Varint &amp; gRPC Framing Engine</a></li>
               <li class="toc-item toc-h2"><a href="#grpc-protobuf-gotchas-best-practices" class="toc-link">gRPC &amp; Protobuf Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1152,13 +1155,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1227,13 +1224,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1275,13 +1266,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

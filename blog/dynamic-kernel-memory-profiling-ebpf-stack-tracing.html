@@ -17,7 +17,7 @@
   <meta property="og:description" content="Production memory debugging: zero-overhead eBPF dynamic memory profiling, kprobes/uprobes instrumentation on kmalloc/malloc, stack backtrace unwinding (BPF_MAP_TYPE_STACK_TRACE), and un-freed memory leak flamegraphs.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Dynamic Kernel Memory Profiling: eBPF Memory Leaks, Stack Tracing & Allocation Profiling",
   "description": "Production memory debugging: zero-overhead eBPF dynamic memory profiling, kprobes/uprobes instrumentation on kmalloc/malloc, stack backtrace unwinding (BPF_MAP_TYPE_STACK_TRACE), and un-freed memory leak flamegraphs.",
   "url": "https://akmalkhaniub.github.io/blog/dynamic-kernel-memory-profiling-ebpf-stack-tracing.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-18",
   "keywords": "eBPF, Memory Leak, Linux Kernel, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#ebpf-memory-profiling-architecture-probe-hooks">eBPF Memory Profiling Architecture &amp; Probe Hooks</a></li>
+                <li><a href="#core-ebpf-memory-profiling-mechanics">Core eBPF Memory Profiling Mechanics</a></li>
                 <li><a href="#python-implementation-ebpf-memory-leak-tracker-simulator">Python Implementation: eBPF Memory Leak Tracker Simulator</a></li>
                 <li><a href="#ebpf-memory-profiling-gotchas-best-practices">eBPF Memory Profiling Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -122,22 +124,22 @@
 <hr>
 <h2 id="ebpf-memory-profiling-architecture-probe-hooks">eBPF Memory Profiling Architecture &amp; Probe Hooks</h2>
 <p>How eBPF attaches kprobes and uprobes to record heap allocations and generate memory leak stack traces:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_ProductionUserspaceKernel [&quot;Production Userspace &amp; Kernel Space&quot;]
-    App[User Application / Kernel Module] --&gt;|1. Memory Alloc: malloc(size)| AllocHook[&quot;uprobe:libc.so:malloc / kprobe:kmalloc&quot;]
-    App --&gt;|2. Memory Free: free(ptr)| FreeHook[&quot;uprobe:libc.so:free / kprobe:kfree&quot;]
+    App[User Application / Kernel Module] --&gt;|Memory Alloc - malloc(size)| AllocHook[&quot;uprobe:libc.so:malloc / kprobe:kmalloc&quot;]
+    App --&gt;|Memory Free - free(ptr)| FreeHook[&quot;uprobe:libc.so:free / kprobe:kfree&quot;]
   end
   
   subgraph SG2_EbpfInKernel [&quot;eBPF In-Kernel Tracing Map Pipeline&quot;]
-    AllocHook --&gt;|3. Record Pointer + Call Stack ID| AllocMap[&quot;eBPF Hash Map: { ptr -&gt; alloc_info_t }&quot;]
-    AllocHook --&gt;|4. Capture Stack Unwind| StackMap[&quot;eBPF Stack Trace Map: { stack_id -&gt; [IP1, IP2, IP3] }&quot;]
+    AllocHook --&gt;|Record Pointer + Call Stack ID| AllocMap[&quot;eBPF Hash Map: { ptr -&gt; alloc_info_t }&quot;]
+    AllocHook --&gt;|Capture Stack Unwind| StackMap[&quot;eBPF Stack Trace Map: { stack_id -&gt; [IP1, IP2, IP3] }&quot;]
     
-    FreeHook --&gt;|5. Delete Pointer Entry| AllocMap
+    FreeHook --&gt;|Delete Pointer Entry| AllocMap
   end
   
   subgraph SG3_MemoryLeakDetection [&quot;Memory Leak Detection &amp; Flamegraphs&quot;]
-    AllocMap --&gt;|6. Scan Remaining Entries (Un-freed!)| LeakDetector[BCC memleak Engine]
-    LeakDetector --&gt; Flamegraph[&quot;🔥 Memory Leak Flamegraph Output&quot;]
+    AllocMap --&gt;|Scan Remaining Entries (Un-freed!)| LeakDetector[BCC memleak Engine]
+    LeakDetector --&gt; Flamegraph[&quot; Memory Leak Flamegraph Output&quot;]
   end</div>
 <h3 id="core-ebpf-memory-profiling-mechanics">Core eBPF Memory Profiling Mechanics</h3>
 <ol>
@@ -308,6 +310,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#ebpf-memory-profiling-architecture-probe-hooks" class="toc-link">eBPF Memory Profiling Architecture &amp; Probe Hooks</a></li>
+              <li class="toc-item toc-h3"><a href="#core-ebpf-memory-profiling-mechanics" class="toc-link">Core eBPF Memory Profiling Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-ebpf-memory-leak-tracker-simulator" class="toc-link">Python Implementation: eBPF Memory Leak Tracker Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#ebpf-memory-profiling-gotchas-best-practices" class="toc-link">eBPF Memory Profiling Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1149,13 +1152,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1224,13 +1221,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1272,13 +1263,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

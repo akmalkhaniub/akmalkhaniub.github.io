@@ -17,7 +17,7 @@
   <meta property="og:description" content="How the new React Native C++ architecture replaces the JSON bridge with JSI direct bindings to eliminate UI thread latency.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-30">
+  <meta property="article:published_time" content="2026-03-31">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "React Native's New Architecture: JSI, Fabric, and Bridgeless Mode",
   "description": "How the new React Native C++ architecture replaces the JSON bridge with JSI direct bindings to eliminate UI thread latency.",
   "url": "https://akmalkhaniub.github.io/blog/react-native-new-architecture-jsi.html",
-  "datePublished": "2026-03-30",
+  "image": "https://github.com/akmalkhaniub.png",
+  "datePublished": "2026-03-31",
   "keywords": "React Native, Mobile, Performance, Architecture",
   "author": {
     "@type": "Person",
@@ -109,7 +110,12 @@
               <ul class="mobile-toc-list">
                 <li><a href="#the-bottleneck-why-the-old-bridge-failed">The Bottleneck: Why the Old Bridge Failed</a></li>
                 <li><a href="#the-new-core-pillars">The New Core Pillars</a></li>
+                <li><a href="#1-javascript-interface-jsi">1. JavaScript Interface (JSI)</a></li>
+                <li><a href="#2-fabric-renderer">2. Fabric Renderer</a></li>
+                <li><a href="#3-turbomodules">3. TurboModules</a></li>
                 <li><a href="#coding-a-c-turbomodule-under-the-new-architecture">Coding a C++ TurboModule under the New Architecture</a></li>
+                <li><a href="#1-the-codegen-schema-definition-typescript">1. The Codegen Schema Definition (TypeScript)</a></li>
+                <li><a href="#2-the-native-c-implementation-fastmathcpp">2. The Native C++ Implementation (FastMath.cpp)</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
               </ul>
             </details>
@@ -131,8 +137,8 @@ For years, React Native&#39;s primary bottleneck has been <strong>the Bridge</st
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     subgraph SG1_OldArchitectureAsync [&quot;Old Architecture (Async JSON Bridge)&quot;]
-        JS_Old[JavaScript Engine] --&gt;|1. Serialize JSON| Bridge[Async Bridge]
-        Bridge --&gt;|2. Deserialize JSON| Native_Old[Native UI Thread]
+        JS_Old[JavaScript Engine] --&gt;|Serialize JSON| Bridge[Async Bridge]
+        Bridge --&gt;|Deserialize JSON| Native_Old[Native UI Thread]
     end
 
     subgraph SG2_NewArchitectureDirect [&quot;New Architecture (Direct C++ JSI Bindings)&quot;]
@@ -236,7 +242,12 @@ std::string FastMath::hashString(std::string input) {
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#the-bottleneck-why-the-old-bridge-failed" class="toc-link">The Bottleneck: Why the Old Bridge Failed</a></li>
               <li class="toc-item toc-h2"><a href="#the-new-core-pillars" class="toc-link">The New Core Pillars</a></li>
+              <li class="toc-item toc-h3"><a href="#1-javascript-interface-jsi" class="toc-link">1. JavaScript Interface (JSI)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-fabric-renderer" class="toc-link">2. Fabric Renderer</a></li>
+              <li class="toc-item toc-h3"><a href="#3-turbomodules" class="toc-link">3. TurboModules</a></li>
               <li class="toc-item toc-h2"><a href="#coding-a-c-turbomodule-under-the-new-architecture" class="toc-link">Coding a C++ TurboModule under the New Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#1-the-codegen-schema-definition-typescript" class="toc-link">1. The Codegen Schema Definition (TypeScript)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-the-native-c-implementation-fastmathcpp" class="toc-link">2. The Native C++ Implementation (FastMath.cpp)</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
             </ul>
           </nav>
@@ -1076,13 +1087,7 @@ std::string FastMath::hashString(std::string input) {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1151,13 +1156,7 @@ std::string FastMath::hashString(std::string input) {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1199,13 +1198,7 @@ std::string FastMath::hashString(std::string input) {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

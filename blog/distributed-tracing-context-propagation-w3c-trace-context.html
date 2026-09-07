@@ -17,7 +17,7 @@
   <meta property="og:description" content="End-to-end distributed transaction tracing: implementing W3C traceparent header injection/extraction, span DAG reconstruction, and tail-based error sampling.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Distributed Tracing Context Propagation & W3C Trace Context Specs",
   "description": "End-to-end distributed transaction tracing: implementing W3C traceparent header injection/extraction, span DAG reconstruction, and tail-based error sampling.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-tracing-context-propagation-w3c-trace-context.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-18",
   "keywords": "Distributed Tracing, W3C, OpenTelemetry, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#w3c-trace-context-propagation-architecture">W3C Trace Context Propagation Architecture</a></li>
+                <li><a href="#core-w3c-trace-context-specification">Core W3C Trace Context Specification</a></li>
                 <li><a href="#python-implementation-w3c-context-propagator-tail-sampler-engine">Python Implementation: W3C Context Propagator &amp; Tail Sampler Engine</a></li>
                 <li><a href="#distributed-tracing-gotchas-best-practices">Distributed Tracing Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -121,18 +123,18 @@
 <hr>
 <h2 id="w3c-trace-context-propagation-architecture">W3C Trace Context Propagation Architecture</h2>
 <p>How W3C <code>traceparent</code> headers propagate context across microservice RPC boundaries:</p>
-<div class="mermaid">graph TD
-  Client[Client Browser / Mobile App] --&gt;|1. HTTP Request| Gateway[API Gateway Service]
+<div class="mermaid">flowchart TD
+  Client[Client Browser / Mobile App] --&gt;|HTTP Request| Gateway[API Gateway Service]
   
   subgraph SG1_TraceContextPropagation [&quot;Trace Context Propagation (TraceID: 4bf92f35...)&quot;]
-    Gateway --&gt;|2. Inject traceparent: 00-4bf92f35...-spanA-01| AuthSvc[Auth Microservice]
-    AuthSvc --&gt;|3. Inject traceparent: 00-4bf92f35...-spanB-01| PaymentSvc[Payment Microservice]
-    PaymentSvc --&gt;|4. Inject traceparent: 00-4bf92f35...-spanC-01| DB[(PostgreSQL Database)]
+    Gateway --&gt;|Inject traceparent - 00-4bf92f35...-spanA-01| AuthSvc[Auth Microservice]
+    AuthSvc --&gt;|Inject traceparent - 00-4bf92f35...-spanB-01| PaymentSvc[Payment Microservice]
+    PaymentSvc --&gt;|Inject traceparent - 00-4bf92f35...-spanC-01| DB[(PostgreSQL Database)]
   end
   
   subgraph SG2_OtelCollectorTail [&quot;OTel Collector Tail-Based Sampling Pipeline&quot;]
-    Gateway &amp; AuthSvc &amp; PaymentSvc --&gt;|5. Push Spans to Collector| OTelCollector[OTel Collector Buffer]
-    OTelCollector --&gt;|6. Inspect Full Trace DAG: Error Detected!| TraceStorage[(Distributed Tracing Engine: Tempo / Jaeger)]
+    Gateway &amp; AuthSvc &amp; PaymentSvc --&gt;|Push Spans to Collector| OTelCollector[OTel Collector Buffer]
+    OTelCollector --&gt;|Inspect Full Trace DAG - Error Detected!| TraceStorage[(Distributed Tracing Engine: Tempo / Jaeger)]
   end</div>
 <h3 id="core-w3c-trace-context-specification">Core W3C Trace Context Specification</h3>
 <ol>
@@ -298,6 +300,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#w3c-trace-context-propagation-architecture" class="toc-link">W3C Trace Context Propagation Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-w3c-trace-context-specification" class="toc-link">Core W3C Trace Context Specification</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-w3c-context-propagator-tail-sampler-engine" class="toc-link">Python Implementation: W3C Context Propagator &amp; Tail Sampler Engine</a></li>
               <li class="toc-item toc-h2"><a href="#distributed-tracing-gotchas-best-practices" class="toc-link">Distributed Tracing Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1139,13 +1142,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1214,13 +1211,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1262,13 +1253,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

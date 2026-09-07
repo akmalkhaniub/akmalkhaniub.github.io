@@ -17,7 +17,7 @@
   <meta property="og:description" content="Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-09-01">
+  <meta property="article:published_time" content="2026-09-02">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Distributed Lock Managers at Scale: The Redlock Controversy, Fencing Tokens, & Postgres Advisory Locks",
   "description": "Why distributed locking in asynchronous networks is deceptively hard: the Kleppmann vs Antirez Redlock debate, process GC pause split-brains, monotonic fencing tokens, and PostgreSQL advisory locks.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-lock-managers-redlock-controversy-fencing-tokens.html",
-  "datePublished": "2026-09-01",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-09-02",
   "keywords": "Distributed Systems, Distributed Locks, Redis, Redlock, PostgreSQL, System Design",
   "author": {
     "@type": "Person",
@@ -108,9 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-why-distributed-locking-is-fundamentally-difficult">1. Why Distributed Locking Is Fundamentally Difficult</a></li>
+                <li><a href="#1-unbounded-process-pauses">1. Unbounded Process Pauses</a></li>
+                <li><a href="#2-unbounded-network-delays">2. Unbounded Network Delays</a></li>
+                <li><a href="#3-physical-clock-drift-and-ntp-jumps">3. Physical Clock Drift and NTP Jumps</a></li>
                 <li><a href="#2-the-two-purposes-of-distributed-locks-efficiency-vs-correctness">2. The Two Purposes of Distributed Locks: Efficiency vs Correctness</a></li>
                 <li><a href="#3-the-fencing-token-invariant-kleppmanns-solution">3. The Fencing Token Invariant: Kleppmann's Solution</a></li>
+                <li><a href="#the-invariant">The Invariant</a></li>
                 <li><a href="#4-the-practical-alternative-postgresql-advisory-locks">4. The Practical Alternative: PostgreSQL Advisory Locks</a></li>
+                <li><a href="#why-postgres-advisory-locks-guarantee-safety">Why Postgres Advisory Locks Guarantee Safety:</a></li>
                 <li><a href="#python-implementation-fencing-token-storage-engine">Python Implementation: Fencing Token Storage Engine</a></li>
                 <li><a href="#architectural-comparison-matrix">Architectural Comparison Matrix</a></li>
                 <li><a href="#the-distributed-systems-truth">The Distributed Systems Truth</a></li>
@@ -121,9 +127,9 @@
 <p>At issue was <strong>Redlock</strong>: an algorithm proposed by Antirez to provide fault-tolerant distributed locking across multiple Redis instances without requiring consensus protocols like Paxos or Raft.</p>
 <p>Antirez argued that by acquiring a lock across a majority of independent Redis nodes with a time-to-live (TTL) expiration lease, engineers could safely coordinate distributed access to mission-critical resources.</p>
 <p>Kleppmann replied with a surgical mathematical critique that dismantled the premise. In asynchronous networks subject to unbounded network latency, garbage collection pauses, and physical clock drift, <strong>no lock based on wall-clock time can ever guarantee safety without monotonically increasing fencing tokens</strong>.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_TheDistributedLock [&quot;The Distributed Lock GC Pause Hazard (Split-Brain Corruption)&quot;]
-    ClientA[&quot;Client 1: Acquires Lock Lease (10s)&quot;] --&gt; GC[&quot;🚨 12-Second GC / VM Pause (Lock Expires!)&quot;]
+    ClientA[&quot;Client 1: Acquires Lock Lease (10s)&quot;] --&gt; GC[&quot; 12-Second GC / VM Pause (Lock Expires!)&quot;]
     
     subgraph SG2_CentralLockService [&quot;Central Lock Service (Redis / DLM)&quot;]
       Expire[&quot;Lease expires at t=10s&quot;] --&gt; GrantB[&quot;Grant Lock to Client 2 at t=11s&quot;]
@@ -131,7 +137,7 @@
     
     GrantB --&gt; ClientB[&quot;Client 2: Writes to Shared Storage&quot;]
     GC --&gt; Wakeup[&quot;Client 1 Wakes Up at t=12s (Believes lease is still valid!)&quot;]
-    Wakeup --&gt; Overwrite[&quot;Client 1 Overwrites Storage (💥 DATA CORRUPTION)&quot;]
+    Wakeup --&gt; Overwrite[&quot;Client 1 Overwrites Storage ( DATA CORRUPTION)&quot;]
   end</div>
 <hr>
 <h2 id="1-why-distributed-locking-is-fundamentally-difficult">1. Why Distributed Locking Is Fundamentally Difficult</h2>
@@ -365,9 +371,14 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-why-distributed-locking-is-fundamentally-difficult" class="toc-link">1. Why Distributed Locking Is Fundamentally Difficult</a></li>
+              <li class="toc-item toc-h3"><a href="#1-unbounded-process-pauses" class="toc-link">1. Unbounded Process Pauses</a></li>
+              <li class="toc-item toc-h3"><a href="#2-unbounded-network-delays" class="toc-link">2. Unbounded Network Delays</a></li>
+              <li class="toc-item toc-h3"><a href="#3-physical-clock-drift-and-ntp-jumps" class="toc-link">3. Physical Clock Drift and NTP Jumps</a></li>
               <li class="toc-item toc-h2"><a href="#2-the-two-purposes-of-distributed-locks-efficiency-vs-correctness" class="toc-link">2. The Two Purposes of Distributed Locks: Efficiency vs Correctness</a></li>
               <li class="toc-item toc-h2"><a href="#3-the-fencing-token-invariant-kleppmanns-solution" class="toc-link">3. The Fencing Token Invariant: Kleppmann's Solution</a></li>
+              <li class="toc-item toc-h3"><a href="#the-invariant" class="toc-link">The Invariant</a></li>
               <li class="toc-item toc-h2"><a href="#4-the-practical-alternative-postgresql-advisory-locks" class="toc-link">4. The Practical Alternative: PostgreSQL Advisory Locks</a></li>
+              <li class="toc-item toc-h3"><a href="#why-postgres-advisory-locks-guarantee-safety" class="toc-link">Why Postgres Advisory Locks Guarantee Safety:</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-fencing-token-storage-engine" class="toc-link">Python Implementation: Fencing Token Storage Engine</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-comparison-matrix" class="toc-link">Architectural Comparison Matrix</a></li>
               <li class="toc-item toc-h2"><a href="#the-distributed-systems-truth" class="toc-link">The Distributed Systems Truth</a></li>
@@ -1209,13 +1220,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1284,13 +1289,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1332,13 +1331,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

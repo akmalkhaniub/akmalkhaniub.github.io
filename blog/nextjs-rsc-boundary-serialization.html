@@ -17,7 +17,7 @@
   <meta property="og:description" content="Analyzing the boundary between Server Components and Client Components in Next.js: examining serialization rules, data-passing constraints, and URL query-based state sharing patterns.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-23">
+  <meta property="article:published_time" content="2026-07-24">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "The RSC Boundary: Deep Dive into Serialization, Shared State, and Thread Boundaries",
   "description": "Analyzing the boundary between Server Components and Client Components in Next.js: examining serialization rules, data-passing constraints, and URL query-based state sharing patterns.",
   "url": "https://akmalkhaniub.github.io/blog/nextjs-rsc-boundary-serialization.html",
-  "datePublished": "2026-07-23",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-07-24",
   "keywords": "Next.js, React 19, Frontend, Architecture",
   "author": {
     "@type": "Person",
@@ -109,16 +110,27 @@
               <ul class="mobile-toc-list">
                 <li><a href="#1-visualizing-the-boundary">1. Visualizing the Boundary</a></li>
                 <li><a href="#2-serialization-rules-what-crosses-the-boundary">2. Serialization Rules: What Crosses the Boundary?</a></li>
+                <li><a href="#serializable-data-supported">Serializable Data (Supported)</a></li>
+                <li><a href="#non-serializable-data-unsupported">Non-Serializable Data (Unsupported)</a></li>
                 <li><a href="#3-common-architectural-pitfalls">3. Common Architectural Pitfalls</a></li>
+                <li><a href="#pitfall-a-the-cannot-serialize-function-error">Pitfall A: The &quot;Cannot Serialize Function&quot; Error</a></li>
+                <li><a href="#pitfall-b-passing-orm-objects-directly">Pitfall B: Passing ORM Objects Directly</a></li>
                 <li><a href="#4-state-sharing-moving-beyond-context-providers">4. State Sharing: Moving Beyond Context Providers</a></li>
+                <li><a href="#the-architectural-solution-url-state">The Architectural Solution: URL State</a></li>
+                <li><a href="#benefits-of-url-state">Benefits of URL State:</a></li>
               </ul>
             </details>
+<div class="alert alert-note">
+  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
+  <div class="alert-content"><p><strong>Update (September 2026)</strong>: Next.js <strong>16.3 is Active LTS</strong>. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See <a href="the-great-un-caching-nextjs-15-caching-architecture-defaults.html">The Great Un-Caching</a> for the 15 default inversion.</p>
+</div>
+</div>
 <p>Understanding the boundaries of React Server Components (RSC) is one of the most critical shifts when moving from traditional client-side SPA frameworks to Next.js App Router. </p>
 <p>Rather than executing all components in the browser, Next.js runs Server Components on the server and streams the resulting UI elements down to the client. This introduces a network and serialization boundary that dictates how we pass data, share state, and structure component trees.</p>
 <hr>
 <h2 id="1-visualizing-the-boundary">1. Visualizing the Boundary</h2>
 <p>The boundary is unidirectional: Server Components can import and render Client Components, but Client Components cannot directly import and render Server Components as components. They can, however, receive Server Components as <code>children</code> or <code>props</code>.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
     subgraph SG1_ServerThread [&quot;Server Thread&quot;]
         A[Layout.tsx - RSC] --&gt; B[Page.tsx - RSC]
     end
@@ -269,8 +281,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-visualizing-the-boundary" class="toc-link">1. Visualizing the Boundary</a></li>
               <li class="toc-item toc-h2"><a href="#2-serialization-rules-what-crosses-the-boundary" class="toc-link">2. Serialization Rules: What Crosses the Boundary?</a></li>
+              <li class="toc-item toc-h3"><a href="#serializable-data-supported" class="toc-link">Serializable Data (Supported)</a></li>
+              <li class="toc-item toc-h3"><a href="#non-serializable-data-unsupported" class="toc-link">Non-Serializable Data (Unsupported)</a></li>
               <li class="toc-item toc-h2"><a href="#3-common-architectural-pitfalls" class="toc-link">3. Common Architectural Pitfalls</a></li>
+              <li class="toc-item toc-h3"><a href="#pitfall-a-the-cannot-serialize-function-error" class="toc-link">Pitfall A: The &quot;Cannot Serialize Function&quot; Error</a></li>
+              <li class="toc-item toc-h3"><a href="#pitfall-b-passing-orm-objects-directly" class="toc-link">Pitfall B: Passing ORM Objects Directly</a></li>
               <li class="toc-item toc-h2"><a href="#4-state-sharing-moving-beyond-context-providers" class="toc-link">4. State Sharing: Moving Beyond Context Providers</a></li>
+              <li class="toc-item toc-h3"><a href="#the-architectural-solution-url-state" class="toc-link">The Architectural Solution: URL State</a></li>
+              <li class="toc-item toc-h3"><a href="#benefits-of-url-state" class="toc-link">Benefits of URL State:</a></li>
             </ul>
           </nav>
         </div>

@@ -17,7 +17,7 @@
   <meta property="og:description" content="How modern AI coding assistants index massive repositories: Tree-sitter AST grammar parsing, SCIP symbol definition graphs, caller-callee hierarchy trees, and compact targeted context assembly.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-09-01">
+  <meta property="article:published_time" content="2026-09-02">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Indexing 10-Million Line Codebases for AI Agents: Tree-sitter AST Graphs, Call Hierarchy Trees, & Hybrid Search",
   "description": "How modern AI coding assistants index massive repositories: Tree-sitter AST grammar parsing, SCIP symbol definition graphs, caller-callee hierarchy trees, and compact targeted context assembly.",
   "url": "https://akmalkhaniub.github.io/blog/indexing-10m-line-codebases-ai-agents-tree-sitter-ast-call-graphs.html",
-  "datePublished": "2026-09-01",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-09-02",
   "keywords": "AI Coding, Codebase Indexing, Tree-sitter, AST, SCIP, AI Agents",
   "author": {
     "@type": "Person",
@@ -108,8 +109,11 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-why-naive-text-chunking-fails-on-source-code">1. Why Naive Text Chunking Fails on Source Code</a></li>
+                <li><a href="#the-3-fatal-flaws-of-naive-embedding-chunking">The 3 Fatal Flaws of Naive Embedding Chunking:</a></li>
                 <li><a href="#2-layer-1-tree-sitter-ast-incremental-parsing">2. Layer 1: Tree-sitter AST Incremental Parsing</a></li>
                 <li><a href="#3-layer-2-3-symbol-graphs-call-hierarchies-scip-lsif">3. Layer 2 &amp; 3: Symbol Graphs &amp; Call Hierarchies (SCIP / LSIF)</a></li>
+                <li><a href="#1-scip-source-code-intelligence-protocol">1. SCIP (Source Code Intelligence Protocol)</a></li>
+                <li><a href="#2-call-hierarchy-graphs">2. Call Hierarchy Graphs</a></li>
                 <li><a href="#4-dynamic-context-budget-assembly">4. Dynamic Context Budget Assembly</a></li>
                 <li><a href="#python-implementation-tree-sitter-style-ast-symbol-call-graph-indexer">Python Implementation: Tree-sitter-Style AST Symbol &amp; Call Graph Indexer</a></li>
                 <li><a href="#summary-text-chunking-vs-ast-code-intelligence">Summary: Text Chunking vs AST Code Intelligence</a></li>
@@ -124,7 +128,7 @@
 </ul>
 <p>To provide sub-second, highly accurate code context without context bloat, modern agent environments deploy a <strong>Semantic Code Intelligence Indexing Pipeline</strong>.</p>
 <p>By combining <strong>Tree-sitter Abstract Syntax Tree (AST) parsing</strong>, <strong>SCIP/LSIF Symbol Reference Graphs</strong>, and <strong>Hybrid BM25 + Vector Search</strong>, engineering teams assemble laser-focused $&lt; 4,000\text{-token}$ context payloads that give agents deep architectural clarity across massive codebases.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_EnterpriseCodeIntelligence [&quot;Enterprise Code Intelligence Indexing Pipeline&quot;]
     Repo[10M Line Monorepo: 25,000 Source Files] --&gt; TreeSitter[&quot;1. Tree-sitter AST Parser (Extracts Functions, Types, Classes)&quot;]
     
@@ -162,7 +166,7 @@
 <hr>
 <h2 id="3-layer-2-3-symbol-graphs-call-hierarchies-scip-lsif">3. Layer 2 &amp; 3: Symbol Graphs &amp; Call Hierarchies (SCIP / LSIF)</h2>
 <p>To understand how code executes, the indexer constructs two directed graphs:</p>
-<div class="mermaid">graph LR
+<div class="mermaid">flowchart TD
   subgraph SG3_HierarchicalCallGraph [&quot;Hierarchical Call Graph (Caller -&gt; Callee)&quot;]
     A[OrderController.postCheckout] --&gt;|Calls| B[BillingService.processCharge]
     B --&gt;|Calls| C[StripeClient.createPaymentIntent]
@@ -361,8 +365,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-why-naive-text-chunking-fails-on-source-code" class="toc-link">1. Why Naive Text Chunking Fails on Source Code</a></li>
+              <li class="toc-item toc-h3"><a href="#the-3-fatal-flaws-of-naive-embedding-chunking" class="toc-link">The 3 Fatal Flaws of Naive Embedding Chunking:</a></li>
               <li class="toc-item toc-h2"><a href="#2-layer-1-tree-sitter-ast-incremental-parsing" class="toc-link">2. Layer 1: Tree-sitter AST Incremental Parsing</a></li>
               <li class="toc-item toc-h2"><a href="#3-layer-2-3-symbol-graphs-call-hierarchies-scip-lsif" class="toc-link">3. Layer 2 &amp; 3: Symbol Graphs &amp; Call Hierarchies (SCIP / LSIF)</a></li>
+              <li class="toc-item toc-h3"><a href="#1-scip-source-code-intelligence-protocol" class="toc-link">1. SCIP (Source Code Intelligence Protocol)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-call-hierarchy-graphs" class="toc-link">2. Call Hierarchy Graphs</a></li>
               <li class="toc-item toc-h2"><a href="#4-dynamic-context-budget-assembly" class="toc-link">4. Dynamic Context Budget Assembly</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-tree-sitter-style-ast-symbol-call-graph-indexer" class="toc-link">Python Implementation: Tree-sitter-Style AST Symbol &amp; Call Graph Indexer</a></li>
               <li class="toc-item toc-h2"><a href="#summary-text-chunking-vs-ast-code-intelligence" class="toc-link">Summary: Text Chunking vs AST Code Intelligence</a></li>
@@ -1205,13 +1212,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1280,13 +1281,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1328,13 +1323,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

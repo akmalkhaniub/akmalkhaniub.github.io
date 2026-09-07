@@ -17,7 +17,7 @@
   <meta property="og:description" content="A survival guide covering the 5 most critical breaking changes in Next.js 15, including the caching default flip, asynchronous routing parameters, React 19 ref updates, and ESLint flat configs.">
   <meta property="og:image" content="https://github.com/akmalkhaniub.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-19">
+  <meta property="article:published_time" content="2026-03-20">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Next.js 14 to 15 Migration: Top Gotchas You Must Know",
   "description": "A survival guide covering the 5 most critical breaking changes in Next.js 15, including the caching default flip, asynchronous routing parameters, React 19 ref updates, and ESLint flat configs.",
   "url": "https://akmalkhaniub.github.io/blog/nextjs-14-to-15-migration-gotchas.html",
-  "datePublished": "2026-03-19",
+  "image": "https://github.com/akmalkhaniub.png",
+  "datePublished": "2026-03-20",
   "keywords": "NextJS, React, Web Development, Migration Guide",
   "author": {
     "@type": "Person",
@@ -107,13 +108,24 @@
             <details class="mobile-toc">
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
+                <li><a href="#article-overview">📖 Article Overview</a></li>
                 <li><a href="#caching-behavior-shift-nextjs-14-vs-nextjs-15">Caching Behavior Shift: Next.js 14 vs. Next.js 15</a></li>
                 <li><a href="#the-top-5-gotchas-and-how-to-fix-them">The Top 5 Gotchas and How to Fix Them</a></li>
+                <li><a href="#gotcha-1-uncached-fetch-by-default">Gotcha 1: Uncached Fetch by Default</a></li>
+                <li><a href="#gotcha-2-asynchronous-dynamic-apis">Gotcha 2: Asynchronous Dynamic APIs</a></li>
+                <li><a href="#gotcha-3-react-19-ref-passing">Gotcha 3: React 19 Ref Passing</a></li>
+                <li><a href="#gotcha-4-eslint-9-flat-configuration">Gotcha 4: ESLint 9 Flat Configuration</a></li>
+                <li><a href="#gotcha-5-server-actions-parameter-security">Gotcha 5: Server Actions Parameter Security</a></li>
                 <li><a href="#migration-steps-checklist">Migration Steps Checklist</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
                 <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
+<div class="alert alert-note">
+  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
+  <div class="alert-content"><p><strong>Update (September 2026)</strong>: Next.js <strong>16.3 is Active LTS</strong>. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See <a href="the-great-un-caching-nextjs-15-caching-architecture-defaults.html">The Great Un-Caching</a> for the 15 default inversion.</p>
+</div>
+</div>
 <blockquote>
 <h3 id="article-overview">📖 Article Overview</h3>
 <ul>
@@ -131,7 +143,7 @@
 <h2 id="caching-behavior-shift-nextjs-14-vs-nextjs-15">Caching Behavior Shift: Next.js 14 vs. Next.js 15</h2>
 <p>The most dangerous gotcha in Next.js 15 is the silent flip in default caching behaviors. In Next.js 14, standard <code>fetch</code> queries, GET Route Handlers, and Client-Side Page cache paths were <strong>cached by default</strong>. In Next.js 15, they are <strong>uncached by default</strong>.</p>
 <p>The diagram below maps the decision paths and visualizes how this swap impacts your database traffic:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
     classDef v14 fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef v15 fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e;
     classDef cache fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
@@ -316,8 +328,14 @@ export async function updateTaskStatus(rawInput: unknown) {
           <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
           <nav class="article-toc">
             <ul class="toc-list">
+              <li class="toc-item toc-h3"><a href="#article-overview" class="toc-link">📖 Article Overview</a></li>
               <li class="toc-item toc-h2"><a href="#caching-behavior-shift-nextjs-14-vs-nextjs-15" class="toc-link">Caching Behavior Shift: Next.js 14 vs. Next.js 15</a></li>
               <li class="toc-item toc-h2"><a href="#the-top-5-gotchas-and-how-to-fix-them" class="toc-link">The Top 5 Gotchas and How to Fix Them</a></li>
+              <li class="toc-item toc-h3"><a href="#gotcha-1-uncached-fetch-by-default" class="toc-link">Gotcha 1: Uncached Fetch by Default</a></li>
+              <li class="toc-item toc-h3"><a href="#gotcha-2-asynchronous-dynamic-apis" class="toc-link">Gotcha 2: Asynchronous Dynamic APIs</a></li>
+              <li class="toc-item toc-h3"><a href="#gotcha-3-react-19-ref-passing" class="toc-link">Gotcha 3: React 19 Ref Passing</a></li>
+              <li class="toc-item toc-h3"><a href="#gotcha-4-eslint-9-flat-configuration" class="toc-link">Gotcha 4: ESLint 9 Flat Configuration</a></li>
+              <li class="toc-item toc-h3"><a href="#gotcha-5-server-actions-parameter-security" class="toc-link">Gotcha 5: Server Actions Parameter Security</a></li>
               <li class="toc-item toc-h2"><a href="#migration-steps-checklist" class="toc-link">Migration Steps Checklist</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
               <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
@@ -1159,13 +1177,7 @@ export async function updateTaskStatus(rawInput: unknown) {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1234,13 +1246,7 @@ export async function updateTaskStatus(rawInput: unknown) {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1282,13 +1288,7 @@ export async function updateTaskStatus(rawInput: unknown) {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

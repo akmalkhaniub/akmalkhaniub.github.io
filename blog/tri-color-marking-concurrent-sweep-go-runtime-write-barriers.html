@@ -17,7 +17,7 @@
   <meta property="og:description" content="Low-latency concurrent GC: implementing Dijkstra Tri-Color Abstraction (White, Grey, Black), Go Hybrid Write Barriers, concurrent sweep mechanics, and GC CPU pacer.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "Tri-Color Marking & Concurrent Sweep: Go Runtime Garbage Collector & Write Barriers",
   "description": "Low-latency concurrent GC: implementing Dijkstra Tri-Color Abstraction (White, Grey, Black), Go Hybrid Write Barriers, concurrent sweep mechanics, and GC CPU pacer.",
   "url": "https://akmalkhaniub.github.io/blog/tri-color-marking-concurrent-sweep-go-runtime-write-barriers.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/default.png",
+  "datePublished": "2026-08-18",
   "keywords": "Go Runtime, Tri-Color GC, Write Barriers, Python",
   "author": {
     "@type": "Person",
@@ -108,6 +109,7 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#tri-color-abstraction-hybrid-write-barrier-architecture">Tri-Color Abstraction &amp; Hybrid Write Barrier Architecture</a></li>
+                <li><a href="#core-go-gc-principles">Core Go GC Principles</a></li>
                 <li><a href="#python-implementation-tri-color-gc-engine-hybrid-write-barrier">Python Implementation: Tri-Color GC Engine &amp; Hybrid Write Barrier</a></li>
                 <li><a href="#go-gc-gotchas-best-practices">Go GC Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
@@ -121,20 +123,20 @@
 <hr>
 <h2 id="tri-color-abstraction-hybrid-write-barrier-architecture">Tri-Color Abstraction &amp; Hybrid Write Barrier Architecture</h2>
 <p>How the Go runtime uses White, Grey, and Black object classifications alongside Hybrid Write Barriers to ensure zero object loss during concurrent marking:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_TriColorAbstraction [&quot;Tri-Color Abstraction Classification&quot;]
-    White[&quot;⚪ WHITE Set: Unvisited candidate objects (Allocated/Garbage)&quot;]
-    Grey[&quot;👵 GREY Set: Reachable live objects whose child pointers are unscanned&quot;]
-    Black[&quot;🖤 BLACK Set: Confirmed live objects whose children are fully scanned&quot;]
+    White[&quot; WHITE Set: Unvisited candidate objects (Allocated/Garbage)&quot;]
+    Grey[&quot; GREY Set: Reachable live objects whose child pointers are unscanned&quot;]
+    Black[&quot; BLACK Set: Confirmed live objects whose children are fully scanned&quot;]
     
-    White --&gt;|1. Root Scan / Write Barrier Shade| Grey
-    Grey --&gt;|2. Mark Phase Scans Children| Black
+    White --&gt;|Root Scan / Write Barrier Shade| Grey
+    Grey --&gt;|Mark Phase Scans Children| Black
   end
   
   subgraph SG2_TriColorInvariant [&quot;Tri-Color Invariant Breakdown &amp; Hybrid Write Barrier Protection&quot;]
-    Mutator[Goroutine Mutator Thread] --&gt;|Mutator Action: black.field = white| DangerCheck{Danger: Black points to White!}
-    DangerCheck --&gt;|Go Hybrid Write Barrier Intercepts!| Shade[✨ Shade Target White Object -&gt; Turn GREY!]
-    Shade --&gt; SafeMark[🎉 Tri-Color Invariant Preserved: Zero Live Object Loss!]
+    Mutator[Goroutine Mutator Thread] --&gt;|Mutator Action - black.field = white| DangerCheck{Danger: Black points to White!}
+    DangerCheck --&gt;|Go Hybrid Write Barrier Intercepts!| Shade[ Shade Target White Object -&gt; Turn GREY!]
+    Shade --&gt; SafeMark[ Tri-Color Invariant Preserved: Zero Live Object Loss!]
   end</div>
 <h3 id="core-go-gc-principles">Core Go GC Principles</h3>
 <ol>
@@ -336,6 +338,7 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#tri-color-abstraction-hybrid-write-barrier-architecture" class="toc-link">Tri-Color Abstraction &amp; Hybrid Write Barrier Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-go-gc-principles" class="toc-link">Core Go GC Principles</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-tri-color-gc-engine-hybrid-write-barrier" class="toc-link">Python Implementation: Tri-Color GC Engine &amp; Hybrid Write Barrier</a></li>
               <li class="toc-item toc-h2"><a href="#go-gc-gotchas-best-practices" class="toc-link">Go GC Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
@@ -1177,13 +1180,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1252,13 +1249,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1300,13 +1291,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>
