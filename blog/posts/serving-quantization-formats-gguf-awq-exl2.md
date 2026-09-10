@@ -9,7 +9,7 @@
 ## Quantization: Compressing Model Parameters
 
 Quantization reduces the precision of model weights (e.g. from 16-bit floating points to 4-bit integers), dramatically reducing file sizes and memory usage:
-* **The Performance Trade-off**: Lower bit-depths reduce VRAM usage but introduce quantization loss, which can degrade model reasoning capabilities.
+* **The Performance Trade-off**: Lower bit-depths reduce VRAM usage but introduce quantization loss, which can degrade model reasoning capabilities [1].
 * **The Formats**:
     * **GGUF (llama.cpp)**: A single-file format optimized for CPU execution with optional GPU offloading. Ideal for workstations lacking dedicated VRAM.
     * **AWQ (Activation-aware Weight Quantization)**: A hardware-optimized format that retains model accuracy by protecting salient weights. Designed for high-throughput GPU serving runtimes (e.g., vLLM).
@@ -18,15 +18,26 @@ Quantization reduces the precision of model weights (e.g. from 16-bit floating p
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Model[FP16 Model Weights] --> Quant[Quantization Compressor]
+    Model["FP16 Model Weights"] --> Quant["Quantization Compressor"]
     
-    Quant --> GGUF[GGUF Format: CPU/GPU offload flexibility]
-    Quant --> AWQ[AWQ Format: GPU serving runtimes]
-    Quant --> EXL2[EXL2 Format: High-speed GPU execution]
+    Quant --> GGUF["GGUF Format: CPU/GPU offload flexibility"]
+    Quant --> AWQ["AWQ Format: GPU serving runtimes"]
+    Quant --> EXL2["EXL2 Format: High-speed GPU execution"]
     
-    GGUF --> Serv1[llama.cpp engine]
-    AWQ --> Serv2[vLLM engine]
-    EXL2 --> Serv3[ExLlamaV2 engine]
+    GGUF --> Serv1["llama.cpp engine"]
+    AWQ --> Serv2["vLLM engine"]
+    EXL2 --> Serv3["ExLlamaV2 engine"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Model,Serv1 blue
+class Quant,Serv2 green
+class GGUF,Serv3 purple
+class AWQ yellow
+class EXL2 red
 ```
 
 ---
@@ -118,4 +129,10 @@ if __name__ == "__main__":
 
 * **Choose the Right Format**: Use GGUF for local CPU/GPU hybrid development, and AWQ/EXL2 for production GPU serving.
 * **Protect Reasoning**: Use AWQ to protect model activation weight distributions during compression.
-* **Test Task Performance**: Always validate your agent's task accuracy after quantizing to ensure reasoning capabilities are preserved.
+* **Test Task Performance**: Always validate your agent's task accuracy after quantizing to ensure reasoning capabilities are preserved. [2]
+
+## References & Further Reading
+
+1. **Lin, J., et al. (2024)**. *AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration*. MLSys. [https://arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)
+2. **Frantar, E., et al. (2023)**. *GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers*. ICLR. [https://arxiv.org/abs/2210.17323](https://arxiv.org/abs/2210.17323)
+3. **Wang, H., et al. (2023)**. *BitNet: Scaling 1-bit Transformers for Large Language Models*. arXiv. [https://arxiv.org/abs/2310.11453](https://arxiv.org/abs/2310.11453)

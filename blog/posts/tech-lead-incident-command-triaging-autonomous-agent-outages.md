@@ -1,6 +1,6 @@
 # Incident Command in the AI Era: Triaging Autonomous Agent Runaways & Outages
 
-In traditional software development, operational incidents are triggered by human deployment errors, infrastructure hardware failures, or un-handled runtime exceptions. A developer pushes a bad commit, a server runs out of memory, or a database connection pool exhausts its limit.
+In traditional software development, operational incidents are triggered by human deployment errors, infrastructure hardware failures, or un-handled runtime exceptions [1]. A developer pushes a bad commit, a server runs out of memory, or a database connection pool exhausts its limit.
 
 In 2026, autonomous developer swarms operate continuously in the background—writing code, expanding test suites, and running schema migrations overnight. This introduces a new class of production hazards: **Agent Runaways**.
 
@@ -13,13 +13,24 @@ When an autonomous agent enters a feedback loop, it can generate thousands of in
 When an autonomous agent runaway occurs, the Incident Commander must execute a strict containment protocol:
 
 ```mermaid
-graph TD
-  A[Telemetry Anomaly Detected: High Error Rate / Rate Limit Spike] --> B[Incident Command Activated]
-  B --> C[Layer 1: Trigger Emergency Kill-Switch]
-  C -->|Freeze Subagent Pools| D[Layer 2: Isolate Git Branch & Lock Repos]
-  D --> E[Layer 3: Execute Deterministic State Rollback]
-  E --> F[Layer 4: AI Forensic Post-Mortem & Trajectory Audit]
-  F --> G[Update Guardrails & Resume Swarm Execution]
+flowchart TD
+  A["Telemetry Anomaly Detected: High Error Rate / Rate Limit Spike"] --> B["Incident Command Activated"]
+  B --> C["Layer 1: Trigger Emergency Kill-Switch"]
+  C -->|Freeze Subagent Pools| D["Layer 2: Isolate Git Branch & Lock Repos"]
+  D --> E["Layer 3: Execute Deterministic State Rollback"]
+  E --> F["Layer 4: AI Forensic Post-Mortem & Trajectory Audit"]
+  F --> G["Update Guardrails & Resume Swarm Execution"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C purple
+class D yellow
+class E red
 ```
 
 ### The Four Incident Containment Steps
@@ -121,4 +132,13 @@ When managing AI-driven operational incidents, follow these strict rules:
 ## Real-World Enterprise Impact
 Teams with AI Incident Command protocols report:
 * **Sub-10 Second Anomaly Containment**: Automated circuit breakers halt runaway agent loops before they affect production users.
-* **100% Post-Mortem Traceability**: Full trajectory audits allow Tech Leads to update prompt specs and prevent repeat failures.
+* **100% Post-Mortem Traceability**: Full trajectory audits allow Tech Leads to update prompt specs and prevent repeat failures. [2]
+
+## References & Further Reading
+
+1. **Michael, M. M. (2004)**. *Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects*. IEEE TPDS. [https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf](https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf)
+2. **McKenney, P. E., & Slingwine, J. D. (1998)**. *Read-Copy Update: Using Execution History to Solve Concurrency Problems*. PDCS. [https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf](https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf)
+3. **Bloom, B. H. (1970)**. *Space/Time Trade-offs in Hash Coding with Allowable Errors*. CACM. [https://doi.org/10.1145/362686.362692](https://doi.org/10.1145/362686.362692)
+4. **Forsgren, N., Humble, J., & Kim, G. (2018)**. *Accelerate: The Science of Lean Software and DevOps*. IT Revolution / DORA. [https://dora.dev/research/](https://dora.dev/research/)
+5. **Brooks, F. P. (1975)**. *The Mythical Man-Month*. Addison-Wesley. [https://en.wikipedia.org/wiki/The_Mythical_Man-Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
+6. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)

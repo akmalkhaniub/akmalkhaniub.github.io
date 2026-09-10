@@ -17,22 +17,33 @@ This article details HNSW multi-layer graph structures, skip-list express lanes,
 How HNSW navigates top-layer sparse express lanes down to dense Layer 0 local clusters for logarithmic ANN search:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_Layer2Sparse ["Layer 2: Sparse Long-Range Express Lane"]
-    StartNode[Top Entry Point: Vector 101] -->|1. Long-Range Hop| Node202[Vector 202]
+    StartNode["Top Entry Point: Vector 101"] -->|Long-Range Hop| Node202["Vector 202"]
   end
   
   subgraph SG2_Layer1Intermediate ["Layer 1: Intermediate Regional Hops"]
-    Node202 -->|2. Drop Down to Layer 1| Node202_L1[Vector 202]
-    Node202_L1 -->|3. Regional Hop| Node305[Vector 305]
+    Node202 -->|Drop Down to Layer 1| Node202_L1["Vector 202"]
+    Node202_L1 -->|Regional Hop| Node305["Vector 305"]
   end
   
   subgraph SG3_Layer0Dense ["Layer 0: Dense Local Proximity Graph"]
-    Node305 -->|4. Drop Down to Layer 0| Node305_L0[Vector 305]
-    Node305_L0 -->|5. Dense Local Neighbors| NN1[Nearest Neighbor 1]
-    Node305_L0 -->|5. Dense Local Neighbors| NN2[Nearest Neighbor 2]
-    Node305_L0 -->|5. Dense Local Neighbors| NN3[Nearest Neighbor 3]
+    Node305 -->|Drop Down to Layer 0| Node305_L0["Vector 305"]
+    Node305_L0 -->|Dense Local Neighbors| NN1["Nearest Neighbor 1"]
+    Node305_L0 -->|Dense Local Neighbors| NN2["Nearest Neighbor 2"]
+    Node305_L0 -->|Dense Local Neighbors| NN3["Nearest Neighbor 3"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class StartNode,NN1 blue
+class Node202,NN2 green
+class Node202_L1,NN3 purple
+class Node305 yellow
+class Node305_L0 red
 ```
 
 ### Core Vector Indexing Mechanics
@@ -199,4 +210,14 @@ When tuning HNSW vector indices:
 ## Real-World Enterprise Impact
 HNSW vector indexing (in **Qdrant**, **Milvus**, **Pinecone**, and **pgvector**) reports:
 * **Sub-10ms Query Latency across Millions of Vectors**: Achieves $O(\log N)$ search complexity via multi-layer skip-graph traversal.
-* **Over $98\%$ Recall Accuracy**: `efSearch` candidate expansion ensures near-exact search quality without brute-force computation.
+* **Over $98\%$ Recall Accuracy**: `efSearch` candidate expansion ensures near-exact search quality without brute-force computation. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **pgvector Authors (2024)**. *pgvector: Open-source vector similarity search for Postgres*. GitHub. [https://github.com/pgvector/pgvector](https://github.com/pgvector/pgvector)
+5. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+6. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+7. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)

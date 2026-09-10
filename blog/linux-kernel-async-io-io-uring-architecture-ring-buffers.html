@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/linux-kernel-async-io-io-uring-architecture-ring-buffers.html">
   <meta property="og:title" content="Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers">
   <meta property="og:description" content="Revolutionizing Linux asynchronous I/O: implementing Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffers, SQPOLL mode, and zero-syscall async storage &amp; networking.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/linux-kernel-async-io-io-uring-architecture-ring-buffers.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-16">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers">
   <meta name="twitter:description" content="Revolutionizing Linux asynchronous I/O: implementing Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffers, SQPOLL mode, and zero-syscall async storage &amp; networking.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/linux-kernel-async-io-io-uring-architecture-ring-buffers.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Linux Kernel Async I/O: io_uring Architecture & High-Throughput Ring Buffers",
   "description": "Revolutionizing Linux asynchronous I/O: implementing Submission Queue (SQ) and Completion Queue (CQ) lockless ring buffers, SQPOLL mode, and zero-syscall async storage & networking.",
   "url": "https://akmalkhaniub.github.io/blog/linux-kernel-async-io-io-uring-architecture-ring-buffers.html",
-  "datePublished": "2026-08-16",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/linux-kernel-async-io-io-uring-architecture-ring-buffers.jpg",
+  "datePublished": "2026-08-17",
   "keywords": "Linux Kernel, io_uring, Async I/O, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/linux-kernel-async-io-io-uring-architecture-ring-buffers.jpg" class="article-cover-img" alt="Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Linux Kernel Async I/O: io_uring Architecture &amp; High-Throughput Ring Buffers</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#iouring-shared-ring-buffer-architecture">io_uring Shared Ring Buffer Architecture</a></li>
+                <li><a href="#core-iouring-mechanics">Core io_uring Mechanics</a></li>
                 <li><a href="#python-implementation-iouring-lockless-ring-buffer-engine">Python Implementation: io_uring Lockless Ring Buffer Engine</a></li>
                 <li><a href="#iouring-implementation-gotchas">io_uring Implementation Gotchas</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>For decades, Linux high-performance networking relied on event loop mechanisms like <code>epoll</code> paired with non-blocking sockets. While <code>epoll</code> allows an application to monitor thousands of file descriptors, executing an actual read or write operation (<code>read()</code>, <code>write()</code>, <code>send()</code>, <code>recv()</code>) still requires making a <strong>system call (syscall)</strong>.</p>
+<p>For decades, Linux high-performance networking relied on event loop mechanisms like <code>epoll</code> paired with non-blocking sockets <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. While <code>epoll</code> allows an application to monitor thousands of file descriptors, executing an actual read or write operation (<code>read()</code>, <code>write()</code>, <code>send()</code>, <code>recv()</code>) still requires making a <strong>system call (syscall)</strong>.</p>
 <p>At millions of requests per second, CPU overhead is dominated by user-space to kernel-space context switches and Meltdown/Spectre page-table isolation (KPTI) mitigation overhead.</p>
 <p>In Linux 5.1, kernel developer Jens Axboe introduced <strong><code>io_uring</code></strong>—a fundamental redesign of Linux asynchronous I/O.</p>
 <p><code>io_uring</code> eliminates system call overhead by creating two lockless circular <strong>ring buffers</strong> shared directly between user memory and kernel memory: the <strong>Submission Queue (SQ)</strong> and the <strong>Completion Queue (CQ)</strong>.</p>
@@ -121,23 +124,34 @@
 <hr>
 <h2 id="iouring-shared-ring-buffer-architecture"><code>io_uring</code> Shared Ring Buffer Architecture</h2>
 <p>How user space and kernel space communicate asynchronously via shared memory ring buffers without syscalls:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_UserSpaceMemory [&quot;User Space Memory&quot;]
-    App[User Application] --&gt;|1. Write SQE Entries| SQ[Submission Queue Ring SQ]
-    CQ[Completion Queue Ring CQ] --&gt;|4. Read CQE Results| App
+    App[&quot;User Application&quot;] --&gt;|Write SQE Entries| SQ[&quot;Submission Queue Ring SQ&quot;]
+    CQ[&quot;Completion Queue Ring CQ&quot;] --&gt;|Read CQE Results| App
   end
   
   subgraph SG2_LocklessSharedRing [&quot;Lockless Shared Ring Buffers&quot;]
-    SQ -.-&gt;|Shared MMap Memory Region| SQ_K[Kernel Submission Queue]
-    CQ_K[Kernel Completion Queue] -.-&gt;|Shared MMap Memory Region| CQ
+    SQ -.-&gt;|Shared MMap Memory Region| SQ_K[&quot;Kernel Submission Queue&quot;]
+    CQ_K[&quot;Kernel Completion Queue&quot;] -.-&gt;|Shared MMap Memory Region| CQ
   end
   
   subgraph SG3_LinuxKernelSpace [&quot;Linux Kernel Space&quot;]
-    SQ_K --&gt;|2. SQPOLL Kernel Thread Reads SQEs| KernelThread[Kernel Async I/O Thread]
-    KernelThread --&gt;|3. Perform Async Storage/Socket I/O| NVMe[NVMe Storage / NIC Network Hardware]
+    SQ_K --&gt;|SQPOLL Kernel Thread Reads SQEs| KernelThread[&quot;Kernel Async I/O Thread&quot;]
+    KernelThread --&gt;|Perform Async Storage/Socket I/O| NVMe[&quot;NVMe Storage / NIC Network Hardware&quot;]
     NVMe --&gt;|Completion Event| KernelThread
     KernelThread --&gt;|Write CQE Entry| CQ_K
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class App,KernelThread blue
+class SQ,NVMe green
+class CQ purple
+class SQ_K yellow
+class CQ_K red</div>
 <h3 id="core-iouring-mechanics">Core <code>io_uring</code> Mechanics</h3>
 <ol>
 <li><strong>Submission Queue Entry (SQE)</strong>: A 64-byte descriptor submitted by user space containing the I/O opcode (<code>IORING_OP_READV</code>, <code>IORING_OP_ACCEPT</code>), file descriptor, memory buffer address, and user metadata tag.</li>
@@ -285,8 +299,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Databases and web servers adopting <code>io_uring</code> (such as <strong>RocksDB</strong>, <strong>Netty</strong>, and <strong>ScyllaDB</strong>) report:</p>
 <ul>
 <li><strong>Over 2,000,000 IOPS per CPU Core</strong>: Achieving more than double the IOPS of traditional <code>epoll</code> or <code>libaio</code> drivers.</li>
-<li><strong>50% Reduction in p99 Latency</strong>: Eliminating syscall context switches stabilizes tail latencies under extreme network concurrency.</li>
+<li><strong>50% Reduction in p99 Latency</strong>: Eliminating syscall context switches stabilizes tail latencies under extreme network concurrency. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Michael, M. M. (2004)</strong>. <em>Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects</em>. IEEE TPDS. <a href="https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf" target="_blank" rel="noopener">https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Bloom, B. H. (1970)</strong>. <em>Space/Time Trade-offs in Hash Coding with Allowable Errors</em>. CACM. <a href="https://doi.org/10.1145/362686.362692" target="_blank" rel="noopener">https://doi.org/10.1145/362686.362692</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -319,9 +344,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#iouring-shared-ring-buffer-architecture" class="toc-link">io_uring Shared Ring Buffer Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-iouring-mechanics" class="toc-link">Core io_uring Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-iouring-lockless-ring-buffer-engine" class="toc-link">Python Implementation: io_uring Lockless Ring Buffer Engine</a></li>
               <li class="toc-item toc-h2"><a href="#iouring-implementation-gotchas" class="toc-link">io_uring Implementation Gotchas</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1160,13 +1187,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1235,13 +1256,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1283,13 +1298,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

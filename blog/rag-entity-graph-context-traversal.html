@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/rag-entity-graph-context-traversal.html">
   <meta property="og:title" content="Entity-Graph RAG: Resolving Document Context with Knowledge Graphs">
   <meta property="og:description" content="Bypassing naive vector search: building entity-relationship graphs to enable agents to resolve multi-hop context queries via graph traversals.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/rag-entity-graph-context-traversal.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-05-31">
+  <meta property="article:published_time" content="2026-06-01">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Entity-Graph RAG: Resolving Document Context with Knowledge Graphs">
   <meta name="twitter:description" content="Bypassing naive vector search: building entity-relationship graphs to enable agents to resolve multi-hop context queries via graph traversals.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/rag-entity-graph-context-traversal.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Entity-Graph RAG: Resolving Document Context with Knowledge Graphs",
   "description": "Bypassing naive vector search: building entity-relationship graphs to enable agents to resolve multi-hop context queries via graph traversals.",
   "url": "https://akmalkhaniub.github.io/blog/rag-entity-graph-context-traversal.html",
-  "datePublished": "2026-05-31",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/rag-entity-graph-context-traversal.jpg",
+  "datePublished": "2026-06-01",
   "keywords": "Knowledge Graphs, RAG, Architecture, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/rag-entity-graph-context-traversal.jpg" class="article-cover-img" alt="Entity-Graph RAG: Resolving Document Context with Knowledge Graphs Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Entity-Graph RAG: Resolving Document Context with Knowledge Graphs</h1>
             <div class="article-meta">
@@ -112,6 +113,7 @@
                 <li><a href="#2-setting-up-multi-hop-traversals">2. Setting up Multi-Hop Traversals</a></li>
                 <li><a href="#code-demo-entity-graph-context-traverser">Code Demo: Entity-Graph Context Traverser</a></li>
                 <li><a href="#architectural-takeaways">Architectural Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,21 +126,32 @@ Traditional Retrieval-Augmented Generation (RAG) relies on vector similarity sea
 <h2 id="the-limitations-of-vector-only-retrieval">The Limitations of Vector-Only Retrieval</h2>
 <p>Naive vector retrieval divides documents into static text chunks and converts them into embeddings:</p>
 <ul>
-<li><strong>Missing Relational Context</strong>: If information about an entity is scattered across multiple pages, a similarity search returns disjointed chunks, missing the underlying connections.</li>
+<li><strong>Missing Relational Context</strong>: If information about an entity is scattered across multiple pages, a similarity search returns disjointed chunks, missing the underlying connections <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>The Multi-Hop Failure</strong>: Queries that require joining facts across different modules fail because the vector search cannot traverse dependencies.</li>
 <li><strong>The Solution</strong>: <strong>Entity-Graph RAG</strong>. We extract key entities (e.g. classes, authors, modules) and their relationships, compile them into a knowledge graph, and perform multi-hop traversals to gather comprehensive context.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[Query: Find dependencies of Team A's modules] --&gt; Identify[1. Identify Root Entity: Team A]
-    Identify --&gt; Traverse[2. Graph Traversal: Look up related nodes]
+    Query[&quot;Query: Find dependencies of Team A's modules&quot;] --&gt; Identify[&quot;1. Identify Root Entity: Team A&quot;]
+    Identify --&gt; Traverse[&quot;2. Graph Traversal: Look up related nodes&quot;]
     
-    Traverse --&gt; Node1[Team A -&gt; writes -&gt; Module 1]
-    Traverse --&gt; Node2[Module 1 -&gt; depends_on -&gt; DB Schema]
+    Traverse --&gt; Node1[&quot;Team A -&gt; writes -&gt; Module 1&quot;]
+    Traverse --&gt; Node2[&quot;Module 1 -&gt; depends_on -&gt; DB Schema&quot;]
     
-    Node1 --&gt; Compile[3. Assemble Trajectory Context Map]
+    Node1 --&gt; Compile[&quot;3. Assemble Trajectory Context Map&quot;]
     Node2 --&gt; Compile
-    Compile --&gt; Prompt[4. Feed Context into LLM Prompt]</div>
+    Compile --&gt; Prompt[&quot;4. Feed Context into LLM Prompt&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,Compile blue
+class Identify,Prompt green
+class Traverse purple
+class Node1 yellow
+class Node2 red</div>
 <hr>
 <h2 id="1-structuring-graph-datasets">1. Structuring Graph Datasets</h2>
 <p>A knowledge graph context is built of three main elements:</p>
@@ -218,8 +231,19 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Structure Relational Data</strong>: Use graph databases (e.g. Neo4j) or network-graph models to map code dependencies and document hierarchies.</li>
 <li><strong>Combine Vector and Graph</strong>: Use vector similarity searches to locate entry-point nodes, then use graph traversals to extract surrounding context.</li>
-<li><strong>Enforce Traversal Limits</strong>: Set strict search depth limits (e.g. <code>max_depth = 2</code>) to prevent graphs from returning overly large context maps.</li>
+<li><strong>Enforce Traversal Limits</strong>: Set strict search depth limits (e.g. <code>max_depth = 2</code>) to prevent graphs from returning overly large context maps. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Edge, D., et al. (2024)</strong>. <em>From Local to Global: A Graph RAG Approach to Query-Focused Summarization</em>. arXiv. <a href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noopener">https://arxiv.org/abs/2404.16130</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Francis, N., et al. (2018)</strong>. <em>Cypher: An Evolving Query Language for Property Graphs</em>. SIGMOD. <a href="https://doi.org/10.1145/3183713.3190657" target="_blank" rel="noopener">https://doi.org/10.1145/3183713.3190657</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -256,6 +280,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-setting-up-multi-hop-traversals" class="toc-link">2. Setting up Multi-Hop Traversals</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-entity-graph-context-traverser" class="toc-link">Code Demo: Entity-Graph Context Traverser</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-takeaways" class="toc-link">Architectural Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1094,13 +1119,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1169,13 +1188,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1217,13 +1230,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

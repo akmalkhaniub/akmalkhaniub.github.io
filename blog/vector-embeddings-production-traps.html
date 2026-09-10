@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/vector-embeddings-production-traps.html">
   <meta property="og:title" content="What Nobody Tells You About Vector Embeddings in Production">
   <meta property="og:description" content="8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-embeddings-production-traps.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-05">
+  <meta property="article:published_time" content="2026-04-06">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="What Nobody Tells You About Vector Embeddings in Production">
   <meta name="twitter:description" content="8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-embeddings-production-traps.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "What Nobody Tells You About Vector Embeddings in Production",
   "description": "8 silent production failures in vector embedding pipelines — silent truncation at 512 tokens, stale indexes after model upgrades, cosine vs dot product confusion, dimension mismatches, and multilingual model mismatch.",
   "url": "https://akmalkhaniub.github.io/blog/vector-embeddings-production-traps.html",
-  "datePublished": "2026-04-05",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/vector-embeddings-production-traps.jpg",
+  "datePublished": "2026-04-06",
   "keywords": "Embeddings, RAG, pgvector, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/vector-embeddings-production-traps.jpg" class="article-cover-img" alt="What Nobody Tells You About Vector Embeddings in Production Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">What Nobody Tells You About Vector Embeddings in Production</h1>
             <div class="article-meta">
@@ -116,6 +117,7 @@
                 <li><a href="#trap-5-multilingual-queries-on-monolingual-models">Trap 5: Multilingual Queries on Monolingual Models</a></li>
                 <li><a href="#trap-6-documents-updated-but-embeddings-not-refreshed">Trap 6: Documents Updated But Embeddings Not Refreshed</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -127,28 +129,28 @@ Vector embeddings are the foundation of every RAG system, semantic search engine
 <hr>
 <h2 id="why-embedding-bugs-are-the-hardest-to-find">Why Embedding Bugs Are the Hardest to Find</h2>
 <p>A broken SQL query throws an exception. A broken embedding pipeline returns results — just wrong ones. Cosine similarity between a garbage vector and a real one is still a number. Your API returns 200 OK. Your users get irrelevant answers. Your eval metrics don&#39;t catch it because the eval dataset was embedded with the same broken model.</p>
-<p>This is the danger zone: <strong>silent correctness failures</strong> with no stack traces.</p>
+<p>This is the danger zone: <strong>silent correctness failures</strong> with no stack traces <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <hr>
 <h2 id="the-embedding-production-failure-map">The Embedding Production Failure Map</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    D[Document] --&gt; T[Tokeniser]
-    T --&gt;|Truncated silently| F1[💥 Trap 1: Silent truncation&lt;br/&gt;at 512 tokens]
-    T --&gt;|OK| E[Embedding Model]
+    D[&quot;Document&quot;] --&gt; T[&quot;Tokeniser&quot;]
+    T --&gt;|Truncated silently| F1[&quot; Trap 1: Silent truncation&lt;br/&gt;at 512 tokens&quot;]
+    T --&gt;|OK| E[&quot;Embedding Model&quot;]
     
-    E --&gt;|Model version changed| F2[💥 Trap 2: Stale index&lt;br/&gt;after model upgrade]
+    E --&gt;|Model version changed| F2[&quot; Trap 2: Stale index&lt;br/&gt;after model upgrade&quot;]
     E --&gt;|OK| V[(Vector Store)]
     
-    V --&gt;|Wrong metric configured| F3[💥 Trap 3: Cosine vs&lt;br/&gt;dot product mismatch]
-    V --&gt;|No normalisation| F4[💥 Trap 4: L2 distance&lt;br/&gt;on unnormalised vectors]
-    V --&gt;|OK| Q[Query Embedding]
+    V --&gt;|Wrong metric configured| F3[&quot; Trap 3: Cosine vs&lt;br/&gt;dot product mismatch&quot;]
+    V --&gt;|No normalisation| F4[&quot; Trap 4: L2 distance&lt;br/&gt;on unnormalised vectors&quot;]
+    V --&gt;|OK| Q[&quot;Query Embedding&quot;]
     
-    Q --&gt;|Different model than index| F5[💥 Trap 5: Query/index&lt;br/&gt;model mismatch]
-    Q --&gt;|OK| R[Search Results]
+    Q --&gt;|Different model than index| F5[&quot; Trap 5: Query/index&lt;br/&gt;model mismatch&quot;]
+    Q --&gt;|OK| R[&quot;Search Results&quot;]
     
-    R --&gt;|No re-embedding on update| F6[💥 Trap 6: Stale doc&lt;br/&gt;embeddings after edit]
-    R --&gt;|Multilingual mismatch| F7[💥 Trap 7: Cross-lingual&lt;br/&gt;query on mono model]
-    R --&gt;|Batch dim mismatch| F8[💥 Trap 8: Dimension&lt;br/&gt;mismatch on insert]
+    R --&gt;|No re-embedding on update| F6[&quot; Trap 6: Stale doc&lt;br/&gt;embeddings after edit&quot;]
+    R --&gt;|Multilingual mismatch| F7[&quot; Trap 7: Cross-lingual&lt;br/&gt;query on mono model&quot;]
+    R --&gt;|Batch dim mismatch| F8[&quot; Trap 8: Dimension&lt;br/&gt;mismatch on insert&quot;]
 
     style F1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style F2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -157,7 +159,18 @@ flowchart TD
     style F5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style F6 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style F7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
-    style F8 fill:#78350f,stroke:#f59e0b,stroke-width:2px</div>
+    style F8 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class D,F3,F6 blue
+class T,F4,F7 green
+class F1,Q,F8 purple
+class E,F5 yellow
+class F2,R red</div>
 <hr>
 <h2 id="trap-1-silent-truncation-at-512-tokens">Trap 1: Silent Truncation at 512 Tokens</h2>
 <p><strong>Symptom</strong>: Long documents return poor search results despite being highly relevant. No errors thrown.</p>
@@ -452,7 +465,7 @@ class EmbeddingFreshnessChecker:
 <li><strong>Audit token counts before embedding</strong>, not after — truncation at 512 tokens discards data with no exception raised.</li>
 </ul>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>OpenAI Embeddings Guide</strong>: <a href="https://platform.openai.com/docs/guides/embeddings" target="_blank" rel="noopener">Best practices for using embeddings</a></li>
 <li><strong>Sentence Transformers</strong>: <a href="https://www.sbert.net/docs/pretrained_models.html" target="_blank" rel="noopener">Pretrained Models Reference</a></li>
@@ -498,6 +511,7 @@ class EmbeddingFreshnessChecker:
               <li class="toc-item toc-h2"><a href="#trap-5-multilingual-queries-on-monolingual-models" class="toc-link">Trap 5: Multilingual Queries on Monolingual Models</a></li>
               <li class="toc-item toc-h2"><a href="#trap-6-documents-updated-but-embeddings-not-refreshed" class="toc-link">Trap 6: Documents Updated But Embeddings Not Refreshed</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1336,13 +1350,7 @@ class EmbeddingFreshnessChecker:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1411,13 +1419,7 @@ class EmbeddingFreshnessChecker:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1459,13 +1461,7 @@ class EmbeddingFreshnessChecker:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

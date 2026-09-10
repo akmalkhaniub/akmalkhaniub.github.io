@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html">
   <meta property="og:title" content="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)">
   <meta property="og:description" content="Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-22">
+  <meta property="article:published_time" content="2026-08-23">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)">
   <meta name="twitter:description" content="Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies & Kernel I/O (RocksDB vs WiredTiger)",
   "description": "Database storage engine internals: B+Tree in-place page splits vs LSM-Tree sequential WAL MemTable flushes, Leveled vs Size-Tiered compaction algorithms, Bloom filter sizing math, and Write Amplification Factor (WAF) trade-offs.",
   "url": "https://akmalkhaniub.github.io/blog/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.html",
-  "datePublished": "2026-08-22",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.jpg",
+  "datePublished": "2026-08-23",
   "keywords": "Database Internals, Storage Engines, LSM-Tree, B-Tree, RocksDB, WiredTiger",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger) Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/lsm-tree-vs-btree-storage-engines-write-amplification-compaction-rocksdb-wiredtiger.jpg" class="article-cover-img" alt="LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger) Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">LSM-Tree vs B+Tree Storage Engines: Write Amplification, Compaction Strategies &amp; Kernel I/O (RocksDB vs WiredTiger)</h1>
             <div class="article-meta">
@@ -108,15 +109,21 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-btree-storage-engine-architecture-the-in-place-page-model">1. B+Tree Storage Engine Architecture: The In-Place Page Model</a></li>
+                <li><a href="#key-invariants">Key Invariants:</a></li>
+                <li><a href="#the-btree-write-amplification-penalty-waf">The B+Tree Write Amplification Penalty ($WAF$)</a></li>
                 <li><a href="#2-lsm-tree-storage-engine-architecture-the-append-only-model">2. LSM-Tree Storage Engine Architecture: The Append-Only Model</a></li>
+                <li><a href="#the-lsm-write-flow">The LSM Write Flow:</a></li>
                 <li><a href="#3-compaction-algorithms-leveled-vs-size-tiered">3. Compaction Algorithms: Leveled vs Size-Tiered</a></li>
+                <li><a href="#leveled-compaction-lcs-mechanics">Leveled Compaction (LCS) Mechanics:</a></li>
                 <li><a href="#4-mitigating-read-amplification-bloom-filters-block-caches">4. Mitigating Read Amplification: Bloom Filters &amp; Block Caches</a></li>
+                <li><a href="#the-mathematical-bloom-filter-defense">The Mathematical Bloom Filter Defense:</a></li>
                 <li><a href="#python-implementation-complete-lsm-tree-storage-engine-simulator">Python Implementation: Complete LSM-Tree Storage Engine Simulator</a></li>
                 <li><a href="#summary-btree-vs-lsm-tree-decision-matrix">Summary: B+Tree vs LSM-Tree Decision Matrix</a></li>
                 <li><a href="#architectural-conclusion">Architectural Conclusion</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>At the heart of every modern database (<strong>PostgreSQL</strong>, <strong>MySQL/InnoDB</strong>, <strong>MongoDB/WiredTiger</strong>, <strong>RocksDB</strong>, <strong>Apache Cassandra</strong>, <strong>CockroachDB</strong>) lies an embedded storage engine responsible for translating abstract relational or key-value queries into physical byte layouts on NVMe SSDs.</p>
+<p>At the heart of every modern database (<strong>PostgreSQL</strong>, <strong>MySQL/InnoDB</strong>, <strong>MongoDB/WiredTiger</strong>, <strong>RocksDB</strong>, <strong>Apache Cassandra</strong>, <strong>CockroachDB</strong>) lies an embedded storage engine responsible for translating abstract relational or key-value queries into physical byte layouts on NVMe SSDs <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>For decades, database architectures have been defined by a fundamental structural divide:</p>
 <ol>
 <li><strong>B+Tree Storage Engines (InnoDB, WiredTiger, SQLite)</strong>: In-place page updates optimized for predictable read latency and low read amplification.</li>
@@ -124,14 +131,25 @@
 </ol>
 <p>According to the <strong>RUM Conjecture</strong> (Read, Update, Memory trade-off), no storage engine can optimize all three dimensions simultaneously.</p>
 <p>This deep-dive architectural analysis explores the internal mechanics of B+Trees versus LSM-Trees, calculates exact Write, Read, and Space Amplification factors ($WAF, RAF, SAF$), and details the compaction algorithms that prevent disk saturation.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_StorageEngineTrade [&quot;Storage Engine Trade-Off (The RUM Conjecture)&quot;]
     BTree[&quot;B+Tree (WiredTiger / InnoDB)&quot;] --&gt;|Pros| LowRAF[&quot;Lowest Read Amplification (Point &amp; Range Lookups)&quot;]
     BTree --&gt;|Cons| HighWAF[&quot;High Write Amplification (Random Page Writes &amp; Doublewrite)&quot;]
     
     LSM[&quot;LSM-Tree (RocksDB / Cassandra)&quot;] --&gt;|Pros| LowWriteWAF[&quot;Lowest Write Amplification (Sequential Appends)&quot;]
     LSM --&gt;|Cons| CompactionOverhead[&quot;Compaction I/O &amp; Background Read Amplification&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class BTree,CompactionOverhead blue
+class LowRAF green
+class HighWAF purple
+class LSM yellow
+class LowWriteWAF red</div>
 <hr>
 <h2 id="1-btree-storage-engine-architecture-the-in-place-page-model">1. B+Tree Storage Engine Architecture: The In-Place Page Model</h2>
 <p>B+Trees (used in <strong>MySQL InnoDB</strong> and <strong>MongoDB WiredTiger</strong>) structure data into fixed-size disk blocks called <strong>Pages</strong> (typically $4\text{ KB}$ or $16\text{ KB}$).</p>
@@ -154,17 +172,28 @@
 <hr>
 <h2 id="2-lsm-tree-storage-engine-architecture-the-append-only-model">2. LSM-Tree Storage Engine Architecture: The Append-Only Model</h2>
 <p>Log-Structured Merge-Trees (invented by Patrick O’Neil in 1996 and popularized by Google Bigtable, LevelDB, and Meta&#39;s <strong>RocksDB</strong>) convert all random writes into sequential disk operations.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG2_LsmTreeWrite [&quot;LSM-Tree Write Path (RocksDB)&quot;]
-    Write[Client Put Request: key, value] --&gt; WAL[1. Write-Ahead Log WAL (Disk Append)]
-    Write --&gt; MemTable[2. MemTable (In-Memory Concurrent SkipList)]
+    Write[&quot;Client Put Request: key, value&quot;] --&gt; WAL[&quot;1. Write-Ahead Log WAL (Disk Append)&quot;]
+    Write --&gt; MemTable[&quot;2. MemTable (In-Memory Concurrent SkipList)&quot;]
     
-    MemTable --&gt;|When full (~64MB)| Flush[3. Flush to Disk (Immutable)]
+    MemTable --&gt;|When full (~64MB)| Flush[&quot;3. Flush to Disk (Immutable)&quot;]
     Flush --&gt; L0[&quot;Level 0 (Unsorted SSTables: Range Overlaps)&quot;]
     L0 --&gt;|Leveled Compaction| L1[&quot;Level 1 (Sorted Disjoint SSTables: 10MB)&quot;]
     L1 --&gt;|Leveled Compaction 10x| L2[&quot;Level 2 (Sorted Disjoint SSTables: 100MB)&quot;]
     L2 --&gt;|Leveled Compaction 10x| L3[&quot;Level 3 (Sorted Disjoint SSTables: 1GB)&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Write,L1 blue
+class WAL,L2 green
+class MemTable,L3 purple
+class Flush yellow
+class L0 red</div>
 <h3 id="the-lsm-write-flow">The LSM Write Flow:</h3>
 <ol>
 <li><strong>WAL Append</strong>: Write operation is appended to an on-disk Write-Ahead Log for crash recovery.</li>
@@ -393,7 +422,19 @@ if __name__ == &quot;__main__&quot;:
 <h2 id="architectural-conclusion">Architectural Conclusion</h2>
 <p>Choosing between an LSM-Tree and a B+Tree is a deliberate trade-off between <strong>write throughput and read predictability</strong>.</p>
 <p>If your application demands high-volume event ingestion, audit logs, or vector embeddings where disk write bandwidth is the bottleneck, <strong>LSM-Trees (RocksDB)</strong> deliver unmatched performance.</p>
-<p>If your application requires deterministic sub-millisecond point reads and deep concurrent transactions across multi-column secondary indexes, <strong>B+Trees (InnoDB / WiredTiger)</strong> remain the gold standard.</p>
+<p>If your application requires deterministic sub-millisecond point reads and deep concurrent transactions across multi-column secondary indexes, <strong>B+Trees (InnoDB / WiredTiger)</strong> remain the gold standard. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Bayer, R., &amp; McCreight, E. (1972)</strong>. <em>Organization and Maintenance of Large Ordered Indexes</em>. Acta Informatica. <a href="https://doi.org/10.1007/BF00288683" target="_blank" rel="noopener">https://doi.org/10.1007/BF00288683</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -426,12 +467,18 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-btree-storage-engine-architecture-the-in-place-page-model" class="toc-link">1. B+Tree Storage Engine Architecture: The In-Place Page Model</a></li>
+              <li class="toc-item toc-h3"><a href="#key-invariants" class="toc-link">Key Invariants:</a></li>
+              <li class="toc-item toc-h3"><a href="#the-btree-write-amplification-penalty-waf" class="toc-link">The B+Tree Write Amplification Penalty ($WAF$)</a></li>
               <li class="toc-item toc-h2"><a href="#2-lsm-tree-storage-engine-architecture-the-append-only-model" class="toc-link">2. LSM-Tree Storage Engine Architecture: The Append-Only Model</a></li>
+              <li class="toc-item toc-h3"><a href="#the-lsm-write-flow" class="toc-link">The LSM Write Flow:</a></li>
               <li class="toc-item toc-h2"><a href="#3-compaction-algorithms-leveled-vs-size-tiered" class="toc-link">3. Compaction Algorithms: Leveled vs Size-Tiered</a></li>
+              <li class="toc-item toc-h3"><a href="#leveled-compaction-lcs-mechanics" class="toc-link">Leveled Compaction (LCS) Mechanics:</a></li>
               <li class="toc-item toc-h2"><a href="#4-mitigating-read-amplification-bloom-filters-block-caches" class="toc-link">4. Mitigating Read Amplification: Bloom Filters &amp; Block Caches</a></li>
+              <li class="toc-item toc-h3"><a href="#the-mathematical-bloom-filter-defense" class="toc-link">The Mathematical Bloom Filter Defense:</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-complete-lsm-tree-storage-engine-simulator" class="toc-link">Python Implementation: Complete LSM-Tree Storage Engine Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#summary-btree-vs-lsm-tree-decision-matrix" class="toc-link">Summary: B+Tree vs LSM-Tree Decision Matrix</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-conclusion" class="toc-link">Architectural Conclusion</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1270,13 +1317,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1345,13 +1386,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1393,13 +1428,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

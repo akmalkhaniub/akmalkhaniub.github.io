@@ -1,6 +1,6 @@
 # gRPC Internals: HTTP/2 Multiplexing, Protobuf Binary Wire Format & Streaming RPCs
 
-In high-concurrency cloud-native microservice architectures (**Google**, **Netflix**, **Uber**, **Lyft**), thousands of backend services communicate millions of times per second.
+In high-concurrency cloud-native microservice architectures (**Google**, **Netflix**, **Uber**, **Lyft**), thousands of backend services communicate millions of times per second [1].
 
 Traditional **REST APIs over HTTP/1.1** introduce two major performance bottlenecks:
 1. **Plaintext JSON Overhead**: Serializing and parsing human-readable JSON strings consumes significant CPU cycles and inflates wire payload sizes.
@@ -19,23 +19,34 @@ This article details HTTP/2 multiplexing, Protobuf Varint encoding, binary field
 How gRPC multiplexes multiple concurrent streams over a single TCP connection using Protobuf binary frames:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ClientServiceGrpc ["Client Service (gRPC Stub)"]
-    Client[Client App] -->|1. Call Unary / Streaming RPC| Stub[Protobuf Generated Stub]
-    Stub -->|2. Encode to Binary Payload: Varint + Field Tags| Encoder[Protobuf Binary Encoder]
+    Client["Client App"] -->|Call Unary / Streaming RPC| Stub["Protobuf Generated Stub"]
+    Stub -->|Encode to Binary Payload - Varint + Field Tags| Encoder["Protobuf Binary Encoder"]
   end
   
   subgraph SG2_Http2Transport ["HTTP/2 Transport Layer (Single Persistent TCP Connection)"]
-    Encoder -->|3. Wrap in HTTP/2 DATA Frame| Stream1[Stream ID 1: HEADERS + DATA (RPC Call A)]
-    Encoder -->|3. Wrap in HTTP/2 DATA Frame| Stream3[Stream ID 3: HEADERS + DATA (RPC Call B)]
+    Encoder -->|Wrap in HTTP/2 DATA Frame| Stream1["Stream ID 1: HEADERS + DATA (RPC Call A)"]
+    Encoder -->|Wrap in HTTP/2 DATA Frame| Stream3["Stream ID 3: HEADERS + DATA (RPC Call B)"]
     
-    Stream1 & Stream3 --> TCP[Single TCP Connection Socket]
+    Stream1 & Stream3 --> TCP["Single TCP Connection Socket"]
   end
   
   subgraph SG3_ServerServiceGrpc ["Server Service (gRPC Handler)"]
-    TCP -->|4. HTTP/2 Frame Demultiplexing| Server[Server gRPC Daemon]
-    Server -->|5. Decode Protobuf Payload| Handler[Execute Microservice Logic]
+    TCP -->|HTTP/2 Frame Demultiplexing| Server["Server gRPC Daemon"]
+    Server -->|Decode Protobuf Payload| Handler["Execute Microservice Logic"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client,TCP blue
+class Stub,Server green
+class Encoder,Handler purple
+class Stream1 yellow
+class Stream3 red
 ```
 
 ### Core gRPC Components & Mechanics
@@ -187,4 +198,10 @@ When engineering gRPC microservices:
 ## Real-World Enterprise Impact
 Microservice architectures transitioning to gRPC (such as **Netflix**, **Uber**, and **Salesforce**) report:
 * **Over $70\%$ Reduction in Network Payload Size**: Protobuf binary Varint encoding slashes JSON wire payload bloat.
-* **$10\times$ Higher Inter-Service RPC Throughput**: HTTP/2 multiplexing handles thousands of parallel RPCs over single persistent TCP connections without connection creation overhead.
+* **$10\times$ Higher Inter-Service RPC Throughput**: HTTP/2 multiplexing handles thousands of parallel RPCs over single persistent TCP connections without connection creation overhead. [2]
+
+## References & Further Reading
+
+1. **Belshe, M., Peon, R., & Thomson, M. (2015)**. *Hypertext Transfer Protocol Version 2 (HTTP/2)*. RFC 7540. [https://www.rfc-editor.org/rfc/rfc7540](https://www.rfc-editor.org/rfc/rfc7540)
+2. **gRPC Authors (2024)**. *gRPC Documentation*. grpc.io. [https://grpc.io/docs/](https://grpc.io/docs/)
+3. **Google (2024)**. *Protocol Buffers Language Guide*. protobuf.dev. [https://protobuf.dev/programming-guides/proto3/](https://protobuf.dev/programming-guides/proto3/)

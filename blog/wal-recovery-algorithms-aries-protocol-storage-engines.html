@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/wal-recovery-algorithms-aries-protocol-storage-engines.html">
   <meta property="og:title" content="WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines">
   <meta property="og:description" content="Achieving ACID durability during unexpected system crashes: implementing Write-Ahead Logging (WAL) and the 3-phase ARIES recovery algorithm (Analysis, Redo, and Undo with CLRs).">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/wal-recovery-algorithms-aries-protocol-storage-engines.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-12">
+  <meta property="article:published_time" content="2026-08-13">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines">
   <meta name="twitter:description" content="Achieving ACID durability during unexpected system crashes: implementing Write-Ahead Logging (WAL) and the 3-phase ARIES recovery algorithm (Analysis, Redo, and Undo with CLRs).">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/wal-recovery-algorithms-aries-protocol-storage-engines.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "WAL & Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines",
   "description": "Achieving ACID durability during unexpected system crashes: implementing Write-Ahead Logging (WAL) and the 3-phase ARIES recovery algorithm (Analysis, Redo, and Undo with CLRs).",
   "url": "https://akmalkhaniub.github.io/blog/wal-recovery-algorithms-aries-protocol-storage-engines.html",
-  "datePublished": "2026-08-12",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/wal-recovery-algorithms-aries-protocol-storage-engines.jpg",
+  "datePublished": "2026-08-13",
   "keywords": "Database Internals, WAL, ARIES, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/wal-recovery-algorithms-aries-protocol-storage-engines.jpg" class="article-cover-img" alt="WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">WAL &amp; Recovery Algorithms: Implementing the ARIES Protocol in Custom Storage Engines</h1>
             <div class="article-meta">
@@ -108,30 +109,43 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#aries-3-phase-crash-recovery-pipeline">ARIES 3-Phase Crash Recovery Pipeline</a></li>
+                <li><a href="#core-aries-invariants">Core ARIES Invariants</a></li>
                 <li><a href="#python-implementation-aries-crash-recovery-engine">Python Implementation: ARIES Crash Recovery Engine</a></li>
                 <li><a href="#aries-recovery-gotchas-principles">ARIES Recovery Gotchas &amp; Principles</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When a database node crashes unexpectedly due to power failure or hardware fault, dirty in-memory database pages that were never flushed to disk are lost, while uncommitted transaction modifications may remain partially written to disk.</p>
+<p>When a database node crashes unexpectedly due to power failure or hardware fault, dirty in-memory database pages that were never flushed to disk are lost, while uncommitted transaction modifications may remain partially written to disk <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>To provide strict <strong>ACID Durability</strong> and atomicity across system crashes, relational and document database engines rely on <strong>Write-Ahead Logging (WAL)</strong> governed by the <strong>ARIES (Algorithms for Recovery and Isolation Exploiting Semantics)</strong> protocol.</p>
 <p>ARIES guarantees that regardless of when or how many times a system crashes during recovery, the database state will recover cleanly to a consistent state.</p>
 <p>This article details the three phases of the ARIES crash recovery algorithm and how to implement a recovery manager.</p>
 <hr>
 <h2 id="aries-3-phase-crash-recovery-pipeline">ARIES 3-Phase Crash Recovery Pipeline</h2>
 <p>The execution flow during database reboot after an unexpected crash:</p>
-<div class="mermaid">graph TD
-  A[Database Crash Event / System Reboot] --&gt; B[Phase 1: Analysis Phase]
+<div class="mermaid">flowchart TD
+  A[&quot;Database Crash Event / System Reboot&quot;] --&gt; B[&quot;Phase 1: Analysis Phase&quot;]
   
   subgraph SG1_RecoveryExecutionPipeline [&quot;Recovery Execution Pipeline&quot;]
-    B --&gt;|Read Log from Checkpoint| B1[Reconstruct Active Transaction Table ATT &amp; Dirty Page Table DPT]
-    B1 --&gt; C[Phase 2: Redo Phase - Repeating History]
-    C --&gt;|Replay all Logged Actions from Smallest recLSN| C1[Bring Database Storage to Crash-Time State]
-    C1 --&gt; D[Phase 3: Undo Phase - Rolling Back Aborts]
-    D --&gt;|Roll Back Uncommitted Transactions in Reverse LSN| D1[Write Compensation Log Records CLRs]
+    B --&gt;|Read Log from Checkpoint| B1[&quot;Reconstruct Active Transaction Table ATT &amp; Dirty Page Table DPT&quot;]
+    B1 --&gt; C[&quot;Phase 2: Redo Phase - Repeating History&quot;]
+    C --&gt;|Replay all Logged Actions from Smallest recLSN| C1[&quot;Bring Database Storage to Crash-Time State&quot;]
+    C1 --&gt; D[&quot;Phase 3: Undo Phase - Rolling Back Aborts&quot;]
+    D --&gt;|Roll Back Uncommitted Transactions in Reverse LSN| D1[&quot;Write Compensation Log Records CLRs&quot;]
   end
   
-  D1 --&gt; E[Database Fully Restored &amp; Ready for Client Connections]</div>
+  D1 --&gt; E[&quot;Database Fully Restored &amp; Ready for Client Connections&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,D blue
+class B,D1 green
+class B1,E purple
+class C yellow
+class C1 red</div>
 <h3 id="core-aries-invariants">Core ARIES Invariants</h3>
 <ol>
 <li><strong>Write-Ahead Logging (WAL) Rule</strong>: A dirty page modification cannot be written to disk until the corresponding log record with Log Sequence Number (LSN) has been flushed to non-volatile disk storage ($PageLSN \le FlushedLSN$).</li>
@@ -262,8 +276,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams utilizing ARIES recovery engines report:</p>
 <ul>
 <li><strong>100% ACID Durability</strong>: Committed transactions survive power outages and kernel panics without data corruption.</li>
-<li><strong>Deterministic Crash Recovery</strong>: Compensation Log Records guarantee that recovery operations are idempotent, even if the server crashes multiple times during reboot.</li>
+<li><strong>Deterministic Crash Recovery</strong>: Compensation Log Records guarantee that recovery operations are idempotent, even if the server crashes multiple times during reboot. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -296,9 +321,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#aries-3-phase-crash-recovery-pipeline" class="toc-link">ARIES 3-Phase Crash Recovery Pipeline</a></li>
+              <li class="toc-item toc-h3"><a href="#core-aries-invariants" class="toc-link">Core ARIES Invariants</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-aries-crash-recovery-engine" class="toc-link">Python Implementation: ARIES Crash Recovery Engine</a></li>
               <li class="toc-item toc-h2"><a href="#aries-recovery-gotchas-principles" class="toc-link">ARIES Recovery Gotchas &amp; Principles</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1137,13 +1164,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1212,13 +1233,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1260,13 +1275,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

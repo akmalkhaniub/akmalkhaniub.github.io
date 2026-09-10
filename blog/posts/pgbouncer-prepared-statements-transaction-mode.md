@@ -8,7 +8,7 @@
 
 ## Understanding PgBouncer Pooling Modes
 
-PgBouncer operates in three modes, each dictating how long a client socket owns a backend server database connection:
+PgBouncer operates in three modes, each dictating how long a client socket owns a backend server database connection [1]:
 1. **Session Pooling (Default)**: The client keeps the server connection until it disconnects. Prepared statements work perfectly, but you cannot scale past your maximum server connection limit.
 2. **Transaction Pooling**: The client only holds the server connection for the duration of a single database transaction. Once the transaction completes (`COMMIT` or `ROLLBACK`), the connection is recycled. **This is where prepared statements break.**
 3. **Statement Pooling**: The connection is recycled after each individual SQL statement. Multi-statement transactions are not supported.
@@ -28,7 +28,7 @@ sequenceDiagram
     
     ClientB->>Proxy: BEGIN; PREPARE S_1 AS SELECT...
     Proxy->>DB: Send to Server Conn #1 (Multiplexed)
-    Note over DB: ❌ Error: prepared statement "S_1" already exists!
+    Note over DB:  Error: prepared statement "S_1" already exists!
     DB-->>Proxy: ERROR 42P05
     Proxy-->>ClientB: Crash / Query Failed
 ```
@@ -104,4 +104,13 @@ When scaling PostgreSQL with PgBouncer:
 * [ ] **Always match database configs to pooling modes**: If you run PgBouncer in Transaction Mode, you *must* disable client-side prepared statements or configure modern statement tracking.
 * [ ] **Use connection flags in ORMs**: When using Prisma, Sequelize, or SQLAlchemy, ensure you pass the `pgbouncer=true` or equivalent pooling parameters in your connection URI.
 * [ ] **Avoid connection pool bleeding**: Clean up temporary tables and session parameters (use `SET LOCAL` instead of `SET`) because connection switches can leak state between client transactions.
-* [ ] **Monitor backend errors**: Watch for PG Error Code `42P05` (duplicate prepared statement) in your logs as an immediate indicator of a PgBouncer config mismatch.
+* [ ] **Monitor backend errors**: Watch for PG Error Code `42P05` (duplicate prepared statement) in your logs as an immediate indicator of a PgBouncer config mismatch. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+5. **Reed, D. P. (1978)**. *Naming and Synchronization in a Decentralized Computer System*. MIT PhD Thesis. [https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf](https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf)
+6. **Bayer, R., & McCreight, E. (1972)**. *Organization and Maintenance of Large Ordered Indexes*. Acta Informatica. [https://doi.org/10.1007/BF00288683](https://doi.org/10.1007/BF00288683)

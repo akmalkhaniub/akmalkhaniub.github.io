@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/nextjs-micro-frontends-multi-zones.html">
   <meta property="og:title" content="Next.js Multi-Zones &amp; Micro Frontends: Federating Server Components at the Edge">
   <meta property="og:description" content="How to architect micro frontends in modern Next.js using Multi-Zones, federate React Server Components (RSCs) at the edge, and leverage middleware routing for seamless sub-app orchestration.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nextjs-micro-frontends-multi-zones.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-29">
+  <meta property="article:published_time" content="2026-03-30">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Next.js Multi-Zones &amp; Micro Frontends: Federating Server Components at the Edge">
   <meta name="twitter:description" content="How to architect micro frontends in modern Next.js using Multi-Zones, federate React Server Components (RSCs) at the edge, and leverage middleware routing for seamless sub-app orchestration.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/nextjs-micro-frontends-multi-zones.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Next.js Multi-Zones & Micro Frontends: Federating Server Components at the Edge",
   "description": "How to architect micro frontends in modern Next.js using Multi-Zones, federate React Server Components (RSCs) at the edge, and leverage middleware routing for seamless sub-app orchestration.",
   "url": "https://akmalkhaniub.github.io/blog/nextjs-micro-frontends-multi-zones.html",
-  "datePublished": "2026-03-29",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/nextjs-micro-frontends-multi-zones.jpg",
+  "datePublished": "2026-03-30",
   "keywords": "Next.js, Micro Frontends, Architecture, Performance",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/nextjs-micro-frontends-multi-zones.jpg" class="article-cover-img" alt="Next.js Multi-Zones &amp; Micro Frontends: Federating Server Components at the Edge Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Next.js Multi-Zones &amp; Micro Frontends: Federating Server Components at the Edge</h1>
             <div class="article-meta">
@@ -109,10 +110,14 @@
               <ul class="mobile-toc-list">
                 <li><a href="#the-micro-frontend-problem-in-modern-ssr">The Micro Frontend Problem in Modern SSR</a></li>
                 <li><a href="#core-pillar-1-nextjs-multi-zones">Core Pillar 1: Next.js Multi-Zones</a></li>
+                <li><a href="#solving-chunk-clashes-with-assetprefix">Solving Chunk Clashes with assetPrefix</a></li>
                 <li><a href="#core-pillar-2-react-server-components-rsc-federation">Core Pillar 2: React Server Components (RSC) Federation</a></li>
                 <li><a href="#core-pillar-3-edge-middleware-routing">Core Pillar 3: Edge Middleware Routing</a></li>
                 <li><a href="#implementation-zone-config-edge-router">Implementation: Zone Config &amp; Edge Router</a></li>
+                <li><a href="#1-nextjs-config-for-the-blog-sub-app-nextconfigjs-on-port-3001">1. Next.js Config for the Blog Sub-App (next.config.js on Port 3001)</a></li>
+                <li><a href="#2-edge-routing-middleware-middlewarets-on-the-landing-app-on-port-3000">2. Edge Routing Middleware (middleware.ts on the Landing App on Port 3000)</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -123,7 +128,7 @@ Micro frontends have long promised isolated, independently deployable frontend a
 </div>
 <hr>
 <h2 id="the-micro-frontend-problem-in-modern-ssr">The Micro Frontend Problem in Modern SSR</h2>
-<p>Standard micro frontend approaches (like Webpack Module Federation or Single-SPA) operate almost entirely in the browser. In server-side rendered (SSR) environments, this creates severe engineering challenges:</p>
+<p>Standard micro frontend approaches (like Webpack Module Federation or Single-SPA) operate almost entirely in the browser <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. In server-side rendered (SSR) environments, this creates severe engineering challenges:</p>
 <ol>
 <li><strong>Hydration Mismatches</strong>: The server-rendered HTML must match the client-side JavaScript exactly. If a micro frontend dynamically injects a component on the client, React will throw a hydration mismatch error.</li>
 <li><strong>Cascading Client Latency</strong>: Downloading separate Webpack runtime bundles for every micro frontend increases JavaScript bloat, destroying Core Web Vitals (INP and LCP).</li>
@@ -131,16 +136,27 @@ Micro frontends have long promised isolated, independently deployable frontend a
 </ol>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Client[Client Browser] --&gt; Edge{Edge Router / Next.js Middleware}
-    Edge -- / --&gt; Landing[Landing Page App: Port 3000]
-    Edge -- /blog/* --&gt; Blog[Blog App: Port 3001]
-    Edge -- /dashboard/* --&gt; Dashboard[Dashboard App: Port 3002]
+    Client[&quot;Client Browser&quot;] --&gt; Edge{Edge Router / Next.js Middleware}
+    Edge -- / --&gt; Landing[&quot;Landing Page App: Port 3000&quot;]
+    Edge -- /blog/* --&gt; Blog[&quot;Blog App: Port 3001&quot;]
+    Edge -- /dashboard/* --&gt; Dashboard[&quot;Dashboard App: Port 3002&quot;]
     
     subgraph SG1_SharedAssetsData [&quot;Shared Assets &amp; Data&quot;]
-        Landing -. Asset Prefix .-&gt; S3[CDN/S3 Bucket]
+        Landing -. Asset Prefix .-&gt; S3[&quot;CDN/S3 Bucket&quot;]
         Blog -. Asset Prefix .-&gt; S3
         Dashboard -. Asset Prefix .-&gt; S3
-    end</div>
+    end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client blue
+class Landing green
+class Blog purple
+class Dashboard yellow
+class S3 red</div>
 <hr>
 <h2 id="core-pillar-1-nextjs-multi-zones">Core Pillar 1: Next.js Multi-Zones</h2>
 <p>Next.js&#39;s native way of split-routing micro frontends is called <strong>Multi-Zones</strong>. In a Multi-Zone architecture, you split your system into multiple independent Next.js applications, each running on separate ports or server instances. </p>
@@ -233,8 +249,17 @@ export const config = {
 <li><input disabled="" type="checkbox"> <strong>Always declare an <code>assetPrefix</code></strong>: Prevent client-side JS/CSS chunk collisions by separating static paths for each sub-app.</li>
 <li><input disabled="" type="checkbox"> <strong>Orchestrate at the Edge</strong>: Use Next.js Middleware to handle dynamic routing rewrites rather than static Nginx configs.</li>
 <li><input disabled="" type="checkbox"> <strong>Leverage RSC for federation</strong>: Render UI pieces on their respective zone servers, and stream the lightweight VDOM down to the shell app.</li>
-<li><input disabled="" type="checkbox"> <strong>Shared styling variables</strong>: Keep micro frontend styles consistent by using global CSS variables loaded at the root layout shell.</li>
+<li><input disabled="" type="checkbox"> <strong>Shared styling variables</strong>: Keep micro frontend styles consistent by using global CSS variables loaded at the root layout shell. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -268,10 +293,14 @@ export const config = {
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#the-micro-frontend-problem-in-modern-ssr" class="toc-link">The Micro Frontend Problem in Modern SSR</a></li>
               <li class="toc-item toc-h2"><a href="#core-pillar-1-nextjs-multi-zones" class="toc-link">Core Pillar 1: Next.js Multi-Zones</a></li>
+              <li class="toc-item toc-h3"><a href="#solving-chunk-clashes-with-assetprefix" class="toc-link">Solving Chunk Clashes with assetPrefix</a></li>
               <li class="toc-item toc-h2"><a href="#core-pillar-2-react-server-components-rsc-federation" class="toc-link">Core Pillar 2: React Server Components (RSC) Federation</a></li>
               <li class="toc-item toc-h2"><a href="#core-pillar-3-edge-middleware-routing" class="toc-link">Core Pillar 3: Edge Middleware Routing</a></li>
               <li class="toc-item toc-h2"><a href="#implementation-zone-config-edge-router" class="toc-link">Implementation: Zone Config &amp; Edge Router</a></li>
+              <li class="toc-item toc-h3"><a href="#1-nextjs-config-for-the-blog-sub-app-nextconfigjs-on-port-3001" class="toc-link">1. Next.js Config for the Blog Sub-App (next.config.js on Port 3001)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-edge-routing-middleware-middlewarets-on-the-landing-app-on-port-3000" class="toc-link">2. Edge Routing Middleware (middleware.ts on the Landing App on Port 3000)</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>

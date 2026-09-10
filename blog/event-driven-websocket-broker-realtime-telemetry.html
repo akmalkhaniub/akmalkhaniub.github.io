@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/event-driven-websocket-broker-realtime-telemetry.html">
   <meta property="og:title" content="WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients">
   <meta property="og:description" content="Auditing agent thoughts live: building high-performance WebSocket gateways to multiplex traces to frontend dashboards.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/event-driven-websocket-broker-realtime-telemetry.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-07">
+  <meta property="article:published_time" content="2026-07-08">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients">
   <meta name="twitter:description" content="Auditing agent thoughts live: building high-performance WebSocket gateways to multiplex traces to frontend dashboards.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/event-driven-websocket-broker-realtime-telemetry.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients",
   "description": "Auditing agent thoughts live: building high-performance WebSocket gateways to multiplex traces to frontend dashboards.",
   "url": "https://akmalkhaniub.github.io/blog/event-driven-websocket-broker-realtime-telemetry.html",
-  "datePublished": "2026-07-07",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/event-driven-websocket-broker-realtime-telemetry.jpg",
+  "datePublished": "2026-07-08",
   "keywords": "Architecture, Event-Driven, WebSockets, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/event-driven-websocket-broker-realtime-telemetry.jpg" class="article-cover-img" alt="WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients</h1>
             <div class="article-meta">
@@ -112,6 +113,7 @@
                 <li><a href="#2-setting-up-non-blocking-event-loops">2. Setting up Non-Blocking Event Loops</a></li>
                 <li><a href="#code-demo-websocket-telemetry-broker">Code Demo: WebSocket Telemetry Broker</a></li>
                 <li><a href="#websocket-gateway-takeaways">WebSocket Gateway Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,20 +126,30 @@ Running asynchronous agent tasks introduces a user-experience challenge: users d
 <h2 id="the-efficiency-of-websocket-gateways">The Efficiency of WebSocket Gateways</h2>
 <p>In legacy status tracking configurations:</p>
 <ul>
-<li><strong>Database Thrashing</strong>: Hundreds of UI clients polling HTTP status endpoints every second degrades database read speeds.</li>
+<li><strong>Database Thrashing</strong>: Hundreds of UI clients polling HTTP status endpoints every second degrades database read speeds <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Delayed Feedback</strong>: Users see execution updates seconds after they occur, degrading the interactive feel.</li>
 <li><strong>The Solution</strong>: <strong>WebSocket Event Brokers</strong>. We establish persistent TCP sockets using WebSockets. When an agent emits a step execution trace event, the gateway routes the event payload immediately to all subscribed clients.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Agent Execution Worker] --&gt;|Emits log trace event| Gateway[WebSocket Broker Gateway]
+    Agent[&quot;Agent Execution Worker&quot;] --&gt;|Emits log trace event| Gateway[&quot;WebSocket Broker Gateway&quot;]
     
     subgraph SG1_ClientSubscriptionHub [&quot;Client Subscription Hub&quot;]
-        Gateway --&gt;|Multiplex payload| Client1[UI Dashboard Client 1]
-        Gateway --&gt;|Multiplex payload| Client2[UI Dashboard Client 2]
+        Gateway --&gt;|Multiplex payload| Client1[&quot;UI Dashboard Client 1&quot;]
+        Gateway --&gt;|Multiplex payload| Client2[&quot;UI Dashboard Client 2&quot;]
     end
     
-    Client1 --&gt;|Subscribe: task_session_101| Gateway</div>
+    Client1 --&gt;|Subscribe - task_session_101| Gateway
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent blue
+class Gateway green
+class Client1 purple
+class Client2 yellow</div>
 <hr>
 <h2 id="1-multiplexing-subscriber-channels">1. Multiplexing Subscriber Channels</h2>
 <p>To route WebSocket updates:</p>
@@ -217,8 +229,16 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Decouple Ingestion from Broadcast</strong>: Buffer agent log traces in queues before routing them to client connections.</li>
 <li><strong>Manage Connection Registries</strong>: De-allocate inactive sockets immediately to protect server memory.</li>
-<li><strong>Provide Structured Channels</strong>: Partition subscriptions by task session IDs to avoid routing irrelevant logs to users.</li>
+<li><strong>Provide Structured Channels</strong>: Partition subscriptions by task session IDs to avoid routing irrelevant logs to users. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Lamport, L. (1978)</strong>. <em>Time, Clocks, and the Ordering of Events in a Distributed System</em>. CACM. <a href="https://lamport.azurewebsites.net/pubs/time-clocks.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/time-clocks.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Gilbert, S., &amp; Lynch, N. (2002)</strong>. <em>Brewer&#39;s Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services</em>. ACM SIGACT News. <a href="https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf" target="_blank" rel="noopener">https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -255,6 +275,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-setting-up-non-blocking-event-loops" class="toc-link">2. Setting up Non-Blocking Event Loops</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-websocket-telemetry-broker" class="toc-link">Code Demo: WebSocket Telemetry Broker</a></li>
               <li class="toc-item toc-h2"><a href="#websocket-gateway-takeaways" class="toc-link">WebSocket Gateway Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1093,13 +1114,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1168,13 +1183,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1216,13 +1225,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

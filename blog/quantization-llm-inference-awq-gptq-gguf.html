@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/quantization-llm-inference-awq-gptq-gguf.html">
   <meta property="og:title" content="Quantization for LLM Inference: AWQ, GPTQ &amp; GGUF Memory Reduction">
   <meta property="og:description" content="Squeezing 70B models into consumer GPUs: implementing 4-bit uniform quantization, AWQ activation-aware weight protection, GPTQ Taylor expansion, and GGUF CPU offloading.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/quantization-llm-inference-awq-gptq-gguf.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Quantization for LLM Inference: AWQ, GPTQ &amp; GGUF Memory Reduction">
   <meta name="twitter:description" content="Squeezing 70B models into consumer GPUs: implementing 4-bit uniform quantization, AWQ activation-aware weight protection, GPTQ Taylor expansion, and GGUF CPU offloading.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/quantization-llm-inference-awq-gptq-gguf.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Quantization for LLM Inference: AWQ, GPTQ & GGUF Memory Reduction",
   "description": "Squeezing 70B models into consumer GPUs: implementing 4-bit uniform quantization, AWQ activation-aware weight protection, GPTQ Taylor expansion, and GGUF CPU offloading.",
   "url": "https://akmalkhaniub.github.io/blog/quantization-llm-inference-awq-gptq-gguf.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/quantization-llm-inference-awq-gptq-gguf.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "Quantization, AWQ, GPTQ, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Quantization for LLM Inference: AWQ, GPTQ &amp; GGUF Memory Reduction Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/quantization-llm-inference-awq-gptq-gguf.jpg" class="article-cover-img" alt="Quantization for LLM Inference: AWQ, GPTQ &amp; GGUF Memory Reduction Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Quantization for LLM Inference: AWQ, GPTQ &amp; GGUF Memory Reduction</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#llm-quantization-awq-salient-weight-architecture">LLM Quantization &amp; AWQ Salient Weight Architecture</a></li>
+                <li><a href="#core-quantization-algorithms-formats">Core Quantization Algorithms &amp; Formats</a></li>
                 <li><a href="#python-implementation-uniform-linear-quantizer-awq-engine">Python Implementation: Uniform Linear Quantizer &amp; AWQ Engine</a></li>
                 <li><a href="#llm-quantization-gotchas-best-practices">LLM Quantization Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Running 70-billion parameter Large Language Models (such as Llama-3-70B) in standard FP16 (16-bit floating-point) precision requires <strong>140 GB of GPU VRAM</strong> just to load the model weights into memory.</p>
+<p>Running 70-billion parameter Large Language Models (such as Llama-3-70B) in standard FP16 (16-bit floating-point) precision requires <strong>140 GB of GPU VRAM</strong> just to load the model weights into memory <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>$$\text{VRAM Size} = 70 \times 10^9 \text{ parameters} \times 2 \text{ bytes/parameter} = 140 \text{ GB}$$</p>
 <p>This forces organizations to deploy multi-GPU clusters (e.g., $2 \times \text{NVIDIA A100 } 80\text{GB}$ nodes), incurring steep hardware and hosting costs.</p>
 <p>To squeeze massive models onto cost-effective single GPUs or consumer hardware, machine learning systems utilize <strong>Quantization</strong>.</p>
@@ -122,21 +125,32 @@
 <hr>
 <h2 id="llm-quantization-awq-salient-weight-architecture">LLM Quantization &amp; AWQ Salient Weight Architecture</h2>
 <p>How AWQ identifies salient weights based on activation magnitudes to preserve accuracy at 4-bit precision:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_UnquantizedModelWeights [&quot;Unquantized Model Weights (FP16: 140 GB VRAM)&quot;]
-    Weights[FP16 Model Weights W: 70B Params] --&gt; ActMonitor[Activation Magnitude Monitor]
+    Weights[&quot;FP16 Model Weights W: 70B Params&quot;] --&gt; ActMonitor[&quot;Activation Magnitude Monitor&quot;]
   end
   
   subgraph SG2_AwqActivationAware [&quot;AWQ (Activation-aware Weight Quantization) Pipeline&quot;]
-    ActMonitor --&gt;|1. Compute Activation Magnitudes |X|| SalientCheck{Identify Salient Weights}
-    SalientCheck --&gt;|2. Top 1% High-Activation Weights| Protect[Apply Scale Factor S &gt; 1: Protect Precision]
-    SalientCheck --&gt;|3. Remaining 99% Non-Critical Weights| Uniform4Bit[Quantize to INT4 (Scale S &amp; Zero-Point Z)]
+    ActMonitor --&gt;|Compute Activation Magnitudes|X|| SalientCheck{Identify Salient Weights}
+    SalientCheck --&gt;|Top 1% High-Activation Weights| Protect[&quot;Apply Scale Factor S &gt; 1: Protect Precision&quot;]
+    SalientCheck --&gt;|Remaining 99% Non-Critical Weights| Uniform4Bit[&quot;Quantize to INT4 (Scale S &amp; Zero-Point Z)&quot;]
   end
   
   subgraph SG3_CompressedModelRepresentation [&quot;Compressed Model Representation (INT4: 35 GB VRAM)&quot;]
     Protect &amp; Uniform4Bit --&gt; QuantizedModel[(Quantized 4-Bit Model: AWQ / GPTQ / GGUF)]
-    QuantizedModel --&gt;|4. High-Speed Inference| ConsumerGPU[Single GPU / Desktop CPU]
-  end</div>
+    QuantizedModel --&gt;|High-Speed Inference| ConsumerGPU[&quot;Single GPU / Desktop CPU&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Weights blue
+class ActMonitor green
+class Protect purple
+class Uniform4Bit yellow
+class ConsumerGPU red</div>
 <h3 id="core-quantization-algorithms-formats">Core Quantization Algorithms &amp; Formats</h3>
 <ol>
 <li><strong>Uniform Linear Quantization (Scale &amp; Zero-Point)</strong>: Maps continuous 16-bit floating-point values ($x$) to discrete $n$-bit integers ($q$).
@@ -253,8 +267,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Platforms adopting 4-bit LLM quantization (such as <strong>AWQ</strong> and <strong>GGUF</strong>) report:</p>
 <ul>
 <li><strong>75% Reduction in GPU VRAM Costs</strong>: Running Llama-3-70B on a single $40\text{GB}$ GPU node instead of requiring multi-GPU $140\text{GB}$ clusters.</li>
-<li><strong>$3\times$ Faster Generation Speeds</strong>: 4-bit weights reduce GPU memory bandwidth pressure, allowing token generation to run at higher tokens/sec.</li>
+<li><strong>$3\times$ Faster Generation Speeds</strong>: 4-bit weights reduce GPU memory bandwidth pressure, allowing token generation to run at higher tokens/sec. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Lin, J., et al. (2024)</strong>. <em>AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</em>. MLSys. <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">https://arxiv.org/abs/2306.00978</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Frantar, E., et al. (2023)</strong>. <em>GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</em>. ICLR. <a href="https://arxiv.org/abs/2210.17323" target="_blank" rel="noopener">https://arxiv.org/abs/2210.17323</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Wang, H., et al. (2023)</strong>. <em>BitNet: Scaling 1-bit Transformers for Large Language Models</em>. arXiv. <a href="https://arxiv.org/abs/2310.11453" target="_blank" rel="noopener">https://arxiv.org/abs/2310.11453</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -287,9 +312,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#llm-quantization-awq-salient-weight-architecture" class="toc-link">LLM Quantization &amp; AWQ Salient Weight Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-quantization-algorithms-formats" class="toc-link">Core Quantization Algorithms &amp; Formats</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-uniform-linear-quantizer-awq-engine" class="toc-link">Python Implementation: Uniform Linear Quantizer &amp; AWQ Engine</a></li>
               <li class="toc-item toc-h2"><a href="#llm-quantization-gotchas-best-practices" class="toc-link">LLM Quantization Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1128,13 +1155,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1203,13 +1224,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1251,13 +1266,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

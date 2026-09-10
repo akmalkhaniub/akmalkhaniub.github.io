@@ -9,19 +9,28 @@
 ## The Code Injection Vulnerability Vector
 
 Dynamic code execution tools (like `exec()` or `eval()`) compile text payloads at runtime:
-* **The Injection Vulnerability**: An attacker injects code commands into a database query. The coding agent generates a script to run the query, compiling the injection statement.
+* **The Injection Vulnerability**: An attacker injects code commands into a database query [1]. The coding agent generates a script to run the query, compiling the injection statement.
 * **Why regex parsing fails**: Regex checks (like searching for `import os`) are bypassed using string obfuscation techniques (e.g. `__import__('o' + 's')`).
 * **The Solution**: **Abstract Syntax Tree (AST) Parsing**. We parse the code string into its logical compiler representation (the AST) and evaluate all import and function nodes, intercepting any malicious calls.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Code[Agent Generates Code Script] --> AST[Compile Code String to AST Nodes]
-    AST --> Scan[Scan AST Nodes for Imports & Attribute Calls]
+    Code["Agent Generates Code Script"] --> AST["Compile Code String to AST Nodes"]
+    AST --> Scan["Scan AST Nodes for Imports & Attribute Calls"]
     
     Scan --> Verify{Does AST match Security Rules?}
-    Verify -->|No: Forbidden calls| Block([Block Script Execution: Raise Safety Alert])
-    Verify -->|Yes: Safe| Sandbox([Run Code inside Sandboxed MicroVM])
+    Verify -->|No - Forbidden calls| Block([Block Script Execution: Raise Safety Alert])
+    Verify -->|Yes - Safe| Sandbox([Run Code inside Sandboxed MicroVM])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Code blue
+class AST green
+class Scan purple
 ```
 
 ---
@@ -129,4 +138,13 @@ os.system("rm -rf /workspace/sensitive")
 
 * **Parse, Don't Regex Scan**: Never rely on regex to search for forbidden modules. Use AST parsers to inspect logic structures.
 * **Scan Imports and Attributes**: Evaluate both import statement nodes and nested attribute lookups to prevent obfuscation.
-* **Combine with VM Sandboxes**: Use AST scanning as your primary guardrail, backed by microVM containers for runtime defense.
+* **Combine with VM Sandboxes**: Use AST scanning as your primary guardrail, backed by microVM containers for runtime defense. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

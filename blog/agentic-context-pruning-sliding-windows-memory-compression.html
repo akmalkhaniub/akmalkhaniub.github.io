@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html">
   <meta property="og:title" content="Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression">
   <meta property="og:description" content="How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agentic-context-pruning-sliding-windows-memory-compression.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-19">
+  <meta property="article:published_time" content="2026-04-20">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression">
   <meta name="twitter:description" content="How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agentic-context-pruning-sliding-windows-memory-compression.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Context Pruning for Long-Running Swarms: Sliding Windows & Memory Compression",
   "description": "How to optimize LLM context window usage in long-running agent workflows using semantic pruning, token sliding windows, and recursive state summarization.",
   "url": "https://akmalkhaniub.github.io/blog/agentic-context-pruning-sliding-windows-memory-compression.html",
-  "datePublished": "2026-04-19",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/agentic-context-pruning-sliding-windows-memory-compression.jpg",
+  "datePublished": "2026-04-20",
   "keywords": "Optimization, AI Agents, Memory, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/agentic-context-pruning-sliding-windows-memory-compression.jpg" class="article-cover-img" alt="Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Context Pruning for Long-Running Swarms: Sliding Windows &amp; Memory Compression</h1>
             <div class="article-meta">
@@ -109,8 +110,12 @@
               <ul class="mobile-toc-list">
                 <li><a href="#the-context-inflation-problem">The Context Inflation Problem</a></li>
                 <li><a href="#3-core-optimization-techniques">3 Core Optimization Techniques</a></li>
+                <li><a href="#1-semantic-pruning">1. Semantic Pruning</a></li>
+                <li><a href="#2-sliding-windows">2. Sliding Windows</a></li>
+                <li><a href="#3-recursive-memory-compression">3. Recursive Memory Compression</a></li>
                 <li><a href="#implementing-a-context-compressor-in-python">Implementing a Context Compressor in Python</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -121,7 +126,7 @@ Long-running agentic workflows—such as analyzing codebase structures, running 
 </div>
 <hr>
 <h2 id="the-context-inflation-problem">The Context Inflation Problem</h2>
-<p>In a standard agent loop, every message exchanged, prompt executed, and raw tool output (such as SQL tables or raw HTML scans) is appended to the conversation history. On long tasks, this history grows.</p>
+<p>In a standard agent loop, every message exchanged, prompt executed, and raw tool output (such as SQL tables or raw HTML scans) is appended to the conversation history <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. On long tasks, this history grows.</p>
 <p>When the context window gets bloated:</p>
 <ol>
 <li><strong>Financial Cost</strong>: Since LLM APIs charge per token, sending 100k tokens of historic logs on every turn becomes prohibitively expensive.</li>
@@ -130,16 +135,27 @@ Long-running agentic workflows—such as analyzing codebase structures, running 
 </ol>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#b45309', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f59e0b', 'lineColor': '#b45309', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Raw[Raw Message Log Stack] --&gt; Slice{Is Token Count &gt; Budget?}
+    Raw[&quot;Raw Message Log Stack&quot;] --&gt; Slice{Is Token Count &gt; Budget?}
     
-    Slice --&gt;|Yes: Exceeds Limit| Prune[1. Semantic Prune: Strip raw tool outputs]
-    Prune --&gt; Slide[2. Slide Window: Keep latest N messages]
-    Slide --&gt; Compress[3. Compress Memory: Summarize discarded history]
+    Slice --&gt;|Yes - Exceeds Limit| Prune[&quot;1. Semantic Prune: Strip raw tool outputs&quot;]
+    Prune --&gt; Slide[&quot;2. Slide Window: Keep latest N messages&quot;]
+    Slide --&gt; Compress[&quot;3. Compress Memory: Summarize discarded history&quot;]
     
-    Compress --&gt; Compile[Compile Final Context: Summary + Writable Window]
+    Compress --&gt; Compile[&quot;Compile Final Context: Summary + Writable Window&quot;]
     Slice --&gt;|No| Compile
     
-    Compile --&gt; LLM[LLM API Call]</div>
+    Compile --&gt; LLM[&quot;LLM API Call&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Raw,LLM blue
+class Prune green
+class Slide purple
+class Compress yellow
+class Compile red</div>
 <hr>
 <h2 id="3-core-optimization-techniques">3 Core Optimization Techniques</h2>
 <h3 id="1-semantic-pruning">1. Semantic Pruning</h3>
@@ -235,8 +251,16 @@ if __name__ == &quot;__main__&quot;:
 <li><input disabled="" type="checkbox"> <strong>Run semantic pruning immediately</strong>: Do not let raw, verbose data outputs persist in the message array. Condense them to structured outcomes immediately after invocation.</li>
 <li><input disabled="" type="checkbox"> <strong>Enforce token-based budgets</strong>: Calculate context length using model-specific encoders (like <code>tiktoken</code>) rather than raw string lengths.</li>
 <li><input disabled="" type="checkbox"> <strong>Run summarization asynchronously</strong>: Keep updates to the running summary separate from the main execution loop to prevent blocking agent runs.</li>
-<li><input disabled="" type="checkbox"> <strong>Slide windows selectively</strong>: Never slide out the initial system prompt or user query parameters; keep core execution directives pinned at the top.</li>
+<li><input disabled="" type="checkbox"> <strong>Slide windows selectively</strong>: Never slide out the initial system prompt or user query parameters; keep core execution directives pinned at the top. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -270,8 +294,12 @@ if __name__ == &quot;__main__&quot;:
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#the-context-inflation-problem" class="toc-link">The Context Inflation Problem</a></li>
               <li class="toc-item toc-h2"><a href="#3-core-optimization-techniques" class="toc-link">3 Core Optimization Techniques</a></li>
+              <li class="toc-item toc-h3"><a href="#1-semantic-pruning" class="toc-link">1. Semantic Pruning</a></li>
+              <li class="toc-item toc-h3"><a href="#2-sliding-windows" class="toc-link">2. Sliding Windows</a></li>
+              <li class="toc-item toc-h3"><a href="#3-recursive-memory-compression" class="toc-link">3. Recursive Memory Compression</a></li>
               <li class="toc-item toc-h2"><a href="#implementing-a-context-compressor-in-python" class="toc-link">Implementing a Context Compressor in Python</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1110,13 +1138,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1185,13 +1207,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1233,13 +1249,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

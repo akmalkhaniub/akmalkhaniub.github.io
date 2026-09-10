@@ -1,4 +1,4 @@
-The biggest bottleneck in AI systems is integration. For every tool or database you want an agent to access, you have to write custom wrappers, format schemas, and manage connection keys. If you decide to switch models (e.g., from Claude to GPT), you frequently have to rewrite your tool-calling logic.
+The biggest bottleneck in AI systems is integration [1]. For every tool or database you want an agent to access, you have to write custom wrappers, format schemas, and manage connection keys. If you decide to switch models (e.g., from Claude to GPT), you frequently have to rewrite your tool-calling logic.
 
 > ### 📖 Article Overview
 > * **What this article is about:** This article explores how the Model Context Protocol (MCP) and emerging Agent-to-Agent (A2A) protocols are standardizing AI system integration and inter-agent communication.
@@ -16,26 +16,37 @@ This article explores how MCP and emerging Agent-to-Agent (A2A) protocols are de
 Before MCP, model integration was an N-to-M complexity problem. Every model client had to write custom code to connect to every tool or data source. With MCP, the architecture is decoupled into a clean client-server model:
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_ClientsClientsLlm ["Clients [Clients / LLM orchestrators]"]
-        Claude[Claude Desktop / Agent]
-        CustomAgent[Custom LangGraph Agent]
+        Claude["Claude Desktop / Agent"]
+        CustomAgent["Custom LangGraph Agent"]
     end
     
     subgraph SG2_ProtocolMcpLayer ["Protocol [MCP Layer]"]
-        MCP_Gate[MCP Router Gateway]
+        MCP_Gate["MCP Router Gateway"]
     end
     
     subgraph SG3_ServersMcpServers ["Servers [MCP Servers / Tools]"]
-        Git[GitHub MCP Server]
-        DB[Database DBOps Server]
-        DevOps[Docker/DevOps Server]
+        Git["GitHub MCP Server"]
+        DB["Database DBOps Server"]
+        DevOps["Docker/DevOps Server"]
     end
     
     Clients -->|JSON-RPC| MCP_Gate
     MCP_Gate --> Git
     MCP_Gate --> DB
     MCP_Gate --> DevOps
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Claude,DevOps blue
+class CustomAgent green
+class MCP_Gate purple
+class Git yellow
+class DB red
 ```
 
 *   **MCP Client**: An agent orchestrator (e.g., a FastAPI gateway) that queries the server to discover what tools are available and sends JSON-RPC execution requests.

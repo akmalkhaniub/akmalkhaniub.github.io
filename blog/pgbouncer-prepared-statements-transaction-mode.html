@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/pgbouncer-prepared-statements-transaction-mode.html">
   <meta property="og:title" content="PgBouncer in Production: The Prepared Statement Traps">
   <meta property="og:description" content="Why PgBouncer Transaction Mode silently breaks prepared statements, causing prepared statement already exists errors, and how to fix it in Node.js and Python clients.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/pgbouncer-prepared-statements-transaction-mode.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-02">
+  <meta property="article:published_time" content="2026-04-03">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PgBouncer in Production: The Prepared Statement Traps">
   <meta name="twitter:description" content="Why PgBouncer Transaction Mode silently breaks prepared statements, causing prepared statement already exists errors, and how to fix it in Node.js and Python clients.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/pgbouncer-prepared-statements-transaction-mode.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "PgBouncer in Production: The Prepared Statement Traps",
   "description": "Why PgBouncer Transaction Mode silently breaks prepared statements, causing prepared statement already exists errors, and how to fix it in Node.js and Python clients.",
   "url": "https://akmalkhaniub.github.io/blog/pgbouncer-prepared-statements-transaction-mode.html",
-  "datePublished": "2026-04-02",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/pgbouncer-prepared-statements-transaction-mode.jpg",
+  "datePublished": "2026-04-03",
   "keywords": "PostgreSQL, PgBouncer, Database, Scaling",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/pgbouncer-prepared-statements-transaction-mode.jpg" class="article-cover-img" alt="PgBouncer in Production: The Prepared Statement Traps Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">PgBouncer in Production: The Prepared Statement Traps</h1>
             <div class="article-meta">
@@ -109,7 +110,10 @@
               <ul class="mobile-toc-list">
                 <li><a href="#understanding-pgbouncer-pooling-modes">Understanding PgBouncer Pooling Modes</a></li>
                 <li><a href="#how-to-fix-the-prepared-statement-conflict">How to Fix the Prepared Statement Conflict</a></li>
+                <li><a href="#solution-1-disable-prepared-statements-client-side-recommended">Solution 1: Disable Prepared Statements Client-Side (Recommended)</a></li>
+                <li><a href="#solution-2-enable-named-prepared-statements-in-pgbouncer-v121">Solution 2: Enable Named Prepared Statements in PgBouncer (v1.21+)</a></li>
                 <li><a href="#conclusion-takeaways">Conclusion &amp; Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -120,7 +124,7 @@ PgBouncer is the industry standard for managing PostgreSQL connections in high-t
 </div>
 <hr>
 <h2 id="understanding-pgbouncer-pooling-modes">Understanding PgBouncer Pooling Modes</h2>
-<p>PgBouncer operates in three modes, each dictating how long a client socket owns a backend server database connection:</p>
+<p>PgBouncer operates in three modes, each dictating how long a client socket owns a backend server database connection <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>:</p>
 <ol>
 <li><strong>Session Pooling (Default)</strong>: The client keeps the server connection until it disconnects. Prepared statements work perfectly, but you cannot scale past your maximum server connection limit.</li>
 <li><strong>Transaction Pooling</strong>: The client only holds the server connection for the duration of a single database transaction. Once the transaction completes (<code>COMMIT</code> or <code>ROLLBACK</code>), the connection is recycled. <strong>This is where prepared statements break.</strong></li>
@@ -140,7 +144,7 @@ sequenceDiagram
     
     ClientB-&gt;&gt;Proxy: BEGIN; PREPARE S_1 AS SELECT...
     Proxy-&gt;&gt;DB: Send to Server Conn #1 (Multiplexed)
-    Note over DB: ❌ Error: prepared statement &quot;S_1&quot; already exists!
+    Note over DB:  Error: prepared statement &quot;S_1&quot; already exists!
     DB--&gt;&gt;Proxy: ERROR 42P05
     Proxy--&gt;&gt;ClientB: Crash / Query Failed</div>
 <p>When Client A prepares a query, the driver names it (e.g. <code>S_1</code>) and registers it in the backend connection memory. When Client B is multiplexed onto that same connection by PgBouncer and tries to register its own prepared statement <code>S_1</code>, the database server throws an error because <code>S_1</code> was already defined.</p>
@@ -194,8 +198,19 @@ track_extra_parameters = onload</code></pre>
 <li><input disabled="" type="checkbox"> <strong>Always match database configs to pooling modes</strong>: If you run PgBouncer in Transaction Mode, you <em>must</em> disable client-side prepared statements or configure modern statement tracking.</li>
 <li><input disabled="" type="checkbox"> <strong>Use connection flags in ORMs</strong>: When using Prisma, Sequelize, or SQLAlchemy, ensure you pass the <code>pgbouncer=true</code> or equivalent pooling parameters in your connection URI.</li>
 <li><input disabled="" type="checkbox"> <strong>Avoid connection pool bleeding</strong>: Clean up temporary tables and session parameters (use <code>SET LOCAL</code> instead of <code>SET</code>) because connection switches can leak state between client transactions.</li>
-<li><input disabled="" type="checkbox"> <strong>Monitor backend errors</strong>: Watch for PG Error Code <code>42P05</code> (duplicate prepared statement) in your logs as an immediate indicator of a PgBouncer config mismatch.</li>
+<li><input disabled="" type="checkbox"> <strong>Monitor backend errors</strong>: Watch for PG Error Code <code>42P05</code> (duplicate prepared statement) in your logs as an immediate indicator of a PgBouncer config mismatch. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Reed, D. P. (1978)</strong>. <em>Naming and Synchronization in a Decentralized Computer System</em>. MIT PhD Thesis. <a href="https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf" target="_blank" rel="noopener">https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Bayer, R., &amp; McCreight, E. (1972)</strong>. <em>Organization and Maintenance of Large Ordered Indexes</em>. Acta Informatica. <a href="https://doi.org/10.1007/BF00288683" target="_blank" rel="noopener">https://doi.org/10.1007/BF00288683</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -229,7 +244,10 @@ track_extra_parameters = onload</code></pre>
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#understanding-pgbouncer-pooling-modes" class="toc-link">Understanding PgBouncer Pooling Modes</a></li>
               <li class="toc-item toc-h2"><a href="#how-to-fix-the-prepared-statement-conflict" class="toc-link">How to Fix the Prepared Statement Conflict</a></li>
+              <li class="toc-item toc-h3"><a href="#solution-1-disable-prepared-statements-client-side-recommended" class="toc-link">Solution 1: Disable Prepared Statements Client-Side (Recommended)</a></li>
+              <li class="toc-item toc-h3"><a href="#solution-2-enable-named-prepared-statements-in-pgbouncer-v121" class="toc-link">Solution 2: Enable Named Prepared Statements in PgBouncer (v1.21+)</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-takeaways" class="toc-link">Conclusion &amp; Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1068,13 +1086,7 @@ track_extra_parameters = onload</code></pre>
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1143,13 +1155,7 @@ track_extra_parameters = onload</code></pre>
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1191,13 +1197,7 @@ track_extra_parameters = onload</code></pre>
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

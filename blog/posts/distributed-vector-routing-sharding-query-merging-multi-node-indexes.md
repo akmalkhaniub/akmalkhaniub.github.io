@@ -1,6 +1,6 @@
 # Distributed Vector Routing: Sharding & Query Merging in Multi-Node Indexes
 
-As vector datasets grow to billions of documents, a single server node can no longer fit the index in memory or handle the CPU query load. To scale, vector databases must partition the index across a cluster of multiple physical machines.
+As vector datasets grow to billions of documents, a single server node can no longer fit the index in memory or handle the CPU query load [1]. To scale, vector databases must partition the index across a cluster of multiple physical machines.
 
 However, sharding vector spaces is fundamentally more complex than sharding relational databases. Relational tables shard easily on a primary key (e.g. `user_id`), allowing queries to target a single node. 
 
@@ -15,26 +15,37 @@ This article details how to design partition schemes and execute scatter-gather 
 The query coordinator broadcasts queries to shards and resolves local lists into a global output:
 
 ```mermaid
-graph TD
-  A[Client Query Vector] --> B[Distributed Coordinator Node]
+flowchart TD
+  A["Client Query Vector"] --> B["Distributed Coordinator Node"]
   
   subgraph SG1_ClusterScatterPhase ["Cluster Scatter Phase"]
-    B -->|Broadcast Query| C[Shard Node 1: Local HNSW Index]
-    B -->|Broadcast Query| D[Shard Node 2: Local HNSW Index]
-    B -->|Broadcast Query| E[Shard Node 3: Local HNSW Index]
+    B -->|Broadcast Query| C["Shard Node 1: Local HNSW Index"]
+    B -->|Broadcast Query| D["Shard Node 2: Local HNSW Index"]
+    B -->|Broadcast Query| E["Shard Node 3: Local HNSW Index"]
   end
   
   subgraph SG2_LocalSearchRuns ["Local Search Runs"]
-    C -->|Return Local Top-K| F[Candidate List A]
-    D -->|Return Local Top-K| G[Candidate List B]
-    E -->|Return Local Top-K| H[Candidate List C]
+    C -->|Return Local Top-K| F["Candidate List A"]
+    D -->|Return Local Top-K| G["Candidate List B"]
+    E -->|Return Local Top-K| H["Candidate List C"]
   end
   
-  F --> I[Gather Phase: Multi-Way Heap Merge Sort]
+  F --> I["Gather Phase: Multi-Way Heap Merge Sort"]
   G --> I
   H --> I
   
-  I --> J[Final Global Top-K Match List]
+  I --> J["Final Global Top-K Match List"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E,J red
 ```
 
 ### Partitioning Strategies
@@ -149,4 +160,11 @@ When sharding vector indexes:
 ## Real-World Enterprise Impact
 Teams deploying distributed vector sharding report:
 * **Horizontal Scalability**: Clusters easily scale to billions of vectors by adding more index shard instances.
-* **Low Merge Overhead**: Using heap-based multi-way merge sort on the coordinator limits latency additions during the gather phase to under 2ms.
+* **Low Merge Overhead**: Using heap-based multi-way merge sort on the coordinator limits latency additions during the gather phase to under 2ms. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

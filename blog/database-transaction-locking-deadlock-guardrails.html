@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/database-transaction-locking-deadlock-guardrails.html">
   <meta property="og:title" content="Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations">
   <meta property="og:description" content="Enforcing database execution safety: implementing lock_timeout boundaries and transactional checks to prevent agent queries from causing deadlocks.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/database-transaction-locking-deadlock-guardrails.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-05-23">
+  <meta property="article:published_time" content="2026-05-24">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations">
   <meta name="twitter:description" content="Enforcing database execution safety: implementing lock_timeout boundaries and transactional checks to prevent agent queries from causing deadlocks.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/database-transaction-locking-deadlock-guardrails.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations",
   "description": "Enforcing database execution safety: implementing lock_timeout boundaries and transactional checks to prevent agent queries from causing deadlocks.",
   "url": "https://akmalkhaniub.github.io/blog/database-transaction-locking-deadlock-guardrails.html",
-  "datePublished": "2026-05-23",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/database-transaction-locking-deadlock-guardrails.jpg",
+  "datePublished": "2026-05-24",
   "keywords": "System Design, Database, Reliability, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/database-transaction-locking-deadlock-guardrails.jpg" class="article-cover-img" alt="Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations</h1>
             <div class="article-meta">
@@ -112,6 +113,7 @@
                 <li><a href="#2-setting-up-connection-boundaries">2. Setting up Connection Boundaries</a></li>
                 <li><a href="#code-demo-resilient-database-connection-wrapper">Code Demo: Resilient Database Connection Wrapper</a></li>
                 <li><a href="#architectural-guidelines">Architectural Guidelines</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,23 +126,34 @@ Letting autonomous agents run raw SQL commands or execute database migrations cr
 <h2 id="the-risk-of-agent-driven-sql-mutations">The Risk of Agent-Driven SQL Mutations</h2>
 <p>When an agent writes code or executes migrations:</p>
 <ul>
-<li><strong>The Infinite Scan Lock</strong>: A missing index query on a massive table locks database rows while scanning, blocking updates.</li>
+<li><strong>The Infinite Scan Lock</strong>: A missing index query on a massive table locks database rows while scanning, blocking updates <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Deadlock Escalation</strong>: Two asynchronous agents updating database rows in reverse order can block each other indefinitely, exhausting connection pools.</li>
 <li><strong>The Solution</strong>: <strong>Timeout Guardrails</strong>. We wrap all agent database connection sessions in strict timeouts. If a query holds locks beyond the threshold (e.g. <code>2 seconds</code>), the transaction aborts automatically, releasing locks.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    SQL[Agent Requests SQL Execution] --&gt; Session[Acquire Connection Session]
-    Session --&gt; Prepend[Prepend Guardrail Limits: lock_timeout &amp; statement_timeout]
+    SQL[&quot;Agent Requests SQL Execution&quot;] --&gt; Session[&quot;Acquire Connection Session&quot;]
+    Session --&gt; Prepend[&quot;Prepend Guardrail Limits: lock_timeout &amp; statement_timeout&quot;]
     
-    Prepend --&gt; RunQuery[Execute Agent Query]
+    Prepend --&gt; RunQuery[&quot;Execute Agent Query&quot;]
     RunQuery --&gt; CheckTimeout{Has Query Exceeded Timeout Limits?}
     
-    CheckTimeout --&gt;|No: Completed| Commit[Commit Transaction &amp; Release Locks]
-    CheckTimeout --&gt;|Yes: Exceeded| Abort[Abort Query: Trigger DB Rollback]
+    CheckTimeout --&gt;|No - Completed| Commit[&quot;Commit Transaction &amp; Release Locks&quot;]
+    CheckTimeout --&gt;|Yes - Exceeded| Abort[&quot;Abort Query: Trigger DB Rollback&quot;]
     
-    Abort --&gt; Release[Release Table &amp; Row Locks]
-    Release --&gt; Log[Log Trace to Audit Queue]</div>
+    Abort --&gt; Release[&quot;Release Table &amp; Row Locks&quot;]
+    Release --&gt; Log[&quot;Log Trace to Audit Queue&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class SQL,Abort blue
+class Session,Release green
+class Prepend,Log purple
+class RunQuery yellow
+class Commit red</div>
 <hr>
 <h2 id="1-under-the-hood-statement-and-lock-timeouts">1. Under the Hood: Statement and Lock Timeouts</h2>
 <p>To safeguard databases, we configure session variables:</p>
@@ -215,8 +228,19 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Enforce Connection Timeouts</strong>: Set <code>statement_timeout</code> and <code>lock_timeout</code> limits on all database sessions accessed by agent workflows.</li>
 <li><strong>Isolate Privileges</strong>: Run agent transactions using dedicated database roles with read-only permissions on sensitive schemas.</li>
-<li><strong>Wrap in Transactions</strong>: Ensure all queries run inside transaction blocks, guaranteeing automated rollbacks on timeouts.</li>
+<li><strong>Wrap in Transactions</strong>: Ensure all queries run inside transaction blocks, guaranteeing automated rollbacks on timeouts. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -253,6 +277,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-setting-up-connection-boundaries" class="toc-link">2. Setting up Connection Boundaries</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-resilient-database-connection-wrapper" class="toc-link">Code Demo: Resilient Database Connection Wrapper</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-guidelines" class="toc-link">Architectural Guidelines</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1091,13 +1116,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1166,13 +1185,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1214,13 +1227,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item active">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

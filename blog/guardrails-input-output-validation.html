@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/guardrails-input-output-validation.html">
   <meta property="og:title" content="Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk">
   <meta property="og:description" content="How to build a layered guardrails stack — prompt injection detection, PII masking, schema enforcement, and NeMo Guardrails Colang policies — to secure every message entering and exiting your LLM API.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/guardrails-input-output-validation.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-03">
+  <meta property="article:published_time" content="2026-04-04">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk">
   <meta name="twitter:description" content="How to build a layered guardrails stack — prompt injection detection, PII masking, schema enforcement, and NeMo Guardrails Colang policies — to secure every message entering and exiting your LLM API.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/guardrails-input-output-validation.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Guardrails & Input/Output Validation: Hardening LLM APIs Against Real-World Risk",
   "description": "How to build a layered guardrails stack — prompt injection detection, PII masking, schema enforcement, and NeMo Guardrails Colang policies — to secure every message entering and exiting your LLM API.",
   "url": "https://akmalkhaniub.github.io/blog/guardrails-input-output-validation.html",
-  "datePublished": "2026-04-03",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/guardrails-input-output-validation.jpg",
+  "datePublished": "2026-04-04",
   "keywords": "Security, Guardrails AI, NeMo, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/guardrails-input-output-validation.jpg" class="article-cover-img" alt="Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Guardrails &amp; Input/Output Validation: Hardening LLM APIs Against Real-World Risk</h1>
             <div class="article-meta">
@@ -113,6 +114,7 @@
                 <li><a href="#implementation-part-1-custom-guardrails-layer">Implementation Part 1: Custom Guardrails Layer</a></li>
                 <li><a href="#nemo-guardrails-colang-based-dialogue-policies">NeMo Guardrails: Colang-Based Dialogue Policies</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -133,24 +135,35 @@ Deploying an LLM API without input/output guardrails is like exposing a REST API
 <hr>
 <h2 id="the-guardrails-architecture">The Guardrails Architecture</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-flowchart LR
-    U[User Input] --&gt; IG[🛡️ Input Guard&lt;br/&gt;Injection Detection&lt;br/&gt;PII Masking&lt;br/&gt;Topic Filter]
+flowchart TD
+    U[&quot;User Input&quot;] --&gt; IG[&quot; Input Guard&lt;br/&gt;Injection Detection&lt;br/&gt;PII Masking&lt;br/&gt;Topic Filter&quot;]
     
-    IG --&gt;|BLOCKED| BR[🚫 Blocked Response&lt;br/&gt;Policy Violation Message]
-    IG --&gt;|PASSED| LLM[🧠 LLM Core&lt;br/&gt;Claude / GPT-4o]
+    IG --&gt;|BLOCKED| BR[&quot; Blocked Response&lt;br/&gt;Policy Violation Message&quot;]
+    IG --&gt;|PASSED| LLM[&quot; LLM Core&lt;br/&gt;Claude / GPT-4o&quot;]
     
-    LLM --&gt; OG[🛡️ Output Guard&lt;br/&gt;Schema Validation&lt;br/&gt;PII Scrubbing&lt;br/&gt;Toxicity Check]
+    LLM --&gt; OG[&quot; Output Guard&lt;br/&gt;Schema Validation&lt;br/&gt;PII Scrubbing&lt;br/&gt;Toxicity Check&quot;]
     
-    OG --&gt;|FAILED| RE[🔁 Retry with&lt;br/&gt;Correction Prompt]
+    OG --&gt;|FAILED| RE[&quot; Retry with&lt;br/&gt;Correction Prompt&quot;]
     RE --&gt; LLM
-    OG --&gt;|PASSED| FO[✅ Safe Response&lt;br/&gt;to User]
+    OG --&gt;|PASSED| FO[&quot; Safe Response&lt;br/&gt;to User&quot;]
 
     style IG fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style OG fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style LLM fill:#4c1d95,stroke:#a855f7,stroke-width:2px
     style BR fill:#1c1917,stroke:#78716c,stroke-width:2px
     style RE fill:#1e293b,stroke:#f59e0b,stroke-width:2px
-    style FO fill:#052e16,stroke:#10b981,stroke-width:2px</div>
+    style FO fill:#052e16,stroke:#10b981,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class U,RE blue
+class IG,FO green
+class BR purple
+class LLM yellow
+class OG red</div>
 <hr>
 <h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
@@ -354,7 +367,7 @@ class StructuredOutputGuard:
             )
 
 # ─────────────────────────────────────────────
-# 6. Composite Guardrails Pipeline
+# 6 [1]. Composite Guardrails Pipeline
 # ─────────────────────────────────────────────
 
 class GuardrailsPipeline:
@@ -534,7 +547,7 @@ async def guarded_response(user_message: str) -&gt; str:
 </ul>
 <p>In our next article, we tackle <strong>Prompt Injection Defence &amp; Red-Teaming</strong> — using Garak and custom adversarial test suites to systematically probe your LLM APIs for vulnerabilities before attackers do.</p>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Guardrails AI Documentation</strong>: <a href="https://www.guardrailsai.com/docs" target="_blank" rel="noopener">Reliable AI Outputs via Validators</a></li>
 <li><strong>NVIDIA NeMo Guardrails</strong>: <a href="https://github.com/NVIDIA/NeMo-Guardrails" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> Colang Dialogue Policy Framework</a></li>
@@ -577,6 +590,7 @@ async def guarded_response(user_message: str) -&gt; str:
               <li class="toc-item toc-h2"><a href="#implementation-part-1-custom-guardrails-layer" class="toc-link">Implementation Part 1: Custom Guardrails Layer</a></li>
               <li class="toc-item toc-h2"><a href="#nemo-guardrails-colang-based-dialogue-policies" class="toc-link">NeMo Guardrails: Colang-Based Dialogue Policies</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1415,13 +1429,7 @@ async def guarded_response(user_message: str) -&gt; str:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1490,13 +1498,7 @@ async def guarded_response(user_message: str) -&gt; str:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1538,13 +1540,7 @@ async def guarded_response(user_message: str) -&gt; str:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

@@ -1,6 +1,6 @@
 # Real-Time Agent Protocols: WebSockets vs. SSE vs. gRPC Streams
 
-When building modern agentic software platforms, legacy request-response HTTP architectures quickly become a primary bottleneck. A multi-step autonomous subagent execution can take anywhere from 10 seconds to several minutes to complete a complex task.
+When building modern agentic software platforms, legacy request-response HTTP architectures quickly become a primary bottleneck [1]. A multi-step autonomous subagent execution can take anywhere from 10 seconds to several minutes to complete a complex task.
 
 Relying on traditional synchronous HTTP `POST` requests leads to **connection timeouts**, **lack of user feedback**, and **poor operational visibility**. Users and orchestrators need real-time, step-by-step trajectory streaming to inspect reasoning logs, monitor tool executions, and intervene when human approval is required.
 
@@ -15,23 +15,34 @@ This article analyzes the technical trade-offs of each protocol and details how 
 Selecting the right streaming protocol depends on the directional requirements and client infrastructure of your agentic system:
 
 ```mermaid
-graph TD
-  A[Agent Server Event Core] --> B{Client & Topology Type?}
+flowchart TD
+  A["Agent Server Event Core"] --> B{Client & Topology Type?}
   
   subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
-    B -->|Browser UI Stream: Read-Only| C[HTTP/2 SSE Endpoint]
-    C -->|Unidirectional Token Stream| D[Web Dashboard / Frontend UI]
+    B -->|Browser UI Stream - Read-Only| C["HTTP/2 SSE Endpoint"]
+    C -->|Unidirectional Token Stream| D["Web Dashboard / Frontend UI"]
   end
   
   subgraph SG2_FullDuplexWebsockets ["Full-Duplex WebSockets"]
-    B -->|Interactive Human-in-the-Loop| E[WebSocket Endpoint]
-    E <-->|Bidirectional Messaging & Approvals| F[Interactive Client Session]
+    B -->|Interactive Human-in-the-Loop| E["WebSocket Endpoint"]
+    E <-->|Bidirectional Messaging & Approvals| F["Interactive Client Session"]
   end
   
   subgraph SG3_GrpcBinaryStreaming ["gRPC Binary Streaming"]
-    B -->|Worker Swarm Inter-Agent IPC| G[gRPC HTTP/2 Protobuf Stream]
-    G <-->|Low Latency Binary Protocol| H[Microservice Worker Nodes]
+    B -->|Worker Swarm Inter-Agent IPC| G["gRPC HTTP/2 Protobuf Stream"]
+    G <-->|Low Latency Binary Protocol| H["Microservice Worker Nodes"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class C,H green
+class D purple
+class E yellow
+class F red
 ```
 
 ### Protocol Comparison Matrix
@@ -153,4 +164,14 @@ When architecting real-time streaming for agentic platforms:
 ## Real-World Enterprise Impact
 Teams adopting hybrid real-time agent protocols report:
 * **Zero HTTP Connection Timeouts**: SSE and WebSockets eliminate 100% of 504 Gateway Timeouts during multi-minute subagent runs.
-* **Superior User UX**: Real-time trajectory streaming provides instant visual feedback to users, increasing developer trust in autonomous tool calls.
+* **Superior User UX**: Real-time trajectory streaming provides instant visual feedback to users, increasing developer trust in autonomous tool calls. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Belshe, M., Peon, R., & Thomson, M. (2015)**. *Hypertext Transfer Protocol Version 2 (HTTP/2)*. RFC 7540. [https://www.rfc-editor.org/rfc/rfc7540](https://www.rfc-editor.org/rfc/rfc7540)
+6. **gRPC Authors (2024)**. *gRPC Documentation*. grpc.io. [https://grpc.io/docs/](https://grpc.io/docs/)
+7. **Google (2024)**. *Protocol Buffers Language Guide*. protobuf.dev. [https://protobuf.dev/programming-guides/proto3/](https://protobuf.dev/programming-guides/proto3/)

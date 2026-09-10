@@ -20,19 +20,19 @@ This skill enforces a non-negotiable **3-Gate Human-in-the-Loop Protocol** ensur
 flowchart TD
   subgraph Checkpoint1 ["Gate 1: Topic & Strategic Angle Approval"]
     A["topic-proposal-verifier generates 3 Dossiers"] --> B["Present Options to User with Scores"]
-    B --> C{{"Human Decision: Select Topic or Pivot Angle"}}
+    B --> C["Human Decision: Select Topic or Pivot Angle"]
   end
 
   subgraph Checkpoint2 ["Gate 2: Visual Architecture & Narrative Outline"]
     C -->|Approved| D["deep-tech-researcher builds Vertical Flowcharts"]
     D --> E["Present Vertical Diagrams & 5-Beat Outline"]
-    E --> F{{"Human Decision: Approve Mental Model & Flow"}}
+    E --> F["Human Decision: Approve Mental Model and Flow"]
   end
 
   subgraph Checkpoint3 ["Gate 3: Pre-Deploy Release Greenlight"]
     F -->|Approved| G["Drafting, Benchmarks & Red Team Review"]
     G --> H["Present Live Preview, Benchmark Harness & Audit Report"]
-    H --> I{{"Human Decision: Final Authorization to Deploy"}}
+    H --> I["Human Decision: Final Authorization to Deploy"]
   end
 
   I -->|Approved| J["Execute Build & Push to GitHub Pages"]

@@ -9,22 +9,33 @@
 ## The Migration Lock Trap
 
 A simple schema update can take down a high-write production system:
-* **Table Locks (`AccessExclusiveLock`)**: Adding a column or modifying a data type acquires an exclusive lock on the table. If a long-running read query is active, the migration waits behind it, and all subsequent read/write requests queue up, exhausting connection pools.
+* **Table Locks (`AccessExclusiveLock`)**: Adding a column or modifying a data type acquires an exclusive lock on the table [1]. If a long-running read query is active, the migration waits behind it, and all subsequent read/write requests queue up, exhausting connection pools.
 * **Default Values**: In older databases, adding a column with a default value (e.g. `DEFAULT 'active'`) forces the engine to rewrite every table row, blocking access for minutes.
 * **The Solution**: An **Agent Migration Gate**. The agent compares application model diffs, generates SQL migration scripts, and parses each command against lock conflict checkers to ensure safe execution patterns.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Diff[Compare Application Model Schemas] --> Gen[Generate Draft SQL Migration]
-    Gen --> Parse[Scan DDL Commands for Lock Risks]
+    Diff["Compare Application Model Schemas"] --> Gen["Generate Draft SQL Migration"]
+    Gen --> Parse["Scan DDL Commands for Lock Risks"]
     
     Parse --> CheckLock{Is Lock Conflict Found?}
-    CheckLock -->|Yes: Risk Detected| Rewrite[Agent Re-writes: Use Safe Migration Pattern]
-    CheckLock -->|No: Safe| Verify[Staging Verification Check]
+    CheckLock -->|Yes - Risk Detected| Rewrite["Agent Re-writes: Use Safe Migration Pattern"]
+    CheckLock -->|No - Safe| Verify["Staging Verification Check"]
     
     Rewrite --> Verify
-    Verify -->|Pass| Commit[Export Safe Migration Script]
+    Verify -->|Pass| Commit["Export Safe Migration Script"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Diff,Commit blue
+class Gen green
+class Parse purple
+class Rewrite yellow
+class Verify red
 ```
 
 ---
@@ -121,4 +132,10 @@ if __name__ == "__main__":
 
 * **Enforce Lock Timeouts**: Always prepend `SET lock_timeout = '2s'` to all migration files to prevent blocking production database connection pools.
 * **Audit Columns with Defaults**: Never add columns with default constraints directly on active tables. Add the column as nullable first, then set the default.
-* **Isolate Index Creations**: Run index builds asynchronously using concurrent configurations, and separate them from general table structure updates.
+* **Isolate Index Creations**: Run index builds asynchronously using concurrent configurations, and separate them from general table structure updates. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

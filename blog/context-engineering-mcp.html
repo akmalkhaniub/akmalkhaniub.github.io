@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/context-engineering-mcp.html">
   <meta property="og:title" content="Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)">
   <meta property="og:description" content="An in-depth look at Context Engineering—the art of dynamically feeding clean, structured database, repo, and container data into LLM context windows using FastAPI and custom MCP servers.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/context-engineering-mcp.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-03">
+  <meta property="article:published_time" content="2026-03-04">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)">
   <meta name="twitter:description" content="An in-depth look at Context Engineering—the art of dynamically feeding clean, structured database, repo, and container data into LLM context windows using FastAPI and custom MCP servers.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/context-engineering-mcp.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)",
   "description": "An in-depth look at Context Engineering—the art of dynamically feeding clean, structured database, repo, and container data into LLM context windows using FastAPI and custom MCP servers.",
   "url": "https://akmalkhaniub.github.io/blog/context-engineering-mcp.html",
-  "datePublished": "2026-03-03",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/context-engineering-mcp.jpg",
+  "datePublished": "2026-03-04",
   "keywords": "AI Agents, MCP, FastAPI, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/context-engineering-mcp.jpg" class="article-cover-img" alt="Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP) Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)</h1>
             <div class="article-meta">
@@ -107,12 +108,14 @@
             <details class="mobile-toc">
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
+                <li><a href="#article-overview">📖 Article Overview</a></li>
                 <li><a href="#the-architecture-unified-tool-gates">The Architecture: Unified Tool Gates</a></li>
                 <li><a href="#1-defining-tools-in-python-with-fastmcp">1. Defining Tools in Python with FastMCP</a></li>
                 <li><a href="#2-preventing-prompt-injection-strict-input-gating">2. Preventing Prompt Injection: Strict Input Gating</a></li>
                 <li><a href="#3-cryptographic-keyrings-protecting-llm-context">3. Cryptographic Keyrings: Protecting LLM Context</a></li>
                 <li><a href="#key-takeaways-for-context-engineers">Key Takeaways for Context Engineers</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <blockquote>
@@ -124,7 +127,7 @@
 </ul>
 </blockquote>
 <p>In the era of Generative AI, context is the primary constraint.</p>
-<p>While Large Language Models (LLMs) are equipped with massive parametric knowledge, they are blind to real-time environments, local codebases, live production databases, and cloud infrastructure. The traditional solution has been to write custom wrapper scripts, compile text prompts, or feed entire database schemas into the context window.</p>
+<p>While Large Language Models (LLMs) are equipped with massive parametric knowledge, they are blind to real-time environments, local codebases, live production databases, and cloud infrastructure <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. The traditional solution has been to write custom wrapper scripts, compile text prompts, or feed entire database schemas into the context window.</p>
 <p>This brute-force approach leads to what engineers call the <strong>&quot;Lost in the Middle&quot;</strong> phenomenon: when an LLM is overloaded with unstructured context, its retrieval accuracy drops, token latency skyrockets, and API billing increases exponentially.</p>
 <p><strong>Context Engineering</strong> is the discipline of building secure, structured, and dynamic gates that feed LLMs exactly what they need—and nothing more—at the precise moment they need it.</p>
 <p>This article explores how to implement Context Engineering using the <strong>Model Context Protocol (MCP)</strong>, drawing architectural patterns from <a href="https://github.com/akmalkhaniub/ops-mcp-suite" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> ops-mcp-suite</a>—a collection of 6 production-grade MCP servers served via a unified FastAPI gateway.</p>
@@ -132,15 +135,26 @@
 <h2 id="the-architecture-unified-tool-gates">The Architecture: Unified Tool Gates</h2>
 <p>Instead of hardcoding APIs for your AI agents, the Model Context Protocol standardizes client-server communication. A client (such as Claude Desktop or a custom LangGraph agent) queries an MCP server to discover what resources and tools are available, executing them via a structured JSON-RPC schema.</p>
 <p>In the <code>ops-mcp-suite</code> architecture, a unified <strong>FastAPI Gateway</strong> acts as a secure proxy, routing tool calls from agent networks to specialized local and remote MCP microservices.</p>
-<div class="mermaid">graph TD
-    A[AI Agent / LLM Client] --&gt;|1. JSON-RPC Request| B[FastAPI Gateway Proxy]
-    B --&gt;|2. Route DevOps Call| C[DevOps MCP Server]
-    B --&gt;|2. Route DB Call| D[DBOps MCP Server]
-    B --&gt;|2. Route Secrets Call| E[Secrets MCP Server]
+<div class="mermaid">flowchart TD
+    A[&quot;AI Agent / LLM Client&quot;] --&gt;|JSON-RPC Request| B[&quot;FastAPI Gateway Proxy&quot;]
+    B --&gt;|Route DevOps Call| C[&quot;DevOps MCP Server&quot;]
+    B --&gt;|Route DB Call| D[&quot;DBOps MCP Server&quot;]
+    B --&gt;|Route Secrets Call| E[&quot;Secrets MCP Server&quot;]
     
     C --&gt;|Docker API| F[(Local Containers)]
     D --&gt;|SQL Alchemy| G[(PostgreSQL / MySQL)]
-    E --&gt;|Fernet Cryptography| H[(Secure Environment Keyring)]</div>
+    E --&gt;|Fernet Cryptography| H[(Secure Environment Keyring)]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class C purple
+class D yellow
+class E red</div>
 <hr>
 <h2 id="1-defining-tools-in-python-with-fastmcp">1. Defining Tools in Python with FastMCP</h2>
 <p>Building an MCP server is straightforward using modern Python toolkits like <code>FastMCP</code>. FastMCP uses Python type hints and docstrings to automatically generate the tool schemas that are sent to the LLM. The LLM reads the docstring to understand <em>when</em> and <em>how</em> to invoke the tool.</p>
@@ -247,7 +261,19 @@ def decrypt_service_key(encrypted_token: str) -&gt; str:
 <li><strong>Robust Security Gating:</strong> Critical for preventing prompt injection, Context Engineering emphasizes strict input validation, type checking, and parameterized queries, ensuring LLM interactions remain secure and controlled.</li>
 <li><strong>Secure Credential Management:</strong> MCP servers can manage sensitive credentials through cryptographic keyrings, allowing LLMs to trigger actions requiring secrets without ever exposing the raw keys to the model&#39;s context or chat history.</li>
 </ol>
-<p><em>Takeaway: By meticulously engineering the context provided to LLMs, we unlock their full potential while maintaining control, security, and efficiency.</em></p>
+<p><em>Takeaway: By meticulously engineering the context provided to LLMs, we unlock their full potential while maintaining control, security, and efficiency.</em> <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Anthropic (2025)</strong>. <em>Model Context Protocol Specification</em>. MCP Docs. <a href="https://modelcontextprotocol.io/specification" target="_blank" rel="noopener">https://modelcontextprotocol.io/specification</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>LangChain (2024)</strong>. <em>LangGraph Documentation</em>. langchain.com. <a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">https://langchain-ai.github.io/langgraph/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -279,12 +305,14 @@ def decrypt_service_key(encrypted_token: str) -&gt; str:
           <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
           <nav class="article-toc">
             <ul class="toc-list">
+              <li class="toc-item toc-h3"><a href="#article-overview" class="toc-link">📖 Article Overview</a></li>
               <li class="toc-item toc-h2"><a href="#the-architecture-unified-tool-gates" class="toc-link">The Architecture: Unified Tool Gates</a></li>
               <li class="toc-item toc-h2"><a href="#1-defining-tools-in-python-with-fastmcp" class="toc-link">1. Defining Tools in Python with FastMCP</a></li>
               <li class="toc-item toc-h2"><a href="#2-preventing-prompt-injection-strict-input-gating" class="toc-link">2. Preventing Prompt Injection: Strict Input Gating</a></li>
               <li class="toc-item toc-h2"><a href="#3-cryptographic-keyrings-protecting-llm-context" class="toc-link">3. Cryptographic Keyrings: Protecting LLM Context</a></li>
               <li class="toc-item toc-h2"><a href="#key-takeaways-for-context-engineers" class="toc-link">Key Takeaways for Context Engineers</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1123,13 +1151,7 @@ def decrypt_service_key(encrypted_token: str) -&gt; str:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1198,13 +1220,7 @@ def decrypt_service_key(encrypted_token: str) -&gt; str:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1246,13 +1262,7 @@ def decrypt_service_key(encrypted_token: str) -&gt; str:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

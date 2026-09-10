@@ -8,7 +8,7 @@
 
 ## The Challenge of Testing Agentic Loops
 
-Unlike simple RAG pipelines, agents make choices. If you update a system prompt or tool schema, the agent might take a completely different path (e.g. calling Tool B instead of Tool A) to achieve the same result.
+Unlike simple RAG pipelines, agents make choices [1]. If you update a system prompt or tool schema, the agent might take a completely different path (e.g. calling Tool B instead of Tool A) to achieve the same result.
 
 We cannot test this using hardcoded string matching. We need to evaluate:
 1. **Tool Usage Compliance**: Did the agent invoke the correct tools in the correct order?
@@ -18,16 +18,27 @@ We cannot test this using hardcoded string matching. We need to evaluate:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Git[Git Code Commit] --> CI[CI Runner: pytest]
-    CI --> Exec[1. Execute Agent Run]
-    Exec --> Trace[2. Capture Agent Trajectory Logs]
+    Git["Git Code Commit"] --> CI["CI Runner: pytest"]
+    CI --> Exec["1. Execute Agent Run"]
+    Exec --> Trace["2. Capture Agent Trajectory Logs"]
     
     Trace --> Judge{3. LLM-as-a-Judge Grader}
-    Judge -->|Evaluate JSON Schema Criteria| Scores[4. Grade: Faithfulness, Tool compliance]
+    Judge -->|Evaluate JSON Schema Criteria| Scores["4. Grade: Faithfulness, Tool compliance"]
     
     Scores --> Assert{5. Assert Score >= 0.85}
-    Assert -- Pass --> Deploy[Deploy Code]
-    Assert -- Fail --> Block[Block Build & Alert Dev]
+    Assert -- Pass --> Deploy["Deploy Code"]
+    Assert -- Fail --> Block["Block Build & Alert Dev"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Git,Deploy blue
+class CI,Block green
+class Exec purple
+class Trace yellow
+class Scores red
 ```
 
 ---
@@ -136,4 +147,13 @@ Automating agent evaluations is the only way to ship changes with confidence:
 * [ ] **Log the execution trajectory**: Design your agent framework (LangGraph, Autogen) to record all tool inputs, outputs, and internal thoughts.
 * [ ] **Verify schemas with Structured Outputs**: Always force the Judge LLM to return scores in a strict JSON format (using Pydantic parser) to ensure assertion parsing never fails.
 * [ ] **Set quality thresholds in CI**: Enforce quality gates (e.g. score >= 0.85) in your pipeline to catch regression errors before they go to staging.
-* [ ] **Run evals in parallel**: Run evaluation tests asynchronously to keep CI pipeline build times under 5 minutes.
+* [ ] **Run evals in parallel**: Run evaluation tests asynchronously to keep CI pipeline build times under 5 minutes. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+5. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+6. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

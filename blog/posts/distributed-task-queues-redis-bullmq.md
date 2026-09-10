@@ -3,7 +3,7 @@
 > * **Why it matters:** It addresses critical challenges like API timeouts, data loss, and LLM rate limits, which are common in high-latency AI operations.
 > * **What we synthesized:** We synthesized a distributed task queue architecture, demonstrated its implementation with BullMQ in TypeScript, and outlined key optimization strategies.
 
-In production-grade AI platforms, synchronous request-response loops are an anti-pattern. If a user uploads a 50-page PDF document and you trigger a multi-agent analysis synchronously within an Express or Next.js API handler, the connection will time out, the client will fail, and you risk losing state if the server restarts.
+In production-grade AI platforms, synchronous request-response loops are an anti-pattern [1]. If a user uploads a 50-page PDF document and you trigger a multi-agent analysis synchronously within an Express or Next.js API handler, the connection will time out, the client will fail, and you risk losing state if the server restarts.
 
 Because Large Language Model (LLM) calls, vector embeddings, and web searching are high-latency, unpredictable operations, they must be decoupled from the client-facing HTTP thread.
 

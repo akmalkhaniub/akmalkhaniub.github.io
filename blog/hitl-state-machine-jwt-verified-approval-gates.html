@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/hitl-state-machine-jwt-verified-approval-gates.html">
   <meta property="og:title" content="JWT-Verified Approval Callbacks: Securing Human Review Gates against Context Injection">
   <meta property="og:description" content="Securing agent pause-and-resume pipelines: building JWT-signed Webhook gateways to verify human approval triggers and prevent context injections.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/hitl-state-machine-jwt-verified-approval-gates.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-05-16">
+  <meta property="article:published_time" content="2026-05-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="JWT-Verified Approval Callbacks: Securing Human Review Gates against Context Injection">
   <meta name="twitter:description" content="Securing agent pause-and-resume pipelines: building JWT-signed Webhook gateways to verify human approval triggers and prevent context injections.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/hitl-state-machine-jwt-verified-approval-gates.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "JWT-Verified Approval Callbacks: Securing Human Review Gates against Context Injection",
   "description": "Securing agent pause-and-resume pipelines: building JWT-signed Webhook gateways to verify human approval triggers and prevent context injections.",
   "url": "https://akmalkhaniub.github.io/blog/hitl-state-machine-jwt-verified-approval-gates.html",
-  "datePublished": "2026-05-16",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/hitl-state-machine-jwt-verified-approval-gates.jpg",
+  "datePublished": "2026-05-17",
   "keywords": "Security, JWT, API Design, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/hitl-state-machine-jwt-verified-approval-gates.jpg" class="article-cover-img" alt="JWT-Verified Approval Callbacks: Securing Human Review Gates against Context Injection Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">JWT-Verified Approval Callbacks: Securing Human Review Gates against Context Injection</h1>
             <div class="article-meta">
@@ -112,6 +113,7 @@
                 <li><a href="#2-setting-up-public-key-signature-verification">2. Setting up Public-Key Signature Verification</a></li>
                 <li><a href="#code-demo-secure-jwt-callback-validator">Code Demo: Secure JWT Callback Validator</a></li>
                 <li><a href="#security-takeaways-for-technical-leads">Security Takeaways for Technical Leads</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -122,7 +124,7 @@ Resuming a suspended agent process via Webhooks introduces significant security 
 </div>
 <hr>
 <h2 id="the-callback-spoofing-threat">The Callback Spoofing Threat</h2>
-<p>When an agent pauses to await approval, it exposes a callback URL (e.g. <code>POST /api/v1/sessions/{id}/resume</code>).</p>
+<p>When an agent pauses to await approval, it exposes a callback URL (e.g. <code>POST /api/v1/sessions/{id}/resume</code>) <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>If this endpoint is unsecured:</p>
 <ul>
 <li><strong>Webhook Spoofing</strong>: An attacker can guess the session ID and trigger a resume call, bypassing the human approval gate.</li>
@@ -131,17 +133,27 @@ Resuming a suspended agent process via Webhooks introduces significant security 
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Click[Reviewer Clicks Approve in Slack] --&gt; Slack[Slack Server signs JWT payload]
-    Slack --&gt; Callback[FastAPI Gateway Webhook Received]
+    Click[&quot;Reviewer Clicks Approve in Slack&quot;] --&gt; Slack[&quot;Slack Server signs JWT payload&quot;]
+    Slack --&gt; Callback[&quot;FastAPI Gateway Webhook Received&quot;]
     
-    Callback --&gt; Decode[Decode JWT &amp; Verify Signature]
+    Callback --&gt; Decode[&quot;Decode JWT &amp; Verify Signature&quot;]
     Decode --&gt; Validate{Is JWT Signature Valid?}
     
     Validate --&gt;|No| Reject([Reject Webhook: Log Security Alert])
     Validate --&gt;|Yes| Match{Does Transaction ID match db lock?}
     
     Match --&gt;|No| Reject
-    Match --&gt;|Yes| Resume([Resume Agent Execution])</div>
+    Match --&gt;|Yes| Resume([Resume Agent Execution])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Click blue
+class Slack green
+class Callback purple
+class Decode yellow</div>
 <hr>
 <h2 id="1-structuring-the-jwt-approval-token">1. Structuring the JWT Approval Token</h2>
 <p>The token claims must specify the exact execution constraints:</p>
@@ -264,8 +276,20 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Reject Raw Webhooks</strong>: Never expose unauthenticated callback endpoints to resume agent pipelines. Enforce JWT signature verification.</li>
 <li><strong>Pin Task Hashes</strong>: Include cryptographic hashes of the agent&#39;s work payloads inside the JWT claims to block modification between pause and resume states.</li>
-<li><strong>Enforce Expiration Limits</strong>: Keep token expirations short (under 5 minutes) to prevent replay attacks on callback controllers.</li>
+<li><strong>Enforce Expiration Limits</strong>: Keep token expirations short (under 5 minutes) to prevent replay attacks on callback controllers. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Jones, M., Bradley, J., &amp; Sakimura, N. (2015)</strong>. <em>JSON Web Token (JWT)</em>. RFC 7519. <a href="https://www.rfc-editor.org/rfc/rfc7519" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7519</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Hardt, D., Ed. (2012)</strong>. <em>The OAuth 2.0 Authorization Framework</em>. RFC 6749. <a href="https://www.rfc-editor.org/rfc/rfc6749" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc6749</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -302,6 +326,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-setting-up-public-key-signature-verification" class="toc-link">2. Setting up Public-Key Signature Verification</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-secure-jwt-callback-validator" class="toc-link">Code Demo: Secure JWT Callback Validator</a></li>
               <li class="toc-item toc-h2"><a href="#security-takeaways-for-technical-leads" class="toc-link">Security Takeaways for Technical Leads</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1140,13 +1165,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1215,13 +1234,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1263,13 +1276,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

@@ -1,6 +1,6 @@
 # Multi-Cloud Object Storage Tiering: Zero-Downtime Migration, Lifecycle Rules & S3 Select Filtering
 
-In enterprise cloud infrastructure (**AWS**, **Google Cloud**, **Cloudflare R2**, **MinIO**), datasets grow exponentially year over year.
+In enterprise cloud infrastructure (**AWS**, **Google Cloud**, **Cloudflare R2**, **MinIO**), datasets grow exponentially year over year [1].
 
 Storing petabytes of historical logs, compliance backups, and analytical datalakes entirely in **Hot Storage** (e.g. AWS S3 Standard at $\$23/\text{TB/month}$) creates massive cloud financial waste. Furthermore, cloud vendor egress fees lock enterprise data inside single proprietary platforms.
 
@@ -17,18 +17,29 @@ This article details storage class economics, automated lifecycle transition sta
 How automated lifecycle policies transition objects across storage tiers and how dual-write proxies migrate data across cloud providers without downtime:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_AutomatedStorageClass ["Automated Storage Class Lifecycle State Machine"]
-    Hot["🔥 Hot Tier (S3 Standard): $23/TB/mo (0s latency)"] -->|1. Age > 30 Days| Cool["🧊 Cool Tier (S3 Standard-IA): $12.50/TB/mo"]
-    Cool -->|2. Age > 90 Days| Cold["❄️ Cold Archive (S3 Glacier): $4/TB/mo"]
-    Cold -->|3. Age > 365 Days| DeepArchive["🌌 Deep Archive: $0.99/TB/mo (12h retrieval)"]
+    Hot[" Hot Tier (S3 Standard): $23/TB/mo (0s latency)"] -->|Age > 30 Days| Cool[" Cool Tier (S3 Standard-IA): $12.50/TB/mo"]
+    Cool -->|Age > 90 Days| Cold[" Cold Archive (S3 Glacier): $4/TB/mo"]
+    Cold -->|Age > 365 Days| DeepArchive[" Deep Archive: $0.99/TB/mo (12h retrieval)"]
   end
   
   subgraph SG2_MultiCloudZero ["Multi-Cloud Zero-Downtime Migration Proxy"]
-    App[Application Request] --> Proxy[Multi-Cloud Proxy Router]
-    Proxy -->|1. Read from New Target (Cloudflare R2)| TargetStore[Cloudflare R2 / MinIO (Zero Egress!)]
-    TargetStore -.->|2. Fallback Miss: Fetch & Replicate| SourceStore[AWS S3 Source Bucket]
+    App["Application Request"] --> Proxy["Multi-Cloud Proxy Router"]
+    Proxy -->|Read from New Target (Cloudflare R2)| TargetStore["Cloudflare R2 / MinIO (Zero Egress!)"]
+    TargetStore -.->|Fallback Miss - Fetch & Replicate| SourceStore["AWS S3 Source Bucket"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Hot,Proxy blue
+class Cool,TargetStore green
+class Cold,SourceStore purple
+class DeepArchive yellow
+class App red
 ```
 
 ### Core Object Storage Tiering Concepts
@@ -160,4 +171,10 @@ When engineering object storage tiering:
 ## Real-World Enterprise Impact
 Multi-cloud tiering and S3 Select infrastructure (such as **Netflix S3 Lifecycle**, **Cloudflare R2**, and **MinIO Multi-Cloud**) report:
 * **Over $80\%$ Reduction in Monthly Cloud Storage Bills**: Automatically moving 90-day-old logs to Glacier Deep Archive slashes cloud infrastructure costs.
-* **Over $95\%$ Bandwidth Savings via S3 Select**: Filtering large CSV/Parquet files directly on storage nodes returns only matching rows over the network, drastically accelerating analytics query speeds.
+* **Over $95\%$ Bandwidth Savings via S3 Select**: Filtering large CSV/Parquet files directly on storage nodes returns only matching rows over the network, drastically accelerating analytics query speeds. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/b-tree-index-internals-page-splitting-latch-crabbing.html">
   <meta property="og:title" content="B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification">
   <meta property="og:description" content="Disk-oriented indexing mechanics: implementing B+Tree slotted-page layouts, 50/50 page splitting, Latch Crabbing lock coupling for concurrent tree traversal, and write amplification mitigation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/b-tree-index-internals-page-splitting-latch-crabbing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification">
   <meta name="twitter:description" content="Disk-oriented indexing mechanics: implementing B+Tree slotted-page layouts, 50/50 page splitting, Latch Crabbing lock coupling for concurrent tree traversal, and write amplification mitigation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/b-tree-index-internals-page-splitting-latch-crabbing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing & Write Amplification",
   "description": "Disk-oriented indexing mechanics: implementing B+Tree slotted-page layouts, 50/50 page splitting, Latch Crabbing lock coupling for concurrent tree traversal, and write amplification mitigation.",
   "url": "https://akmalkhaniub.github.io/blog/b-tree-index-internals-page-splitting-latch-crabbing.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/b-tree-index-internals-page-splitting-latch-crabbing.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "B-Tree, Indexing, Slotted Page, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/b-tree-index-internals-page-splitting-latch-crabbing.jpg" class="article-cover-img" alt="B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">B-Tree Index Internals: B+Trees, Page Splitting, Latch Crabbing &amp; Write Amplification</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#btree-page-layout-latch-crabbing-architecture">B+Tree Page Layout &amp; Latch Crabbing Architecture</a></li>
+                <li><a href="#core-btree-mechanics">Core B+Tree Mechanics</a></li>
                 <li><a href="#python-implementation-slotted-page-btree-latch-crabbing-engine">Python Implementation: Slotted-Page B+Tree &amp; Latch Crabbing Engine</a></li>
                 <li><a href="#btree-storage-gotchas-best-practices">B+Tree Storage Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In relational storage engines (<strong>PostgreSQL btree</strong>, <strong>MySQL InnoDB</strong>, <strong>SQLite</strong>, <strong>Oracle</strong>), <strong>B+Trees</strong> are the foundational data structure driving primary keys and secondary indexes.</p>
+<p>In relational storage engines (<strong>PostgreSQL btree</strong>, <strong>MySQL InnoDB</strong>, <strong>SQLite</strong>, <strong>Oracle</strong>), <strong>B+Trees</strong> are the foundational data structure driving primary keys and secondary indexes <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Unlike standard in-memory binary search trees (AVL, Red-Black), B+Trees are specifically engineered for <strong>block-oriented disk and NVMe storage</strong>.</p>
 <p>With a high branching factor $B$ (typically hundreds of keys per $8\text{ KB}$ page), a B+Tree can index billions of rows with a tree height of only $3$ or $4$ disk seeks.</p>
 <p>However, supporting concurrent read/write transactions at high throughput requires managing complex physical page layouts (<strong>Slotted-Page Architecture</strong>), handling <strong>Page Splitting</strong>, and preventing concurrency deadlocks via <strong>Latch Crabbing (Lock Coupling)</strong>.</p>
@@ -121,20 +124,31 @@
 <hr>
 <h2 id="btree-page-layout-latch-crabbing-architecture">B+Tree Page Layout &amp; Latch Crabbing Architecture</h2>
 <p>How Slotted-Page layouts organize tuples inside $8\text{ KB}$ disk blocks and how Latch Crabbing lock coupling navigates concurrent trees:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_SlottedPageDisk [&quot;Slotted-Page Disk Block Layout (8 KB Fixed Size)&quot;]
-    Header[Page Header: LSN, Slot Count, Free Space Pointer] --&gt; SlotArray[Slot Array: Slot 0 Offset, Slot 1 Offset...]
-    SlotArray --&gt; FreeSpace[&lt;-- Free Space Gap --&gt;]
-    FreeSpace --&gt; TupleData[Tuple 1 Data | Tuple 0 Data (Grows Backwards)]
+    Header[&quot;Page Header: LSN, Slot Count, Free Space Pointer&quot;] --&gt; SlotArray[&quot;Slot Array: Slot 0 Offset, Slot 1 Offset...&quot;]
+    SlotArray --&gt; FreeSpace[&quot;&lt;-- Free Space Gap --&gt;&quot;]
+    FreeSpace --&gt; TupleData[&quot;Tuple 1 Data | Tuple 0 Data (Grows Backwards)&quot;]
   end
   
   subgraph SG2_LatchCrabbingConcurrency [&quot;Latch Crabbing Concurrency Protocol (Lock Coupling)&quot;]
-    ReadOp[Read Request: Key = 42] --&gt;|1. Acquire Read Latch| Root[Root Node Page 0]
-    Root --&gt;|2. Read Child Page P1 Pointer| Child[Internal Node Page P1]
-    Child --&gt;|3. Acquire Read Latch on P1 FIRST| ChildLatch[Child Latch Held]
-    ChildLatch --&gt;|4. Safe! Release Read Latch on Root| ReleaseRoot[Release Parent Latch]
-    ReleaseRoot --&gt;|5. Traverse to Leaf Page| Leaf[Leaf Page P9: Return Value]
-  end</div>
+    ReadOp[&quot;Read Request: Key = 42&quot;] --&gt;|Acquire Read Latch| Root[&quot;Root Node Page 0&quot;]
+    Root --&gt;|Read Child Page P1 Pointer| Child[&quot;Internal Node Page P1&quot;]
+    Child --&gt;|Acquire Read Latch on P1 FIRST| ChildLatch[&quot;Child Latch Held&quot;]
+    ChildLatch --&gt;|Safe! Release Read Latch on Root| ReleaseRoot[&quot;Release Parent Latch&quot;]
+    ReleaseRoot --&gt;|Traverse to Leaf Page| Leaf[&quot;Leaf Page P9: Return Value&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Header,Root blue
+class SlotArray,Child green
+class FreeSpace,ChildLatch purple
+class TupleData,ReleaseRoot yellow
+class ReadOp,Leaf red</div>
 <h3 id="core-btree-mechanics">Core B+Tree Mechanics</h3>
 <ol>
 <li><strong>B+Tree vs Classic B-Tree Structural Difference</strong>:<ul>
@@ -294,8 +308,17 @@ if __name__ == &quot;__main__&quot;:
 <p>Storage engines deploying B+Tree slotted pages and latch crabbing (such as <strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, and <strong>SQLite</strong>) report:</p>
 <ul>
 <li><strong>$O(\log_B N)$ Lightning-Fast Point Lookups</strong>: Reading keys from a billion-row table in under $4$ physical disk block seeks.</li>
-<li><strong>Deadlock-Free Concurrent Index Operations</strong>: Latch crabbing lock coupling enables thousands of concurrent threads to traverse and modify index pages simultaneously.</li>
+<li><strong>Deadlock-Free Concurrent Index Operations</strong>: Latch crabbing lock coupling enables thousands of concurrent threads to traverse and modify index pages simultaneously. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Bayer, R., &amp; McCreight, E. (1972)</strong>. <em>Organization and Maintenance of Large Ordered Indexes</em>. Acta Informatica. <a href="https://doi.org/10.1007/BF00288683" target="_blank" rel="noopener">https://doi.org/10.1007/BF00288683</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Reed, D. P. (1978)</strong>. <em>Naming and Synchronization in a Decentralized Computer System</em>. MIT PhD Thesis. <a href="https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf" target="_blank" rel="noopener">https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -328,9 +351,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#btree-page-layout-latch-crabbing-architecture" class="toc-link">B+Tree Page Layout &amp; Latch Crabbing Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-btree-mechanics" class="toc-link">Core B+Tree Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-slotted-page-btree-latch-crabbing-engine" class="toc-link">Python Implementation: Slotted-Page B+Tree &amp; Latch Crabbing Engine</a></li>
               <li class="toc-item toc-h2"><a href="#btree-storage-gotchas-best-practices" class="toc-link">B+Tree Storage Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1169,13 +1194,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1244,13 +1263,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1292,13 +1305,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

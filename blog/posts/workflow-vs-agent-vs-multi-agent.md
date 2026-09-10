@@ -3,7 +3,7 @@
 > * **Why it matters:** Failing to choose the correct architecture leads to over-engineered, slow, expensive, and difficult-to-verify AI systems.
 > * **What we synthesized:** We synthesized a decision matrix and architectural guardrails to help developers select the most efficient and predictable design pattern for their tasks.
 
-In the rush to adopt generative artificial intelligence, vocabulary has been the first casualty. Marketing decks call simple API wrappers "agents," and developers refer to basic loops as "multi-agent networks." 
+In the rush to adopt generative artificial intelligence, vocabulary has been the first casualty [1]. Marketing decks call simple API wrappers "agents," and developers refer to basic loops as "multi-agent networks." 
 
 This lack of terminological precision isn't just a semantic issue; it is a design hazard. When developers fail to distinguish between workflows, agents, and multi-agent systems, they build architectures that are over-engineered, slow, expensive, and difficult to verify.
 
@@ -16,34 +16,45 @@ To design production-grade systems, we must map our tasks against a clear **Spec
 To build reliable systems, we must choose the right architectural pattern based on the complexity and predictability of the target workflow.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_Workflow1Deterministic ["Workflow [1. Deterministic / LLM Workflow]"]
-        W_Start[Input] --> W_Step1[Step A: Prompt]
-        W_Step1 --> W_Step2[Step B: Code Logic]
-        W_Step2 --> W_Step3[Step C: Prompt]
-        W_Step3 --> W_Out[Predictable Output]
+        W_Start["Input"] --> W_Step1["Step A: Prompt"]
+        W_Step1 --> W_Step2["Step B: Code Logic"]
+        W_Step2 --> W_Step3["Step C: Prompt"]
+        W_Step3 --> W_Out["Predictable Output"]
     end
 
     subgraph SG2_Agent2Single ["Agent [2. Single Agent Loop]"]
-        A_Start[Input] --> A_Loop{ReAct Loop}
-        A_Loop -->|Decide Tool| A_Tool[Call API / Tool]
+        A_Start["Input"] --> A_Loop{ReAct Loop}
+        A_Loop -->|Decide Tool| A_Tool["Call API / Tool"]
         A_Tool -->|Observe Result| A_Loop
-        A_Loop -->|Task Finished| A_Out[Output]
+        A_Loop -->|Task Finished| A_Out["Output"]
     end
 
     subgraph SG3_Mas3Multi ["MAS [3. Multi-Agent System]"]
-        M_Start[Input] --> M_Orch[Orchestrator Agent]
-        M_Orch -->|Delegates| M_W1[Worker Agent A]
-        M_Orch -->|Delegates| M_W2[Worker Agent B]
-        M_W1 --> M_Val[Validator Agent]
+        M_Start["Input"] --> M_Orch["Orchestrator Agent"]
+        M_Orch -->|Delegates| M_W1["Worker Agent A"]
+        M_Orch -->|Delegates| M_W2["Worker Agent B"]
+        M_W1 --> M_Val["Validator Agent"]
         M_W2 --> M_Val
-        M_Val -->|Approved| M_Out[Final Output]
+        M_Val -->|Approved| M_Out["Final Output"]
         M_Val -->|Rejected| M_Orch
     end
 
     style Workflow fill:#f8fafc,stroke:#cbd5e1,stroke-width:2px
     style Agent fill:#f0f9ff,stroke:#0ea5e9,stroke-width:2px
     style MAS fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class W_Start,A_Start,M_W1 blue
+class W_Step1,A_Tool,M_W2 green
+class W_Step2,A_Out,M_Val purple
+class W_Step3,M_Start,M_Out yellow
+class W_Out,M_Orch red
 ```
 
 ### 1. LLM Workflows (Structured Pipelines)

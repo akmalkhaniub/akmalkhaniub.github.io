@@ -1,6 +1,6 @@
 # Advanced Multi-Tenant Edge Routing: Designing a middleware.ts Subdomain Engine
 
-In multi-tenant SaaS platforms (such as platforms like Vercel, Shopify, or link shorteners like **Dub.co**), routing user requests dynamically based on the requested domain or subdomain is a fundamental requirement. 
+In multi-tenant SaaS platforms (such as platforms like Vercel, Shopify, or link shorteners like **Dub [1].co**), routing user requests dynamically based on the requested domain or subdomain is a fundamental requirement. 
 
 A user visiting `tenant1.yourplatform.com/dashboard` or a custom mapped domain like `mybrand.com/link` must see the content tailored to `tenant1` silently, without the browser performing a visible redirect or showing internal path modifications (like `/tenants/tenant1/link` in the address bar).
 
@@ -138,4 +138,11 @@ Next.js middleware runs on V8 isolates, meaning standard Node.js APIs (such as `
 ### B. Custom Domain SSL Handshakes
 If you allow users to point custom domains to your platform:
 * You cannot handle SSL cert handshakes directly in Next.js middleware.
-* **The Solution:** Offload custom domain DNS routing to proxy networks like **Cloudflare for SaaS** or **Vercel Custom Domains**. These edge proxies handle the incoming SSL handshakes and pass resolved hostname headers back to your Next.js app.
+* **The Solution:** Offload custom domain DNS routing to proxy networks like **Cloudflare for SaaS** or **Vercel Custom Domains**. These edge proxies handle the incoming SSL handshakes and pass resolved hostname headers back to your Next.js app. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

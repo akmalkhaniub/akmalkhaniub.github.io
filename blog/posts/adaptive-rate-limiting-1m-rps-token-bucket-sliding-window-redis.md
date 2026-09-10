@@ -1,4 +1,4 @@
-When an API gateway processes one million requests per second, the math of distributed state becomes unforgiving.
+When an API gateway processes one million requests per second, the math of distributed state becomes unforgiving [1].
 
 Consider what happens if you implement a classic, naive rate limiter. Every incoming HTTP connection reaches an edge proxy; the edge proxy extracts an API token, serializes a command, and sends an atomic `INCR` or `ZADD` to a centralized Redis cluster.
 
@@ -9,10 +9,10 @@ Now consider the opposite extreme: enforce rate limits entirely in local proxy m
 Solving rate limiting at one million requests per second requires **Hierarchical Adaptive Rate Limiting**: decoupling local microsecond validation from asynchronous global quota reconciliation.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_HierarchicalAdaptiveRate ["Hierarchical Adaptive Rate Limiting at Scale"]
-    Traffic[1,000,000 Inbound RPS] --> Proxy1[Edge Proxy Node A]
-    Traffic --> Proxy2[Edge Proxy Node B]
+    Traffic["1,000,000 Inbound RPS"] --> Proxy1["Edge Proxy Node A"]
+    Traffic --> Proxy2["Edge Proxy Node B"]
     
     subgraph SG2_Tier1Local ["Tier 1: Local In-Memory Fast Path"]
       Proxy1 --> Bucket1["Local Memory Token Bucket (Zero Network Latency)"]
@@ -26,6 +26,17 @@ graph TD
     Bucket1 -->|Quota Depleted| Reject429["HTTP 429 Too Many Requests (Retry-After)"]
     Bucket1 -->|Permitted| Upstream["Downstream Services"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Traffic,Reject429 blue
+class Proxy1,Upstream green
+class Proxy2 purple
+class Bucket1 yellow
+class Bucket2 red
 ```
 
 ---
@@ -127,16 +138,26 @@ Production systems enforce **AWS Full Jitter Backoff**, which decorrelates retry
 $$\text{Sleep Time} = \text{random}\Big(0, \; \min(\text{MaxSleep}, \; \text{BaseSleep} \times 2^{\text{attempt}})\Big)$$
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG4_RegularExponentialBackoff ["Regular Exponential Backoff vs Full Jitter Backoff"]
     subgraph SG5_1RegularExponential ["1. Regular Exponential Backoff (Thundering Herd)"]
-      F1[10,000 Concurrent 429 Failures] -->|All Sleep Exactly 4.0s| Spike["Spike: 10,000 Retries at t=4.0s (System Meltdown)"]
+      F1["10,000 Concurrent 429 Failures"] -->|All Sleep Exactly 4.0s| Spike["Spike: 10,000 Retries at t=4.0s (System Meltdown)"]
     end
 
     subgraph SG6_2FullJitter ["2. Full Jitter Exponential Backoff (Decorrelated)"]
-      F2[10,000 Concurrent 429 Failures] -->|Sleep Uniform Random 0..4.0s| Smooth["Smooth: Retries distributed evenly across 4000ms"]
+      F2["10,000 Concurrent 429 Failures"] -->|Sleep Uniform Random 0..4.0s| Smooth["Smooth: Retries distributed evenly across 4000ms"]
     end
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class F1 blue
+class Spike green
+class F2 purple
+class Smooth yellow
 ```
 
 ---
@@ -245,4 +266,13 @@ if __name__ == "__main__":
 
 Rate limiting at scale is fundamentally about **failure domains and latency physics**.
 
-If rate-limiting decisions require synchronous network hops across the datacenter, your rate limiter will inevitably collapse your service during the exact traffic spikes it was designed to absorb. By validating traffic in local proxy memory and synchronizing state through asynchronous batch reconciliation, systems engineers build architectures that remain rock solid under millions of requests per second.
+If rate-limiting decisions require synchronous network hops across the datacenter, your rate limiter will inevitably collapse your service during the exact traffic spikes it was designed to absorb. By validating traffic in local proxy memory and synchronizing state through asynchronous batch reconciliation, systems engineers build architectures that remain rock solid under millions of requests per second. [2]
+
+## References & Further Reading
+
+1. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+2. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+3. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

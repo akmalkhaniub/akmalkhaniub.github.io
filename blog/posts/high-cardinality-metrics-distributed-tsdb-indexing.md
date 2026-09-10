@@ -1,7 +1,7 @@
 # High-Cardinality Metrics & Distributed TSDB Indexing
 
 In modern cloud-native platforms monitoring microservices (using **Prometheus**, **Thanos**, **M3DB**, or **VictoriaMetrics**), time series data streams are defined as key-value metric labels:
-`http_requests_total{service="payment", status="500", user_id="89123"}`.
+`http_requests_total{service="payment", status="500", user_id="89123"}` [1].
 
 While metric labels enable flexible querying, adding high-cardinality labels (such as `user_id`, `order_id`, or container `instance_id`) creates **High-Cardinality Explosion**.
 
@@ -18,21 +18,32 @@ This article explores high-cardinality TSDB indexing and Gorilla float compressi
 How Time Series Databases compress metrics and index label combinations:
 
 ```mermaid
-graph TD
-  MetricStream["Metric Stream: http_requests_total{service='payment', status='500'}"] --> LabelIdx[TSDB Inverted Label Index]
+flowchart TD
+  MetricStream["Metric Stream: http_requests_total{service='payment', status='500'}"] --> LabelIdx["TSDB Inverted Label Index"]
   
   subgraph SG1_InvertedIndexLabel ["Inverted Index Label Lookup"]
     LabelIdx -->|Map 'service=payment'| SeriesList["Series ID Set: [Series #101, Series #102]"]
   end
   
   subgraph SG2_TimeSeriesChunk ["Time Series Chunk Compressor (2-Hour Head Block)"]
-    SeriesList --> HeadChunk[2-Hour Head Chunk Memory Buffer]
+    SeriesList --> HeadChunk["2-Hour Head Chunk Memory Buffer"]
     
-    HeadChunk -->|1. Double-Delta Timestamp Encoding| Timestamps[Timestamps: 1-bit / 7-bit deltas]
-    HeadChunk -->|2. XOR Bitwise Value Compression| GorillaVal[Gorilla XOR Float Compression]
+    HeadChunk -->|Double-Delta Timestamp Encoding| Timestamps["Timestamps: 1-bit / 7-bit deltas"]
+    HeadChunk -->|XOR Bitwise Value Compression| GorillaVal["Gorilla XOR Float Compression"]
   end
   
-  GorillaVal -->|3. Compressed Block (1.37 bytes / sample)| BlockFile[(Immutable TSDB Block File on Disk)]
+  GorillaVal -->|Compressed Block (1.37 bytes / sample)| BlockFile[(Immutable TSDB Block File on Disk)]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class MetricStream,GorillaVal blue
+class LabelIdx green
+class SeriesList purple
+class HeadChunk yellow
+class Timestamps red
 ```
 
 ### Core TSDB Compression & Indexing Mechanics
@@ -167,4 +178,10 @@ When designing metrics infrastructure:
 ## Real-World Enterprise Impact
 Platforms implementing Gorilla XOR TSDB compression report:
 * **Over 85% Disk Storage Savings**: Compressing float64 metrics down to $1.37$ bytes per sample allows storing petabytes of telemetry at low cost.
-* **$10\times$ Faster Metric Graphing**: Compact compressed blocks fit directly into CPU L3 memory caches, executing PromQL queries across millions of series in under $50\text{ms}$.
+* **$10\times$ Faster Metric Graphing**: Compact compressed blocks fit directly into CPU L3 memory caches, executing PromQL queries across millions of series in under $50\text{ms}$. [2]
+
+## References & Further Reading
+
+1. **Pelkonen, T., et al. (2015)**. *Gorilla: A Fast, Scalable, In-Memory Time Series Database*. VLDB. [https://www.vldb.org/pvldb/vol8/p1816-teller.pdf](https://www.vldb.org/pvldb/vol8/p1816-teller.pdf)
+2. **Prometheus Authors (2024)**. *Prometheus Documentation*. CNCF. [https://prometheus.io/docs/introduction/overview/](https://prometheus.io/docs/introduction/overview/)
+3. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)

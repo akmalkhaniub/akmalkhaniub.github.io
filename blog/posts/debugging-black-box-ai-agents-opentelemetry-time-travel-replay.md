@@ -1,6 +1,6 @@
 # Debugging the Black Box: How to Trace, Profile, and Replay Broken Agent Runs with OpenTelemetry & Time-Travel Debugging
 
-In traditional software engineering, debugging a crash is straightforward: you reproduce the issue with deterministic inputs, set a breakpoint in your IDE, inspect the stack frame, and step through the code line by line.
+In traditional software engineering, debugging a crash is straightforward: you reproduce the issue with deterministic inputs, set a breakpoint in your IDE, inspect the stack frame, and step through the code line by line [1].
 
 In autonomous multi-agent engineering (**Agent Fleet Orchestrator**, **LangGraph**, **Devin**, **Claude Engineer**), traditional debugging breaks down completely:
 * An agent runs for 18 steps across 5 tools over 12 minutes, then silently fails on Step 15 by corrupting a configuration file.
@@ -12,10 +12,10 @@ Debugging production AI agent swarms requires treating agent trajectories as **d
 By combining **OpenTelemetry distributed tracing**, **Context Window Flame Graphs**, and **Time-Travel Trajectory Replay**, engineering teams can inspect, profile, and replay complex multi-agent failures deterministically without spending a single cent on redundant LLM API calls.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ProductionAgentObservability ["Production Agent Observability Pipeline"]
-    AgentCore[Agent Execution Core] --> OTel[OpenTelemetry Span Collector]
-    AgentCore --> Recorder[Deterministic Trajectory Recorder]
+    AgentCore["Agent Execution Core"] --> OTel["OpenTelemetry Span Collector"]
+    AgentCore --> Recorder["Deterministic Trajectory Recorder"]
     
     subgraph SG2_ObservabilityBackends ["Observability Backends"]
       OTel --> Traces["1. Distributed Traces (Jaeger / Datadog / Langfuse)"]
@@ -23,8 +23,19 @@ graph TD
       Recorder --> ReplayBuffer["3. Time-Travel Replay Buffer (Offline Deterministic Stepping)"]
     end
     
-    ReplayBuffer --> OfflineDebugger[Zero-Cost IDE Breakpoint & Prompt Testing]
+    ReplayBuffer --> OfflineDebugger["Zero-Cost IDE Breakpoint & Prompt Testing"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class AgentCore,ReplayBuffer blue
+class OTel,OfflineDebugger green
+class Recorder purple
+class Traces yellow
+class FlameGraphs red
 ```
 
 ---
@@ -229,4 +240,13 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 You cannot optimize or debug what you cannot observe.
 
-By instrumenting agent swarms with **OpenTelemetry spans**, **Context Flame Graphs**, and **Event-Sourced Time-Travel Replay**, engineering teams illuminate the AI black box—turning chaotic, unpredictable agent runs into transparent, reproducible, and verifiable distributed systems.
+By instrumenting agent swarms with **OpenTelemetry spans**, **Context Flame Graphs**, and **Event-Sourced Time-Travel Replay**, engineering teams illuminate the AI black box—turning chaotic, unpredictable agent runs into transparent, reproducible, and verifiable distributed systems. [2]
+
+## References & Further Reading
+
+1. **W3C Distributed Tracing Working Group (2021)**. *Trace Context*. W3C Recommendation. [https://www.w3.org/TR/trace-context/](https://www.w3.org/TR/trace-context/)
+2. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+3. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

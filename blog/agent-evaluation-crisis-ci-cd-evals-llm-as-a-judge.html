@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/agent-evaluation-crisis-ci-cd-evals-llm-as-a-judge.html">
   <meta property="og:title" content="The Agent Evaluation Crisis: How to Build Evals That Actually Catch Regressions in CI/CD">
   <meta property="og:description" content="Why traditional unit tests fail on stochastic agents: building a 3-tier evaluation pyramid combining deterministic AST invariants, trajectory assertion graphs, and calibrated LLM-as-a-Judge rubrics for CI/CD pipelines.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agent-evaluation-crisis-ci-cd-evals-llm-as-a-judge.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-30">
+  <meta property="article:published_time" content="2026-08-31">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="The Agent Evaluation Crisis: How to Build Evals That Actually Catch Regressions in CI/CD">
   <meta name="twitter:description" content="Why traditional unit tests fail on stochastic agents: building a 3-tier evaluation pyramid combining deterministic AST invariants, trajectory assertion graphs, and calibrated LLM-as-a-Judge rubrics for CI/CD pipelines.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/agent-evaluation-crisis-ci-cd-evals-llm-as-a-judge.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "The Agent Evaluation Crisis: How to Build Evals That Actually Catch Regressions in CI/CD",
   "description": "Why traditional unit tests fail on stochastic agents: building a 3-tier evaluation pyramid combining deterministic AST invariants, trajectory assertion graphs, and calibrated LLM-as-a-Judge rubrics for CI/CD pipelines.",
   "url": "https://akmalkhaniub.github.io/blog/agent-evaluation-crisis-ci-cd-evals-llm-as-a-judge.html",
-  "datePublished": "2026-08-30",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/agent-evaluation-crisis-ci-cd-evals-llm-as-a-judge.jpg",
+  "datePublished": "2026-08-31",
   "keywords": "AI Agents, LLM Evals, CI/CD, Testing, LLM-as-a-Judge, Software Engineering",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="The Agent Evaluation Crisis: How to Build Evals That Actually Catch Regressions in CI/CD Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/agent-evaluation-crisis-ci-cd-evals-llm-as-a-judge.jpg" class="article-cover-img" alt="The Agent Evaluation Crisis: How to Build Evals That Actually Catch Regressions in CI/CD Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">The Agent Evaluation Crisis: How to Build Evals That Actually Catch Regressions in CI/CD</h1>
             <div class="article-meta">
@@ -108,13 +109,19 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-why-traditional-unit-tests-fail-on-ai-agents">1. Why Traditional Unit Tests Fail on AI Agents</a></li>
+                <li><a href="#the-3-core-breakdown-modes-of-llm-testing">The 3 Core Breakdown Modes of LLM Testing:</a></li>
                 <li><a href="#2-the-3-tier-agent-evaluation-framework">2. The 3-Tier Agent Evaluation Framework</a></li>
+                <li><a href="#tier-1-deterministic-symbolic-invariants-fast-objective">Tier 1: Deterministic Symbolic Invariants (Fast &amp; Objective)</a></li>
+                <li><a href="#tier-2-trajectory-assertion-graphs-evaluating-the-path-taken">Tier 2: Trajectory Assertion Graphs (Evaluating the Path Taken)</a></li>
+                <li><a href="#trajectory-assertion-examples">Trajectory Assertion Examples:</a></li>
+                <li><a href="#tier-3-calibrated-llm-as-a-judge-with-multi-point-rubrics">Tier 3: Calibrated LLM-as-a-Judge with Multi-Point Rubrics</a></li>
                 <li><a href="#python-implementation-complete-cicd-agent-evaluation-harness">Python Implementation: Complete CI/CD Agent Evaluation Harness</a></li>
                 <li><a href="#summary-traditional-cicd-vs-agent-cicd-evals">Summary: Traditional CI/CD vs Agent CI/CD Evals</a></li>
                 <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In modern continuous integration and delivery (CI/CD) pipelines, automated unit and integration tests are the ultimate safety net.</p>
+<p>In modern continuous integration and delivery (CI/CD) pipelines, automated unit and integration tests are the ultimate safety net <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>You write deterministic assertions (<code>assert response.status_code == 200</code>), run <code>pytest</code> or <code>jest</code>, and if all tests pass, the pull request merges safely to <code>main</code>.</p>
 <p>When engineering autonomous AI agent systems (<strong>Agent Fleet Orchestrator</strong>, <strong>SpecForge</strong>, <strong>LangGraph</strong>, <strong>Devin</strong>), traditional testing fails completely:</p>
 <ul>
@@ -123,20 +130,31 @@
 <li>Teams either suffer from <strong>$100%$ flaky test suites</strong> or stop running CI/CD evals altogether, shipping prompt changes blindly.</li>
 </ul>
 <p>Solving the <strong>Agent Evaluation Crisis</strong> requires establishing a modern <strong>Three-Tier Evaluation Pyramid</strong>: combining <strong>Deterministic Symbolic Assertions</strong>, <strong>Trajectory State Graphs</strong>, and <strong>Calibrated LLM-as-a-Judge Rubrics</strong>.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_The3Tier [&quot;The 3-Tier Agent Evaluation Pyramid&quot;]
     Tier1[&quot;Tier 1: Deterministic Symbolic Invariants (AST Parsing, Type Checks, Linters, 10ms)&quot;]
     Tier2[&quot;Tier 2: Trajectory Assertion Graphs (Tool Call Sequence DAG Validation, 50ms)&quot;]
     Tier3[&quot;Tier 3: Calibrated LLM-as-a-Judge (Multi-Point Rubrics &amp; Semantic Scoring, 1-2s)&quot;]
   end
   
-  PR[Pull Request: Prompt / Skill Change] --&gt; BenchmarkDataset[Golden Benchmark Dataset (100 Cases)]
+  PR[&quot;Pull Request: Prompt / Skill Change&quot;] --&gt; BenchmarkDataset[&quot;Golden Benchmark Dataset (100 Cases)&quot;]
   BenchmarkDataset --&gt; Tier1
   Tier1 --&gt;|AST Passed| Tier2
   Tier2 --&gt;|Trajectory Valid| Tier3
   Tier3 --&gt; ScoreGate{Pass Rate &gt;= 95%?}
-  ScoreGate --&gt;|Yes| Merge[✅ Merge to Main]
-  ScoreGate --&gt;|No| Block[❌ Block Build: Prompt Regression]</div>
+  ScoreGate --&gt;|Yes| Merge[&quot; Merge to Main&quot;]
+  ScoreGate --&gt;|No| Block[&quot; Block Build: Prompt Regression&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Tier1,Merge blue
+class Tier2,Block green
+class Tier3 purple
+class PR yellow
+class BenchmarkDataset red</div>
 <hr>
 <h2 id="1-why-traditional-unit-tests-fail-on-ai-agents">1. Why Traditional Unit Tests Fail on AI Agents</h2>
 <p>Traditional software testing relies on an invariant assumption: <strong>deterministic inputs yield deterministic outputs ($f(x) = y$)</strong>.</p>
@@ -165,15 +183,26 @@
 <h3 id="tier-2-trajectory-assertion-graphs-evaluating-the-path-taken">Tier 2: Trajectory Assertion Graphs (Evaluating the Path Taken)</h3>
 <p>In autonomous agent swarms, <strong>how the agent solved the problem</strong> is just as important as the final answer.</p>
 <p>A <strong>Trajectory Assertion Graph</strong> validates that the agent invoked tools in a logical, secure sequence:</p>
-<div class="mermaid">graph LR
+<div class="mermaid">flowchart TD
   subgraph SG2_ValidTrajectoryDag [&quot;Valid Trajectory DAG&quot;]
-    T1[1. view_file: Inspect Codebase] --&gt; T2[2. replace_file_content: Apply Patch]
-    T2 --&gt; T3[3. run_test: Verify Execution]
+    T1[&quot;1. view_file: Inspect Codebase&quot;] --&gt; T2[&quot;2. replace_file_content: Apply Patch&quot;]
+    T2 --&gt; T3[&quot;3. run_test: Verify Execution&quot;]
   end
   
   subgraph SG3_InvalidAntiPattern [&quot;Invalid Anti-Pattern (Flagged by Eval)&quot;]
-    A1[1. replace_file_content: Blindly Guess] --&gt; A2[2. git_commit: Commit without Testing!]
-  end</div>
+    A1[&quot;1. replace_file_content: Blindly Guess&quot;] --&gt; A2[&quot;2. git_commit: Commit without Testing!&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class T1 blue
+class T2 green
+class T3 purple
+class A1 yellow
+class A2 red</div>
 <h3 id="trajectory-assertion-examples">Trajectory Assertion Examples:</h3>
 <ul>
 <li><code>assert &quot;view_file&quot; in trajectory.tool_names</code> (Agent inspected context before acting).</li>
@@ -341,7 +370,18 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>You cannot build reliable autonomous agent systems without <strong>rigorous, multi-tier evaluation infrastructure</strong>.</p>
-<p>By anchoring agent evaluation to <strong>deterministic AST invariants</strong>, <strong>trajectory state graphs</strong>, and <strong>calibrated LLM rubrics</strong>, engineering organizations create robust CI/CD safety nets that catch prompt regressions before they ever reach production.</p>
+<p>By anchoring agent evaluation to <strong>deterministic AST invariants</strong>, <strong>trajectory state graphs</strong>, and <strong>calibrated LLM rubrics</strong>, engineering organizations create robust CI/CD safety nets that catch prompt regressions before they ever reach production. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>LangChain (2024)</strong>. <em>LangGraph Documentation</em>. langchain.com. <a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">https://langchain-ai.github.io/langgraph/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Anthropic (2025)</strong>. <em>Model Context Protocol Specification</em>. MCP Docs. <a href="https://modelcontextprotocol.io/specification" target="_blank" rel="noopener">https://modelcontextprotocol.io/specification</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -374,10 +414,16 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-why-traditional-unit-tests-fail-on-ai-agents" class="toc-link">1. Why Traditional Unit Tests Fail on AI Agents</a></li>
+              <li class="toc-item toc-h3"><a href="#the-3-core-breakdown-modes-of-llm-testing" class="toc-link">The 3 Core Breakdown Modes of LLM Testing:</a></li>
               <li class="toc-item toc-h2"><a href="#2-the-3-tier-agent-evaluation-framework" class="toc-link">2. The 3-Tier Agent Evaluation Framework</a></li>
+              <li class="toc-item toc-h3"><a href="#tier-1-deterministic-symbolic-invariants-fast-objective" class="toc-link">Tier 1: Deterministic Symbolic Invariants (Fast &amp; Objective)</a></li>
+              <li class="toc-item toc-h3"><a href="#tier-2-trajectory-assertion-graphs-evaluating-the-path-taken" class="toc-link">Tier 2: Trajectory Assertion Graphs (Evaluating the Path Taken)</a></li>
+              <li class="toc-item toc-h3"><a href="#trajectory-assertion-examples" class="toc-link">Trajectory Assertion Examples:</a></li>
+              <li class="toc-item toc-h3"><a href="#tier-3-calibrated-llm-as-a-judge-with-multi-point-rubrics" class="toc-link">Tier 3: Calibrated LLM-as-a-Judge with Multi-Point Rubrics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-complete-cicd-agent-evaluation-harness" class="toc-link">Python Implementation: Complete CI/CD Agent Evaluation Harness</a></li>
               <li class="toc-item toc-h2"><a href="#summary-traditional-cicd-vs-agent-cicd-evals" class="toc-link">Summary: Traditional CI/CD vs Agent CI/CD Evals</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1216,13 +1262,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1291,13 +1331,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1339,13 +1373,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

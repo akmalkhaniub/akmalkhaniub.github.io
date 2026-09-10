@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/architecting-leaselogic-tabular-clause-extraction-pgvector-npv-modeling.html">
   <meta property="og:title" content="Architecting LeaseLogic: Tabular Real Estate Clause Extraction, Multi-Tenant pgvector RAG &amp; NPV Cashflow Modeling">
   <meta property="og:description" content="Commercial real estate AI: parsing complex 100+ page PDFs with tabular layout awareness, Claude tool use schema enforcement, multi-tenant pgvector RAG for clause citation, and automated Net Effective Rent &amp; NPV cashflow computation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/leaselogic-dashboard.jpg">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/architecting-leaselogic-tabular-clause-extraction-pgvector-npv-modeling.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-18">
+  <meta property="article:published_time" content="2026-08-19">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Architecting LeaseLogic: Tabular Real Estate Clause Extraction, Multi-Tenant pgvector RAG &amp; NPV Cashflow Modeling">
   <meta name="twitter:description" content="Commercial real estate AI: parsing complex 100+ page PDFs with tabular layout awareness, Claude tool use schema enforcement, multi-tenant pgvector RAG for clause citation, and automated Net Effective Rent &amp; NPV cashflow computation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/leaselogic-dashboard.jpg">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/architecting-leaselogic-tabular-clause-extraction-pgvector-npv-modeling.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Architecting LeaseLogic: Tabular Real Estate Clause Extraction, Multi-Tenant pgvector RAG & NPV Cashflow Modeling",
   "description": "Commercial real estate AI: parsing complex 100+ page PDFs with tabular layout awareness, Claude tool use schema enforcement, multi-tenant pgvector RAG for clause citation, and automated Net Effective Rent & NPV cashflow computation.",
   "url": "https://akmalkhaniub.github.io/blog/architecting-leaselogic-tabular-clause-extraction-pgvector-npv-modeling.html",
-  "datePublished": "2026-08-18",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/architecting-leaselogic-tabular-clause-extraction-pgvector-npv-modeling.jpg",
+  "datePublished": "2026-08-19",
   "keywords": "LeaseLogic, Claude 3.5 Sonnet, pgvector, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/leaselogic-dashboard.jpg" class="article-cover-img" alt="Architecting LeaseLogic: Tabular Real Estate Clause Extraction, Multi-Tenant pgvector RAG &amp; NPV Cashflow Modeling Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/architecting-leaselogic-tabular-clause-extraction-pgvector-npv-modeling.jpg" class="article-cover-img" alt="Architecting LeaseLogic: Tabular Real Estate Clause Extraction, Multi-Tenant pgvector RAG &amp; NPV Cashflow Modeling Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Architecting LeaseLogic: Tabular Real Estate Clause Extraction, Multi-Tenant pgvector RAG &amp; NPV Cashflow Modeling</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#leaselogic-system-architecture">LeaseLogic System Architecture</a></li>
+                <li><a href="#core-architecture-highlights">Core Architecture Highlights</a></li>
                 <li><a href="#python-implementation-lease-extraction-npv-cashflow-engine">Python Implementation: Lease Extraction &amp; NPV Cashflow Engine</a></li>
                 <li><a href="#cre-legal-tech-gotchas-best-practices">CRE Legal Tech Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In commercial real estate (CRE) asset management and private equity (<strong>LeaseLogic</strong>, <strong>JLL</strong>, <strong>CBRE</strong>, <strong>Blackstone Real Estate</strong>), evaluating 100+ page institutional commercial lease agreements is one of the most high-stakes, time-consuming analytical tasks.</p>
+<p>In commercial real estate (CRE) asset management and private equity (<strong>LeaseLogic</strong>, <strong>JLL</strong>, <strong>CBRE</strong>, <strong>Blackstone Real Estate</strong>), evaluating 100+ page institutional commercial lease agreements is one of the most high-stakes, time-consuming analytical tasks <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>A single overlooked clause—such as a un-capped Operating Expense (OpEx) pass-through, a $3.5%$ compounding annual rent step-up, or a Tenant Improvement (TI) clawback—can introduce millions of dollars in unexpected portfolio liabilities.</p>
 <p>Standard Optical Character Recognition (OCR) and naive RAG pipelines fail catastrophically on commercial leases because they flatten multi-column rent schedules and complex indemnity tables into jumbled text strings.</p>
 <p>To solve this, I architected <strong><a href="https://github.com/akmalkhaniub/leaselogic" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> LeaseLogic</a></strong>—an AI-powered commercial lease intelligence and cashflow valuation platform.</p>
@@ -122,10 +125,10 @@
 <hr>
 <h2 id="leaselogic-system-architecture">LeaseLogic System Architecture</h2>
 <p>How LeaseLogic processes 120-page commercial lease contracts, verifies clause citations via multi-tenant vector search, and computes 10-year financial cashflows:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_DocumentIngestionSpatial [&quot;Document Ingestion &amp; Spatial Layout Recovery&quot;]
-    PDF[100+ Page Commercial Lease PDF] --&gt; Parser[Layout-Aware PDF Engine: pdfplumber Bounding Boxes]
-    Parser --&gt; Tables[Extracted Tabular Rent Schedules + Text Blocks]
+    PDF[&quot;100+ Page Commercial Lease PDF&quot;] --&gt; Parser[&quot;Layout-Aware PDF Engine: pdfplumber Bounding Boxes&quot;]
+    Parser --&gt; Tables[&quot;Extracted Tabular Rent Schedules + Text Blocks&quot;]
   end
   
   subgraph SG2_Claude35 [&quot;Claude 3.5 Structured Extraction Engine&quot;]
@@ -138,7 +141,18 @@
     PGVector --&gt; AuditUI[&quot;Exact Bounding Box &amp; Page Number Citation Audit&quot;]
     Terms --&gt; NPVEngine[&quot;Financial Cashflow Engine: 10-Yr Cashflow, NER &amp; NPV Modeling&quot;]
     NPVEngine --&gt; Dashboard[&quot;Interactive Executive Analytics Dashboard&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class PDF,PGVector blue
+class Parser,AuditUI green
+class Tables,NPVEngine purple
+class ClaudePrompt,Dashboard yellow
+class Terms red</div>
 <h3 id="core-architecture-highlights">Core Architecture Highlights</h3>
 <ol>
 <li><strong>The Spatial Layout Parsing Problem</strong>:<ul>
@@ -289,7 +303,17 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>$100%$ Verifiable Audit Trail</strong>: Instant interactive bounding-box overlays eliminate manual page searching during due diligence.</li>
 <li><strong>Automated Portfolio Risk Modeling</strong>: Multi-lease aggregations identify expiration cliffs and un-hedged OpEx liabilities in real time.</li>
 </ul>
-<p>You can explore the open-source codebase on GitHub: <strong><a href="https://github.com/akmalkhaniub/leaselogic" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> <code>akmalkhaniub/leaselogic</code></a></strong>.</p>
+<p>You can explore the open-source codebase on GitHub: <strong><a href="https://github.com/akmalkhaniub/leaselogic" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> <code>akmalkhaniub/leaselogic</code></a></strong>. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>pgvector Authors (2024)</strong>. <em>pgvector: Open-source vector similarity search for Postgres</em>. GitHub. <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/pgvector/pgvector</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -322,9 +346,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#leaselogic-system-architecture" class="toc-link">LeaseLogic System Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-architecture-highlights" class="toc-link">Core Architecture Highlights</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-lease-extraction-npv-cashflow-engine" class="toc-link">Python Implementation: Lease Extraction &amp; NPV Cashflow Engine</a></li>
               <li class="toc-item toc-h2"><a href="#cre-legal-tech-gotchas-best-practices" class="toc-link">CRE Legal Tech Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1163,13 +1189,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1238,13 +1258,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1286,13 +1300,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

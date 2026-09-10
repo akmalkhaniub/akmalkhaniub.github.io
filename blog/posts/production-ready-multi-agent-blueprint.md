@@ -3,7 +3,7 @@
 > * **Why it matters:** Building multi-agent systems requires rigorous systems engineering to prevent infinite loops, control API token costs, and ensure deterministic quality in production environments.
 > * **What we synthesized:** We synthesized a complete 8-stage swarm architecture—integrating supervisor coordination, parallel writing, automated verification, and programmatic validation—into a robust, scale-tested implementation blueprint.
 
-In this final post of the series, we bring together all the architectural concepts—from state checkpointing to validator gates—to design a complete, production-ready **"Research-to-Report" Multi-Agent Application**.
+In this final post of the series, we bring together all the architectural concepts—from state checkpointing to validator gates—to design a complete, production-ready **"Research-to-Report" Multi-Agent Application** [1].
 
 This blueprint represents a robust, scale-tested architecture that can parse documents, search the web, draft reports, verify facts, and integrate human approval gates without running into infinite loops or "agent soup" drift.
 
@@ -14,35 +14,46 @@ This blueprint represents a robust, scale-tested architecture that can parse doc
 The system mimics a professional digital newsroom, dividing labor among specialized agents coordinating via a shared database:
 
 ```mermaid
-graph TD
-    UserReq[User Query / Topic] --> Supervisor[1. Supervisor Agent]
-    Supervisor -->|Plan & Assign| Researcher[2. Researcher Agent]
-    Researcher -->|Tool: Web Search| Web[Web API / Google]
+flowchart TD
+    UserReq["User Query / Topic"] --> Supervisor["1. Supervisor Agent"]
+    Supervisor -->|Plan & Assign| Researcher["2. Researcher Agent"]
+    Researcher -->|Tool - Web Search| Web["Web API / Google"]
     
-    Researcher -->|Output: Raw Context| Supervisor
-    Supervisor -->|Assign Verification| FactChecker[3. Fact Verifier Agent]
-    FactChecker -->|Tool: Vector Search| Vector[(pgvector Knowledge Base)]
+    Researcher -->|Output - Raw Context| Supervisor
+    Supervisor -->|Assign Verification| FactChecker["3. Fact Verifier Agent"]
+    FactChecker -->|Tool - Vector Search| Vector[(pgvector Knowledge Base)]
     
-    FactChecker -->|Output: Verified Facts| Supervisor
-    Supervisor -->|Assign Outline| Outliner[4. Outline Agent]
-    Outliner -->|Output: Document Structure| Supervisor
+    FactChecker -->|Output - Verified Facts| Supervisor
+    Supervisor -->|Assign Outline| Outliner["4. Outline Agent"]
+    Outliner -->|Output - Document Structure| Supervisor
     
-    Supervisor -->|Assign Draft| Writer[5. Writer Agent]
-    Writer -->|Output: Draft Report| Critic[6. Critic Agent]
+    Supervisor -->|Assign Draft| Writer["5. Writer Agent"]
+    Writer -->|Output - Draft Report| Critic["6. Critic Agent"]
     
     subgraph SG1_ReviewGateReview ["Review Gate [Review & Verification Loop]"]
-        Critic -->|Fails: Critique Loop| Writer
-        Critic -->|Passes| Validator[7. Validator Agent]
+        Critic -->|Fails - Critique Loop| Writer
+        Critic -->|Passes| Validator["7. Validator Agent"]
     end
     
     Validator -->|Fails programmatic checks| Writer
     Validator -->|Passes| HITL{8. Human Approval Gate}
     
-    HITL -->|Approved| Commit[Final Published Report]
-    HITL -->|Rejected: Comments| Supervisor
+    HITL -->|Approved| Commit["Final Published Report"]
+    HITL -->|Rejected - Comments| Supervisor
     
     style ReviewGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
     style Commit fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserReq,Outliner blue
+class Supervisor,Writer green
+class Researcher,Critic purple
+class Web,Validator yellow
+class FactChecker,Commit red
 ```
 
 ---

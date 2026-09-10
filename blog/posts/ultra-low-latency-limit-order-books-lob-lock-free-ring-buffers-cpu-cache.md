@@ -1,6 +1,6 @@
 # Designing Ultra-Low Latency Limit Order Books (LOB): Lock-Free Ring Buffers & CPU Cache Optimization in High-Frequency Trading
 
-In modern electronic financial exchanges (**Nasdaq**, **CME Group**, **Binance**, **Jane Street**, **Citadel Securities**), the performance of a **Limit Order Book (LOB)** matching engine is measured not in milliseconds, but in **sub-microsecond tick-to-trade cycles**.
+In modern electronic financial exchanges (**Nasdaq**, **CME Group**, **Binance**, **Jane Street**, **Citadel Securities**), the performance of a **Limit Order Book (LOB)** matching engine is measured not in milliseconds, but in **sub-microsecond tick-to-trade cycles** [1].
 
 At high-frequency trading (HFT) scale, standard software engineering conventions break down completely:
 * A single Linux kernel context switch incurs a **$1\text{ to }3\text{ microsecond}$ penalty**—an eternity when arbitrage opportunities disappear in $500\text{ nanoseconds}$.
@@ -12,7 +12,7 @@ Building a production-grade, deterministic matching engine requires mastering **
 This architectural guide examines the internal mechanics of zero-allocation Limit Order Books, mechanical sympathy with modern x86/ARM hardware, and the data structures that power sub-microsecond trade execution.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UltraLowLatency ["Ultra-Low Latency Limit Order Book Pipeline"]
     NIC["Kernel-Bypass NIC (Solarflare / DPDK)"] --> RingBuffer["1. Lock-Free SPSC Ring Buffer (LMAX Disruptor Pattern)"]
     RingBuffer --> Matcher["2. Core Matching Engine (Pinned to Isolated CPU Core)"]
@@ -25,6 +25,17 @@ graph TD
     Matcher --> ExecutionRing["3. Outbound Execution Ring Buffer"]
     ExecutionRing --> Gateway["Market Feed Gateway (Zero-Copy Multicast)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class NIC,ExecutionRing blue
+class RingBuffer,Gateway green
+class Matcher purple
+class Bids yellow
+class Asks red
 ```
 
 ---
@@ -69,7 +80,7 @@ A Limit Order Book maintains two sorted ladders:
 If prices are identical, orders are matched strictly in chronological arrival order (**Price-Time Priority / FIFO**).
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG3_LimitOrderBook ["Limit Order Book Structure (Bids vs Asks)"]
     Bids["BIDS (Descending)\n$100.50 (Qty: 500) -> [Ord1] <-> [Ord2]\n$100.40 (Qty: 1200) -> [Ord3]\n$100.30 (Qty: 800) -> [Ord4]"]
     Spread["=== SPREAD: $0.10 ==="]
@@ -77,6 +88,15 @@ graph LR
   end
   
   Bids --- Spread --- Asks
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Bids blue
+class Spread green
+class Asks purple
 ```
 
 ### Optimal Data Structure Selection:
@@ -92,11 +112,20 @@ graph LR
 To pass market orders from the network thread to the matching core without thread locking, high-frequency systems implement the **LMAX Disruptor circular ring buffer pattern**:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG4_LockFreeCircular ["Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)"]
     Head["Producer Head Sequence (Padded 64B)"] -->|Writes Next Event| Slot["Slot [head & (Size - 1)]"]
     Slot --> Tail["Consumer Tail Sequence (Padded 64B)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Head blue
+class Slot green
+class Tail purple
 ```
 
 ### Key Invariants:
@@ -265,4 +294,10 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 In high-frequency limit order books, **software design is hardware design**.
 
-By structuring data structures to fit entirely within L1/L2 caches, eliminating lock contention through power-of-two ring buffers, and enforcing zero runtime heap allocations, engineers achieve the sub-microsecond determinism required by global financial exchanges.
+By structuring data structures to fit entirely within L1/L2 caches, eliminating lock contention through power-of-two ring buffers, and enforcing zero runtime heap allocations, engineers achieve the sub-microsecond determinism required by global financial exchanges. [2]
+
+## References & Further Reading
+
+1. **Michael, M. M. (2004)**. *Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects*. IEEE TPDS. [https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf](https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf)
+2. **McKenney, P. E., & Slingwine, J. D. (1998)**. *Read-Copy Update: Using Execution History to Solve Concurrency Problems*. PDCS. [https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf](https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf)
+3. **Bloom, B. H. (1970)**. *Space/Time Trade-offs in Hash Coding with Allowable Errors*. CACM. [https://doi.org/10.1145/362686.362692](https://doi.org/10.1145/362686.362692)

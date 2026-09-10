@@ -2,7 +2,7 @@
 
 Welcome to the **300th milestone post** of our engineering publication!
 
-Over the course of 300 deep-dive technical articles, we have explored the entire spectrum of software engineering, distributed systems, database internals, kernel networking, cloud-native control planes, and autonomous AI agent architectures.
+Over the course of 300 deep-dive technical articles, we have explored the entire spectrum of software engineering, distributed systems, database internals, kernel networking, cloud-native control planes, and autonomous AI agent architectures [1].
 
 Building systems capable of handling billions of daily requests, petabytes of storage, sub-millisecond search latencies, and autonomous multi-agent reasoning requires mastering core **System Design Patterns**.
 
@@ -15,26 +15,37 @@ To mark this milestone, this article synthesizes the **10 foundational architect
 How modern distributed software stacks combine consensus, storage, networking, edge compute, and AI:
 
 ```mermaid
-graph TD
-  User[Global User Base] -->|1. Anycast BGP / Geo-DNS Routing| Edge[Edge Network: Wasm SFI + CRDT KV]
+flowchart TD
+  User["Global User Base"] -->|Anycast BGP / Geo-DNS Routing| Edge["Edge Network: Wasm SFI + CRDT KV"]
   
   subgraph SG1_EdgeComputeSecurity ["Edge Compute & Security Layer"]
-    Edge -->|2. Wasm Micro-Tenancy / V8 Snapshots| API[API Gateway & OTel Collector]
+    Edge -->|Wasm Micro-Tenancy / V8 Snapshots| API["API Gateway & OTel Collector"]
   end
   
   subgraph SG2_HighPerformanceNetworking ["High-Performance Networking Layer"]
-    API -->|3. io_uring / Zero-Copy / gRPC HTTP2| Services[Microservice Mesh]
+    API -->|io_uring / Zero-Copy / gRPC HTTP2| Services["Microservice Mesh"]
   end
   
   subgraph SG3_StorageVectorSearch ["Storage & Vector Search Engines"]
-    Services -->|4. Multi-Raft Partitioning| DistributedDB[(Multi-Raft LSM Storage: RocksDB)]
-    Services -->|5. HNSW + PQ Quantization| VectorDB[(Vector DB: HNSW + BM25 Hybrid)]
+    Services -->|Multi-Raft Partitioning| DistributedDB[(Multi-Raft LSM Storage: RocksDB)]
+    Services -->|HNSW + PQ Quantization| VectorDB[(Vector DB: HNSW + BM25 Hybrid)]
   end
   
   subgraph SG4_AutonomousAiObservability ["Autonomous AI & Observability Control Plane"]
-    Services -.->|6. Traces & Metrics| Observability[(OTel TSDB & Indexless Logs)]
-    Services <--->|7. ReAct Reasoning Loops| Agents[Autonomous Multi-Agent Supervisor]
+    Services -.->|Traces & Metrics| Observability[(OTel TSDB & Indexless Logs)]
+    Services <--->|ReAct Reasoning Loops| Agents["Autonomous Multi-Agent Supervisor"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User blue
+class Edge green
+class API purple
+class Services yellow
+class Agents red
 ```
 
 ---
@@ -138,4 +149,13 @@ if __name__ == "__main__":
 ## Looking Forward: The Future of Systems Engineering
 As we look ahead past Post 300, software engineering will continue to coalesce around **Hardware-Software Co-Design**, **Kernel-Bypassing I/O**, **Edge-Native Computing**, and **Self-Healing Agentic Systems**.
 
-Thank you to all readers and engineers following this journey!
+Thank you to all readers and engineers following this journey! [2]
+
+## References & Further Reading
+
+1. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+2. **Lamport, L. (2001)**. *Paxos Made Simple*. ACM SIGACT News. [https://lamport.azurewebsites.net/pubs/paxos-simple.pdf](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf)
+3. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)
+4. **Shapiro, M., Preguiça, N., Baquero, C., & Zawirski, M. (2011)**. *Conflict-free Replicated Data Types*. SSS. [https://hal.inria.fr/inria-00609399v1/document](https://hal.inria.fr/inria-00609399v1/document)
+5. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+6. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

@@ -8,24 +8,35 @@
 
 ## The Root Cause: PostgreSQL Lock Hierarchy
 
-Every operation in PostgreSQL acquires a lock. The danger lies in **Exclusive Locks** (specifically `AccessExclusiveLock`), which block all other operations, including simple reads (`SELECT`) and writes (`INSERT`/`UPDATE`).
+Every operation in PostgreSQL acquires a lock. The danger lies in **Exclusive Locks** (specifically `AccessExclusiveLock`), which block all other operations, including simple reads (`SELECT`) and writes (`INSERT`/`UPDATE`) [1].
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    subgraph SG1_NaiveBlockWay ["❌ Naive Block Way (Exclusive Lock)"]
-        Migration[ALTER TABLE ADD COLUMN DEFAULT] -->|Acquires AccessExclusiveLock| Table[Users Table]
-        Reads[Incoming SELECTs] -->|Blocked| Table
-        Writes[Incoming INSERTs] -->|Blocked| Table
-        Table -->|Queue fills up, connections timeout| Crash[Server Outage]
+    subgraph SG1_NaiveBlockWay [" Naive Block Way (Exclusive Lock)"]
+        Migration["ALTER TABLE ADD COLUMN DEFAULT"] -->|Acquires AccessExclusiveLock| Table["Users Table"]
+        Reads["Incoming SELECTs"] -->|Blocked| Table
+        Writes["Incoming INSERTs"] -->|Blocked| Table
+        Table -->|Queue fills up, connections timeout| Crash["Server Outage"]
     end
 
-    subgraph SG2_SafeWayIncremental ["✅ Safe Way (Incremental Locks)"]
-        Step1[1. ALTER TABLE ADD COLUMN without default] -->|Short AccessExclusiveLock| Table2[Users Table]
-        Step2[2. SET DEFAULT value] -->|Quick Lock metadata update| Table2
-        Step3[3. Backfill data in small batches] -->|Low-level RowShareLock| Table2
-        Reads2[Incoming SELECTs] -->|Allowed concurrently| Table2
+    subgraph SG2_SafeWayIncremental [" Safe Way (Incremental Locks)"]
+        Step1["1. ALTER TABLE ADD COLUMN without default"] -->|Short AccessExclusiveLock| Table2["Users Table"]
+        Step2["2. SET DEFAULT value"] -->|Quick Lock metadata update| Table2
+        Step3["3. Backfill data in small batches"] -->|Low-level RowShareLock| Table2
+        Reads2["Incoming SELECTs"] -->|Allowed concurrently| Table2
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Migration,Step1 blue
+class Table,Table2 green
+class Reads,Step2 purple
+class Writes,Step3 yellow
+class Crash,Reads2 red
 ```
 
 If a migration transaction is blocked waiting for an exclusive lock, it blocks the queue. All subsequent queries hitting that table queue up behind it, freezing the app.
@@ -99,4 +110,10 @@ Database reliability at scale requires strict lock management:
 * [ ] **Always set a `lock_timeout`**: Never let a migration query wait indefinitely; terminate it early to protect the active connection pool.
 * [ ] **Use `CONCURRENTLY` for index building**: Standard index creation blocks write queues; concurrent builds run safely in the background.
 * [ ] **Split constraint validation**: Add foreign keys and check constraints as `NOT VALID` first, then run validation in a separate transaction block.
-* [ ] **Backfill in small batches**: Avoid running large `UPDATE` statements that lock entire tables; batch updates to 5,000–10,000 rows at a time.
+* [ ] **Backfill in small batches**: Avoid running large `UPDATE` statements that lock entire tables; batch updates to 5,000–10,000 rows at a time. [2]
+
+## References & Further Reading
+
+1. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+2. **Reed, D. P. (1978)**. *Naming and Synchronization in a Decentralized Computer System*. MIT PhD Thesis. [https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf](https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf)
+3. **Bayer, R., & McCreight, E. (1972)**. *Organization and Maintenance of Large Ordered Indexes*. Acta Informatica. [https://doi.org/10.1007/BF00288683](https://doi.org/10.1007/BF00288683)

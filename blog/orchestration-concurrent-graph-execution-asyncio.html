@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/orchestration-concurrent-graph-execution-asyncio.html">
   <meta property="og:title" content="Concurrent Graph Execution: Running Parallel Tool Branches Concurrently">
   <meta property="og:description" content="Optimizing multi-agent execution times: compiling async event loops to coordinate parallel graph task branches.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/orchestration-concurrent-graph-execution-asyncio.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-16">
+  <meta property="article:published_time" content="2026-06-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Concurrent Graph Execution: Running Parallel Tool Branches Concurrently">
   <meta name="twitter:description" content="Optimizing multi-agent execution times: compiling async event loops to coordinate parallel graph task branches.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/orchestration-concurrent-graph-execution-asyncio.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Concurrent Graph Execution: Running Parallel Tool Branches Concurrently",
   "description": "Optimizing multi-agent execution times: compiling async event loops to coordinate parallel graph task branches.",
   "url": "https://akmalkhaniub.github.io/blog/orchestration-concurrent-graph-execution-asyncio.html",
-  "datePublished": "2026-06-16",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/orchestration-concurrent-graph-execution-asyncio.jpg",
+  "datePublished": "2026-06-17",
   "keywords": "Performance, Orchestration, Asyncio, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/orchestration-concurrent-graph-execution-asyncio.jpg" class="article-cover-img" alt="Concurrent Graph Execution: Running Parallel Tool Branches Concurrently Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Concurrent Graph Execution: Running Parallel Tool Branches Concurrently</h1>
             <div class="article-meta">
@@ -112,6 +113,7 @@
                 <li><a href="#2-setting-up-async-event-dispatchers">2. Setting up Async Event Dispatchers</a></li>
                 <li><a href="#code-demo-asynchronous-graph-execution-engine">Code Demo: Asynchronous Graph Execution Engine</a></li>
                 <li><a href="#concurrent-execution-takeaways">Concurrent Execution Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,23 +126,34 @@ When executing multi-step agent graphs, running every task node sequentially is 
 <h2 id="the-efficiency-loss-of-sequential-execution">The Efficiency Loss of Sequential Execution</h2>
 <p>In basic agent runtimes:</p>
 <ul>
-<li><strong>The Idle Worker Problem</strong>: If Node B and Node C are independent of each other but both depend on Node A, running them sequentially blocks the CPU and increases execution times.</li>
+<li><strong>The Idle Worker Problem</strong>: If Node B and Node C are independent of each other but both depend on Node A, running them sequentially blocks the CPU and increases execution times <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Under-utilized Resources</strong>: Sequential tool calls fail to leverage async features, increasing latency.</li>
 <li><strong>The Solution</strong>: <strong>Concurrent Graph Execution</strong>. We track node dependencies. As soon as all parent nodes of a task are complete, we immediately launch that node in an async event loop, running independent paths concurrently.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    NodeA[Node A: Read Source Codes] --&gt;|Complete| Dispatch{Dispatch Event loop}
+    NodeA[&quot;Node A: Read Source Codes&quot;] --&gt;|Complete| Dispatch{Dispatch Event loop}
     
-    Dispatch --&gt; NodeB[Node B: Run Linter 1]
-    Dispatch --&gt; NodeC[Node C: Run Linter 2]
-    Dispatch --&gt; NodeD[Node D: Run Security Scan]
+    Dispatch --&gt; NodeB[&quot;Node B: Run Linter 1&quot;]
+    Dispatch --&gt; NodeC[&quot;Node C: Run Linter 2&quot;]
+    Dispatch --&gt; NodeD[&quot;Node D: Run Security Scan&quot;]
     
-    NodeB --&gt;|Merge Output| Join[Join Node E: Generate Report]
+    NodeB --&gt;|Merge Output| Join[&quot;Join Node E: Generate Report&quot;]
     NodeC --&gt;|Merge Output| Join
     NodeD --&gt;|Merge Output| Join
     
-    Join --&gt; Complete([Graph Complete])</div>
+    Join --&gt; Complete([Graph Complete])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class NodeA blue
+class NodeB green
+class NodeC purple
+class NodeD yellow
+class Join red</div>
 <hr>
 <h2 id="1-under-the-hood-tracking-node-execution-states">1. Under the Hood: Tracking Node Execution States</h2>
 <p>To execute a graph concurrently, we maintain node states:</p>
@@ -232,8 +245,19 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Map Dependencies</strong>: Define clear prerequisite mappings for all task nodes before starting execution.</li>
 <li><strong>Execute Concurrently</strong>: Dispatch independent task branches concurrently to minimize total execution times.</li>
-<li><strong>Monitor Shared State</strong>: Enforce read-only locks on shared states to prevent data corruption during concurrent execution.</li>
+<li><strong>Monitor Shared State</strong>: Enforce read-only locks on shared states to prevent data corruption during concurrent execution. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>LangChain (2024)</strong>. <em>LangGraph Documentation</em>. langchain.com. <a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noopener">https://langchain-ai.github.io/langgraph/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Anthropic (2025)</strong>. <em>Model Context Protocol Specification</em>. MCP Docs. <a href="https://modelcontextprotocol.io/specification" target="_blank" rel="noopener">https://modelcontextprotocol.io/specification</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -270,6 +294,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-setting-up-async-event-dispatchers" class="toc-link">2. Setting up Async Event Dispatchers</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-asynchronous-graph-execution-engine" class="toc-link">Code Demo: Asynchronous Graph Execution Engine</a></li>
               <li class="toc-item toc-h2"><a href="#concurrent-execution-takeaways" class="toc-link">Concurrent Execution Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1108,13 +1133,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1183,13 +1202,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1231,13 +1244,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

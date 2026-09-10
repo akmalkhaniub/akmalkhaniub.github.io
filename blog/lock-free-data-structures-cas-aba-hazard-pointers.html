@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/lock-free-data-structures-cas-aba-hazard-pointers.html">
   <meta property="og:title" content="Lock-Free Data Structures: Compare-And-Swap (CAS), ABA Problem &amp; Hazard Pointers">
   <meta property="og:description" content="Non-blocking concurrency: implementing Compare-And-Swap (CAS) primitives, Treiber Stack retry loops, ABA problem mitigation via Tagged Pointers, and Hazard Pointer safe memory reclamation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/lock-free-data-structures-cas-aba-hazard-pointers.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Lock-Free Data Structures: Compare-And-Swap (CAS), ABA Problem &amp; Hazard Pointers">
   <meta name="twitter:description" content="Non-blocking concurrency: implementing Compare-And-Swap (CAS) primitives, Treiber Stack retry loops, ABA problem mitigation via Tagged Pointers, and Hazard Pointer safe memory reclamation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/lock-free-data-structures-cas-aba-hazard-pointers.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Lock-Free Data Structures: Compare-And-Swap (CAS), ABA Problem & Hazard Pointers",
   "description": "Non-blocking concurrency: implementing Compare-And-Swap (CAS) primitives, Treiber Stack retry loops, ABA problem mitigation via Tagged Pointers, and Hazard Pointer safe memory reclamation.",
   "url": "https://akmalkhaniub.github.io/blog/lock-free-data-structures-cas-aba-hazard-pointers.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/lock-free-data-structures-cas-aba-hazard-pointers.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "Lock-Free, CAS, Concurrency, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Lock-Free Data Structures: Compare-And-Swap (CAS), ABA Problem &amp; Hazard Pointers Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/lock-free-data-structures-cas-aba-hazard-pointers.jpg" class="article-cover-img" alt="Lock-Free Data Structures: Compare-And-Swap (CAS), ABA Problem &amp; Hazard Pointers Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Lock-Free Data Structures: Compare-And-Swap (CAS), ABA Problem &amp; Hazard Pointers</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#lock-free-concurrency-the-aba-problem">Lock-Free Concurrency &amp; The ABA Problem</a></li>
+                <li><a href="#core-lock-free-mechanics">Core Lock-Free Mechanics</a></li>
                 <li><a href="#python-implementation-lock-free-treiber-stack-hazard-pointers">Python Implementation: Lock-Free Treiber Stack &amp; Hazard Pointers</a></li>
                 <li><a href="#lock-free-concurrency-gotchas-best-practices">Lock-Free Concurrency Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-concurrency systems programming (<strong>Linux Kernel</strong>, <strong>JVM</strong>, <strong>Rust Tokio</strong>, <strong>Database Storage Engines</strong>), multi-threaded worker threads process millions of items per second.</p>
+<p>In high-concurrency systems programming (<strong>Linux Kernel</strong>, <strong>JVM</strong>, <strong>Rust Tokio</strong>, <strong>Database Storage Engines</strong>), multi-threaded worker threads process millions of items per second <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Traditional <strong>Mutual Exclusion Locks (Mutexes)</strong> suffer from severe performance penalties:</p>
 <ul>
 <li><strong>Context Switching Overhead</strong>: Blocking a thread requires an operating system context switch ($\approx 1\mu\text{s} - 3\mu\text{s}$).</li>
@@ -125,24 +128,35 @@
 <hr>
 <h2 id="lock-free-concurrency-the-aba-problem">Lock-Free Concurrency &amp; The ABA Problem</h2>
 <p>How atomic Compare-And-Swap (CAS) instructions operate, the ABA problem vulnerability, and Hazard Pointer memory safety:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_CompareAndSwap [&quot;Compare-And-Swap (CAS) Loop&quot;]
-    ReadVal[1. Read Current Head Pointer A] --&gt; PrepareNew[2. Construct New Node B -&gt; next = A]
-    PrepareNew --&gt; CASCheck{&quot;3. Execute Hardware CAS (Head, Expected=A, New=B)&quot;}
-    CASCheck --&gt;|Success: Head updated to B| Done[🎉 Operation Complete!]
-    CASCheck --&gt;|Failure: Contention detected!| ReadVal
+    ReadVal[&quot;1. Read Current Head Pointer A&quot;] --&gt; PrepareNew[&quot;2. Construct New Node B -&gt; next = A&quot;]
+    PrepareNew --&gt; CASCheck[&quot;3. Execute Hardware CAS (Head, Expected=A, New=B)&quot;]
+    CASCheck --&gt;|Success - Head updated to B| Done[&quot; Operation Complete!&quot;]
+    CASCheck --&gt;|Failure - Contention detected!| ReadVal
   end
   
   subgraph SG2_TheAbaProblem [&quot;The ABA Problem Vulnerability&quot;]
-    T1[Thread 1 reads Head A] -.-&gt;|Thread 1 Suspended| T2[Thread 2 Pops A, Pops B, Pushes A back!]
-    T2 -.-&gt; T1Resume[Thread 1 Resumes: CAS sees Head is STILL A!]
-    T1Resume --&gt;|CAS Succeeds Unsafely!| CorruptedStack[🚨 STACK CORRUPTION! Node B was freed!]
+    T1[&quot;Thread 1 reads Head A&quot;] -.-&gt;|Thread 1 Suspended| T2[&quot;Thread 2 Pops A, Pops B, Pushes A back!&quot;]
+    T2 -.-&gt; T1Resume[&quot;Thread 1 Resumes: CAS sees Head is STILL A!&quot;]
+    T1Resume --&gt;|CAS Succeeds Unsafely!| CorruptedStack[&quot; STACK CORRUPTION! Node B was freed!&quot;]
   end
   
   subgraph SG3_MitigationTaggedPointers [&quot;Mitigation: Tagged Pointers &amp; Hazard Pointers&quot;]
-    CorruptedStack -.-&gt; Tagged[Tagged Pointer: Combine Pointer + Version Count]
-    CorruptedStack -.-&gt; Hazard[Hazard Pointers: Defer Free until HP Array clear]
-  end</div>
+    CorruptedStack -.-&gt; Tagged[&quot;Tagged Pointer: Combine Pointer + Version Count&quot;]
+    CorruptedStack -.-&gt; Hazard[&quot;Hazard Pointers: Defer Free until HP Array clear&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ReadVal,T2 blue
+class PrepareNew,T1Resume green
+class CASCheck,CorruptedStack purple
+class Done,Tagged yellow
+class T1,Hazard red</div>
 <h3 id="core-lock-free-mechanics">Core Lock-Free Mechanics</h3>
 <ol>
 <li><strong>Compare-And-Swap (CAS) Primitive</strong>:<ul>
@@ -312,8 +326,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Lock-free algorithms (such as <strong>Java ConcurrentLinkedQueue</strong>, <strong>Rust crossbeam</strong>, and <strong>Linux Kernel lockless Ring Buffers</strong>) report:</p>
 <ul>
 <li><strong>Zero Thread Blocking</strong>: Worker threads never enter OS sleep/wake cycles, eliminating context switch overhead.</li>
-<li><strong>Up to $5\times$ Higher Multi-Threaded Throughput</strong>: Eliminating lock acquisition bottlenecks maximizes parallel CPU core execution efficiency.</li>
+<li><strong>Up to $5\times$ Higher Multi-Threaded Throughput</strong>: Eliminating lock acquisition bottlenecks maximizes parallel CPU core execution efficiency. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Michael, M. M. (2004)</strong>. <em>Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects</em>. IEEE TPDS. <a href="https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf" target="_blank" rel="noopener">https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>McKenney, P. E., &amp; Slingwine, J. D. (1998)</strong>. <em>Read-Copy Update: Using Execution History to Solve Concurrency Problems</em>. PDCS. <a href="https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf" target="_blank" rel="noopener">https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Bloom, B. H. (1970)</strong>. <em>Space/Time Trade-offs in Hash Coding with Allowable Errors</em>. CACM. <a href="https://doi.org/10.1145/362686.362692" target="_blank" rel="noopener">https://doi.org/10.1145/362686.362692</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -346,9 +372,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#lock-free-concurrency-the-aba-problem" class="toc-link">Lock-Free Concurrency &amp; The ABA Problem</a></li>
+              <li class="toc-item toc-h3"><a href="#core-lock-free-mechanics" class="toc-link">Core Lock-Free Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-lock-free-treiber-stack-hazard-pointers" class="toc-link">Python Implementation: Lock-Free Treiber Stack &amp; Hazard Pointers</a></li>
               <li class="toc-item toc-h2"><a href="#lock-free-concurrency-gotchas-best-practices" class="toc-link">Lock-Free Concurrency Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1187,13 +1215,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1262,13 +1284,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1310,13 +1326,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

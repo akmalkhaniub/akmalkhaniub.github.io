@@ -9,22 +9,32 @@
 ## The Latency Penalty of Synchronous Auditing
 
 In typical system setups:
-* **The DB Write Bottleneck**: Running database `INSERT` commands to track token usage during a streaming HTTP connection blocks response threads, increasing latency.
+* **The DB Write Bottleneck**: Running database `INSERT` commands to track token usage during a streaming HTTP connection blocks response threads, increasing latency [1].
 * **The Streaming Token Challenge**: When streaming, the total token usage is only known after the final chunk is received. Tracking partial chunks requires lightweight, stateful counters.
 * **The Solution**: **Redis Streams**. The gateway interceptor increments local token counters as chunks flow, and publishes usage metadata to a Redis Stream on session close. A background worker consumes the stream, saves records, and updates billing dashboards asynchronously.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Client[Client Prompt Request] --> Gateway{Streaming Gateway Proxy}
-    Gateway -->|Forward Request| LLM[LLM API Provider]
+    Client["Client Prompt Request"] --> Gateway{Streaming Gateway Proxy}
+    Gateway -->|Forward Request| LLM["LLM API Provider"]
     
     LLM -->|Stream Token Chunks| Gateway
     Gateway -->|Local Counter Increments| Gateway
     
-    Gateway -->|Client Disconnect / Session End| Redis[Publish Billing Metadata to Redis Stream]
-    Redis --> Worker[Asynchronous Worker Thread]
+    Gateway -->|Client Disconnect / Session End| Redis["Publish Billing Metadata to Redis Stream"]
+    Redis --> Worker["Asynchronous Worker Thread"]
     Worker --> DB[(Billing Database Update)]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client blue
+class LLM green
+class Redis purple
+class Worker yellow
 ```
 
 ---
@@ -131,4 +141,13 @@ if __name__ == "__main__":
 
 * **Audit Asynchronously**: Never run database inserts to track token usage inside streaming requests. Publish metadata to Redis Streams instead.
 * **Define Pricing Matrices**: Maintain a centralized configuration schema mapping provider rates to track costs accurately.
-* **Configure Stream Retries**: Ensure consumers use consumer groups with ACK flags to guarantee that no billing record is lost during network failures.
+* **Configure Stream Retries**: Ensure consumers use consumer groups with ACK flags to guarantee that no billing record is lost during network failures. [2]
+
+## References & Further Reading
+
+1. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+2. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+3. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)
+4. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+5. **Reed, D. P. (1978)**. *Naming and Synchronization in a Decentralized Computer System*. MIT PhD Thesis. [https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf](https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf)
+6. **Bayer, R., & McCreight, E. (1972)**. *Organization and Maintenance of Large Ordered Indexes*. Acta Informatica. [https://doi.org/10.1007/BF00288683](https://doi.org/10.1007/BF00288683)

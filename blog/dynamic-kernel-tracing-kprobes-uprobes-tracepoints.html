@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/dynamic-kernel-tracing-kprobes-uprobes-tracepoints.html">
   <meta property="og:title" content="Dynamic Kernel Tracing: Kprobes, Uprobes &amp; Tracepoints in eBPF Observability">
   <meta property="og:description" content="Zero-overhead system telemetry: implementing Kprobes (kernel function entry/return), Uprobes (user-space binary ELF instrumentation), static Tracepoints, and BPF Ring Buffers.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/dynamic-kernel-tracing-kprobes-uprobes-tracepoints.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Dynamic Kernel Tracing: Kprobes, Uprobes &amp; Tracepoints in eBPF Observability">
   <meta name="twitter:description" content="Zero-overhead system telemetry: implementing Kprobes (kernel function entry/return), Uprobes (user-space binary ELF instrumentation), static Tracepoints, and BPF Ring Buffers.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/dynamic-kernel-tracing-kprobes-uprobes-tracepoints.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Dynamic Kernel Tracing: Kprobes, Uprobes & Tracepoints in eBPF Observability",
   "description": "Zero-overhead system telemetry: implementing Kprobes (kernel function entry/return), Uprobes (user-space binary ELF instrumentation), static Tracepoints, and BPF Ring Buffers.",
   "url": "https://akmalkhaniub.github.io/blog/dynamic-kernel-tracing-kprobes-uprobes-tracepoints.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/dynamic-kernel-tracing-kprobes-uprobes-tracepoints.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "eBPF, Kprobes, Observability, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Dynamic Kernel Tracing: Kprobes, Uprobes &amp; Tracepoints in eBPF Observability Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/dynamic-kernel-tracing-kprobes-uprobes-tracepoints.jpg" class="article-cover-img" alt="Dynamic Kernel Tracing: Kprobes, Uprobes &amp; Tracepoints in eBPF Observability Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Dynamic Kernel Tracing: Kprobes, Uprobes &amp; Tracepoints in eBPF Observability</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#linux-tracing-subsystems-ebpf-event-pipeline">Linux Tracing Subsystems &amp; eBPF Event Pipeline</a></li>
+                <li><a href="#core-linux-tracing-mechanisms">Core Linux Tracing Mechanisms</a></li>
                 <li><a href="#python-implementation-kprobe-uprobe-event-telemetry-dispatcher">Python Implementation: Kprobe &amp; Uprobe Event Telemetry Dispatcher</a></li>
                 <li><a href="#dynamic-tracing-gotchas-best-practices">Dynamic Tracing Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In production distributed systems, diagnosing performance anomalies, hidden latency spikes, or memory leaks using traditional debugging tools (<code>strace</code>, <code>gdb</code>, <code>lsof</code>) is impossible.</p>
+<p>In production distributed systems, diagnosing performance anomalies, hidden latency spikes, or memory leaks using traditional debugging tools (<code>strace</code>, <code>gdb</code>, <code>lsof</code>) is impossible <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Tools like <code>strace</code> rely on the Linux <code>ptrace()</code> system call, which stops process execution on every system call entry and exit. This introduces a <strong>$100\times$ to $500\times$ latency penalty</strong>, making it far too dangerous to run against live production databases or web servers.</p>
 <p>To achieve zero-overhead, production-safe system telemetry, Linux combines <strong>eBPF</strong> with three powerful tracing subsystems: <strong>Kprobes</strong>, <strong>Uprobes</strong>, and <strong>Tracepoints</strong>.</p>
 <p>By dynamically instrumenting kernel C functions and user-space ELF binaries at runtime without modifying code or restarting processes, tools like <strong>bpftrace</strong> and <strong>BCC</strong> deliver deep runtime observability.</p>
@@ -121,22 +124,33 @@
 <hr>
 <h2 id="linux-tracing-subsystems-ebpf-event-pipeline">Linux Tracing Subsystems &amp; eBPF Event Pipeline</h2>
 <p>How Kprobes, Uprobes, and Tracepoints capture telemetry events inside the kernel:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_UserSpaceApplication [&quot;User-Space Application (e.g. OpenSSL / MySQL)&quot;]
-    UserApp[User-Space Binary /lib/libssl.so] --&gt;|1. Call SSL_write()| UprobeHook{Uprobe / Uretprobe Hook}
+    UserApp[&quot;User-Space Binary /lib/libssl.so&quot;] --&gt;|Call SSL_write()| UprobeHook{Uprobe / Uretprobe Hook}
   end
   
   subgraph SG2_LinuxKernelSpace [&quot;Linux Kernel Space&quot;]
-    Syscall[Syscall: sys_enter_openat] --&gt;|2. Trigger Static Tracepoint| TracepointHook{Kernel Tracepoint Hook}
-    KernelFunc[Kernel Function: tcp_v4_connect] --&gt;|3. INT3 Breakpoint Trap| KprobeHook{Kprobe / Kretprobe Hook}
+    Syscall[&quot;Syscall: sys_enter_openat&quot;] --&gt;|Trigger Static Tracepoint| TracepointHook{Kernel Tracepoint Hook}
+    KernelFunc[&quot;Kernel Function: tcp_v4_connect&quot;] --&gt;|INT3 Breakpoint Trap| KprobeHook{Kprobe / Kretprobe Hook}
     
-    UprobeHook &amp; TracepointHook &amp; KprobeHook --&gt;|4. Fire Event| eBPFProg[eBPF Tracing Program]
+    UprobeHook &amp; TracepointHook &amp; KprobeHook --&gt;|Fire Event| eBPFProg[&quot;eBPF Tracing Program&quot;]
   end
   
   subgraph SG3_TelemetryAggregationRing [&quot;Telemetry Aggregation &amp; Ring Buffers&quot;]
-    eBPFProg --&gt;|5. Push Struct Event| BPF_RingBuf[BPF Ring Buffer: BPF_MAP_TYPE_RINGBUF]
-    BPF_RingBuf --&gt;|6. Zero-Copy Poll| BPFTraceDaemon[User-Space Observability Daemon / bpftrace]
-  end</div>
+    eBPFProg --&gt;|Push Struct Event| BPF_RingBuf[&quot;BPF Ring Buffer: BPF_MAP_TYPE_RINGBUF&quot;]
+    BPF_RingBuf --&gt;|Zero-Copy Poll| BPFTraceDaemon[&quot;User-Space Observability Daemon / bpftrace&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserApp,BPFTraceDaemon blue
+class Syscall green
+class KernelFunc purple
+class eBPFProg yellow
+class BPF_RingBuf red</div>
 <h3 id="core-linux-tracing-mechanisms">Core Linux Tracing Mechanisms</h3>
 <ol>
 <li><strong>Kernel Probes (Kprobes &amp; Kretprobes)</strong>:<ul>
@@ -263,8 +277,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Platforms adopting eBPF dynamic tracing (such as <strong>Datadog</strong>, <strong>New Relic</strong>, and <strong>bpftrace</strong>) report:</p>
 <ul>
 <li><strong>Zero Application Modifications</strong>: Instrumenting user-space binaries (OpenSSL, MySQL) delivers deep APM observability without modifying source code or re-deploying containers.</li>
-<li><strong>Under 1% Performance Overhead</strong>: Replacing <code>ptrace()</code> with in-kernel eBPF probes reduces profiling overhead from $500\times$ down to less than $1%$.</li>
+<li><strong>Under 1% Performance Overhead</strong>: Replacing <code>ptrace()</code> with in-kernel eBPF probes reduces profiling overhead from $500\times$ down to less than $1%$. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>W3C Distributed Tracing Working Group (2021)</strong>. <em>Trace Context</em>. W3C Recommendation. <a href="https://www.w3.org/TR/trace-context/" target="_blank" rel="noopener">https://www.w3.org/TR/trace-context/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -297,9 +322,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#linux-tracing-subsystems-ebpf-event-pipeline" class="toc-link">Linux Tracing Subsystems &amp; eBPF Event Pipeline</a></li>
+              <li class="toc-item toc-h3"><a href="#core-linux-tracing-mechanisms" class="toc-link">Core Linux Tracing Mechanisms</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-kprobe-uprobe-event-telemetry-dispatcher" class="toc-link">Python Implementation: Kprobe &amp; Uprobe Event Telemetry Dispatcher</a></li>
               <li class="toc-item toc-h2"><a href="#dynamic-tracing-gotchas-best-practices" class="toc-link">Dynamic Tracing Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1138,13 +1165,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1213,13 +1234,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1261,13 +1276,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

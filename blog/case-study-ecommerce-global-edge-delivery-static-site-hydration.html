@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/case-study-ecommerce-global-edge-delivery-static-site-hydration.html">
   <meta property="og:title" content="Case Study: Optimizing Global Edge Delivery &amp; Static Site Hydration">
   <meta property="og:description" content="Optimizing global e-commerce delivery using edge middleware: sanitizing request parameters, maximizing cache hit ratios, and resolving query-string cache-busting loops.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/case-study-ecommerce-global-edge-delivery-static-site-hydration.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-08">
+  <meta property="article:published_time" content="2026-08-09">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Case Study: Optimizing Global Edge Delivery &amp; Static Site Hydration">
   <meta name="twitter:description" content="Optimizing global e-commerce delivery using edge middleware: sanitizing request parameters, maximizing cache hit ratios, and resolving query-string cache-busting loops.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/case-study-ecommerce-global-edge-delivery-static-site-hydration.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Case Study: Optimizing Global Edge Delivery & Static Site Hydration",
   "description": "Optimizing global e-commerce delivery using edge middleware: sanitizing request parameters, maximizing cache hit ratios, and resolving query-string cache-busting loops.",
   "url": "https://akmalkhaniub.github.io/blog/case-study-ecommerce-global-edge-delivery-static-site-hydration.html",
-  "datePublished": "2026-08-08",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/case-study-ecommerce-global-edge-delivery-static-site-hydration.jpg",
+  "datePublished": "2026-08-09",
   "keywords": "Case Study, E-Commerce, Edge Caching, JavaScript",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Case Study: Optimizing Global Edge Delivery &amp; Static Site Hydration Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/case-study-ecommerce-global-edge-delivery-static-site-hydration.jpg" class="article-cover-img" alt="Case Study: Optimizing Global Edge Delivery &amp; Static Site Hydration Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Case Study: Optimizing Global Edge Delivery &amp; Static Site Hydration</h1>
             <div class="article-meta">
@@ -109,12 +110,15 @@
               <ul class="mobile-toc-list">
                 <li><a href="#case-study-overview-the-10-part-framework">Case Study Overview: The 10-Part Framework</a></li>
                 <li><a href="#global-edge-delivery-flow">Global Edge Delivery Flow</a></li>
+                <li><a href="#high-speed-delivery-tactics">High-Speed Delivery Tactics</a></li>
                 <li><a href="#javascript-implementation-cloudflare-workers-edge-normalizer">JavaScript Implementation: Cloudflare Workers Edge Normalizer</a></li>
                 <li><a href="#the-incident-the-query-string-cache-busting-loop">The Incident: The Query-String Cache-Busting Loop</a></li>
+                <li><a href="#the-remediation">The Remediation</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>For global retail sites, page speed directly correlates with purchase conversion rates. A 100ms increase in Time to First Byte (TTFB) on product catalog pages can drop user checkout conversions by up to 7%. During high-traffic events, loading pages dynamically from central servers introduces network latency and risks database overload.</p>
+<p>For global retail sites, page speed directly correlates with purchase conversion rates <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. A 100ms increase in Time to First Byte (TTFB) on product catalog pages can drop user checkout conversions by up to 7%. During high-traffic events, loading pages dynamically from central servers introduces network latency and risks database overload.</p>
 <p>This case study details the architecture, deployment, and operational gotchas of a <strong>Global Edge Delivery &amp; Static Site Hydration</strong> platform designed to serve millions of product pages at sub-50ms speed.</p>
 <hr>
 <h2 id="case-study-overview-the-10-part-framework">Case Study Overview: The 10-Part Framework</h2>
@@ -135,19 +139,30 @@
 <hr>
 <h2 id="global-edge-delivery-flow">Global Edge Delivery Flow</h2>
 <p>The system normalizes incoming client requests at edge nodes, serving static caches locally whenever possible:</p>
-<div class="mermaid">graph TD
-  A[Global Client Browsers] --&gt;|Geo-Routed Request| B[Cloudflare Edge Node]
+<div class="mermaid">flowchart TD
+  A[&quot;Global Client Browsers&quot;] --&gt;|Geo-Routed Request| B[&quot;Cloudflare Edge Node&quot;]
   
   subgraph SG1_CloudflareWorkerEdge [&quot;Cloudflare Worker Edge Middleware&quot;]
-    B --&gt;|Step 1: Sanitize Query String| C[URL Normalization Node]
-    C --&gt;|Step 2: Check Local Edge Cache| D{Cache Hit?}
+    B --&gt;|Step 1 - Sanitize Query String| C[&quot;URL Normalization Node&quot;]
+    C --&gt;|Step 2 - Check Local Edge Cache| D{Cache Hit?}
   end
   
-  D --&gt;|Yes| E[Instant Response: sub-50ms TTFB]
-  D --&gt;|No| F[Fetch from Next.js Origin Server]
+  D --&gt;|Yes| E[&quot;Instant Response: sub-50ms TTFB&quot;]
+  D --&gt;|No| F[&quot;Fetch from Next.js Origin Server&quot;]
   
-  F --&gt;|Serve &amp; Write Edge Cache| G[Stale-While-Revalidate Sync]
-  G --&gt; E</div>
+  F --&gt;|Serve &amp; Write Edge Cache| G[&quot;Stale-While-Revalidate Sync&quot;]
+  G --&gt; E
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B green
+class C purple
+class E yellow
+class F red</div>
 <h3 id="high-speed-delivery-tactics">High-Speed Delivery Tactics</h3>
 <ol>
 <li><strong>Edge URL Sanitization</strong>: By stripping marketing tokens (e.g. <code>utm_source</code>, <code>fbclid</code>, and random query salts) at the edge, we ensure the CDN evaluates clean cache keys, preventing cache-busting attacks.</li>
@@ -227,8 +242,19 @@ if (typeof addEventListener !== 'undefined') {
 <p>By moving routing logic and cache key normalization to edge middleware:</p>
 <ul>
 <li><strong>94% Reduction in Origin Traffic</strong>: Normalizing URL queries stopped invalidation loops and protected origin servers.</li>
-<li><strong>Sub-50ms Catalog Load Times</strong>: Cache hit ratios rose from 68% to 99.98% globally, speeding up user product discovery.</li>
+<li><strong>Sub-50ms Catalog Load Times</strong>: Cache hit ratios rose from 68% to 99.98% globally, speeding up user product discovery. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Fielding, R., Nottingham, M., &amp; Reschke, J. (2014)</strong>. <em>Hypertext Transfer Protocol (HTTP/1.1): Caching</em>. RFC 7234. <a href="https://www.rfc-editor.org/rfc/rfc7234" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7234</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -262,9 +288,12 @@ if (typeof addEventListener !== 'undefined') {
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#case-study-overview-the-10-part-framework" class="toc-link">Case Study Overview: The 10-Part Framework</a></li>
               <li class="toc-item toc-h2"><a href="#global-edge-delivery-flow" class="toc-link">Global Edge Delivery Flow</a></li>
+              <li class="toc-item toc-h3"><a href="#high-speed-delivery-tactics" class="toc-link">High-Speed Delivery Tactics</a></li>
               <li class="toc-item toc-h2"><a href="#javascript-implementation-cloudflare-workers-edge-normalizer" class="toc-link">JavaScript Implementation: Cloudflare Workers Edge Normalizer</a></li>
               <li class="toc-item toc-h2"><a href="#the-incident-the-query-string-cache-busting-loop" class="toc-link">The Incident: The Query-String Cache-Busting Loop</a></li>
+              <li class="toc-item toc-h3"><a href="#the-remediation" class="toc-link">The Remediation</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1103,13 +1132,7 @@ if (typeof addEventListener !== 'undefined') {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1178,13 +1201,7 @@ if (typeof addEventListener !== 'undefined') {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1226,13 +1243,7 @@ if (typeof addEventListener !== 'undefined') {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

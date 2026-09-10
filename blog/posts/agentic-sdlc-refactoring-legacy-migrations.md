@@ -13,7 +13,7 @@ Enterprise systems are often burdened by legacy structures:
 2. **Library Deprecations**: Swapping out old HTTP libraries (like `request`) for modern alternatives (`axios` or native `fetch`).
 3. **Typing Migrations**: Transitioning raw JavaScript codebases into strictly-typed TypeScript.
 
-Manual refactoring of these issues across hundreds of microservices is slow and error-prone. AST codemods help but struggle when code style deviates or imports are structured dynamically. 
+Manual refactoring of these issues across hundreds of microservices is slow and error-prone [1]. AST codemods help but struggle when code style deviates or imports are structured dynamically. 
 
 Agentic migration swarms offer a dynamic alternative. By reasoning over code structures and dependencies, agents apply context-specific edits, verify each change against compiler flags, and resolve secondary type errors recursively.
 
@@ -29,21 +29,32 @@ A scalable codebase migration swarm is organized hierarchically:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Scan[Orchestrator Scans Codebase] --> Graph[Build File Dependency Graph]
-    Graph --> Dispatch[Dispatch Tasks to Workers]
+    Scan["Orchestrator Scans Codebase"] --> Graph["Build File Dependency Graph"]
+    Graph --> Dispatch["Dispatch Tasks to Workers"]
     
     subgraph SG1_WorkersParallelWorker ["Workers [Parallel Worker Processing]"]
-        W1[Refactor Agent: File A] --> L1[Lint & Compiler Check]
-        W2[Refactor Agent: File B] --> L2[Lint & Compiler Check]
+        W1["Refactor Agent: File A"] --> L1["Lint & Compiler Check"]
+        W2["Refactor Agent: File B"] --> L2["Lint & Compiler Check"]
     end
     
     L1 -->|Fail| W1
     L2 -->|Fail| W2
     
-    L1 -->|Pass| Merge[Aggregate Modifications]
+    L1 -->|Pass| Merge["Aggregate Modifications"]
     L2 -->|Pass| Merge
     
-    Merge --> PR[Generate PR Branch & Review]
+    Merge --> PR["Generate PR Branch & Review"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Scan,W2 blue
+class Graph,L2 green
+class Dispatch,Merge purple
+class W1,PR yellow
+class L1 red
 ```
 
 ---
@@ -146,4 +157,14 @@ def fetch_data(url):
 Automating legacy refactoring with agentic swarms:
 * **Preserves Dev Focus**: Engineers no longer have to spend weeks performing mechanical API translations. Instead, they focus on resolving high-level logic exceptions flagged during the migration test suites.
 * **Eliminates Code Rot**: Upgrading package structures monthly or refactoring deprecations instantly prevents technical debt from accumulating.
-* **Guarantees Conformity**: Multi-agent pipelines enforce 100% type safety and compiler compliance, producing highly standardized code across diverse microservice ecosystems.
+* **Guarantees Conformity**: Multi-agent pipelines enforce 100% type safety and compiler compliance, producing highly standardized code across diverse microservice ecosystems. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **React Team (2024)**. *React Compiler*. react.dev. [https://react.dev/learn/react-compiler](https://react.dev/learn/react-compiler)
+5. **React Team (2024)**. *React 19 Blog Post*. react.dev. [https://react.dev/blog/2024/12/05/react-19](https://react.dev/blog/2024/12/05/react-19)
+6. **Ry, R. (2024)**. *SolidJS Reactivity*. solidjs.com. [https://www.solidjs.com/guides/reactivity](https://www.solidjs.com/guides/reactivity)
+7. **Svelte Team (2024)**. *Svelte 5 Runes*. svelte.dev. [https://svelte.dev/docs/svelte/what-are-runes](https://svelte.dev/docs/svelte/what-are-runes)

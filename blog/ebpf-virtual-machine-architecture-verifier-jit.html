@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/ebpf-virtual-machine-architecture-verifier-jit.html">
   <meta property="og:title" content="eBPF Virtual Machine Architecture: BPF Instruction Set, Verifier Safety &amp; JIT Emission">
   <meta property="og:description" content="Kernel-space programmability: implementing 64-bit eBPF registers, static verifier security passes, memory pointer safety, and native x86_64 JIT compilation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/ebpf-virtual-machine-architecture-verifier-jit.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="eBPF Virtual Machine Architecture: BPF Instruction Set, Verifier Safety &amp; JIT Emission">
   <meta name="twitter:description" content="Kernel-space programmability: implementing 64-bit eBPF registers, static verifier security passes, memory pointer safety, and native x86_64 JIT compilation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/ebpf-virtual-machine-architecture-verifier-jit.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "eBPF Virtual Machine Architecture: BPF Instruction Set, Verifier Safety & JIT Emission",
   "description": "Kernel-space programmability: implementing 64-bit eBPF registers, static verifier security passes, memory pointer safety, and native x86_64 JIT compilation.",
   "url": "https://akmalkhaniub.github.io/blog/ebpf-virtual-machine-architecture-verifier-jit.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/ebpf-virtual-machine-architecture-verifier-jit.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "eBPF, Linux Kernel, Security, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="eBPF Virtual Machine Architecture: BPF Instruction Set, Verifier Safety &amp; JIT Emission Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/ebpf-virtual-machine-architecture-verifier-jit.jpg" class="article-cover-img" alt="eBPF Virtual Machine Architecture: BPF Instruction Set, Verifier Safety &amp; JIT Emission Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">eBPF Virtual Machine Architecture: BPF Instruction Set, Verifier Safety &amp; JIT Emission</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#ebpf-verification-jit-execution-architecture">eBPF Verification &amp; JIT Execution Architecture</a></li>
+                <li><a href="#core-ebpf-virtual-machine-architecture">Core eBPF Virtual Machine Architecture</a></li>
                 <li><a href="#python-implementation-ebpf-bytecode-emulator-static-verifier">Python Implementation: eBPF Bytecode Emulator &amp; Static Verifier</a></li>
                 <li><a href="#ebpf-development-gotchas-best-practices">eBPF Development Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>For decades, extending or customizing Linux kernel behavior required writing custom C Kernel Modules (<code>.ko</code>).</p>
+<p>For decades, extending or customizing Linux kernel behavior required writing custom C Kernel Modules (<code> [1].ko</code>).</p>
 <p>However, out-of-tree kernel modules are inherently dangerous: a single null-pointer dereference or infinite loop inside kernel space triggers a catastrophic <strong>Kernel Panic</strong> system crash, taking down the entire physical host machine.</p>
 <p>To grant developers the ability to execute custom logic inside the Linux kernel safely without modifying kernel source code or loading risk-laden kernel modules, Linux introduced <strong>Extended Berkeley Packet Filter (eBPF)</strong>.</p>
 <p>eBPF transforms the Linux kernel into a <strong>Programmable Operating System</strong>.</p>
@@ -122,20 +125,31 @@
 <hr>
 <h2 id="ebpf-verification-jit-execution-architecture">eBPF Verification &amp; JIT Execution Architecture</h2>
 <p>How eBPF programs pass static kernel verification before JIT compilation into native assembly:</p>
-<div class="mermaid">graph TD
-  Source[eBPF C Source Code: bpf_program.c] --&gt;|1. Compile via Clang/LLVM| Bytecode[eBPF Bytecode File: .o]
+<div class="mermaid">flowchart TD
+  Source[&quot;eBPF C Source Code: bpf_program.c&quot;] --&gt;|Compile via Clang/LLVM| Bytecode[&quot;eBPF Bytecode File: .o&quot;]
   
   subgraph SG1_LinuxKernelSandbox [&quot;Linux Kernel Sandbox (bpf Syscall)&quot;]
-    Bytecode --&gt;|2. bpf(BPF_PROG_LOAD)| Verifier{Linux eBPF Static Verifier}
+    Bytecode --&gt;|bpf(BPF_PROG_LOAD)| Verifier{Linux eBPF Static Verifier}
     
-    Verifier --&gt;|3a. Check CFG: Unreachable code, Out-of-bounds Pointers, Infinite Loops| Reject[🚨 REJECT LOAD: Insecure Program!]
-    Verifier --&gt;|3b. Verification Passed!| JIT[eBPF Kernel JIT Compiler]
+    Verifier --&gt;|Check CFG - Unreachable code, Out-of-bounds Pointers, Infinite Loops| Reject[&quot; REJECT LOAD: Insecure Program!&quot;]
+    Verifier --&gt;|Verification Passed!| JIT[&quot;eBPF Kernel JIT Compiler&quot;]
   end
   
   subgraph SG2_HighSpeedNative [&quot;High-Speed Native Kernel Execution&quot;]
-    JIT --&gt;|4. Emit Native Machine Code| Assembly[Native x86_64 / ARM64 Assembly]
-    Assembly --&gt;|5. Hook Attach: Kprobes / Tracepoints / XDP| KernelExec[Direct Execution in Kernel Context]
-  end</div>
+    JIT --&gt;|Emit Native Machine Code| Assembly[&quot;Native x86_64 / ARM64 Assembly&quot;]
+    Assembly --&gt;|Hook Attach - Kprobes / Tracepoints / XDP| KernelExec[&quot;Direct Execution in Kernel Context&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Source,KernelExec blue
+class Bytecode green
+class Reject purple
+class JIT yellow
+class Assembly red</div>
 <h3 id="core-ebpf-virtual-machine-architecture">Core eBPF Virtual Machine Architecture</h3>
 <ol>
 <li><strong>64-Bit Register Architecture</strong>: The eBPF virtual machine contains <strong>11 64-bit registers</strong> (<code>R0</code> through <code>R10</code>):<ul>
@@ -286,8 +300,19 @@ if __name__ == &quot;__main__&quot;:
 <p>eBPF technology (powering <strong>Cilium</strong>, <strong>Falco</strong>, and <strong>Pixie</strong>) reports:</p>
 <ul>
 <li><strong>Over 80% Reduction in Network CPU Overhead</strong>: Bypassing traditional Linux network stack processing via eBPF XDP programs dramatically reduces CPU usage.</li>
-<li><strong>Kernel-Level Zero-Day Threat Detection</strong>: Security agents intercept system calls and container process executions in real time with zero kernel panic risk.</li>
+<li><strong>Kernel-Level Zero-Day Threat Detection</strong>: Security agents intercept system calls and container process executions in real time with zero kernel panic risk. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Cytron, R., et al. (1991)</strong>. <em>Efficiently Computing Static Single Assignment Form and the Control Dependence Graph</em>. ACM TOPLAS. <a href="https://doi.org/10.1145/115372.115320" target="_blank" rel="noopener">https://doi.org/10.1145/115372.115320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Lattner, C., &amp; Adve, V. (2004)</strong>. <em>LLVM: A Compilation Framework for Lifelong Program Analysis &amp; Transformation</em>. CGO. <a href="https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf" target="_blank" rel="noopener">https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>V8 Team (2024)</strong>. <em>V8 Orinoco and Garbage Collection</em>. v8.dev. <a href="https://v8.dev/blog" target="_blank" rel="noopener">https://v8.dev/blog</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -320,9 +345,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#ebpf-verification-jit-execution-architecture" class="toc-link">eBPF Verification &amp; JIT Execution Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-ebpf-virtual-machine-architecture" class="toc-link">Core eBPF Virtual Machine Architecture</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-ebpf-bytecode-emulator-static-verifier" class="toc-link">Python Implementation: eBPF Bytecode Emulator &amp; Static Verifier</a></li>
               <li class="toc-item toc-h2"><a href="#ebpf-development-gotchas-best-practices" class="toc-link">eBPF Development Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1161,13 +1188,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1236,13 +1257,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1284,13 +1299,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/security-dynamic-rbac-tool-grants-tokens.html">
   <meta property="og:title" content="Dynamic Tool RBAC: Implementing Scoped Tool Grants for Swarms">
   <meta property="og:description" content="Securing agent privilege boundaries: implementing dynamic JWT-scoped tool permissions to restrict filesystem and API access in multi-agent swarms.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/security-dynamic-rbac-tool-grants-tokens.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-05-29">
+  <meta property="article:published_time" content="2026-05-30">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Dynamic Tool RBAC: Implementing Scoped Tool Grants for Swarms">
   <meta name="twitter:description" content="Securing agent privilege boundaries: implementing dynamic JWT-scoped tool permissions to restrict filesystem and API access in multi-agent swarms.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/security-dynamic-rbac-tool-grants-tokens.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Dynamic Tool RBAC: Implementing Scoped Tool Grants for Swarms",
   "description": "Securing agent privilege boundaries: implementing dynamic JWT-scoped tool permissions to restrict filesystem and API access in multi-agent swarms.",
   "url": "https://akmalkhaniub.github.io/blog/security-dynamic-rbac-tool-grants-tokens.html",
-  "datePublished": "2026-05-29",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/security-dynamic-rbac-tool-grants-tokens.jpg",
+  "datePublished": "2026-05-30",
   "keywords": "Security, JWT, API Design, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/security-dynamic-rbac-tool-grants-tokens.jpg" class="article-cover-img" alt="Dynamic Tool RBAC: Implementing Scoped Tool Grants for Swarms Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Dynamic Tool RBAC: Implementing Scoped Tool Grants for Swarms</h1>
             <div class="article-meta">
@@ -112,6 +113,7 @@
                 <li><a href="#2-decoupling-authorization-gates">2. Decoupling Authorization Gates</a></li>
                 <li><a href="#code-demo-scoped-tool-rbac-gateway">Code Demo: Scoped Tool RBAC Gateway</a></li>
                 <li><a href="#security-takeaways">Security Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,20 +126,29 @@ Sharing global access tokens across multi-agent systems is a major security flaw
 <h2 id="the-danger-of-over-privileged-agent-swarms">The Danger of Over-Privileged Agent Swarms</h2>
 <p>In basic systems, agents share a single API key or run with root host privileges:</p>
 <ul>
-<li><strong>Horizontal Privilege Escalation</strong>: A database auditor agent should not have permission to delete files or run git pushes, but shared credentials grant these capabilities.</li>
+<li><strong>Horizontal Privilege Escalation</strong>: A database auditor agent should not have permission to delete files or run git pushes, but shared credentials grant these capabilities <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Malicious Context Hijacking</strong>: If an agent is compromised via a prompt injection attack, the attacker can leverage the agent&#39;s broad tool permissions to execute system mutations.</li>
 <li><strong>The Solution</strong>: <strong>Scoped Session Tokens</strong>. The coordinator agent generates signed JWT keys with specific scope limits (e.g. <code>files:read:/workspace/src</code>) and delegates them to child agents. Tool routers parse the token claims before executing operations.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Request[Agent requests Tool: Read File] --&gt; Auth[Present signed Session JWT Token]
+    Request[&quot;Agent requests Tool: Read File&quot;] --&gt; Auth[&quot;Present signed Session JWT Token&quot;]
     Auth --&gt; Gateway{Gateway Scope Verifier}
     
-    Gateway --&gt; Decode[Decode JWT Claims]
+    Gateway --&gt; Decode[&quot;Decode JWT Claims&quot;]
     Decode --&gt; Match{Do Token Scopes match File Path?}
     
-    Match --&gt;|No: Unauthorized path| Reject([Block Tool Action: Log Alert])
-    Match --&gt;|Yes: Authorized| Execute([Execute Tool &amp; Return File Content])</div>
+    Match --&gt;|No - Unauthorized path| Reject([Block Tool Action: Log Alert])
+    Match --&gt;|Yes - Authorized| Execute([Execute Tool &amp; Return File Content])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Request blue
+class Auth green
+class Decode purple</div>
 <hr>
 <h2 id="1-defining-fine-grained-tool-scopes">1. Defining Fine-Grained Tool Scopes</h2>
 <p>We structure scope claims using hierarchical patterns:</p>
@@ -226,8 +237,19 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Avoid Unified Master Keys</strong>: Never supply parent root access keys directly to worker agent nodes. Enforce token scopes.</li>
 <li><strong>Isolate Filesystem Tools</strong>: Restrict filesystem reads and writes to specific subdirectories using path validation checks.</li>
-<li><strong>Establish Gateway Audits</strong>: Log authorization failures to alert security monitors about potential prompt injection attacks.</li>
+<li><strong>Establish Gateway Audits</strong>: Log authorization failures to alert security monitors about potential prompt injection attacks. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Jones, M., Bradley, J., &amp; Sakimura, N. (2015)</strong>. <em>JSON Web Token (JWT)</em>. RFC 7519. <a href="https://www.rfc-editor.org/rfc/rfc7519" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7519</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Hardt, D., Ed. (2012)</strong>. <em>The OAuth 2.0 Authorization Framework</em>. RFC 6749. <a href="https://www.rfc-editor.org/rfc/rfc6749" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc6749</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -264,6 +286,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-decoupling-authorization-gates" class="toc-link">2. Decoupling Authorization Gates</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-scoped-tool-rbac-gateway" class="toc-link">Code Demo: Scoped Tool RBAC Gateway</a></li>
               <li class="toc-item toc-h2"><a href="#security-takeaways" class="toc-link">Security Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1102,13 +1125,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1177,13 +1194,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1225,13 +1236,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

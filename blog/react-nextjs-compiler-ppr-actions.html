@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/react-nextjs-compiler-ppr-actions.html">
   <meta property="og:title" content="Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem">
   <meta property="og:description" content="An architectural guide reviewing the React Compiler, Next.js Server Actions, Partial Prerendering (PPR), the new 'use cache' directive, and post-response execution via after().">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/react-nextjs-compiler-ppr-actions.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-18">
+  <meta property="article:published_time" content="2026-03-19">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem">
   <meta name="twitter:description" content="An architectural guide reviewing the React Compiler, Next.js Server Actions, Partial Prerendering (PPR), the new 'use cache' directive, and post-response execution via after().">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/react-nextjs-compiler-ppr-actions.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Full-Stack React & Next.js: Architecture Patterns for the 2026 Ecosystem",
   "description": "An architectural guide reviewing the React Compiler, Next.js Server Actions, Partial Prerendering (PPR), the new 'use cache' directive, and post-response execution via after().",
   "url": "https://akmalkhaniub.github.io/blog/react-nextjs-compiler-ppr-actions.html",
-  "datePublished": "2026-03-18",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/react-nextjs-compiler-ppr-actions.jpg",
+  "datePublished": "2026-03-19",
   "keywords": "React, NextJS, Web Development, System Design",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/react-nextjs-compiler-ppr-actions.jpg" class="article-cover-img" alt="Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Full-Stack React &amp; Next.js: Architecture Patterns for the 2026 Ecosystem</h1>
             <div class="article-meta">
@@ -107,14 +108,26 @@
             <details class="mobile-toc">
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
+                <li><a href="#article-overview">📖 Article Overview</a></li>
                 <li><a href="#the-partial-prerendering-ppr-request-lifecycle">The Partial Prerendering (PPR) Request Lifecycle</a></li>
                 <li><a href="#key-architectural-transformations-in-2026">Key Architectural Transformations in 2026</a></li>
+                <li><a href="#1-the-react-compiler-the-end-of-usememo">1. The React Compiler: The End of useMemo</a></li>
+                <li><a href="#2-full-stack-data-mutations-server-actions">2. Full-Stack Data Mutations: Server Actions</a></li>
+                <li><a href="#3-granular-caching-the-use-cache-directive">3. Granular Caching: The use cache Directive</a></li>
+                <li><a href="#4-post-response-execution-the-after-api">4. Post-Response Execution: The after() API</a></li>
                 <li><a href="#building-a-server-action-form-in-nextjs">Building a Server-Action Form in Next.js</a></li>
+                <li><a href="#1-server-actions-controller-actionsts">1. Server Actions Controller (actions.ts)</a></li>
+                <li><a href="#2-client-task-component-taskformtsx">2. Client Task Component (TaskForm.tsx)</a></li>
                 <li><a href="#implementation-guardrails">Implementation Guardrails</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
                 <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
+<div class="alert alert-note">
+  <div class="alert-title"><i class="fa-solid fa-info-circle"></i> Note</div>
+  <div class="alert-content"><p><strong>Update (September 2026)</strong>: Next.js <strong>16.3 is Active LTS</strong>. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See <a href="the-great-un-caching-nextjs-15-caching-architecture-defaults.html">The Great Un-Caching</a> for the 15 default inversion.</p>
+</div>
+</div>
 <blockquote>
 <h3 id="article-overview">📖 Article Overview</h3>
 <ul>
@@ -123,7 +136,7 @@
 <li><strong>What we synthesized:</strong> We analyzed the PPR request lifecycle, detailed key architectural transformations, and provided a production-ready, full-stack form component utilizing optimistic UI updates and post-response background execution.</li>
 </ul>
 </blockquote>
-<p>The full-stack Javascript ecosystem is undergoing a dramatic consolidation. In 2026, the boundary between client-side rendering and server-side operations has completely dissolved. </p>
+<p>The full-stack Javascript ecosystem is undergoing a dramatic consolidation <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. In 2026, the boundary between client-side rendering and server-side operations has completely dissolved. </p>
 <p>With the stabilization of the <strong>React Compiler</strong>, <strong>React 19 Server Actions</strong>, and Next.js features like <strong>Partial Prerendering (PPR)</strong> and the <strong><code>after()</code> API</strong>, full-stack development is now cleaner, faster, and more unified.</p>
 <p>This article reviews these architectural features and details how to build a production-grade, form-handling component that leverages optimistic updates, server mutations, and post-response background execution.</p>
 <hr>
@@ -341,9 +354,16 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
           <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
           <nav class="article-toc">
             <ul class="toc-list">
+              <li class="toc-item toc-h3"><a href="#article-overview" class="toc-link">📖 Article Overview</a></li>
               <li class="toc-item toc-h2"><a href="#the-partial-prerendering-ppr-request-lifecycle" class="toc-link">The Partial Prerendering (PPR) Request Lifecycle</a></li>
               <li class="toc-item toc-h2"><a href="#key-architectural-transformations-in-2026" class="toc-link">Key Architectural Transformations in 2026</a></li>
+              <li class="toc-item toc-h3"><a href="#1-the-react-compiler-the-end-of-usememo" class="toc-link">1. The React Compiler: The End of useMemo</a></li>
+              <li class="toc-item toc-h3"><a href="#2-full-stack-data-mutations-server-actions" class="toc-link">2. Full-Stack Data Mutations: Server Actions</a></li>
+              <li class="toc-item toc-h3"><a href="#3-granular-caching-the-use-cache-directive" class="toc-link">3. Granular Caching: The use cache Directive</a></li>
+              <li class="toc-item toc-h3"><a href="#4-post-response-execution-the-after-api" class="toc-link">4. Post-Response Execution: The after() API</a></li>
               <li class="toc-item toc-h2"><a href="#building-a-server-action-form-in-nextjs" class="toc-link">Building a Server-Action Form in Next.js</a></li>
+              <li class="toc-item toc-h3"><a href="#1-server-actions-controller-actionsts" class="toc-link">1. Server Actions Controller (actions.ts)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-client-task-component-taskformtsx" class="toc-link">2. Client Task Component (TaskForm.tsx)</a></li>
               <li class="toc-item toc-h2"><a href="#implementation-guardrails" class="toc-link">Implementation Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
               <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
@@ -1185,13 +1205,7 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1260,13 +1274,7 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1308,13 +1316,7 @@ export default function TaskForm({ initialTasks }: TaskFormProps) {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

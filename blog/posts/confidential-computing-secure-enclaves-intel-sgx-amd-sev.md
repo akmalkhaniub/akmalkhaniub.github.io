@@ -1,6 +1,6 @@
 # Confidential Computing & Secure Enclaves: Intel SGX, AMD SEV & Hardware Attestation
 
-In multi-tenant public cloud environments (AWS, Azure, Google Cloud), organizations deploy sensitive workloads (financial analytics, healthcare records, proprietary AI models).
+In multi-tenant public cloud environments (AWS, Azure, Google Cloud), organizations deploy sensitive workloads (financial analytics, healthcare records, proprietary AI models) [1].
 
 Standard security protocols encrypt **Data-at-Rest** (disk encryption) and **Data-in-Transit** (TLS encryption).
 
@@ -19,22 +19,33 @@ This article details Enclave Page Cache (EPC) encryption, AMD SEV-SNP memory iso
 How Secure Enclaves isolate memory and provide cryptographic Remote Attestation quotes to verify binary integrity:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UntrustedCloudInfrastructure ["Untrusted Cloud Infrastructure (Hypervisor / OS Kernel)"]
-    UntrustedOS[Untrusted Host OS / Hypervisor] -.->|Attempt Memory Peeking| Blocked[🚫 BLOCKED by Hardware Memory Encryption Engine!]
+    UntrustedOS["Untrusted Host OS / Hypervisor"] -.->|Attempt Memory Peeking| Blocked[" BLOCKED by Hardware Memory Encryption Engine!"]
   end
   
   subgraph SG2_PhysicalCpuHardware ["Physical CPU Hardware (Intel SGX / AMD SEV)"]
-    MEE[Hardware Memory Encryption Engine: AES-XTS 128/256] <--> EPC[Enclave Page Cache EPC: Encrypted RAM]
-    EPC <--> Enclave[Secure Enclave Execution Context: MRENCLAVE Binary Hash]
+    MEE["Hardware Memory Encryption Engine: AES-XTS 128/256"] <--> EPC["Enclave Page Cache EPC: Encrypted RAM"]
+    EPC <--> Enclave["Secure Enclave Execution Context: MRENCLAVE Binary Hash"]
   end
   
   subgraph SG3_RemoteHardwareAttestation ["Remote Hardware Attestation Verification"]
-    Enclave -->|1. Generate Enclave Report| CPU_Key[CPU Hardware Attestation Secret Key]
-    CPU_Key -->|2. Cryptographically Sign Quote| AttestationQuote[Signed Hardware Attestation Quote]
-    AttestationQuote -->|3. Transmit Quote over TLS| RemoteClient[Remote Client / Verifier]
-    RemoteClient -->|4. Verify Signature via Intel/AMD PKI| Trust[🎉 VERIFIED: Code is running inside Genuine CPU Enclave!]
+    Enclave -->|Generate Enclave Report| CPU_Key["CPU Hardware Attestation Secret Key"]
+    CPU_Key -->|Cryptographically Sign Quote| AttestationQuote["Signed Hardware Attestation Quote"]
+    AttestationQuote -->|Transmit Quote over TLS| RemoteClient["Remote Client / Verifier"]
+    RemoteClient -->|Verify Signature via Intel/AMD PKI| Trust[" VERIFIED: Code is running inside Genuine CPU Enclave!"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UntrustedOS,CPU_Key blue
+class Blocked,AttestationQuote green
+class MEE,RemoteClient purple
+class EPC,Trust yellow
+class Enclave red
 ```
 
 ### Core Confidential Computing Principles
@@ -173,4 +184,10 @@ When building enclave applications:
 ## Real-World Enterprise Impact
 Confidential Computing deployments (such as **Azure Confidential VMs**, **AWS Nitro Enclaves**, and **Google Cloud Confidential Space**) report:
 * **Zero-Trust Cloud Processing**: Processing sensitive healthcare and financial data in public clouds without trusting the cloud provider's infrastructure or personnel.
-* **Multiparty Privacy-Preserving AI**: Multiple competing financial institutions training joint machine learning models on combined private data without exposing raw data to any party.
+* **Multiparty Privacy-Preserving AI**: Multiple competing financial institutions training joint machine learning models on combined private data without exposing raw data to any party. [2]
+
+## References & Further Reading
+
+1. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+2. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+3. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

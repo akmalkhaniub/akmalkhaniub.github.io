@@ -7,7 +7,7 @@
 
 ---
 
-The self-attention mechanism is both the secret to the Transformer's reasoning power and its biggest engineering limitation. 
+The self-attention mechanism is both the secret to the Transformer's reasoning power and its biggest engineering limitation [1]. 
 
 Self-attention computes a relationship matrix comparing every token in a prompt to every other token. This creates a **quadratic complexity bottleneck**: doubling your input context length increases the computational load and VRAM memory footprint by **four times ($O(N^2)$)**.
 
@@ -22,19 +22,19 @@ This article synthesizes the trade-offs of State Space Models vs. Transformers, 
 As context lengths scale into millions of tokens, the VRAM consumption of self-attention diverges quadratically, while SSMs maintain a constant state size, scaling memory usage linearly.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef linear fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
     classDef quad fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef label fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
 
-    Start[Inference Sequence Length N] --> ScaleType{Scale Complexity}
+    Start["Inference Sequence Length N"] --> ScaleType{Scale Complexity}
     
-    ScaleType -->|Self-Attention: O N^2| PathQuad[Quadratic Memory Growth]
-    ScaleType -->|State Space SSM: O N| PathLinear[Linear Memory Growth]
+    ScaleType -->|Self-Attention - O N^2| PathQuad["Quadratic Memory Growth"]
+    ScaleType -->|State Space SSM - O N| PathLinear["Linear Memory Growth"]
     
-    PathQuad -->|Context: 100K tokens| HBM_Crash[KV-Cache exhausts HBM/VRAM / Out Of Memory error]
-    PathLinear -->|Context: 100K tokens| LowVRAM[Constant state size / Stable execution]
+    PathQuad -->|Context - 100K tokens| HBM_Crash["KV-Cache exhausts HBM/VRAM / Out Of Memory error"]
+    PathLinear -->|Context - 100K tokens| LowVRAM["Constant state size / Stable execution"]
 
     class Start,ScaleType label;
     class PathLinear,LowVRAM linear;

@@ -1,4 +1,4 @@
-There is an unspoken rule in modern software marketing: the easier a framework is to deploy on its creator’s proprietary cloud, the more treacherous it is to self-host on your own infrastructure.
+There is an unspoken rule in modern software marketing: the easier a framework is to deploy on its creator’s proprietary cloud, the more treacherous it is to self-host on your own infrastructure [1].
 
 Next.js is the crown jewel of Vercel. When you push code to Vercel, a sophisticated, highly optimized fleet of edge networks, global key-value caches, automated image optimization microservices, and serverless compute pipelines coordinate seamlessly. Features like Incremental Static Regeneration (ISR), Server Actions, and the Data Cache work instantly with zero configuration.
 
@@ -18,7 +18,7 @@ And immediately, the platform starts unraveling:
 This is **The Self-Hosting Gauntlet**. Here is the architectural guide to taming Next.js in production on Docker, Kubernetes, and AWS Fargate.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph K8sArch ["Self-Hosted Next.js Architecture on Kubernetes"]
     Ingress["Cloudflare or AWS ALB"] --> Pod1["Next.js Pod 1: Standalone Node"]
     Ingress --> Pod2["Next.js Pod 2: Standalone Node"]
@@ -30,6 +30,17 @@ graph TD
       Pod1 & Pod2 & Pod3 <-->|Synchronized Action Cipher Keys| EnvSecrets["Kubernetes Secret: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY"]
     end
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Ingress blue
+class Pod1 green
+class Pod2 purple
+class Pod3 yellow
+class EnvSecrets red
 ```
 *Figure 1: Production multi-node Kubernetes cluster architecture for self-hosted Next.js with shared Redis cache handler and AWS S3 static asset offloading. Source: CNCF Enterprise Architecture Guidelines [2, 3].*
 

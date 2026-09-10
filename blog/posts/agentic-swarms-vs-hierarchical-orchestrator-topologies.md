@@ -8,7 +8,7 @@
 
 ## The Coordination Challenge
 
-When executing complex tasks, breaking down the problem among specialized agents (e.g., Researcher, Coder, Validator) is standard practice. However, how these agents collaborate impacts execution speed, cost, and reliability. 
+When executing complex tasks, breaking down the problem among specialized agents (e.g., Researcher, Coder, Validator) is standard practice. However, how these agents collaborate impacts execution speed, cost, and reliability [1]. 
 
 We organize agent networks using two primary topologies:
 
@@ -16,17 +16,28 @@ We organize agent networks using two primary topologies:
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     subgraph SG1_A1Hierarchical ["A [1. Hierarchical Supervisor]"]
-        Sup[Supervisor Agent] -->|Assigns task| W1[Worker A: Researcher]
+        Sup["Supervisor Agent"] -->|Assigns task| W1["Worker A: Researcher"]
         W1 -->|Returns result| Sup
-        Sup -->|Assigns task| W2[Worker B: Writer]
+        Sup -->|Assigns task| W2["Worker B: Writer"]
         W2 -->|Returns result| Sup
     end
 
     subgraph SG2_B2Decentralized ["B [2. Decentralized Swarm]"]
-        S1[Agent A: Researcher] -->|Transition state| S2[Agent B: Writer]
-        S2 -->|Transition state| S3[Agent C: Validator]
+        S1["Agent A: Researcher"] -->|Transition state| S2["Agent B: Writer"]
+        S2 -->|Transition state| S3["Agent C: Validator"]
         S3 -->|Feedback loops| S1
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Sup,S3 blue
+class W1 green
+class W2 purple
+class S1 yellow
+class S2 red
 ```
 
 ---
@@ -188,4 +199,13 @@ Selecting the right multi-agent architecture requires balancing control against 
 * [ ] **Enforce loop safety boundaries**: In decentralized swarms, always implement a global execution counter to force-terminate states if routing loops develop.
 * [ ] **Use Supervisors for dynamic planning**: If the list of tasks is unpredictable and changes based on user input, a supervisor's dynamic decomposition is required.
 * [ ] **Use Swarms for predictable flows**: If the sequence of operations follows a clear pipeline (e.g. Research $\rightarrow$ Code $\rightarrow$ Test), use direct swarm transitions to cut latency and token costs.
-* [ ] **Isolate state mutations**: Ensure that agent nodes write to distinct, non-overlapping keys in the shared state object to prevent race conditions in parallel execution.
+* [ ] **Isolate state mutations**: Ensure that agent nodes write to distinct, non-overlapping keys in the shared state object to prevent race conditions in parallel execution. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

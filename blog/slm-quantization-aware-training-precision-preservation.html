@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/slm-quantization-aware-training-precision-preservation.html">
   <meta property="og:title" content="Quantization-Aware Training: Protecting Model Precision against Bit Loss">
   <meta property="og:description" content="Improving low-bit model accuracy: simulating weight rounding errors during training to harden local 4-bit adapters.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/slm-quantization-aware-training-precision-preservation.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-05">
+  <meta property="article:published_time" content="2026-07-06">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Quantization-Aware Training: Protecting Model Precision against Bit Loss">
   <meta name="twitter:description" content="Improving low-bit model accuracy: simulating weight rounding errors during training to harden local 4-bit adapters.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/slm-quantization-aware-training-precision-preservation.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Quantization-Aware Training: Protecting Model Precision against Bit Loss",
   "description": "Improving low-bit model accuracy: simulating weight rounding errors during training to harden local 4-bit adapters.",
   "url": "https://akmalkhaniub.github.io/blog/slm-quantization-aware-training-precision-preservation.html",
-  "datePublished": "2026-07-05",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/slm-quantization-aware-training-precision-preservation.jpg",
+  "datePublished": "2026-07-06",
   "keywords": "Optimization, Fine-Tuning, Quantization, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/slm-quantization-aware-training-precision-preservation.jpg" class="article-cover-img" alt="Quantization-Aware Training: Protecting Model Precision against Bit Loss Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Quantization-Aware Training: Protecting Model Precision against Bit Loss</h1>
             <div class="article-meta">
@@ -112,6 +113,7 @@
                 <li><a href="#2-straight-through-estimators-ste">2. Straight-Through Estimators (STE)</a></li>
                 <li><a href="#code-demo-quantization-aware-training-simulator">Code Demo: Quantization-Aware Training Simulator</a></li>
                 <li><a href="#quantization-aware-takeaways">Quantization-Aware Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,22 +126,33 @@ Deploying fine-tuned models to edge devices requires converting high-precision w
 <h2 id="the-threat-of-quantization-noise">The Threat of Quantization Noise</h2>
 <p>In standard compression workflows:</p>
 <ul>
-<li><strong>The Post-Training Drop</strong>: Quantizing a custom-tuned adapter post-hoc rounds floating-point values to discrete integer steps, destroying high-precision representations.</li>
+<li><strong>The Post-Training Drop</strong>: Quantizing a custom-tuned adapter post-hoc rounds floating-point values to discrete integer steps, destroying high-precision representations <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Loss of Domain Accuracy</strong>: SLMs fine-tuned to output strict JSON schemas start outputting syntax errors after compression due to rounding losses.</li>
 <li><strong>The Solution</strong>: <strong>Quantization-Aware Training (QAT)</strong>. We preserve weights in high-precision (FP32) but pass them through a simulated quantization gate (fake quantization) during forward training passes. The optimizer updates the FP32 weights based on the degraded outputs, learning robust parameters.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Weight[High-Precision Weights: FP32] --&gt; FakeQuant{Fake Quantization Gate}
+    Weight[&quot;High-Precision Weights: FP32&quot;] --&gt; FakeQuant{Fake Quantization Gate}
     
     subgraph SG1_QuantizationSimulation [&quot;Quantization Simulation&quot;]
-        FakeQuant --&gt; Scale[Scale to target bit bounds: e.g. -8 to +7]
-        Scale --&gt; Round[Round floats to nearest integers]
-        Round --&gt; DeScale[De-scale back to floating range]
+        FakeQuant --&gt; Scale[&quot;Scale to target bit bounds: e.g. -8 to +7&quot;]
+        Scale --&gt; Round[&quot;Round floats to nearest integers&quot;]
+        Round --&gt; DeScale[&quot;De-scale back to floating range&quot;]
     end
     
-    DeScale --&gt; Forward[Execute forward training pass]
-    Forward --&gt; Backprop[Calculate Gradients &amp; Update FP32 weights]</div>
+    DeScale --&gt; Forward[&quot;Execute forward training pass&quot;]
+    Forward --&gt; Backprop[&quot;Calculate Gradients &amp; Update FP32 weights&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Weight,Backprop blue
+class Scale green
+class Round purple
+class DeScale yellow
+class Forward red</div>
 <hr>
 <h2 id="1-simulating-integer-clamping-fake-quantization">1. Simulating Integer Clamping (Fake Quantization)</h2>
 <p>To implement simulated low-bit training:</p>
@@ -216,8 +229,20 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Simulate Rounding Noise</strong>: Inject quantization rounding errors during training to train models to adapt to noise.</li>
 <li><strong>Keep High-Precision Backups</strong>: Maintain master weights in high-precision (FP32) to aggregate gradients.</li>
-<li><strong>Enforce Safe Boundaries</strong>: Clamp weights to prevent activation overflow during low-bit deployment.</li>
+<li><strong>Enforce Safe Boundaries</strong>: Clamp weights to prevent activation overflow during low-bit deployment. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Hu, E. J., et al. (2021)</strong>. <em>LoRA: Low-Rank Adaptation of Large Language Models</em>. ICLR. <a href="https://arxiv.org/abs/2106.09685" target="_blank" rel="noopener">https://arxiv.org/abs/2106.09685</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Dettmers, T., et al. (2023)</strong>. <em>QLoRA: Efficient Finetuning of Quantized LLMs</em>. NeurIPS. <a href="https://arxiv.org/abs/2305.14314" target="_blank" rel="noopener">https://arxiv.org/abs/2305.14314</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Lin, J., et al. (2024)</strong>. <em>AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</em>. MLSys. <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener">https://arxiv.org/abs/2306.00978</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Frantar, E., et al. (2023)</strong>. <em>GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</em>. ICLR. <a href="https://arxiv.org/abs/2210.17323" target="_blank" rel="noopener">https://arxiv.org/abs/2210.17323</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Wang, H., et al. (2023)</strong>. <em>BitNet: Scaling 1-bit Transformers for Large Language Models</em>. arXiv. <a href="https://arxiv.org/abs/2310.11453" target="_blank" rel="noopener">https://arxiv.org/abs/2310.11453</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -254,6 +279,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-straight-through-estimators-ste" class="toc-link">2. Straight-Through Estimators (STE)</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-quantization-aware-training-simulator" class="toc-link">Code Demo: Quantization-Aware Training Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#quantization-aware-takeaways" class="toc-link">Quantization-Aware Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1091,14 +1117,8 @@ if __name__ == &quot;__main__&quot;:
             <li class="sidebar-post-item">
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
-            <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
             <li class="sidebar-post-item active">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1167,13 +1187,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1215,13 +1229,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

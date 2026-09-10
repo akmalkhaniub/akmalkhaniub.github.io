@@ -1,6 +1,10 @@
 # Hybrid Search & Reranking: Balancing Dense Retrieval with Sparse BM25 + Cross-Encoders
 
 > [!NOTE]
+> **Catalog note**: For the production RRF path, see [Hybrid Search with Sparse and Dense Ranking](rag-hybrid-search-sparse-dense-rrf-ranking.html).
+
+
+> [!NOTE]
 > **📖 Article Overview**
 > Semantic vector embeddings are powerful for conceptual matching, but they struggle with exact keyword targets, SKU codes, and precise system IDs. In this article, we show how to construct a high-recall **Hybrid Search** pipeline combining dense vector embeddings (**pgvector**) with sparse keyword matching (**BM25 / TSQuery**). We outline the reciprocal rank fusion (RRF) score merger algorithm, evaluate the latency trade-offs of neural **Cross-Encoder rerankers**, and provide a complete Python implementation.
 
@@ -24,19 +28,19 @@ A production-grade hybrid retrieval pipeline executes parallel search queries, m
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
-    A[User Search Query] --> B[Dense Retrieval Branch]
-    A --> C[Sparse Retrieval Branch]
+flowchart TD
+    A["User Search Query"] --> B["Dense Retrieval Branch"]
+    A --> C["Sparse Retrieval Branch"]
     
-    B -->|Cosine Distance Lookup| D[pgvector Index Search]
-    C -->|TF-IDF / BM25 Inverted Index| E[PostgreSQL tsvector Search]
+    B -->|Cosine Distance Lookup| D["pgvector Index Search"]
+    C -->|TF-IDF / BM25 Inverted Index| E["PostgreSQL tsvector Search"]
     
-    D -->|Top 50 Vector Candidates| F[Reciprocal Rank Fusion RRF Merger]
+    D -->|Top 50 Vector Candidates| F["Reciprocal Rank Fusion RRF Merger"]
     E -->|Top 50 Keyword Candidates| F
     
-    F -->|Top 20 Merged Candidates| G[Neural Cross-Encoder Reranker]
-    G -->|Calculate Pairwise Relevance| H[Re-sorted Final List]
-    H -->|Top 5 Chunks| I[LLM Context Ingestion]
+    F -->|Top 20 Merged Candidates| G["Neural Cross-Encoder Reranker"]
+    G -->|Calculate Pairwise Relevance| H["Re-sorted Final List"]
+    H -->|Top 5 Chunks| I["LLM Context Ingestion"]
 
     style A fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
     style B fill:#111827,stroke:#a855f7,stroke-width:2px
@@ -44,6 +48,17 @@ graph TD
     style F fill:#0ea5e9,stroke:#0f172a,stroke-width:2px,color:#0f172a
     style G fill:#111827,stroke:#10b981,stroke-width:2px
     style I fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E red
 ```
 
 ### The RRF (Reciprocal Rank Fusion) Merger
@@ -171,7 +186,7 @@ In our next article, [Automated RAG Evals: Stress-Testing Pipelines with DeepEva
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **RRF Paper**: *Reciprocal Rank Fusion Outperforms Single Retrieval Models* (Cormack et al., Waterloo) — [ResearchGate Link](https://www.researchgate.net/)
 *   **pgvector Documentation**: [PostgreSQL extension for vector similarity search](https://github.com/pgvector/pgvector)
 *   **Sentence Transformers**: [Cross-Encoder Documentation](https://sbert.net/)

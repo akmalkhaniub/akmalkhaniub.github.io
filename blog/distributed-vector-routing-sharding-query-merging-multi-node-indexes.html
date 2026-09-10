@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/distributed-vector-routing-sharding-query-merging-multi-node-indexes.html">
   <meta property="og:title" content="Distributed Vector Routing: Sharding &amp; Query Merging in Multi-Node Indexes">
   <meta property="og:description" content="Scaling vector databases to billions of documents: evaluating document-based scatter-gather partitioning vs cluster-based routing, and implementing heap-based multi-way merge sorts.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-vector-routing-sharding-query-merging-multi-node-indexes.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-10">
+  <meta property="article:published_time" content="2026-08-11">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Distributed Vector Routing: Sharding &amp; Query Merging in Multi-Node Indexes">
   <meta name="twitter:description" content="Scaling vector databases to billions of documents: evaluating document-based scatter-gather partitioning vs cluster-based routing, and implementing heap-based multi-way merge sorts.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/distributed-vector-routing-sharding-query-merging-multi-node-indexes.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Distributed Vector Routing: Sharding & Query Merging in Multi-Node Indexes",
   "description": "Scaling vector databases to billions of documents: evaluating document-based scatter-gather partitioning vs cluster-based routing, and implementing heap-based multi-way merge sorts.",
   "url": "https://akmalkhaniub.github.io/blog/distributed-vector-routing-sharding-query-merging-multi-node-indexes.html",
-  "datePublished": "2026-08-10",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/distributed-vector-routing-sharding-query-merging-multi-node-indexes.jpg",
+  "datePublished": "2026-08-11",
   "keywords": "Vector Database, Distributed Routing, Sharding, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Distributed Vector Routing: Sharding &amp; Query Merging in Multi-Node Indexes Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/distributed-vector-routing-sharding-query-merging-multi-node-indexes.jpg" class="article-cover-img" alt="Distributed Vector Routing: Sharding &amp; Query Merging in Multi-Node Indexes Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Distributed Vector Routing: Sharding &amp; Query Merging in Multi-Node Indexes</h1>
             <div class="article-meta">
@@ -108,38 +109,51 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#distributed-vector-search-pipeline">Distributed Vector Search Pipeline</a></li>
+                <li><a href="#partitioning-strategies">Partitioning Strategies</a></li>
                 <li><a href="#python-simulation-distributed-scatter-gather-coordinator">Python Simulation: Distributed Scatter-Gather Coordinator</a></li>
                 <li><a href="#distributed-search-gotchas-guardrails">Distributed Search Gotchas &amp; Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>As vector datasets grow to billions of documents, a single server node can no longer fit the index in memory or handle the CPU query load. To scale, vector databases must partition the index across a cluster of multiple physical machines.</p>
+<p>As vector datasets grow to billions of documents, a single server node can no longer fit the index in memory or handle the CPU query load <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. To scale, vector databases must partition the index across a cluster of multiple physical machines.</p>
 <p>However, sharding vector spaces is fundamentally more complex than sharding relational databases. Relational tables shard easily on a primary key (e.g. <code>user_id</code>), allowing queries to target a single node. </p>
 <p>In contrast, vector search requires finding the global $k$-nearest neighbors ($k$-NN) of an arbitrary query vector. Because similar vectors could theoretically reside on any shard, databases must implement sophisticated <strong>Distributed Vector Routing</strong> pipelines.</p>
 <p>This article details how to design partition schemes and execute scatter-gather query routing.</p>
 <hr>
 <h2 id="distributed-vector-search-pipeline">Distributed Vector Search Pipeline</h2>
 <p>The query coordinator broadcasts queries to shards and resolves local lists into a global output:</p>
-<div class="mermaid">graph TD
-  A[Client Query Vector] --&gt; B[Distributed Coordinator Node]
+<div class="mermaid">flowchart TD
+  A[&quot;Client Query Vector&quot;] --&gt; B[&quot;Distributed Coordinator Node&quot;]
   
   subgraph SG1_ClusterScatterPhase [&quot;Cluster Scatter Phase&quot;]
-    B --&gt;|Broadcast Query| C[Shard Node 1: Local HNSW Index]
-    B --&gt;|Broadcast Query| D[Shard Node 2: Local HNSW Index]
-    B --&gt;|Broadcast Query| E[Shard Node 3: Local HNSW Index]
+    B --&gt;|Broadcast Query| C[&quot;Shard Node 1: Local HNSW Index&quot;]
+    B --&gt;|Broadcast Query| D[&quot;Shard Node 2: Local HNSW Index&quot;]
+    B --&gt;|Broadcast Query| E[&quot;Shard Node 3: Local HNSW Index&quot;]
   end
   
   subgraph SG2_LocalSearchRuns [&quot;Local Search Runs&quot;]
-    C --&gt;|Return Local Top-K| F[Candidate List A]
-    D --&gt;|Return Local Top-K| G[Candidate List B]
-    E --&gt;|Return Local Top-K| H[Candidate List C]
+    C --&gt;|Return Local Top-K| F[&quot;Candidate List A&quot;]
+    D --&gt;|Return Local Top-K| G[&quot;Candidate List B&quot;]
+    E --&gt;|Return Local Top-K| H[&quot;Candidate List C&quot;]
   end
   
-  F --&gt; I[Gather Phase: Multi-Way Heap Merge Sort]
+  F --&gt; I[&quot;Gather Phase: Multi-Way Heap Merge Sort&quot;]
   G --&gt; I
   H --&gt; I
   
-  I --&gt; J[Final Global Top-K Match List]</div>
+  I --&gt; J[&quot;Final Global Top-K Match List&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E,J red</div>
 <h3 id="partitioning-strategies">Partitioning Strategies</h3>
 <ol>
 <li><strong>Document-Based Partitioning (Scatter-Gather)</strong>: Vectors are distributed uniformly across shards (e.g., using round-robin or document ID hashes). The query coordinator broadcasts the query vector to every shard in the cluster. Each shard returns its local top-$k$ results, and the coordinator merges them. This is robust but resource-intensive at scale.</li>
@@ -248,8 +262,17 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams deploying distributed vector sharding report:</p>
 <ul>
 <li><strong>Horizontal Scalability</strong>: Clusters easily scale to billions of vectors by adding more index shard instances.</li>
-<li><strong>Low Merge Overhead</strong>: Using heap-based multi-way merge sort on the coordinator limits latency additions during the gather phase to under 2ms.</li>
+<li><strong>Low Merge Overhead</strong>: Using heap-based multi-way merge sort on the coordinator limits latency additions during the gather phase to under 2ms. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Vercel Documentation (2026)</strong>. <em>Caching in Next.js</em>. Next.js Docs. <a href="https://nextjs.org/docs/app/getting-started/caching" target="_blank" rel="noopener">https://nextjs.org/docs/app/getting-started/caching</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>React Team (2024)</strong>. <em>React Server Components and Related RFCs</em>. reactjs/rfcs. <a href="https://github.com/reactjs/rfcs" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/reactjs/rfcs</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -282,9 +305,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#distributed-vector-search-pipeline" class="toc-link">Distributed Vector Search Pipeline</a></li>
+              <li class="toc-item toc-h3"><a href="#partitioning-strategies" class="toc-link">Partitioning Strategies</a></li>
               <li class="toc-item toc-h2"><a href="#python-simulation-distributed-scatter-gather-coordinator" class="toc-link">Python Simulation: Distributed Scatter-Gather Coordinator</a></li>
               <li class="toc-item toc-h2"><a href="#distributed-search-gotchas-guardrails" class="toc-link">Distributed Search Gotchas &amp; Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1123,13 +1148,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1198,13 +1217,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1246,13 +1259,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

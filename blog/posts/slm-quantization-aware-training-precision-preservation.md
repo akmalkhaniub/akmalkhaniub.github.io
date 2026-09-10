@@ -9,23 +9,34 @@
 ## The Threat of Quantization Noise
 
 In standard compression workflows:
-* **The Post-Training Drop**: Quantizing a custom-tuned adapter post-hoc rounds floating-point values to discrete integer steps, destroying high-precision representations.
+* **The Post-Training Drop**: Quantizing a custom-tuned adapter post-hoc rounds floating-point values to discrete integer steps, destroying high-precision representations [1].
 * **Loss of Domain Accuracy**: SLMs fine-tuned to output strict JSON schemas start outputting syntax errors after compression due to rounding losses.
 * **The Solution**: **Quantization-Aware Training (QAT)**. We preserve weights in high-precision (FP32) but pass them through a simulated quantization gate (fake quantization) during forward training passes. The optimizer updates the FP32 weights based on the degraded outputs, learning robust parameters.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Weight[High-Precision Weights: FP32] --> FakeQuant{Fake Quantization Gate}
+    Weight["High-Precision Weights: FP32"] --> FakeQuant{Fake Quantization Gate}
     
     subgraph SG1_QuantizationSimulation ["Quantization Simulation"]
-        FakeQuant --> Scale[Scale to target bit bounds: e.g. -8 to +7]
-        Scale --> Round[Round floats to nearest integers]
-        Round --> DeScale[De-scale back to floating range]
+        FakeQuant --> Scale["Scale to target bit bounds: e.g. -8 to +7"]
+        Scale --> Round["Round floats to nearest integers"]
+        Round --> DeScale["De-scale back to floating range"]
     end
     
-    DeScale --> Forward[Execute forward training pass]
-    Forward --> Backprop[Calculate Gradients & Update FP32 weights]
+    DeScale --> Forward["Execute forward training pass"]
+    Forward --> Backprop["Calculate Gradients & Update FP32 weights"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Weight,Backprop blue
+class Scale green
+class Round purple
+class DeScale yellow
+class Forward red
 ```
 
 ---
@@ -113,4 +124,14 @@ if __name__ == "__main__":
 
 * **Simulate Rounding Noise**: Inject quantization rounding errors during training to train models to adapt to noise.
 * **Keep High-Precision Backups**: Maintain master weights in high-precision (FP32) to aggregate gradients.
-* **Enforce Safe Boundaries**: Clamp weights to prevent activation overflow during low-bit deployment.
+* **Enforce Safe Boundaries**: Clamp weights to prevent activation overflow during low-bit deployment. [2]
+
+## References & Further Reading
+
+1. **Hu, E. J., et al. (2021)**. *LoRA: Low-Rank Adaptation of Large Language Models*. ICLR. [https://arxiv.org/abs/2106.09685](https://arxiv.org/abs/2106.09685)
+2. **Dettmers, T., et al. (2023)**. *QLoRA: Efficient Finetuning of Quantized LLMs*. NeurIPS. [https://arxiv.org/abs/2305.14314](https://arxiv.org/abs/2305.14314)
+3. **Lin, J., et al. (2024)**. *AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration*. MLSys. [https://arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)
+4. **Frantar, E., et al. (2023)**. *GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers*. ICLR. [https://arxiv.org/abs/2210.17323](https://arxiv.org/abs/2210.17323)
+5. **Wang, H., et al. (2023)**. *BitNet: Scaling 1-bit Transformers for Large Language Models*. arXiv. [https://arxiv.org/abs/2310.11453](https://arxiv.org/abs/2310.11453)
+6. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+7. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)

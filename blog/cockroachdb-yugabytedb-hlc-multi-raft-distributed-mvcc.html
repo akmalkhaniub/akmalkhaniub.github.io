@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/cockroachdb-yugabytedb-hlc-multi-raft-distributed-mvcc.html">
   <meta property="og:title" content="CockroachDB &amp; YugabyteDB Internals: Hybrid Logical Clocks (HLC), Multi-Raft Consensus &amp; Distributed MVCC">
   <meta property="og:description" content="Cloud-native Distributed SQL engines: implementing Hybrid Logical Clocks (HLC combining physical clock + logical counter), Multi-Raft range partitioning (64 MB splits), Distributed MVCC, and Write Intent resolution.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/cockroachdb-yugabytedb-hlc-multi-raft-distributed-mvcc.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="CockroachDB &amp; YugabyteDB Internals: Hybrid Logical Clocks (HLC), Multi-Raft Consensus &amp; Distributed MVCC">
   <meta name="twitter:description" content="Cloud-native Distributed SQL engines: implementing Hybrid Logical Clocks (HLC combining physical clock + logical counter), Multi-Raft range partitioning (64 MB splits), Distributed MVCC, and Write Intent resolution.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/cockroachdb-yugabytedb-hlc-multi-raft-distributed-mvcc.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "CockroachDB & YugabyteDB Internals: Hybrid Logical Clocks (HLC), Multi-Raft Consensus & Distributed MVCC",
   "description": "Cloud-native Distributed SQL engines: implementing Hybrid Logical Clocks (HLC combining physical clock + logical counter), Multi-Raft range partitioning (64 MB splits), Distributed MVCC, and Write Intent resolution.",
   "url": "https://akmalkhaniub.github.io/blog/cockroachdb-yugabytedb-hlc-multi-raft-distributed-mvcc.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/cockroachdb-yugabytedb-hlc-multi-raft-distributed-mvcc.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "CockroachDB, YugabyteDB, HLC, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="CockroachDB &amp; YugabyteDB Internals: Hybrid Logical Clocks (HLC), Multi-Raft Consensus &amp; Distributed MVCC Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/cockroachdb-yugabytedb-hlc-multi-raft-distributed-mvcc.jpg" class="article-cover-img" alt="CockroachDB &amp; YugabyteDB Internals: Hybrid Logical Clocks (HLC), Multi-Raft Consensus &amp; Distributed MVCC Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">CockroachDB &amp; YugabyteDB Internals: Hybrid Logical Clocks (HLC), Multi-Raft Consensus &amp; Distributed MVCC</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#distributed-sql-architecture-hlc-multi-raft-mechanics">Distributed SQL Architecture &amp; HLC Multi-Raft Mechanics</a></li>
+                <li><a href="#core-open-source-distributed-sql-mechanics">Core Open-Source Distributed SQL Mechanics</a></li>
                 <li><a href="#python-implementation-hybrid-logical-clock-multi-raft-simulator">Python Implementation: Hybrid Logical Clock &amp; Multi-Raft Simulator</a></li>
                 <li><a href="#distributed-sql-gotchas-best-practices">Distributed SQL Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In modern cloud-native database engineering (<strong>CockroachDB</strong>, <strong>YugabyteDB</strong>, <strong>TiDB</strong>), applications require full PostgreSQL compatibility alongside elastic horizontal scaling.</p>
+<p>In modern cloud-native database engineering (<strong>CockroachDB</strong>, <strong>YugabyteDB</strong>, <strong>TiDB</strong>), applications require full PostgreSQL compatibility alongside elastic horizontal scaling <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>While Google Spanner demonstrated global linearizability, it relies on proprietary GPS receivers and Rubidium atomic clock hardware (<strong>TrueTime</strong>) to bound physical clock uncertainty.</p>
 <p>To deliver Spanner-grade distributed transactions on commodity cloud VMs (AWS EC2, GCP, Azure), open-source Distributed SQL engines deploy <strong>Hybrid Logical Clocks (HLC)</strong>.</p>
 <p>By pairing HLC time tracking with <strong>Multi-Raft Range Partitioning</strong> and <strong>Distributed MVCC Write Intents</strong>, these databases execute multi-shard transactions with strict serializability on standard hardware.</p>
@@ -121,9 +124,9 @@
 <hr>
 <h2 id="distributed-sql-architecture-hlc-multi-raft-mechanics">Distributed SQL Architecture &amp; HLC Multi-Raft Mechanics</h2>
 <p>How CockroachDB and YugabyteDB combine Hybrid Logical Clocks and Multi-Raft consensus to execute distributed ACID transactions:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_HybridLogicalClock [&quot;Hybrid Logical Clock (HLC) Time Engine&quot;]
-    PhysicalClock[Physical Server Clock pt] &amp; RemoteHLC[Incoming Message HLC: l_m, c_m] --&gt; HLCUpdate[HLC Update Math: l_next = max(l_curr, pt, l_m)]
+    PhysicalClock[&quot;Physical Server Clock pt&quot;] &amp; RemoteHLC[&quot;Incoming Message HLC: l_m, c_m&quot;] --&gt; HLCUpdate[&quot;HLC Update Math: l_next = max(l_curr, pt, l_m)&quot;]
     HLCUpdate --&gt; HLCTuple[&quot;HLC Timestamp Tuple: (l_next, c_next)&quot;]
   end
   
@@ -135,9 +138,20 @@
   subgraph SG3_DistributedMvccWrite [&quot;Distributed MVCC &amp; Write Intent Resolution&quot;]
     Range1 --&gt; WriteIntent[&quot;Write Intent Record: key@HLC -&gt; [Val, Pointer to Txn Record]&quot;]
     WriteIntent --&gt; TxnState{Is Txn Record Status = COMMITTED?}
-    TxnState --&gt;|Yes| MVCCRead[&quot;🎉 Instant MVCC Read: Return Value at HLC Timestamp!&quot;]
-    TxnState --&gt;|No: Aborted/Pending| Rollback[&quot;Wait or Push Transaction Threshold&quot;]
-  end</div>
+    TxnState --&gt;|Yes| MVCCRead[&quot; Instant MVCC Read: Return Value at HLC Timestamp!&quot;]
+    TxnState --&gt;|No - Aborted/Pending| Rollback[&quot;Wait or Push Transaction Threshold&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class PhysicalClock,Range2 blue
+class RemoteHLC,WriteIntent green
+class HLCUpdate,MVCCRead purple
+class HLCTuple,Rollback yellow
+class Range1 red</div>
 <h3 id="core-open-source-distributed-sql-mechanics">Core Open-Source Distributed SQL Mechanics</h3>
 <ol>
 <li><strong>Hybrid Logical Clocks (HLC)</strong>:<ul>
@@ -284,8 +298,20 @@ if __name__ == &quot;__main__&quot;:
 <p>Distributed SQL internals (in <strong>CockroachDB</strong>, <strong>YugabyteDB</strong>, and <strong>TiDB</strong>) report:</p>
 <ul>
 <li><strong>Spanner-Grade Reliability on Commodity Cloud Hardware</strong>: Delivers multi-region ACID transactions without requiring atomic clock GPS hardware.</li>
-<li><strong>Elastic Horizontal Auto-Scaling</strong>: $64\text{ MB}$ Multi-Raft range splits allow clusters to scale linearly across hundreds of nodes.</li>
+<li><strong>Elastic Horizontal Auto-Scaling</strong>: $64\text{ MB}$ Multi-Raft range splits allow clusters to scale linearly across hundreds of nodes. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (2001)</strong>. <em>Paxos Made Simple</em>. ACM SIGACT News. <a href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/paxos-simple.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Lamport, L. (1998)</strong>. <em>The Part-Time Parliament</em>. ACM TOCS. <a href="https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Corbett, J. C., et al. (2012)</strong>. <em>Spanner: Google&#39;s Globally-Distributed Database</em>. OSDI. <a href="https://research.google/pubs/pub39966/" target="_blank" rel="noopener">https://research.google/pubs/pub39966/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Lamport, L. (1978)</strong>. <em>Time, Clocks, and the Ordering of Events in a Distributed System</em>. CACM. <a href="https://lamport.azurewebsites.net/pubs/time-clocks.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/time-clocks.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Thomson, A., et al. (2012)</strong>. <em>Calvin: Fast Distributed Transactions for Partitioned Database Systems</em>. SIGMOD. <a href="https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf" target="_blank" rel="noopener">https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -318,9 +344,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#distributed-sql-architecture-hlc-multi-raft-mechanics" class="toc-link">Distributed SQL Architecture &amp; HLC Multi-Raft Mechanics</a></li>
+              <li class="toc-item toc-h3"><a href="#core-open-source-distributed-sql-mechanics" class="toc-link">Core Open-Source Distributed SQL Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-hybrid-logical-clock-multi-raft-simulator" class="toc-link">Python Implementation: Hybrid Logical Clock &amp; Multi-Raft Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#distributed-sql-gotchas-best-practices" class="toc-link">Distributed SQL Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1159,13 +1187,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1234,13 +1256,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1282,13 +1298,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

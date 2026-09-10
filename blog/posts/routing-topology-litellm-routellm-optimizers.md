@@ -9,22 +9,33 @@
 ## The Economics of Inference Routing
 
 A production-grade system manages cost and latency profiles:
-* **The Cost-Performance Curve**: Frontier models (e.g. Claude 3.5 Sonnet, GPT-4o) are highly capable but expensive. Small, local models (e.g. Llama-3B) are cheap and fast but lack complex reasoning context.
+* **The Cost-Performance Curve**: Frontier models (e.g [1]. Claude 3.5 Sonnet, GPT-4o) are highly capable but expensive. Small, local models (e.g. Llama-3B) are cheap and fast but lack complex reasoning context.
 * **Intelligent Routing**: By deploying routing proxies, we analyze query inputs and direct traffic dynamically, routing simple tasks (e.g. classification, code linting) to cheap SLMs, and reserving frontier LLMs for complex refactoring tasks.
 * **The Solution**: Integrating gateways like **LiteLLM** or **RouteLLM** to decouple application code from provider interfaces, configure automatic failovers, and handle circuit breakers.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Request[Agent Prompt Request] --> Gateway{Resilient Routing Gateway}
+    Request["Agent Prompt Request"] --> Gateway{Resilient Routing Gateway}
     
-    Gateway -->|Verify state: Closed| CallPrimary[Execute Primary Model: Claude 3.5]
+    Gateway -->|Verify state - Closed| CallPrimary["Execute Primary Model: Claude 3.5"]
     
-    CallPrimary -->|Success| Return[Return Agent Response]
-    CallPrimary -->|Fail: Outage / Rate Limit| Trip[Trip Circuit Breaker]
+    CallPrimary -->|Success| Return["Return Agent Response"]
+    CallPrimary -->|Fail - Outage / Rate Limit| Trip["Trip Circuit Breaker"]
     
-    Trip -->|Switch State: Open| RouteFallback[Route to Fallback: local Llama-3B]
+    Trip -->|Switch State - Open| RouteFallback["Route to Fallback: local Llama-3B"]
     RouteFallback --> Return
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Request blue
+class CallPrimary green
+class Return purple
+class Trip yellow
+class RouteFallback red
 ```
 
 ---
@@ -130,4 +141,13 @@ if __name__ == "__main__":
 
 * **Deploy Unified Gateways**: Use systems like LiteLLM to standardize prompt schemas across various LLM providers.
 * **Enforce Circuit Breakers**: Wrap provider connections in circuit breakers to route traffic around offline API endpoints automatically.
-* **Log Failures**: Feed fallback metrics into Grafana or Prometheus dashboards to track provider availability.
+* **Log Failures**: Feed fallback metrics into Grafana or Prometheus dashboards to track provider availability. [2]
+
+## References & Further Reading
+
+1. **Michael, M. M. (2004)**. *Hazard Pointers: Safe Memory Reclamation for Lock-Free Objects*. IEEE TPDS. [https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf](https://www.cs.otago.ac.nz/cosc440/readings/hazard-pointers.pdf)
+2. **McKenney, P. E., & Slingwine, J. D. (1998)**. *Read-Copy Update: Using Execution History to Solve Concurrency Problems*. PDCS. [https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf](https://www.rdrop.com/users/paulmck/RCU/rclockpdcsproof.pdf)
+3. **Bloom, B. H. (1970)**. *Space/Time Trade-offs in Hash Coding with Allowable Errors*. CACM. [https://doi.org/10.1145/362686.362692](https://doi.org/10.1145/362686.362692)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

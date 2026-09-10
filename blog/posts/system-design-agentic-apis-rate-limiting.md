@@ -8,7 +8,7 @@
 
 ## The Agentic Traffic Pattern
 
-When an AI agent executes a multi-step task, it consumes APIs not as a static integration, but as dynamic tools. This creates traffic behaviors that differ fundamentally from human clients:
+When an AI agent executes a multi-step task, it consumes APIs not as a static integration, but as dynamic tools [1]. This creates traffic behaviors that differ fundamentally from human clients:
 
 1. **High Concurrency and Depth**: An agent might spawn parallel sub-agents, resulting in hundreds of API requests hitting downstream microservices in a single second.
 2. **Recursive Validation Loops**: If a tool returns a validation error, the agent will rewrite its parameters and immediately retry the call—creating rapid, loop-driven retry spikes.
@@ -18,17 +18,28 @@ When an AI agent executes a multi-step task, it consumes APIs not as a static in
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     subgraph SG1_Traditional1Deterministic ["Traditional [1. Deterministic Traffic]"]
-        User[Human Browser] -->|Single GET| Gate[API Gateway]
+        User["Human Browser"] -->|Single GET| Gate["API Gateway"]
         Gate -->|Sync Process| DB[(Database)]
     end
 
     subgraph SG2_Agentic2Recursive ["Agentic [2. Recursive Swarm Traffic]"]
-        Agent[Orchestrator Agent] -->|Recursive Handoffs| A1[Agent Worker A]
-        Agent -->|Parallel Spawns| A2[Agent Worker B]
-        A1 -->|Recursive Retries & Tool Calls| ToolGate[Agent-Facing Gateway]
+        Agent["Orchestrator Agent"] -->|Recursive Handoffs| A1["Agent Worker A"]
+        Agent -->|Parallel Spawns| A2["Agent Worker B"]
+        A1 -->|Recursive Retries & Tool Calls| ToolGate["Agent-Facing Gateway"]
         A2 -->|Recursive Retries & Tool Calls| ToolGate
         ToolGate -->|Idempotency Guard & Rate Limiter| DB
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,ToolGate blue
+class Gate green
+class Agent purple
+class A1 yellow
+class A2 red
 ```
 
 ---
@@ -145,4 +156,13 @@ def execute_transfer(
 
 * **Standardize Idempotency**: Never expose a state-altering tool to an LLM agent without requiring an idempotency key.
 * **Design for Error Autonomy**: Include precise diagnostic fields and recovery instructions in error payloads to help agents self-correct without human intervention.
-* **Token-Aware Gateways**: Set rate limits at the API gateway that check client IDs specifically for agent nodes to avoid rate-limiting legitimate human users during agent storms.
+* **Token-Aware Gateways**: Set rate limits at the API gateway that check client IDs specifically for agent nodes to avoid rate-limiting legitimate human users during agent storms. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Garcia-Molina, H., & Salem, K. (1987)**. *Sagas*. SIGMOD. [https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf](https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf)
+5. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)
+6. **Turner, J. S. (1986)**. *New Directions in Communications (or Which Way to the Information Age?)*. IEEE Communications Magazine. [https://doi.org/10.1109/MCOM.1986.1092946](https://doi.org/10.1109/MCOM.1986.1092946)

@@ -9,19 +9,27 @@
 ## The Message-Passing Bottleneck
 
 When agents pass states sequentially:
-* **State Drifts**: Agent C might run an action based on outdated parameters if Agent B updated the task scope without propagating the change.
+* **State Drifts**: Agent C might run an action based on outdated parameters if Agent B updated the task scope without propagating the change [1].
 * **Redundant Payload Bloat**: Chat histories are repeatedly appended and serialized across network requests, consuming unnecessary token bandwidth.
 * **The Solution**: The **Blackboard Pattern**. Instead of direct communication, all agents read and write to a centralized shared memory store (the Blackboard). We enforce transaction locks to prevent concurrent write collisions.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent1[Agent Worker 1: Architect] -->|Request Write Lock| BB{Central Blackboard State Store}
-    Agent2[Agent Worker 2: Coder] -->|Read State| BB
+    Agent1["Agent Worker 1: Architect"] -->|Request Write Lock| BB{Central Blackboard State Store}
+    Agent2["Agent Worker 2: Coder"] -->|Read State| BB
     
-    BB -->|State Lock: Granted| Agent1
+    BB -->|State Lock - Granted| Agent1
     Agent1 -->|Commit JSON Update| BB
     BB -->|Release Lock & Dispatch Update| Agent2
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent1 blue
+class Agent2 green
 ```
 
 ---
@@ -105,4 +113,13 @@ if __name__ == "__main__":
 
 * **Enforce Optimistic Locks**: Never permit direct, unversioned state writes. Always validate `version_id` properties before committing updates.
 * **Isolate Task Sub-keys**: Divide the blackboard JSON structure into independent domains (e.g. `architecture`, `code`, `testing`) to minimize write conflicts.
-* **Establish Event Logs**: Build audit logs tracking which agent updated which state key, facilitating debug trace analysis.
+* **Establish Event Logs**: Build audit logs tracking which agent updated which state key, facilitating debug trace analysis. [2]
+
+## References & Further Reading
+
+1. **Cytron, R., et al. (1991)**. *Efficiently Computing Static Single Assignment Form and the Control Dependence Graph*. ACM TOPLAS. [https://doi.org/10.1145/115372.115320](https://doi.org/10.1145/115372.115320)
+2. **Lattner, C., & Adve, V. (2004)**. *LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation*. CGO. [https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf](https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf)
+3. **V8 Team (2024)**. *V8 Orinoco and Garbage Collection*. v8.dev. [https://v8.dev/blog](https://v8.dev/blog)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

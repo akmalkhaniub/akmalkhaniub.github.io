@@ -1,6 +1,6 @@
 # Graph Query Languages & Traversal Engines: Cypher AST Parsing, Breadth-First Traversal & Graph Pattern Matching
 
-In enterprise graph infrastructure (**Neo4j**, **AWS Neptune**, **Memgraph**, **FalkorDB**), software applications express complex graph relationships declaratively using **openCypher** or **GQL (Graph Query Language)**.
+In enterprise graph infrastructure (**Neo4j**, **AWS Neptune**, **Memgraph**, **FalkorDB**), software applications express complex graph relationships declaratively using **openCypher** or **GQL (Graph Query Language)** [1].
 
 Unlike SQL—which describes relational table projections and join conditions—Cypher allows developers to draw visual ASCII patterns of target subgraphs:
 `MATCH (u:User {name: 'Alice'})-[:FRIEND]->(f:User)-[:LIKES]->(p:Post) RETURN f.name, p.title`.
@@ -19,20 +19,31 @@ This article details Cypher query AST compilation, variable-length BFS path expa
 How graph engines parse Cypher ASTs and use VF2 Subgraph Isomorphism backtracking to match patterns against graph storage:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_CypherAstQuery ["Cypher AST Query Compilation"]
-    Cypher["Query: MATCH (a:User)-[:KNOWS]->(b:User) WHERE a.age > 25 RETURN b.name"] --> Lexer[Lexer & Parser]
+    Cypher["Query: MATCH (a:User)-[:KNOWS]->(b:User) WHERE a.age > 25 RETURN b.name"] --> Lexer["Lexer & Parser"]
     Lexer --> AST["1. Cypher AST: [MatchPatternNode | WhereFilterNode | ProjectionNode]"]
-    AST --> Planner[Logical Query Planner]
+    AST --> Planner["Logical Query Planner"]
   end
   
   subgraph SG2_SubgraphIsomorphismVf2 ["Subgraph Isomorphism (VF2 Backtracking Engine)"]
-    Planner -->|2. Expand Candidate State Space| VF2["VF2 State Space Search Tree"]
-    VF2 -->|3. Evaluate Feasibility Rules| LabelCheck{Check Label & Direction match?}
-    LabelCheck -->|Yes: Extend Mapping| ExtendState[Extend Target State Pair: (QueryNode_A -> RealNode_101)]
-    LabelCheck -->|No: Backtrack| Backtrack[Backtrack State Tree]
-    ExtendState --> OutputMatches[🎉 Matched Subgraph Results!]
+    Planner -->|Expand Candidate State Space| VF2["VF2 State Space Search Tree"]
+    VF2 -->|Evaluate Feasibility Rules| LabelCheck{Check Label & Direction match?}
+    LabelCheck -->|Yes - Extend Mapping| ExtendState["Extend Target State Pair: (QueryNode_A -> RealNode_101)"]
+    LabelCheck -->|No - Backtrack| Backtrack["Backtrack State Tree"]
+    ExtendState --> OutputMatches[" Matched Subgraph Results!"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Cypher,ExtendState blue
+class Lexer,Backtrack green
+class AST,OutputMatches purple
+class Planner yellow
+class VF2 red
 ```
 
 ### Core Graph Traversal Mechanics
@@ -192,4 +203,10 @@ When writing Cypher graph queries:
 ## Real-World Enterprise Impact
 Declarative graph query engines (such as **Neo4j openCypher**, **Memgraph**, and **FalkorDB**) report:
 * **Over $100\times$ Faster Graph Pattern Queries**: VF2 Subgraph Isomorphism backtracking prunes invalid search branches early.
-* **Declarative Developer Productivity**: Replaces 50-line SQL nested JOIN queries with intuitive 3-line Cypher ASCII graph pattern expressions.
+* **Declarative Developer Productivity**: Replaces 50-line SQL nested JOIN queries with intuitive 3-line Cypher ASCII graph pattern expressions. [2]
+
+## References & Further Reading
+
+1. **Edge, D., et al. (2024)**. *From Local to Global: A Graph RAG Approach to Query-Focused Summarization*. arXiv. [https://arxiv.org/abs/2404.16130](https://arxiv.org/abs/2404.16130)
+2. **Francis, N., et al. (2018)**. *Cypher: An Evolving Query Language for Property Graphs*. SIGMOD. [https://doi.org/10.1145/3183713.3190657](https://doi.org/10.1145/3183713.3190657)
+3. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)

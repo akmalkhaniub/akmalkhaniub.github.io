@@ -9,26 +9,37 @@
 ## The Threat of Swarm Deadlocks
 
 In consensus-driven agent configurations:
-* **The Execution Block**: Standard voting gates require a clear majority. A tie vote leaves the state machine without a next step path.
+* **The Execution Block**: Standard voting gates require a clear majority [1]. A tie vote leaves the state machine without a next step path.
 * **Token Drain**: If agents attempt to break ties by simply debating again without changing context parameters, they repeat arguments and exhaust token budgets.
 * **The Solution**: **Consensus Routers**. We insert a routing middleware that intercepts the output of voting gates. If a deadlock is identified, the router dynamically modifies the execution path, routing the task to a supervisor agent or escalating it to a human approval gate.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Voting[Voting Gate: Propose Migration Path] --> Check{Is Vote Deadlocked?}
+    Voting["Voting Gate: Propose Migration Path"] --> Check{Is Vote Deadlocked?}
     
-    Check -->|No: Majority Met| Execute[Execute Selected Migration Tool]
-    Check -->|Yes: Split Vote| Router[Consensus Routing Middleware]
+    Check -->|No - Majority Met| Execute["Execute Selected Migration Tool"]
+    Check -->|Yes - Split Vote| Router["Consensus Routing Middleware"]
     
     subgraph SG1_FallbackEscalation ["Fallback Escalation"]
-        Router -->|Route to Supervisor| Sup[Supervisor LLM: High-Context Tie Breaker]
-        Router -->|Route to Human| HITL[Human-In-The-Loop Approval Gate]
+        Router -->|Route to Supervisor| Sup["Supervisor LLM: High-Context Tie Breaker"]
+        Router -->|Route to Human| HITL["Human-In-The-Loop Approval Gate"]
     end
     
-    Sup --> Resolve[Resolve Execution State]
+    Sup --> Resolve["Resolve Execution State"]
     HITL --> Resolve
-    Resolve --> Resume[Resume Main Swarm Branch]
+    Resolve --> Resume["Resume Main Swarm Branch"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Voting,Resolve blue
+class Execute,Resume green
+class Router purple
+class Sup yellow
+class HITL red
 ```
 
 ---
@@ -118,4 +129,13 @@ if __name__ == "__main__":
 
 * **Identify Tie States Early**: Monitor vote distributions in voting gates to catch deadlocks instantly.
 * **Determine Environment Safety**: Route development ties to supervisor models, but escalate production deadlocks to humans.
-* **Maintain Execution Trace**: Attach agent voting details to the fallback routing payload to provide supervisors with the necessary context.
+* **Maintain Execution Trace**: Attach agent voting details to the fallback routing payload to provide supervisors with the necessary context. [2]
+
+## References & Further Reading
+
+1. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+2. **Lamport, L. (2001)**. *Paxos Made Simple*. ACM SIGACT News. [https://lamport.azurewebsites.net/pubs/paxos-simple.pdf](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf)
+3. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

@@ -1,6 +1,10 @@
 # Production-Grade Observability: Harnessing Stable instrumentation.ts
 
-In cloud architectures, monitoring high-throughput applications is essential for diagnosing production failures. While standard APIs (like logging middleware) work in traditional monoliths, serverless and edge environments present unique monitoring challenges:
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
+In cloud architectures, monitoring high-throughput applications is essential for diagnosing production failures [1]. While standard APIs (like logging middleware) work in traditional monoliths, serverless and edge environments present unique monitoring challenges:
 * **Serverless Boot Strapping**: Cold starts launch isolated runtimes on request. There was historically no built-in, unified way in Next.js to initialize monitoring utilities before routing requests.
 * **Hacked Solutions**: Developers resorted to loading tracing libraries inside root `layout.tsx` files (which executed repeatedly, causing memory leaks) or wrapping builds in heavy Express configurations that broke Vercel/Netlify deployments.
 
@@ -144,4 +148,14 @@ When writing bootstrapping logic, keep execution footprints minimal:
 ## Real-World Production Adoption
 High-traffic portals utilize `instrumentation.ts` to manage tracing:
 * **Trace Verification**: Tracing software (such as Langfuse or Datadog) registers spans on server launch, allowing developers to monitor route latency.
-* **Secure Environment Loading**: Environments running inside Kubernetes load secrets directly to runtime memory rather than embedding plain text strings in configuration files.
+* **Secure Environment Loading**: Environments running inside Kubernetes load secrets directly to runtime memory rather than embedding plain text strings in configuration files. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+5. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+6. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+7. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

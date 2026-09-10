@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/case-study-fintech-payment-routing-agentic-engine.html">
   <meta property="og:title" content="Case Study: Modernizing a Legacy Fintech Core into an Agentic Payment Routing Engine">
   <meta property="og:description" content="A 10-part engineering case study on refactoring a high-volume payments core on GCP: team composition, Cloud Run architecture, scale metrics, trade-offs, production outages, and $3.8M revenue impact.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/case-study-fintech-payment-routing-agentic-engine.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-30">
+  <meta property="article:published_time" content="2026-07-31">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Case Study: Modernizing a Legacy Fintech Core into an Agentic Payment Routing Engine">
   <meta name="twitter:description" content="A 10-part engineering case study on refactoring a high-volume payments core on GCP: team composition, Cloud Run architecture, scale metrics, trade-offs, production outages, and $3.8M revenue impact.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/case-study-fintech-payment-routing-agentic-engine.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Case Study: Modernizing a Legacy Fintech Core into an Agentic Payment Routing Engine",
   "description": "A 10-part engineering case study on refactoring a high-volume payments core on GCP: team composition, Cloud Run architecture, scale metrics, trade-offs, production outages, and $3.8M revenue impact.",
   "url": "https://akmalkhaniub.github.io/blog/case-study-fintech-payment-routing-agentic-engine.html",
-  "datePublished": "2026-07-30",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/case-study-fintech-payment-routing-agentic-engine.jpg",
+  "datePublished": "2026-07-31",
   "keywords": "Case Study, Fintech, GCP, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Case Study: Modernizing a Legacy Fintech Core into an Agentic Payment Routing Engine Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/case-study-fintech-payment-routing-agentic-engine.jpg" class="article-cover-img" alt="Case Study: Modernizing a Legacy Fintech Core into an Agentic Payment Routing Engine Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Case Study: Modernizing a Legacy Fintech Core into an Agentic Payment Routing Engine</h1>
             <div class="article-meta">
@@ -111,15 +112,17 @@
                 <li><a href="#2-team-size-and-composition">2. Team Size and Composition</a></li>
                 <li><a href="#3-duration">3. Duration</a></li>
                 <li><a href="#4-architecture">4. Architecture</a></li>
+                <li><a href="#tech-stack-breakdown">Tech Stack Breakdown</a></li>
                 <li><a href="#5-scale">5. Scale</a></li>
                 <li><a href="#6-your-personal-contribution">6. Your Personal Contribution</a></li>
                 <li><a href="#7-difficult-decision">7. Difficult Decision</a></li>
                 <li><a href="#8-incident-or-failure">8. Incident or Failure</a></li>
                 <li><a href="#9-measured-result">9. Measured Result</a></li>
                 <li><a href="#10-lesson-learned">10. Lesson Learned</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Modernizing high-volume financial infrastructure while processing millions of live transactions per day is one of the most high-stakes challenges an engineering lead can face. This case study documents how our team refactored a brittle, monolithic payment core into an intelligent, event-driven payment routing engine on Google Cloud Platform.</p>
+<p>Modernizing high-volume financial infrastructure while processing millions of live transactions per day is one of the most high-stakes challenges an engineering lead can face <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. This case study documents how our team refactored a brittle, monolithic payment core into an intelligent, event-driven payment routing engine on Google Cloud Platform.</p>
 <hr>
 <h2 id="1-industry-and-problem">1. Industry and Problem</h2>
 <ul>
@@ -152,24 +155,35 @@
 <hr>
 <h2 id="4-architecture">4. Architecture</h2>
 <p>The architecture replaced static Java routing logic with an event-driven Cloud Run worker swarm on GCP:</p>
-<div class="mermaid">graph TD
-  A[Merchant API Transaction Request] --&gt; B[GCP Cloud Pub/Sub: Payment Event Topic]
-  B --&gt; C[Eventarc Event Router]
-  C --&gt; D[Cloud Run Intelligent Router Worker]
+<div class="mermaid">flowchart TD
+  A[&quot;Merchant API Transaction Request&quot;] --&gt; B[&quot;GCP Cloud Pub/Sub: Payment Event Topic&quot;]
+  B --&gt; C[&quot;Eventarc Event Router&quot;]
+  C --&gt; D[&quot;Cloud Run Intelligent Router Worker&quot;]
   
   subgraph SG1_RealTimeIntelligent [&quot;Real-Time Intelligent Routing Engine&quot;]
-    D --&gt; E[AlloyDB AI: Merchant Routing Rules &amp; History]
-    D --&gt; F[Vertex AI: Dynamic Fee &amp; Approval Predictor]
+    D --&gt; E[&quot;AlloyDB AI: Merchant Routing Rules &amp; History&quot;]
+    D --&gt; F[&quot;Vertex AI: Dynamic Fee &amp; Approval Predictor&quot;]
   end
   
-  D --&gt;|Option A: Low Fee| G[Processor A: Adyen API]
-  D --&gt;|Option B: Fallback| H[Processor B: Stripe API]
-  D --&gt;|Option C: High Approval| I[Processor C: Chase Paymentech]
+  D --&gt;|Option A - Low Fee| G[&quot;Processor A: Adyen API&quot;]
+  D --&gt;|Option B - Fallback| H[&quot;Processor B: Stripe API&quot;]
+  D --&gt;|Option C - High Approval| I[&quot;Processor C: Chase Paymentech&quot;]
   
-  G --&gt; J[Transaction Result Collector]
+  G --&gt; J[&quot;Transaction Result Collector&quot;]
   H --&gt; J
   I --&gt; J
-  J --&gt; K[Cloud Spanner: Immutable Ledger &amp; BigQuery Telemetry]</div>
+  J --&gt; K[&quot;Cloud Spanner: Immutable Ledger &amp; BigQuery Telemetry&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F,K blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E,J red</div>
 <h3 id="tech-stack-breakdown">Tech Stack Breakdown</h3>
 <ul>
 <li><strong>Compute &amp; Routing</strong>: GCP Cloud Run (Python / Go containers) triggered via Eventarc and Cloud Pub/Sub queues.</li>
@@ -291,8 +305,16 @@ if __name__ == &quot;__main__&quot;:
 <h2 id="10-lesson-learned">10. Lesson Learned</h2>
 <blockquote>
 <p><strong>&quot;Never couple real-time payment routing logic to synchronous HTTP dependencies.&quot;</strong></p>
-<p>As a Tech Lead, the biggest lesson from this migration was that intelligent agentic decisions must always operate behind asynchronous event buffers (Pub/Sub + Cloud Tasks). Relying on synchronous HTTP chains inside microservices turns transient third-party latency into catastrophic platform-wide outages. Decoupling routing evaluation from payment execution saved our platform.</p>
+<p>As a Tech Lead, the biggest lesson from this migration was that intelligent agentic decisions must always operate behind asynchronous event buffers (Pub/Sub + Cloud Tasks). Relying on synchronous HTTP chains inside microservices turns transient third-party latency into catastrophic platform-wide outages. Decoupling routing evaluation from payment execution saved our platform. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
 </blockquote>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Lamport, L. (1978)</strong>. <em>Time, Clocks, and the Ordering of Events in a Distributed System</em>. CACM. <a href="https://lamport.azurewebsites.net/pubs/time-clocks.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/time-clocks.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Gilbert, S., &amp; Lynch, N. (2002)</strong>. <em>Brewer&#39;s Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services</em>. ACM SIGACT News. <a href="https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf" target="_blank" rel="noopener">https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -328,12 +350,14 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-team-size-and-composition" class="toc-link">2. Team Size and Composition</a></li>
               <li class="toc-item toc-h2"><a href="#3-duration" class="toc-link">3. Duration</a></li>
               <li class="toc-item toc-h2"><a href="#4-architecture" class="toc-link">4. Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#tech-stack-breakdown" class="toc-link">Tech Stack Breakdown</a></li>
               <li class="toc-item toc-h2"><a href="#5-scale" class="toc-link">5. Scale</a></li>
               <li class="toc-item toc-h2"><a href="#6-your-personal-contribution" class="toc-link">6. Your Personal Contribution</a></li>
               <li class="toc-item toc-h2"><a href="#7-difficult-decision" class="toc-link">7. Difficult Decision</a></li>
               <li class="toc-item toc-h2"><a href="#8-incident-or-failure" class="toc-link">8. Incident or Failure</a></li>
               <li class="toc-item toc-h2"><a href="#9-measured-result" class="toc-link">9. Measured Result</a></li>
               <li class="toc-item toc-h2"><a href="#10-lesson-learned" class="toc-link">10. Lesson Learned</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1172,13 +1196,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1247,13 +1265,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1295,13 +1307,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>
