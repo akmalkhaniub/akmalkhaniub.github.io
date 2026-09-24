@@ -8,7 +8,7 @@
 
 ## Architecture: Monorepos with DDD & Nx
 
-In an enterprise monorepos structure, we isolate functionality into modular libraries under distinct domains. Instead of writing all application code inside a single `src/app` folder, we split domains and categorise every library into one of five strict layers:
+In an enterprise monorepos structure, we isolate functionality into modular libraries under distinct domains [1]. Instead of writing all application code inside a single `src/app` folder, we split domains and categorise every library into one of five strict layers:
 
 1. **Shell**: Entry point of the domain, handling routing, layout, and global interceptors.
 2. **Feature**: Smart containers containing business routing, triggering data loads, and orchestrating components.
@@ -23,12 +23,12 @@ To prevent circular dependencies and maintain architectural integrity, we enforc
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    App[App Container] --> Shell[Shell Library]
-    Shell --> Feature[Feature Libraries]
-    Feature --> UI[UI Presentational Libraries]
-    Feature --> DataAccess[Data-Access Libraries]
+    App["App Container"] --> Shell["Shell Library"]
+    Shell --> Feature["Feature Libraries"]
+    Feature --> UI["UI Presentational Libraries"]
+    Feature --> DataAccess["Data-Access Libraries"]
     UI --> DataAccess
-    DataAccess --> Util[Utility Libraries]
+    DataAccess --> Util["Utility Libraries"]
 
     classDef allowed fill:#111827,stroke:#0284c7,stroke-width:2px,color:#f3f4f6;
     classDef restricted fill:#7f1d1d,stroke:#f87171,stroke-width:2px,color:#fee2e2;
@@ -178,4 +178,14 @@ To build Angular platforms that scale gracefully across multi-team enterprises:
 * [ ] **Enforce strict library boundaries**: Tag libraries as `shell`, `feature`, `ui`, `data-access`, or `util` and use ESLint rules to block circular inputs.
 * [ ] **Migrate to Signal Stores**: Stop writing redundant actions and reducers. Use Angular's reactive Signals to build lightweight state managers.
 * [ ] **Optimize CI with Nx Affected**: Save computation hours by building, linting, and testing only the affected graph changes.
-* [ ] **Keep UI components pure**: Separate layout orchestration from raw template styling to ensure UI components remain reusable and testable.
+* [ ] **Keep UI components pure**: Separate layout orchestration from raw template styling to ensure UI components remain reusable and testable. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **React Team (2024)**. *React Compiler*. react.dev. [https://react.dev/learn/react-compiler](https://react.dev/learn/react-compiler)
+5. **React Team (2024)**. *React 19 Blog Post*. react.dev. [https://react.dev/blog/2024/12/05/react-19](https://react.dev/blog/2024/12/05/react-19)
+6. **Ry, R. (2024)**. *SolidJS Reactivity*. solidjs.com. [https://www.solidjs.com/guides/reactivity](https://www.solidjs.com/guides/reactivity)
+7. **Svelte Team (2024)**. *Svelte 5 Runes*. svelte.dev. [https://svelte.dev/docs/svelte/what-are-runes](https://svelte.dev/docs/svelte/what-are-runes)

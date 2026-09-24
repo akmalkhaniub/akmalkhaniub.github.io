@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/linux-process-scheduler-eevdf-cgroups-v2.html">
   <meta property="og:title" content="Linux Process Scheduler Internals: EEVDF (Earliest Eligible Virtual Deadline First) &amp; Cgroups v2">
   <meta property="og:description" content="Kernel CPU scheduling mechanics: implementing EEVDF lag calculation, virtual deadline sorting, Cgroups v2 unified resource limits, and CPU quota throttling.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/linux-process-scheduler-eevdf-cgroups-v2.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Linux Process Scheduler Internals: EEVDF (Earliest Eligible Virtual Deadline First) &amp; Cgroups v2">
   <meta name="twitter:description" content="Kernel CPU scheduling mechanics: implementing EEVDF lag calculation, virtual deadline sorting, Cgroups v2 unified resource limits, and CPU quota throttling.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/linux-process-scheduler-eevdf-cgroups-v2.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Linux Process Scheduler Internals: EEVDF (Earliest Eligible Virtual Deadline First) & Cgroups v2",
   "description": "Kernel CPU scheduling mechanics: implementing EEVDF lag calculation, virtual deadline sorting, Cgroups v2 unified resource limits, and CPU quota throttling.",
   "url": "https://akmalkhaniub.github.io/blog/linux-process-scheduler-eevdf-cgroups-v2.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/linux-process-scheduler-eevdf-cgroups-v2.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "Linux Kernel, Scheduler, EEVDF, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Linux Process Scheduler Internals: EEVDF (Earliest Eligible Virtual Deadline First) &amp; Cgroups v2 Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/linux-process-scheduler-eevdf-cgroups-v2.jpg" class="article-cover-img" alt="Linux Process Scheduler Internals: EEVDF (Earliest Eligible Virtual Deadline First) &amp; Cgroups v2 Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Linux Process Scheduler Internals: EEVDF (Earliest Eligible Virtual Deadline First) &amp; Cgroups v2</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#eevdf-scheduling-cgroups-v2-architecture">EEVDF Scheduling &amp; Cgroups v2 Architecture</a></li>
+                <li><a href="#core-eevdf-cgroups-v2-principles">Core EEVDF &amp; Cgroups v2 Principles</a></li>
                 <li><a href="#python-implementation-eevdf-scheduler-cgroup-quota-simulator">Python Implementation: EEVDF Scheduler &amp; Cgroup Quota Simulator</a></li>
                 <li><a href="#scheduler-cgroup-gotchas-best-practices">Scheduler &amp; Cgroup Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-concurrency cloud environments running thousands of Docker/Kubernetes container workloads on a single physical host, the Linux kernel CPU scheduler is the ultimate arbiter of system latency and fairness.</p>
+<p>In high-concurrency cloud environments running thousands of Docker/Kubernetes container workloads on a single physical host, the Linux kernel CPU scheduler is the ultimate arbiter of system latency and fairness <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>For over 15 years, Linux relied on the <strong>Completely Fair Scheduler (CFS)</strong>. While CFS ensured proportional CPU distribution over long time windows, it struggled with <strong>latency-sensitive tasks</strong>: interactive or real-time tasks could be delayed by CPU-bound batch tasks until their $vruntime$ caught up.</p>
 <p>To solve CFS latency deficiencies, Linux kernel 6.6 replaced CFS with <strong>EEVDF (Earliest Eligible Virtual Deadline First)</strong>, authored by Peter Zijlstra based on Peter Shenoy&#39;s seminal 1995 research.</p>
 <p>Combined with <strong>Cgroups v2</strong> unified resource hierarchies, EEVDF delivers deterministic CPU latency guarantees for containerized workloads.</p>
@@ -121,24 +124,35 @@
 <hr>
 <h2 id="eevdf-scheduling-cgroups-v2-architecture">EEVDF Scheduling &amp; Cgroups v2 Architecture</h2>
 <p>How the EEVDF scheduler selects tasks based on Lag Eligibility and Virtual Deadlines:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_KubernetesContainerPods [&quot;Kubernetes Container Pods (Cgroups v2 Limits)&quot;]
-    PodA[Container A: cpu.max = 200ms/100ms] --&gt; RunQueue[Linux CPU RunQueue (Red-Black Tree)]
-    PodB[Container B: Latency-Sensitive API] --&gt; RunQueue
+    PodA[&quot;Container A: cpu.max = 200ms/100ms&quot;] --&gt; RunQueue[&quot;Linux CPU RunQueue (Red-Black Tree)&quot;]
+    PodB[&quot;Container B: Latency-Sensitive API&quot;] --&gt; RunQueue
   end
   
   subgraph SG2_EevdfSchedulerSelection [&quot;EEVDF Scheduler Selection Engine (Kernel 6.6+)&quot;]
-    RunQueue --&gt;|1. Calculate Virtual Time V &amp; Lag| LagCheck{Is Task Lag &gt;= 0? Eligible Check}
+    RunQueue --&gt;|Calculate Virtual Time V &amp; Lag| LagCheck{Is Task Lag &gt;= 0? Eligible Check}
     
-    LagCheck --&gt;|No: Lag &lt; 0 Over-allocated| Ineligible[Task Ineligible: Wait for V to advance]
-    LagCheck --&gt;|Yes: Lag &gt;= 0 Eligible| EligibleSet[Eligible Tasks Candidate Pool]
+    LagCheck --&gt;|No - Lag &lt; 0 Over-allocated| Ineligible[&quot;Task Ineligible: Wait for V to advance&quot;]
+    LagCheck --&gt;|Yes - Lag &gt;= 0 Eligible| EligibleSet[&quot;Eligible Tasks Candidate Pool&quot;]
     
-    EligibleSet --&gt;|2. Sort by Virtual Deadline: V_i = vruntime + q / weight| EarliestDeadline[Pick Task with Earliest Virtual Deadline!]
+    EligibleSet --&gt;|Sort by Virtual Deadline - V_i = vruntime + q / weight| EarliestDeadline[&quot;Pick Task with Earliest Virtual Deadline!&quot;]
   end
   
   subgraph SG3_CpuExecutionContext [&quot;CPU Execution Context&quot;]
-    EarliestDeadline --&gt;|3. Dispatch Time Slice q| CPUCore[Physical CPU Core Execution]
-  end</div>
+    EarliestDeadline --&gt;|Dispatch Time Slice q| CPUCore[&quot;Physical CPU Core Execution&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class PodA,EarliestDeadline blue
+class RunQueue,CPUCore green
+class PodB purple
+class Ineligible yellow
+class EligibleSet red</div>
 <h3 id="core-eevdf-cgroups-v2-principles">Core EEVDF &amp; Cgroups v2 Principles</h3>
 <ol>
 <li><strong>Virtual Runtime ($vruntime$) &amp; Lag</strong>: The scheduler maintains a monotonic system virtual time $V$. A task&#39;s <strong>Lag</strong> represents the difference between the CPU time the task <em>should</em> have received versus what it <em>actually</em> consumed:
@@ -281,8 +295,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Upgrading to Linux kernel 6.6+ EEVDF and Cgroups v2 (such as <strong>Fedora</strong>, <strong>Ubuntu 24.04</strong>, and <strong>AWS Bottlerocket</strong>) reports:</p>
 <ul>
 <li><strong>Over 50% Reduction in Tail Latency for Interactive Services</strong>: Earliest Virtual Deadline sorting allows audio, video, and HTTP API workloads to pre-empt batch background processing instantly.</li>
-<li><strong>Deterministic Container Resource Isolation</strong>: Cgroups v2 memory and CPU controllers prevent noisy neighbor containers from crashing co-located mission-critical services.</li>
+<li><strong>Deterministic Container Resource Isolation</strong>: Cgroups v2 memory and CPU controllers prevent noisy neighbor containers from crashing co-located mission-critical services. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Kubernetes Authors (2024)</strong>. <em>Kubernetes Documentation</em>. CNCF. <a href="https://kubernetes.io/docs/home/" target="_blank" rel="noopener">https://kubernetes.io/docs/home/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -315,9 +340,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#eevdf-scheduling-cgroups-v2-architecture" class="toc-link">EEVDF Scheduling &amp; Cgroups v2 Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-eevdf-cgroups-v2-principles" class="toc-link">Core EEVDF &amp; Cgroups v2 Principles</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-eevdf-scheduler-cgroup-quota-simulator" class="toc-link">Python Implementation: EEVDF Scheduler &amp; Cgroup Quota Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#scheduler-cgroup-gotchas-best-practices" class="toc-link">Scheduler &amp; Cgroup Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1156,13 +1183,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1231,13 +1252,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1279,13 +1294,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

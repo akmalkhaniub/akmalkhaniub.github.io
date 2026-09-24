@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/system-design-cqrs-rag-pipelines-separation-concerns.html">
   <meta property="og:title" content="CQRS in RAG: Decoupling Document Ingestion from Semantic Query Loops">
   <meta property="og:description" content="Applying CQRS to RAG platforms: partitioning write-heavy ingestion parsing modules from low-latency read-only vector databases.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-cqrs-rag-pipelines-separation-concerns.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-07-24">
+  <meta property="article:published_time" content="2026-07-25">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="CQRS in RAG: Decoupling Document Ingestion from Semantic Query Loops">
   <meta name="twitter:description" content="Applying CQRS to RAG platforms: partitioning write-heavy ingestion parsing modules from low-latency read-only vector databases.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/system-design-cqrs-rag-pipelines-separation-concerns.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "CQRS in RAG: Decoupling Document Ingestion from Semantic Query Loops",
   "description": "Applying CQRS to RAG platforms: partitioning write-heavy ingestion parsing modules from low-latency read-only vector databases.",
   "url": "https://akmalkhaniub.github.io/blog/system-design-cqrs-rag-pipelines-separation-concerns.html",
-  "datePublished": "2026-07-24",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/system-design-cqrs-rag-pipelines-separation-concerns.jpg",
+  "datePublished": "2026-07-25",
   "keywords": "System Design, CQRS, RAG, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="CQRS in RAG: Decoupling Document Ingestion from Semantic Query Loops Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/system-design-cqrs-rag-pipelines-separation-concerns.jpg" class="article-cover-img" alt="CQRS in RAG: Decoupling Document Ingestion from Semantic Query Loops Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">CQRS in RAG: Decoupling Document Ingestion from Semantic Query Loops</h1>
             <div class="article-meta">
@@ -109,10 +110,13 @@
               <ul class="mobile-toc-list">
                 <li><a href="#the-rag-cqrs-architecture">The RAG CQRS Architecture</a></li>
                 <li><a href="#implementing-a-decoupled-rag-cqrs-pattern">Implementing a Decoupled RAG CQRS Pattern</a></li>
+                <li><a href="#1-the-command-handler-ingestion-write">1. The Command Handler (Ingestion / Write)</a></li>
+                <li><a href="#2-the-query-handler-search-read">2. The Query Handler (Search / Read)</a></li>
                 <li><a href="#important-pitfalls-in-rag-cqrs">Important Pitfalls in RAG CQRS</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When building a proof-of-concept Retrieval-Augmented Generation (RAG) system, hosting document ingestion and semantic search on a single unified database is standard practice. However, when scaling to enterprise production, this shared-resource model fails:</p>
+<p>When building a proof-of-concept Retrieval-Augmented Generation (RAG) system, hosting document ingestion and semantic search on a single unified database is standard practice <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. However, when scaling to enterprise production, this shared-resource model fails:</p>
 <ul>
 <li><strong>Write Bloat</strong>: Running heavy document ingestion processes—parsing large PDFs, extracting tables, running OCR, generating embeddings—consumes massive CPU and disk I/O.</li>
 <li><strong>Read Latency Spikes</strong>: If the database is busy indexing newly ingested files, concurrent semantic search queries (which require fast, memory-locked index scans) suffer latency spikes, degrading the user experience.</li>
@@ -121,22 +125,33 @@
 <hr>
 <h2 id="the-rag-cqrs-architecture">The RAG CQRS Architecture</h2>
 <p>In a RAG CQRS model, document ingestion (Command) and user querying (Query) are decoupled into isolated pipelines with dedicated databases:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_IngestionPipelineCommand [&quot;Ingestion Pipeline Command&quot;]
-    A[New PDF Upload] --&gt; B[Asynchronous Ingestion Worker]
-    B --&gt;|CPU Heavy: OCR, Chunking| C[Generate Embeddings]
+    A[&quot;New PDF Upload&quot;] --&gt; B[&quot;Asynchronous Ingestion Worker&quot;]
+    B --&gt;|CPU Heavy - OCR, Chunking| C[&quot;Generate Embeddings&quot;]
     C --&gt;|Bulk Insert| D[(Write Database: MongoDB / PostgreSQL)]
   end
   subgraph SG2_SynchronizationHook [&quot;Synchronization Hook&quot;]
-    D --&gt;|Change Data Capture CDC / Event| E[Message Broker: Kafka / RabbitMQ]
+    D --&gt;|Change Data Capture CDC / Event| E[&quot;Message Broker: Kafka / RabbitMQ&quot;]
     E --&gt;|Replicate quantized vectors| F[(Read Database: Qdrant Replicas)]
   end
   subgraph SG3_QueryPipelineRead [&quot;Query Pipeline Read&quot;]
-    G[User Search Query] --&gt; H[Low-Latency Search Service]
+    G[&quot;User Search Query&quot;] --&gt; H[&quot;Low-Latency Search Service&quot;]
     H --&gt;|Fast read-only HNSW lookup| F
     F --&gt;|Return chunks| H
     H --&gt;|Response| G
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class B green
+class C purple
+class E yellow
+class G red</div>
 <ol>
 <li><strong>The Ingestion Pipeline (Write / Command)</strong>: Reads incoming documents, runs PDF extraction engines, calls embedding APIs, and stores raw documents in a master document store (e.g., MongoDB or a write-optimized PostgreSQL node).</li>
 <li><strong>The Synchronization Pathway</strong>: A Change Data Capture (CDC) system or an event broker replicates only the indexable vector payloads and minimal metadata keys down to the read store.</li>
@@ -208,9 +223,17 @@ class VectorSearchQuery:
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Data Synchronization Failures</strong>: If the replication worker crashes, the read database will become out of sync with the master store. Implement a daily validation job that compares record counts between the write store and the read store, rebuilding missing vector indexes automatically.</p>
+  <div class="alert-content"><p><strong>Data Synchronization Failures</strong>: If the replication worker crashes, the read database will become out of sync with the master store. Implement a daily validation job that compares record counts between the write store and the read store, rebuilding missing vector indexes automatically. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
 </div>
 </div>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -244,7 +267,10 @@ class VectorSearchQuery:
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#the-rag-cqrs-architecture" class="toc-link">The RAG CQRS Architecture</a></li>
               <li class="toc-item toc-h2"><a href="#implementing-a-decoupled-rag-cqrs-pattern" class="toc-link">Implementing a Decoupled RAG CQRS Pattern</a></li>
+              <li class="toc-item toc-h3"><a href="#1-the-command-handler-ingestion-write" class="toc-link">1. The Command Handler (Ingestion / Write)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-the-query-handler-search-read" class="toc-link">2. The Query Handler (Search / Read)</a></li>
               <li class="toc-item toc-h2"><a href="#important-pitfalls-in-rag-cqrs" class="toc-link">Important Pitfalls in RAG CQRS</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1083,13 +1109,7 @@ class VectorSearchQuery:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1158,13 +1178,7 @@ class VectorSearchQuery:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1206,13 +1220,7 @@ class VectorSearchQuery:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

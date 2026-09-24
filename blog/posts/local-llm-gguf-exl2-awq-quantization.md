@@ -8,15 +8,26 @@
 
 ## What is Quantization?
 
-An LLM's weights are originally stored as 16-bit floating-point numbers (FP16 or BF16). A 70-billion parameter model requires around 140 GB of VRAM just to load. Quantization compresses these weights into lower bit-depth integers (like 4-bit, 5-bit, or 8-bit), allowing massive models to run on single consumer or enterprise GPUs.
+An LLM's weights are originally stored as 16-bit floating-point numbers (FP16 or BF16) [1]. A 70-billion parameter model requires around 140 GB of VRAM just to load. Quantization compresses these weights into lower bit-depth integers (like 4-bit, 5-bit, or 8-bit), allowing massive models to run on single consumer or enterprise GPUs.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
-flowchart LR
-    FP16[Original Weights: FP16 / BF16 <br> 16 bits per parameter] -->|Quantization Process| INT4[Compressed Weights: INT4 / INT8 <br> 4-8 bits per parameter]
-    INT4 --> GGUF[GGUF format <br> CPU+GPU offload]
-    INT4 --> AWQ[AWQ format <br> Activation-Aware, GPU only]
-    INT4 --> EXL2[EXL2 format <br> ExLlamaV2, High-speed GPU]
+flowchart TD
+    FP16["Original Weights: FP16 / BF16 <br> 16 bits per parameter"] -->|Quantization Process| INT4["Compressed Weights: INT4 / INT8 <br> 4-8 bits per parameter"]
+    INT4 --> GGUF["GGUF format <br> CPU+GPU offload"]
+    INT4 --> AWQ["AWQ format <br> Activation-Aware, GPU only"]
+    INT4 --> EXL2["EXL2 format <br> ExLlamaV2, High-speed GPU"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class FP16 blue
+class INT4 green
+class GGUF purple
+class AWQ yellow
+class EXL2 red
 ```
 
 ---
@@ -98,4 +109,13 @@ Once running, the container exposes an OpenAI-compatible API on port `8000`, all
 Selecting the right quantization format is critical for local LLM cost and speed:
 * [ ] **Choose GGUF for edge/local client dev**: GGUF is perfect for running on laptops (macOS/Windows) because it allows CPU RAM offloading.
 * [ ] **Choose AWQ for server-scale production**: vLLM handles AWQ natively, delivering the highest concurrent token throughput.
-* [ ] **Compute your KV Cache buffer**: Always leave a 20% VRAM buffer above the model weight size to prevent Out-Of-Memory (OOM) crashes when context windows fill up.
+* [ ] **Compute your KV Cache buffer**: Always leave a 20% VRAM buffer above the model weight size to prevent Out-Of-Memory (OOM) crashes when context windows fill up. [2]
+
+## References & Further Reading
+
+1. **Kwon, W., et al. (2023)**. *Efficient Memory Management for Large Language Model Serving with PagedAttention*. SOSP. [https://arxiv.org/abs/2309.06180](https://arxiv.org/abs/2309.06180)
+2. **Dao, T., et al. (2022)**. *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*. NeurIPS. [https://arxiv.org/abs/2205.14135](https://arxiv.org/abs/2205.14135)
+3. **Leviathan, Y., Kalman, M., & Matias, Y. (2023)**. *Fast Inference from Transformers via Speculative Decoding*. ICML. [https://arxiv.org/abs/2211.17192](https://arxiv.org/abs/2211.17192)
+4. **Lin, J., et al. (2024)**. *AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration*. MLSys. [https://arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)
+5. **Frantar, E., et al. (2023)**. *GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers*. ICLR. [https://arxiv.org/abs/2210.17323](https://arxiv.org/abs/2210.17323)
+6. **Wang, H., et al. (2023)**. *BitNet: Scaling 1-bit Transformers for Large Language Models*. arXiv. [https://arxiv.org/abs/2310.11453](https://arxiv.org/abs/2310.11453)

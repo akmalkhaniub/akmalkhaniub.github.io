@@ -1,9 +1,12 @@
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
 > ### 📖 Article Overview
 > * **What this article is about:** This article explores the consolidation of the full-stack JavaScript ecosystem in 2026, focusing on React 19 and Next.js 15 features like the React Compiler, Server Actions, Partial Prerendering (PPR), and the `after()` API.
 > * **Why it matters:** Understanding these features allows engineers to build highly performant, secure, and unified web applications with sub-100ms initial load times and seamless state synchronization.
 > * **What we synthesized:** We analyzed the PPR request lifecycle, detailed key architectural transformations, and provided a production-ready, full-stack form component utilizing optimistic UI updates and post-response background execution.
 
-The full-stack Javascript ecosystem is undergoing a dramatic consolidation. In 2026, the boundary between client-side rendering and server-side operations has completely dissolved. 
+The full-stack Javascript ecosystem is undergoing a dramatic consolidation [1]. In 2026, the boundary between client-side rendering and server-side operations has completely dissolved. 
 
 With the stabilization of the **React Compiler**, **React 19 Server Actions**, and Next.js features like **Partial Prerendering (PPR)** and the **`after()` API**, full-stack development is now cleaner, faster, and more unified.
 

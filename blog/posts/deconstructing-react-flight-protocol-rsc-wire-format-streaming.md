@@ -20,19 +20,30 @@ But in production systems engineering, abstractions are leaks waiting to spring.
 Here is the complete wire-level breakdown of the React Flight protocol.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph FlightPipeline ["React Server Component Serialization Pipeline"]
     ServerTree["Server Component Tree"] --> FiberPass["Server Fiber Reconciliation"]
     FiberPass --> FlightEmitter["React Flight Streaming Emitter"]
     
-    FlightEmitter -->|Emit Module References: Line 1:I| Wire["HTTP Stream: text/x-component"]
-    FlightEmitter -->|Emit VDOM JSON Nodes: Line 0:...| Wire
-    FlightEmitter -->|Emit Suspense Promises: Line 2:...| Wire
+    FlightEmitter -->|Emit Module References - Line 1 -I| Wire["HTTP Stream: text/x-component"]
+    FlightEmitter -->|Emit VDOM JSON Nodes - Line 0 -...| Wire
+    FlightEmitter -->|Emit Suspense Promises - Line 2 -...| Wire
     
     Wire --> ClientParser["Browser Flight Chunk Parser"]
     ClientParser --> ChunkResolver["Resolve Client Components and Fiber Nodes"]
     ChunkResolver --> DOMReconciliation["Merge into Active Client DOM Tree"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ServerTree,ChunkResolver blue
+class FiberPass,DOMReconciliation green
+class FlightEmitter purple
+class Wire yellow
+class ClientParser red
 ```
 *Figure 1: The React Server Component serialization pipeline and Flight streaming lifecycle across network boundaries. Modules with `'use client'` are emitted as manifest references (`1:I`), while pure server components are lowered to line-delimited Virtual DOM descriptors (`0:...`). Source: React Core Team Flight Architecture Specification [1, 2].*
 

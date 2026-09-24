@@ -21,17 +21,17 @@ Without a validation layer, LLM APIs are vulnerable to four categories of produc
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-flowchart LR
-    U[User Input] --> IG[🛡️ Input Guard<br/>Injection Detection<br/>PII Masking<br/>Topic Filter]
+flowchart TD
+    U["User Input"] --> IG[" Input Guard<br/>Injection Detection<br/>PII Masking<br/>Topic Filter"]
     
-    IG -->|BLOCKED| BR[🚫 Blocked Response<br/>Policy Violation Message]
-    IG -->|PASSED| LLM[🧠 LLM Core<br/>Claude / GPT-4o]
+    IG -->|BLOCKED| BR[" Blocked Response<br/>Policy Violation Message"]
+    IG -->|PASSED| LLM[" LLM Core<br/>Claude / GPT-4o"]
     
-    LLM --> OG[🛡️ Output Guard<br/>Schema Validation<br/>PII Scrubbing<br/>Toxicity Check]
+    LLM --> OG[" Output Guard<br/>Schema Validation<br/>PII Scrubbing<br/>Toxicity Check"]
     
-    OG -->|FAILED| RE[🔁 Retry with<br/>Correction Prompt]
+    OG -->|FAILED| RE[" Retry with<br/>Correction Prompt"]
     RE --> LLM
-    OG -->|PASSED| FO[✅ Safe Response<br/>to User]
+    OG -->|PASSED| FO[" Safe Response<br/>to User"]
 
     style IG fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style OG fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -39,6 +39,17 @@ flowchart LR
     style BR fill:#1c1917,stroke:#78716c,stroke-width:2px
     style RE fill:#1e293b,stroke:#f59e0b,stroke-width:2px
     style FO fill:#052e16,stroke:#10b981,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class U,RE blue
+class IG,FO green
+class BR purple
+class LLM yellow
+class OG red
 ```
 
 ---
@@ -235,7 +246,7 @@ class StructuredOutputGuard:
             )
 
 # ─────────────────────────────────────────────
-# 6. Composite Guardrails Pipeline
+# 6 [1]. Composite Guardrails Pipeline
 # ─────────────────────────────────────────────
 
 class GuardrailsPipeline:
@@ -430,7 +441,7 @@ In our next article, we tackle **Prompt Injection Defence & Red-Teaming** — us
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Guardrails AI Documentation**: [Reliable AI Outputs via Validators](https://www.guardrailsai.com/docs)
 *   **NVIDIA NeMo Guardrails**: [Colang Dialogue Policy Framework](https://github.com/NVIDIA/NeMo-Guardrails)
 *   **OWASP LLM Top 10**: [LLM Application Security Risks](https://owasp.org/www-project-top-10-for-large-language-model-applications/)

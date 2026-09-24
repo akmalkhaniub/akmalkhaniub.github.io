@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant | Akmal Khan Tech Blog</title>
-  <meta name="description" content="Tuning vector database index parameters: configuring M, ef_construction, and ef_search to optimize recall vs. search latency.">
+  <title>HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search | Akmal Khan Tech Blog</title>
+  <meta name="description" content="Analyzing Hierarchical Navigable Small World (HNSW) graph layers, optimizing M and efSearch, and implementing custom configurations in pgvector and Qdrant.">
   <meta name="author" content="Akmal Khan">
   <link rel="canonical" href="https://akmalkhaniub.github.io/blog/vector-db-hnsw-index-tuning-pgvector-qdrant.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -13,27 +13,28 @@
   <!-- Open Graph -->
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/vector-db-hnsw-index-tuning-pgvector-qdrant.html">
-  <meta property="og:title" content="HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant">
-  <meta property="og:description" content="Tuning vector database index parameters: configuring M, ef_construction, and ef_search to optimize recall vs. search latency.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:title" content="HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search">
+  <meta property="og:description" content="Analyzing Hierarchical Navigable Small World (HNSW) graph layers, optimizing M and efSearch, and implementing custom configurations in pgvector and Qdrant.">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-db-hnsw-index-tuning-pgvector-qdrant.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-09">
+  <meta property="article:published_time" content="2026-07-25">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant">
-  <meta name="twitter:description" content="Tuning vector database index parameters: configuring M, ef_construction, and ef_search to optimize recall vs. search latency.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:title" content="HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search">
+  <meta name="twitter:description" content="Analyzing Hierarchical Navigable Small World (HNSW) graph layers, optimizing M and efSearch, and implementing custom configurations in pgvector and Qdrant.">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/vector-db-hnsw-index-tuning-pgvector-qdrant.jpg">
 
   <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant",
-  "description": "Tuning vector database index parameters: configuring M, ef_construction, and ef_search to optimize recall vs. search latency.",
+  "headline": "HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search",
+  "description": "Analyzing Hierarchical Navigable Small World (HNSW) graph layers, optimizing M and efSearch, and implementing custom configurations in pgvector and Qdrant.",
   "url": "https://akmalkhaniub.github.io/blog/vector-db-hnsw-index-tuning-pgvector-qdrant.html",
-  "datePublished": "2026-06-09",
-  "keywords": "Database, Performance, RAG, Python",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/vector-db-hnsw-index-tuning-pgvector-qdrant.jpg",
+  "datePublished": "2026-07-25",
+  "keywords": "Vector Database, HNSW, pgvector, System Design",
   "author": {
     "@type": "Person",
     "name": "Akmal Khan",
@@ -92,14 +93,14 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/vector-db-hnsw-index-tuning-pgvector-qdrant.jpg" class="article-cover-img" alt="HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search Cover" /></div>
           <div class="article-header">
-            <h1 class="article-title">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant</h1>
+            <h1 class="article-title">HNSW Index Tuning: Optimizing efSearch and M for High-Throughput Search</h1>
             <div class="article-meta">
-              <span><i class="fa-regular fa-calendar"></i> June 10, 2026</span>
+              <span><i class="fa-regular fa-calendar"></i> July 25, 2026</span>
               <span><i class="fa-solid fa-user"></i> Akmal Khan</span>
               <span><i class="fa-regular fa-clock"></i> 10 min read</span>
-              <div class="article-tags"><span class="project-badge">Database</span><span class="project-badge">Performance</span><span class="project-badge">RAG</span><span class="project-badge">Python</span></div>
+              <div class="article-tags"><span class="project-badge">Vector Database</span><span class="project-badge">HNSW</span><span class="project-badge">pgvector</span><span class="project-badge">System Design</span></div>
             </div>
           </div>
 
@@ -108,12 +109,16 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#under-the-hood-hnsws-layered-routing">Under the Hood: HNSW's Layered Routing</a></li>
+                <li><a href="#the-core-tuning-knobs">The Core Tuning Knobs</a></li>
                 <li><a href="#tuning-hnsw-indexes-in-production">Tuning HNSW Indexes in Production</a></li>
+                <li><a href="#1-optimizing-pgvector-in-postgresql">1. Optimizing pgvector in PostgreSQL</a></li>
+                <li><a href="#2-configuring-qdrant-collections">2. Configuring Qdrant Collections</a></li>
                 <li><a href="#recall-vs-latency-trade-offs">Recall vs. Latency Trade-offs</a></li>
                 <li><a href="#important-pitfalls-in-index-configuration">Important Pitfalls in Index Configuration</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In vector retrieval applications, matching a user&#39;s query vector against millions of document vectors is computationally expensive. Running a full brute-force linear search (Flat index) guarantees 100% recall, but scales linearly ($O(N)$), degrading latency to hundreds of milliseconds in large datasets.</p>
+<p>In vector retrieval applications, matching a user&#39;s query vector against millions of document vectors is computationally expensive <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. Running a full brute-force linear search (Flat index) guarantees 100% recall, but scales linearly ($O(N)$), degrading latency to hundreds of milliseconds in large datasets.</p>
 <p>To achieve sub-10ms search times, production databases use <strong>Approximate Nearest Neighbor (ANN)</strong> search algorithms. The gold standard for ANN search is the <strong>Hierarchical Navigable Small World (HNSW)</strong> graph index. This article details HNSW&#39;s layered routing architecture and how to tune its parameters (<code>M</code>, <code>efConstruction</code>, and <code>efSearch</code>) in <strong>pgvector</strong> and <strong>Qdrant</strong> to balance search latency and recall accuracy.</p>
 <hr>
 <h2 id="under-the-hood-hnsws-layered-routing">Under the Hood: HNSW&#39;s Layered Routing</h2>
@@ -122,21 +127,32 @@
 <li><strong>Upper Layers</strong>: Contain fewer nodes with longer-range links. Queries execute fast, high-level routing to quickly zoom in on the region of interest.</li>
 <li><strong>Lower Layers</strong>: Contain denser links. Routing transitions downward to execute fine-grained, localized searches until it reaches the base layer (Layer 0), which contains all vectors.</li>
 </ul>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_Layer2Express [&quot;Layer 2 (Express Layer)&quot;]
-    L2_A[Vector Entry] --&gt; L2_B[Far Destination]
+    L2_A[&quot;Vector Entry&quot;] --&gt; L2_B[&quot;Far Destination&quot;]
   end
   subgraph SG2_Layer1Local [&quot;Layer 1 (Local Area Layer)&quot;]
-    L1_A[Vector Entry] --&gt; L1_B[Mid Destination 1]
-    L1_B --&gt; L1_C[Mid Destination 2]
+    L1_A[&quot;Vector Entry&quot;] --&gt; L1_B[&quot;Mid Destination 1&quot;]
+    L1_B --&gt; L1_C[&quot;Mid Destination 2&quot;]
   end
   subgraph SG3_Layer0Base [&quot;Layer 0 (Base Layer - All Vectors)&quot;]
-    L0_A[Vector Entry] --&gt; L0_B[Node A]
-    L0_B --&gt; L0_C[Node B]
-    L0_C --&gt; L0_D[Node C]
+    L0_A[&quot;Vector Entry&quot;] --&gt; L0_B[&quot;Node A&quot;]
+    L0_B --&gt; L0_C[&quot;Node B&quot;]
+    L0_C --&gt; L0_D[&quot;Node C&quot;]
   end
   L2_A --&gt; L1_A
-  L1_B --&gt; L0_B</div>
+  L1_B --&gt; L0_B
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class L2_A,L0_A blue
+class L2_B,L0_B green
+class L1_A,L0_C purple
+class L1_B,L0_D yellow
+class L1_C red</div>
 <h3 id="the-core-tuning-knobs">The Core Tuning Knobs</h3>
 <ul>
 <li><strong><code>M</code></strong>: The maximum number of bidirectional link connections established for each new node added to the graph. <ul>
@@ -247,9 +263,21 @@ LIMIT 10;</code></pre>
 </div>
 <div class="alert alert-caution">
   <div class="alert-title"><i class="fa-solid fa-radiation"></i> Caution</div>
-  <div class="alert-content"><p><strong>Memory Allocation</strong>: HNSW graphs are stored entirely in RAM to support fast lookup hops. An index configured with high <code>M</code> (e.g. 64) can easily occupy tens of gigabytes of RAM. Calculate index memory sizes before deploying to production servers.</p>
+  <div class="alert-content"><p><strong>Memory Allocation</strong>: HNSW graphs are stored entirely in RAM to support fast lookup hops. An index configured with high <code>M</code> (e.g. 64) can easily occupy tens of gigabytes of RAM. Calculate index memory sizes before deploying to production servers. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
 </div>
 </div>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>pgvector Authors (2024)</strong>. <em>pgvector: Open-source vector similarity search for Postgres</em>. GitHub. <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/pgvector/pgvector</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Vercel Engineering (2025)</strong>. <em>Next.js 16</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-16" target="_blank" rel="noopener">https://nextjs.org/blog/next-16</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-7" class="citation-item"><strong>Vercel Engineering (2024)</strong>. <em>Next.js 15</em>. Next.js Blog. <a href="https://nextjs.org/blog/next-15" target="_blank" rel="noopener">https://nextjs.org/blog/next-15</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -257,7 +285,7 @@ LIMIT 10;</code></pre>
             <span class="share-label"><i class="fa-solid fa-share-nodes"></i> Share:</span>
             <button id="share-link-btn" class="btn btn-sm btn-secondary"><i class="fa-regular fa-copy"></i> Copy Link</button>
             <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-db-hnsw-index-tuning-pgvector-qdrant.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-            <a href="https://twitter.com/intent/tweet?text=HNSW%20Index%20Tuning%3A%20Optimizing%20Recall%20vs.%20Latency%20in%20pgvector%20and%20Qdrant&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-db-hnsw-index-tuning-pgvector-qdrant.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
+            <a href="https://twitter.com/intent/tweet?text=HNSW%20Index%20Tuning%3A%20Optimizing%20efSearch%20and%20M%20for%20High-Throughput%20Search&url=https%3A%2F%2Fakmalkhaniub.github.io%2Fblog%2Fvector-db-hnsw-index-tuning-pgvector-qdrant.html" target="_blank" rel="noopener" class="btn btn-sm btn-secondary"><i class="fa-brands fa-x-twitter"></i> X / Twitter</a>
           </div>
 
           <div class="newsletter-box">
@@ -282,9 +310,13 @@ LIMIT 10;</code></pre>
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#under-the-hood-hnsws-layered-routing" class="toc-link">Under the Hood: HNSW's Layered Routing</a></li>
+              <li class="toc-item toc-h3"><a href="#the-core-tuning-knobs" class="toc-link">The Core Tuning Knobs</a></li>
               <li class="toc-item toc-h2"><a href="#tuning-hnsw-indexes-in-production" class="toc-link">Tuning HNSW Indexes in Production</a></li>
+              <li class="toc-item toc-h3"><a href="#1-optimizing-pgvector-in-postgresql" class="toc-link">1. Optimizing pgvector in PostgreSQL</a></li>
+              <li class="toc-item toc-h3"><a href="#2-configuring-qdrant-collections" class="toc-link">2. Configuring Qdrant Collections</a></li>
               <li class="toc-item toc-h2"><a href="#recall-vs-latency-trade-offs" class="toc-link">Recall vs. Latency Trade-offs</a></li>
               <li class="toc-item toc-h2"><a href="#important-pitfalls-in-index-configuration" class="toc-link">Important Pitfalls in Index Configuration</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1123,13 +1155,7 @@ LIMIT 10;</code></pre>
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1198,13 +1224,7 @@ LIMIT 10;</code></pre>
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item active">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1246,13 +1266,7 @@ LIMIT 10;</code></pre>
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

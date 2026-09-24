@@ -1,6 +1,6 @@
 # Content Safety Guardrails & Deterministic Input/Output Sanitizers
 
-In early AI applications, developers relied on system prompts (e.g. *"You are a helpful assistant. Please do not output harmful instructions or SQL injection strings."*) to enforce safety. However, security research has conclusively proven that **prompt-based safety rules can always be bypassed** given sufficient adversarial creativity.
+In early AI applications, developers relied on system prompts (e.g. *"You are a helpful assistant [1]. Please do not output harmful instructions or SQL injection strings."*) to enforce safety. However, security research has conclusively proven that **prompt-based safety rules can always be bypassed** given sufficient adversarial creativity.
 
 To build production systems capable of handling enterprise traffic, engineering teams must wrap probabilistic foundation models inside **Deterministic Guardrail Layers**. 
 
@@ -15,26 +15,37 @@ This article details how to architect a multi-layered content safety and output 
 The security architecture enforces deterministic checks at both entry and exit points of model execution:
 
 ```mermaid
-graph TD
-  A[Raw User / Environment Input] --> B[Pre-Execution Guardrails Layer]
+flowchart TD
+  A["Raw User / Environment Input"] --> B["Pre-Execution Guardrails Layer"]
   
   subgraph SG1_PreExecutionInput ["Pre-Execution Input Filtering"]
-    B --> C[PII / Secret Masker]
-    B --> D[AST Syntax Validator]
-    B --> E[Length & Token Boundary Caps]
+    B --> C["PII / Secret Masker"]
+    B --> D["AST Syntax Validator"]
+    B --> E["Length & Token Boundary Caps"]
   end
   
-  E -->|Sanitized Input| F[LLM Model / Agent Worker Core]
-  F -->|Raw Generated Output| G[Post-Execution Sanitizer Layer]
+  E -->|Sanitized Input| F["LLM Model / Agent Worker Core"]
+  F -->|Raw Generated Output| G["Post-Execution Sanitizer Layer"]
   
   subgraph SG2_PostExecutionOutput ["Post-Execution Output Validation"]
-    G --> H[Pydantic Schema Validation]
-    G --> I[Regex Command & SQL Injection Filter]
-    G --> J[LLM Safety Classifier Check]
+    G --> H["Pydantic Schema Validation"]
+    G --> I["Regex Command & SQL Injection Filter"]
+    G --> J["LLM Safety Classifier Check"]
   end
   
-  J -->|Passed All Guards| K[Safe Executable Tool Call / Output]
-  J -->|Validation Failure| L[Fallback to Safe Default & Error Alert]
+  J -->|Passed All Guards| K["Safe Executable Tool Call / Output"]
+  J -->|Validation Failure| L["Fallback to Safe Default & Error Alert"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F,K blue
+class B,G,L green
+class C,H purple
+class D,I yellow
+class E,J red
 ```
 
 ### The Three Guardrail Layers
@@ -166,4 +177,10 @@ When implementing content safety guardrails, adhere to these design principles:
 ## Real-World Enterprise Impact
 Teams deploying Deterministic Guardrails report:
 * **Zero Prohibited Command Executions**: Native code regex filters prevent 100% of malicious shell and SQL injection attempts.
-* **Structural Reliability**: Pydantic schema validators eliminate malformed JSON tool call crashes.
+* **Structural Reliability**: Pydantic schema validators eliminate malformed JSON tool call crashes. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

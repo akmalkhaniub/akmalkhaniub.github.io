@@ -1,6 +1,6 @@
 # Case Study: Modernizing a Legacy Fintech Core into an Agentic Payment Routing Engine
 
-Modernizing high-volume financial infrastructure while processing millions of live transactions per day is one of the most high-stakes challenges an engineering lead can face. This case study documents how our team refactored a brittle, monolithic payment core into an intelligent, event-driven payment routing engine on Google Cloud Platform.
+Modernizing high-volume financial infrastructure while processing millions of live transactions per day is one of the most high-stakes challenges an engineering lead can face [1]. This case study documents how our team refactored a brittle, monolithic payment core into an intelligent, event-driven payment routing engine on Google Cloud Platform.
 
 ---
 
@@ -39,24 +39,35 @@ We assembled a cross-functional engineering taskforce of **8 engineers**:
 The architecture replaced static Java routing logic with an event-driven Cloud Run worker swarm on GCP:
 
 ```mermaid
-graph TD
-  A[Merchant API Transaction Request] --> B[GCP Cloud Pub/Sub: Payment Event Topic]
-  B --> C[Eventarc Event Router]
-  C --> D[Cloud Run Intelligent Router Worker]
+flowchart TD
+  A["Merchant API Transaction Request"] --> B["GCP Cloud Pub/Sub: Payment Event Topic"]
+  B --> C["Eventarc Event Router"]
+  C --> D["Cloud Run Intelligent Router Worker"]
   
   subgraph SG1_RealTimeIntelligent ["Real-Time Intelligent Routing Engine"]
-    D --> E[AlloyDB AI: Merchant Routing Rules & History]
-    D --> F[Vertex AI: Dynamic Fee & Approval Predictor]
+    D --> E["AlloyDB AI: Merchant Routing Rules & History"]
+    D --> F["Vertex AI: Dynamic Fee & Approval Predictor"]
   end
   
-  D -->|Option A: Low Fee| G[Processor A: Adyen API]
-  D -->|Option B: Fallback| H[Processor B: Stripe API]
-  D -->|Option C: High Approval| I[Processor C: Chase Paymentech]
+  D -->|Option A - Low Fee| G["Processor A: Adyen API"]
+  D -->|Option B - Fallback| H["Processor B: Stripe API"]
+  D -->|Option C - High Approval| I["Processor C: Chase Paymentech"]
   
-  G --> J[Transaction Result Collector]
+  G --> J["Transaction Result Collector"]
   H --> J
   I --> J
-  J --> K[Cloud Spanner: Immutable Ledger & BigQuery Telemetry]
+  J --> K["Cloud Spanner: Immutable Ledger & BigQuery Telemetry"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F,K blue
+class B,G green
+class C,H purple
+class D,I yellow
+class E,J red
 ```
 
 ### Tech Stack Breakdown
@@ -187,4 +198,10 @@ After 100% production cutover, the business and technical metrics surpassed targ
 
 > **"Never couple real-time payment routing logic to synchronous HTTP dependencies."**
 > 
-> As a Tech Lead, the biggest lesson from this migration was that intelligent agentic decisions must always operate behind asynchronous event buffers (Pub/Sub + Cloud Tasks). Relying on synchronous HTTP chains inside microservices turns transient third-party latency into catastrophic platform-wide outages. Decoupling routing evaluation from payment execution saved our platform.
+> As a Tech Lead, the biggest lesson from this migration was that intelligent agentic decisions must always operate behind asynchronous event buffers (Pub/Sub + Cloud Tasks). Relying on synchronous HTTP chains inside microservices turns transient third-party latency into catastrophic platform-wide outages. Decoupling routing evaluation from payment execution saved our platform. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

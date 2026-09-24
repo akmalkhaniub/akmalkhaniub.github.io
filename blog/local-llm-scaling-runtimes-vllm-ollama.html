@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/local-llm-scaling-runtimes-vllm-ollama.html">
   <meta property="og:title" content="Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes">
   <meta property="og:description" content="How to scale offline batch data extraction, set up local GPU inference nodes with vLLM, and implement fallback orchestration rules.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/local-llm-scaling-runtimes-vllm-ollama.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-26">
+  <meta property="article:published_time" content="2026-03-27">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes">
   <meta name="twitter:description" content="How to scale offline batch data extraction, set up local GPU inference nodes with vLLM, and implement fallback orchestration rules.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/local-llm-scaling-runtimes-vllm-ollama.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM & Ollama Runtimes",
   "description": "How to scale offline batch data extraction, set up local GPU inference nodes with vLLM, and implement fallback orchestration rules.",
   "url": "https://akmalkhaniub.github.io/blog/local-llm-scaling-runtimes-vllm-ollama.html",
-  "datePublished": "2026-03-26",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/local-llm-scaling-runtimes-vllm-ollama.jpg",
+  "datePublished": "2026-03-27",
   "keywords": "vLLM, Ollama, Docker, DevOps",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/local-llm-scaling-runtimes-vllm-ollama.jpg" class="article-cover-img" alt="Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Local LLM Fallback: Scaling Bulk Document Processing with Local vLLM &amp; Ollama Runtimes</h1>
             <div class="article-meta">
@@ -109,9 +110,11 @@
               <ul class="mobile-toc-list">
                 <li><a href="#the-economics-of-high-volume-token-processing">The Economics of High-Volume Token Processing</a></li>
                 <li><a href="#hybrid-failover-gateway-architecture">Hybrid Failover Gateway Architecture</a></li>
+                <li><a href="#local-runtimes-comparison">Local Runtimes Comparison</a></li>
                 <li><a href="#whats-good-whats-not">What's Good &amp; What's Not</a></li>
                 <li><a href="#technical-implementation-failover-gateway-wrapper-in-python">Technical Implementation: Failover Gateway Wrapper in Python</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -122,7 +125,7 @@ While frontier API models (like Claude 3.5 Sonnet) are unmatched in reasoning, q
 </div>
 <hr>
 <h2 id="the-economics-of-high-volume-token-processing">The Economics of High-Volume Token Processing</h2>
-<p>When building interactive applications (like chat interfaces or secure code executors), we require the highest possible reasoning capabilities. For these tasks, querying a cloud API makes sense.</p>
+<p>When building interactive applications (like chat interfaces or secure code executors), we require the highest possible reasoning capabilities <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. For these tasks, querying a cloud API makes sense.</p>
 <p>However, for bulk offline data tasks:</p>
 <ol>
 <li><strong>Batch Ingestion</strong>: Parsing 10,000 PDF invoices, extracting key-value data, and indexing them.</li>
@@ -134,18 +137,18 @@ While frontier API models (like Claude 3.5 Sonnet) are unmatched in reasoning, q
 <h2 id="hybrid-failover-gateway-architecture">Hybrid Failover Gateway Architecture</h2>
 <p>A failover gateway routes inbound requests to cloud APIs based on priority, automatically failing over to a local vLLM or Ollama node if the API service throws rate-limit (<code>429</code>) or timeout exceptions.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
-    A[Incoming Task Request] --&gt; B{Check Task Priority}
+flowchart TD
+    A[&quot;Incoming Task Request&quot;] --&gt; B{Check Task Priority}
     
-    B --&gt;|Batch / Low-Priority| C[Local Inference Cluster]
-    B --&gt;|High-Priority / User| D[Cloud API Gate: Claude]
+    B --&gt;|Batch / Low-Priority| C[&quot;Local Inference Cluster&quot;]
+    B --&gt;|High-Priority / User| D[&quot;Cloud API Gate: Claude&quot;]
     
-    C --&gt;|vLLM / Ollama Node| E[Local GPU Cluster]
+    C --&gt;|vLLM / Ollama Node| E[&quot;Local GPU Cluster&quot;]
     
-    D --&gt;|Success| F[Return Response]
+    D --&gt;|Success| F[&quot;Return Response&quot;]
     D --&gt;|Timeout / Rate Limit 429| G{Fallback Activated?}
     G --&gt;|Yes| C
-    G --&gt;|No| H[Return Gateway Error]
+    G --&gt;|No| H[&quot;Return Gateway Error&quot;]
     
     E --&gt; F
 
@@ -154,7 +157,18 @@ graph TD
     style C fill:#111827,stroke:#eab308,stroke-width:2px
     style D fill:#111827,stroke:#0ea5e9,stroke-width:2px
     style E fill:#0ea5e9,stroke:#0f172a,stroke-width:2px,color:#0f172a
-    style F fill:#10b981,stroke:#0f172a,stroke-width:2px</div>
+    style F fill:#10b981,stroke:#0f172a,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class C green
+class D purple
+class E yellow
+class F red</div>
 <h3 id="local-runtimes-comparison">Local Runtimes Comparison</h3>
 <ul>
 <li><strong>vLLM</strong>: An enterprise-grade, high-throughput model server that implements <strong>PagedAttention</strong> (which manages KV-cache memory blocks dynamically to prevent GPU fragmentation). Ideal for concurrent multi-user serving and batch operations.</li>
@@ -263,7 +277,7 @@ if __name__ == &quot;__main__&quot;:
 </ul>
 <p>To review the comparative parameter bounds of local small language models vs cloud-hosted platforms, check out our baseline guide: <a href="file:///G:/ReplitProjects/akmalkhaniub.github.io/blog/edge-slms-vs-cloud-llms-parameter-budgets.html">Edge SLMs vs. Cloud LLMs: Navigating the Spectrum of Parameter Budgets</a>.</p>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>vLLM Paper</strong>: <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em> (Kwon et al., Berkeley) — <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">arXiv:2309.06180</a></li>
 <li><strong>vLLM Project</strong>: <a href="https://github.com/vllm-project/vllm" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> High-throughput serving engine github repo</a></li>
@@ -302,9 +316,11 @@ if __name__ == &quot;__main__&quot;:
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#the-economics-of-high-volume-token-processing" class="toc-link">The Economics of High-Volume Token Processing</a></li>
               <li class="toc-item toc-h2"><a href="#hybrid-failover-gateway-architecture" class="toc-link">Hybrid Failover Gateway Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#local-runtimes-comparison" class="toc-link">Local Runtimes Comparison</a></li>
               <li class="toc-item toc-h2"><a href="#whats-good-whats-not" class="toc-link">What's Good &amp; What's Not</a></li>
               <li class="toc-item toc-h2"><a href="#technical-implementation-failover-gateway-wrapper-in-python" class="toc-link">Technical Implementation: Failover Gateway Wrapper in Python</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1143,13 +1159,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1218,13 +1228,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1266,13 +1270,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

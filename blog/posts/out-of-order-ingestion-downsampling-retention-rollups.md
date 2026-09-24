@@ -1,6 +1,6 @@
 # Out-of-Order Ingestion & Automated Downsampling: Real-Time Rollups & Retention Policies
 
-In petabyte-scale observability platforms (**Thanos**, **Cortex**, **VictoriaMetrics**, **Grafana Mimir**), telemetry pipelines process millions of metric streams continuously.
+In petabyte-scale observability platforms (**Thanos**, **Cortex**, **VictoriaMetrics**, **Grafana Mimir**), telemetry pipelines process millions of metric streams continuously [1].
 
 Operating production time-series systems introduces two major data engineering hurdles: **Out-of-Order (OOO) Metric Ingestion** and **High-Volume Historical Storage Costs**.
 
@@ -19,13 +19,13 @@ This article details OOO skip-list buffering, background chunk merging, multi-re
 How time-series databases handle late-arriving metrics and execute automated multi-tier downsampling rollups:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_OutOfOrder ["Out-of-Order (OOO) Ingestion Pipeline"]
-    MetricStream[Incoming Metric Stream] --> CheckTime{"Timestamp > Last Sample?"}
-    CheckTime -->|Yes: In-Order| NormalHead[Standard Gorilla RAM Chunk]
-    CheckTime -->|No: Late-Arriving OOO!| OOOBuffer["⚠️ Out-of-Order (OOO) Skip-List RAM Buffer"]
+    MetricStream["Incoming Metric Stream"] --> CheckTime["Timestamp > Last Sample?"]
+    CheckTime -->|Yes - In-Order| NormalHead["Standard Gorilla RAM Chunk"]
+    CheckTime -->|No - Late-Arriving OOO!| OOOBuffer[" Out-of-Order (OOO) Skip-List RAM Buffer"]
     
-    NormalHead & OOOBuffer -->|Background Merge| CompactedChunk[Compacted Immutable Block Segment]
+    NormalHead & OOOBuffer -->|Background Merge| CompactedChunk["Compacted Immutable Block Segment"]
   end
   
   subgraph SG2_AutomatedDownsamplingRetention ["Automated Downsampling & Retention Tiering"]
@@ -33,6 +33,17 @@ graph TD
     RawTier -->|Thanos Downsampler| Tier5m["5-Minute Rollup (min, max, sum, count) - Retained 90 Days"]
     Tier5m -->|Thanos Downsampler| Tier1h["1-Hour Rollup (Long-Term Archive) - Retained 2 Years"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class MetricStream,RawTier blue
+class CheckTime,Tier5m green
+class NormalHead,Tier1h purple
+class OOOBuffer yellow
+class CompactedChunk red
 ```
 
 ### Core Downsampling & OOO Mechanics
@@ -177,4 +188,10 @@ When managing long-term metric retention:
 ## Real-World Enterprise Impact
 Downsampling and OOO ingestion engines (in **Thanos**, **VictoriaMetrics**, and **Grafana Mimir**) report:
 * **Over $95\%$ Reduction in Long-Term Cloud Storage Costs**: Downsampling 1-second raw metrics into 5-minute rollups slashes S3 storage volumes.
-* **$50\times$ Faster Multi-Month Dashboard Rendering**: Querying pre-aggregated downsampled buckets eliminates reading billions of raw historical data points.
+* **$50\times$ Faster Multi-Month Dashboard Rendering**: Querying pre-aggregated downsampled buckets eliminates reading billions of raw historical data points. [2]
+
+## References & Further Reading
+
+1. **Pelkonen, T., et al. (2015)**. *Gorilla: A Fast, Scalable, In-Memory Time Series Database*. VLDB. [https://www.vldb.org/pvldb/vol8/p1816-teller.pdf](https://www.vldb.org/pvldb/vol8/p1816-teller.pdf)
+2. **Prometheus Authors (2024)**. *Prometheus Documentation*. CNCF. [https://prometheus.io/docs/introduction/overview/](https://prometheus.io/docs/introduction/overview/)
+3. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)

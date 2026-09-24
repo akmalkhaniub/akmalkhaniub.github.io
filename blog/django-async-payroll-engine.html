@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/django-async-payroll-engine.html">
   <meta property="og:title" content="Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django">
   <meta property="og:description" content="How to design a scale-tested, transactionally secure payroll engine that solves float inaccuracies, database deadlocks, and CPU-bound worker bottlenecks using Django, Celery, and PostgreSQL.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/django-async-payroll-engine.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-02">
+  <meta property="article:published_time" content="2026-03-03">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django">
   <meta name="twitter:description" content="How to design a scale-tested, transactionally secure payroll engine that solves float inaccuracies, database deadlocks, and CPU-bound worker bottlenecks using Django, Celery, and PostgreSQL.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/django-async-payroll-engine.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Engineering a High-Throughput Async Payroll Engine with Celery & Django",
   "description": "How to design a scale-tested, transactionally secure payroll engine that solves float inaccuracies, database deadlocks, and CPU-bound worker bottlenecks using Django, Celery, and PostgreSQL.",
   "url": "https://akmalkhaniub.github.io/blog/django-async-payroll-engine.html",
-  "datePublished": "2026-03-02",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/django-async-payroll-engine.jpg",
+  "datePublished": "2026-03-03",
   "keywords": "Python, Django, Celery, Architecture",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/django-async-payroll-engine.jpg" class="article-cover-img" alt="Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Engineering a High-Throughput Async Payroll Engine with Celery &amp; Django</h1>
             <div class="article-meta">
@@ -107,12 +108,14 @@
             <details class="mobile-toc">
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
+                <li><a href="#article-overview">📖 Article Overview</a></li>
                 <li><a href="#the-architecture-dynamic-parallel-fan-out">The Architecture: Dynamic Parallel Fan-Out</a></li>
                 <li><a href="#1-mathematical-accuracy-enforcing-currency-precision">1. Mathematical Accuracy: Enforcing Currency Precision</a></li>
                 <li><a href="#2-preventing-double-payouts-acid-pessimistic-locking">2. Preventing Double-Payouts: ACID &amp; Pessimistic Locking</a></li>
                 <li><a href="#3-high-throughput-scaling-parallel-pdf-compiles-via-celery">3. High-Throughput Scaling: Parallel PDF Compiles via Celery</a></li>
                 <li><a href="#key-performance-metrics">Key Performance Metrics</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <blockquote>
@@ -124,7 +127,7 @@
 </ul>
 </blockquote>
 <hr>
-<p>In financial technology, computational accuracy and transactional integrity are absolute. If a system rounds a dollar up or down incorrectly, or if a database query fails halfway through processing a bulk payout, it compromises the core security of the ledger.</p>
+<p>In financial technology, computational accuracy and transactional integrity are absolute <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. If a system rounds a dollar up or down incorrectly, or if a database query fails halfway through processing a bulk payout, it compromises the core security of the ledger.</p>
 <p>When designing a <strong>High-Throughput Asynchronous Payroll Engine</strong>, developers face three major engineering challenges:</p>
 <ol>
 <li><strong>Mathematical Precision</strong>: Standard binary floating-point numbers (<code>float</code>) introduce rounding errors that compound over thousands of calculations.</li>
@@ -142,18 +145,29 @@
 <li>The celery worker pulls the task and processes the calculation inside an isolated database transaction.</li>
 <li>Once completed, a fan-out task is dispatched, triggering dozens of separate, concurrent PDF compilers.</li>
 </ol>
-<div class="mermaid">graph TD
-    A[Django API] --&gt;|1. Trigger Run| B(Redis Queue)
-    B --&gt;|2. Pull Task| C(Celery Worker)
-    C --&gt;|3. Calculate &amp; Lock Row| D[Database]
-    C --&gt;|4. Update Status to Completed| D
-    C --&gt;|5. Dispatch Fan-Out| B
-    B --&gt;|6. Parallel Invoices| E[Celery PDF Worker 1]
-    B --&gt;|6. Parallel Invoices| F[Celery PDF Worker 2]
-    B --&gt;|6. Parallel Invoices| G[Celery PDF Worker 3]
-    E --&gt;|7. Upload Pay Statement| H[(Persistent Media Storage)]
-    F --&gt;|7. Upload Pay Statement| H
-    G --&gt;|7. Upload Pay Statement| H</div>
+<div class="mermaid">flowchart TD
+    A[&quot;Django API&quot;] --&gt;|Trigger Run| B(Redis Queue)
+    B --&gt;|Pull Task| C(Celery Worker)
+    C --&gt;|Calculate &amp; Lock Row| D[&quot;Database&quot;]
+    C --&gt;|Update Status to Completed| D
+    C --&gt;|Dispatch Fan-Out| B
+    B --&gt;|Parallel Invoices| E[&quot;Celery PDF Worker 1&quot;]
+    B --&gt;|Parallel Invoices| F[&quot;Celery PDF Worker 2&quot;]
+    B --&gt;|Parallel Invoices| G[&quot;Celery PDF Worker 3&quot;]
+    E --&gt;|Upload Pay Statement| H[(Persistent Media Storage)]
+    F --&gt;|Upload Pay Statement| H
+    G --&gt;|Upload Pay Statement| H
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class D green
+class E purple
+class F yellow
+class G red</div>
 <hr>
 <h2 id="1-mathematical-accuracy-enforcing-currency-precision">1. Mathematical Accuracy: Enforcing Currency Precision</h2>
 <p>Computers represent floats in binary (base 2), which makes it impossible to store numbers like <code>0.1</code> exactly. This results in precision anomalies (e.g., <code>0.1 + 0.2</code> returning <code>0.30000000000000004</code> instead of exactly <code>0.3</code>). </p>
@@ -283,7 +297,15 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
 <li><strong>High-Throughput Scaling:</strong> Asynchronous worker queues (Celery) with dynamic fan-out enable parallel processing of CPU-intensive tasks like PDF generation, significantly boosting system throughput and responsiveness.</li>
 </ol>
 <p><em>Takeaway: A combination of precise data types, robust transaction management, and asynchronous architecture is essential for building high-performance, reliable financial systems.</em></p>
-<p><em>The full source code, deployment scripts, and local test suites are available in the public <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a> repository.</em></p>
+<p><em>The full source code, deployment scripts, and local test suites are available in the public <a href="https://github.com/akmalkhaniub/django-payroll-engine" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> django-payroll-engine</a> repository.</em> <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Redis Ltd. (2024)</strong>. <em>Redis Documentation</em>. redis.io. <a href="https://redis.io/docs/" target="_blank" rel="noopener">https://redis.io/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -315,12 +337,14 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
           <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
           <nav class="article-toc">
             <ul class="toc-list">
+              <li class="toc-item toc-h3"><a href="#article-overview" class="toc-link">📖 Article Overview</a></li>
               <li class="toc-item toc-h2"><a href="#the-architecture-dynamic-parallel-fan-out" class="toc-link">The Architecture: Dynamic Parallel Fan-Out</a></li>
               <li class="toc-item toc-h2"><a href="#1-mathematical-accuracy-enforcing-currency-precision" class="toc-link">1. Mathematical Accuracy: Enforcing Currency Precision</a></li>
               <li class="toc-item toc-h2"><a href="#2-preventing-double-payouts-acid-pessimistic-locking" class="toc-link">2. Preventing Double-Payouts: ACID &amp; Pessimistic Locking</a></li>
               <li class="toc-item toc-h2"><a href="#3-high-throughput-scaling-parallel-pdf-compiles-via-celery" class="toc-link">3. High-Throughput Scaling: Parallel PDF Compiles via Celery</a></li>
               <li class="toc-item toc-h2"><a href="#key-performance-metrics" class="toc-link">Key Performance Metrics</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1159,13 +1183,7 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1234,13 +1252,7 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1282,13 +1294,7 @@ def generate_invoice_pdf_task(self, payroll_entry_id: int) -&gt; dict:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

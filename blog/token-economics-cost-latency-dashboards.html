@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/token-economics-cost-latency-dashboards.html">
   <meta property="og:title" content="Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI">
   <meta property="og:description" content="How to track model telemetry, build prompt cache hits, and set up cost-routing tables to optimize large-scale production LLM spend.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/token-economics-cost-latency-dashboards.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-02-27">
+  <meta property="article:published_time" content="2026-02-28">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI">
   <meta name="twitter:description" content="How to track model telemetry, build prompt cache hits, and set up cost-routing tables to optimize large-scale production LLM spend.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/token-economics-cost-latency-dashboards.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Token Economics: Designing Cost & Latency Dashboards for Enterprise AI",
   "description": "How to track model telemetry, build prompt cache hits, and set up cost-routing tables to optimize large-scale production LLM spend.",
   "url": "https://akmalkhaniub.github.io/blog/token-economics-cost-latency-dashboards.html",
-  "datePublished": "2026-02-27",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/token-economics-cost-latency-dashboards.jpg",
+  "datePublished": "2026-02-28",
   "keywords": "Economics, Observability, Monitoring",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/token-economics-cost-latency-dashboards.jpg" class="article-cover-img" alt="Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Token Economics: Designing Cost &amp; Latency Dashboards for Enterprise AI</h1>
             <div class="article-meta">
@@ -107,9 +108,14 @@
             <details class="mobile-toc">
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
+                <li><a href="#article-overview">📖 Article Overview</a></li>
                 <li><a href="#telemetry-and-cost-routing-pipeline">Telemetry and Cost-Routing Pipeline</a></li>
                 <li><a href="#context-engineering-prefix-caching-rules">Context Engineering: Prefix Caching Rules</a></li>
+                <li><a href="#bad-prompt-layout-invalidates-cache">Bad Prompt Layout (Invalidates Cache):</a></li>
+                <li><a href="#good-prompt-layout-maximizes-cache-hits">Good Prompt Layout (Maximizes Cache Hits):</a></li>
                 <li><a href="#coding-llm-telemetry-middleware-in-nodejs">Coding LLM Telemetry Middleware in Node.js</a></li>
+                <li><a href="#1-database-ingestion-schema">1. Database Ingestion Schema</a></li>
+                <li><a href="#2-telemetry-interceptor-implementation">2. Telemetry Interceptor Implementation</a></li>
                 <li><a href="#telemetry-dashboard-goals">Telemetry Dashboard Goals</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
                 <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
@@ -123,30 +129,40 @@
 <li><strong>What we synthesized:</strong> We synthesized a complete telemetry and cost-routing pipeline, prefix caching rules for maximizing hit rates, and a Node.js middleware implementation to track and log real-time token metrics.</li>
 </ul>
 </blockquote>
-<p>When deploying large-scale Generative AI applications, API costs and latency compound exponentially. In a multi-agent system, agents repeatedly pass long conversations, document contexts, and tool definitions back and forth. This &quot;agentic tax&quot; can quickly run up thousands of dollars in cloud API fees and slow system response times to an crawl.</p>
+<p>When deploying large-scale Generative AI applications, API costs and latency compound exponentially <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. In a multi-agent system, agents repeatedly pass long conversations, document contexts, and tool definitions back and forth. This &quot;agentic tax&quot; can quickly run up thousands of dollars in cloud API fees and slow system response times to an crawl.</p>
 <p>To operate enterprise-grade AI products sustainably, we must transition from basic prompt templates to strict <strong>Context Engineering</strong> and <strong>Token Economics Telemetry</strong>. </p>
 <p>This article details how to optimize prompt structures for <strong>Prompt Caching</strong>, track model telemetry (input, output, and cached tokens), and design real-time observability dashboards.</p>
 <hr>
 <h2 id="telemetry-and-cost-routing-pipeline">Telemetry and Cost-Routing Pipeline</h2>
 <p>To audit and optimize costs, every single model call must pass through a wrapper that logs token metrics and latency data into an analytical database before resolving back to the agent application.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
     subgraph SG1_ClientappAgentApplication [&quot;ClientApp [Agent Application Layer]&quot;]
-        Agent[Agent Orchestrator] --&gt;|1. Generate Request| MW[Telemetry Middleware]
+        Agent[&quot;Agent Orchestrator&quot;] --&gt;|Generate Request| MW[&quot;Telemetry Middleware&quot;]
     end
 
     subgraph SG2_GatewayInferenceTelemetry [&quot;Gateway [Inference &amp; Telemetry Gateway]&quot;]
-        MW --&gt;|2. Route to LLM API| LLM[LLM API: Claude / GPT-4o]
-        LLM --&gt;|3. Return Completion + Usage Metrics| MW
-        MW --&gt;|4. Log usage as async job| DB[(PostgreSQL Telemetry DB)]
+        MW --&gt;|Route to LLM API| LLM[&quot;LLM API: Claude / GPT-4o&quot;]
+        LLM --&gt;|Return Completion + Usage Metrics| MW
+        MW --&gt;|Log usage as async job| DB[(PostgreSQL Telemetry DB)]
     end
 
     subgraph SG3_MonitorObservabilityLayer [&quot;Monitor [Observability Layer]&quot;]
-        Dash[Grafana / Cost Dashboard] --&gt;|5. Query aggregate analytics| DB
+        Dash[&quot;Grafana / Cost Dashboard&quot;] --&gt;|Query aggregate analytics| DB
     end
 
     style ClientApp fill:#f8fafc,stroke:#64748b,stroke-width:2px
     style Gateway fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px
-    style Monitor fill:#fffbeb,stroke:#d97706,stroke-width:2px</div>
+    style Monitor fill:#fffbeb,stroke:#d97706,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent blue
+class MW green
+class LLM purple
+class Dash yellow</div>
 <ol>
 <li><strong>Agent Request</strong>: The orchestrator triggers an API call with static tools, system instructions, and dynamic context.</li>
 <li><strong>Middleware Interception</strong>: A custom middleware wraps the API call, capturing a timestamp.</li>
@@ -282,9 +298,14 @@ async function logLLMUsage({ agentName, model, durationMs, ttftMs, usage }) {
           <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
           <nav class="article-toc">
             <ul class="toc-list">
+              <li class="toc-item toc-h3"><a href="#article-overview" class="toc-link">📖 Article Overview</a></li>
               <li class="toc-item toc-h2"><a href="#telemetry-and-cost-routing-pipeline" class="toc-link">Telemetry and Cost-Routing Pipeline</a></li>
               <li class="toc-item toc-h2"><a href="#context-engineering-prefix-caching-rules" class="toc-link">Context Engineering: Prefix Caching Rules</a></li>
+              <li class="toc-item toc-h3"><a href="#bad-prompt-layout-invalidates-cache" class="toc-link">Bad Prompt Layout (Invalidates Cache):</a></li>
+              <li class="toc-item toc-h3"><a href="#good-prompt-layout-maximizes-cache-hits" class="toc-link">Good Prompt Layout (Maximizes Cache Hits):</a></li>
               <li class="toc-item toc-h2"><a href="#coding-llm-telemetry-middleware-in-nodejs" class="toc-link">Coding LLM Telemetry Middleware in Node.js</a></li>
+              <li class="toc-item toc-h3"><a href="#1-database-ingestion-schema" class="toc-link">1. Database Ingestion Schema</a></li>
+              <li class="toc-item toc-h3"><a href="#2-telemetry-interceptor-implementation" class="toc-link">2. Telemetry Interceptor Implementation</a></li>
               <li class="toc-item toc-h2"><a href="#telemetry-dashboard-goals" class="toc-link">Telemetry Dashboard Goals</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
               <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
@@ -1126,13 +1147,7 @@ async function logLLMUsage({ agentName, model, durationMs, ttftMs, usage }) {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1201,13 +1216,7 @@ async function logLLMUsage({ agentName, model, durationMs, ttftMs, usage }) {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1249,13 +1258,7 @@ async function logLLMUsage({ agentName, model, durationMs, ttftMs, usage }) {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

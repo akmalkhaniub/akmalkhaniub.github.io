@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/out-of-order-ingestion-downsampling-retention-rollups.html">
   <meta property="og:title" content="Out-of-Order Ingestion &amp; Automated Downsampling: Real-Time Rollups &amp; Retention Policies">
   <meta property="og:description" content="High-cardinality time-series management: late-arriving telemetry metric handling, Out-of-Order (OOO) buffer compaction, automated resolution downsampling (1s to 5m to 1h rollups), and lifecycle tiering.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/out-of-order-ingestion-downsampling-retention-rollups.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Out-of-Order Ingestion &amp; Automated Downsampling: Real-Time Rollups &amp; Retention Policies">
   <meta name="twitter:description" content="High-cardinality time-series management: late-arriving telemetry metric handling, Out-of-Order (OOO) buffer compaction, automated resolution downsampling (1s to 5m to 1h rollups), and lifecycle tiering.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/out-of-order-ingestion-downsampling-retention-rollups.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Out-of-Order Ingestion & Automated Downsampling: Real-Time Rollups & Retention Policies",
   "description": "High-cardinality time-series management: late-arriving telemetry metric handling, Out-of-Order (OOO) buffer compaction, automated resolution downsampling (1s to 5m to 1h rollups), and lifecycle tiering.",
   "url": "https://akmalkhaniub.github.io/blog/out-of-order-ingestion-downsampling-retention-rollups.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/out-of-order-ingestion-downsampling-retention-rollups.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "Downsampling, OOO Ingestion, Thanos, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Out-of-Order Ingestion &amp; Automated Downsampling: Real-Time Rollups &amp; Retention Policies Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/out-of-order-ingestion-downsampling-retention-rollups.jpg" class="article-cover-img" alt="Out-of-Order Ingestion &amp; Automated Downsampling: Real-Time Rollups &amp; Retention Policies Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Out-of-Order Ingestion &amp; Automated Downsampling: Real-Time Rollups &amp; Retention Policies</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#out-of-order-ingestion-downsampling-architecture">Out-of-Order Ingestion &amp; Downsampling Architecture</a></li>
+                <li><a href="#core-downsampling-ooo-mechanics">Core Downsampling &amp; OOO Mechanics</a></li>
                 <li><a href="#python-implementation-ooo-ingestion-downsampling-engine">Python Implementation: OOO Ingestion &amp; Downsampling Engine</a></li>
                 <li><a href="#downsampling-ooo-gotchas-best-practices">Downsampling &amp; OOO Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In petabyte-scale observability platforms (<strong>Thanos</strong>, <strong>Cortex</strong>, <strong>VictoriaMetrics</strong>, <strong>Grafana Mimir</strong>), telemetry pipelines process millions of metric streams continuously.</p>
+<p>In petabyte-scale observability platforms (<strong>Thanos</strong>, <strong>Cortex</strong>, <strong>VictoriaMetrics</strong>, <strong>Grafana Mimir</strong>), telemetry pipelines process millions of metric streams continuously <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Operating production time-series systems introduces two major data engineering hurdles: <strong>Out-of-Order (OOO) Metric Ingestion</strong> and <strong>High-Volume Historical Storage Costs</strong>.</p>
 <p>When mobile client devices or edge IoT nodes reconnect after a network partition, they transmit historical metrics out of timestamp order.</p>
 <p>Simultaneously, storing raw 1-second metric resolution across years of historical data inflates cloud storage costs into millions of dollars while crippling dashboard query rendering.</p>
@@ -122,20 +125,31 @@
 <hr>
 <h2 id="out-of-order-ingestion-downsampling-architecture">Out-of-Order Ingestion &amp; Downsampling Architecture</h2>
 <p>How time-series databases handle late-arriving metrics and execute automated multi-tier downsampling rollups:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_OutOfOrder [&quot;Out-of-Order (OOO) Ingestion Pipeline&quot;]
-    MetricStream[Incoming Metric Stream] --&gt; CheckTime{&quot;Timestamp &gt; Last Sample?&quot;}
-    CheckTime --&gt;|Yes: In-Order| NormalHead[Standard Gorilla RAM Chunk]
-    CheckTime --&gt;|No: Late-Arriving OOO!| OOOBuffer[&quot;⚠️ Out-of-Order (OOO) Skip-List RAM Buffer&quot;]
+    MetricStream[&quot;Incoming Metric Stream&quot;] --&gt; CheckTime[&quot;Timestamp &gt; Last Sample?&quot;]
+    CheckTime --&gt;|Yes - In-Order| NormalHead[&quot;Standard Gorilla RAM Chunk&quot;]
+    CheckTime --&gt;|No - Late-Arriving OOO!| OOOBuffer[&quot; Out-of-Order (OOO) Skip-List RAM Buffer&quot;]
     
-    NormalHead &amp; OOOBuffer --&gt;|Background Merge| CompactedChunk[Compacted Immutable Block Segment]
+    NormalHead &amp; OOOBuffer --&gt;|Background Merge| CompactedChunk[&quot;Compacted Immutable Block Segment&quot;]
   end
   
   subgraph SG2_AutomatedDownsamplingRetention [&quot;Automated Downsampling &amp; Retention Tiering&quot;]
     CompactedChunk --&gt; RawTier[&quot;Raw Resolution (1s / 10s Scrape) - Retained 14 Days&quot;]
     RawTier --&gt;|Thanos Downsampler| Tier5m[&quot;5-Minute Rollup (min, max, sum, count) - Retained 90 Days&quot;]
     Tier5m --&gt;|Thanos Downsampler| Tier1h[&quot;1-Hour Rollup (Long-Term Archive) - Retained 2 Years&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class MetricStream,RawTier blue
+class CheckTime,Tier5m green
+class NormalHead,Tier1h purple
+class OOOBuffer yellow
+class CompactedChunk red</div>
 <h3 id="core-downsampling-ooo-mechanics">Core Downsampling &amp; OOO Mechanics</h3>
 <ol>
 <li><strong>The Out-of-Order (OOO) Ingestion Problem</strong>:<ul>
@@ -284,8 +298,16 @@ if __name__ == &quot;__main__&quot;:
 <p>Downsampling and OOO ingestion engines (in <strong>Thanos</strong>, <strong>VictoriaMetrics</strong>, and <strong>Grafana Mimir</strong>) report:</p>
 <ul>
 <li><strong>Over $95%$ Reduction in Long-Term Cloud Storage Costs</strong>: Downsampling 1-second raw metrics into 5-minute rollups slashes S3 storage volumes.</li>
-<li><strong>$50\times$ Faster Multi-Month Dashboard Rendering</strong>: Querying pre-aggregated downsampled buckets eliminates reading billions of raw historical data points.</li>
+<li><strong>$50\times$ Faster Multi-Month Dashboard Rendering</strong>: Querying pre-aggregated downsampled buckets eliminates reading billions of raw historical data points. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Pelkonen, T., et al. (2015)</strong>. <em>Gorilla: A Fast, Scalable, In-Memory Time Series Database</em>. VLDB. <a href="https://www.vldb.org/pvldb/vol8/p1816-teller.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1816-teller.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Prometheus Authors (2024)</strong>. <em>Prometheus Documentation</em>. CNCF. <a href="https://prometheus.io/docs/introduction/overview/" target="_blank" rel="noopener">https://prometheus.io/docs/introduction/overview/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -318,9 +340,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#out-of-order-ingestion-downsampling-architecture" class="toc-link">Out-of-Order Ingestion &amp; Downsampling Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-downsampling-ooo-mechanics" class="toc-link">Core Downsampling &amp; OOO Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-ooo-ingestion-downsampling-engine" class="toc-link">Python Implementation: OOO Ingestion &amp; Downsampling Engine</a></li>
               <li class="toc-item toc-h2"><a href="#downsampling-ooo-gotchas-best-practices" class="toc-link">Downsampling &amp; OOO Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1159,13 +1183,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1234,13 +1252,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1282,13 +1294,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

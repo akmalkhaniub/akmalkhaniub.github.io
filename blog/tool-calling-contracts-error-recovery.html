@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/tool-calling-contracts-error-recovery.html">
   <meta property="og:title" content="Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas">
   <meta property="og:description" content="How to design typed tool schemas with Pydantic v2, build structured error feedback loops for LLM self-correction, and implement exponential backoff retry patterns for production agent reliability.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/tool-calling-contracts-error-recovery.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-01">
+  <meta property="article:published_time" content="2026-04-02">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas">
   <meta name="twitter:description" content="How to design typed tool schemas with Pydantic v2, build structured error feedback loops for LLM self-correction, and implement exponential backoff retry patterns for production agent reliability.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/tool-calling-contracts-error-recovery.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Tool-Calling Contracts & Error Recovery: Building Resilient Agent Tool Schemas",
   "description": "How to design typed tool schemas with Pydantic v2, build structured error feedback loops for LLM self-correction, and implement exponential backoff retry patterns for production agent reliability.",
   "url": "https://akmalkhaniub.github.io/blog/tool-calling-contracts-error-recovery.html",
-  "datePublished": "2026-04-01",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/tool-calling-contracts-error-recovery.jpg",
+  "datePublished": "2026-04-02",
   "keywords": "Pydantic, LangGraph, Error Handling, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/tool-calling-contracts-error-recovery.jpg" class="article-cover-img" alt="Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Tool-Calling Contracts &amp; Error Recovery: Building Resilient Agent Tool Schemas</h1>
             <div class="article-meta">
@@ -114,6 +115,7 @@
                 <li><a href="#error-recovery-sequence-llm-self-correction-loop">Error Recovery Sequence: LLM Self-Correction Loop</a></li>
                 <li><a href="#generating-tool-schemas-directly-from-pydantic-models">Generating Tool Schemas Directly from Pydantic Models</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,7 +126,7 @@ Tool calls are the primary interface between LLM reasoning and the real world. W
 </div>
 <hr>
 <h2 id="why-tool-calls-break-in-production">Why Tool Calls Break in Production</h2>
-<p>Tool calling is conceptually simple: the LLM decides to call a function, the runtime executes it, and the result is fed back. In practice, production failures cluster around three anti-patterns:</p>
+<p>Tool calling is conceptually simple: the LLM decides to call a function, the runtime executes it, and the result is fed back <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. In practice, production failures cluster around three anti-patterns:</p>
 <ol>
 <li><strong>Hallucinated Parameters</strong>: The model confidently passes an argument that doesn&#39;t exist in the schema — e.g., <code>{&quot;user_id&quot;: &quot;abc123&quot;, &quot;sort_by&quot;: &quot;relevance&quot;}</code> when <code>sort_by</code> is not a defined field. Without validation, this propagates silently.</li>
 <li><strong>Type Coercion Failures</strong>: The model returns <code>&quot;true&quot;</code> (string) for a boolean field, <code>&quot;5&quot;</code> (string) for an integer, or an ISO date string when an epoch timestamp is expected.</li>
@@ -135,19 +137,19 @@ Tool calls are the primary interface between LLM reasoning and the real world. W
 <h2 id="tool-contract-architecture">Tool Contract Architecture</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    A[🧠 LLM Reasoning Layer] --&gt;|Generates tool call JSON| B{Schema Validator&lt;br/&gt;Pydantic v2}
+    A[&quot; LLM Reasoning Layer&quot;] --&gt;|Generates tool call JSON| B{Schema Validator&lt;br/&gt;Pydantic v2}
     
-    B --&gt;|✅ Valid Schema| C[Tool Executor&lt;br/&gt;Function Registry]
-    B --&gt;|❌ Invalid Schema| D[Error Feedback Loop&lt;br/&gt;Structured Error Message]
+    B --&gt;|Valid Schema| C[&quot;Tool Executor&lt;br/&gt;Function Registry&quot;]
+    B --&gt;|Invalid Schema| D[&quot;Error Feedback Loop&lt;br/&gt;Structured Error Message&quot;]
     D --&gt; A
 
-    C --&gt;|Success| E[Tool Result&lt;br/&gt;Typed Response Object]
+    C --&gt;|Success| E[&quot;Tool Result&lt;br/&gt;Typed Response Object&quot;]
     C --&gt;|Exception / Timeout| F{Retry Policy&lt;br/&gt;ExponentialBackoff}
     
     F --&gt;|Attempt ≤ Max Retries| C
-    F --&gt;|Max Retries Exceeded| G[Fallback Strategy&lt;br/&gt;Default Value / Alt Tool]
+    F --&gt;|Max Retries Exceeded| G[&quot;Fallback Strategy&lt;br/&gt;Default Value / Alt Tool&quot;]
     
-    E --&gt; H[LLM Observation&lt;br/&gt;Continue Reasoning]
+    E --&gt; H[&quot;LLM Observation&lt;br/&gt;Continue Reasoning&quot;]
     G --&gt; H
 
     style A fill:#4c1d95,stroke:#a855f7,stroke-width:2px
@@ -156,7 +158,18 @@ flowchart TD
     style D fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style F fill:#1e293b,stroke:#f59e0b,stroke-width:2px
     style G fill:#1e293b,stroke:#f59e0b,stroke-width:2px
-    style H fill:#4c1d95,stroke:#a855f7,stroke-width:2px</div>
+    style H fill:#4c1d95,stroke:#a855f7,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class C green
+class D purple
+class E yellow
+class G red</div>
 <hr>
 <h2 id="whats-good-whats-not">What&#39;s Good &amp; What&#39;s Not</h2>
 <table>
@@ -538,7 +551,7 @@ print(json.dumps(search_tool_def, indent=2))
 </ul>
 <p>In our next article, we explore <strong>Agent Memory: Short-Term, Episodic &amp; Semantic</strong> — how to persist agent state across sessions using Mem0, Redis, and pgvector so agents accumulate knowledge and context over time.</p>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Anthropic Tool Use Guide</strong>: <a href="https://docs.anthropic.com/en/docs/build-with-claude/tool-use" target="_blank" rel="noopener">Function Calling with Claude</a></li>
 <li><strong>OpenAI Function Calling</strong>: <a href="https://platform.openai.com/docs/guides/function-calling" target="_blank" rel="noopener">Structured Tool Calling Reference</a></li>
@@ -582,6 +595,7 @@ print(json.dumps(search_tool_def, indent=2))
               <li class="toc-item toc-h2"><a href="#error-recovery-sequence-llm-self-correction-loop" class="toc-link">Error Recovery Sequence: LLM Self-Correction Loop</a></li>
               <li class="toc-item toc-h2"><a href="#generating-tool-schemas-directly-from-pydantic-models" class="toc-link">Generating Tool Schemas Directly from Pydantic Models</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1420,13 +1434,7 @@ print(json.dumps(search_tool_def, indent=2))
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1495,13 +1503,7 @@ print(json.dumps(search_tool_def, indent=2))
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1543,13 +1545,7 @@ print(json.dumps(search_tool_def, indent=2))
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

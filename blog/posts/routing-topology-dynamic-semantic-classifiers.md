@@ -13,7 +13,7 @@ If a user submits a query, the router must choose:
 2. `Route to Frontend Agent`
 3. `Route to Testing Agent`
 
-Using an LLM for this choice requires parsing prompt logic, generating class tokens, and decoding responses.
+Using an LLM for this choice requires parsing prompt logic, generating class tokens, and decoding responses [1].
 By using **Semantic Similarity Routing**:
 * We convert the query into a local vector embedding (e.g. using a lightweight local model like `all-MiniLM-L6-v2` or a fast API embedding).
 * We calculate the cosine similarity of the query embedding against pre-calculated embeddings of our target categories.
@@ -22,14 +22,25 @@ By using **Semantic Similarity Routing**:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Prompt[Incoming User Prompt] --> Embed[Convert to Embedding Vector]
+    Prompt["Incoming User Prompt"] --> Embed["Convert to Embedding Vector"]
     Embed --> Cosine{Cosine Similarity Evaluator}
     
-    Cosine -->|Class: DB Update| DB[Route to Database Queue]
-    Cosine -->|Class: CSS Styling| FE[Route to Frontend Queue]
-    Cosine -->|Class: Unit Tests| Test[Route to Testing Queue]
+    Cosine -->|Class - DB Update| DB["Route to Database Queue"]
+    Cosine -->|Class - CSS Styling| FE["Route to Frontend Queue"]
+    Cosine -->|Class - Unit Tests| Test["Route to Testing Queue"]
     
     style Cosine fill:#111827,stroke:#0db49b,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Prompt blue
+class Embed green
+class DB purple
+class FE yellow
+class Test red
 ```
 
 ---
@@ -124,4 +135,10 @@ if __name__ == "__main__":
 
 * **Use Local Embeddings**: Use lightweight local embedding generators (`sentence-transformers`) on your router gateways to execute vector math in under 5 milliseconds.
 * **Establish Safeguard Thresholds**: Configure fallback queues to catch queries with low similarity scores, preventing misrouting failures.
-* **Audit Centroids**: Periodically update your centroid vectors using historical task logs to match updates in codebase scopes.
+* **Audit Centroids**: Periodically update your centroid vectors using historical task logs to match updates in codebase scopes. [2]
+
+## References & Further Reading
+
+1. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+2. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

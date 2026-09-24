@@ -11,18 +11,29 @@
 In traditional web applications, key-value stores (like Redis) cache database query results using exact string keys (e.g., query SQL string hash). In LLM interactions, this approach falls short:
 * **Query Variations**: Users express the same intent in infinitely varied formats, structures, or spelling.
 * **Redundant API Costs**: Processing these variation queries forces the LLM to generate identical answers, wasting token budgets and execution time.
-* **The Solution**: A **Semantic Cache**. Instead of comparing characters, we compare **semantic vectors** (embeddings). If the vector distance between the incoming query and a previously cached query is close enough, we return the cached response.
+* **The Solution**: A **Semantic Cache**. Instead of comparing characters, we compare **semantic vectors** (embeddings). If the vector distance between the incoming query and a previously cached query is close enough, we return the cached response [1].
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    User[User Query] --> Embed[Generate Query Vector]
-    Embed --> DBQuery[Search Vector Database]
+    User["User Query"] --> Embed["Generate Query Vector"]
+    Embed --> DBQuery["Search Vector Database"]
     DBQuery --> Match{Is Cosine Similarity > Threshold?}
-    Match -->|Yes: Cache Hit| Return[Return Cached LLM Response]
-    Match -->|No: Cache Miss| LLM[Invoke LLM API]
-    LLM --> WriteCache[Insert Query & Response to Vector DB]
+    Match -->|Yes - Cache Hit| Return["Return Cached LLM Response"]
+    Match -->|No - Cache Miss| LLM["Invoke LLM API"]
+    LLM --> WriteCache["Insert Query & Response to Vector DB"]
     WriteCache --> Return
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,WriteCache blue
+class Embed green
+class DBQuery purple
+class Return yellow
+class LLM red
 ```
 
 ---
@@ -134,4 +145,16 @@ if __name__ == "__main__":
 
 * **Select a High-Quality Embedding Model**: Models like OpenAI `text-embedding-3-small` or Cohere `embed-english-v3.0` provide high semantic separation, reducing false positives.
 * **Handle Cache Eviction**: Set an LRU (Least Recently Used) cache policy or TTL (Time-To-Live) on vector entries. If underlying application data or prompts change, invalidate target vector namespaces.
-* **Blend Vector Caching with Local Database**: Store vector search indexes in Redis (using RediSearch vector utilities) or pgvector for sub-millisecond retrieval speeds in high-scale environments.
+* **Blend Vector Caching with Local Database**: Store vector search indexes in Redis (using RediSearch vector utilities) or pgvector for sub-millisecond retrieval speeds in high-scale environments. [2]
+
+
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+5. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+6. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+7. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

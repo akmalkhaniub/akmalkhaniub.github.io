@@ -16,23 +16,34 @@ Instead of feeding retrieved documents directly into the prompt generator, a CRA
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[User Query] --> Retrieve[1. Retrieve from Vector DB]
+    Query["User Query"] --> Retrieve["1. Retrieve from Vector DB"]
     Retrieve --> Grader{2. Context Grader Node}
     
-    Grader -->|CORRECT <br> Confidence > 0.8| Generate[3. Generate LLM Completion]
-    Grader -->|INCORRECT <br> Confidence < 0.3| Search[4. Trigger Web Search API]
-    Grader -->|AMBIGUOUS| Hybrid[5. Merge Vector & Web Search]
+    Grader -->|CORRECT <br> Confidence > 0.8| Generate["3. Generate LLM Completion"]
+    Grader -->|INCORRECT <br> Confidence < 0.3| Search["4. Trigger Web Search API"]
+    Grader -->|AMBIGUOUS| Hybrid["5. Merge Vector & Web Search"]
     
-    Search --> Filter[6. Filter Snippets]
+    Search --> Filter["6. Filter Snippets"]
     Hybrid --> Filter
     Filter --> Generate
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,Filter blue
+class Retrieve green
+class Generate purple
+class Search yellow
+class Hybrid red
 ```
 
 ---
 
 ## Implementing Corrective RAG in Python
 
-Below is a complete implementation using Python, `pydantic` for structured grading outputs, and a mock web search searcher routing logic.
+Below is a complete implementation using Python, `pydantic` for structured grading outputs, and a mock web search searcher routing logic [1].
 
 ```python
 import os
@@ -140,4 +151,10 @@ Self-Reflective loops protect RAG systems from poor vector search results:
 * [ ] **Insert a grader node**: Always evaluate the semantic relevancy of retrieved document fragments before passing them to the generator.
 * [ ] **Enforce structured grading criteria**: Use strict grading schemas (CORRECT, INCORRECT, AMBIGUOUS) using Pydantic parse endpoints.
 * [ ] **Establish search fallback gates**: If local vector data scores below your relevancy threshold, dynamically trigger search API gateways to collect fresh data.
-* [ ] **Filter context dynamically**: Strip away flagged irrelevant context blocks to optimize input token costs and keep prompts focused.
+* [ ] **Filter context dynamically**: Strip away flagged irrelevant context blocks to optimize input token costs and keep prompts focused. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)

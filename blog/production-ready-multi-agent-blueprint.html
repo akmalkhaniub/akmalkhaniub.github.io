@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/production-ready-multi-agent-blueprint.html">
   <meta property="og:title" content="Building a Production-Ready Multi-Agent App: A Practical Blueprint">
   <meta property="og:description" content="A complete architectural blueprint of an enterprise-grade 'Research-to-Report' multi-agent app from data parsing to human approval gates.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/production-ready-multi-agent-blueprint.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-16">
+  <meta property="article:published_time" content="2026-03-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Building a Production-Ready Multi-Agent App: A Practical Blueprint">
   <meta name="twitter:description" content="A complete architectural blueprint of an enterprise-grade 'Research-to-Report' multi-agent app from data parsing to human approval gates.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/production-ready-multi-agent-blueprint.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Building a Production-Ready Multi-Agent App: A Practical Blueprint",
   "description": "A complete architectural blueprint of an enterprise-grade 'Research-to-Report' multi-agent app from data parsing to human approval gates.",
   "url": "https://akmalkhaniub.github.io/blog/production-ready-multi-agent-blueprint.html",
-  "datePublished": "2026-03-16",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/production-ready-multi-agent-blueprint.jpg",
+  "datePublished": "2026-03-17",
   "keywords": "AI Agents, System Design, Blueprint",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/production-ready-multi-agent-blueprint.jpg" class="article-cover-img" alt="Building a Production-Ready Multi-Agent App: A Practical Blueprint Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Building a Production-Ready Multi-Agent App: A Practical Blueprint</h1>
             <div class="article-meta">
@@ -107,8 +108,14 @@
             <details class="mobile-toc">
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
+                <li><a href="#article-overview">📖 Article Overview</a></li>
                 <li><a href="#the-swarm-architecture">The Swarm Architecture</a></li>
                 <li><a href="#step-by-step-blueprint-walkthrough">Step-by-Step Blueprint Walkthrough</a></li>
+                <li><a href="#1-the-supervisor-the-expeditor">1. The Supervisor (The Expeditor)</a></li>
+                <li><a href="#2-the-researcher-fact-verifier">2. The Researcher &amp; Fact Verifier</a></li>
+                <li><a href="#3-the-outline-writer-agents">3. The Outline &amp; Writer Agents</a></li>
+                <li><a href="#4-the-critic-validator-quality-assurance">4. The Critic &amp; Validator (Quality Assurance)</a></li>
+                <li><a href="#5-human-in-the-loop-hitl-approval-gate">5. Human-in-the-Loop (HITL) Approval Gate</a></li>
                 <li><a href="#implementation-rules-for-production">Implementation Rules for Production</a></li>
                 <li><a href="#summary-of-the-series">Summary of the Series</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
@@ -123,40 +130,51 @@
 <li><strong>What we synthesized:</strong> We synthesized a complete 8-stage swarm architecture—integrating supervisor coordination, parallel writing, automated verification, and programmatic validation—into a robust, scale-tested implementation blueprint.</li>
 </ul>
 </blockquote>
-<p>In this final post of the series, we bring together all the architectural concepts—from state checkpointing to validator gates—to design a complete, production-ready <strong>&quot;Research-to-Report&quot; Multi-Agent Application</strong>.</p>
+<p>In this final post of the series, we bring together all the architectural concepts—from state checkpointing to validator gates—to design a complete, production-ready <strong>&quot;Research-to-Report&quot; Multi-Agent Application</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>This blueprint represents a robust, scale-tested architecture that can parse documents, search the web, draft reports, verify facts, and integrate human approval gates without running into infinite loops or &quot;agent soup&quot; drift.</p>
 <hr>
 <h2 id="the-swarm-architecture">The Swarm Architecture</h2>
 <p>The system mimics a professional digital newsroom, dividing labor among specialized agents coordinating via a shared database:</p>
-<div class="mermaid">graph TD
-    UserReq[User Query / Topic] --&gt; Supervisor[1. Supervisor Agent]
-    Supervisor --&gt;|Plan &amp; Assign| Researcher[2. Researcher Agent]
-    Researcher --&gt;|Tool: Web Search| Web[Web API / Google]
+<div class="mermaid">flowchart TD
+    UserReq[&quot;User Query / Topic&quot;] --&gt; Supervisor[&quot;1. Supervisor Agent&quot;]
+    Supervisor --&gt;|Plan &amp; Assign| Researcher[&quot;2. Researcher Agent&quot;]
+    Researcher --&gt;|Tool - Web Search| Web[&quot;Web API / Google&quot;]
     
-    Researcher --&gt;|Output: Raw Context| Supervisor
-    Supervisor --&gt;|Assign Verification| FactChecker[3. Fact Verifier Agent]
-    FactChecker --&gt;|Tool: Vector Search| Vector[(pgvector Knowledge Base)]
+    Researcher --&gt;|Output - Raw Context| Supervisor
+    Supervisor --&gt;|Assign Verification| FactChecker[&quot;3. Fact Verifier Agent&quot;]
+    FactChecker --&gt;|Tool - Vector Search| Vector[(pgvector Knowledge Base)]
     
-    FactChecker --&gt;|Output: Verified Facts| Supervisor
-    Supervisor --&gt;|Assign Outline| Outliner[4. Outline Agent]
-    Outliner --&gt;|Output: Document Structure| Supervisor
+    FactChecker --&gt;|Output - Verified Facts| Supervisor
+    Supervisor --&gt;|Assign Outline| Outliner[&quot;4. Outline Agent&quot;]
+    Outliner --&gt;|Output - Document Structure| Supervisor
     
-    Supervisor --&gt;|Assign Draft| Writer[5. Writer Agent]
-    Writer --&gt;|Output: Draft Report| Critic[6. Critic Agent]
+    Supervisor --&gt;|Assign Draft| Writer[&quot;5. Writer Agent&quot;]
+    Writer --&gt;|Output - Draft Report| Critic[&quot;6. Critic Agent&quot;]
     
     subgraph SG1_ReviewGateReview [&quot;Review Gate [Review &amp; Verification Loop]&quot;]
-        Critic --&gt;|Fails: Critique Loop| Writer
-        Critic --&gt;|Passes| Validator[7. Validator Agent]
+        Critic --&gt;|Fails - Critique Loop| Writer
+        Critic --&gt;|Passes| Validator[&quot;7. Validator Agent&quot;]
     end
     
     Validator --&gt;|Fails programmatic checks| Writer
     Validator --&gt;|Passes| HITL{8. Human Approval Gate}
     
-    HITL --&gt;|Approved| Commit[Final Published Report]
-    HITL --&gt;|Rejected: Comments| Supervisor
+    HITL --&gt;|Approved| Commit[&quot;Final Published Report&quot;]
+    HITL --&gt;|Rejected - Comments| Supervisor
     
     style ReviewGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
-    style Commit fill:#f0fdf4,stroke:#16a34a,stroke-width:2px</div>
+    style Commit fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserReq,Outliner blue
+class Supervisor,Writer green
+class Researcher,Critic purple
+class Web,Validator yellow
+class FactChecker,Commit red</div>
 <hr>
 <h2 id="step-by-step-blueprint-walkthrough">Step-by-Step Blueprint Walkthrough</h2>
 <h3 id="1-the-supervisor-the-expeditor">1. The Supervisor (The Expeditor)</h3>
@@ -244,8 +262,14 @@
           <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
           <nav class="article-toc">
             <ul class="toc-list">
+              <li class="toc-item toc-h3"><a href="#article-overview" class="toc-link">📖 Article Overview</a></li>
               <li class="toc-item toc-h2"><a href="#the-swarm-architecture" class="toc-link">The Swarm Architecture</a></li>
               <li class="toc-item toc-h2"><a href="#step-by-step-blueprint-walkthrough" class="toc-link">Step-by-Step Blueprint Walkthrough</a></li>
+              <li class="toc-item toc-h3"><a href="#1-the-supervisor-the-expeditor" class="toc-link">1. The Supervisor (The Expeditor)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-the-researcher-fact-verifier" class="toc-link">2. The Researcher &amp; Fact Verifier</a></li>
+              <li class="toc-item toc-h3"><a href="#3-the-outline-writer-agents" class="toc-link">3. The Outline &amp; Writer Agents</a></li>
+              <li class="toc-item toc-h3"><a href="#4-the-critic-validator-quality-assurance" class="toc-link">4. The Critic &amp; Validator (Quality Assurance)</a></li>
+              <li class="toc-item toc-h3"><a href="#5-human-in-the-loop-hitl-approval-gate" class="toc-link">5. Human-in-the-Loop (HITL) Approval Gate</a></li>
               <li class="toc-item toc-h2"><a href="#implementation-rules-for-production" class="toc-link">Implementation Rules for Production</a></li>
               <li class="toc-item toc-h2"><a href="#summary-of-the-series" class="toc-link">Summary of the Series</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
@@ -1088,13 +1112,7 @@
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1163,13 +1181,7 @@
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1211,13 +1223,7 @@
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

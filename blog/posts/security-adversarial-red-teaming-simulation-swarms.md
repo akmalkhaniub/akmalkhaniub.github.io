@@ -9,23 +9,34 @@
 ## Moving Beyond Static Security Checks
 
 In traditional software development:
-* **The Static Scanner Gap**: Linters and static application security testing (SAST) tools check code syntax, but cannot predict how an LLM agent will behave when presented with ambiguous user prompts.
+* **The Static Scanner Gap**: Linters and static application security testing (SAST) tools check code syntax, but cannot predict how an LLM agent will behave when presented with ambiguous user prompts [1].
 * **The Multi-Step Exploit**: An attacker might first ask the agent to create a harmless file, and then exploit a subsequent step to append malicious code.
 * **The Solution**: **Adversarial Swarms**. We run a secondary "red-team" agent whose sole objective is to discover vulnerability exploits in the target agent. The red-team agent generates exploit prompts, monitors target outcomes, and logs safety scores.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Adversary[Red-Team Simulator Agent] -->|Compile Exploit Prompt: Override sandbox rules| Target[Primary Target Agent]
+    Adversary["Red-Team Simulator Agent"] -->|Compile Exploit Prompt - Override sandbox rules| Target["Primary Target Agent"]
     
-    Target -->|Execute Action| Output[Evaluate Action Outcome]
+    Target -->|Execute Action| Output["Evaluate Action Outcome"]
     
     Output --> Evaluation{Was Restricted Action Triggered?}
-    Evaluation -->|Yes| Fail[Vulnerability Flagged: Security Score = 0]
-    Evaluation -->|No| Success[Safety Verified: Security Score = 100]
+    Evaluation -->|Yes| Fail["Vulnerability Flagged: Security Score = 0"]
+    Evaluation -->|No| Success["Safety Verified: Security Score = 100"]
     
-    Fail --> Iterate[Refine Attack Strategy & Retry]
+    Fail --> Iterate["Refine Attack Strategy & Retry"]
     Iterate --> Adversary
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Adversary,Iterate blue
+class Target green
+class Output purple
+class Fail yellow
+class Success red
 ```
 
 ---
@@ -126,4 +137,10 @@ if __name__ == "__main__":
 
 * **Automate Adversarial Simulation**: Integrate red-team simulation loops into your CI/CD pipelines to catch vulnerabilities before they reach production.
 * **Implement Validator Gates**: Use independent validator agents to check the output of target agents for security violations.
-* **Continuous Updates**: Regularly update your attack libraries with new exploit vectors discovered in production logs.
+* **Continuous Updates**: Regularly update your attack libraries with new exploit vectors discovered in production logs. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

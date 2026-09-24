@@ -8,7 +8,7 @@
 
 ## The Silent Regression Problem in Generative AI
 
-In traditional software engineering, we write unit tests with deterministic assertions: if input is $X$, verify output is $Y$. In RAG (Retrieval-Augmented Generation) applications, however, outputs are probabilistic. 
+In traditional software engineering, we write unit tests with deterministic assertions: if input is $X$, verify output is $Y$ [1]. In RAG (Retrieval-Augmented Generation) applications, however, outputs are probabilistic. 
 
 If you modify a system prompt template to improve formatting, you might silently trigger a regression: the model may start hallucinating facts, ignore the retrieved context, or fail to address the user's core question. Because these failures don't throw server errors, they often go unnoticed until users encounter them in production.
 
@@ -22,27 +22,27 @@ A production-grade evaluation loop executes RAG queries, captures the inputs, re
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
-    A[Test Suite Triggered] --> B[Generate Synthetic Q&A Dataset]
-    B --> C[Execute RAG Pipeline]
+flowchart TD
+    A["Test Suite Triggered"] --> B["Generate Synthetic Q&A Dataset"]
+    B --> C["Execute RAG Pipeline"]
     
-    C -->|Output| D[RAG Test Case]
-    D -->|Input Query| E[DeepEval Test Runner]
+    C -->|Output| D["RAG Test Case"]
+    D -->|Input Query| E["DeepEval Test Runner"]
     D -->|Retrieved Context| E
     D -->|Generated Output| E
     D -->|Reference Ground Truth| E
     
     E --> F{Evaluate Metrics}
-    F -->|NLI Check| G[Faithfulness Metric]
-    F -->|Semantic Alignment| H[Answer Relevance Metric]
-    F -->|Overlap Indexing| I[Context Recall Metric]
+    F -->|NLI Check| G["Faithfulness Metric"]
+    F -->|Semantic Alignment| H["Answer Relevance Metric"]
+    F -->|Overlap Indexing| I["Context Recall Metric"]
     
     G --> J{Verify Thresholds}
     H --> J
     I --> J
     
-    J -->|Score < 0.7| K[Fail: CI/CD Build Blocked]
-    J -->|Score >= 0.7| L[Pass: Deploy to Production]
+    J -->|Score < 0.7| K["Fail: CI/CD Build Blocked"]
+    J -->|Score >= 0.7| L["Pass: Deploy to Production"]
 
     style A fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
     style C fill:#0f172a,stroke:#38bdf8,stroke-width:2px
@@ -50,6 +50,17 @@ graph TD
     style J fill:#1e293b,stroke:#a855f7,stroke-width:2px
     style K fill:#ef4444,stroke:#0f172a,stroke-width:2px
     style L fill:#10b981,stroke:#0f172a,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B,H green
+class C,I purple
+class D,K yellow
+class E,L red
 ```
 
 ### Core Metrics to Measure
@@ -147,7 +158,7 @@ For a broader discussion on monitoring and benchmarking multi-agent architecture
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **RAG Triad Framework**: TruLens evaluation methodologies — [TruLens Portal](https://www.trulens.org/)
 *   **DeepEval Framework**: Programmatic unit testing docs — [Confident AI Portal](https://www.confident-ai.com/)
 *   **LLM-as-a-Judge Evaluation**: *Judging LLM-as-a-Judge: A Study on Evaluation Consistency* — [arXiv:2306.05685](https://arxiv.org/abs/2306.05685)

@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/kv-cache-compression-long-context-streamingllm-snapkv-h2o.html">
   <meta property="og:title" content="KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction">
   <meta property="og:description" content="How to scale 1M+ token context windows without GPU OOM: the attention sink phenomenon in StreamingLLM, SnapKV positional observation windows, and H2O dynamic heavy-hitter KV-cache eviction.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-compression-long-context-streamingllm-snapkv-h2o.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-31">
+  <meta property="article:published_time" content="2026-09-01">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction">
   <meta name="twitter:description" content="How to scale 1M+ token context windows without GPU OOM: the attention sink phenomenon in StreamingLLM, SnapKV positional observation windows, and H2O dynamic heavy-hitter KV-cache eviction.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-compression-long-context-streamingllm-snapkv-h2o.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV & H2O Heavy-Hitter Eviction",
   "description": "How to scale 1M+ token context windows without GPU OOM: the attention sink phenomenon in StreamingLLM, SnapKV positional observation windows, and H2O dynamic heavy-hitter KV-cache eviction.",
   "url": "https://akmalkhaniub.github.io/blog/kv-cache-compression-long-context-streamingllm-snapkv-h2o.html",
-  "datePublished": "2026-08-31",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/kv-cache-compression-long-context-streamingllm-snapkv-h2o.jpg",
+  "datePublished": "2026-09-01",
   "keywords": "KV-Cache, StreamingLLM, SnapKV, LLM Inference, GPU Optimization, AI Systems",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/kv-cache-compression-long-context-streamingllm-snapkv-h2o.jpg" class="article-cover-img" alt="KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">KV-Cache Compression for 1M+ Context Agents: StreamingLLM, SnapKV &amp; H2O Heavy-Hitter Eviction</h1>
             <div class="article-meta">
@@ -108,14 +109,19 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-the-long-context-vram-memory-wall">1. The Long-Context VRAM Memory Wall</a></li>
+                <li><a href="#key-value-cache-scaling-math">Key-Value Cache Scaling Math:</a></li>
                 <li><a href="#2-the-attention-sink-phenomenon-streamingllm">2. The Attention Sink Phenomenon &amp; StreamingLLM</a></li>
+                <li><a href="#why-did-sliding-window-fail-the-discovery-of-attention-sinks">Why did sliding window fail? The Discovery of Attention Sinks</a></li>
                 <li><a href="#3-h2o-heavy-hitter-oracle-snapkv">3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</a></li>
+                <li><a href="#1-h2o-heavy-hitter-oracle">1. H2O (Heavy Hitter Oracle)</a></li>
+                <li><a href="#2-snapkv-positional-clustering">2. SnapKV (Positional Clustering)</a></li>
                 <li><a href="#python-implementation-streamingllm-h2o-kv-cache-simulator">Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</a></li>
                 <li><a href="#summary-kv-cache-compression-matrix">Summary: KV-Cache Compression Matrix</a></li>
                 <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>With the emergence of ultra-long context language models (<strong>Gemini 1.5 Pro</strong>, <strong>Claude 3.5 Sonnet</strong>, <strong>Llama 3.1 405B</strong>), autonomous AI agents can ingest entire codebases, legal repositories, and multi-hour audio streams into a single prompt.</p>
+<p>With the emergence of ultra-long context language models (<strong>Gemini 1.5 Pro</strong>, <strong>Claude 3 <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.5 Sonnet</strong>, <strong>Llama 3.1 405B</strong>), autonomous AI agents can ingest entire codebases, legal repositories, and multi-hour audio streams into a single prompt.</p>
 <p>In production inference infrastructure, however, long-context serving hits a catastrophic physical barrier: <strong>the KV-Cache VRAM Memory Wall</strong>.</p>
 <p>During autoregressive generation, the Key-Value (KV) cache stores past token key and value tensors in GPU High Bandwidth Memory (HBM) to avoid recomputing self-attention:</p>
 <p>$$\text{KV-Cache Memory Size} = 2 \times \text{Batch Size} \times \text{Seq Length} \times N_{\text{layers}} \times N_{\text{kv_heads}} \times D_{\text{head}} \times \text{Bytes}$$</p>
@@ -123,7 +129,7 @@
 <p>$$\text{KV-Cache Size} = 2 \times 1 \times 10^6 \times 80 \text{ layers} \times 8 \text{ heads} \times 128 \times 2 \text{ bytes} \approx \mathbf{163.84 \text{ Gigabytes of GPU VRAM per request!}}$$</p>
 <p>The KV-cache memory footprint <strong>vastly exceeds the size of the model weights themselves ($140\text{ GB}$)</strong>, limiting GPU concurrency to $1$ user per $$30,000$ Nvidia H100 GPU.</p>
 <p>To make long-context agents economically viable, modern inference engines deploy <strong>KV-Cache Compression</strong>: leveraging <strong>StreamingLLM Attention Sinks</strong>, <strong>SnapKV Positional Clustering</strong>, and <strong>H2O Heavy-Hitter Eviction</strong> to reduce VRAM consumption by <strong>$80%\text{ to }90%$</strong> with near-zero degradation in reasoning accuracy.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_UncompressedKvCache [&quot;Uncompressed KV-Cache vs StreamingLLM &amp; H2O Compression&quot;]
     subgraph SG2_1Uncompressed1m [&quot;1. Uncompressed 1M Context (164GB VRAM - OOM Crash)&quot;]
       FullKV[&quot;Linear KV-Cache: 1,000,000 Tokens (164 GB GPU VRAM)&quot;]
@@ -137,7 +143,18 @@
       Sink --- H2O --- Local
       H2O &amp; Local --&gt; FinalVRAM[&quot;Total Memory: ~16 GB VRAM (10x User Concurrency!)&quot;]
     end
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class FullKV blue
+class Sink green
+class H2O purple
+class Local yellow
+class FinalVRAM red</div>
 <hr>
 <h2 id="1-the-long-context-vram-memory-wall">1. The Long-Context VRAM Memory Wall</h2>
 <p>Why does KV-cache memory scale so aggressively compared to model weights?</p>
@@ -161,7 +178,7 @@
 <li>Even when an initial token has no semantic relevance to the current sentence, the model dumps <strong>massive unallocated attention weights ($&gt; 50%$) onto the first 4 tokens of the prompt</strong>.</li>
 <li>When sliding window attention evicted those initial tokens, the softmax denominator destabilized, destroying the model&#39;s internal attention distribution.</li>
 </ul>
-<div class="mermaid">graph LR
+<div class="mermaid">flowchart TD
   subgraph SG4_StreamingllmKvCache [&quot;StreamingLLM KV-Cache Eviction Policy&quot;]
     T0[&quot;Token 0: &lt;s&gt; (Sink Token: 40% Attention)&quot;]
     T1[&quot;Token 1: System (Sink Token: 15% Attention)&quot;]
@@ -173,7 +190,18 @@
     Rolling[&quot;Rolling Window: Tokens 998,000..1,000,000&quot;]
     
     T0 --- T1 --- T2 --- T3 --- Evicted --- Rolling
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class T0,Rolling blue
+class T1 green
+class T2 purple
+class T3 yellow
+class Evicted red</div>
 <p><strong>The StreamingLLM Invariant</strong>: By permanently pinning the <strong>first 4 Attention Sink Tokens</strong> in GPU memory and pairing them with a <strong>rolling local window</strong>, an LLM can generate text infinitely over millions of tokens with a bounded $O(1)$ VRAM memory footprint!</p>
 <hr>
 <h2 id="3-h2o-heavy-hitter-oracle-snapkv">3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</h2>
@@ -320,7 +348,18 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>Serving 1M+ token context windows is not a hardware brute-force challenge—<strong>it is an attention geometry optimization problem</strong>.</p>
-<p>By locking in <strong>Attention Sinks (StreamingLLM)</strong> and dynamically pruning low-salience tokens with <strong>H2O Heavy-Hitter and SnapKV algorithms</strong>, AI systems engineers unlock multi-million token agent capabilities with an <strong>$80%\text{ to }90%$ reduction in GPU VRAM costs</strong>.</p>
+<p>By locking in <strong>Attention Sinks (StreamingLLM)</strong> and dynamically pruning low-salience tokens with <strong>H2O Heavy-Hitter and SnapKV algorithms</strong>, AI systems engineers unlock multi-million token agent capabilities with an <strong>$80%\text{ to }90%$ reduction in GPU VRAM costs</strong>. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Dao, T., et al. (2022)</strong>. <em>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</em>. NeurIPS. <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">https://arxiv.org/abs/2205.14135</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vaswani, A., et al. (2017)</strong>. <em>Attention Is All You Need</em>. NeurIPS. <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">https://arxiv.org/abs/1706.03762</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Kwon, W., et al. (2023)</strong>. <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em>. SOSP. <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">https://arxiv.org/abs/2309.06180</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -353,11 +392,16 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-the-long-context-vram-memory-wall" class="toc-link">1. The Long-Context VRAM Memory Wall</a></li>
+              <li class="toc-item toc-h3"><a href="#key-value-cache-scaling-math" class="toc-link">Key-Value Cache Scaling Math:</a></li>
               <li class="toc-item toc-h2"><a href="#2-the-attention-sink-phenomenon-streamingllm" class="toc-link">2. The Attention Sink Phenomenon &amp; StreamingLLM</a></li>
+              <li class="toc-item toc-h3"><a href="#why-did-sliding-window-fail-the-discovery-of-attention-sinks" class="toc-link">Why did sliding window fail? The Discovery of Attention Sinks</a></li>
               <li class="toc-item toc-h2"><a href="#3-h2o-heavy-hitter-oracle-snapkv" class="toc-link">3. H2O (Heavy-Hitter Oracle) &amp; SnapKV</a></li>
+              <li class="toc-item toc-h3"><a href="#1-h2o-heavy-hitter-oracle" class="toc-link">1. H2O (Heavy Hitter Oracle)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-snapkv-positional-clustering" class="toc-link">2. SnapKV (Positional Clustering)</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-streamingllm-h2o-kv-cache-simulator" class="toc-link">Python Implementation: StreamingLLM &amp; H2O KV-Cache Simulator</a></li>
               <li class="toc-item toc-h2"><a href="#summary-kv-cache-compression-matrix" class="toc-link">Summary: KV-Cache Compression Matrix</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1196,13 +1240,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1271,13 +1309,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1319,13 +1351,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

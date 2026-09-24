@@ -8,7 +8,7 @@
 
 ## The Context Inflation Problem
 
-In a standard agent loop, every message exchanged, prompt executed, and raw tool output (such as SQL tables or raw HTML scans) is appended to the conversation history. On long tasks, this history grows.
+In a standard agent loop, every message exchanged, prompt executed, and raw tool output (such as SQL tables or raw HTML scans) is appended to the conversation history [1]. On long tasks, this history grows.
 
 When the context window gets bloated:
 1. **Financial Cost**: Since LLM APIs charge per token, sending 100k tokens of historic logs on every turn becomes prohibitively expensive.
@@ -18,16 +18,27 @@ When the context window gets bloated:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#b45309', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f59e0b', 'lineColor': '#b45309', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Raw[Raw Message Log Stack] --> Slice{Is Token Count > Budget?}
+    Raw["Raw Message Log Stack"] --> Slice{Is Token Count > Budget?}
     
-    Slice -->|Yes: Exceeds Limit| Prune[1. Semantic Prune: Strip raw tool outputs]
-    Prune --> Slide[2. Slide Window: Keep latest N messages]
-    Slide --> Compress[3. Compress Memory: Summarize discarded history]
+    Slice -->|Yes - Exceeds Limit| Prune["1. Semantic Prune: Strip raw tool outputs"]
+    Prune --> Slide["2. Slide Window: Keep latest N messages"]
+    Slide --> Compress["3. Compress Memory: Summarize discarded history"]
     
-    Compress --> Compile[Compile Final Context: Summary + Writable Window]
+    Compress --> Compile["Compile Final Context: Summary + Writable Window"]
     Slice -->|No| Compile
     
-    Compile --> LLM[LLM API Call]
+    Compile --> LLM["LLM API Call"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Raw,LLM blue
+class Prune green
+class Slide purple
+class Compress yellow
+class Compile red
 ```
 
 ---
@@ -137,4 +148,10 @@ Implementing context compression controls ensures runtime cost efficiency and mo
 * [ ] **Run semantic pruning immediately**: Do not let raw, verbose data outputs persist in the message array. Condense them to structured outcomes immediately after invocation.
 * [ ] **Enforce token-based budgets**: Calculate context length using model-specific encoders (like `tiktoken`) rather than raw string lengths.
 * [ ] **Run summarization asynchronously**: Keep updates to the running summary separate from the main execution loop to prevent blocking agent runs.
-* [ ] **Slide windows selectively**: Never slide out the initial system prompt or user query parameters; keep core execution directives pinned at the top.
+* [ ] **Slide windows selectively**: Never slide out the initial system prompt or user query parameters; keep core execution directives pinned at the top. [2]
+
+## References & Further Reading
+
+1. **Cytron, R., et al. (1991)**. *Efficiently Computing Static Single Assignment Form and the Control Dependence Graph*. ACM TOPLAS. [https://doi.org/10.1145/115372.115320](https://doi.org/10.1145/115372.115320)
+2. **Lattner, C., & Adve, V. (2004)**. *LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation*. CGO. [https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf](https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf)
+3. **V8 Team (2024)**. *V8 Orinoco and Garbage Collection*. v8.dev. [https://v8.dev/blog](https://v8.dev/blog)

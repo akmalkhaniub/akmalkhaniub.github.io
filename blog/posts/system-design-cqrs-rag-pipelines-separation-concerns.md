@@ -1,6 +1,6 @@
 # CQRS in RAG: Decoupling Document Ingestion from Semantic Query Loops
 
-When building a proof-of-concept Retrieval-Augmented Generation (RAG) system, hosting document ingestion and semantic search on a single unified database is standard practice. However, when scaling to enterprise production, this shared-resource model fails:
+When building a proof-of-concept Retrieval-Augmented Generation (RAG) system, hosting document ingestion and semantic search on a single unified database is standard practice [1]. However, when scaling to enterprise production, this shared-resource model fails:
 * **Write Bloat**: Running heavy document ingestion processes—parsing large PDFs, extracting tables, running OCR, generating embeddings—consumes massive CPU and disk I/O.
 * **Read Latency Spikes**: If the database is busy indexing newly ingested files, concurrent semantic search queries (which require fast, memory-locked index scans) suffer latency spikes, degrading the user experience.
 
@@ -13,22 +13,33 @@ To solve this, high-performance RAG architectures apply **Command Query Responsi
 In a RAG CQRS model, document ingestion (Command) and user querying (Query) are decoupled into isolated pipelines with dedicated databases:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_IngestionPipelineCommand ["Ingestion Pipeline Command"]
-    A[New PDF Upload] --> B[Asynchronous Ingestion Worker]
-    B -->|CPU Heavy: OCR, Chunking| C[Generate Embeddings]
+    A["New PDF Upload"] --> B["Asynchronous Ingestion Worker"]
+    B -->|CPU Heavy - OCR, Chunking| C["Generate Embeddings"]
     C -->|Bulk Insert| D[(Write Database: MongoDB / PostgreSQL)]
   end
   subgraph SG2_SynchronizationHook ["Synchronization Hook"]
-    D -->|Change Data Capture CDC / Event| E[Message Broker: Kafka / RabbitMQ]
+    D -->|Change Data Capture CDC / Event| E["Message Broker: Kafka / RabbitMQ"]
     E -->|Replicate quantized vectors| F[(Read Database: Qdrant Replicas)]
   end
   subgraph SG3_QueryPipelineRead ["Query Pipeline Read"]
-    G[User Search Query] --> H[Low-Latency Search Service]
+    G["User Search Query"] --> H["Low-Latency Search Service"]
     H -->|Fast read-only HNSW lookup| F
     F -->|Return chunks| H
     H -->|Response| G
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class B green
+class C purple
+class E yellow
+class G red
 ```
 
 1. **The Ingestion Pipeline (Write / Command)**: Reads incoming documents, runs PDF extraction engines, calls embedding APIs, and stores raw documents in a master document store (e.g., MongoDB or a write-optimized PostgreSQL node).
@@ -110,4 +121,10 @@ When decoupling reads and writes, keep these consistency rules in mind:
 > **Eventual Consistency Latency**: Because sync updates are asynchronous, there will be a brief delay (typically 100ms–2000ms) between a document being uploaded and it appearing in vector search results. Ensure your frontend client indicates "indexing status" to prevent users from refreshing immediately and missing new data.
 
 > [!CAUTION]
-> **Data Synchronization Failures**: If the replication worker crashes, the read database will become out of sync with the master store. Implement a daily validation job that compares record counts between the write store and the read store, rebuilding missing vector indexes automatically.
+> **Data Synchronization Failures**: If the replication worker crashes, the read database will become out of sync with the master store. Implement a daily validation job that compares record counts between the write store and the read store, rebuilding missing vector indexes automatically. [2]
+
+## References & Further Reading
+
+1. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+2. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+3. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

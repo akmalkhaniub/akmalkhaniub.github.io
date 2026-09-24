@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/columnar-storage-engines-apache-arrow-parquet-simd-vectorized.html">
   <meta property="og:title" content="Columnar Storage Engines: Apache Arrow, Parquet &amp; SIMD Vectorized Query Execution">
   <meta property="og:description" content="Accelerating analytical query processing in OLAP data engines: implementing Apache Arrow columnar memory layouts, dictionary encoding, Parquet row group pruning, and SIMD CPU vectorization.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/columnar-storage-engines-apache-arrow-parquet-simd-vectorized.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-12">
+  <meta property="article:published_time" content="2026-08-13">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Columnar Storage Engines: Apache Arrow, Parquet &amp; SIMD Vectorized Query Execution">
   <meta name="twitter:description" content="Accelerating analytical query processing in OLAP data engines: implementing Apache Arrow columnar memory layouts, dictionary encoding, Parquet row group pruning, and SIMD CPU vectorization.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/columnar-storage-engines-apache-arrow-parquet-simd-vectorized.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Columnar Storage Engines: Apache Arrow, Parquet & SIMD Vectorized Query Execution",
   "description": "Accelerating analytical query processing in OLAP data engines: implementing Apache Arrow columnar memory layouts, dictionary encoding, Parquet row group pruning, and SIMD CPU vectorization.",
   "url": "https://akmalkhaniub.github.io/blog/columnar-storage-engines-apache-arrow-parquet-simd-vectorized.html",
-  "datePublished": "2026-08-12",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/columnar-storage-engines-apache-arrow-parquet-simd-vectorized.jpg",
+  "datePublished": "2026-08-13",
   "keywords": "Database Internals, Columnar, SIMD, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Columnar Storage Engines: Apache Arrow, Parquet &amp; SIMD Vectorized Query Execution Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/columnar-storage-engines-apache-arrow-parquet-simd-vectorized.jpg" class="article-cover-img" alt="Columnar Storage Engines: Apache Arrow, Parquet &amp; SIMD Vectorized Query Execution Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Columnar Storage Engines: Apache Arrow, Parquet &amp; SIMD Vectorized Query Execution</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#row-oriented-vs-columnar-memory-layout">Row-Oriented vs. Columnar Memory Layout</a></li>
+                <li><a href="#core-columnar-engine-technologies">Core Columnar Engine Technologies</a></li>
                 <li><a href="#python-implementation-columnar-engine-with-dictionary-encoding-simd-vectorization">Python Implementation: Columnar Engine with Dictionary Encoding &amp; SIMD Vectorization</a></li>
                 <li><a href="#columnar-storage-gotchas-best-practices">Columnar Storage Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Traditional OLTP databases store records in <strong>row-oriented</strong> formats, placing all fields of a single tuple next to each other on disk. While optimal for single-record lookups and transactional writes, row-oriented layouts degrade severely during Analytical (OLAP) aggregations.</p>
+<p>Traditional OLTP databases store records in <strong>row-oriented</strong> formats, placing all fields of a single tuple next to each other on disk <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. While optimal for single-record lookups and transactional writes, row-oriented layouts degrade severely during Analytical (OLAP) aggregations.</p>
 <p>Executing an aggregation query like <code>SELECT SUM(amount) FROM sales</code> on a row-oriented database requires reading every un-needed attribute (customer IDs, timestamps, addresses) from disk into RAM, creating massive memory bandwidth waste.</p>
 <p>To accelerate analytical workloads, modern data engines (such as <strong>Apache Arrow</strong>, <strong>Apache Parquet</strong>, <strong>DuckDB</strong>, and <strong>ClickHouse</strong>) utilize <strong>Columnar Storage Engines</strong>.</p>
 <p>By grouping all values of a specific column contiguously in memory and on disk, columnar engines apply <strong>Dictionary Encoding</strong>, <strong>Run-Length Encoding (RLE)</strong>, and <strong>SIMD (Single Instruction, Multiple Data) Vectorized Query Execution</strong>.</p>
@@ -121,23 +124,34 @@
 <hr>
 <h2 id="row-oriented-vs-columnar-memory-layout">Row-Oriented vs. Columnar Memory Layout</h2>
 <p>Comparing memory layout topologies for analytical queries:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_RowOrientedMemory [&quot;Row-Oriented Memory Layout (OLTP: Postgres/MySQL)&quot;]
-    R1[Row 1: ID, Age, City, Salary] --&gt; R2[Row 2: ID, Age, City, Salary]
-    R2 --&gt; R3[Row 3: ID, Age, City, Salary]
+    R1[&quot;Row 1: ID, Age, City, Salary&quot;] --&gt; R2[&quot;Row 2: ID, Age, City, Salary&quot;]
+    R2 --&gt; R3[&quot;Row 3: ID, Age, City, Salary&quot;]
   end
   
   subgraph SG2_ColumnarMemoryLayout [&quot;Columnar Memory Layout (OLAP: Arrow/Parquet)&quot;]
-    C1[IDs: ID1, ID2, ID3...]
-    C2[Ages: Age1, Age2, Age3...]
-    C3[Cities: City1, City2, City3...]
-    C4[Salaries: Sal1, Sal2, Sal3...]
+    C1[&quot;IDs: ID1, ID2, ID3...&quot;]
+    C2[&quot;Ages: Age1, Age2, Age3...&quot;]
+    C3[&quot;Cities: City1, City2, City3...&quot;]
+    C4[&quot;Salaries: Sal1, Sal2, Sal3...&quot;]
   end
   
   subgraph SG3_SimdVectorizedCpu [&quot;SIMD Vectorized CPU Register&quot;]
-    C4 --&gt;|Contiguous Memory Slice| V[SIMD Register: Load 8 Float64 Values]
-    V --&gt;|Single AVX-512 FMA Instruction| CPU[8 Parallel Additions per CPU Cycle]
-  end</div>
+    C4 --&gt;|Contiguous Memory Slice| V[&quot;SIMD Register: Load 8 Float64 Values&quot;]
+    V --&gt;|Single AVX-512 FMA Instruction| CPU[&quot;8 Parallel Additions per CPU Cycle&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class R1,C3 blue
+class R2,C4 green
+class R3,V purple
+class C1,CPU yellow
+class C2 red</div>
 <h3 id="core-columnar-engine-technologies">Core Columnar Engine Technologies</h3>
 <ol>
 <li><strong>Contiguous Memory Slices (Apache Arrow)</strong>: Apache Arrow defines a standardized, zero-copy in-memory format for columnar arrays. Because values of data type <code>Float64</code> sit adjacently in RAM, CPU cache pre-fetchers achieve near 100% cache hit rates during iteration.</li>
@@ -244,8 +258,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams adopting columnar memory engines (Arrow/Parquet/DuckDB) report:</p>
 <ul>
 <li><strong>100x Speedup on Analytical Queries</strong>: Eliminating un-needed row attributes and utilizing SIMD vectorization reduces aggregation query execution times from minutes to milliseconds.</li>
-<li><strong>85% Disk Storage Savings</strong>: Combining dictionary encoding, RLE, and Snappy/ZSTD compression shrinks raw CSV/JSON datasets to a fraction of their original size.</li>
+<li><strong>85% Disk Storage Savings</strong>: Combining dictionary encoding, RLE, and Snappy/ZSTD compression shrinks raw CSV/JSON datasets to a fraction of their original size. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -278,9 +303,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#row-oriented-vs-columnar-memory-layout" class="toc-link">Row-Oriented vs. Columnar Memory Layout</a></li>
+              <li class="toc-item toc-h3"><a href="#core-columnar-engine-technologies" class="toc-link">Core Columnar Engine Technologies</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-columnar-engine-with-dictionary-encoding-simd-vectorization" class="toc-link">Python Implementation: Columnar Engine with Dictionary Encoding &amp; SIMD Vectorization</a></li>
               <li class="toc-item toc-h2"><a href="#columnar-storage-gotchas-best-practices" class="toc-link">Columnar Storage Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1119,13 +1146,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1194,13 +1215,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1242,13 +1257,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

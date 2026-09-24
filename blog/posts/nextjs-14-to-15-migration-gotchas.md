@@ -1,3 +1,6 @@
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
 > ### 📖 Article Overview
 > * **What this article is about:** This article provides a comprehensive migration guide detailing the critical breaking changes when upgrading from Next.js 14 to Next.js 15.
 > * **Why it matters:** Understanding these architectural shifts prevents production-breaking compilation errors, broken component references, and unexpected database load spikes caused by new caching defaults.
@@ -5,7 +8,7 @@
 
 ---
 
-Upgrading your framework is rarely as simple as running `npm install next@latest`. 
+Upgrading your framework is rarely as simple as running `npm install next@latest` [1]. 
 
 While Next.js 15 introduces massive performance improvements (thanks to stable **Turbopack** and the **React Compiler**), it also ships with several fundamental breaking changes. 
 
@@ -22,25 +25,25 @@ The most dangerous gotcha in Next.js 15 is the silent flip in default caching be
 The diagram below maps the decision paths and visualizes how this swap impacts your database traffic:
 
 ```mermaid
-graph TD
+flowchart TD
     classDef v14 fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef v15 fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e;
     classDef cache fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
     classDef db fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef route fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
 
-    Start[Inference: fetch '/api/data'] --> Choice{Framework Version}
+    Start["Inference: fetch '/api/data'"] --> Choice{Framework Version}
     
-    Choice -->|Next.js 14| Path14[Default: Force-Cache]
-    Choice -->|Next.js 15| Path15[Default: No-Store]
+    Choice -->|Next.js 14| Path14["Default: Force-Cache"]
+    Choice -->|Next.js 15| Path15["Default: No-Store"]
     
-    Path14 --> Hit[Read from Edge Cache]
-    Path15 --> Miss[Send Request directly to Server]
+    Path14 --> Hit["Read from Edge Cache"]
+    Path15 --> Miss["Send Request directly to Server"]
     
-    Hit --> Return1[Return Cached Payload]
-    Miss --> QueryDB[Execute Database Query]
+    Hit --> Return1["Return Cached Payload"]
+    Miss --> QueryDB["Execute Database Query"]
     
-    QueryDB --> Return2[Return fresh Database Rows]
+    QueryDB --> Return2["Return fresh Database Rows"]
 
     class Path14 v14;
     class Path15 v15;

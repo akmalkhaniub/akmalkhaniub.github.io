@@ -5,7 +5,7 @@
 > * **Why it matters:** Understanding this paradigm shift is critical for engineers to build cost-effective, low-latency, and highly accurate enterprise search systems that outperform obsolete vector-only architectures.
 > * **What we synthesized:** We analyzed the core transitions across ingestion, hybrid retrieval, GraphRAG, prompt caching, and agentic orchestration, demonstrating how these technologies consolidate into modern database backends like PostgreSQL.
 
-Two years is an eternity in Generative AI. 
+Two years is an eternity in Generative AI [1]. 
 
 In early 2024, building a Retrieval-Augmented Generation (RAG) system was a weekend scripting project. You wrote a simple parser, split documents into static 500-character chunks, generated embeddings, and queried a vector database using Cosine Similarity. 
 
@@ -22,36 +22,47 @@ This article traces the architectural journey of RAG from 2024 to 2026, mapping 
 The transition can be summarized as a shift from **passive, linear text matching** to **active, multi-tier structured reasoning**.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_Year20242024Linear ["Year2024 [2024: Linear Naïve RAG]"]
-        Q1[User Query] -->|Cosine Similarity| V1[(Vector DB)]
-        V1 -->|Top K Chunks| G1[LLM Generator]
-        G1 -->|Response| U1[User]
+        Q1["User Query"] -->|Cosine Similarity| V1[(Vector DB)]
+        V1 -->|Top K Chunks| G1["LLM Generator"]
+        G1 -->|Response| U1["User"]
     end
 
     subgraph SG2_Year20262026Adaptive ["Year2026 [2026: Adaptive Agentic Ecosystem]"]
-        Q2[User Query] -->|1. Route & Decompose| Route{Agent Router}
-        Route -->|2a. Keywords| Lex[(Sparse Index)]
-        Route -->|2b. Vectors| Vec[(pgvector HNSW)]
-        Route -->|2c. Entities| Graph[(GraphRAG Knowledge Base)]
+        Q2["User Query"] -->|Route & Decompose| Route{Agent Router}
+        Route -->|Keywords| Lex[(Sparse Index)]
+        Route -->|Vectors| Vec[(pgvector HNSW)]
+        Route -->|Entities| Graph[(GraphRAG Knowledge Base)]
         
-        Lex -->|3. Merge & Score| RRF[Reciprocal Rank Fusion]
-        Vec -->|3. Merge & Score| RRF
+        Lex -->|Merge & Score| RRF["Reciprocal Rank Fusion"]
+        Vec -->|Merge & Score| RRF
         
-        RRF -->|4. Rerank Chunks| CE[Cross-Encoder Reranker]
-        Graph -->|4. Pull Entity Subgraphs| CE
+        RRF -->|Rerank Chunks| CE["Cross-Encoder Reranker"]
+        Graph -->|Pull Entity Subgraphs| CE
         
-        CE -->|5. Structured Context| Cache[Prompt Cache / KV Store]
-        Cache -->|6. Reason & Synthesize| G2[LLM Engine]
-        G2 -->|7. Self-Verify| Val{Relevance Grader}
+        CE -->|Structured Context| Cache["Prompt Cache / KV Store"]
+        Cache -->|Reason & Synthesize| G2["LLM Engine"]
+        G2 -->|Self-Verify| Val{Relevance Grader}
         
-        Val -->|Failed Check| Rewrite[Query Rewriter]
+        Val -->|Failed Check| Rewrite["Query Rewriter"]
         Rewrite --> Route
-        Val -->|Passed Check| U2[Grounded Response]
+        Val -->|Passed Check| U2["Grounded Response"]
     end
 
     style Year2024 fill:#f8fafc,stroke:#94a3b8,stroke-width:2px
     style Year2026 fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Q1,CE blue
+class G1,Cache green
+class U1,G2 purple
+class Q2,Rewrite yellow
+class RRF,U2 red
 ```
 
 ---

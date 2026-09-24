@@ -9,26 +9,37 @@
 ## The Chaos of Layout-Blind Chunking
 
 In typical document chunking setups:
-* **Table Scrambling**: Monolithic text parsers read tables row-by-row but output them as a flat stream of text, mixing columns together.
+* **Table Scrambling**: Monolithic text parsers read tables row-by-row but output them as a flat stream of text, mixing columns together [1].
 * **Header Mismatch**: Sub-sections lose their context when headers are split from the body paragraphs they describe.
 * **The Solution**: **Layout-Aware Parsing**. We leverage page bounding coordinates (X, Y, Width, Height) to partition layout blocks, preserving tables as clean Markdown strings.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    PDF[Raw PDF Document] --> Coordinates[Parse Bounding Boxes & Text Spans]
+    PDF["Raw PDF Document"] --> Coordinates["Parse Bounding Boxes & Text Spans"]
     
     subgraph SG1_LayoutPartitioning ["Layout Partitioning"]
         Coordinates -->|Read BBoxes| IdentifyHeader{Is Element Header?}
         Coordinates -->|Read BBoxes| IdentifyTable{Is Element Table Row?}
     end
     
-    IdentifyHeader -->|Yes| SegmentHeader[Isolate Header block]
-    IdentifyTable -->|Yes| SegmentTable[Convert Table Rows to Markdown string]
+    IdentifyHeader -->|Yes| SegmentHeader["Isolate Header block"]
+    IdentifyTable -->|Yes| SegmentTable["Convert Table Rows to Markdown string"]
     
-    SegmentHeader --> Compile[Compile Structured Context Chunks]
+    SegmentHeader --> Compile["Compile Structured Context Chunks"]
     SegmentTable --> Compile
     Compile --> VectorStore[(Store in Vector DB)]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class PDF blue
+class Coordinates green
+class SegmentHeader purple
+class SegmentTable yellow
+class Compile red
 ```
 
 ---
@@ -177,4 +188,10 @@ if __name__ == "__main__":
 
 * **Avoid Layout-Blind Splits**: Simple character-count text chunking corrupts structured lists and tables.
 * **Isolate Tabular Columns**: Detect coordinate boundaries to format tables as clean Markdown.
-* **Maintain Structural Context**: Group headings alongside related body text to preserve context for vector indexing.
+* **Maintain Structural Context**: Group headings alongside related body text to preserve context for vector indexing. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

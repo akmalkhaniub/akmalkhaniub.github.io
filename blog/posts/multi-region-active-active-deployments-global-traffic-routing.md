@@ -1,6 +1,6 @@
 # Multi-Region Active-Active Deployments & Global Traffic Routing
 
-Deploying a web application within a single cloud region (such as `us-east-1`) leaves systems vulnerable to cloud provider outages and imposes high round-trip network latencies ($150\text{ms}$ to $300\text{ms}$) for international users across Asia or Europe.
+Deploying a web application within a single cloud region (such as `us-east-1`) leaves systems vulnerable to cloud provider outages and imposes high round-trip network latencies ($150\text{ms}$ to $300\text{ms}$) for international users across Asia or Europe [1].
 
 To achieve 99.999% availability and single-digit millisecond latency worldwide, enterprise architectures migrate to **Multi-Region Active-Active Deployments**.
 
@@ -15,30 +15,41 @@ This article details how to design multi-region active-active architectures and 
 Global Anycast DNS routing and cross-region asynchronous database replication:
 
 ```mermaid
-graph TD
-  Client1[User in Tokyo] -->|1. DNS Lookup / Anycast BGP| Router[Global Traffic Router / Edge CDN]
-  Client2[User in Frankfurt] --> Router
+flowchart TD
+  Client1["User in Tokyo"] -->|DNS Lookup / Anycast BGP| Router["Global Traffic Router / Edge CDN"]
+  Client2["User in Frankfurt"] --> Router
   
   subgraph SG1_EdgeRoutingLayer ["Edge Routing Layer"]
-    Router -->|2. Route to Lowest Latency Region| RegionAP[AP-East Region: Tokyo]
-    Router -->|3. Route to Lowest Latency Region| RegionEU[EU-Central Region: Frankfurt]
+    Router -->|Route to Lowest Latency Region| RegionAP["AP-East Region: Tokyo"]
+    Router -->|Route to Lowest Latency Region| RegionEU["EU-Central Region: Frankfurt"]
   end
   
   subgraph SG2_ActiveDatacenterRegion ["Active Datacenter Region: AP-East"]
-    RegionAP --> AppAP[App Service AP]
+    RegionAP --> AppAP["App Service AP"]
     AppAP --> DBAP[(Local Shard DB AP)]
   end
   
   subgraph SG3_ActiveDatacenterRegion ["Active Datacenter Region: EU-Central"]
-    RegionEU --> AppEU[App Service EU]
+    RegionEU --> AppEU["App Service EU"]
     AppEU --> DBEU[(Local Shard DB EU)]
   end
   
   subgraph SG4_CrossRegionReplication ["Cross-Region Replication Bus"]
-    DBAP <-->|4. Asynchronous Multi-Master Sync| DBEU
+    DBAP <-->|Asynchronous Multi-Master Sync| DBEU
   end
   
-  RegionAP -.->|5. Health Check Fails: Automated Failover| RegionEU
+  RegionAP -.->|Health Check Fails - Automated Failover| RegionEU
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client1,AppAP blue
+class Router,AppEU green
+class Client2 purple
+class RegionAP yellow
+class RegionEU red
 ```
 
 ### Core Multi-Region Principles
@@ -156,4 +167,10 @@ When building active-active multi-region systems:
 ## Real-World Enterprise Impact
 Teams deploying multi-region active-active architectures report:
 * **99.999% High Availability**: Automated regional failover ensures seamless operation even during catastrophic cloud datacenter outages.
-* **Single-Digit Latencies Globally**: Routing requests to the nearest edge datacenter dramatically improves user experience worldwide.
+* **Single-Digit Latencies Globally**: Routing requests to the nearest edge datacenter dramatically improves user experience worldwide. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

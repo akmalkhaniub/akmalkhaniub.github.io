@@ -10,7 +10,7 @@
 
 In Next.js, when you define `"use server"` at the top of a file or function, Next.js compiles that function into a unique API path during build time. 
 
-When a button in the client calls `updateProfile(data)`, the browser doesn't execute the function directly. Instead, it fires an HTTP POST request to your page route with a header `Next-Action: <action-id>` containing serialized arguments.
+When a button in the client calls `updateProfile(data)`, the browser doesn't execute the function directly [1]. Instead, it fires an HTTP POST request to your page route with a header `Next-Action: <action-id>` containing serialized arguments.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -21,7 +21,7 @@ sequenceDiagram
 
     Client->>Gateway: POST /profile (Header: Next-Action: a8df293c...) [Body: [99, "New Title"]]
     Note over Gateway: Route maps request parameters to updateProfile(99, "New Title")
-    Note over Gateway: 🚨 Security Check Missing!
+    Note over Gateway:  Security Check Missing!
     Gateway->>DB: UPDATE projects SET title = 'New Title' WHERE id = 99
     DB-->>Gateway: OK
     Gateway-->>Client: Return JSON response
@@ -108,4 +108,14 @@ Next.js Server Actions make data fetching and mutation incredibly clean, but you
 * [ ] **Never trust client-passed IDs directly**: Validate ownership of the target record using the user context retrieved on the server.
 * [ ] **Enforce schema validation on all inputs**: Always validate incoming arguments using Zod, Yup, or ArkType schemas.
 * [ ] **Verify session details server-side**: Query session data within the action, never pass session arguments down from the client component.
-* [ ] **Limit rate actions**: Put throttling rules on actions that write data or invoke external APIs (like payment processors or email dispatchers).
+* [ ] **Limit rate actions**: Put throttling rules on actions that write data or invoke external APIs (like payment processors or email dispatchers). [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+6. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+7. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

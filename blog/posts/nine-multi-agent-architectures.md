@@ -7,7 +7,7 @@
 
 ---
 
-Multi-agent design is a library of patterns. Selecting the wrong pattern results in massive latency, excessive token costs, or system deadlock.
+Multi-agent design is a library of patterns [1]. Selecting the wrong pattern results in massive latency, excessive token costs, or system deadlock.
 
 For each pattern, this article defines what it is, when to use it, the real-world organizational analogy, and its typical failure modes. These architectures are designed to help you organize multiple LLM nodes into cohesive software systems, as referenced in our public [agentic-apps-portfolio](https://github.com/akmalkhaniub/agentic-apps-portfolio) monorepo.
 

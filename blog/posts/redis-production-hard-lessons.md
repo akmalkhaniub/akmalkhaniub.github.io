@@ -17,19 +17,19 @@ Unlike Postgres, which throws errors and rolls back, Redis's failure modes are o
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    R[Redis Server] --> L1{Memory Limit<br/>Reached?}
-    L1 -->|Yes + allkeys-lru| E1[💥 Lesson 1: LRU silently<br/>evicts job queue keys]
+    R["Redis Server"] --> L1{Memory Limit<br/>Reached?}
+    L1 -->|Yes + allkeys-lru| E1[" Lesson 1: LRU silently<br/>evicts job queue keys"]
     L1 -->|No| L2{KEYS or<br/>SMEMBERS on<br/>huge set?}
-    L2 -->|Yes| E2[💥 Lesson 2: O-n commands<br/>block entire server]
+    L2 -->|Yes| E2[" Lesson 2: O-n commands<br/>block entire server"]
     L2 -->|No| L3{Cluster Mode?}
-    L3 -->|Lua across slots| E3[💥 Lesson 3: Lua not<br/>atomic across nodes]
-    L3 -->|Wrong keyslot| E4[💥 Lesson 4: MGET fails<br/>on different slots]
+    L3 -->|Lua across slots| E3[" Lesson 3: Lua not<br/>atomic across nodes"]
+    L3 -->|Wrong keyslot| E4[" Lesson 4: MGET fails<br/>on different slots"]
     L3 -->|No| L4{Persistence<br/>Config?}
-    L4 -->|No AOF or RDB| E5[💥 Lesson 5: All data<br/>lost on restart]
+    L4 -->|No AOF or RDB| E5[" Lesson 5: All data<br/>lost on restart"]
     L4 -->|OK| L5{Connection<br/>Pool?}
-    L5 -->|No pool / wrong size| E6[💥 Lesson 6: Connection<br/>exhaustion under load]
+    L5 -->|No pool / wrong size| E6[" Lesson 6: Connection<br/>exhaustion under load"]
     L5 -->|OK| L6{TTL Strategy?}
-    L6 -->|No TTL on sessions| E7[💥 Lesson 7: Memory<br/>grows without bound]
+    L6 -->|No TTL on sessions| E7[" Lesson 7: Memory<br/>grows without bound"]
 
     style E1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style E2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -38,6 +38,17 @@ flowchart TD
     style E5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style E6 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style E7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class R,E5 blue
+class E1,E6 green
+class E2,E7 purple
+class E3 yellow
+class E4 red
 ```
 
 ---
@@ -394,7 +405,7 @@ Redis is extraordinary when configured correctly and treacherous when not. The f
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Redis Configuration Guide**: [redis.conf production best practices](https://redis.io/docs/management/config/)
 *   **Redis Cluster Specification**: [Hash slots and key distribution](https://redis.io/docs/management/scaling/)
 *   **Redis Persistence**: [RDB vs AOF trade-offs](https://redis.io/docs/management/persistence/)

@@ -8,7 +8,7 @@
 
 ## Moving Agents to the CI/CD Pipeline
 
-The software delivery lifecycle doesn't end when code is written. In modern DevOps, code must navigate a complex series of validation stages. When integrated directly into these environments, agents can handle complex workflows that simple test pipelines cannot:
+The software delivery lifecycle doesn't end when code is written. In modern DevOps, code must navigate a complex series of validation stages [1]. When integrated directly into these environments, agents can handle complex workflows that simple test pipelines cannot:
 
 * **Semantic Code Auditing**: Looking past basic lint rules to identify logic bugs, race conditions, or unhandled exceptions in newly modified functions.
 * **Auto-Triage & Labeling**: Classifying pull requests, assigning optimal human reviewers, and suggesting dependency updates.
@@ -17,14 +17,25 @@ The software delivery lifecycle doesn't end when code is written. In modern DevO
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0b8489', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#14b8a6', 'lineColor': '#0b8489', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    PR[PR Submitted] --> Trigger[CI Agent Node Triggered]
-    Trigger --> Review[AST & Logic Flow Review]
-    Trigger --> RunTests[Execute Test Suite]
-    RunTests -->|Tests Fail| Bisect[Agent Triggers Git Bisect]
-    Bisect --> FindCommit[Isolate Breaking Commit]
-    FindCommit --> Comment[Post PR Triage Report]
+    PR["PR Submitted"] --> Trigger["CI Agent Node Triggered"]
+    Trigger --> Review["AST & Logic Flow Review"]
+    Trigger --> RunTests["Execute Test Suite"]
+    RunTests -->|Tests Fail| Bisect["Agent Triggers Git Bisect"]
+    Bisect --> FindCommit["Isolate Breaking Commit"]
+    FindCommit --> Comment["Post PR Triage Report"]
     Review --> Comment
     Comment --> Merge{Approve Merge?}
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class PR,FindCommit blue
+class Trigger,Comment green
+class Review purple
+class RunTests yellow
+class Bisect red
 ```
 
 ---
@@ -136,4 +147,10 @@ if __name__ == "__main__":
 By deploying autonomous review agents in the CI pipeline:
 * **Trivial PRs are Auto-Merged**: PRs that only fix simple documentation formatting or dependency updates can be auto-tested, approved, and merged without human intervention.
 * **Human Time is Saved**: Engineers no longer spend hours hunting down which commit in a massive merge request broke the main build. The agent flags the line and developer author instantly.
-* **Proactive Defense**: By running AST-level security scanners inside containerized test jobs, agents flag potential prompt injection vectors or API authorization gaps before deploying to staging.
+* **Proactive Defense**: By running AST-level security scanners inside containerized test jobs, agents flag potential prompt injection vectors or API authorization gaps before deploying to staging. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

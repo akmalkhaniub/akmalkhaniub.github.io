@@ -22,18 +22,18 @@ Every LLM API invocation is billed on token counts — both input and output. Fo
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-graph LR
+flowchart TD
     subgraph SG1_PerRequestToken ["Per Request Token Breakdown"]
-        A[System Prompt<br/>~4000 tokens] --> T[Total Input]
-        B[RAG Context<br/>~5000 tokens] --> T
-        C[Chat History<br/>~3000 tokens] --> T
-        D[User Query<br/>~200 tokens] --> T
+        A["System Prompt<br/>~4000 tokens"] --> T["Total Input"]
+        B["RAG Context<br/>~5000 tokens"] --> T
+        C["Chat History<br/>~3000 tokens"] --> T
+        D["User Query<br/>~200 tokens"] --> T
     end
     
     T --> E{Caching Applied?}
     
-    E -->|No Cache| F[12200 tokens<br/>billed at $0.015/1K = $0.183 per call]
-    E -->|With Cache| G[Cache Hit: 12000 tokens @ $0.0015/1K<br/>+ Fresh: 200 tokens @ $0.015/1K<br/>= $0.021 per call — 88% savings]
+    E -->|No Cache| F["12200 tokens<br/>billed at $0.015/1K = $0.183 per call"]
+    E -->|With Cache| G["Cache Hit: 12000 tokens @ $0.0015/1K<br/>+ Fresh: 200 tokens @ $0.015/1K<br/>= $0.021 per call — 88% savings"]
     
     style A fill:#1e293b,stroke:#f59e0b,stroke-width:2px
     style B fill:#1e293b,stroke:#f59e0b,stroke-width:2px
@@ -41,6 +41,17 @@ graph LR
     style D fill:#1e293b,stroke:#10b981,stroke-width:2px
     style F fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style G fill:#052e16,stroke:#10b981,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class T,G green
+class B purple
+class C yellow
+class D red
 ```
 
 ---
@@ -297,7 +308,7 @@ In our next article, we explore **Model Routing** — the strategy of dynamicall
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Anthropic Prompt Caching Guide**: [Cache Control API Reference](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)
 *   **OpenAI Prompt Caching**: [Automatic Caching in the Chat Completions API](https://platform.openai.com/docs/guides/prompt-caching)
 *   **LiteLLM**: [Unified LLM Gateway with Caching Support](https://docs.litellm.ai/)

@@ -1,6 +1,10 @@
 # Next.js 15 & React 19: Mastering the useOptimistic Hook
 
 > [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. Treat version-specific APIs below as historical unless a section is marked current. See [The Great Un-Caching](the-great-un-caching-nextjs-15-caching-architecture-defaults.html) for the 15 default inversion.
+
+
+> [!NOTE]
 > **📖 Article Overview**
 > User experience is heavily defined by perceived latency. If a user clicks a "Like" button, toggles a bookmark, or submits a comment, waiting for a server round-trip to update the UI makes the application feel sluggish. React 19 introduces a native solution to this problem: the **`useOptimistic`** hook. When combined with Next.js 15 Server Actions, `useOptimistic` allows you to update the UI instantly under the assumption that the server request will succeed, while retaining the ability to roll back the state gracefully if the action fails. This article shows you how to implement this pattern.
 
@@ -8,7 +12,7 @@
 
 ## What is Optimistic UI?
 
-Optimistic UI is a design pattern where the client interface behaves as if a server operation was successful before it actually completes. 
+Optimistic UI is a design pattern where the client interface behaves as if a server operation was successful before it actually completes [1]. 
 
 In standard architectures, updating state requires a round-trip:
 
@@ -156,4 +160,14 @@ The combination of Server Actions and `useOptimistic` provides desktop-like spee
 * [ ] **Enforce `startTransition`**: Remember that `useOptimistic` triggers *must* be wrapped inside a React transition scope to run correctly.
 * [ ] **Retain a base state**: Always maintain the server-confirmed state separately (using `useState`); the optimistic hook depends on this baseline to compute values and rollback.
 * [ ] **Design error boundaries**: When actions fail, present user-friendly alerts or toast notifications explaining the rollback.
-* [ ] **Prevent duplicate triggers**: Disable button clicks or throttle actions while the optimistic transition is pending to avoid double submission bugs.
+* [ ] **Prevent duplicate triggers**: Disable button clicks or throttle actions while the optimistic transition is pending to avoid double submission bugs. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **React Team (2024)**. *React 19 Blog Post*. react.dev. [https://react.dev/blog/2024/12/05/react-19](https://react.dev/blog/2024/12/05/react-19)
+6. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+7. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

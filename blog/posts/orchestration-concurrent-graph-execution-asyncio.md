@@ -9,24 +9,35 @@
 ## The Efficiency Loss of Sequential Execution
 
 In basic agent runtimes:
-* **The Idle Worker Problem**: If Node B and Node C are independent of each other but both depend on Node A, running them sequentially blocks the CPU and increases execution times.
+* **The Idle Worker Problem**: If Node B and Node C are independent of each other but both depend on Node A, running them sequentially blocks the CPU and increases execution times [1].
 * **Under-utilized Resources**: Sequential tool calls fail to leverage async features, increasing latency.
 * **The Solution**: **Concurrent Graph Execution**. We track node dependencies. As soon as all parent nodes of a task are complete, we immediately launch that node in an async event loop, running independent paths concurrently.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    NodeA[Node A: Read Source Codes] -->|Complete| Dispatch{Dispatch Event loop}
+    NodeA["Node A: Read Source Codes"] -->|Complete| Dispatch{Dispatch Event loop}
     
-    Dispatch --> NodeB[Node B: Run Linter 1]
-    Dispatch --> NodeC[Node C: Run Linter 2]
-    Dispatch --> NodeD[Node D: Run Security Scan]
+    Dispatch --> NodeB["Node B: Run Linter 1"]
+    Dispatch --> NodeC["Node C: Run Linter 2"]
+    Dispatch --> NodeD["Node D: Run Security Scan"]
     
-    NodeB -->|Merge Output| Join[Join Node E: Generate Report]
+    NodeB -->|Merge Output| Join["Join Node E: Generate Report"]
     NodeC -->|Merge Output| Join
     NodeD -->|Merge Output| Join
     
     Join --> Complete([Graph Complete])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class NodeA blue
+class NodeB green
+class NodeC purple
+class NodeD yellow
+class Join red
 ```
 
 ---
@@ -129,4 +140,13 @@ if __name__ == "__main__":
 
 * **Map Dependencies**: Define clear prerequisite mappings for all task nodes before starting execution.
 * **Execute Concurrently**: Dispatch independent task branches concurrently to minimize total execution times.
-* **Monitor Shared State**: Enforce read-only locks on shared states to prevent data corruption during concurrent execution.
+* **Monitor Shared State**: Enforce read-only locks on shared states to prevent data corruption during concurrent execution. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

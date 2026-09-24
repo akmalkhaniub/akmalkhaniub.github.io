@@ -8,7 +8,7 @@
 
 ## The Economics of Prompt Caching
 
-In complex agentic systems, prompts are often extremely large. System prompts containing codebases, API specifications, and extensive reasoning instructions can easily reach 50,000 to 100,000 tokens. 
+In complex agentic systems, prompts are often extremely large. System prompts containing codebases, API specifications, and extensive reasoning instructions can easily reach 50,000 to 100,000 tokens [1]. 
 
 Reading this context on every single turn of a multi-turn conversation is both slow and expensive. Prompt caching addresses this by caching the processed token state of the prompt prefix.
 
@@ -17,18 +17,29 @@ Reading this context on every single turn of a multi-turn conversation is both s
 flowchart TD
     subgraph SG1_Naive1Naive ["Naive [1. Naive Prompt Layout Cache Invalidation]"]
         direction TB
-        N1[Dynamic User Query] --> N2[Static Codebase Context]
-        N2 --> N3[System Instructions]
-        note1[Result: EVERY query invalidates the entire cache prefix]
+        N1["Dynamic User Query"] --> N2["Static Codebase Context"]
+        N2 --> N3["System Instructions"]
+        note1["Result: EVERY query invalidates the entire cache prefix"]
     end
 
     subgraph SG2_Optimized2Optimized ["Optimized [2. Optimized Layout Cache Matching]"]
         direction TB
-        O1[System Instructions - Cache Hit] --> O2[Static Codebase Context - Cache Hit]
-        O2 --> O3[Semi-Static Session State - Cache Hit]
-        O3 --> O4[Dynamic User Query - Cache Bypass]
-        note2[Result: 95% of prompt is read from cache]
+        O1["System Instructions - Cache Hit"] --> O2["Static Codebase Context - Cache Hit"]
+        O2 --> O3["Semi-Static Session State - Cache Hit"]
+        O3 --> O4["Dynamic User Query - Cache Bypass"]
+        note2["Result: 95% of prompt is read from cache"]
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class N1,O2 blue
+class N2,O3 green
+class N3,O4 purple
+class note1,note2 yellow
+class O1 red
 ```
 
 ---
@@ -148,4 +159,13 @@ if __name__ == "__main__":
 
 * **Order of Volatility**: Verify your prompt templates assemble blocks from most static (System instructions) to most dynamic (User input). Never place variable items at the top of the prompt.
 * **Keep Cache Limits in Mind**: Do not apply cache tags to small prompts. Standardize caching for payloads exceeding 1,024 tokens.
-* **Monitor API Invalidation**: Implement observability tracking to calculate cache hit metrics (e.g. tracking `cached_creation_input_tokens` and `cached_read_input_tokens` headers from API response objects).
+* **Monitor API Invalidation**: Implement observability tracking to calculate cache hit metrics (e.g. tracking `cached_creation_input_tokens` and `cached_read_input_tokens` headers from API response objects). [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+5. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+6. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

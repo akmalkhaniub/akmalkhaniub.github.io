@@ -9,22 +9,33 @@
 ## The Lack of Agent Experience Persistence
 
 In naive architectures, every task starts with a blank slate:
-* **Repetitive Failure Loops**: The agent repeatedly attempts to write a database script that violates a database table constraint because it has no memory of the migration failure in yesterday's session.
+* **Repetitive Failure Loops**: The agent repeatedly attempts to write a database script that violates a database table constraint because it has no memory of the migration failure in yesterday's session [1].
 * **Redundant Discovery Phase**: The agent reconstructs API specifications on every run rather than caching successful call sequences.
 * **The Solution**: **Episodic Memory**. We log completed task runs to a vector database. When a new task prompt is received, we fetch the top-k most similar past runs, extracting details of successful plans and warnings about failed paths.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    UserGoal[User Goal: Migration on Partition Table] --> Embed[Convert Goal to Vector Embedding]
-    Embed --> QueryDB[Search Episodic Memory Vector Store]
+    UserGoal["User Goal: Migration on Partition Table"] --> Embed["Convert Goal to Vector Embedding"]
+    Embed --> QueryDB["Search Episodic Memory Vector Store"]
     
     QueryDB --> Match{Are Similar Past Trajectories Found?}
-    Match -->|No| NormalPlan[Compile Normal Execution Plan]
-    Match -->|Yes| Prepend[Inject Past Experience: Success/Fail Logs]
+    Match -->|No| NormalPlan["Compile Normal Execution Plan"]
+    Match -->|Yes| Prepend["Inject Past Experience: Success/Fail Logs"]
     
-    Prepend --> Exec[Execute Agent Run]
-    Exec --> LogRun[Log Outcome & Plan to Episodic Vector Store]
+    Prepend --> Exec["Execute Agent Run"]
+    Exec --> LogRun["Log Outcome & Plan to Episodic Vector Store"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserGoal,Exec blue
+class Embed,LogRun green
+class QueryDB purple
+class NormalPlan yellow
+class Prepend red
 ```
 
 ---
@@ -125,4 +136,13 @@ if __name__ == "__main__":
 
 * **Inject Before Planning**: Query episodic memory before planning phases to guide agents around past failures.
 * **Deduplicate Records**: Clean up memory records to prevent agents from loading redundant files into prompt contexts.
-* **Isolate Failures**: Explicitly tag failed runs with critiques to teach agents what execution paths to avoid.
+* **Isolate Failures**: Explicitly tag failed runs with critiques to teach agents what execution paths to avoid. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+5. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+6. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

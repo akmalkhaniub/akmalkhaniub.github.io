@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/async-python-event-loop-mistakes.html">
   <meta property="og:title" content="Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop">
   <meta property="og:description" content="Eight async Python anti-patterns that silently strangle FastAPI and LLM API servers — time.sleep, synchronous I/O, sequential awaits, swallowed CancelledError, and missing run_in_executor for CPU work.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/async-python-event-loop-mistakes.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-04-06">
+  <meta property="article:published_time" content="2026-04-07">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop">
   <meta name="twitter:description" content="Eight async Python anti-patterns that silently strangle FastAPI and LLM API servers — time.sleep, synchronous I/O, sequential awaits, swallowed CancelledError, and missing run_in_executor for CPU work.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/async-python-event-loop-mistakes.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop",
   "description": "Eight async Python anti-patterns that silently strangle FastAPI and LLM API servers — time.sleep, synchronous I/O, sequential awaits, swallowed CancelledError, and missing run_in_executor for CPU work.",
   "url": "https://akmalkhaniub.github.io/blog/async-python-event-loop-mistakes.html",
-  "datePublished": "2026-04-06",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/async-python-event-loop-mistakes.jpg",
+  "datePublished": "2026-04-07",
   "keywords": "Python, AsyncIO, FastAPI, Performance",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/async-python-event-loop-mistakes.jpg" class="article-cover-img" alt="Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Stop Handling Async Python Wrong: 8 Patterns That Block Your Event Loop</h1>
             <div class="article-meta">
@@ -117,6 +118,7 @@
                 <li><a href="#anti-pattern-7-creating-tasks-without-storing-references">Anti-Pattern 7: Creating Tasks Without Storing References</a></li>
                 <li><a href="#anti-pattern-8-not-setting-timeouts-on-awaited-calls">Anti-Pattern 8: Not Setting Timeouts on Awaited Calls</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -127,7 +129,7 @@ Python&#39;s <code>asyncio</code> is the backbone of every high-performance AI A
 </div>
 <hr>
 <h2 id="how-one-blocking-call-destroys-async-performance">How One Blocking Call Destroys Async Performance</h2>
-<p>The event loop is a single-threaded scheduler. When you call a blocking function inside a coroutine, the entire loop stalls — <strong>no other coroutines run until the blocking call returns</strong>. In a server handling 100 concurrent requests, one accidental <code>time.sleep(2)</code> inside a coroutine stalls all 100 requests for 2 seconds.</p>
+<p>The event loop is a single-threaded scheduler <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. When you call a blocking function inside a coroutine, the entire loop stalls — <strong>no other coroutines run until the blocking call returns</strong>. In a server handling 100 concurrent requests, one accidental <code>time.sleep(2)</code> inside a coroutine stalls all 100 requests for 2 seconds.</p>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#f59e0b', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#fbbf24', 'lineColor': '#f59e0b', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 sequenceDiagram
     participant L as Event Loop
@@ -135,7 +137,7 @@ sequenceDiagram
     participant R2 as Request 2
     participant R3 as Request 3
 
-    Note over L: ✅ Correct async — all run concurrently
+    Note over L:  Correct async — all run concurrently
     L-&gt;&gt;R1: await async_llm_call()
     L-&gt;&gt;R2: await async_db_query()
     L-&gt;&gt;R3: await async_embed()
@@ -144,7 +146,7 @@ sequenceDiagram
     R3--&gt;&gt;L: result (1s)
     Note over L: Total wall time: ~2s
 
-    Note over L: ❌ One blocking call — R2 and R3 wait
+    Note over L:  One blocking call — R2 and R3 wait
     L-&gt;&gt;R1: time.sleep(2) ← BLOCKS LOOP
     Note over R2,R3: Frozen — cannot execute
     R1--&gt;&gt;L: (2s later)
@@ -422,7 +424,7 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
 <li><strong>Never suppress <code>CancelledError</code></strong> — it is how graceful shutdown works in every async Python server, including Uvicorn and Gunicorn with worker class <code>uvicorn.workers.UvicornWorker</code>.</li>
 </ul>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Python asyncio Documentation</strong>: <a href="https://docs.python.org/3/library/asyncio-task.html" target="_blank" rel="noopener">Coroutines and Tasks</a></li>
 <li><strong>FastAPI Concurrency Guide</strong>: <a href="https://fastapi.tiangolo.com/async/" target="_blank" rel="noopener">Async and Await</a></li>
@@ -469,6 +471,7 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
               <li class="toc-item toc-h2"><a href="#anti-pattern-7-creating-tasks-without-storing-references" class="toc-link">Anti-Pattern 7: Creating Tasks Without Storing References</a></li>
               <li class="toc-item toc-h2"><a href="#anti-pattern-8-not-setting-timeouts-on-awaited-calls" class="toc-link">Anti-Pattern 8: Not Setting Timeouts on Awaited Calls</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1307,13 +1310,7 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1382,13 +1379,7 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1430,13 +1421,7 @@ async def parallel_with_timeout(tasks: list, timeout: float = 10.0):
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

@@ -11,10 +11,10 @@
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    Q1{Does the client<br/>send messages<br/>after connection?} -->|No| SSE[✅ Use SSE<br/>Simpler, HTTP/2 multiplexed<br/>Auto-reconnect built in]
+    Q1{Does the client<br/>send messages<br/>after connection?} -->|No| SSE[" Use SSE<br/>Simpler, HTTP/2 multiplexed<br/>Auto-reconnect built in"]
     Q1 -->|Yes| Q2{More than<br/>10 msg/sec<br/>in both directions?}
     Q2 -->|No| Q3{Need binary<br/>frames?}
-    Q2 -->|Yes| WS[✅ Use WebSockets<br/>Full-duplex, lower overhead<br/>at high message rates]
+    Q2 -->|Yes| WS[" Use WebSockets<br/>Full-duplex, lower overhead<br/>at high message rates"]
     Q3 -->|Yes| WS
     Q3 -->|No| Q4{Collaborative<br/>multi-user<br/>real-time?}
     Q4 -->|Yes| WS
@@ -22,6 +22,14 @@ flowchart TD
 
     style SSE fill:#052e16,stroke:#10b981,stroke-width:2px
     style WS fill:#0c1a3a,stroke:#3b82f6,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class SSE blue
+class WS green
 ```
 
 **Use SSE for**: LLM token streaming, one-way notifications, progress updates, server push
@@ -486,7 +494,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) => void) {
 
 ## Conclusion & Key Takeaways
 
-WebSockets unlock true bidirectional real-time communication but bring a distinct set of production failure modes compared to SSE. The most dangerous are silent: dropped messages from buffer overflow, phantom disconnections from idle proxies, and memory leaks from missing disconnect cleanup.
+WebSockets unlock true bidirectional real-time communication but bring a distinct set of production failure modes compared to SSE [1]. The most dangerous are silent: dropped messages from buffer overflow, phantom disconnections from idle proxies, and memory leaks from missing disconnect cleanup.
 
 - **Always implement heartbeats at 25-second intervals** — most proxies and load balancers have 60-second idle timeouts. Heartbeats keep connections alive and detect dead clients.
 - **Read close codes and act accordingly** — `1000` means don't reconnect; `1006` means reconnect immediately; `4001` means re-authenticate. Ignoring close codes leads to unnecessary reconnect storms.
@@ -494,7 +502,7 @@ WebSockets unlock true bidirectional real-time communication but bring a distinc
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 - **MDN WebSocket API**: [WebSocket close codes reference](https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code)
 - **RFC 6455**: [The WebSocket Protocol specification](https://datatracker.ietf.org/doc/html/rfc6455)
 - **FastAPI WebSockets**: [WebSocket documentation](https://fastapi.tiangolo.com/advanced/websockets/)

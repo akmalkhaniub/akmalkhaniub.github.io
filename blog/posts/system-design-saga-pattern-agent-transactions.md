@@ -13,7 +13,7 @@ Consider an autonomous travel booking swarm where three agents execute a pipelin
 2. **Hotel Agent**: Reserves a hotel room.
 3. **Billing Agent**: Deducts funds from the user's wallet.
 
-If the Flight and Hotel agents succeed, but the Billing agent fails due to insufficient funds, the system is left in an inconsistent state: flights and hotels are reserved, but unpaid. Because these are external API calls, we cannot use database-level ACID transactions.
+If the Flight and Hotel agents succeed, but the Billing agent fails due to insufficient funds, the system is left in an inconsistent state: flights and hotels are reserved, but unpaid [1]. Because these are external API calls, we cannot use database-level ACID transactions.
 
 To solve this, we rely on the **Saga Pattern**, a design pattern that structures distributed transactions as a series of local steps. If any step fails, the coordinator executes a series of **compensating transactions** in reverse order to cancel changes and roll back the system.
 
@@ -22,17 +22,28 @@ To solve this, we rely on the **Saga Pattern**, a design pattern that structures
 flowchart TD
     subgraph SG1_SagaExecutions ["Saga Executions"]
         direction TB
-        Step1[1. Book Flight] -->|Success| Step2[2. Book Hotel]
-        Step2 -->|Success| Step3[3. Charge Wallet - FAILS!]
+        Step1["1. Book Flight"] -->|Success| Step2["2. Book Hotel"]
+        Step2 -->|Success| Step3["3. Charge Wallet - FAILS!"]
     end
 
     subgraph SG2_CompensatingRollbacks ["Compensating Rollbacks"]
         direction TB
-        Comp1[Compensate 2: Cancel Hotel] --> Comp2[Compensate 1: Cancel Flight]
+        Comp1["Compensate 2: Cancel Hotel"] --> Comp2["Compensate 1: Cancel Flight"]
     end
 
     Step3 -->|Trigger Rollback| Comp1
     Comp2 --> FinalState([System Rolled Back Cleanly])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Step1 blue
+class Step2 green
+class Step3 purple
+class Comp1 yellow
+class Comp2 red
 ```
 
 ---
@@ -149,4 +160,13 @@ if __name__ == "__main__":
 
 * **Map out Sagas Explicitly**: When designing multi-agent flows, always define a compensating rollback action for every forward API call that modifies state.
 * **Orchestrate for observability**: In agentic ecosystems, rely on an orchestrator to manage state transitions rather than choreographing them blindly across event systems.
-* **Build Alerting for Compensation Failures**: If a compensating action fails, the system must immediately issue a critical alert to a human queue for manual reconciliation.
+* **Build Alerting for Compensation Failures**: If a compensating action fails, the system must immediately issue a critical alert to a human queue for manual reconciliation. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+5. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+6. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

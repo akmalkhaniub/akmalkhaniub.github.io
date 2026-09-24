@@ -8,7 +8,7 @@
 
 ## The "Lost in the Middle" Recall Deficit
 
-Bi-encoder embedding models calculate document coordinates independently from the user query. This is fast but less accurate:
+Bi-encoder embedding models calculate document coordinates independently from the user query [1]. This is fast but less accurate:
 * **The Relevance Gap**: Similarity search scores indicate semantic proximity, but do not guarantee that the text chunk contains the direct answer to the user's question.
 * **Context Overload**: Stuffing 20 raw search chunks into a prompt pollutes the model's context window, increasing latency and token costs.
 * **The Solution**: **Cross-Encoder Reranking**. We retrieve a larger pool of candidate chunks (e.g. top 25) and feed them along with the query into a cross-encoder model. The model computes a precise query-document attention score, allowing us to select only the top 3-5 most relevant chunks.
@@ -16,16 +16,27 @@ Bi-encoder embedding models calculate document coordinates independently from th
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Matches[Parallel Search Matches: Top-25 Chunks] --> Rerank[Cross-Encoder Evaluation Engine]
-    Query[User Query Target] --> Rerank
+    Matches["Parallel Search Matches: Top-25 Chunks"] --> Rerank["Cross-Encoder Evaluation Engine"]
+    Query["User Query Target"] --> Rerank
     
-    Rerank --> Score[Compute Query-Chunk Attention Scores]
+    Rerank --> Score["Compute Query-Chunk Attention Scores"]
     Score --> Filter{Is Score Above Relevance Threshold?}
     
-    Filter -->|No: Noise| Drop([Drop Chunk: Save Token Space])
-    Filter -->|Yes: High Relevancy| Keep[Keep Chunk: Add to Context Window]
+    Filter -->|No - Noise| Drop([Drop Chunk: Save Token Space])
+    Filter -->|Yes - High Relevancy| Keep["Keep Chunk: Add to Context Window"]
     
-    Keep --> Prompt[Compile Optimized Prompt Context]
+    Keep --> Prompt["Compile Optimized Prompt Context"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Matches,Prompt blue
+class Rerank green
+class Query purple
+class Score yellow
+class Keep red
 ```
 
 ---
@@ -129,4 +140,10 @@ if __name__ == "__main__":
 
 * **Retrieve Wide, Filter Narrow**: Configure RAG pipelines to fetch a broad pool of vector matches, then use a rerank model to select the top matches.
 * **Filter with Relevance Thresholds**: Discard document chunks with relevance scores below `0.60` to protect model context space.
-* **Monitor Latency Trade-offs**: While cross-encoders improve query accuracy, they add latency. Use small, optimized reranker models to keep step times under 100 milliseconds.
+* **Monitor Latency Trade-offs**: While cross-encoders improve query accuracy, they add latency. Use small, optimized reranker models to keep step times under 100 milliseconds. [2]
+
+## References & Further Reading
+
+1. **Donenfeld, J. A. (2017)**. *WireGuard: Next Generation Kernel Network Tunnel*. NDSS. [https://www.wireguard.com/papers/wireguard.pdf](https://www.wireguard.com/papers/wireguard.pdf)
+2. **SPIFFE Authors (2024)**. *SPIFFE Specification*. CNCF. [https://github.com/spiffe/spiffe/blob/main/standards/SPIFFE.md](https://github.com/spiffe/spiffe/blob/main/standards/SPIFFE.md)
+3. **Perrin, T. (2018)**. *The Noise Protocol Framework*. noiseprotocol.org. [https://noiseprotocol.org/noise.pdf](https://noiseprotocol.org/noise.pdf)

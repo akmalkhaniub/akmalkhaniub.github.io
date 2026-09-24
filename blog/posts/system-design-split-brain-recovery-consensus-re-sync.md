@@ -9,26 +9,37 @@
 ## The Distributed Partition Dilemma
 
 In partitioned agent networks:
-* **The Divergent Branch Problem**: Partition A executes step 3A while Partition B concurrently executes step 3B for the same task key.
+* **The Divergent Branch Problem**: Partition A executes step 3A while Partition B concurrently executes step 3B for the same task key [1].
 * **Corrupted Context Graphs**: Unifying divergent trace histories without causal ordering produces invalid execution sequences.
 * **The Solution**: **Consensus Re-Sync & Lineage Pruning**. Upon network healing, nodes exchange state vector clock trees, identify divergence points, and apply deterministic consensus rules (such as leader-driven pruning or branch unioning).
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    State[Common State Base: Step 1] --> Partition{Network Partition Event}
+    State["Common State Base: Step 1"] --> Partition{Network Partition Event}
     
     subgraph SG1_DivergentClusters ["Divergent Clusters"]
-        Partition -->|Cluster A Branch| NodeA[Cluster A: Step 2A]
-        Partition -->|Cluster B Branch| NodeB[Cluster B: Step 2B]
+        Partition -->|Cluster A Branch| NodeA["Cluster A: Step 2A"]
+        Partition -->|Cluster B Branch| NodeB["Cluster B: Step 2B"]
     end
     
-    NodeA --> Heal[Network Heals: Trigger Re-Sync Manager]
+    NodeA --> Heal["Network Heals: Trigger Re-Sync Manager"]
     NodeB --> Heal
     
-    Heal --> VectorCheck[Compare Vector Clock Lineage]
+    Heal --> VectorCheck["Compare Vector Clock Lineage"]
     VectorCheck --> Reconcile{Conflict Resolution Policy}
-    Reconcile -->|Union non-conflicting steps| Unified[Unified Task Timeline]
+    Reconcile -->|Union non-conflicting steps| Unified["Unified Task Timeline"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class State,Unified blue
+class NodeA green
+class NodeB purple
+class Heal yellow
+class VectorCheck red
 ```
 
 ---
@@ -125,4 +136,13 @@ if __name__ == "__main__":
 
 * **Use Vector Clock Lineages**: Attach vector clock maps to all state updates to identify when network partitions cause execution divergence.
 * **Locate Common Ancestor**: Trace back vector clocks to find the last consensus state before the partition occurred.
-* **Unify Non-Conflicting Steps**: Merge parallel non-conflicting agent step logs to preserve execution work when network connectivity restores.
+* **Unify Non-Conflicting Steps**: Merge parallel non-conflicting agent step logs to preserve execution work when network connectivity restores. [2]
+
+## References & Further Reading
+
+1. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+2. **Lamport, L. (2001)**. *Paxos Made Simple*. ACM SIGACT News. [https://lamport.azurewebsites.net/pubs/paxos-simple.pdf](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf)
+3. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)
+4. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+5. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+6. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

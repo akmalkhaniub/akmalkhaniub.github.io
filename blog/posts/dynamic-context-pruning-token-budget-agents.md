@@ -8,7 +8,7 @@
 
 ## The Danger of Context Inflation
 
-As an autonomous agent executes a multi-step workflow, its conversation log inflates rapidly. Every tool invocation, traceback error dump, and intermediate reasoning thought adds to the context window:
+As an autonomous agent executes a multi-step workflow, its conversation log inflates rapidly [1]. Every tool invocation, traceback error dump, and intermediate reasoning thought adds to the context window:
 
 1. **Latency Scaling**: Attention calculations scale quadratically \(O(N^2)\) or linear-biases in newer architectures. In practice, feeding 100,000 tokens increases latency and slows down agentic response loops.
 2. **Retrieval Degradation**: As prompts grow larger, models start missing constraints, ignoring system guidelines, or losing track of historical details.
@@ -17,12 +17,23 @@ As an autonomous agent executes a multi-step workflow, its conversation log infl
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Raw[Incoming Messages & Tool Logs] --> Filter[Prune Verbose Tool Output]
+    Raw["Incoming Messages & Tool Logs"] --> Filter["Prune Verbose Tool Output"]
     Filter --> Budget{Total Tokens > Limit?}
-    Budget -->|No| Prompt[Assemble Prompt]
-    Budget -->|Yes| Summarize[Summarize Historical Nodes]
-    Summarize --> Slide[Slide Message Window]
+    Budget -->|No| Prompt["Assemble Prompt"]
+    Budget -->|Yes| Summarize["Summarize Historical Nodes"]
+    Summarize --> Slide["Slide Message Window"]
     Slide --> Prompt
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Raw blue
+class Filter green
+class Prompt purple
+class Summarize yellow
+class Slide red
 ```
 
 ---
@@ -136,4 +147,10 @@ if __name__ == "__main__":
 
 * **Always Compress Recursively**: Never delete historical user interactions completely. Instead, use small, fast SLMs (like Llama 3.2 3B or Gemini Flash) to generate paragraph summaries of expired blocks.
 * **Filter Before Ingestion**: Build format-aware parsers at the tool gateway. If a tool outputs raw HTML or CSV, extract the critical keys first and discard the wrapper syntax.
-* **Observability Monitoring**: Keep track of the average context length per session. If lengths grow continuously without stabilization, refine your window slice bounds.
+* **Observability Monitoring**: Keep track of the average context length per session. If lengths grow continuously without stabilization, refine your window slice bounds. [2]
+
+## References & Further Reading
+
+1. **Dao, T., et al. (2022)**. *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*. NeurIPS. [https://arxiv.org/abs/2205.14135](https://arxiv.org/abs/2205.14135)
+2. **Vaswani, A., et al. (2017)**. *Attention Is All You Need*. NeurIPS. [https://arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
+3. **Kwon, W., et al. (2023)**. *Efficient Memory Management for Large Language Model Serving with PagedAttention*. SOSP. [https://arxiv.org/abs/2309.06180](https://arxiv.org/abs/2309.06180)

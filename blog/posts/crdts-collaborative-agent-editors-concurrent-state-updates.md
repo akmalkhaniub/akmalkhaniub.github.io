@@ -1,6 +1,6 @@
 # Conflict-Free Replicated Data Types (CRDTs) for Collaborative Agent Editors
 
-When multiple AI agents work concurrently on a shared codebase or memory document (for example, a **Code Generator Agent**, a **Security Auditor Agent**, and a **Documentation Agent** editing different parts of a project simultaneously), coordinating updates through centralized database locks creates severe throughput bottlenecks.
+When multiple AI agents work concurrently on a shared codebase or memory document (for example, a **Code Generator Agent**, a **Security Auditor Agent**, and a **Documentation Agent** editing different parts of a project simultaneously), coordinating updates through centralized database locks creates severe throughput bottlenecks [1].
 
 If agents must wait for central write locks before appending changes, task execution degrades into slow sequential steps.
 
@@ -17,21 +17,32 @@ This article details how to implement CRDT state synchronization engines for mul
 Mathematical properties of State-Based CRDT merge operations ($\sqcup$):
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ReplicaAgent1 ["Replica Agent 1"]
-    A1[State S1] -->|Local Edit| A2[State S1']
+    A1["State S1"] -->|Local Edit| A2["State S1'"]
   end
   
   subgraph SG2_ReplicaAgent2 ["Replica Agent 2"]
-    B1[State S2] -->|Local Edit| B2[State S2']
+    B1["State S2"] -->|Local Edit| B2["State S2'"]
   end
   
-  A2 -->|Broadcast State S1'| M[State Merge Engine: S1' ⊔ S2']
+  A2 -->|Broadcast State S1'| M["State Merge Engine: S1' ⊔ S2'"]
   B2 -->|Broadcast State S2'| M
   
   subgraph SG3_ConvergedState ["Converged State"]
-    M --> C[Unified Replicated State: Mathematically Identical Across All Nodes]
+    M --> C["Unified Replicated State: Mathematically Identical Across All Nodes"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A1,C blue
+class A2 green
+class B1 purple
+class B2 yellow
+class M red
 ```
 
 ### Mathematical Invariants of CRDT Merges
@@ -164,4 +175,13 @@ When deploying CRDTs in agent environments:
 ## Real-World Enterprise Impact
 Teams deploying CRDT agent state synchronization report:
 * **Zero Locking Overhead**: Autonomous agents edit shared codebases concurrently with zero lock contention.
-* **Guaranteed State Convergence**: Replicas operating over unstable network connections automatically converge to identical final states as soon as network connectivity is restored.
+* **Guaranteed State Convergence**: Replicas operating over unstable network connections automatically converge to identical final states as soon as network connectivity is restored. [2]
+
+## References & Further Reading
+
+1. **Shapiro, M., Preguiça, N., Baquero, C., & Zawirski, M. (2011)**. *Conflict-free Replicated Data Types*. SSS. [https://hal.inria.fr/inria-00609399v1/document](https://hal.inria.fr/inria-00609399v1/document)
+2. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+3. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+4. **Kubernetes Authors (2024)**. *Kubernetes Documentation*. CNCF. [https://kubernetes.io/docs/home/](https://kubernetes.io/docs/home/)
+5. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+6. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)

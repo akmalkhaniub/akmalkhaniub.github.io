@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/bm25-hybrid-search-combining-keyword-relevance-dense-vector-embeddings.html">
   <meta property="og:title" content="BM25 &amp; Hybrid Search: Combining Keyword Relevance with Dense Vector Embeddings">
   <meta property="og:description" content="Fusing keyword precision with semantic recall: implementing Okapi BM25 ranking, dense vector search, and Reciprocal Rank Fusion (RRF) score merging.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/bm25-hybrid-search-combining-keyword-relevance-dense-vector-embeddings.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-16">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="BM25 &amp; Hybrid Search: Combining Keyword Relevance with Dense Vector Embeddings">
   <meta name="twitter:description" content="Fusing keyword precision with semantic recall: implementing Okapi BM25 ranking, dense vector search, and Reciprocal Rank Fusion (RRF) score merging.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/bm25-hybrid-search-combining-keyword-relevance-dense-vector-embeddings.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "BM25 & Hybrid Search: Combining Keyword Relevance with Dense Vector Embeddings",
   "description": "Fusing keyword precision with semantic recall: implementing Okapi BM25 ranking, dense vector search, and Reciprocal Rank Fusion (RRF) score merging.",
   "url": "https://akmalkhaniub.github.io/blog/bm25-hybrid-search-combining-keyword-relevance-dense-vector-embeddings.html",
-  "datePublished": "2026-08-16",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/bm25-hybrid-search-combining-keyword-relevance-dense-vector-embeddings.jpg",
+  "datePublished": "2026-08-17",
   "keywords": "Hybrid Search, BM25, RRF, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="BM25 &amp; Hybrid Search: Combining Keyword Relevance with Dense Vector Embeddings Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/bm25-hybrid-search-combining-keyword-relevance-dense-vector-embeddings.jpg" class="article-cover-img" alt="BM25 &amp; Hybrid Search: Combining Keyword Relevance with Dense Vector Embeddings Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">BM25 &amp; Hybrid Search: Combining Keyword Relevance with Dense Vector Embeddings</h1>
             <div class="article-meta">
@@ -108,9 +109,11 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#hybrid-search-reciprocal-rank-fusion-architecture">Hybrid Search &amp; Reciprocal Rank Fusion Architecture</a></li>
+                <li><a href="#core-search-formulas">Core Search Formulas</a></li>
                 <li><a href="#python-implementation-bm25-rrf-hybrid-search-engine">Python Implementation: BM25 &amp; RRF Hybrid Search Engine</a></li>
                 <li><a href="#hybrid-search-gotchas-best-practices">Hybrid Search Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <p>In modern Information Retrieval (IR), artificial intelligence teams faces a dilemma when choosing search algorithms:</p>
@@ -124,11 +127,11 @@
 <hr>
 <h2 id="hybrid-search-reciprocal-rank-fusion-architecture">Hybrid Search &amp; Reciprocal Rank Fusion Architecture</h2>
 <p>How a Hybrid Search Engine executes parallel Sparse + Dense queries and merges rank positions:</p>
-<div class="mermaid">graph TD
-  Query[&quot;User Search Query: 'FastAPI error ERR-401'&quot;] --&gt; SparseEngine[Sparse BM25 Keyword Search Engine]
-  Query --&gt; EmbeddingModel[Text Embedding Model: OpenAI / Cohere]
+<div class="mermaid">flowchart TD
+  Query[&quot;User Search Query: 'FastAPI error ERR-401'&quot;] --&gt; SparseEngine[&quot;Sparse BM25 Keyword Search Engine&quot;]
+  Query --&gt; EmbeddingModel[&quot;Text Embedding Model: OpenAI / Cohere&quot;]
   
-  EmbeddingModel --&gt;|Dense Vector| DenseEngine[Dense Vector HNSW Search Engine]
+  EmbeddingModel --&gt;|Dense Vector| DenseEngine[&quot;Dense Vector HNSW Search Engine&quot;]
   
   subgraph SG1_ParallelRetrievalPipelines [&quot;Parallel Retrieval Pipelines&quot;]
     SparseEngine --&gt;|Top-K Ranked Documents| SparseList[&quot;BM25 Ranked List: [Doc 12 (Rank 1), Doc 4 (Rank 2)]&quot;]
@@ -136,11 +139,22 @@
   end
   
   subgraph SG2_ReciprocalRankFusion [&quot;Reciprocal Rank Fusion RRF Engine&quot;]
-    SparseList --&gt; RRF[Reciprocal Rank Fusion Engine: Score = 1 / (60 + Rank)]
+    SparseList --&gt; RRF[&quot;Reciprocal Rank Fusion Engine: Score = 1 / (60 + Rank)&quot;]
     DenseList --&gt; RRF
   end
   
-  RRF --&gt;|Fused Score Calculation| FinalResults[&quot;Consolidated Hybrid Results: Doc 12 (Score: 0.0325)&quot;]</div>
+  RRF --&gt;|Fused Score Calculation| FinalResults[&quot;Consolidated Hybrid Results: Doc 12 (Score: 0.0325)&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,DenseList blue
+class SparseEngine,RRF green
+class EmbeddingModel,FinalResults purple
+class DenseEngine yellow
+class SparseList red</div>
 <h3 id="core-search-formulas">Core Search Formulas</h3>
 <ol>
 <li><strong>Okapi BM25 Term Weighting</strong>: An evolution of TF-IDF. Computes document relevance by incorporating non-linear term frequency saturation ($k_1$) and document length normalization ($b$):
@@ -289,8 +303,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Search platforms switching to BM25 + Vector Hybrid Search report:</p>
 <ul>
 <li><strong>30% Increase in Search Relevance (NDCG@10)</strong>: Combining semantic understanding with exact term matching outperforms pure vector search on real-world search benchmarks.</li>
-<li><strong>100% Exact Match Accuracy for Product SKUs</strong>: Hybrid search guarantees that users searching for exact part numbers receive exact catalog matches every time.</li>
+<li><strong>100% Exact Match Accuracy for Product SKUs</strong>: Hybrid search guarantees that users searching for exact part numbers receive exact catalog matches every time. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Robertson, S., &amp; Zaragoza, H. (2009)</strong>. <em>The Probabilistic Relevance Framework: BM25 and Beyond</em>. Foundations and Trends in Information Retrieval. <a href="https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf" target="_blank" rel="noopener">https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Edge, D., et al. (2024)</strong>. <em>From Local to Global: A Graph RAG Approach to Query-Focused Summarization</em>. arXiv. <a href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noopener">https://arxiv.org/abs/2404.16130</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Axboe, J. (2019)</strong>. <em>Efficient IO with io_uring</em>. kernel.dk. <a href="https://kernel.dk/io_uring.pdf" target="_blank" rel="noopener">https://kernel.dk/io_uring.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Linux Kernel Community (2024)</strong>. <em>BPF Documentation</em>. kernel.org. <a href="https://docs.kernel.org/bpf/" target="_blank" rel="noopener">https://docs.kernel.org/bpf/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Høiland-Jørgensen, T., et al. (2018)</strong>. <em>The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel</em>. CoNEXT. <a href="https://dl.acm.org/doi/10.1145/3281411.3281443" target="_blank" rel="noopener">https://dl.acm.org/doi/10.1145/3281411.3281443</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -323,9 +348,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#hybrid-search-reciprocal-rank-fusion-architecture" class="toc-link">Hybrid Search &amp; Reciprocal Rank Fusion Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-search-formulas" class="toc-link">Core Search Formulas</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-bm25-rrf-hybrid-search-engine" class="toc-link">Python Implementation: BM25 &amp; RRF Hybrid Search Engine</a></li>
               <li class="toc-item toc-h2"><a href="#hybrid-search-gotchas-best-practices" class="toc-link">Hybrid Search Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1164,13 +1191,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1239,13 +1260,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1287,13 +1302,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

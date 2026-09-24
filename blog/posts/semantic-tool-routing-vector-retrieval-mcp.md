@@ -8,7 +8,7 @@
 
 ## The Tool Bloat Problem: Hallucinations & Cost
 
-When an LLM client is configured to use tools, the developer supplies a JSON array containing the schema of every available tool (including parameters, descriptions, and types). 
+When an LLM client is configured to use tools, the developer supplies a JSON array containing the schema of every available tool (including parameters, descriptions, and types) [1]. 
 
 If you expose 100+ tools:
 1. **Context Window Inflation**: Storing 100 tool schemas can consume 10,000 to 30,000 tokens on *every single interaction*, significantly increasing execution costs.
@@ -17,16 +17,27 @@ If you expose 100+ tools:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[User Query: Calculate Q3 payroll total] --> Search[Semantic Vector Search]
+    Query["User Query: Calculate Q3 payroll total"] --> Search["Semantic Vector Search"]
     Search -->|Matches query to tool descriptions| VectorDB[(Tool Vector Store)]
     
-    VectorDB -->|Retrieves top-3 relevant schemas| Router[Dynamic Tool Router]
+    VectorDB -->|Retrieves top-3 relevant schemas| Router["Dynamic Tool Router"]
     
-    Router -->|Compiles runtime schemas| LLM[LLM Engine]
-    LLM -->|Generates Tool Call| MCPGate[Model Context Protocol Gate]
+    Router -->|Compiles runtime schemas| LLM["LLM Engine"]
+    LLM -->|Generates Tool Call| MCPGate["Model Context Protocol Gate"]
     
-    MCPGate -->|Invokes target server| ToolServer[Payroll MCP Server]
+    MCPGate -->|Invokes target server| ToolServer["Payroll MCP Server"]
     ToolServer -->|Executes API & returns results| LLM
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,ToolServer blue
+class Search green
+class Router purple
+class LLM yellow
+class MCPGate red
 ```
 
 To prevent this, we introduce a **Semantic Tool Router**. We generate embeddings of our tool descriptions and store them in a vector index. Before querying the LLM, we perform a vector search to fetch the top-3 matching tools. The LLM only sees the tools it actually needs.
@@ -188,4 +199,10 @@ To scale tool access for enterprise-grade agents:
 * [ ] **Enforce tool schema caching**: Avoid generating tool embeddings dynamically during execution. Cache tool schemas and description vectors inside a fast registry DB.
 * [ ] **Index semantic descriptions, not code names**: Model routers rely on natural language descriptions to match queries. Write detailed explanations of *when* to use a tool.
 * [ ] **Limit LLM context exposure**: Set `top_k` constraints (usually 3 to 5 tools maximum) to optimize execution costs and prevent tool hallucinations.
-* [ ] **Enforce MCP boundaries**: Run sensitive execution scripts inside isolated MCP servers with strict read/write boundaries, rather than hosting execution files on your main server.
+* [ ] **Enforce MCP boundaries**: Run sensitive execution scripts inside isolated MCP servers with strict read/write boundaries, rather than hosting execution files on your main server. [2]
+
+## References & Further Reading
+
+1. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+2. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

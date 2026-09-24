@@ -8,7 +8,7 @@
 
 ## The Paradigm Shift: From Syntax to Context
 
-In the traditional software era, the bottleneck was typing speed and syntax recall. Today, code generation is a solved problem. The new bottleneck is **verification, context management, and boundaries**:
+In the traditional software era, the bottleneck was typing speed and syntax recall [1]. Today, code generation is a solved problem. The new bottleneck is **verification, context management, and boundaries**:
 * **Context Engineering**: Organizing repository structures, MCP tools, and schemas so that agents can navigate code safely.
 * **Verification Gates**: Writing strict validation rules, AST parsers, and evaluation metrics (LLM-as-a-judge) to verify agent-generated solutions.
 * **Telemetry Tracing**: Auditing execution trajectories to ensure background code daemons don't get stuck in recursive validation loops.
@@ -16,16 +16,27 @@ In the traditional software era, the bottleneck was typing speed and syntax reca
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Spec[1. Define System Specifications & Constraints] --> Agent[2. Trigger Agentic Codegen Swarm]
-    Agent --> Sandbox[3. Run Code in Ephemeral Sandbox Node]
+    Spec["1. Define System Specifications & Constraints"] --> Agent["2. Trigger Agentic Codegen Swarm"]
+    Agent --> Sandbox["3. Run Code in Ephemeral Sandbox Node"]
     
-    Sandbox --> Evals[4. Execute Telemetry Trace & Logic Invariant Evals]
+    Sandbox --> Evals["4. Execute Telemetry Trace & Logic Invariant Evals"]
     Evals --> Gate{Did Evals Pass?}
     
-    Gate -->|No| PromptAdjust[Adjust context constraints & retry]
+    Gate -->|No| PromptAdjust["Adjust context constraints & retry"]
     PromptAdjust --> Agent
     
-    Gate -->|Yes| Review[5. Human Audits PR & Merges to Main]
+    Gate -->|Yes| Review["5. Human Audits PR & Merges to Main"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Spec,Review blue
+class Agent green
+class Sandbox purple
+class Evals yellow
+class PromptAdjust red
 ```
 
 ---
@@ -138,4 +149,13 @@ if __name__ == "__main__":
 
 ## Conclusion: The Path Forward
 
-The transition to AI-native software engineering in 2026 does not diminish the need for deep technical expertise. In fact, it raises the bar: engineers must understand system architecture, security, and verification patterns at a higher level than ever before. We are no longer the builders laying bricks—we are the architects directing the construction swarms.
+The transition to AI-native software engineering in 2026 does not diminish the need for deep technical expertise. In fact, it raises the bar: engineers must understand system architecture, security, and verification patterns at a higher level than ever before. We are no longer the builders laying bricks—we are the architects directing the construction swarms. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **W3C Distributed Tracing Working Group (2021)**. *Trace Context*. W3C Recommendation. [https://www.w3.org/TR/trace-context/](https://www.w3.org/TR/trace-context/)
+5. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+6. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)

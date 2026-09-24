@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/mvcc-snapshot-isolation-serializability.html">
   <meta property="og:title" content="Multi-Version Concurrency Control (MVCC): Snapshot Isolation &amp; Serializability">
   <meta property="og:description" content="High-concurrency relational storage engines: implementing tuple versioning (xmin/xmax), Read Snapshots, Snapshot Isolation (SI), Write-Write conflict resolution, and Write Skew mitigation.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/mvcc-snapshot-isolation-serializability.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Multi-Version Concurrency Control (MVCC): Snapshot Isolation &amp; Serializability">
   <meta name="twitter:description" content="High-concurrency relational storage engines: implementing tuple versioning (xmin/xmax), Read Snapshots, Snapshot Isolation (SI), Write-Write conflict resolution, and Write Skew mitigation.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/mvcc-snapshot-isolation-serializability.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Multi-Version Concurrency Control (MVCC): Snapshot Isolation & Serializability",
   "description": "High-concurrency relational storage engines: implementing tuple versioning (xmin/xmax), Read Snapshots, Snapshot Isolation (SI), Write-Write conflict resolution, and Write Skew mitigation.",
   "url": "https://akmalkhaniub.github.io/blog/mvcc-snapshot-isolation-serializability.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/mvcc-snapshot-isolation-serializability.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "MVCC, Databases, Concurrency, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Multi-Version Concurrency Control (MVCC): Snapshot Isolation &amp; Serializability Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/mvcc-snapshot-isolation-serializability.jpg" class="article-cover-img" alt="Multi-Version Concurrency Control (MVCC): Snapshot Isolation &amp; Serializability Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Multi-Version Concurrency Control (MVCC): Snapshot Isolation &amp; Serializability</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#mvcc-tuple-versioning-read-snapshot-architecture">MVCC Tuple Versioning &amp; Read Snapshot Architecture</a></li>
+                <li><a href="#core-mvcc-concepts">Core MVCC Concepts</a></li>
                 <li><a href="#python-implementation-mvcc-storage-engine-with-read-snapshots">Python Implementation: MVCC Storage Engine with Read Snapshots</a></li>
                 <li><a href="#mvcc-gotchas-best-practices">MVCC Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In high-concurrency database engines (<strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, <strong>CockroachDB</strong>, <strong>TiKV</strong>), supporting thousands of simultaneous read and write transactions is a core requirement.</p>
+<p>In high-concurrency database engines (<strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, <strong>CockroachDB</strong>, <strong>TiKV</strong>), supporting thousands of simultaneous read and write transactions is a core requirement <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>If a database uses traditional <strong>Two-Phase Locking (2PL)</strong> with exclusive read/write locks, read operations block write operations and write operations block read operations. Under heavy traffic, transaction queues stall, causing severe lock contention and connection timeouts.</p>
 <p>To eliminate read/write lock contention, modern relational and distributed storage engines implement <strong>Multi-Version Concurrency Control (MVCC)</strong>.</p>
 <p>The core promise of MVCC is simple: <strong>&quot;Readers Never Block Writers, and Writers Never Block Readers.&quot;</strong></p>
@@ -122,20 +125,31 @@
 <hr>
 <h2 id="mvcc-tuple-versioning-read-snapshot-architecture">MVCC Tuple Versioning &amp; Read Snapshot Architecture</h2>
 <p>How MVCC maintains tuple version chains to provide consistent Read Snapshots without locking:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_TupleVersionChain [&quot;Tuple Version Chain in Storage (Row: 'account_101')&quot;]
     V1[&quot;Version 1: Balance=$100 (xmin: 100, xmax: 105)&quot;] --&gt; V2[&quot;Version 2: Balance=$150 (xmin: 105, xmax: inf)&quot;]
   end
   
   subgraph SG2_ConcurrentTransactionRead [&quot;Concurrent Transaction Read Snapshots&quot;]
-    TxA[&quot;Tx A (Start TxID: 102) Read Query&quot;] --&gt;|Visits Chain: Sees xmin 100 &lt;= 102 &lt; xmax 105| V1
-    TxB[&quot;Tx B (Start TxID: 110) Read Query&quot;] --&gt;|Visits Chain: Sees xmin 105 &lt;= 110 &lt; inf| V2
+    TxA[&quot;Tx A (Start TxID: 102) Read Query&quot;] --&gt;|Visits Chain - Sees xmin 100 &lt;= 102 &lt; xmax 105| V1
+    TxB[&quot;Tx B (Start TxID: 110) Read Query&quot;] --&gt;|Visits Chain - Sees xmin 105 &lt;= 110 &lt; inf| V2
   end
   
   subgraph SG3_SnapshotIsolationVisibility [&quot;Snapshot Isolation Visibility Check&quot;]
-    TxA -.-&gt;|Reads Immutable Historical Snapshot| ReadA[Balance = $100 (Zero Locking!)]
-    TxB -.-&gt;|Reads Latest Committed Snapshot| ReadB[Balance = $150]
-  end</div>
+    TxA -.-&gt;|Reads Immutable Historical Snapshot| ReadA[&quot;Balance = $100 (Zero Locking!)&quot;]
+    TxB -.-&gt;|Reads Latest Committed Snapshot| ReadB[&quot;Balance = $150&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class V1,ReadB blue
+class V2 green
+class TxA purple
+class TxB yellow
+class ReadA red</div>
 <h3 id="core-mvcc-concepts">Core MVCC Concepts</h3>
 <ol>
 <li><strong>Tuple Versioning (<code>xmin</code> / <code>xmax</code>)</strong>: Every row modification (<code>UPDATE</code> or <code>DELETE</code>) creates a new tuple version rather than mutating existing disk bytes. Each tuple header stores metadata fields:<ul>
@@ -277,8 +291,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Databases utilizing MVCC (such as <strong>PostgreSQL</strong>, <strong>MySQL InnoDB</strong>, and <strong>CockroachDB</strong>) report:</p>
 <ul>
 <li><strong>Over $10\times$ Higher Read Throughput</strong>: Readers executing long analytical queries never block short concurrent write transactions.</li>
-<li><strong>Consistently Fast Snapshot Backups</strong>: Taking database snapshots requires zero table locks, allowing online backups during peak production traffic.</li>
+<li><strong>Consistently Fast Snapshot Backups</strong>: Taking database snapshots requires zero table locks, allowing online backups during peak production traffic. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Lamport, L. (1998)</strong>. <em>The Part-Time Parliament</em>. ACM TOCS. <a href="https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Lamport, L. (2001)</strong>. <em>Paxos Made Simple</em>. ACM SIGACT News. <a href="https://lamport.azurewebsites.net/pubs/paxos-simple.pdf" target="_blank" rel="noopener">https://lamport.azurewebsites.net/pubs/paxos-simple.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Reed, D. P. (1978)</strong>. <em>Naming and Synchronization in a Decentralized Computer System</em>. MIT PhD Thesis. <a href="https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf" target="_blank" rel="noopener">https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -311,9 +336,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#mvcc-tuple-versioning-read-snapshot-architecture" class="toc-link">MVCC Tuple Versioning &amp; Read Snapshot Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-mvcc-concepts" class="toc-link">Core MVCC Concepts</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-mvcc-storage-engine-with-read-snapshots" class="toc-link">Python Implementation: MVCC Storage Engine with Read Snapshots</a></li>
               <li class="toc-item toc-h2"><a href="#mvcc-gotchas-best-practices" class="toc-link">MVCC Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1152,13 +1179,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1227,13 +1248,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1275,13 +1290,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

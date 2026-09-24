@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/debugging-black-box-ai-agents-opentelemetry-time-travel-replay.html">
   <meta property="og:title" content="Debugging the Black Box: How to Trace, Profile, and Replay Broken Agent Runs with OpenTelemetry &amp; Time-Travel Debugging">
   <meta property="og:description" content="How to debug non-deterministic AI agent failures: OpenTelemetry span instrumentation with W3C baggage propagation, context window flame graphs for token bloat profiling, and zero-cost time-travel trajectory replay.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/debugging-black-box-ai-agents-opentelemetry-time-travel-replay.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-30">
+  <meta property="article:published_time" content="2026-08-31">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Debugging the Black Box: How to Trace, Profile, and Replay Broken Agent Runs with OpenTelemetry &amp; Time-Travel Debugging">
   <meta name="twitter:description" content="How to debug non-deterministic AI agent failures: OpenTelemetry span instrumentation with W3C baggage propagation, context window flame graphs for token bloat profiling, and zero-cost time-travel trajectory replay.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/debugging-black-box-ai-agents-opentelemetry-time-travel-replay.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Debugging the Black Box: How to Trace, Profile, and Replay Broken Agent Runs with OpenTelemetry & Time-Travel Debugging",
   "description": "How to debug non-deterministic AI agent failures: OpenTelemetry span instrumentation with W3C baggage propagation, context window flame graphs for token bloat profiling, and zero-cost time-travel trajectory replay.",
   "url": "https://akmalkhaniub.github.io/blog/debugging-black-box-ai-agents-opentelemetry-time-travel-replay.html",
-  "datePublished": "2026-08-30",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/debugging-black-box-ai-agents-opentelemetry-time-travel-replay.jpg",
+  "datePublished": "2026-08-31",
   "keywords": "AI Agents, Debugging, OpenTelemetry, Observability, Time-Travel Replay, System Design",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Debugging the Black Box: How to Trace, Profile, and Replay Broken Agent Runs with OpenTelemetry &amp; Time-Travel Debugging Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/debugging-black-box-ai-agents-opentelemetry-time-travel-replay.jpg" class="article-cover-img" alt="Debugging the Black Box: How to Trace, Profile, and Replay Broken Agent Runs with OpenTelemetry &amp; Time-Travel Debugging Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Debugging the Black Box: How to Trace, Profile, and Replay Broken Agent Runs with OpenTelemetry &amp; Time-Travel Debugging</h1>
             <div class="article-meta">
@@ -108,15 +109,19 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-the-stochastic-debugging-crisis">1. The Stochastic Debugging Crisis</a></li>
+                <li><a href="#the-3-core-failure-modes-of-agent-debugging">The 3 Core Failure Modes of Agent Debugging:</a></li>
                 <li><a href="#2-distributed-tracing-for-agent-swarms-with-opentelemetry">2. Distributed Tracing for Agent Swarms with OpenTelemetry</a></li>
+                <li><a href="#standardized-opentelemetry-span-attributes-for-ai-agents">Standardized OpenTelemetry Span Attributes for AI Agents:</a></li>
                 <li><a href="#3-time-travel-trajectory-replay-zero-cost-deterministic-debugging">3. Time-Travel Trajectory Replay: Zero-Cost Deterministic Debugging</a></li>
+                <li><a href="#how-time-travel-debugging-works">How Time-Travel Debugging Works:</a></li>
                 <li><a href="#4-context-window-flame-graphs-profiling-token-bloat">4. Context Window Flame Graphs: Profiling Token Bloat</a></li>
                 <li><a href="#python-implementation-time-travel-agent-replay-engine-with-otel-spans">Python Implementation: Time-Travel Agent Replay Engine with OTel Spans</a></li>
                 <li><a href="#summary-traditional-debugging-vs-agent-time-travel-debugging">Summary: Traditional Debugging vs Agent Time-Travel Debugging</a></li>
                 <li><a href="#architectural-takeaway">Architectural Takeaway</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In traditional software engineering, debugging a crash is straightforward: you reproduce the issue with deterministic inputs, set a breakpoint in your IDE, inspect the stack frame, and step through the code line by line.</p>
+<p>In traditional software engineering, debugging a crash is straightforward: you reproduce the issue with deterministic inputs, set a breakpoint in your IDE, inspect the stack frame, and step through the code line by line <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>In autonomous multi-agent engineering (<strong>Agent Fleet Orchestrator</strong>, <strong>LangGraph</strong>, <strong>Devin</strong>, <strong>Claude Engineer</strong>), traditional debugging breaks down completely:</p>
 <ul>
 <li>An agent runs for 18 steps across 5 tools over 12 minutes, then silently fails on Step 15 by corrupting a configuration file.</li>
@@ -125,10 +130,10 @@
 </ul>
 <p>Debugging production AI agent swarms requires treating agent trajectories as <strong>distributed, stateful, event-sourced distributed systems</strong>.</p>
 <p>By combining <strong>OpenTelemetry distributed tracing</strong>, <strong>Context Window Flame Graphs</strong>, and <strong>Time-Travel Trajectory Replay</strong>, engineering teams can inspect, profile, and replay complex multi-agent failures deterministically without spending a single cent on redundant LLM API calls.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_ProductionAgentObservability [&quot;Production Agent Observability Pipeline&quot;]
-    AgentCore[Agent Execution Core] --&gt; OTel[OpenTelemetry Span Collector]
-    AgentCore --&gt; Recorder[Deterministic Trajectory Recorder]
+    AgentCore[&quot;Agent Execution Core&quot;] --&gt; OTel[&quot;OpenTelemetry Span Collector&quot;]
+    AgentCore --&gt; Recorder[&quot;Deterministic Trajectory Recorder&quot;]
     
     subgraph SG2_ObservabilityBackends [&quot;Observability Backends&quot;]
       OTel --&gt; Traces[&quot;1. Distributed Traces (Jaeger / Datadog / Langfuse)&quot;]
@@ -136,8 +141,19 @@
       Recorder --&gt; ReplayBuffer[&quot;3. Time-Travel Replay Buffer (Offline Deterministic Stepping)&quot;]
     end
     
-    ReplayBuffer --&gt; OfflineDebugger[Zero-Cost IDE Breakpoint &amp; Prompt Testing]
-  end</div>
+    ReplayBuffer --&gt; OfflineDebugger[&quot;Zero-Cost IDE Breakpoint &amp; Prompt Testing&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class AgentCore,ReplayBuffer blue
+class OTel,OfflineDebugger green
+class Recorder purple
+class Traces yellow
+class FlameGraphs red</div>
 <hr>
 <h2 id="1-the-stochastic-debugging-crisis">1. The Stochastic Debugging Crisis</h2>
 <p>Why is debugging an autonomous agent fundamentally harder than debugging traditional distributed microservices?</p>
@@ -341,7 +357,18 @@ if __name__ == &quot;__main__&quot;:
 <hr>
 <h2 id="architectural-takeaway">Architectural Takeaway</h2>
 <p>You cannot optimize or debug what you cannot observe.</p>
-<p>By instrumenting agent swarms with <strong>OpenTelemetry spans</strong>, <strong>Context Flame Graphs</strong>, and <strong>Event-Sourced Time-Travel Replay</strong>, engineering teams illuminate the AI black box—turning chaotic, unpredictable agent runs into transparent, reproducible, and verifiable distributed systems.</p>
+<p>By instrumenting agent swarms with <strong>OpenTelemetry spans</strong>, <strong>Context Flame Graphs</strong>, and <strong>Event-Sourced Time-Travel Replay</strong>, engineering teams illuminate the AI black box—turning chaotic, unpredictable agent runs into transparent, reproducible, and verifiable distributed systems. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>W3C Distributed Tracing Working Group (2021)</strong>. <em>Trace Context</em>. W3C Recommendation. <a href="https://www.w3.org/TR/trace-context/" target="_blank" rel="noopener">https://www.w3.org/TR/trace-context/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>OpenTelemetry Authors (2024)</strong>. <em>OpenTelemetry Specification</em>. CNCF. <a href="https://opentelemetry.io/docs/specs/otel/" target="_blank" rel="noopener">https://opentelemetry.io/docs/specs/otel/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Apache Parquet Community (2024)</strong>. <em>Apache Parquet Format</em>. Apache Software Foundation. <a href="https://parquet.apache.org/docs/" target="_blank" rel="noopener">https://parquet.apache.org/docs/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Apache Arrow Community (2024)</strong>. <em>Apache Arrow Columnar Format</em>. Apache Software Foundation. <a href="https://arrow.apache.org/docs/format/Columnar.html" target="_blank" rel="noopener">https://arrow.apache.org/docs/format/Columnar.html</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Apache Iceberg Community (2024)</strong>. <em>Iceberg Table Spec</em>. Apache Software Foundation. <a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener">https://iceberg.apache.org/spec/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -374,12 +401,16 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-the-stochastic-debugging-crisis" class="toc-link">1. The Stochastic Debugging Crisis</a></li>
+              <li class="toc-item toc-h3"><a href="#the-3-core-failure-modes-of-agent-debugging" class="toc-link">The 3 Core Failure Modes of Agent Debugging:</a></li>
               <li class="toc-item toc-h2"><a href="#2-distributed-tracing-for-agent-swarms-with-opentelemetry" class="toc-link">2. Distributed Tracing for Agent Swarms with OpenTelemetry</a></li>
+              <li class="toc-item toc-h3"><a href="#standardized-opentelemetry-span-attributes-for-ai-agents" class="toc-link">Standardized OpenTelemetry Span Attributes for AI Agents:</a></li>
               <li class="toc-item toc-h2"><a href="#3-time-travel-trajectory-replay-zero-cost-deterministic-debugging" class="toc-link">3. Time-Travel Trajectory Replay: Zero-Cost Deterministic Debugging</a></li>
+              <li class="toc-item toc-h3"><a href="#how-time-travel-debugging-works" class="toc-link">How Time-Travel Debugging Works:</a></li>
               <li class="toc-item toc-h2"><a href="#4-context-window-flame-graphs-profiling-token-bloat" class="toc-link">4. Context Window Flame Graphs: Profiling Token Bloat</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-time-travel-agent-replay-engine-with-otel-spans" class="toc-link">Python Implementation: Time-Travel Agent Replay Engine with OTel Spans</a></li>
               <li class="toc-item toc-h2"><a href="#summary-traditional-debugging-vs-agent-time-travel-debugging" class="toc-link">Summary: Traditional Debugging vs Agent Time-Travel Debugging</a></li>
               <li class="toc-item toc-h2"><a href="#architectural-takeaway" class="toc-link">Architectural Takeaway</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1218,13 +1249,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1293,13 +1318,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1341,13 +1360,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

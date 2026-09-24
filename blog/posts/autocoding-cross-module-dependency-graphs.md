@@ -9,23 +9,34 @@
 ## The Danger of Isolated File Edits
 
 In single-file AI editing configurations:
-* **The Import Disconnect**: Modifying a utility function's return type breaks caller functions in separate package subdirectories.
+* **The Import Disconnect**: Modifying a utility function's return type breaks caller functions in separate package subdirectories [1].
 * **Incomplete Refactoring**: The agent updates the core module but overlooks test suites and API handlers that import the modified symbol.
 * **The Solution**: **Dependency Graph Analysis**. We parse import statements across all project modules, building a directed graph where nodes represent files and edges represent import dependencies.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Target[Core File: auth_service.py - Refactored] --> Impact{Dependency Graph Lookup}
+    Target["Core File: auth_service.py - Refactored"] --> Impact{Dependency Graph Lookup}
     
     subgraph SG1_DirectedDependencyGraph ["Directed Dependency Graph"]
-        Impact -->|Imports auth_service| Caller1[File: api_router.py]
-        Impact -->|Imports auth_service| Caller2[File: test_auth.py]
-        Caller1 -->|Imports api_router| Server[File: main.py]
+        Impact -->|Imports auth_service| Caller1["File: api_router.py"]
+        Impact -->|Imports auth_service| Caller2["File: test_auth.py"]
+        Caller1 -->|Imports api_router| Server["File: main.py"]
     end
     
-    Impact --> Queue[Queue Downstream Refactoring Tasks]
+    Impact --> Queue["Queue Downstream Refactoring Tasks"]
     Queue --> Agent([Trigger Agent Multi-File Refactor Pass])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Target blue
+class Caller1 green
+class Caller2 purple
+class Server yellow
+class Queue red
 ```
 
 ---
@@ -129,4 +140,10 @@ if __name__ == "__main__":
 
 * **Map Imports Before Editing**: Parse project import statements into a directed graph before performing codebase modifications.
 * **Use BFS Traversal**: Execute Breadth-First Search traversals to capture multi-level downstream dependencies.
-* **Audit Import Signatures**: Verify that call sites in caller files match updated module function signatures.
+* **Audit Import Signatures**: Verify that call sites in caller files match updated module function signatures. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

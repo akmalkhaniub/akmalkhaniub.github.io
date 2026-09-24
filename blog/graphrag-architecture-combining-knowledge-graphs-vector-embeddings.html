@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/graphrag-architecture-combining-knowledge-graphs-vector-embeddings.html">
   <meta property="og:title" content="GraphRAG Architecture: Combining Knowledge Graphs with Vector Embeddings">
   <meta property="og:description" content="Moving beyond flat vector search in RAG applications: designing hybrid context engines that combine dense vector semantic matching with explicit property graph traversal.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/graphrag-architecture-combining-knowledge-graphs-vector-embeddings.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-05">
+  <meta property="article:published_time" content="2026-08-06">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="GraphRAG Architecture: Combining Knowledge Graphs with Vector Embeddings">
   <meta name="twitter:description" content="Moving beyond flat vector search in RAG applications: designing hybrid context engines that combine dense vector semantic matching with explicit property graph traversal.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/graphrag-architecture-combining-knowledge-graphs-vector-embeddings.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "GraphRAG Architecture: Combining Knowledge Graphs with Vector Embeddings",
   "description": "Moving beyond flat vector search in RAG applications: designing hybrid context engines that combine dense vector semantic matching with explicit property graph traversal.",
   "url": "https://akmalkhaniub.github.io/blog/graphrag-architecture-combining-knowledge-graphs-vector-embeddings.html",
-  "datePublished": "2026-08-05",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/graphrag-architecture-combining-knowledge-graphs-vector-embeddings.jpg",
+  "datePublished": "2026-08-06",
   "keywords": "GraphRAG, Knowledge Graphs, Vector Embeddings, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="GraphRAG Architecture: Combining Knowledge Graphs with Vector Embeddings Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/graphrag-architecture-combining-knowledge-graphs-vector-embeddings.jpg" class="article-cover-img" alt="GraphRAG Architecture: Combining Knowledge Graphs with Vector Embeddings Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">GraphRAG Architecture: Combining Knowledge Graphs with Vector Embeddings</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#graphrag-retrieval-pipeline-architecture">GraphRAG Retrieval Pipeline Architecture</a></li>
+                <li><a href="#why-flat-vector-search-fails">Why Flat Vector Search Fails</a></li>
                 <li><a href="#python-implementation-in-memory-semantic-graph-rag-retriever">Python Implementation: In-Memory Semantic Graph RAG Retriever</a></li>
                 <li><a href="#important-graphrag-design-guardrails">Important GraphRAG Design Guardrails</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>When engineering Retrieval-Augmented Generation (RAG) pipelines for complex datasets—such as multi-repository software codebases or massive regulatory document databases—traditional <strong>flat vector search</strong> quickly reaches its limits.</p>
+<p>When engineering Retrieval-Augmented Generation (RAG) pipelines for complex datasets—such as multi-repository software codebases or massive regulatory document databases—traditional <strong>flat vector search</strong> quickly reaches its limits <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Standard chunk-based vector retrieval splits files into arbitrary text fragments, generates dense embeddings, and performs top-k cosine similarity matching. While this works well for simple factoid retrieval (e.g., <em>&quot;Find the function that validates user emails&quot;</em>), it fails catastrophically on <strong>global or multi-hop relationship queries</strong> (e.g., <em>&quot;If I modify the return schema of class <code>UserBilling</code>, which downstream payment routing systems will break?&quot;</em>).</p>
 <p>Solving multi-hop and structural questions requires <strong>GraphRAG (Graph-based Retrieval-Augmented Generation)</strong>.</p>
 <p>By combining the semantic reasoning of dense vector embeddings with the explicit relational structure of a <strong>Knowledge Graph</strong>, GraphRAG allows autonomous agents to perform deep topological traversal and retrieve context that spans multiple files and relationships.</p>
@@ -121,20 +124,31 @@
 <hr>
 <h2 id="graphrag-retrieval-pipeline-architecture">GraphRAG Retrieval Pipeline Architecture</h2>
 <p>The GraphRAG pipeline merges dense semantic retrieval with explicit property graph relationships:</p>
-<div class="mermaid">graph TD
-  A[User / Agent Query] --&gt; B[Dynamic Hybrid Retriever]
+<div class="mermaid">flowchart TD
+  A[&quot;User / Agent Query&quot;] --&gt; B[&quot;Dynamic Hybrid Retriever&quot;]
   
   subgraph SG1_GraphragKnowledgeEngine [&quot;GraphRAG Knowledge Engine&quot;]
-    B --&gt;|Step 1: Vector Semantic Match| C[(Vector Embedding Index)]
-    B --&gt;|Step 2: Explicit Relationship Hop| D[(Neo4j Property Graph)]
+    B --&gt;|Step 1 - Vector Semantic Match| C[(Vector Embedding Index)]
+    B --&gt;|Step 2 - Explicit Relationship Hop| D[(Neo4j Property Graph)]
     
-    C --&gt;|Locate Seed Entity Node| E[Identify Start Node: UserBilling]
-    D --&gt;|Traverse Edges: CALLS / INHERITS| F[Find Dependent Nodes: StripeRouter, LedgerWriter]
+    C --&gt;|Locate Seed Entity Node| E[&quot;Identify Start Node: UserBilling&quot;]
+    D --&gt;|Traverse Edges - CALLS / INHERITS| F[&quot;Find Dependent Nodes: StripeRouter, LedgerWriter&quot;]
   end
   
-  E --&gt; G[Extract Semantic Context Subgraph]
+  E --&gt; G[&quot;Extract Semantic Context Subgraph&quot;]
   F --&gt; G
-  G --&gt;|Structured Entity-Relation Prompt| H[LLM Generation Engine]</div>
+  G --&gt;|Structured Entity-Relation Prompt| H[&quot;LLM Generation Engine&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class B green
+class E purple
+class F yellow
+class G red</div>
 <h3 id="why-flat-vector-search-fails">Why Flat Vector Search Fails</h3>
 <ul>
 <li><strong>Lack of Structural Context</strong>: Standard vector chunking strips away inheritance, dependency, and call relationship structures.</li>
@@ -269,8 +283,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams deploying GraphRAG report:</p>
 <ul>
 <li><strong>90% Reduction in Context Recall Errors</strong>: GraphRAG successfully captures multi-file dependencies that flat vector search chunking misses entirely.</li>
-<li><strong>Streamlined Agent Prompts</strong>: Restricting RAG queries to exact entity-relationship subgraphs reduces overall context token usage, cutting LLM cost-per-query.</li>
+<li><strong>Streamlined Agent Prompts</strong>: Restricting RAG queries to exact entity-relationship subgraphs reduces overall context token usage, cutting LLM cost-per-query. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Edge, D., et al. (2024)</strong>. <em>From Local to Global: A Graph RAG Approach to Query-Focused Summarization</em>. arXiv. <a href="https://arxiv.org/abs/2404.16130" target="_blank" rel="noopener">https://arxiv.org/abs/2404.16130</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Francis, N., et al. (2018)</strong>. <em>Cypher: An Evolving Query Language for Property Graphs</em>. SIGMOD. <a href="https://doi.org/10.1145/3183713.3190657" target="_blank" rel="noopener">https://doi.org/10.1145/3183713.3190657</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Bishop, M., Ed. (2022)</strong>. <em>HTTP/3</em>. RFC 7541 / RFC 9114. <a href="https://www.rfc-editor.org/rfc/rfc9114" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9114</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Belshe, M., Peon, R., &amp; Thomson, M. (2015)</strong>. <em>Hypertext Transfer Protocol Version 2 (HTTP/2)</em>. RFC 7540. <a href="https://www.rfc-editor.org/rfc/rfc7540" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc7540</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Fielding, R., Ed., Nottingham, M., Ed., &amp; Reschke, J., Ed. (2022)</strong>. <em>HTTP Semantics</em>. RFC 9110. <a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">https://www.rfc-editor.org/rfc/rfc9110</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -303,9 +328,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#graphrag-retrieval-pipeline-architecture" class="toc-link">GraphRAG Retrieval Pipeline Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#why-flat-vector-search-fails" class="toc-link">Why Flat Vector Search Fails</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-in-memory-semantic-graph-rag-retriever" class="toc-link">Python Implementation: In-Memory Semantic Graph RAG Retriever</a></li>
               <li class="toc-item toc-h2"><a href="#important-graphrag-design-guardrails" class="toc-link">Important GraphRAG Design Guardrails</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1144,13 +1171,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1219,13 +1240,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1267,13 +1282,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

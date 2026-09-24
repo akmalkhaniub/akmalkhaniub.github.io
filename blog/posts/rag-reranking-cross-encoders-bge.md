@@ -8,22 +8,33 @@
 
 ## The Limits of Bi-Encoders (Vector Embeddings)
 
-Embedding models are **Bi-encoders**. They process the user query and the database documents independently, converting them into vectors to measure distance. While fast, this means the model cannot capture token-to-token interactions between the query and the candidate documents. 
+Embedding models are **Bi-encoders**. They process the user query and the database documents independently, converting them into vectors to measure distance [1]. While fast, this means the model cannot capture token-to-token interactions between the query and the candidate documents. 
 
 A **Cross-encoder** (Reranker) takes the query and a document *together* as a single input, executing full self-attention across both. This produces a highly accurate relevancy score, but is too computationally expensive to run on millions of documents.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[User Query] --> VectorSearch[1. Dense Vector Search <br> pgvector]
-    Query --> KeywordSearch[2. Sparse Keyword Search <br> BM25]
+    Query["User Query"] --> VectorSearch["1. Dense Vector Search <br> pgvector"]
+    Query --> KeywordSearch["2. Sparse Keyword Search <br> BM25"]
     
-    VectorSearch --> RRF[3. Reciprocal Rank Fusion <br> Merge top 50 results]
+    VectorSearch --> RRF["3. Reciprocal Rank Fusion <br> Merge top 50 results"]
     KeywordSearch --> RRF
     
     RRF --> Reranker{4. Cross-Encoder Reranker <br> BGE-Reranker-Large}
-    Reranker -->|Re-calculate token affinity| TopDocs[5. Isolated Top-3 Context]
-    TopDocs --> LLM[LLM Generation]
+    Reranker -->|Re-calculate token affinity| TopDocs["5. Isolated Top-3 Context"]
+    TopDocs --> LLM["LLM Generation"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,LLM blue
+class VectorSearch green
+class KeywordSearch purple
+class RRF yellow
+class TopDocs red
 ```
 
 By using both, we get the best of both worlds:
@@ -122,4 +133,14 @@ Rerankers are one of the most effective ways to boost your RAG system's accuracy
 * [ ] **Combine dense and sparse search**: Use hybrid search (vector similarity + keyword matching) as your initial retrieval pass.
 * [ ] **Use Reciprocal Rank Fusion (RRF)**: Blend results from different search indexes fairly before reranking.
 * [ ] **Deploy a Cross-encoder**: Place a reranker (like BGE-Reranker or Cohere V3) in front of your LLM call.
-* [ ] **Measure latency tradeoffs**: Keep your candidate list size (retrieval pool) limited to 50–100 documents to ensure reranking completes within 100ms.
+* [ ] **Measure latency tradeoffs**: Keep your candidate list size (retrieval pool) limited to 50–100 documents to ensure reranking completes within 100ms. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **pgvector Authors (2024)**. *pgvector: Open-source vector similarity search for Postgres*. GitHub. [https://github.com/pgvector/pgvector](https://github.com/pgvector/pgvector)
+5. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+6. **Robertson, S., & Zaragoza, H. (2009)**. *The Probabilistic Relevance Framework: BM25 and Beyond*. Foundations and Trends in Information Retrieval. [https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf](https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf)
+7. **Edge, D., et al. (2024)**. *From Local to Global: A Graph RAG Approach to Query-Focused Summarization*. arXiv. [https://arxiv.org/abs/2404.16130](https://arxiv.org/abs/2404.16130)

@@ -8,7 +8,7 @@
 
 ## Why Tool Calls Break in Production
 
-Tool calling is conceptually simple: the LLM decides to call a function, the runtime executes it, and the result is fed back. In practice, production failures cluster around three anti-patterns:
+Tool calling is conceptually simple: the LLM decides to call a function, the runtime executes it, and the result is fed back [1]. In practice, production failures cluster around three anti-patterns:
 
 1.  **Hallucinated Parameters**: The model confidently passes an argument that doesn't exist in the schema — e.g., `{"user_id": "abc123", "sort_by": "relevance"}` when `sort_by` is not a defined field. Without validation, this propagates silently.
 2.  **Type Coercion Failures**: The model returns `"true"` (string) for a boolean field, `"5"` (string) for an integer, or an ISO date string when an epoch timestamp is expected.
@@ -23,19 +23,19 @@ The solution is a three-layer defense: **Schema Contracts → Runtime Validation
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#10b981', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#34d399', 'lineColor': '#10b981', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    A[🧠 LLM Reasoning Layer] -->|Generates tool call JSON| B{Schema Validator<br/>Pydantic v2}
+    A[" LLM Reasoning Layer"] -->|Generates tool call JSON| B{Schema Validator<br/>Pydantic v2}
     
-    B -->|✅ Valid Schema| C[Tool Executor<br/>Function Registry]
-    B -->|❌ Invalid Schema| D[Error Feedback Loop<br/>Structured Error Message]
+    B -->|Valid Schema| C["Tool Executor<br/>Function Registry"]
+    B -->|Invalid Schema| D["Error Feedback Loop<br/>Structured Error Message"]
     D --> A
 
-    C -->|Success| E[Tool Result<br/>Typed Response Object]
+    C -->|Success| E["Tool Result<br/>Typed Response Object"]
     C -->|Exception / Timeout| F{Retry Policy<br/>ExponentialBackoff}
     
     F -->|Attempt ≤ Max Retries| C
-    F -->|Max Retries Exceeded| G[Fallback Strategy<br/>Default Value / Alt Tool]
+    F -->|Max Retries Exceeded| G["Fallback Strategy<br/>Default Value / Alt Tool"]
     
-    E --> H[LLM Observation<br/>Continue Reasoning]
+    E --> H["LLM Observation<br/>Continue Reasoning"]
     G --> H
 
     style A fill:#4c1d95,stroke:#a855f7,stroke-width:2px
@@ -45,6 +45,17 @@ flowchart TD
     style F fill:#1e293b,stroke:#f59e0b,stroke-width:2px
     style G fill:#1e293b,stroke:#f59e0b,stroke-width:2px
     style H fill:#4c1d95,stroke:#a855f7,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,H blue
+class C green
+class D purple
+class E yellow
+class G red
 ```
 
 ---
@@ -436,7 +447,7 @@ In our next article, we explore **Agent Memory: Short-Term, Episodic & Semantic*
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Anthropic Tool Use Guide**: [Function Calling with Claude](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)
 *   **OpenAI Function Calling**: [Structured Tool Calling Reference](https://platform.openai.com/docs/guides/function-calling)
 *   **Pydantic v2 Documentation**: [Data Validation for Python](https://docs.pydantic.dev/latest/)

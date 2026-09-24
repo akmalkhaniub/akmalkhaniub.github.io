@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/websockets-production-sse-vs-ws.html">
   <meta property="og:title" content="WebSockets in Production: Where SSE Ends and WS Begins">
   <meta property="og:description" content="8 WebSocket production failure modes — Nginx upgrade header misconfiguration, idle proxy disconnections, auth token expiry mid-session, message backpressure drops, broadcast blocking, and memory leaks from missing disconnect cleanup.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/websockets-production-sse-vs-ws.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-02-15">
+  <meta property="article:published_time" content="2026-02-16">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="WebSockets in Production: Where SSE Ends and WS Begins">
   <meta name="twitter:description" content="8 WebSocket production failure modes — Nginx upgrade header misconfiguration, idle proxy disconnections, auth token expiry mid-session, message backpressure drops, broadcast blocking, and memory leaks from missing disconnect cleanup.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/websockets-production-sse-vs-ws.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "WebSockets in Production: Where SSE Ends and WS Begins",
   "description": "8 WebSocket production failure modes — Nginx upgrade header misconfiguration, idle proxy disconnections, auth token expiry mid-session, message backpressure drops, broadcast blocking, and memory leaks from missing disconnect cleanup.",
   "url": "https://akmalkhaniub.github.io/blog/websockets-production-sse-vs-ws.html",
-  "datePublished": "2026-02-15",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/websockets-production-sse-vs-ws.jpg",
+  "datePublished": "2026-02-16",
   "keywords": "WebSockets, Node.js, Python, Real-Time",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/websockets-production-sse-vs-ws.jpg" class="article-cover-img" alt="WebSockets in Production: Where SSE Ends and WS Begins Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">WebSockets in Production: Where SSE Ends and WS Begins</h1>
             <div class="article-meta">
@@ -117,6 +118,7 @@
                 <li><a href="#failure-7-no-room-cleanup-memory-leak-on-disconnect">Failure 7: No Room Cleanup — Memory Leak on Disconnect</a></li>
                 <li><a href="#failure-8-aws-alb-cloudflare-dont-support-websockets-on-all-plans">Failure 8: AWS ALB / Cloudflare Don't Support WebSockets on All Plans</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -129,17 +131,25 @@ Server-Sent Events handle 90% of LLM streaming use cases perfectly. But when you
 <h2 id="sse-vs-websockets-choose-the-right-tool">SSE vs WebSockets: Choose the Right Tool</h2>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    Q1{Does the client&lt;br/&gt;send messages&lt;br/&gt;after connection?} --&gt;|No| SSE[✅ Use SSE&lt;br/&gt;Simpler, HTTP/2 multiplexed&lt;br/&gt;Auto-reconnect built in]
+    Q1{Does the client&lt;br/&gt;send messages&lt;br/&gt;after connection?} --&gt;|No| SSE[&quot; Use SSE&lt;br/&gt;Simpler, HTTP/2 multiplexed&lt;br/&gt;Auto-reconnect built in&quot;]
     Q1 --&gt;|Yes| Q2{More than&lt;br/&gt;10 msg/sec&lt;br/&gt;in both directions?}
     Q2 --&gt;|No| Q3{Need binary&lt;br/&gt;frames?}
-    Q2 --&gt;|Yes| WS[✅ Use WebSockets&lt;br/&gt;Full-duplex, lower overhead&lt;br/&gt;at high message rates]
+    Q2 --&gt;|Yes| WS[&quot; Use WebSockets&lt;br/&gt;Full-duplex, lower overhead&lt;br/&gt;at high message rates&quot;]
     Q3 --&gt;|Yes| WS
     Q3 --&gt;|No| Q4{Collaborative&lt;br/&gt;multi-user&lt;br/&gt;real-time?}
     Q4 --&gt;|Yes| WS
     Q4 --&gt;|No| SSE
 
     style SSE fill:#052e16,stroke:#10b981,stroke-width:2px
-    style WS fill:#0c1a3a,stroke:#3b82f6,stroke-width:2px</div>
+    style WS fill:#0c1a3a,stroke:#3b82f6,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class SSE blue
+class WS green</div>
 <p><strong>Use SSE for</strong>: LLM token streaming, one-way notifications, progress updates, server push
 <strong>Use WebSockets for</strong>: Chat apps, collaborative editors, agent-to-user tool call feedback, live dashboards with bidirectional controls</p>
 <hr>
@@ -544,14 +554,14 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
 }</code></pre>
 <hr>
 <h2 id="conclusion-key-takeaways">Conclusion &amp; Key Takeaways</h2>
-<p>WebSockets unlock true bidirectional real-time communication but bring a distinct set of production failure modes compared to SSE. The most dangerous are silent: dropped messages from buffer overflow, phantom disconnections from idle proxies, and memory leaks from missing disconnect cleanup.</p>
+<p>WebSockets unlock true bidirectional real-time communication but bring a distinct set of production failure modes compared to SSE <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. The most dangerous are silent: dropped messages from buffer overflow, phantom disconnections from idle proxies, and memory leaks from missing disconnect cleanup.</p>
 <ul>
 <li><strong>Always implement heartbeats at 25-second intervals</strong> — most proxies and load balancers have 60-second idle timeouts. Heartbeats keep connections alive and detect dead clients.</li>
 <li><strong>Read close codes and act accordingly</strong> — <code>1000</code> means don&#39;t reconnect; <code>1006</code> means reconnect immediately; <code>4001</code> means re-authenticate. Ignoring close codes leads to unnecessary reconnect storms.</li>
 <li><strong>Clean up in <code>finally</code> blocks</strong> — every WebSocket <code>connect</code> must have a corresponding <code>disconnect</code> in a <code>finally</code> clause, or you will leak memory with every closed connection.</li>
 </ul>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>MDN WebSocket API</strong>: <a href="https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code" target="_blank" rel="noopener">WebSocket close codes reference</a></li>
 <li><strong>RFC 6455</strong>: <a href="https://datatracker.ietf.org/doc/html/rfc6455" target="_blank" rel="noopener">The WebSocket Protocol specification</a></li>
@@ -598,6 +608,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
               <li class="toc-item toc-h2"><a href="#failure-7-no-room-cleanup-memory-leak-on-disconnect" class="toc-link">Failure 7: No Room Cleanup — Memory Leak on Disconnect</a></li>
               <li class="toc-item toc-h2"><a href="#failure-8-aws-alb-cloudflare-dont-support-websockets-on-all-plans" class="toc-link">Failure 8: AWS ALB / Cloudflare Don't Support WebSockets on All Plans</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1436,13 +1447,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1511,13 +1516,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1559,13 +1558,7 @@ function useSSEFallback(url: string, onMessage: (data: unknown) =&gt; void) {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

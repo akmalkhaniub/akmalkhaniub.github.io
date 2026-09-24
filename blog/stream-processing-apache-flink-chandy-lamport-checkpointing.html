@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/stream-processing-apache-flink-chandy-lamport-checkpointing.html">
   <meta property="og:title" content="Stream Processing Engine Architecture: Apache Flink Stateful Stream Execution &amp; Chandy-Lamport Checkpointing">
   <meta property="og:description" content="Low-latency stateful stream processing: implementing DataStream DAG execution graphs, embedded RocksDB state backends, Chandy-Lamport Asynchronous Barrier Snapshotting (ABS), and exactly-once semantics.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/stream-processing-apache-flink-chandy-lamport-checkpointing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Stream Processing Engine Architecture: Apache Flink Stateful Stream Execution &amp; Chandy-Lamport Checkpointing">
   <meta name="twitter:description" content="Low-latency stateful stream processing: implementing DataStream DAG execution graphs, embedded RocksDB state backends, Chandy-Lamport Asynchronous Barrier Snapshotting (ABS), and exactly-once semantics.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/stream-processing-apache-flink-chandy-lamport-checkpointing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Stream Processing Engine Architecture: Apache Flink Stateful Stream Execution & Chandy-Lamport Checkpointing",
   "description": "Low-latency stateful stream processing: implementing DataStream DAG execution graphs, embedded RocksDB state backends, Chandy-Lamport Asynchronous Barrier Snapshotting (ABS), and exactly-once semantics.",
   "url": "https://akmalkhaniub.github.io/blog/stream-processing-apache-flink-chandy-lamport-checkpointing.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/stream-processing-apache-flink-chandy-lamport-checkpointing.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "Stream Processing, Apache Flink, Chandy-Lamport, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Stream Processing Engine Architecture: Apache Flink Stateful Stream Execution &amp; Chandy-Lamport Checkpointing Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/stream-processing-apache-flink-chandy-lamport-checkpointing.jpg" class="article-cover-img" alt="Stream Processing Engine Architecture: Apache Flink Stateful Stream Execution &amp; Chandy-Lamport Checkpointing Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Stream Processing Engine Architecture: Apache Flink Stateful Stream Execution &amp; Chandy-Lamport Checkpointing</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#stateful-stream-processing-chandy-lamport-snapshot-architecture">Stateful Stream Processing &amp; Chandy-Lamport Snapshot Architecture</a></li>
+                <li><a href="#core-stream-processing-mechanics">Core Stream Processing Mechanics</a></li>
                 <li><a href="#python-implementation-stateful-stream-operator-chandy-lamport-engine">Python Implementation: Stateful Stream Operator &amp; Chandy-Lamport Engine</a></li>
                 <li><a href="#stream-processing-gotchas-best-practices">Stream Processing Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In real-time data engineering (financial fraud detection, ad-tech clickstream analytics, IoT telemetry), processing unbounded data streams requires continuous sub-second latency.</p>
+<p>In real-time data engineering (financial fraud detection, ad-tech clickstream analytics, IoT telemetry), processing unbounded data streams requires continuous sub-second latency <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>Early stream processing engines relied on <strong>Micro-Batching</strong> (such as Apache Spark Streaming), which grouped events into small discrete time intervals.</p>
 <p>While micro-batching simplifies fault tolerance, it inherently introduces artificial latency ($100\text{ms}$ to $1\text{s}$) because events must wait for batch collection.</p>
 <p>To achieve sub-10 millisecond processing latencies, modern stream engines—led by <strong>Apache Flink</strong>—utilize continuous, pipelined <strong>Stateful Stream Processing</strong>.</p>
@@ -122,26 +125,37 @@
 <hr>
 <h2 id="stateful-stream-processing-chandy-lamport-snapshot-architecture">Stateful Stream Processing &amp; Chandy-Lamport Snapshot Architecture</h2>
 <p>How Flink injects Stream Barriers into continuous data streams to capture consistent global snapshots:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_UnboundedDataStream [&quot;Unbounded Data Stream Ingestion&quot;]
-    Source[Kafka Source Partition] --&gt;|Inject Checkpointing Stream Barrier B1| BarrierStream[Data Stream: e1, e2, B1, e3, e4]
+    Source[&quot;Kafka Source Partition&quot;] --&gt;|Inject Checkpointing Stream Barrier B1| BarrierStream[&quot;Data Stream: e1, e2, B1, e3, e4&quot;]
   end
   
   subgraph SG2_ParallelFlinkTask [&quot;Parallel Flink Task Managers (Stateful Operators)&quot;]
-    BarrierStream --&gt; Task1[Task Operator 1: KeyBy Fraud Aggregator]
-    BarrierStream --&gt; Task2[Task Operator 2: KeyBy Fraud Aggregator]
+    BarrierStream --&gt; Task1[&quot;Task Operator 1: KeyBy Fraud Aggregator&quot;]
+    BarrierStream --&gt; Task2[&quot;Task Operator 2: KeyBy Fraud Aggregator&quot;]
     
     Task1 &lt;--&gt;|Read/Write Local State &lt; 1ms| Rocks1[(Embedded RocksDB State)]
     Task2 &lt;--&gt;|Read/Write Local State &lt; 1ms| Rocks2[(Embedded RocksDB State)]
   end
   
   subgraph SG3_AsynchronousBarrierSnapshotting [&quot;Asynchronous Barrier Snapshotting (Chandy-Lamport)&quot;]
-    Task1 --&gt;|1. Barrier B1 Received: Align Inputs| Snapshot1[Asynchronously Copy RocksDB State to S3/HDFS]
-    Task2 --&gt;|1. Barrier B1 Received: Align Inputs| Snapshot2[Asynchronously Copy RocksDB State to S3/HDFS]
+    Task1 --&gt;|Barrier B1 Received - Align Inputs| Snapshot1[&quot;Asynchronously Copy RocksDB State to S3/HDFS&quot;]
+    Task2 --&gt;|Barrier B1 Received - Align Inputs| Snapshot2[&quot;Asynchronously Copy RocksDB State to S3/HDFS&quot;]
     
-    Snapshot1 &amp; Snapshot2 --&gt; JobManager[Flink JobManager: Checkpoint Metadata Store]
-    JobManager --&gt;|2. All Operators Ack B1| ConsistentState[🎉 CONSISTENT GLOBAL STATE SNAPSHOT COMPLETED!]
-  end</div>
+    Snapshot1 &amp; Snapshot2 --&gt; JobManager[&quot;Flink JobManager: Checkpoint Metadata Store&quot;]
+    JobManager --&gt;|All Operators Ack B1| ConsistentState[&quot; CONSISTENT GLOBAL STATE SNAPSHOT COMPLETED!&quot;]
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Source,Snapshot2 blue
+class BarrierStream,JobManager green
+class Task1,ConsistentState purple
+class Task2 yellow
+class Snapshot1 red</div>
 <h3 id="core-stream-processing-mechanics">Core Stream Processing Mechanics</h3>
 <ol>
 <li><strong>Pipelined Continuous Execution DAG</strong>: Unlike batch processors that materialize intermediate results to disk between stages, Flink operators (Source, FlatMap, KeyBy, Window, Sink) run continuously in parallel task slots, passing records directly across network sockets via netty ring buffers.</li>
@@ -271,8 +285,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Streaming platforms utilizing Flink and Chandy-Lamport ABS (such as <strong>Uber</strong>, <strong>Netflix</strong>, <strong>Alibaba</strong>, and <strong>Stripe</strong>) report:</p>
 <ul>
 <li><strong>Sub-10ms Processing Latency</strong>: Continuous pipelined operators process millions of events per second with instant state updates.</li>
-<li><strong>100% Reliable Exactly-Once Guarantees</strong>: Automatic recovery from node failures in seconds by restoring local RocksDB states from recent ABS S3 snapshots.</li>
+<li><strong>100% Reliable Exactly-Once Guarantees</strong>: Automatic recovery from node failures in seconds by restoring local RocksDB states from recent ABS S3 snapshots. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Chang, F., et al. (2006)</strong>. <em>Bigtable: A Distributed Storage System for Structured Data</em>. OSDI. <a href="https://research.google/pubs/pub27898/" target="_blank" rel="noopener">https://research.google/pubs/pub27898/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Carbone, P., et al. (2015)</strong>. <em>Apache Flink: Stream and Batch Processing in a Single Engine</em>. IEEE Data Engineering Bulletin. <a href="https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Zaharia, M., et al. (2012)</strong>. <em>Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing</em>. NSDI. <a href="https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf" target="_blank" rel="noopener">https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -305,9 +330,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#stateful-stream-processing-chandy-lamport-snapshot-architecture" class="toc-link">Stateful Stream Processing &amp; Chandy-Lamport Snapshot Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-stream-processing-mechanics" class="toc-link">Core Stream Processing Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-stateful-stream-operator-chandy-lamport-engine" class="toc-link">Python Implementation: Stateful Stream Operator &amp; Chandy-Lamport Engine</a></li>
               <li class="toc-item toc-h2"><a href="#stream-processing-gotchas-best-practices" class="toc-link">Stream Processing Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1146,13 +1173,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1221,13 +1242,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1269,13 +1284,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

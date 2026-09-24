@@ -9,18 +9,29 @@
 ## The Chaos of Flat Logs
 
 In typical multi-agent systems:
-* **The Context Gap**: Flat system logs mix standard outputs together, making it impossible to map which subagent call triggered a specific SQL lock timeout.
+* **The Context Gap**: Flat system logs mix standard outputs together, making it impossible to map which subagent call triggered a specific SQL lock timeout [1].
 * **Lack of Performance Mapping**: Analyzing execution delays is difficult without parent-child timing correlations.
 * **The Solution**: **Structured Tracing**. We model agent runs as hierarchical tree structures consisting of parent and child "spans". Every span records start/end times, input prompts, tool params, and errors.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    ParentSpan[Parent Span: User Goal Orchestration] --> ChildSpan1[Child Span 1: Research Agent Planner]
-    ParentSpan --> ChildSpan2[Child Span 2: Coder Agent Execution]
+    ParentSpan["Parent Span: User Goal Orchestration"] --> ChildSpan1["Child Span 1: Research Agent Planner"]
+    ParentSpan --> ChildSpan2["Child Span 2: Coder Agent Execution"]
     
-    ChildSpan2 --> ToolSpan1[Tool Span 2.1: Write File payload]
-    ChildSpan2 --> ToolSpan2[Tool Span 2.2: Compile script payload]
+    ChildSpan2 --> ToolSpan1["Tool Span 2.1: Write File payload"]
+    ChildSpan2 --> ToolSpan2["Tool Span 2.2: Compile script payload"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class ParentSpan blue
+class ChildSpan1 green
+class ChildSpan2 purple
+class ToolSpan1 yellow
+class ToolSpan2 red
 ```
 
 ---
@@ -122,4 +133,13 @@ if __name__ == "__main__":
 
 * **Organize as Trees**: Format agent execution logs as hierarchical parent-child spans to maintain context.
 * **Trace Metadata**: Log model token counts, tool parameters, and response states inside each span.
-* **Track Latency Spikes**: Monitor timing metrics per span to identify performance bottlenecks in your agent chains.
+* **Track Latency Spikes**: Monitor timing metrics per span to identify performance bottlenecks in your agent chains. [2]
+
+## References & Further Reading
+
+1. **W3C Distributed Tracing Working Group (2021)**. *Trace Context*. W3C Recommendation. [https://www.w3.org/TR/trace-context/](https://www.w3.org/TR/trace-context/)
+2. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+3. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

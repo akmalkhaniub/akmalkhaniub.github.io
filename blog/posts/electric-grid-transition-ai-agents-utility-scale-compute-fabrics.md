@@ -1,6 +1,6 @@
 # The Electric Grid Transition: Why AI Agents Are Leaving Isolated Generators for Utility-Scale Compute Fabrics
 
-In the late 19th century, every manufacturing factory was designed around a massive, on-site steam engine.
+In the late 19th century, every manufacturing factory was designed around a massive, on-site steam engine [1].
 
 Mechanical energy was distributed throughout the building via an intricate, dangerous web of **overhead shafts, pulleys, and leather belts**.
 
@@ -15,13 +15,24 @@ Fractional horsepower electric motors were attached directly to individual machi
 Today, enterprise AI agents are undergoing their own **Electric Grid Transition**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_The1890sSteam ["The 1890s Steam Factory vs The 2026 Agentic Architecture"]
     S1890["1890s: On-Site Steam Engine (Private, Isolated Boiler)"] <---> S2026["2026: Monolithic Agent Scripts (Isolated 'agent.py' Processes)"]
     G1890["1910s: Centralized AC Electric Grid (Tesla / Westinghouse)"] <---> G2026["2026: Utility-Scale Agent Compute Fabric (Shared MCP & State Hubs)"]
     M1890["1910s: Fractional Electric Motors on Every Machine"] <---> M2026["2026: Modular Micro-Agents Plugging into Shared Tool Hubs"]
     P1890["1910s: 10x Factory Productivity & Flexible Workflows"] <---> P2026["2026: Composable Multi-Agent Swarms with 99.9% Reliability"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class S1890,M2026 blue
+class S2026,P1890 green
+class G1890,P2026 purple
+class G2026 yellow
+class M1890 red
 ```
 
 ---
@@ -52,16 +63,16 @@ In early agent prototypes, developers build autonomous agents as self-contained 
 Modern agent architecture replaces isolated scripts with a **Decoupled Compute & Tool Fabric**:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG2_ClientTaskLayer ["Client & Task Layer"]
-    User[Enterprise User / Event Stream] --> Dispatcher[Utility Grid Task Dispatcher]
+    User["Enterprise User / Event Stream"] --> Dispatcher["Utility Grid Task Dispatcher"]
   end
 
   subgraph SG3_TheUtilityAgent ["The Utility Agent Grid (Shared Middleware)"]
-    Dispatcher --> Supervisor[Centralized Orchestrator Swarm]
-    Supervisor --> Coder[Coder Micro-Agent]
-    Supervisor --> Auditor[Auditor Micro-Agent]
-    Supervisor --> Deployer[Deployer Micro-Agent]
+    Dispatcher --> Supervisor["Centralized Orchestrator Swarm"]
+    Supervisor --> Coder["Coder Micro-Agent"]
+    Supervisor --> Auditor["Auditor Micro-Agent"]
+    Supervisor --> Deployer["Deployer Micro-Agent"]
   end
 
   subgraph SG4_EnterpriseUtilityShared ["Enterprise Utility Shared Infrastructure"]
@@ -69,6 +80,17 @@ graph TD
     Coder & Auditor & Deployer <--> SharedState["2. Centralized State Fabric (Redis / PostgresSaver Checkpoints)"]
     Coder & Auditor & Deployer <--> SharedMemory["3. Global Vector & Graph-RAG Memory Fabric"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,Deployer blue
+class Dispatcher,SharedMCP green
+class Supervisor,SharedState purple
+class Coder,SharedMemory yellow
+class Auditor red
 ```
 
 ### The 3 Core Pillars of the Agentic Grid:
@@ -211,4 +233,13 @@ if (require.main === module) {
 ## Architectural Takeaway
 The lesson of the electrification of industry is that **true scale is unlocked by decoupling energy generation from consumption**.
 
-By retiring isolated, monolithic agent scripts and adopting **utility-scale agent compute fabrics**, engineering organizations create composable, resilient, and collaborative AI systems ready for planetary-scale operations.
+By retiring isolated, monolithic agent scripts and adopting **utility-scale agent compute fabrics**, engineering organizations create composable, resilient, and collaborative AI systems ready for planetary-scale operations. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+5. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

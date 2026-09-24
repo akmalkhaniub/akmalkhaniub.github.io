@@ -9,24 +9,35 @@
 ## The Danger of Region-Bound State Silos
 
 In single-region agent deployments:
-* **The Cloud Outage Loss**: A regional outage drops active agent execution threads, discarding active task DAG state and forcing users to restart complex workflows.
+* **The Cloud Outage Loss**: A regional outage drops active agent execution threads, discarding active task DAG state and forcing users to restart complex workflows [1].
 * **Synchronous Latency Penalties**: Replicating agent state synchronously across continents before confirming step completion introduces 300+ millisecond cross-ocean network delays.
 * **The Solution**: **Active-Active Asynchronous Replication**. Regions process agent tasks locally for low-latency responsiveness while streaming state update deltas asynchronously to standby clusters.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    User[User Task Dispatch] -->|Route to primary| RegionA[Primary Cluster: us-east-1]
+    User["User Task Dispatch"] -->|Route to primary| RegionA["Primary Cluster: us-east-1"]
     
     subgraph SG1_ActiveActiveReplication ["Active-Active Replication"]
         RegionA -->|Execute Step & Emit Delta| LocalDB_A[(State DB: us-east-1)]
-        RegionA -->|Async Stream Delta| SyncQueue[Cross-Region Sync Gateway]
-        SyncQueue -->|Replicate State Delta| RegionB[Failover Cluster: eu-west-1]
+        RegionA -->|Async Stream Delta| SyncQueue["Cross-Region Sync Gateway"]
+        SyncQueue -->|Replicate State Delta| RegionB["Failover Cluster: eu-west-1"]
         RegionB -->|Apply CRDT Merge| LocalDB_B[(State DB: eu-west-1)]
     end
     
-    RegionA -.->|Region Outage Detected| Failover[Failover Router: Redirect Traffic to Region B]
+    RegionA -.->|Region Outage Detected| Failover["Failover Router: Redirect Traffic to Region B"]
     Failover --> RegionB
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User blue
+class RegionA green
+class SyncQueue purple
+class RegionB yellow
+class Failover red
 ```
 
 ---
@@ -121,4 +132,13 @@ if __name__ == "__main__":
 
 * **Decouple Task Execution from Sync**: Buffer state deltas locally so agents execute without waiting for cross-ocean network ACKs.
 * **Adopt Last-Write-Wins (LWW) Semantics**: Tag state updates with high-precision timestamps to resolve cross-region merge conflicts deterministically.
-* **Replicate Execution Graphs Continuously**: Stream intermediate task step outputs to standby clusters to enable instant failovers during outages.
+* **Replicate Execution Graphs Continuously**: Stream intermediate task step outputs to standby clusters to enable instant failovers during outages. [2]
+
+## References & Further Reading
+
+1. **Shapiro, M., Preguiça, N., Baquero, C., & Zawirski, M. (2011)**. *Conflict-free Replicated Data Types*. SSS. [https://hal.inria.fr/inria-00609399v1/document](https://hal.inria.fr/inria-00609399v1/document)
+2. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+3. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

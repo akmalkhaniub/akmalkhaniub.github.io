@@ -7,7 +7,7 @@
 
 ---
 
-In our foundational article, [Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)](post.html?post=context-engineering-mcp), we explored how to sanitize inputs and restrict LLM arguments using static regex constraints and schema types. 
+In our foundational article, [Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)](post [1].html?post=context-engineering-mcp), we explored how to sanitize inputs and restrict LLM arguments using static regex constraints and schema types. 
 
 However, when building advanced developer agents or database write co-pilots, input sanitization alone is insufficient. If a model must write and execute custom scripts to parse data, compile code, or audit spreadsheets, a single prompt injection can bypass sanitization rules, allowing adversarial instructions to run shell commands (like `rm -rf` or environment file extraction) directly on your host machine.
 
@@ -22,28 +22,28 @@ This article reviews these containment architectures, drawing from security patt
 To prevent prompt injection from reaching host resources, we establish a secure boundary where the agent gateway validates user authorization (JWT roles), filters tool availability, and executes commands inside a locked Docker sandbox.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
     classDef gate fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef sandbox fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef secure fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
 
-    User[User Request + JWT] -->|1. Dispatch| Gateway[FastAPI Gateway proxy]
-    Gateway -->|2. Check User Role| RoleFilter{Admin or Developer?}
+    User["User Request + JWT"] -->|Dispatch| Gateway["FastAPI Gateway proxy"]
+    Gateway -->|Check User Role| RoleFilter{Admin or Developer?}
     
-    RoleFilter -->|No: Mask Write Tools| AgentPrompt[Expose Read-Only Tools to LLM]
-    RoleFilter -->|Yes: Expose All Tools| AgentPrompt
+    RoleFilter -->|No - Mask Write Tools| AgentPrompt["Expose Read-Only Tools to LLM"]
+    RoleFilter -->|Yes - Expose All Tools| AgentPrompt
     
-    AgentPrompt -->|3. Call Code Exec Tool| CodeCheck{Contains System Injection?}
-    CodeCheck -->|Always| DockerLaunch[Spawn Ephemeral Docker Container]
+    AgentPrompt -->|Call Code Exec Tool| CodeCheck{Contains System Injection?}
+    CodeCheck -->|Always| DockerLaunch["Spawn Ephemeral Docker Container"]
     
     subgraph SG1_ContainersandboxIsolatedEnvironment ["ContainerSandbox [Isolated Environment]"]
-        DockerLaunch -->|Mount Temp Volume| RunScript[Execute Code / RAM & CPU Limited]
-        RunScript -->|Harvest Output| OutputCheck[Parse and Truncate Result]
+        DockerLaunch -->|Mount Temp Volume| RunScript["Execute Code / RAM & CPU Limited"]
+        RunScript -->|Harvest Output| OutputCheck["Parse and Truncate Result"]
     end
     
-    OutputCheck -->|4. Destroy Container| Gateway
-    Gateway -->|5. Return Safe Output| User
+    OutputCheck -->|Destroy Container| Gateway
+    Gateway -->|Return Safe Output| User
 
     class User start;
     class Gateway,RoleFilter,CodeCheck gate;

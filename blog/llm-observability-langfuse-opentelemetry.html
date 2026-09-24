@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/llm-observability-langfuse-opentelemetry.html">
   <meta property="og:title" content="LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility">
   <meta property="og:description" content="How to instrument every LLM API call, agent reasoning step, and tool invocation with semantic traces using Langfuse and OpenTelemetry — and ship them into Grafana or Datadog dashboards.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/llm-observability-langfuse-opentelemetry.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-31">
+  <meta property="article:published_time" content="2026-04-01">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility">
   <meta name="twitter:description" content="How to instrument every LLM API call, agent reasoning step, and tool invocation with semantic traces using Langfuse and OpenTelemetry — and ship them into Grafana or Datadog dashboards.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/llm-observability-langfuse-opentelemetry.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "LLM Observability with Langfuse & OpenTelemetry: Building AI System Visibility",
   "description": "How to instrument every LLM API call, agent reasoning step, and tool invocation with semantic traces using Langfuse and OpenTelemetry — and ship them into Grafana or Datadog dashboards.",
   "url": "https://akmalkhaniub.github.io/blog/llm-observability-langfuse-opentelemetry.html",
-  "datePublished": "2026-03-31",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/llm-observability-langfuse-opentelemetry.jpg",
+  "datePublished": "2026-04-01",
   "keywords": "Langfuse, OpenTelemetry, Observability, DevOps",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/llm-observability-langfuse-opentelemetry.jpg" class="article-cover-img" alt="LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">LLM Observability with Langfuse &amp; OpenTelemetry: Building AI System Visibility</h1>
             <div class="article-meta">
@@ -115,6 +116,7 @@
                 <li><a href="#typescript-sdk-tracing-in-nextjs-hono-apis">TypeScript SDK: Tracing in Next.js / Hono APIs</a></li>
                 <li><a href="#key-metrics-dashboard-what-to-monitor">Key Metrics Dashboard: What to Monitor</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -125,7 +127,7 @@ Deploying an LLM application without observability is like operating a productio
 </div>
 <hr>
 <h2 id="why-standard-apm-tools-fall-short-for-ai-systems">Why Standard APM Tools Fall Short for AI Systems</h2>
-<p>Classic Application Performance Monitoring (APM) tools like Datadog, New Relic, or AWS CloudWatch capture request latency, error rates, and CPU utilisation. These metrics are necessary but fundamentally insufficient for AI applications. The failure modes in LLM systems are semantic, not structural:</p>
+<p>Classic Application Performance Monitoring (APM) tools like Datadog, New Relic, or AWS CloudWatch capture request latency, error rates, and CPU utilisation <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. These metrics are necessary but fundamentally insufficient for AI applications. The failure modes in LLM systems are semantic, not structural:</p>
 <ul>
 <li><strong>A 200 OK response</strong> can contain a hallucinated fact, a wrong code block, or a harmful output.</li>
 <li><strong>A 500ms latency</strong> might be acceptable for a tool call but unacceptable for a streaming response.</li>
@@ -137,30 +139,30 @@ Deploying an LLM application without observability is like operating a productio
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#06b6d4', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#22d3ee', 'lineColor': '#06b6d4', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 graph TB
     subgraph SG1_Layer3Evaluation [&quot;Layer 3 — Evaluation&quot;]
-        E1[Faithfulness Score]
-        E2[Answer Relevance]
-        E3[Hallucination Detector]
+        E1[&quot;Faithfulness Score&quot;]
+        E2[&quot;Answer Relevance&quot;]
+        E3[&quot;Hallucination Detector&quot;]
     end
 
     subgraph SG2_Layer2Llm [&quot;Layer 2 — LLM Traces&quot;]
-        T1[Span: System Prompt]
-        T2[Span: RAG Retrieval]
-        T3[Span: LLM Generation]
-        T4[Span: Tool Call]
-        T5[Span: Final Output]
+        T1[&quot;Span: System Prompt&quot;]
+        T2[&quot;Span: RAG Retrieval&quot;]
+        T3[&quot;Span: LLM Generation&quot;]
+        T4[&quot;Span: Tool Call&quot;]
+        T5[&quot;Span: Final Output&quot;]
     end
 
     subgraph SG3_Layer1Infrastructure [&quot;Layer 1 — Infrastructure&quot;]
-        I1[Request Latency P50/P99]
-        I2[Token Usage per Model]
-        I3[API Error Rates]
-        I4[Cost per Request]
+        I1[&quot;Request Latency P50/P99&quot;]
+        I2[&quot;Token Usage per Model&quot;]
+        I3[&quot;API Error Rates&quot;]
+        I4[&quot;Cost per Request&quot;]
     end
 
     subgraph Platforms
-        P1[Langfuse&lt;br/&gt;Semantic Tracing]
-        P2[OpenTelemetry&lt;br/&gt;OTEL Collector]
-        P3[Grafana / Datadog&lt;br/&gt;Dashboards]
+        P1[&quot;Langfuse&lt;br/&gt;Semantic Tracing&quot;]
+        P2[&quot;OpenTelemetry&lt;br/&gt;OTEL Collector&quot;]
+        P3[&quot;Grafana / Datadog&lt;br/&gt;Dashboards&quot;]
     end
 
     Layer 3 --&gt; P1
@@ -514,7 +516,7 @@ mindmap
 </ul>
 <p>In our next article, we tackle <strong>Guardrails &amp; Input/Output Validation</strong> — using Guardrails AI and NVIDIA NeMo to build structured safety layers that intercept harmful inputs and enforce schema-compliant agent outputs before they reach your users.</p>
 <hr>
-<h3 id="research-references-resources">Research References &amp; Resources</h3>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
 <ul>
 <li><strong>Langfuse Documentation</strong>: <a href="https://langfuse.com/docs" target="_blank" rel="noopener">Open-Source LLM Engineering Platform</a></li>
 <li><strong>OpenTelemetry for AI</strong>: <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener">Semantic Conventions for LLM Spans</a></li>
@@ -559,6 +561,7 @@ mindmap
               <li class="toc-item toc-h2"><a href="#typescript-sdk-tracing-in-nextjs-hono-apis" class="toc-link">TypeScript SDK: Tracing in Next.js / Hono APIs</a></li>
               <li class="toc-item toc-h2"><a href="#key-metrics-dashboard-what-to-monitor" class="toc-link">Key Metrics Dashboard: What to Monitor</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1397,13 +1400,7 @@ mindmap
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1472,13 +1469,7 @@ mindmap
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1520,13 +1511,7 @@ mindmap
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

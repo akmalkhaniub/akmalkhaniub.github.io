@@ -8,7 +8,7 @@
 
 ## Moving Beyond Chaos Monkey for Servers
 
-Traditional chaos engineering (like Netflix's Chaos Monkey) validates infrastructure resilience by killing server instances or injecting network latency.
+Traditional chaos engineering (like Netflix's Chaos Monkey) validates infrastructure resilience by killing server instances or injecting network latency [1].
 
 When engineering agentic workflows, we face **cognitive and semantic vulnerabilities**:
 * **API Rate Limits (HTTP 429)**: How does the agent react when an external inference API or vector database rate-limits its query?
@@ -20,17 +20,28 @@ To verify stability, we inject failures directly inside the **Agent-to-Tool boun
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Agent Requests Tool Call] --> Interceptor{Chaos Interceptor Middleware}
+    Agent["Agent Requests Tool Call"] --> Interceptor{Chaos Interceptor Middleware}
     
-    Interceptor -->|Rule: Apply Rate Limit| Mock429[Return HTTP 429 / Rate Limit]
-    Interceptor -->|Rule: Corrupt JSON| MockCorrupt[Return Malformed JSON String]
-    Interceptor -->|Rule: Timeout Delay| Delay[Inject 5s Network Latency]
-    Interceptor -->|Rule: Clean Bypass| API[Pass through to Real API]
+    Interceptor -->|Rule - Apply Rate Limit| Mock429["Return HTTP 429 / Rate Limit"]
+    Interceptor -->|Rule - Corrupt JSON| MockCorrupt["Return Malformed JSON String"]
+    Interceptor -->|Rule - Timeout Delay| Delay["Inject 5s Network Latency"]
+    Interceptor -->|Rule - Clean Bypass| API["Pass through to Real API"]
     
-    Mock429 --> Eval[Evaluate Agent Recovery Logic]
+    Mock429 --> Eval["Evaluate Agent Recovery Logic"]
     MockCorrupt --> Eval
     Delay --> Eval
     API --> Eval
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent,Eval blue
+class Mock429 green
+class MockCorrupt purple
+class Delay yellow
+class API red
 ```
 
 ---
@@ -134,4 +145,10 @@ if __name__ == "__main__":
 
 * **Audit Agent Logs**: Regularly inspect agent trajectories during chaos tests. If an agent loops on a failure, refine the prompt guidelines or configure max loop bounds.
 * **Enforce Exponential Backoffs**: Guarantee all agent connectors use exponential backoff mechanisms when hitting API rate limits.
-* **Isolate Tests in Staging**: Always run chaos drills inside sandbox configurations or staging databases to prevent real production data corruption.
+* **Isolate Tests in Staging**: Always run chaos drills inside sandbox configurations or staging databases to prevent real production data corruption. [2]
+
+## References & Further Reading
+
+1. **Garcia-Molina, H., & Salem, K. (1987)**. *Sagas*. SIGMOD. [https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf](https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf)
+2. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)
+3. **Turner, J. S. (1986)**. *New Directions in Communications (or Which Way to the Information Age?)*. IEEE Communications Magazine. [https://doi.org/10.1109/MCOM.1986.1092946](https://doi.org/10.1109/MCOM.1986.1092946)

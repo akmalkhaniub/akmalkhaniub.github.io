@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/context-engineering-ephemeral-sandboxing.html">
   <meta property="og:title" content="Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking">
   <meta property="og:description" content="How to execute untrusted LLM tool calls safely inside transient Docker sandboxes while enforcing role-based tool lists via FastAPI middleware.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/context-engineering-ephemeral-sandboxing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-03-17">
+  <meta property="article:published_time" content="2026-03-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking">
   <meta name="twitter:description" content="How to execute untrusted LLM tool calls safely inside transient Docker sandboxes while enforcing role-based tool lists via FastAPI middleware.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/context-engineering-ephemeral-sandboxing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Advanced Context Engineering: Ephemeral Sandbox Containment & Dynamic Tool Masking",
   "description": "How to execute untrusted LLM tool calls safely inside transient Docker sandboxes while enforcing role-based tool lists via FastAPI middleware.",
   "url": "https://akmalkhaniub.github.io/blog/context-engineering-ephemeral-sandboxing.html",
-  "datePublished": "2026-03-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/context-engineering-ephemeral-sandboxing.jpg",
+  "datePublished": "2026-03-18",
   "keywords": "AI Agents, Security, FastAPI, Docker",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/context-engineering-ephemeral-sandboxing.jpg" class="article-cover-img" alt="Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Advanced Context Engineering: Ephemeral Sandbox Containment &amp; Dynamic Tool Masking</h1>
             <div class="article-meta">
@@ -107,8 +108,11 @@
             <details class="mobile-toc">
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
+                <li><a href="#article-overview">📖 Article Overview</a></li>
                 <li><a href="#the-sandboxed-gating-lifecycle">The Sandboxed Gating Lifecycle</a></li>
                 <li><a href="#synthesis-whats-good-whats-not">Synthesis: What's Good &amp; What's Not</a></li>
+                <li><a href="#1-ephemeral-sandboxing-docker-containment">1. Ephemeral Sandboxing (Docker Containment)</a></li>
+                <li><a href="#2-dynamic-tool-masking">2. Dynamic Tool Masking</a></li>
                 <li><a href="#implementing-a-secure-sandboxing-tool-in-python">Implementing a Secure Sandboxing tool in Python</a></li>
                 <li><a href="#security-containment-checklist">Security Containment Checklist</a></li>
                 <li><a href="#conclusion-key-takeaways">Conclusion &amp; Key Takeaways</a></li>
@@ -124,35 +128,35 @@
 </ul>
 </blockquote>
 <hr>
-<p>In our foundational article, <a href="post.html?post=context-engineering-mcp">Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)</a>, we explored how to sanitize inputs and restrict LLM arguments using static regex constraints and schema types. </p>
+<p>In our foundational article, [Context Engineering: Building Secure LLM Tool Gates with Model Context Protocol (MCP)](post <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.html?post=context-engineering-mcp), we explored how to sanitize inputs and restrict LLM arguments using static regex constraints and schema types. </p>
 <p>However, when building advanced developer agents or database write co-pilots, input sanitization alone is insufficient. If a model must write and execute custom scripts to parse data, compile code, or audit spreadsheets, a single prompt injection can bypass sanitization rules, allowing adversarial instructions to run shell commands (like <code>rm -rf</code> or environment file extraction) directly on your host machine.</p>
 <p>To protect host environments, we must implement <strong>advanced containment strategies</strong>: running all untrusted code executions inside transient, resource-constrained <strong>ephemeral sandboxes</strong>, and using <strong>dynamic tool masking</strong> to hide sensitive tools from the model based on the user&#39;s active session permissions.</p>
 <p>This article reviews these containment architectures, drawing from security patterns implemented in the secure document processor <a href="https://github.com/akmalkhaniub/healthcare-audit-vault" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> healthcare-audit-vault</a> and tool manager <a href="https://github.com/akmalkhaniub/ops-mcp-suite" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> ops-mcp-suite</a>.</p>
 <hr>
 <h2 id="the-sandboxed-gating-lifecycle">The Sandboxed Gating Lifecycle</h2>
 <p>To prevent prompt injection from reaching host resources, we establish a secure boundary where the agent gateway validates user authorization (JWT roles), filters tool availability, and executes commands inside a locked Docker sandbox.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
     classDef gate fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef sandbox fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef secure fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
 
-    User[User Request + JWT] --&gt;|1. Dispatch| Gateway[FastAPI Gateway proxy]
-    Gateway --&gt;|2. Check User Role| RoleFilter{Admin or Developer?}
+    User[&quot;User Request + JWT&quot;] --&gt;|Dispatch| Gateway[&quot;FastAPI Gateway proxy&quot;]
+    Gateway --&gt;|Check User Role| RoleFilter{Admin or Developer?}
     
-    RoleFilter --&gt;|No: Mask Write Tools| AgentPrompt[Expose Read-Only Tools to LLM]
-    RoleFilter --&gt;|Yes: Expose All Tools| AgentPrompt
+    RoleFilter --&gt;|No - Mask Write Tools| AgentPrompt[&quot;Expose Read-Only Tools to LLM&quot;]
+    RoleFilter --&gt;|Yes - Expose All Tools| AgentPrompt
     
-    AgentPrompt --&gt;|3. Call Code Exec Tool| CodeCheck{Contains System Injection?}
-    CodeCheck --&gt;|Always| DockerLaunch[Spawn Ephemeral Docker Container]
+    AgentPrompt --&gt;|Call Code Exec Tool| CodeCheck{Contains System Injection?}
+    CodeCheck --&gt;|Always| DockerLaunch[&quot;Spawn Ephemeral Docker Container&quot;]
     
     subgraph SG1_ContainersandboxIsolatedEnvironment [&quot;ContainerSandbox [Isolated Environment]&quot;]
-        DockerLaunch --&gt;|Mount Temp Volume| RunScript[Execute Code / RAM &amp; CPU Limited]
-        RunScript --&gt;|Harvest Output| OutputCheck[Parse and Truncate Result]
+        DockerLaunch --&gt;|Mount Temp Volume| RunScript[&quot;Execute Code / RAM &amp; CPU Limited&quot;]
+        RunScript --&gt;|Harvest Output| OutputCheck[&quot;Parse and Truncate Result&quot;]
     end
     
-    OutputCheck --&gt;|4. Destroy Container| Gateway
-    Gateway --&gt;|5. Return Safe Output| User
+    OutputCheck --&gt;|Destroy Container| Gateway
+    Gateway --&gt;|Return Safe Output| User
 
     class User start;
     class Gateway,RoleFilter,CodeCheck gate;
@@ -313,8 +317,11 @@ def execute_python_in_sandbox(script_content: str) -&gt; str:
           <h4><i class="fa-solid fa-bars-staggered"></i> Table of Contents</h4>
           <nav class="article-toc">
             <ul class="toc-list">
+              <li class="toc-item toc-h3"><a href="#article-overview" class="toc-link">📖 Article Overview</a></li>
               <li class="toc-item toc-h2"><a href="#the-sandboxed-gating-lifecycle" class="toc-link">The Sandboxed Gating Lifecycle</a></li>
               <li class="toc-item toc-h2"><a href="#synthesis-whats-good-whats-not" class="toc-link">Synthesis: What's Good &amp; What's Not</a></li>
+              <li class="toc-item toc-h3"><a href="#1-ephemeral-sandboxing-docker-containment" class="toc-link">1. Ephemeral Sandboxing (Docker Containment)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-dynamic-tool-masking" class="toc-link">2. Dynamic Tool Masking</a></li>
               <li class="toc-item toc-h2"><a href="#implementing-a-secure-sandboxing-tool-in-python" class="toc-link">Implementing a Secure Sandboxing tool in Python</a></li>
               <li class="toc-item toc-h2"><a href="#security-containment-checklist" class="toc-link">Security Containment Checklist</a></li>
               <li class="toc-item toc-h2"><a href="#conclusion-key-takeaways" class="toc-link">Conclusion &amp; Key Takeaways</a></li>
@@ -1157,13 +1164,7 @@ def execute_python_in_sandbox(script_content: str) -&gt; str:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1232,13 +1233,7 @@ def execute_python_in_sandbox(script_content: str) -&gt; str:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1280,13 +1275,7 @@ def execute_python_in_sandbox(script_content: str) -&gt; str:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

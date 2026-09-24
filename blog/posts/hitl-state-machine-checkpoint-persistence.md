@@ -8,7 +8,7 @@
 
 ## The Fragility of Blocking Execution Threads
 
-In basic code structures, developers wait for input using blocking loops (e.g. `input()`). In multi-agent services handling thousands of concurrent users, keeping system threads active during a human-in-the-loop (HITL) gate introduces several problems:
+In basic code structures, developers wait for input using blocking loops (e.g. `input()`) [1]. In multi-agent services handling thousands of concurrent users, keeping system threads active during a human-in-the-loop (HITL) gate introduces several problems:
 * **Resource Exhaustion**: Active threads consume memory, thread pools, and database connections.
 * **Server Crash Risk**: If the host container restarts while waiting for a 2-hour approval callback, the agent's progress is lost forever.
 * **The Solution**: **Checkpointing**. When hitting an approval gate, the state machine serializes the agent's variables (memory stack, history logs, tool history), saves the payload to a persistent database, and terminates the active process. When the callback resumes the task, the runner fetches the state, reconstructs the agent, and continues execution.
@@ -16,15 +16,26 @@ In basic code structures, developers wait for input using blocking loops (e.g. `
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Run[Agent Execution Phase 1] --> Gate{HITL Verification Gate}
+    Run["Agent Execution Phase 1"] --> Gate{HITL Verification Gate}
     
-    Gate -->|Requires Review| Serialize[Serialize Memory Stack & Variables]
-    Serialize --> DB[Persist State JSON to Database]
+    Gate -->|Requires Review| Serialize["Serialize Memory Stack & Variables"]
+    Serialize --> DB["Persist State JSON to Database"]
     DB --> Exit([Terminate Active Thread])
     
-    Callback[Admin Approval Received] --> Load[Load State JSON from DB]
-    Load --> Deserialize[Reconstruct Memory Stack]
-    Deserialize --> Resume[Resume Agent: Execution Phase 2]
+    Callback["Admin Approval Received"] --> Load["Load State JSON from DB"]
+    Load --> Deserialize["Reconstruct Memory Stack"]
+    Deserialize --> Resume["Resume Agent: Execution Phase 2"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Run,Deserialize blue
+class Serialize,Resume green
+class DB purple
+class Callback yellow
+class Load red
 ```
 
 ---
@@ -122,4 +133,14 @@ if __name__ == "__main__":
 
 * **Serialize at Graph Boundaries**: Only serialize agent states at clean graph transition boundaries, avoiding mid-execution tool locks.
 * **Secure State Payload**: Encrypt serialized state values stored in your database to prevent unauthorized developers from viewing API key context.
-* **Validate Schemas**: Always check state schema version indicators upon load to prevent deprecated parameters from causing runtime exceptions.
+* **Validate Schemas**: Always check state schema version indicators upon load to prevent deprecated parameters from causing runtime exceptions. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+6. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+7. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

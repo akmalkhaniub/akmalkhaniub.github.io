@@ -5,7 +5,7 @@
 > * **Why it matters:** Prevents context contamination, improves agent coordination, and enables production-grade applications.
 > * **What we synthesized:** A three-tiered memory model, strict context isolation principles, and an architectural checklist for reliable agentic systems.
 
-In single-prompt LLM applications, memory is simple: you append messages to a linear array and feed it back into the context window.
+In single-prompt LLM applications, memory is simple: you append messages to a linear array and feed it back into the context window [1].
 
 In multi-agent systems, this naive memory model fails. If 5 specialized agents are writing code, auditing databases, and running tests, compiling *every* step's trace into a single shared context window results in **context contamination**, prompt confusion, and bloated token costs.
 
@@ -18,9 +18,9 @@ To build production-grade agentic applications, you must design a **Multi-Tiered
 A reliable multi-agent system divides memory into three distinct tiers, separating short-term task states from long-term database memory:
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_Context1Ephemeral ["Context [1. Ephemeral Task State]"]
-        Thread[Current Node Thread History]
+        Thread["Current Node Thread History"]
     end
     subgraph SG2_Sharedstate2Shared ["SharedState [2. Shared Session Database]"]
         PG[(PostgreSQL JSONB / Redis)]
@@ -31,6 +31,13 @@ graph TD
     
     Thread <--> SharedState
     SharedState <--> LongTerm
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Thread blue
 ```
 
 ### 1. Ephemeral Task State (Local Context)

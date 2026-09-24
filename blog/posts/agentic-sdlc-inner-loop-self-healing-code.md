@@ -8,20 +8,30 @@
 
 ## Moving Beyond Autocomplete
 
-The traditional "inner loop" of software development consists of writing code, running a local compiler or test runner, diagnosing stack traces, and fixing issues. AI copilots speed up the writing phase but still leave the validation and correction phases in human hands. 
+The traditional "inner loop" of software development consists of writing code, running a local compiler or test runner, diagnosing stack traces, and fixing issues [1]. AI copilots speed up the writing phase but still leave the validation and correction phases in human hands. 
 
 Agentic engineering redefines this flow by combining LLM reasoning with code execution environments. Instead of a single generation pass, the agent functions inside an execution loop:
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Start([User Request]) --> Write[Agent Generates Code]
-    Write --> Run[Execute Code in Sandbox]
+    Start([User Request]) --> Write["Agent Generates Code"]
+    Write --> Run["Execute Code in Sandbox"]
     Run --> Check{Did Code Pass?}
     Check -->|Yes| End([Output Approved Code])
-    Check -->|No| Parse[Parse Traceback & Stdout]
-    Parse --> Feedback[Inject Errors into Agent Context]
+    Check -->|No| Parse["Parse Traceback & Stdout"]
+    Parse --> Feedback["Inject Errors into Agent Context"]
     Feedback --> Write
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Write blue
+class Run green
+class Parse purple
+class Feedback yellow
 ```
 
 By programmatically closing the loop between **intent** and **verification**, agents achieve high-fidelity code generations that compile and run correctly before the developer ever opens a pull request.
@@ -152,4 +162,10 @@ if __name__ == "__main__":
 
 * **Shift in Focus**: Developers shift from writing boilerplate code to defining rigorous **verification specifications** (tests, types, and constraints) that guide the self-healing loop.
 * **Deterministic Output**: Unlike simple chat generations, self-healed code guarantees that the output satisfies local compilation and test requirements before human review.
-* **Scalable Pipelines**: Integrating this local loop into developer environments (like IDE extensions or pre-commit hooks) dramatically reduces time spent fixing trivial syntax errors.
+* **Scalable Pipelines**: Integrating this local loop into developer environments (like IDE extensions or pre-commit hooks) dramatically reduces time spent fixing trivial syntax errors. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

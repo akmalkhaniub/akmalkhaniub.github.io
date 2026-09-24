@@ -1,6 +1,6 @@
 # The Architecture of Distributed Vector Databases at Scale: HNSW Graphs, Product Quantization (PQ) & DiskANN across 1 Billion Embeddings
 
-In the modern AI infrastructure stack (**Milvus**, **Qdrant**, **Pinecone**, **pgvector**, **Weaviate**), vector similarity search has transformed from an experimental research tool into the foundational layer powering Retrieval-Augmented Generation (RAG), multimodal search, and recommendation engines.
+In the modern AI infrastructure stack (**Milvus**, **Qdrant**, **Pinecone**, **pgvector**, **Weaviate**), vector similarity search has transformed from an experimental research tool into the foundational layer powering Retrieval-Augmented Generation (RAG), multimodal search, and recommendation engines [1].
 
 However, scaling vector search from $100,000$ embeddings to **1 Billion high-dimensional vectors** introduces a massive infrastructure bottleneck.
 
@@ -13,10 +13,10 @@ If stored as an in-memory **Hierarchical Navigable Small World (HNSW)** graph, a
 This article details how modern distributed vector databases achieve sub-$10\text{ms}$ recall across 1 billion vectors using **Product Quantization (PQ)**, **Asymmetric Distance Computation (ADC)**, **DiskANN SSD-optimized graph traversal**, and **disaggregated compute-storage architectures**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_BillionScaleVector ["Billion-Scale Vector Search Pipeline"]
-    Query[Query Vector: 1536-dim float32] --> Coordinator[Distributed Query Coordinator]
-    Coordinator --> Shards[Parallel Query Shard Nodes]
+    Query["Query Vector: 1536-dim float32"] --> Coordinator["Distributed Query Coordinator"]
+    Coordinator --> Shards["Parallel Query Shard Nodes"]
     
     subgraph SG2_QuantizationTraversalEngine ["Quantization & Traversal Engine"]
       Shards --> ADC["1. Asymmetric Distance Computation (Precomputed Lookup Tables)"]
@@ -24,8 +24,19 @@ graph TD
       Shards --> Rerank["3. Top-K Full Precision Re-Ranking (Float32 Vector Cache)"]
     end
     
-    Rerank --> Reduce[K-Way Merge & Top-K Results]
+    Rerank --> Reduce["K-Way Merge & Top-K Results"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,Rerank blue
+class Coordinator,Reduce green
+class Shards purple
+class ADC yellow
+class DiskANN red
 ```
 
 ---
@@ -69,18 +80,28 @@ $$\text{Dist}(\vec{q}, \vec{x}_{\text{compressed}}) \approx \sum_{m=1}^M \text{L
 To completely overcome the RAM ceiling, **DiskANN** (Microsoft Research, Subramanya et al.) stores the graph structure and compressed vectors on fast **NVMe SSDs** rather than in RAM.
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG3_InMemoryCache ["In-Memory Cache (~10% RAM)"]
-    Mem[Compressed PQ Vectors + Fast Entry Point Index]
+    Mem["Compressed PQ Vectors + Fast Entry Point Index"]
   end
   
   subgraph SG4_NvmeSsdDisk ["NVMe SSD Disk Layout (90% Cold)"]
-    SSD[Vamana Graph Nodes + Full Precision 1536-dim Vectors]
+    SSD["Vamana Graph Nodes + Full Precision 1536-dim Vectors"]
   end
   
-  Query[Query Vector] --> Mem
+  Query["Query Vector"] --> Mem
   Mem -->|Greedy Beam Search Routing| SSD
-  SSD -->|Zero-Copy io_uring Asynchronous Sector Reads| TopK[Top-K Nearest Neighbors]
+  SSD -->|Zero-Copy io_uring Asynchronous Sector Reads| TopK["Top-K Nearest Neighbors"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Mem blue
+class SSD green
+class Query purple
+class TopK yellow
 ```
 
 ### The Vamana Graph Advantage over HNSW:
@@ -96,24 +117,35 @@ graph LR
 At enterprise scale, vector databases decouple stateful storage from stateless compute nodes:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG5_ClientIngestionQuery ["Client Ingestion & Query Layer"]
-    Client[Client App] --> Proxy[Stateless Query / Ingest Proxy]
+    Client["Client App"] --> Proxy["Stateless Query / Ingest Proxy"]
   end
   
   subgraph SG6_StorageConsensusBrokers ["Storage & Consensus Brokers"]
-    Proxy -->|1. Append Insert WAL| LogBroker[Apache Kafka / Pulsar WAL Broker]
-    Proxy -->|2. Parallel Scatter Search| QueryNode1[Query Worker Node 1]
-    Proxy -->|2. Parallel Scatter Search| QueryNode2[Query Worker Node 2]
+    Proxy -->|Append Insert WAL| LogBroker["Apache Kafka / Pulsar WAL Broker"]
+    Proxy -->|Parallel Scatter Search| QueryNode1["Query Worker Node 1"]
+    Proxy -->|Parallel Scatter Search| QueryNode2["Query Worker Node 2"]
   end
   
   subgraph SG7_BackgroundProcessingObject ["Background Processing & Object Store"]
-    LogBroker --> DataNode[Data Node: Segment Flusher]
+    LogBroker --> DataNode["Data Node: Segment Flusher"]
     DataNode --> S3[(Cloud Object Storage: AWS S3 / MinIO)]
-    S3 --> IndexNode[Indexer Node: Builds DiskANN / HNSW SSTs]
+    S3 --> IndexNode["Indexer Node: Builds DiskANN / HNSW SSTs"]
     IndexNode --> S3
     S3 -.->|Mmap / Cache Segments| QueryNode1 & QueryNode2
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client,DataNode blue
+class Proxy,IndexNode green
+class LogBroker purple
+class QueryNode1 yellow
+class QueryNode2 red
 ```
 
 ### Architectural Responsibilities:
@@ -259,4 +291,13 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 Scaling vector databases to 1 billion embeddings is fundamentally a problem of **memory economics and I/O layout**.
 
-By combining **Product Quantization** to reduce vector dimensionality in memory with **DiskANN Vamana graphs** on high-throughput NVMe SSDs, modern AI engineering platforms achieve sub-10ms similarity search at a fraction of traditional cloud infrastructure costs.
+By combining **Product Quantization** to reduce vector dimensionality in memory with **DiskANN Vamana graphs** on high-throughput NVMe SSDs, modern AI engineering platforms achieve sub-10ms similarity search at a fraction of traditional cloud infrastructure costs. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Subramanya, S. J., et al. (2019)**. *DiskANN: Fast Accurate Billion-point Nearest Neighbor Search on a Single Node*. NeurIPS. [https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf](https://proceedings.neurips.cc/paper/2019/file/09853c7fb1d3f8ee67a61b6bf4a7f8e6-Paper.pdf)
+5. **pgvector Authors (2024)**. *pgvector: Open-source vector similarity search for Postgres*. GitHub. [https://github.com/pgvector/pgvector](https://github.com/pgvector/pgvector)
+6. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)

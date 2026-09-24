@@ -8,7 +8,7 @@
 
 ## The Micro Frontend Problem in Modern SSR
 
-Standard micro frontend approaches (like Webpack Module Federation or Single-SPA) operate almost entirely in the browser. In server-side rendered (SSR) environments, this creates severe engineering challenges:
+Standard micro frontend approaches (like Webpack Module Federation or Single-SPA) operate almost entirely in the browser [1]. In server-side rendered (SSR) environments, this creates severe engineering challenges:
 1. **Hydration Mismatches**: The server-rendered HTML must match the client-side JavaScript exactly. If a micro frontend dynamically injects a component on the client, React will throw a hydration mismatch error.
 2. **Cascading Client Latency**: Downloading separate Webpack runtime bundles for every micro frontend increases JavaScript bloat, destroying Core Web Vitals (INP and LCP).
 3. **Asset Collision**: Different micro frontends might build chunks with the same name, causing browser caches to swap modules incorrectly.
@@ -16,16 +16,27 @@ Standard micro frontend approaches (like Webpack Module Federation or Single-SPA
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Client[Client Browser] --> Edge{Edge Router / Next.js Middleware}
-    Edge -- / --> Landing[Landing Page App: Port 3000]
-    Edge -- /blog/* --> Blog[Blog App: Port 3001]
-    Edge -- /dashboard/* --> Dashboard[Dashboard App: Port 3002]
+    Client["Client Browser"] --> Edge{Edge Router / Next.js Middleware}
+    Edge -- / --> Landing["Landing Page App: Port 3000"]
+    Edge -- /blog/* --> Blog["Blog App: Port 3001"]
+    Edge -- /dashboard/* --> Dashboard["Dashboard App: Port 3002"]
     
     subgraph SG1_SharedAssetsData ["Shared Assets & Data"]
-        Landing -. Asset Prefix .-> S3[CDN/S3 Bucket]
+        Landing -. Asset Prefix .-> S3["CDN/S3 Bucket"]
         Blog -. Asset Prefix .-> S3
         Dashboard -. Asset Prefix .-> S3
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client blue
+class Landing green
+class Blog purple
+class Dashboard yellow
+class S3 red
 ```
 
 ---
@@ -145,4 +156,11 @@ Next.js transforms micro frontends from a client-side bundle nightmare into a fa
 * [ ] **Always declare an `assetPrefix`**: Prevent client-side JS/CSS chunk collisions by separating static paths for each sub-app.
 * [ ] **Orchestrate at the Edge**: Use Next.js Middleware to handle dynamic routing rewrites rather than static Nginx configs.
 * [ ] **Leverage RSC for federation**: Render UI pieces on their respective zone servers, and stream the lightweight VDOM down to the shell app.
-* [ ] **Shared styling variables**: Keep micro frontend styles consistent by using global CSS variables loaded at the root layout shell.
+* [ ] **Shared styling variables**: Keep micro frontend styles consistent by using global CSS variables loaded at the root layout shell. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

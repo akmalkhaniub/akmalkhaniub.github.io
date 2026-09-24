@@ -17,7 +17,7 @@
   <meta property="og:description" content="Why Server Actions are publicly addressable HTTP endpoints: threat modeling unauthenticated function IDs, closed-over scope leaks, CSRF protection mechanics, and building production Action Gateways with Zod.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/server-action-security-attack-surface-full-stack-rpc-threat-model.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-09-05">
+  <meta property="article:published_time" content="2026-09-06">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "The Server Action Attack Surface: Full-Stack RPC and the Disappearing Security Perimeter",
   "description": "Why Server Actions are publicly addressable HTTP endpoints: threat modeling unauthenticated function IDs, closed-over scope leaks, CSRF protection mechanics, and building production Action Gateways with Zod.",
   "url": "https://akmalkhaniub.github.io/blog/server-action-security-attack-surface-full-stack-rpc-threat-model.html",
-  "datePublished": "2026-09-05",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/server-action-security-attack-surface-full-stack-rpc-threat-model.jpg",
+  "datePublished": "2026-09-06",
   "keywords": "React 19, Next.js, Server Actions, Web Security, AppSec, Threat Modeling",
   "author": {
     "@type": "Person",
@@ -108,14 +109,19 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-why-this-feature-the-ergonomic-nightmare-of-rest-plumbing">1. Why This Feature? The Ergonomic Nightmare of REST Plumbing</a></li>
+                <li><a href="#the-progressive-enhancement-superpower">The Progressive Enhancement Superpower</a></li>
                 <li><a href="#2-the-threat-surface-four-critical-vulnerabilities-in-production">2. The Threat Surface: Four Critical Vulnerabilities in Production</a></li>
+                <li><a href="#1-the-missing-authorization-vulnerability-the-bola-hazard">1. The Missing Authorization Vulnerability (The BOLA Hazard)</a></li>
+                <li><a href="#2-scope-capturing-accidental-secret-leakage">2. Scope Capturing &amp; Accidental Secret Leakage</a></li>
+                <li><a href="#3-cross-site-request-forgery-csrf-in-server-actions">3. Cross-Site Request Forgery (CSRF) in Server Actions</a></li>
                 <li><a href="#3-the-defense-in-depth-pattern-action-gateways">3. The Defense-in-Depth Pattern: Action Gateways</a></li>
+                <li><a href="#usage-in-production">Usage in Production:</a></li>
                 <li><a href="#4-cross-framework-comparison-full-stack-mutation-models">4. Cross-Framework Comparison: Full-Stack Mutation Models</a></li>
                 <li><a href="#5-architectural-summary">5. Architectural Summary</a></li>
                 <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In full-stack software development, security has historically relied on an unambiguous physical perimeter: the network boundary between the client browser and the backend server.</p>
+<p>In full-stack software development, security has historically relied on an unambiguous physical perimeter: the network boundary between the client browser and the backend server <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>If you wanted a client to mutate data on the server, you followed a disciplined ritual:</p>
 <ol>
 <li>You declared a specific HTTP endpoint in your router (<code>POST /api/v1/billing/cancel-subscription</code>).</li>
@@ -135,7 +141,7 @@ async function updateProfile(formData: FormData) {
 <p>To security researchers and penetration testers, Server Actions represent something far more alarming: <strong>the dissolution of the security perimeter</strong>.</p>
 <p>By allowing developers to write server functions directly inline inside UI component files, full-stack frameworks have obscured the reality that <strong>every single Server Action is an unauthenticated, publicly addressable HTTP POST endpoint exposed to anyone with a terminal and cURL</strong>.</p>
 <p>Here is the threat model of Server Actions, and the architectural patterns required to secure them in production.</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SecurityPerimeter [&quot;The Disappearing Security Perimeter&quot;]
     subgraph TradArch [&quot;Traditional API Architecture: Explicit Perimeter&quot;]
       Client1[&quot;Browser Client&quot;] --&gt; Gateway[&quot;API Gateway / Router&quot;]
@@ -150,7 +156,18 @@ async function updateProfile(formData: FormData) {
       PublicAction -.-&gt;|Missing Auth Check?| DB[(&quot;Direct Database Mutation&quot;)]
       PublicAction -.-&gt;|Captures Closed Scope?| SecretLeak[&quot;Leaked Environment Pointers&quot;]
     end
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client1,Handler blue
+class Gateway,Client2 green
+class AuthMW,PublicAction purple
+class RBAC,SecretLeak yellow
+class Validator red</div>
 <p><em>Figure 1: Server Action RPC invocation lifecycle, cryptographic action ID hash verification, and closed-over scope boundaries. Source: OWASP Full-Stack Security Taskforce &amp; React Documentation <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a> <a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a> <a href="#ref-4" class="citation-link" data-ref="4" title="Reference [4]">[4]</a></sup>.</em></p>
 <hr>
 <h2 id="1-why-this-feature-the-ergonomic-nightmare-of-rest-plumbing">1. Why This Feature? The Ergonomic Nightmare of REST Plumbing</h2>
@@ -369,8 +386,13 @@ export const cancelSubscription = createProtectedAction(
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-why-this-feature-the-ergonomic-nightmare-of-rest-plumbing" class="toc-link">1. Why This Feature? The Ergonomic Nightmare of REST Plumbing</a></li>
+              <li class="toc-item toc-h3"><a href="#the-progressive-enhancement-superpower" class="toc-link">The Progressive Enhancement Superpower</a></li>
               <li class="toc-item toc-h2"><a href="#2-the-threat-surface-four-critical-vulnerabilities-in-production" class="toc-link">2. The Threat Surface: Four Critical Vulnerabilities in Production</a></li>
+              <li class="toc-item toc-h3"><a href="#1-the-missing-authorization-vulnerability-the-bola-hazard" class="toc-link">1. The Missing Authorization Vulnerability (The BOLA Hazard)</a></li>
+              <li class="toc-item toc-h3"><a href="#2-scope-capturing-accidental-secret-leakage" class="toc-link">2. Scope Capturing &amp; Accidental Secret Leakage</a></li>
+              <li class="toc-item toc-h3"><a href="#3-cross-site-request-forgery-csrf-in-server-actions" class="toc-link">3. Cross-Site Request Forgery (CSRF) in Server Actions</a></li>
               <li class="toc-item toc-h2"><a href="#3-the-defense-in-depth-pattern-action-gateways" class="toc-link">3. The Defense-in-Depth Pattern: Action Gateways</a></li>
+              <li class="toc-item toc-h3"><a href="#usage-in-production" class="toc-link">Usage in Production:</a></li>
               <li class="toc-item toc-h2"><a href="#4-cross-framework-comparison-full-stack-mutation-models" class="toc-link">4. Cross-Framework Comparison: Full-Stack Mutation Models</a></li>
               <li class="toc-item toc-h2"><a href="#5-architectural-summary" class="toc-link">5. Architectural Summary</a></li>
               <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
@@ -1212,13 +1234,7 @@ export const cancelSubscription = createProtectedAction(
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1287,13 +1303,7 @@ export const cancelSubscription = createProtectedAction(
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1335,13 +1345,7 @@ export const cancelSubscription = createProtectedAction(
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

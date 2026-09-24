@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/flashattention-hardware-aware-exact-attention-sram-tiling.html">
   <meta property="og:title" content="FlashAttention Engine: Hardware-Aware Exact Attention &amp; SRAM Tiling">
   <meta property="og:description" content="Accelerating Transformer self-attention: solving GPU HBM bandwidth bottlenecks with SRAM block tiling, online softmax normalization, and IO-aware exact attention.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/flashattention-hardware-aware-exact-attention-sram-tiling.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-17">
+  <meta property="article:published_time" content="2026-08-18">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="FlashAttention Engine: Hardware-Aware Exact Attention &amp; SRAM Tiling">
   <meta name="twitter:description" content="Accelerating Transformer self-attention: solving GPU HBM bandwidth bottlenecks with SRAM block tiling, online softmax normalization, and IO-aware exact attention.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/flashattention-hardware-aware-exact-attention-sram-tiling.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "FlashAttention Engine: Hardware-Aware Exact Attention & SRAM Tiling",
   "description": "Accelerating Transformer self-attention: solving GPU HBM bandwidth bottlenecks with SRAM block tiling, online softmax normalization, and IO-aware exact attention.",
   "url": "https://akmalkhaniub.github.io/blog/flashattention-hardware-aware-exact-attention-sram-tiling.html",
-  "datePublished": "2026-08-17",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/flashattention-hardware-aware-exact-attention-sram-tiling.jpg",
+  "datePublished": "2026-08-18",
   "keywords": "FlashAttention, CUDA, LLM Inference, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="FlashAttention Engine: Hardware-Aware Exact Attention &amp; SRAM Tiling Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/flashattention-hardware-aware-exact-attention-sram-tiling.jpg" class="article-cover-img" alt="FlashAttention Engine: Hardware-Aware Exact Attention &amp; SRAM Tiling Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">FlashAttention Engine: Hardware-Aware Exact Attention &amp; SRAM Tiling</h1>
             <div class="article-meta">
@@ -108,37 +109,50 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#flashattention-gpu-memory-hierarchy-tiling-architecture">FlashAttention GPU Memory Hierarchy &amp; Tiling Architecture</a></li>
+                <li><a href="#core-flashattention-mechanics">Core FlashAttention Mechanics</a></li>
                 <li><a href="#python-implementation-tiled-online-softmax-flashattention-engine">Python Implementation: Tiled Online Softmax FlashAttention Engine</a></li>
                 <li><a href="#flashattention-gotchas-best-practices">FlashAttention Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <p>In Transformer neural networks (such as GPT-4, Llama-3, and Claude), the core computational block is <strong>Self-Attention</strong>:</p>
 <p>$$\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$</p>
 <p>For long context windows (e.g., $32\text{K}$ to $128\text{K}$ tokens), computing standard attention encounters a severe performance wall.</p>
-<p>Standard attention materializes an intermediate $N \times N$ attention matrix in GPU <strong>High Bandwidth Memory (HBM)</strong>. For $N=64,000$ tokens, storing the intermediate $64\text{K} \times 64\text{K}$ matrix consumes <strong>$8\text{ GB}$ of VRAM per attention head</strong>, causing GPU memory OOMs and severe memory bandwidth bottlenecks.</p>
+<p>Standard attention materializes an intermediate $N \times N$ attention matrix in GPU <strong>High Bandwidth Memory (HBM)</strong> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. For $N=64,000$ tokens, storing the intermediate $64\text{K} \times 64\text{K}$ matrix consumes <strong>$8\text{ GB}$ of VRAM per attention head</strong>, causing GPU memory OOMs and severe memory bandwidth bottlenecks.</p>
 <p>To eliminate this memory wall, Stanford researcher Tri Dao created <strong>FlashAttention</strong> and <strong>FlashAttention-2</strong>.</p>
 <p>By reorganizing attention computations into <strong>SRAM Tiling Blocks</strong> and utilizing <strong>Online Softmax Normalization</strong>, FlashAttention computes <em>exact</em> attention without ever materializing the $N \times N$ matrix in HBM, speeding up training and inference by $2\times$ to $4\times$.</p>
 <p>This article details GPU memory hierarchy, SRAM tiling, and online softmax algorithms.</p>
 <hr>
 <h2 id="flashattention-gpu-memory-hierarchy-tiling-architecture">FlashAttention GPU Memory Hierarchy &amp; Tiling Architecture</h2>
 <p>How FlashAttention loads blocks into high-speed GPU SRAM to avoid HBM memory bandwidth bottlenecks:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_SlowGpuMemory [&quot;Slow GPU Memory: High Bandwidth Memory (HBM ~2 TB/sec)&quot;]
-    Q_HBM[Q Matrix: N x d]
-    K_HBM[K Matrix: N x d]
-    V_HBM[V Matrix: N x d]
+    Q_HBM[&quot;Q Matrix: N x d&quot;]
+    K_HBM[&quot;K Matrix: N x d&quot;]
+    V_HBM[&quot;V Matrix: N x d&quot;]
   end
   
   subgraph SG2_FastOnChip [&quot;Fast On-Chip GPU Cache: L1 SRAM (~19 TB/sec)&quot;]
-    Q_HBM --&gt;|1. Stream Tile Block Br x d| Q_SRAM[Q Tile Block in SRAM]
-    K_HBM --&gt;|2. Stream Tile Block Bc x d| K_SRAM[K Tile Block in SRAM]
-    V_HBM --&gt;|3. Stream Tile Block Bc x d| V_SRAM[V Tile Block in SRAM]
+    Q_HBM --&gt;|Stream Tile Block Br x d| Q_SRAM[&quot;Q Tile Block in SRAM&quot;]
+    K_HBM --&gt;|Stream Tile Block Bc x d| K_SRAM[&quot;K Tile Block in SRAM&quot;]
+    V_HBM --&gt;|Stream Tile Block Bc x d| V_SRAM[&quot;V Tile Block in SRAM&quot;]
     
-    Q_SRAM &amp; K_SRAM &amp; V_SRAM --&gt;|4. Compute Tile QK^T &amp; Online Softmax| OnlineSoftmax[Online Softmax Incremental Accumulator]
+    Q_SRAM &amp; K_SRAM &amp; V_SRAM --&gt;|Compute Tile QK^T &amp; Online Softmax| OnlineSoftmax[&quot;Online Softmax Incremental Accumulator&quot;]
   end
   
-  OnlineSoftmax --&gt;|5. Write Final Output Tile Block (N x d)| Out_HBM[Final Output O in HBM]</div>
+  OnlineSoftmax --&gt;|Write Final Output Tile Block (N x d)| Out_HBM[&quot;Final Output O in HBM&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Q_HBM,V_SRAM blue
+class K_HBM,OnlineSoftmax green
+class V_HBM,Out_HBM purple
+class Q_SRAM yellow
+class K_SRAM red</div>
 <h3 id="core-flashattention-mechanics">Core FlashAttention Mechanics</h3>
 <ol>
 <li><strong>GPU Memory Hierarchy</strong>: GPUs contain two primary memory tiers:<ul>
@@ -269,8 +283,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Platforms adopting FlashAttention (such as <strong>PyTorch 2.0 <code>sdpa</code></strong>, <strong>vLLM</strong>, and <strong>Triton</strong>) report:</p>
 <ul>
 <li><strong>$2\times$ to $4\times$ Faster Transformer Training</strong>: Eliminating HBM read/write bottlenecks speeds up large-scale LLM training runs.</li>
-<li><strong>$10\times$ Memory Reduction for Long Contexts</strong>: Enables processing $128\text{K}+$ token context windows on standard GPU clusters without OOM crashes.</li>
+<li><strong>$10\times$ Memory Reduction for Long Contexts</strong>: Enables processing $128\text{K}+$ token context windows on standard GPU clusters without OOM crashes. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Mohan, C., et al. (1992)</strong>. <em>ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks</em>. ACM TODS. <a href="https://doi.org/10.1145/128765.128770" target="_blank" rel="noopener">https://doi.org/10.1145/128765.128770</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>O&#39;Neil, P., Cheng, E., Gawlick, D., &amp; O&#39;Neil, E. (1996)</strong>. <em>The Log-Structured Merge-Tree (LSM-Tree)</em>. Acta Informatica. <a href="https://www.cs.umb.edu/~poneil/lsmtree.pdf" target="_blank" rel="noopener">https://www.cs.umb.edu/~poneil/lsmtree.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Dao, T., et al. (2022)</strong>. <em>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</em>. NeurIPS. <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">https://arxiv.org/abs/2205.14135</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vaswani, A., et al. (2017)</strong>. <em>Attention Is All You Need</em>. NeurIPS. <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">https://arxiv.org/abs/1706.03762</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Kwon, W., et al. (2023)</strong>. <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em>. SOSP. <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">https://arxiv.org/abs/2309.06180</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -303,9 +328,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#flashattention-gpu-memory-hierarchy-tiling-architecture" class="toc-link">FlashAttention GPU Memory Hierarchy &amp; Tiling Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-flashattention-mechanics" class="toc-link">Core FlashAttention Mechanics</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-tiled-online-softmax-flashattention-engine" class="toc-link">Python Implementation: Tiled Online Softmax FlashAttention Engine</a></li>
               <li class="toc-item toc-h2"><a href="#flashattention-gotchas-best-practices" class="toc-link">FlashAttention Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1144,13 +1171,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1219,13 +1240,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1267,13 +1282,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

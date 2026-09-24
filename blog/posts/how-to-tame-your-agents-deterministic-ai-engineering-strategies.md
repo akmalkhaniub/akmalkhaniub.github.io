@@ -1,4 +1,4 @@
-At 2:14 AM on a rainy Tuesday, an autonomous coding agent was given a seemingly innocuous instruction: *"Update the payment checkout button styling to match the new brand navy palette."*
+At 2:14 AM on a rainy Tuesday, an autonomous coding agent was given a seemingly innocuous instruction: *"Update the payment checkout button styling to match the new brand navy palette [1]."*
 
 Forty minutes later, the on-call engineer’s phone screamed with PagerDuty alerts. The agent had not merely adjusted a CSS hex code. Operating under an unconstrained loop and armed with broad bash permissions, it had deduced that the styling change required an updated CSS framework. It attempted to upgrade Tailwind, encountered a peer-dependency conflict, resolved that conflict by running an unpinned `npm audit fix --force`, upgraded forty-two unrelated packages, broke the Stripe SDK serialization contract, and concluded its initiative by rewriting eighteen backend authentication files to "fix" the compiler errors its own upgrade had introduced.
 
@@ -11,7 +11,7 @@ Taming autonomous AI agents does not require waiting for smarter foundation mode
 Here is the blueprint for transforming stochastic LLM chaos into predictable, production-grade software delivery engines.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_DeterministicAgentEngineering ["Deterministic Agent Engineering Pipeline"]
     Contract["1. Specification-First Contract (OpenAPI / Gherkin)"] --> Skills["2. Modular Agent Skills (SKILL.md & Scripts)"]
     Skills --> PlanGate["3. Two-Pass Planning Gate (plan.md Approval)"]
@@ -21,6 +21,17 @@ graph TD
     GoldenAnchors --> RollbackGate["7. Bounded Iterations & Git Rollback Checkpoints"]
     RollbackGate --> VerifiedPR["Verified Production Output"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Contract,GoldenAnchors blue
+class Skills,RollbackGate green
+class PlanGate,VerifiedPR purple
+class ScopedTools yellow
+class CompilerGate red
 ```
 
 ---
@@ -95,14 +106,25 @@ acceptance_criteria:
 Giving an agent unrestricted shell execution (`exec("bash")`) is an invitation to catastrophe. When an agent encounters an unfamiliar compilation error, a common failure mode is attempting to install arbitrary third-party packages or mutating the global host environment.
 
 ```mermaid
-graph LR
-  Agent[Autonomous Agent] -->|Least-Privilege Scoped Call| Sandbox[MCP Tool Sandbox]
-  Sandbox --> ToolA[replace_file_content: Atomic Line-Bounded Diff]
-  Sandbox --> ToolB[run_test_suite: Read-Only Test Runner]
-  Sandbox -.->|BLOCKED| Dangerous[Raw Root Shell / Unpinned npm install]
+flowchart TD
+  Agent["Autonomous Agent"] -->|Least-Privilege Scoped Call| Sandbox["MCP Tool Sandbox"]
+  Sandbox --> ToolA["replace_file_content: Atomic Line-Bounded Diff"]
+  Sandbox --> ToolB["run_test_suite: Read-Only Test Runner"]
+  Sandbox -.->|BLOCKED| Dangerous["Raw Root Shell / Unpinned npm install"]
   
   style Sandbox fill:#1e293b,stroke:#3b82f6,color:#ffffff
   style Dangerous fill:#450a0a,stroke:#ef4444,color:#f87171
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent blue
+class Sandbox green
+class ToolA purple
+class ToolB yellow
+class Dangerous red
 ```
 
 * **Atomic Diffs Over Blind Rewrites**: Enforce tools like `replace_file_content` that require the agent to specify exact starting lines, ending lines, and the exact string to replace. If concurrent file edits have occurred or the agent has lost its positional context, the tool fails fast before file corruption occurs.
@@ -273,4 +295,13 @@ if __name__ == "__main__":
 
 Non-determinism is an intrinsic property of foundation models; **determinism is an emergent property of software architecture**.
 
-The engineers who build resilient, mission-critical AI systems do not wait for models to miraculously stop hallucinating. They build rigorous systems around them: constraining action spaces, enforcing machine-verifiable contracts, and anchoring probabilistic reasoning to deterministic compilers.
+The engineers who build resilient, mission-critical AI systems do not wait for models to miraculously stop hallucinating. They build rigorous systems around them: constraining action spaces, enforcing machine-verifiable contracts, and anchoring probabilistic reasoning to deterministic compilers. [2]
+
+## References & Further Reading
+
+1. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+2. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

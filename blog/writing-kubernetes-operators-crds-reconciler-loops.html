@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/writing-kubernetes-operators-crds-reconciler-loops.html">
   <meta property="og:title" content="Writing Kubernetes Operators: Custom Resource Definitions (CRDs) &amp; Reconciler Loops">
   <meta property="og:description" content="Extending the Kubernetes API: defining Custom Resource Definitions (CRDs), writing controller Informer watches, and building idempotent Reconciler loops for automated cluster self-healing.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/writing-kubernetes-operators-crds-reconciler-loops.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-16">
+  <meta property="article:published_time" content="2026-08-17">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Writing Kubernetes Operators: Custom Resource Definitions (CRDs) &amp; Reconciler Loops">
   <meta name="twitter:description" content="Extending the Kubernetes API: defining Custom Resource Definitions (CRDs), writing controller Informer watches, and building idempotent Reconciler loops for automated cluster self-healing.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/default.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/writing-kubernetes-operators-crds-reconciler-loops.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Writing Kubernetes Operators: Custom Resource Definitions (CRDs) & Reconciler Loops",
   "description": "Extending the Kubernetes API: defining Custom Resource Definitions (CRDs), writing controller Informer watches, and building idempotent Reconciler loops for automated cluster self-healing.",
   "url": "https://akmalkhaniub.github.io/blog/writing-kubernetes-operators-crds-reconciler-loops.html",
-  "datePublished": "2026-08-16",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/writing-kubernetes-operators-crds-reconciler-loops.jpg",
+  "datePublished": "2026-08-17",
   "keywords": "Kubernetes, Operators, IaC, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/default.png" class="article-cover-img" alt="Writing Kubernetes Operators: Custom Resource Definitions (CRDs) &amp; Reconciler Loops Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/writing-kubernetes-operators-crds-reconciler-loops.jpg" class="article-cover-img" alt="Writing Kubernetes Operators: Custom Resource Definitions (CRDs) &amp; Reconciler Loops Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Writing Kubernetes Operators: Custom Resource Definitions (CRDs) &amp; Reconciler Loops</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#kubernetes-operator-control-loop-architecture">Kubernetes Operator Control Loop Architecture</a></li>
+                <li><a href="#core-operator-components">Core Operator Components</a></li>
                 <li><a href="#python-implementation-custom-kubernetes-operator-reconciler">Python Implementation: Custom Kubernetes Operator Reconciler</a></li>
                 <li><a href="#operator-gotchas-best-practices">Operator Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-enterprise-impact">Real-World Enterprise Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>Kubernetes is built on a powerful extensibility model. Out of the box, it manages built-in primitives like <code>Pods</code>, <code>Deployments</code>, and <code>Services</code>. However, stateful applications—such as PostgreSQL database clusters, Redis sentinel pairs, or Kafka brokers—require complex operational knowledge to scale, backup, failover, and upgrade.</p>
+<p>Kubernetes is built on a powerful extensibility model. Out of the box, it manages built-in primitives like <code>Pods</code>, <code>Deployments</code>, and <code>Services</code> <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>. However, stateful applications—such as PostgreSQL database clusters, Redis sentinel pairs, or Kafka brokers—require complex operational knowledge to scale, backup, failover, and upgrade.</p>
 <p>To encode human operational domain knowledge directly into the Kubernetes API, platform engineers write <strong>Kubernetes Operators</strong>.</p>
 <p>An Operator pairs a <strong>Custom Resource Definition (CRD)</strong> (which extends the Kubernetes API schema) with a custom <strong>Reconciler Controller Loop</strong>.</p>
 <p>The Reconciler continuously observes the actual state of the cluster, compares it against the user&#39;s declared desired state, and takes automated corrective actions to converge the two.</p>
@@ -121,26 +124,37 @@
 <hr>
 <h2 id="kubernetes-operator-control-loop-architecture">Kubernetes Operator Control Loop Architecture</h2>
 <p>How a Custom Controller watches CRD events and drives cluster convergence:</p>
-<div class="mermaid">graph TD
-  User[Platform Engineer] --&gt;|1. kubectl apply -f db.yaml| API[Kubernetes API Server]
+<div class="mermaid">flowchart TD
+  User[&quot;Platform Engineer&quot;] --&gt;|kubectl apply -f db.yaml| API[&quot;Kubernetes API Server&quot;]
   
   subgraph SG1_CustomResourceDefinition [&quot;Custom Resource Definition CRD&quot;]
-    API --&gt;|2. Persist Spec| ETCD[(etcd State Store)]
+    API --&gt;|Persist Spec| ETCD[(etcd State Store)]
   end
   
   subgraph SG2_CustomOperatorController [&quot;Custom Operator Controller&quot;]
-    API --&gt;|3. Watch Event Notification| Informer[Informer / Watch Cache]
-    Informer --&gt;|4. Push Key to WorkQueue| Queue[WorkQueue]
-    Queue --&gt;|5. Pop Key| Reconciler[Reconciler Loop]
+    API --&gt;|Watch Event Notification| Informer[&quot;Informer / Watch Cache&quot;]
+    Informer --&gt;|Push Key to WorkQueue| Queue[&quot;WorkQueue&quot;]
+    Queue --&gt;|Pop Key| Reconciler[&quot;Reconciler Loop&quot;]
   end
   
   subgraph SG3_AutomatedReconciliationLogic [&quot;Automated Reconciliation Logic&quot;]
-    Reconciler --&gt;|6. Query Actual Cluster State| Pods[Live Kubernetes Pods &amp; StatefulSets]
-    Reconciler --&gt;|7. Calculate Delta: Desired vs Actual| Engine{State Delta?}
-    Engine --&gt;|Out of Sync| Action[Create / Update / Delete Pods]
-    Engine --&gt;|In Sync| Status[Update CRD status.conditions]
+    Reconciler --&gt;|Query Actual Cluster State| Pods[&quot;Live Kubernetes Pods &amp; StatefulSets&quot;]
+    Reconciler --&gt;|Calculate Delta - Desired vs Actual| Engine{State Delta?}
+    Engine --&gt;|Out of Sync| Action[&quot;Create / Update / Delete Pods&quot;]
+    Engine --&gt;|In Sync| Status[&quot;Update CRD status.conditions&quot;]
     Action --&gt; Pods
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,Pods blue
+class API,Action green
+class Informer,Status purple
+class Queue yellow
+class Reconciler red</div>
 <h3 id="core-operator-components">Core Operator Components</h3>
 <ol>
 <li><strong>Custom Resource Definition (CRD)</strong>: Defines a custom OpenAPI schema registered with the Kubernetes API server (e.g. <code>apiVersion: database.example.com/v1</code>, <code>kind: PostgresCluster</code>).</li>
@@ -279,8 +293,19 @@ if __name__ == &quot;__main__&quot;:
 <p>Teams writing custom Kubernetes Operators report:</p>
 <ul>
 <li><strong>Automated Self-Healing Operations</strong>: Operators detect drifted or crashed stateful nodes and automatically provision replacements without human intervention.</li>
-<li><strong>Declarative API Standardization</strong>: Managing complex database or messaging middleware using familiar <code>kubectl</code> declarative YAML files streamlines platform engineering workflows.</li>
+<li><strong>Declarative API Standardization</strong>: Managing complex database or messaging middleware using familiar <code>kubectl</code> declarative YAML files streamlines platform engineering workflows. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Kreps, J., Narkhede, N., &amp; Rao, J. (2011)</strong>. <em>Kafka: a Distributed Messaging System for Log Processing</em>. NetDB. <a href="https://notes.stephenholiday.com/Kafka.pdf" target="_blank" rel="noopener">https://notes.stephenholiday.com/Kafka.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>DeCandia, G., et al. (2007)</strong>. <em>Dynamo: Amazon&#39;s Highly Available Key-value Store</em>. SOSP. <a href="https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf" target="_blank" rel="noopener">https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Carbone, P., et al. (2015)</strong>. <em>Apache Flink: Stream and Batch Processing in a Single Engine</em>. IEEE Data Engineering Bulletin. <a href="https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf" target="_blank" rel="noopener">https://www.vldb.org/pvldb/vol8/p1970-carbone.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Kubernetes Authors (2024)</strong>. <em>Kubernetes Documentation</em>. CNCF. <a href="https://kubernetes.io/docs/home/" target="_blank" rel="noopener">https://kubernetes.io/docs/home/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Ongaro, D., &amp; Ousterhout, J. (2014)</strong>. <em>In Search of an Understandable Consensus Algorithm</em>. USENIX ATC. <a href="https://raft.github.io/raft.pdf" target="_blank" rel="noopener">https://raft.github.io/raft.pdf</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Burrows, M. (2006)</strong>. <em>The Chubby Lock Service for Loosely-Coupled Distributed Systems</em>. OSDI. <a href="https://research.google/pubs/pub27897/" target="_blank" rel="noopener">https://research.google/pubs/pub27897/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -313,9 +338,11 @@ if __name__ == &quot;__main__&quot;:
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#kubernetes-operator-control-loop-architecture" class="toc-link">Kubernetes Operator Control Loop Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#core-operator-components" class="toc-link">Core Operator Components</a></li>
               <li class="toc-item toc-h2"><a href="#python-implementation-custom-kubernetes-operator-reconciler" class="toc-link">Python Implementation: Custom Kubernetes Operator Reconciler</a></li>
               <li class="toc-item toc-h2"><a href="#operator-gotchas-best-practices" class="toc-link">Operator Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-enterprise-impact" class="toc-link">Real-World Enterprise Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1154,13 +1181,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1229,13 +1250,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1277,13 +1292,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

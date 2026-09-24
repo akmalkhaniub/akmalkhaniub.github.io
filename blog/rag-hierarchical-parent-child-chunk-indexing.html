@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/rag-hierarchical-parent-child-chunk-indexing.html">
   <meta property="og:title" content="Hierarchical Indexing: Designing Parent-Child Vector Scopes">
   <meta property="og:description" content="Maximizing semantic retrieval accuracy: structuring hierarchical database indexes to match child chunks and return parent contexts.">
-  <meta property="og:image" content="https://github.com/akmalkhaniub.png">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/rag-hierarchical-parent-child-chunk-indexing.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-06-28">
+  <meta property="article:published_time" content="2026-06-29">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Hierarchical Indexing: Designing Parent-Child Vector Scopes">
   <meta name="twitter:description" content="Maximizing semantic retrieval accuracy: structuring hierarchical database indexes to match child chunks and return parent contexts.">
-  <meta name="twitter:image" content="https://github.com/akmalkhaniub.png">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/rag-hierarchical-parent-child-chunk-indexing.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Hierarchical Indexing: Designing Parent-Child Vector Scopes",
   "description": "Maximizing semantic retrieval accuracy: structuring hierarchical database indexes to match child chunks and return parent contexts.",
   "url": "https://akmalkhaniub.github.io/blog/rag-hierarchical-parent-child-chunk-indexing.html",
-  "datePublished": "2026-06-28",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/rag-hierarchical-parent-child-chunk-indexing.jpg",
+  "datePublished": "2026-06-29",
   "keywords": "Optimization, RAG, Data Indexing, Python",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          
+          <div class="article-cover-frame"><img src="/blog/assets/covers/rag-hierarchical-parent-child-chunk-indexing.jpg" class="article-cover-img" alt="Hierarchical Indexing: Designing Parent-Child Vector Scopes Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Hierarchical Indexing: Designing Parent-Child Vector Scopes</h1>
             <div class="article-meta">
@@ -112,6 +113,7 @@
                 <li><a href="#2-resolving-parent-chunks-on-match">2. Resolving Parent Chunks on Match</a></li>
                 <li><a href="#code-demo-parent-child-retriever">Code Demo: Parent-Child Retriever</a></li>
                 <li><a href="#hierarchical-indexing-takeaways">Hierarchical Indexing Takeaways</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
 <div class="alert alert-note">
@@ -124,25 +126,36 @@ Designing retrieval mechanisms in RAG pipelines involves a constant trade-off. L
 <h2 id="the-limitations-of-single-scale-chunking">The Limitations of Single-Scale Chunking</h2>
 <p>In flat vector databases:</p>
 <ul>
-<li><strong>Embedding Dilution</strong>: High-dimensional vector search struggles to match specific facts when they are buried inside large paragraphs.</li>
+<li><strong>Embedding Dilution</strong>: High-dimensional vector search struggles to match specific facts when they are buried inside large paragraphs <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</li>
 <li><strong>Context Deprivation</strong>: Matching small sentences directly yields high similarity scores, but the model cannot answer questions because it lacks the surrounding paragraphs.</li>
 <li><strong>The Solution</strong>: <strong>Parent-Child Scoping</strong>. We decouple the retrieval index from the context generation index. We run vector searches on child nodes, identify matches, and retrieve their parent records to supply context.</li>
 </ul>
 <div class="mermaid">%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Doc[Source Document] --&gt; Parent[Large Parent Chunk: 1000 tokens]
+    Doc[&quot;Source Document&quot;] --&gt; Parent[&quot;Large Parent Chunk: 1000 tokens&quot;]
     
     subgraph SG1_ChunkHierarchy [&quot;Chunk Hierarchy&quot;]
-        Parent --&gt; Child1[Child Chunk 1: 128 tokens]
-        Parent --&gt; Child2[Child Chunk 2: 128 tokens]
+        Parent --&gt; Child1[&quot;Child Chunk 1: 128 tokens&quot;]
+        Parent --&gt; Child2[&quot;Child Chunk 2: 128 tokens&quot;]
     end
     
     Child1 --&gt;|Embed &amp; Index| VectorDB[(Vector DB: Child Embeddings)]
     
-    Query[User Search Query] --&gt;|Similarity Search| VectorDB
-    VectorDB --&gt;|Match Child 2| Resolve[Lookup Parent ID]
+    Query[&quot;User Search Query&quot;] --&gt;|Similarity Search| VectorDB
+    VectorDB --&gt;|Match Child 2| Resolve[&quot;Lookup Parent ID&quot;]
     
-    Resolve --&gt;|Return Context| LLM[LLM Generator Prompt]</div>
+    Resolve --&gt;|Return Context| LLM[&quot;LLM Generator Prompt&quot;]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Doc,Resolve blue
+class Parent,LLM green
+class Child1 purple
+class Child2 yellow
+class Query red</div>
 <hr>
 <h2 id="1-segmenting-hierarchical-relationships">1. Segmenting Hierarchical Relationships</h2>
 <p>To construct parent-child relationships:</p>
@@ -234,8 +247,16 @@ if __name__ == &quot;__main__&quot;:
 <ul>
 <li><strong>Decouple Matching from Context</strong>: Run vector similarity matches on small child chunks while providing large parent blocks to the LLM.</li>
 <li><strong>Apply Chunk Overlaps</strong>: Implement overlapping character windows on child chunks to prevent key facts from being cut off.</li>
-<li><strong>De-duplicate Matches</strong>: Keep track of matching parent IDs to avoid sending redundant text blocks to the LLM.</li>
+<li><strong>De-duplicate Matches</strong>: Keep track of matching parent IDs to avoid sending redundant text blocks to the LLM. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></li>
 </ul>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Jégou, H., Douze, M., &amp; Schmid, C. (2011)</strong>. <em>Product Quantization for Nearest Neighbor Search</em>. IEEE TPAMI. <a href="https://hal.inria.fr/inria-00514462v2/document" target="_blank" rel="noopener">https://hal.inria.fr/inria-00514462v2/document</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>Johnson, J., Douze, M., &amp; Jégou, H. (2019)</strong>. <em>Billion-scale Similarity Search with GPUs</em>. IEEE Transactions on Big Data. <a href="https://arxiv.org/abs/1702.08734" target="_blank" rel="noopener">https://arxiv.org/abs/1702.08734</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -272,6 +293,7 @@ if __name__ == &quot;__main__&quot;:
               <li class="toc-item toc-h2"><a href="#2-resolving-parent-chunks-on-match" class="toc-link">2. Resolving Parent Chunks on Match</a></li>
               <li class="toc-item toc-h2"><a href="#code-demo-parent-child-retriever" class="toc-link">Code Demo: Parent-Child Retriever</a></li>
               <li class="toc-item toc-h2"><a href="#hierarchical-indexing-takeaways" class="toc-link">Hierarchical Indexing Takeaways</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1110,13 +1132,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1185,13 +1201,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1233,13 +1243,7 @@ if __name__ == &quot;__main__&quot;:
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

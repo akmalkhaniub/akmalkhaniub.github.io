@@ -6,7 +6,7 @@
 > * **What we synthesized:** The solution leverages Python's Decimal library, ACID transactions with pessimistic locking, and asynchronous worker queues via Celery and Redis to achieve precision, concurrency, and high throughput.
 
 ---
-In financial technology, computational accuracy and transactional integrity are absolute. If a system rounds a dollar up or down incorrectly, or if a database query fails halfway through processing a bulk payout, it compromises the core security of the ledger.
+In financial technology, computational accuracy and transactional integrity are absolute [1]. If a system rounds a dollar up or down incorrectly, or if a database query fails halfway through processing a bulk payout, it compromises the core security of the ledger.
 
 When designing a **High-Throughput Asynchronous Payroll Engine**, developers face three major engineering challenges:
 1. **Mathematical Precision**: Standard binary floating-point numbers (`float`) introduce rounding errors that compound over thousands of calculations.
@@ -28,18 +28,29 @@ When an administrator triggers a new monthly payroll run:
 4. Once completed, a fan-out task is dispatched, triggering dozens of separate, concurrent PDF compilers.
 
 ```mermaid
-graph TD
-    A[Django API] -->|1. Trigger Run| B(Redis Queue)
-    B -->|2. Pull Task| C(Celery Worker)
-    C -->|3. Calculate & Lock Row| D[Database]
-    C -->|4. Update Status to Completed| D
-    C -->|5. Dispatch Fan-Out| B
-    B -->|6. Parallel Invoices| E[Celery PDF Worker 1]
-    B -->|6. Parallel Invoices| F[Celery PDF Worker 2]
-    B -->|6. Parallel Invoices| G[Celery PDF Worker 3]
-    E -->|7. Upload Pay Statement| H[(Persistent Media Storage)]
-    F -->|7. Upload Pay Statement| H
-    G -->|7. Upload Pay Statement| H
+flowchart TD
+    A["Django API"] -->|Trigger Run| B(Redis Queue)
+    B -->|Pull Task| C(Celery Worker)
+    C -->|Calculate & Lock Row| D["Database"]
+    C -->|Update Status to Completed| D
+    C -->|Dispatch Fan-Out| B
+    B -->|Parallel Invoices| E["Celery PDF Worker 1"]
+    B -->|Parallel Invoices| F["Celery PDF Worker 2"]
+    B -->|Parallel Invoices| G["Celery PDF Worker 3"]
+    E -->|Upload Pay Statement| H[(Persistent Media Storage)]
+    F -->|Upload Pay Statement| H
+    G -->|Upload Pay Statement| H
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class D green
+class E purple
+class F yellow
+class G red
 ```
 
 ---
@@ -201,4 +212,10 @@ Building robust financial software demands meticulous attention to accuracy, con
 
 *Takeaway: A combination of precise data types, robust transaction management, and asynchronous architecture is essential for building high-performance, reliable financial systems.*
 
-*The full source code, deployment scripts, and local test suites are available in the public [django-payroll-engine](https://github.com/akmalkhaniub/django-payroll-engine) repository.*
+*The full source code, deployment scripts, and local test suites are available in the public [django-payroll-engine](https://github.com/akmalkhaniub/django-payroll-engine) repository.* [2]
+
+## References & Further Reading
+
+1. **Redis Ltd. (2024)**. *Redis Documentation*. redis.io. [https://redis.io/docs/](https://redis.io/docs/)
+2. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+3. **Kreps, J., Narkhede, N., & Rao, J. (2011)**. *Kafka: a Distributed Messaging System for Log Processing*. NetDB. [https://notes.stephenholiday.com/Kafka.pdf](https://notes.stephenholiday.com/Kafka.pdf)

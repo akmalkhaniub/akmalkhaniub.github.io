@@ -8,7 +8,7 @@
 
 ## The Limitations of Naive Vector Search
 
-Standard Retrieval-Augmented Generation (RAG) is built on a simple pipeline: split documents into chunks, calculate semantic vector embeddings for each chunk, and retrieve the top-$K$ most similar chunks during query time using cosine similarity.
+Standard Retrieval-Augmented Generation (RAG) is built on a simple pipeline: split documents into chunks, calculate semantic vector embeddings for each chunk, and retrieve the top-$K$ most similar chunks during query time using cosine similarity [1].
 
 This approach is highly effective for localized questions (e.g., *"What was the revenue of Company X in Q3?"*). However, it fails catastrophically under two scenarios:
 
@@ -25,25 +25,25 @@ A production-grade GraphRAG system operates in two distinct phases: **Graph Inge
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
-graph TD
-    A[Raw Text Documents] --> B[LLM Entity Extractor]
-    B -->|Extract Nodes & Edges| C[Entity Registry]
-    B -->|Compute Text Embeddings| D[Vector Index]
-    C --> E[Neo4j Property Graph Store]
+flowchart TD
+    A["Raw Text Documents"] --> B["LLM Entity Extractor"]
+    B -->|Extract Nodes & Edges| C["Entity Registry"]
+    B -->|Compute Text Embeddings| D["Vector Index"]
+    C --> E["Neo4j Property Graph Store"]
     D --> E
     
     subgraph SG1_QueryExecutionGate ["Query Execution Gate"]
-        F[User Query] --> G{Query Classifier}
-        G -->|Local Search: Entity Specific| H[Local Query Engine]
-        G -->|Global Search: Thematic| I[Global Community Search]
+        F["User Query"] --> G{Query Classifier}
+        G -->|Local Search - Entity Specific| H["Local Query Engine"]
+        G -->|Global Search - Thematic| I["Global Community Search"]
         
         E --> H
         E --> I
-        H --> J[Context Aggregator]
+        H --> J["Context Aggregator"]
         I --> J
     end
     
-    J --> K[LLM Synthesis & Response]
+    J --> K["LLM Synthesis & Response"]
 
     style A fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
     style B fill:#0f172a,stroke:#38bdf8,stroke-width:2px
@@ -52,6 +52,17 @@ graph TD
     style H fill:#111827,stroke:#10b981,stroke-width:2px
     style I fill:#111827,stroke:#eab308,stroke-width:2px
     style K fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,H green
+class C,I purple
+class D,J yellow
+class E,K red
 ```
 
 ### Ingestion Pipeline
@@ -172,7 +183,7 @@ In our next article, [Hybrid Search & Reranking: Balancing Dense Retrieval with 
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **Microsoft Research**: *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* — [arXiv:2404.16130](https://arxiv.org/abs/2404.16130)
 *   **LlamaIndex Guide**: [Property Graph Index Documentation](https://docs.llamaindex.ai/)
 *   **Neo4j Developer Portal**: [GraphRAG patterns with Neo4j](https://neo4j.com/)

@@ -7,7 +7,7 @@
 
 ---
 
-In our previous articles, we secured agent actions with [Ephemeral Sandbox Containment](post.html?post=context-engineering-ephemeral-sandboxing) and optimized resource limits using [Semantic Prompt Caching](post.html?post=context-engineering-prompt-caching). 
+In our previous articles, we secured agent actions with [Ephemeral Sandbox Containment](post [1].html?post=context-engineering-ephemeral-sandboxing) and optimized resource limits using [Semantic Prompt Caching](post.html?post=context-engineering-prompt-caching). 
 
 However, when scaling from a single assistant to a collaborative swarm of multiple agents—such as the workflows deployed in the [agentic-apps-portfolio](https://github.com/akmalkhaniub/agentic-apps-portfolio)—we run into a coordination barrier. If Agent A (e.g., a software architect) writes a complex design spec, Agent B (the programmer) writes the implementation, and Agent C (the validator) audits the code, how do they stay in sync?
 
@@ -22,29 +22,29 @@ To solve this, we implement a **Blackboard Memory Architecture** using **MCP Res
 Below is the architecture of a multi-agent system coordinating through a central MCP memory resource. The Supervisor routes work while specialized agents read from and write to the shared blackboard.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
     classDef supervisor fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef workers fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef memory fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
 
-    User[User Request] -->|1. Dispatch| Supervisor[Supervisor Agent]
+    User["User Request"] -->|Dispatch| Supervisor["Supervisor Agent"]
     
     subgraph SG1_MultiagentswarmAgenticSwarm ["MultiAgentSwarm [Agentic Swarm]"]
-        Supervisor -->|2. Task A| CoderAgent[Coder Agent]
-        Supervisor -->|3. Task B| TesterAgent[Tester Agent]
+        Supervisor -->|Task A| CoderAgent["Coder Agent"]
+        Supervisor -->|Task B| TesterAgent["Tester Agent"]
     end
     
     subgraph SG2_BlackboardmemoryMcpBlackboard ["BlackboardMemory [MCP Blackboard Server]"]
         MemoryResource[(MCP Memory Resource / mcp://state/blackboard)]
     end
 
-    CoderAgent -->|4. Write Code State| MemoryResource
-    TesterAgent -->|5. Read Code / Run Tests| MemoryResource
-    TesterAgent -->|6. Write Test Results| MemoryResource
+    CoderAgent -->|Write Code State| MemoryResource
+    TesterAgent -->|Read Code / Run Tests| MemoryResource
+    TesterAgent -->|Write Test Results| MemoryResource
     
-    Supervisor -->|7. Check Progress| MemoryResource
-    Supervisor -->|8. Final Delivery| User
+    Supervisor -->|Check Progress| MemoryResource
+    Supervisor -->|Final Delivery| User
 
     class User start;
     class Supervisor supervisor;

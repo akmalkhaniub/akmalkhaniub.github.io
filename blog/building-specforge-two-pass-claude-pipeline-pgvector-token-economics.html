@@ -15,15 +15,15 @@
   <meta property="og:url" content="https://akmalkhaniub.github.io/blog/building-specforge-two-pass-claude-pipeline-pgvector-token-economics.html">
   <meta property="og:title" content="Building SpecForge: Two-Pass Claude 3.5 Extraction Pipeline, pgvector Deduplication &amp; Real-Time Token Economics">
   <meta property="og:description" content="Deep-dive into SpecForge's two-pass requirements extraction pipeline: Pass 1 structural epic discovery to Pass 2 granular user story &amp; Gherkin generation, pgvector semantic deduplication, and real-time token economics metering.">
-  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/specforge-dashboard.jpg">
+  <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/building-specforge-two-pass-claude-pipeline-pgvector-token-economics.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-08-18">
+  <meta property="article:published_time" content="2026-08-19">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Building SpecForge: Two-Pass Claude 3.5 Extraction Pipeline, pgvector Deduplication &amp; Real-Time Token Economics">
   <meta name="twitter:description" content="Deep-dive into SpecForge's two-pass requirements extraction pipeline: Pass 1 structural epic discovery to Pass 2 granular user story &amp; Gherkin generation, pgvector semantic deduplication, and real-time token economics metering.">
-  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/specforge-dashboard.jpg">
+  <meta name="twitter:image" content="https://akmalkhaniub.github.io/blog/assets/covers/building-specforge-two-pass-claude-pipeline-pgvector-token-economics.jpg">
 
   <script type="application/ld+json">
 {
@@ -32,7 +32,8 @@
   "headline": "Building SpecForge: Two-Pass Claude 3.5 Extraction Pipeline, pgvector Deduplication & Real-Time Token Economics",
   "description": "Deep-dive into SpecForge's two-pass requirements extraction pipeline: Pass 1 structural epic discovery to Pass 2 granular user story & Gherkin generation, pgvector semantic deduplication, and real-time token economics metering.",
   "url": "https://akmalkhaniub.github.io/blog/building-specforge-two-pass-claude-pipeline-pgvector-token-economics.html",
-  "datePublished": "2026-08-18",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/building-specforge-two-pass-claude-pipeline-pgvector-token-economics.jpg",
+  "datePublished": "2026-08-19",
   "keywords": "SpecForge, Claude 3.5 Sonnet, pgvector, TypeScript",
   "author": {
     "@type": "Person",
@@ -92,7 +93,7 @@
         <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Blog</a>
 
         <article class="article-card">
-          <div class="article-cover-frame"><img src="/blog/assets/covers/specforge-dashboard.jpg" class="article-cover-img" alt="Building SpecForge: Two-Pass Claude 3.5 Extraction Pipeline, pgvector Deduplication &amp; Real-Time Token Economics Cover" /></div>
+          <div class="article-cover-frame"><img src="/blog/assets/covers/building-specforge-two-pass-claude-pipeline-pgvector-token-economics.jpg" class="article-cover-img" alt="Building SpecForge: Two-Pass Claude 3.5 Extraction Pipeline, pgvector Deduplication &amp; Real-Time Token Economics Cover" /></div>
           <div class="article-header">
             <h1 class="article-title">Building SpecForge: Two-Pass Claude 3.5 Extraction Pipeline, pgvector Deduplication &amp; Real-Time Token Economics</h1>
             <div class="article-meta">
@@ -108,12 +109,14 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#specforge-system-architecture-two-pass-pipeline">SpecForge System Architecture &amp; Two-Pass Pipeline</a></li>
+                <li><a href="#core-architecture-highlights">Core Architecture Highlights</a></li>
                 <li><a href="#typescript-implementation-two-pass-extraction-pgvector-deduplication">TypeScript Implementation: Two-Pass Extraction &amp; pgvector Deduplication</a></li>
                 <li><a href="#production-engineering-gotchas-best-practices">Production Engineering Gotchas &amp; Best Practices</a></li>
                 <li><a href="#real-world-performance-impact">Real-World Performance Impact</a></li>
+                <li><a href="#references-further-reading">References &amp; Further Reading</a></li>
               </ul>
             </details>
-<p>In modern agile software engineering (<strong>SpecForge</strong>, <strong>Jira Automation</strong>, <strong>Linear Integrations</strong>), transforming 50-page unstructured Product Requirement Documents (PRDs) and Business Requirement Documents (BRDs) into actionable backlog tickets is a notorious bottleneck.</p>
+<p>In modern agile software engineering (<strong>SpecForge</strong>, <strong>Jira Automation</strong>, <strong>Linear Integrations</strong>), transforming 50-page unstructured Product Requirement Documents (PRDs) and Business Requirement Documents (BRDs) into actionable backlog tickets is a notorious bottleneck <sup class="citation-ref"><a href="#ref-1" class="citation-link" data-ref="1" title="Reference [1]">[1]</a></sup>.</p>
 <p>When product managers and engineering leads attempt to parse complex PRDs in a single LLM prompt, models suffer from &quot;attention dilution&quot;—skipping subtle non-functional requirements, hallucinating edge cases, and generating inconsistent ticket formats.</p>
 <p>To solve this, I architected and built <strong><a href="https://github.com/akmalkhaniub/specforge" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> SpecForge</a></strong>—a production AI-powered requirements extraction platform.</p>
 <p>SpecForge decouples requirements synthesis into a <strong>Two-Pass Claude 3.5 Sonnet Extraction Pipeline</strong>, enforces zero duplicate tickets via <strong><code>pgvector</code> cosine similarity indexing</strong>, and meters live extraction costs down to the millicent with a <strong>Real-Time Token Economics Engine</strong>.</p>
@@ -121,10 +124,10 @@
 <hr>
 <h2 id="specforge-system-architecture-two-pass-pipeline">SpecForge System Architecture &amp; Two-Pass Pipeline</h2>
 <p>How SpecForge ingests raw DOCX/PDF PRDs, performs two-pass hierarchical analysis, and indexes user stories into PostgreSQL:</p>
-<div class="mermaid">graph TD
+<div class="mermaid">flowchart TD
   subgraph SG1_IngestionDocumentChunking [&quot;Ingestion &amp; Document Chunking&quot;]
-    Doc[Raw PRD / BRD Document .docx/.pdf] --&gt; Ingestion[mammoth / pdfplumber Ingest Engine]
-    Ingestion --&gt; Chunks[Hierarchical Markdown Chunking]
+    Doc[&quot;Raw PRD / BRD Document .docx/.pdf&quot;] --&gt; Ingestion[&quot;mammoth / pdfplumber Ingest Engine&quot;]
+    Ingestion --&gt; Chunks[&quot;Hierarchical Markdown Chunking&quot;]
   end
   
   subgraph SG2_TwoPassClaude [&quot;Two-Pass Claude 3.5 Extraction Engine&quot;]
@@ -140,7 +143,18 @@
     PGVector --&gt;|Duplicate Detected| Merge[&quot;Automated Merge Recommendation&quot;]
     PGVector --&gt;|New Unique Story| Backlog[&quot;Persistent Jira / Linear Backlog&quot;]
     Pass1 &amp; Pass2 --&gt; Metering[&quot;Token Economics Metering ($ / session)&quot;]
-  end</div>
+  end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Doc,Pass2,Backlog blue
+class Ingestion,Stories,Metering green
+class Chunks,Embedder purple
+class Pass1,PGVector yellow
+class Epics,Merge red</div>
 <h3 id="core-architecture-highlights">Core Architecture Highlights</h3>
 <ol>
 <li><strong>The Single-Pass Prompt Failure Mode</strong>:<ul>
@@ -322,7 +336,18 @@ export class SpecForgePipeline {
 <li><strong>$100%$ Schema Determinism</strong>: Structured tool calling eliminates markdown parsing syntax errors.</li>
 <li><strong>Zero Duplicate Backlog Tickets</strong>: <code>pgvector</code> semantic deduplication catches overlapping stories across multi-author PRDs.</li>
 </ul>
-<p>You can explore the full open-source codebase on GitHub: <strong><a href="https://github.com/akmalkhaniub/specforge" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> <code>akmalkhaniub/specforge</code></a></strong>.</p>
+<p>You can explore the full open-source codebase on GitHub: <strong><a href="https://github.com/akmalkhaniub/specforge" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> <code>akmalkhaniub/specforge</code></a></strong>. <sup class="citation-ref"><a href="#ref-2" class="citation-link" data-ref="2" title="Reference [2]">[2]</a></sup></p>
+<h2 id="references-further-reading">References &amp; Further Reading</h2>
+<ol class="references-list">
+
+<li id="ref-1" class="citation-item"><strong>pgvector Authors (2024)</strong>. <em>pgvector: Open-source vector similarity search for Postgres</em>. GitHub. <a href="https://github.com/pgvector/pgvector" target="_blank" rel="noopener" class="repo-link"><i class="fa-brands fa-github"></i> https://github.com/pgvector/pgvector</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-2" class="citation-item"><strong>Malkov, Y. A., &amp; Yashunin, D. A. (2018)</strong>. <em>Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs</em>. IEEE TPAMI. <a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener">https://arxiv.org/abs/1603.09320</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-3" class="citation-item"><strong>PostgreSQL Global Development Group (2024)</strong>. <em>PostgreSQL Documentation</em>. postgresql.org. <a href="https://www.postgresql.org/docs/current/" target="_blank" rel="noopener">https://www.postgresql.org/docs/current/</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-4" class="citation-item"><strong>Dao, T., et al. (2022)</strong>. <em>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</em>. NeurIPS. <a href="https://arxiv.org/abs/2205.14135" target="_blank" rel="noopener">https://arxiv.org/abs/2205.14135</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-5" class="citation-item"><strong>Vaswani, A., et al. (2017)</strong>. <em>Attention Is All You Need</em>. NeurIPS. <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">https://arxiv.org/abs/1706.03762</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+<li id="ref-6" class="citation-item"><strong>Kwon, W., et al. (2023)</strong>. <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em>. SOSP. <a href="https://arxiv.org/abs/2309.06180" target="_blank" rel="noopener">https://arxiv.org/abs/2309.06180</a> <a href="#ref-back" class="citation-backlink" title="Jump back to context" aria-label="Jump back to context">&#x21A9;&#xFE0E;</a></li>
+
+</ol>
 
           </div>
 
@@ -355,9 +380,11 @@ export class SpecForgePipeline {
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#specforge-system-architecture-two-pass-pipeline" class="toc-link">SpecForge System Architecture &amp; Two-Pass Pipeline</a></li>
+              <li class="toc-item toc-h3"><a href="#core-architecture-highlights" class="toc-link">Core Architecture Highlights</a></li>
               <li class="toc-item toc-h2"><a href="#typescript-implementation-two-pass-extraction-pgvector-deduplication" class="toc-link">TypeScript Implementation: Two-Pass Extraction &amp; pgvector Deduplication</a></li>
               <li class="toc-item toc-h2"><a href="#production-engineering-gotchas-best-practices" class="toc-link">Production Engineering Gotchas &amp; Best Practices</a></li>
               <li class="toc-item toc-h2"><a href="#real-world-performance-impact" class="toc-link">Real-World Performance Impact</a></li>
+              <li class="toc-item toc-h2"><a href="#references-further-reading" class="toc-link">References &amp; Further Reading</a></li>
             </ul>
           </nav>
         </div>
@@ -1196,13 +1223,7 @@ export class SpecForgePipeline {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1271,13 +1292,7 @@ export class SpecForgePipeline {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1319,13 +1334,7 @@ export class SpecForgePipeline {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>

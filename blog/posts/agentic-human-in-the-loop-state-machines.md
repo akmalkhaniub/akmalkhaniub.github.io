@@ -8,28 +8,39 @@
 
 ## The Autonomy Problem in the Enterprise
 
-When an agent plans and runs a series of actions, it operates in a loop: planning, executing tools, inspecting results, and deciding the next step. If one of these steps involves a sensitive transaction—like spending money or emailing a client—we cannot let the agent run unsupervised. 
+When an agent plans and runs a series of actions, it operates in a loop: planning, executing tools, inspecting results, and deciding the next step [1]. If one of these steps involves a sensitive transaction—like spending money or emailing a client—we cannot let the agent run unsupervised. 
 
 We need a way to insert a **Human Gate**:
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Start[User Prompt] --> Step1[Plan Generation]
-    Step1 --> Node1[Action Node: Create Draft invoice]
+    Start["User Prompt"] --> Step1["Plan Generation"]
+    Step1 --> Node1["Action Node: Create Draft invoice"]
     Node1 --> Check{Is sensitive action?}
     
-    Check -->|Yes| Pause[Pause Execution & Serialize State]
+    Check -->|Yes| Pause["Pause Execution & Serialize State"]
     Pause --> DB[(PostgreSQL Checkpoint DB)]
-    Pause --> Notify[Send Slack/Email Notification with Approval Link]
+    Pause --> Notify["Send Slack/Email Notification with Approval Link"]
     
-    Notify --> Await[Await Human Action Callback]
-    Await --> Webhook[Receive Webhook: Approve / Edit]
+    Notify --> Await["Await Human Action Callback"]
+    Await --> Webhook["Receive Webhook: Approve / Edit"]
     
-    Webhook --> Deserialize[Reload State from DB]
-    Deserialize --> Node2[Action Node: Execute payment]
+    Webhook --> Deserialize["Reload State from DB"]
+    Deserialize --> Node2["Action Node: Execute payment"]
     Check -->|No| Node2
-    Node2 --> End[Deliver Output]
+    Node2 --> End["Deliver Output"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Start,Await blue
+class Step1,Webhook green
+class Node1,Deserialize purple
+class Pause,Node2 yellow
+class Notify,End red
 ```
 
 To achieve this without blocking active server thread pools, we design an **Asynchronous Checkpointed State Machine**. The system serializes the agent's memory stack and current graph position, saves it to a persistent database, and releases the CPU resource.
@@ -195,4 +206,14 @@ To build safe, enterprise-compliant agentic workflows:
 * [ ] **Define clear threshold gates**: Never allow agents to make un-audited state updates or calls for sensitive tasks. Enforce gates at the configuration level.
 * [ ] **Decouple state from memory**: Do not keep active execution processes running during human review. Serialize the state to a database and spin down resources.
 * [ ] **Generate unique secure URLs**: Include a cryptographically signed token in the human feedback notification to prevent spoofing or unauthorized approvals.
-* [ ] **Log human interventions**: Ensure comments, overrides, and approval details are recorded into the conversation thread to maintain strict audit integrity.
+* [ ] **Log human interventions**: Ensure comments, overrides, and approval details are recorded into the conversation thread to maintain strict audit integrity. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+5. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+6. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+7. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

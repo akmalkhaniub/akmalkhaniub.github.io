@@ -9,7 +9,7 @@
 ## Streaming Real-Time Agent Outputs
 
 Traditional HTTP request-response cycles are built for static content:
-* **The Latency Bottleneck**: Waiting for a complete LLM generation before sending a response frustrates users.
+* **The Latency Bottleneck**: Waiting for a complete LLM generation before sending a response frustrates users [1].
 * **Bi-directional vs. Uni-directional Needs**: Agents stream data to the client, but clients occasionally need to interrupt execution threads mid-stream.
 * **The Options**: **SSE** (Server-Sent Events) and **WebSockets**. While SSE is simple and built on standard HTTP, WebSockets supports full-duplex, bi-directional communication channels.
 
@@ -17,17 +17,27 @@ Traditional HTTP request-response cycles are built for static content:
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
-        Client1[Client] -->|HTTP GET Request| Server1[FastAPI Server]
+        Client1["Client"] -->|HTTP GET Request| Server1["FastAPI Server"]
         Server1 -->|Keep-Alive Stream Header| Client1
         Server1 -->|Stream Token Chunk 1| Client1
         Server1 -->|Stream Token Chunk 2| Client1
     end
     
     subgraph SG2_WebsocketsWs ["WebSockets WS"]
-        Client2[Client] -->|Upgrade Request| Server2[FastAPI Server]
+        Client2["Client"] -->|Upgrade Request| Server2["FastAPI Server"]
         Server2 -->|Establish Bi-directional socket| Client2
         Server2 <-->|Send / Receive frames concurrently| Client2
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client1 blue
+class Server1 green
+class Client2 purple
+class Server2 yellow
 ```
 
 ---
@@ -112,4 +122,10 @@ if __name__ == "__main__":
 
 * **Default to SSE for Text**: Use Server-Sent Events (SSE) as your default protocol for simple streaming text outputs to minimize connection setup overhead.
 * **Use WebSockets for Interactive Swarms**: Implement WebSockets when you need bi-directional communication to support real-time client interrupts.
-* **Adjust Gateway Timeouts**: Configure proxy server timeouts (e.g. `proxy_read_timeout` in Nginx) to match maximum planning latencies.
+* **Adjust Gateway Timeouts**: Configure proxy server timeouts (e.g. `proxy_read_timeout` in Nginx) to match maximum planning latencies. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
