@@ -140,6 +140,41 @@ def draw_isometric(draw: ImageDraw.ImageDraw, seed: bytes, accent, accent2):
         draw.polygon(right, outline=accent)
 
 
+def draw_instant_nav_art(draw: ImageDraw.ImageDraw, accent, accent2):
+    """One shared App Shell feeding many inbox links."""
+    shell = [70, 210, 430, 430]
+    draw.rounded_rectangle(shell, radius=18, outline=accent, width=3)
+    draw.rectangle([70, 210, 430, 258], fill=(*accent, 40), outline=accent)
+    font = ImageFont.truetype(FONT_MONO, 13)
+    draw.text((92, 224), "APP SHELL  /inbox/[id]", font=font, fill=accent)
+    for i, label in enumerate(("chrome", "suspense", "use cache")):
+        y = 290 + i * 42
+        draw.rounded_rectangle([96, y, 404, y + 32], radius=8, outline=accent2, width=2)
+        draw.text((112, y + 8), label, font=font, fill=(226, 232, 240))
+    for i in range(6):
+        y = 88 + i * 92
+        x = 520
+        if y > 560:
+            break
+        draw.ellipse([x, y, x + 28, y + 28], outline=accent2, width=2)
+        draw.line([(430, 320), (x + 4, y + 14)], fill=accent if i % 2 == 0 else accent2, width=2)
+
+
+def draw_cow_art(draw: ImageDraw.ImageDraw, accent, accent2):
+    """One memory file, shared clean pages, private dirty islands."""
+    draw.rounded_rectangle([56, 86, 560, 150], radius=12, outline=accent, width=3)
+    font = ImageFont.truetype(FONT_MONO, 13)
+    draw.text((76, 108), "guest-ram.bin   MAP_PRIVATE", font=font, fill=accent)
+    for i in range(4):
+        x = 80 + i * 120
+        y = 210
+        draw.rounded_rectangle([x, y, x + 100, y + 280], radius=14, outline=accent2, width=2)
+        draw.rectangle([x + 12, y + 24, x + 88, y + 150], outline=accent, width=2)
+        if i < 2:
+            draw.ellipse([x + 30, y + 180, x + 70, y + 220], fill=accent2)
+        draw.text((x + 18, y + 246), f"VM {i+1}", font=font, fill=(226, 232, 240))
+
+
 def render_cover(post: dict) -> Image.Image:
     slug = post["slug"]
     seed = rng_vals(slug)
@@ -158,7 +193,11 @@ def render_cover(post: dict) -> Image.Image:
     for y in range(0, H, 10):
         d.ellipse([620, y, 644, y + 8], outline=accent2)
 
-    if variant == 0:
+    if slug == "nextjs-16-3-instant-navigations-app-shell-partial-prefetch":
+        draw_instant_nav_art(d, accent, accent2)
+    elif slug == "firecracker-cow-snapshot-fork-vs-jailer-isolation":
+        draw_cow_art(d, accent, accent2)
+    elif variant == 0:
         draw_graph(d, seed, accent, accent2, variant)
     elif variant == 1:
         draw_hex(d, seed, accent, accent2)
@@ -211,6 +250,8 @@ def main():
         "react-compiler-vs-signals-fine-grained-reactivity-ast-tradeoffs",
         "server-action-security-attack-surface-full-stack-rpc-threat-model",
         "the-great-un-caching-nextjs-15-caching-architecture-defaults",
+        "nextjs-16-3-instant-navigations-app-shell-partial-prefetch",
+        "firecracker-cow-snapshot-fork-vs-jailer-isolation",
     }
     written = 0
     skipped = 0
