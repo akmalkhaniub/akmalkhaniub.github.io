@@ -160,6 +160,27 @@ def draw_instant_nav_art(draw: ImageDraw.ImageDraw, accent, accent2):
         draw.line([(430, 320), (x + 4, y + 14)], fill=accent if i % 2 == 0 else accent2, width=2)
 
 
+def draw_mapper_art(draw: ImageDraw.ImageDraw, accent, accent2):
+    """Native tsc process speaking JSON-RPC to a mapper child."""
+    font = ImageFont.truetype(FONT_MONO, 13)
+    draw.rounded_rectangle([56, 90, 300, 520], radius=16, outline=accent, width=3)
+    draw.rectangle([56, 90, 300, 138], outline=accent, width=2)
+    draw.text((72, 106), "tsc  (native Go)", font=font, fill=accent)
+    for i, label in enumerate(("SourceFile.text", "originalText", "spanMap")):
+        y = 170 + i * 70
+        draw.rounded_rectangle([76, y, 280, y + 48], radius=8, outline=accent2, width=2)
+        draw.text((90, y + 16), label, font=font, fill=(226, 232, 240))
+    draw.rounded_rectangle([360, 90, 604, 520], radius=16, outline=accent2, width=3)
+    draw.rectangle([360, 90, 604, 138], outline=accent2, width=2)
+    draw.text((376, 106), "mapper  STDIO", font=font, fill=accent2)
+    for i, label in enumerate(("initialize", "openProject", "transform")):
+        y = 170 + i * 70
+        draw.rounded_rectangle([380, y, 584, y + 48], radius=8, outline=accent, width=2)
+        draw.text((394, y + 16), label, font=font, fill=(226, 232, 240))
+    for y in (194, 264, 334):
+        draw.line([(300, y), (360, y)], fill=accent, width=2)
+
+
 def draw_cow_art(draw: ImageDraw.ImageDraw, accent, accent2):
     """One memory file, shared clean pages, private dirty islands."""
     draw.rounded_rectangle([56, 86, 560, 150], radius=12, outline=accent, width=3)
@@ -197,6 +218,8 @@ def render_cover(post: dict) -> Image.Image:
         draw_instant_nav_art(d, accent, accent2)
     elif slug == "firecracker-cow-snapshot-fork-vs-jailer-isolation":
         draw_cow_art(d, accent, accent2)
+    elif slug == "typescript-7-1-content-mapper-json-rpc-vs-compiler-api":
+        draw_mapper_art(d, accent, accent2)
     elif variant == 0:
         draw_graph(d, seed, accent, accent2, variant)
     elif variant == 1:
@@ -240,6 +263,9 @@ def render_cover(post: dict) -> Image.Image:
 
 
 def main():
+    import sys
+
+    only = sys.argv[1] if len(sys.argv) > 1 else None
     preserve = {
         "async-request-apis-nextjs-15-cookies-headers-params-concurrency",
         "deconstructing-react-flight-protocol-rsc-wire-format-streaming",
@@ -252,10 +278,13 @@ def main():
         "the-great-un-caching-nextjs-15-caching-architecture-defaults",
         "nextjs-16-3-instant-navigations-app-shell-partial-prefetch",
         "firecracker-cow-snapshot-fork-vs-jailer-isolation",
+        "typescript-7-1-content-mapper-json-rpc-vs-compiler-api",
     }
     written = 0
     skipped = 0
     for p in POSTS:
+        if only and p["slug"] != only:
+            continue
         dest = OUT / f"{p['slug']}.jpg"
         if p["slug"] in preserve and dest.exists():
             skipped += 1
@@ -263,7 +292,7 @@ def main():
         cover = render_cover(p)
         cover.save(dest, "JPEG", quality=84, optimize=True)
         written += 1
-    print(json.dumps({"written": written, "preserved_custom": skipped, "total": len(POSTS)}))
+    print(json.dumps({"written": written, "preserved_custom": skipped, "total": len(POSTS), "only": only}))
 
 
 if __name__ == "__main__":
