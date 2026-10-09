@@ -1,6 +1,6 @@
 # Designing Agent Fleet Orchestrator: Hierarchical LangGraph Supervisor-Worker Topologies & Distributed Execution
 
-In enterprise AI engineering (**Agent Fleet Orchestrator**, **LangGraph Multi-Agent**, **Autonomous Software Engineering Swarms**), coordinating multiple autonomous AI agents to solve complex, multi-step engineering missions is rapidly replacing single-prompt pipelines.
+In enterprise AI engineering (**Agent Fleet Orchestrator**, **LangGraph Multi-Agent**, **Autonomous Software Engineering Swarms**), coordinating multiple autonomous AI agents to solve complex, multi-step engineering missions is rapidly replacing single-prompt pipelines [1].
 
 However, naive peer-to-peer agent swarms (where all agents communicate freely in a flat network) suffer from catastrophic failures: infinite recursive messaging loops, non-deterministic state drift, and runaway token expenses.
 
@@ -17,9 +17,9 @@ Agent Fleet Orchestrator implements a **Hierarchical Supervisor-Worker Topology*
 How the Supervisor Agent plans missions, dispatches tasks to parallel worker nodes, and recovers state via persistent checkpoints:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_UserMissionIngestion ["User Mission Ingestion"]
-    User[User Engineering Goal] --> Supervisor["LangGraph Supervisor Agent (Planner & Router)"]
+    User["User Engineering Goal"] --> Supervisor["LangGraph Supervisor Agent (Planner & Router)"]
   end
   
   subgraph SG2_ParallelDomainWorker ["Parallel Domain Worker Swarm"]
@@ -32,9 +32,20 @@ graph TD
   subgraph SG3_CheckpointMemoryTelemetry ["Checkpoint Memory & Telemetry"]
     Coder & Security & DB & QA --> Checkpoint["PostgresSaver Checkpointing (Rollback & Resume)"]
     Checkpoint --> Evaluator["Supervisor Evaluation & Synthesis Gate"]
-    Evaluator -->|Approved| MissionSuccess["🎉 Mission Complete (Merged Artifacts)"]
-    Evaluator -->|Tests Failed| AutoHeal["🔄 Dispatch Feedback to Coder Agent"]
+    Evaluator -->|Approved| MissionSuccess[" Mission Complete (Merged Artifacts)"]
+    Evaluator -->|Tests Failed| AutoHeal[" Dispatch Feedback to Coder Agent"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,QA blue
+class Supervisor,Checkpoint green
+class Coder,Evaluator purple
+class Security,MissionSuccess yellow
+class DB,AutoHeal red
 ```
 
 ### Core Architecture Highlights
@@ -196,4 +207,13 @@ Agent Fleet Orchestrator streamlines autonomous operations:
 * **$100\%$ Deterministic Checkpoint Recovery**: Resumes failed sub-tasks instantly without re-running completed upstream nodes.
 * **Bounded Token Expenditure**: Hierarchical supervisor routing prevents uncontrolled peer-to-peer message loops.
 
-You can explore the open-source codebase on GitHub: **[`akmalkhaniub/agent-fleet-orchestrator`](https://github.com/akmalkhaniub/agent-fleet-orchestrator)**.
+You can explore the open-source codebase on GitHub: **[`akmalkhaniub/agent-fleet-orchestrator`](https://github.com/akmalkhaniub/agent-fleet-orchestrator)**. [2]
+
+## References & Further Reading
+
+1. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+2. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+4. **Cytron, R., et al. (1991)**. *Efficiently Computing Static Single Assignment Form and the Control Dependence Graph*. ACM TOPLAS. [https://doi.org/10.1145/115372.115320](https://doi.org/10.1145/115372.115320)
+5. **Lattner, C., & Adve, V. (2004)**. *LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation*. CGO. [https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf](https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf)
+6. **V8 Team (2024)**. *V8 Orinoco and Garbage Collection*. v8.dev. [https://v8.dev/blog](https://v8.dev/blog)

@@ -9,22 +9,33 @@
 ## Bridging Vision Models and Code Generators
 
 In typical design-to-code pipelines:
-* **The Unstructured Pixel Problem**: Vision models can recognize text in an image but struggle to accurately nesting elements inside flexbox/grid containers based purely on raw pixel inputs.
+* **The Unstructured Pixel Problem**: Vision models can recognize text in an image but struggle to accurately nesting elements inside flexbox/grid containers based purely on raw pixel inputs [1].
 * **Redundant DOM Elements**: Direct image-to-HTML generation often creates absolute positioning hacks that break responsive layouts.
 * **The Solution**: **Visual Bounding Box Segmentation**. We process image element bounding boxes `[ymin, xmin, ymax, xmax]`, group adjacent elements into parent container nodes, and output clean component trees.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Image[UI Wireframe Screenshot Image] --> Vision[Vision Model Object Detector]
+    Image["UI Wireframe Screenshot Image"] --> Vision["Vision Model Object Detector"]
     
     subgraph SG1_BoundingBoxParser ["Bounding Box Parser"]
-        Vision --> BBoxes[Extract Element BBoxes: X, Y, Width, Height]
-        BBoxes --> Hierarchy[Nest Child Nodes inside Parent Containers]
+        Vision --> BBoxes["Extract Element BBoxes: X, Y, Width, Height"]
+        BBoxes --> Hierarchy["Nest Child Nodes inside Parent Containers"]
     end
     
-    Hierarchy --> TreeCompiler[Compile Nested Component JSON Tree]
+    Hierarchy --> TreeCompiler["Compile Nested Component JSON Tree"]
     TreeCompiler --> CodeGen([Generate Responsive React Code])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Image blue
+class Vision green
+class BBoxes purple
+class Hierarchy yellow
+class TreeCompiler red
 ```
 
 ---
@@ -119,4 +130,10 @@ if __name__ == "__main__":
 
 * **Sort by Surface Area**: Process container bounding boxes first to establish parent bounds before placing child elements.
 * **Check Spatial Containment**: Verify bounding box overlaps to build nested component trees automatically.
-* **Pass Structured Layouts**: Supply structured JSON layout maps to code generation models to avoid hardcoded absolute positioning.
+* **Pass Structured Layouts**: Supply structured JSON layout maps to code generation models to avoid hardcoded absolute positioning. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

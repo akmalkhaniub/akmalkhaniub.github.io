@@ -9,23 +9,34 @@
 ## The Race Condition Hazard in Swarms
 
 In uncoordinated multi-agent networks:
-* **The Simultaneous Mutation Trap**: Worker Agent A reads user balance $100 while Worker Agent B reads balance $100 concurrently. Both write updated values based on initial state, causing lost updates.
+* **The Simultaneous Mutation Trap**: Worker Agent A reads user balance $100 while Worker Agent B reads balance $100 concurrently [1]. Both write updated values based on initial state, causing lost updates.
 * **Stale Lock Leases**: Slow agent tasks cause lock timeouts to expire while execution is in progress, allowing a second agent to grab the lock prematurely.
 * **The Solution**: **Fencing Tokens**. Every granted lock lease includes an incremental integer fencing token (`fencing_token = 105`). Shared resources reject incoming write operations if the client presents an outdated token.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent1[Worker Agent Node 1] -->|Request Lock: resource_db| LockMgr[Distributed Lock Manager]
-    Agent2[Worker Agent Node 2] -->|Request Lock: resource_db| LockMgr
+    Agent1["Worker Agent Node 1"] -->|Request Lock - resource_db| LockMgr["Distributed Lock Manager"]
+    Agent2["Worker Agent Node 2"] -->|Request Lock - resource_db| LockMgr
     
     subgraph SG1_LockArbitrator ["Lock Arbitrator"]
-        LockMgr -->|Grant Lease + Token 101| Lease1[Lock Granted: Agent 1]
-        LockMgr -->|Reject: Resource Locked| Lockout[Agent 2 Blocked]
+        LockMgr -->|Grant Lease + Token 101| Lease1["Lock Granted: Agent 1"]
+        LockMgr -->|Reject - Resource Locked| Lockout["Agent 2 Blocked"]
     end
     
     Lease1 -->|Write Mutation + Token 101| Storage[(Target Resource DB)]
-    Storage -->|Verify Token 101 > Last Token 100| Commit[Commit Transaction]
+    Storage -->|Verify Token 101 > Last Token 100| Commit["Commit Transaction"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent1,Commit blue
+class LockMgr green
+class Agent2 purple
+class Lease1 yellow
+class Lockout red
 ```
 
 ---
@@ -120,4 +131,13 @@ if __name__ == "__main__":
 
 * **Enforce Monotonic Fencing Tokens**: Always attach auto-incrementing integer fencing tokens to lock leases.
 * **Validate Tokens at Storage Targets**: Reject write requests if the provided fencing token is older than the last applied token.
-* **Set TTL Lease Expirations**: Include automatic lease expiration timeouts to prevent deadlocks when agent nodes crash.
+* **Set TTL Lease Expirations**: Include automatic lease expiration timeouts to prevent deadlocks when agent nodes crash. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)
+4. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

@@ -60,19 +60,19 @@ The agent fleet acts as the Staff Research & Drafting Bureau, while **Akmal Khan
 flowchart TD
   subgraph Gate1_Section ["Gate 1: Topic Inception Approval"]
     G1_A["topic-proposal-verifier evaluates scores"] --> G1_B["Present 3 Scored Topic Dossiers"]
-    G1_B --> G1_C{{"Human Decision: Select Topic or Pivot Angle"}}
+    G1_B --> G1_C["Human Decision: Select Topic or Pivot Angle"]
   end
 
   subgraph Gate2_Section ["Gate 2: Vertical Visual & Outline Approval"]
     G1_C -->|Approved| G2_A["deep-tech-researcher builds Vertical Layouts"]
     G2_A --> G2_B["Present Vertical Diagrams & 5-Beat Outline"]
-    G2_B --> G2_C{{"Human Decision: Approve Flow & Mental Models"}}
+    G2_B --> G2_C["Human Decision: Approve Flow and Mental Models"]
   end
 
   subgraph Gate3_Section ["Gate 3: Pre-Deploy Release Greenlight"]
     G2_C -->|Approved| G3_A["Drafting, Benchmarks & Red Team Audit"]
     G3_A --> G3_B["Present Live Preview & Audit Report"]
-    G3_B --> G3_C{{"Human Decision: Final Authorization to Deploy"}}
+    G3_B --> G3_C["Human Decision: Final Authorization to Deploy"]
   end
 
   G3_C -->|Approved| G3_D["Git Commit & Push to GitHub Pages"]
@@ -98,7 +98,8 @@ akmalkhaniub.github.io/
 │       ├── seo-and-publication-qa-auditor/  # 8. Audits TOC anchors, JSON-LD & static build
 │       ├── distribution-and-social-packager/# 9. ByteByteGo visual carousels & HN hooks
 │       ├── multi-platform-syndication-manager/# 10. Downstream distribution with canonical tags
-│       └── evergreen-lifecycle-and-analytics-monitor/ # 11. Deprecation audits & errata maintenance
+│       ├── evergreen-lifecycle-and-analytics-monitor/ # 11. Deprecation audits & errata maintenance
+│       └── community-feedback-and-errata-manager/     # 12. Giscus / HN triage & living errata
 ├── blog/
 ├── scripts/
 ├── PUBLICATION_TARGETS.json                 # Downstream syndication platform configuration
@@ -115,3 +116,28 @@ akmalkhaniub.github.io/
 4. **The Stack Freshness Invariant**: Always verify live LTS package versions. Never refer to an older release as current.
 5. **The Mermaid Parser Safety Invariant**: Square brackets with quotes for nodes (`NodeID["Clean Title"]`), clean edge text (`-->|Cache Hit| Node`), clean subgraphs.
 6. **The Red Team Clearance Invariant**: No article may be deployed without explicit clearance from `staff-architect-red-team`.
+
+---
+
+## 6. Canonical Fleet Execution Order
+
+Skills are not optional flavor text. For a **new** essay they run in this order, stopping at each HITL gate:
+
+1. `topic-proposal-verifier` — three scored dossiers. **Gate 1 STOP.**
+2. `human-editorial-gatekeeper` — hold until the editor picks a topic.
+3. `deep-tech-researcher` — live LTS versions, primary RFCs, `flowchart TD` blueprints (max two columns). **Gate 2 STOP.**
+4. `visual-and-cover-art-creator` — 16:9 cover at `blog/assets/covers/<slug>.jpg` plus hardened Mermaid.
+5. `narrative-tech-storyteller` — 5-beat draft with numbered citations.
+6. `code-and-benchmark-verifier` — typed snippets and runnable benches.
+7. `staff-architect-red-team` — ACCEPTED / REVISE / REJECT.
+8. `seo-and-publication-qa-auditor` — TOC, JSON-LD `image`, sitemap/RSS, `npm run pipeline <slug>`. **Gate 3 STOP.**
+9. `distribution-and-social-packager` then `multi-platform-syndication-manager` — canonical URL on every cross-post. Write packages under `blog/posts/<slug>.syndication.md` (do not invent a missing `blog/articles/` tree).
+
+Post-publish (not a substitute for Gates 1–3):
+
+10. `community-feedback-and-errata-manager` — Giscus / HN triage, dated errata callouts.
+11. `evergreen-lifecycle-and-analytics-monitor` — EOL banners, duplicate-slug audits, Next.js 16.3 vs 15 Maintenance vs 14 EOL.
+
+`scripts/publish-pipeline.js` is the mechanical gate: it fails the build on `flowchart LR` / `graph LR`, `graph TD`, quoted rhombus nodes, and duplicate `posts.json` slugs. Missing `## References & Further Reading` is a warning, not a silent pass.
+
+**Do not** copy example diagrams from older skill drafts that use `graph TD` or `-->|1. Step|`. Those contradict the Visual Invariant.

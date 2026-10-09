@@ -51,7 +51,7 @@ renderer.heading = function (token) {
   const depth = token.depth;
   const rawText = token.text;
   const id = slugify(rawText);
-  if (depth === 2) {
+  if (depth === 2 || depth === 3) {
     currentHeadings.push({ depth, text: rawText, id });
   }
   const content = this.parser ? this.parser.parseInline(token.tokens) : escapeHtml(rawText);
@@ -154,19 +154,19 @@ function pageHtml(post, bodyHtml, tocSidebarCard = '', mobileToc = '') {
   const desc = escapeHtml(post.description);
   const iso = toISO(post.date);
   const tagsHtml = post.tags.map((t) => `<span class="project-badge">${escapeHtml(t)}</span>`).join('');
+  const ogImage = post.coverImage ? `${SITE}${post.coverImage}` : 'https://github.com/akmalkhaniub.png';
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
     headline: post.title,
     description: post.description,
     url,
+    image: ogImage,
     ...(iso ? { datePublished: iso } : {}),
     keywords: post.tags.join(', '),
     author: { '@type': 'Person', name: AUTHOR, url: `${SITE}/` },
     mainEntityOfPage: url
   }, null, 2);
-
-  const ogImage = post.coverImage ? `${SITE}${post.coverImage}` : 'https://github.com/akmalkhaniub.png';
 
   const isEbook = ebookSlugs.has(post.slug);
   const sidebarIcon = isEbook ? 'fa-book' : 'fa-list';

@@ -9,20 +9,31 @@
 ## The Line-by-Line Bottleneck
 
 Human cognitive processing cannot keep pace with AI code output. When an agent updates a database connector, generates 15 tests, and rewrites a controller endpoint in 45 seconds, a TL trying to review it line-by-line experiences:
-* **Review Fatigue**: After inspecting the 5th AI-generated PR of the morning, critical details slip past.
+* **Review Fatigue**: After inspecting the 5th AI-generated PR of the morning, critical details slip past [1].
 * **Semantic Blind Spots**: AI code is syntactically perfect, making logical bugs or security vulnerabilities (e.g. subtle SQL injections or race conditions) hard to spot visually.
 * **The Solution**: Shifting focus from *inspecting code* to *engineering the verification gates*. The Team Lead's primary job is to write the strict boundaries (assertions, validation contracts, integrations) and let the gates verify the code.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Code[AI-Generated Code Commit] --> AST[1. AST Syntax & Type Checker]
-    AST -->|Pass| Unit[2. Unit & Integration Test Suites]
-    Unit -->|Pass| Sec[3. AST Security Scanner]
-    Sec -->|Pass| Score[4. Compute Verification Integrity Score]
+    Code["AI-Generated Code Commit"] --> AST["1. AST Syntax & Type Checker"]
+    AST -->|Pass| Unit["2. Unit & Integration Test Suites"]
+    Unit -->|Pass| Sec["3. AST Security Scanner"]
+    Sec -->|Pass| Score["4. Compute Verification Integrity Score"]
     
     Score -->|Score >= 95%| PassGate([Promote to Production / Staging])
     Score -->|Score < 95%| RejectGate([Reject & Route back to Agent Context])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Code blue
+class AST green
+class Unit purple
+class Sec yellow
+class Score red
 ```
 
 ---
@@ -154,4 +165,10 @@ def run_command(command: str):
 
 * **Define Boundaries, Not Implementations**: Focus your manual efforts on writing strict schemas (e.g. JSON schema, Pydantic templates) and architectural guidelines. Let the validation gates test the code logic.
 * **Automate Security Scans**: Never rely on visual code reviews to catch security holes. Deploy automated checkers like Bandit, Semgrep, or Snyk directly inside the PR lifecycle.
-* **Log Verification Metrices**: Maintain a database of code verification scores. If code from a particular source regularly drops below the threshold, refine the prompt context or update the model constraints.
+* **Log Verification Metrices**: Maintain a database of code verification scores. If code from a particular source regularly drops below the threshold, refine the prompt context or update the model constraints. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

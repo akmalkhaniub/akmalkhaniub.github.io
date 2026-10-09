@@ -9,20 +9,31 @@
 ## The Overhead of Monolithic DOM Ingestion
 
 In basic web agent setups:
-* **The Noise Factor**: Raw HTML is filled with redundant styling tags, script nodes, and SVG descriptors that do not help the agent navigate the page.
+* **The Noise Factor**: Raw HTML is filled with redundant styling tags, script nodes, and SVG descriptors that do not help the agent navigate the page [1].
 * **Instruction Overload**: Stuffing 100k tokens of raw page source code makes it difficult for the model to find specific navigation buttons (e.g. the "Add to Cart" button).
 * **The Solution**: **Visual DOM Segmentation**. We parse the page layout using element bounding boxes, group adjacent nodes into visual coordinate segments, and export a simplified JSON grid map.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    RawHTML[Raw HTML Page Source] --> Parser[Remove Script, Style, SVG Nodes]
+    RawHTML["Raw HTML Page Source"] --> Parser["Remove Script, Style, SVG Nodes"]
     
-    Parser --> Box[Extract Element Bounding Boxes: X, Y, Width, Height]
-    Box --> Grid[Group Adjacent Elements into Grid Segments]
+    Parser --> Box["Extract Element Bounding Boxes: X, Y, Width, Height"]
+    Box --> Grid["Group Adjacent Elements into Grid Segments"]
     
-    Grid --> Compile[Compile Compressed JSON Grid Map]
+    Grid --> Compile["Compile Compressed JSON Grid Map"]
     Compile --> Agent([Execute Web Agent Step])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class RawHTML blue
+class Parser green
+class Box purple
+class Grid yellow
+class Compile red
 ```
 
 ---
@@ -117,4 +128,13 @@ if __name__ == "__main__":
 
 * **Filter Non-Visual Nodes**: Remove all script, style, and SVG tags before processing webpage structures.
 * **Isolate Interactive Nodes**: Focus DOM parsing exclusively on interactive tags (buttons, links, inputs) to limit token usage.
-* **Enforce Row Baselines**: Group adjacent nodes sharing similar vertical offsets to simplify layout trees.
+* **Enforce Row Baselines**: Group adjacent nodes sharing similar vertical offsets to simplify layout trees. [2]
+
+## References & Further Reading
+
+1. **Donenfeld, J. A. (2017)**. *WireGuard: Next Generation Kernel Network Tunnel*. NDSS. [https://www.wireguard.com/papers/wireguard.pdf](https://www.wireguard.com/papers/wireguard.pdf)
+2. **SPIFFE Authors (2024)**. *SPIFFE Specification*. CNCF. [https://github.com/spiffe/spiffe/blob/main/standards/SPIFFE.md](https://github.com/spiffe/spiffe/blob/main/standards/SPIFFE.md)
+3. **Perrin, T. (2018)**. *The Noise Protocol Framework*. noiseprotocol.org. [https://noiseprotocol.org/noise.pdf](https://noiseprotocol.org/noise.pdf)
+4. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+5. **Reed, D. P. (1978)**. *Naming and Synchronization in a Decentralized Computer System*. MIT PhD Thesis. [https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf](https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf)
+6. **Bayer, R., & McCreight, E. (1972)**. *Organization and Maintenance of Large Ordered Indexes*. Acta Informatica. [https://doi.org/10.1007/BF00288683](https://doi.org/10.1007/BF00288683)

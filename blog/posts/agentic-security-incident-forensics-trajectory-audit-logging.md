@@ -1,6 +1,6 @@
 # Incident Forensics & Trajectory Audit Logging for AI Security Outages
 
-When a traditional web application suffers a security incident, SRE and security teams analyze web server access logs, database query histories, and stack traces. However, when an autonomous AI agent is compromised—such as executing an unauthorized database update or exfiltrating data via an indirect prompt injection—standard HTTP logs fail to reveal *why* the agent chose to perform the action.
+When a traditional web application suffers a security incident, SRE and security teams analyze web server access logs, database query histories, and stack traces [1]. However, when an autonomous AI agent is compromised—such as executing an unauthorized database update or exfiltrating data via an indirect prompt injection—standard HTTP logs fail to reveal *why* the agent chose to perform the action.
 
 Because agentic workflows involve non-deterministic reasoning, multi-step tool calls, and dynamic context retrieval, security teams need **Trajectory Audit Logs**. 
 
@@ -15,23 +15,34 @@ This article details how to design immutable trajectory audit logging pipelines 
 The forensic logging pipeline captures immutable telemetry at every step of the agent execution lifecycle:
 
 ```mermaid
-graph TD
-  A[User / System Incident Trigger] --> B[Agent Worker Execution Loop]
+flowchart TD
+  A["User / System Incident Trigger"] --> B["Agent Worker Execution Loop"]
   
   subgraph SG1_ImmutableTrajectoryAudit ["Immutable Trajectory Audit Logging (JSONL / BigQuery)"]
-    B -->|Step 1: System Prompt & User Context| C[(Trajectory Log Store)]
-    B -->|Step 2: Retrieved Context & Vector Scores| C
-    B -->|Step 3: Raw LLM Output & Tool Invocation| C
-    B -->|Step 4: Tool Execution Result & Status| C
+    B -->|Step 1 - System Prompt & User Context| C[(Trajectory Log Store)]
+    B -->|Step 2 - Retrieved Context & Vector Scores| C
+    B -->|Step 3 - Raw LLM Output & Tool Invocation| C
+    B -->|Step 4 - Tool Execution Result & Status| C
   end
   
   subgraph SG2_PostIncidentForensic ["Post-Incident Forensic Reconstruction"]
-    D[Security Incident Alert] --> E[Forensic Trajectory Parser]
+    D["Security Incident Alert"] --> E["Forensic Trajectory Parser"]
     C --> E
-    E --> F[Identify Injection Entry Step]
-    E --> G[Isolate Compromised Tool Sessions]
-    E --> H[Generate Incident Forensic Report & Token Revocation]
+    E --> F["Identify Injection Entry Step"]
+    E --> G["Isolate Compromised Tool Sessions"]
+    E --> H["Generate Incident Forensic Report & Token Revocation"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class B,H green
+class D purple
+class E yellow
+class F red
 ```
 
 ### Forensic Reconstruction Requirements
@@ -173,4 +184,10 @@ When implementing trajectory logging pipelines:
 ## Real-World Enterprise Impact
 Teams establishing Trajectory Audit Logging report:
 * **Rapid Incident Root-Cause Identification**: Forensic parsers locate the exact prompt injection entry point in seconds rather than hours.
-* **Complete Audit Trail for Compliance**: Full step-by-step causal records satisfy enterprise SOC2 Type II and FedRAMP security requirements.
+* **Complete Audit Trail for Compliance**: Full step-by-step causal records satisfy enterprise SOC2 Type II and FedRAMP security requirements. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

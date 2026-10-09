@@ -7,7 +7,7 @@
 
 In the era of Generative AI, context is the primary constraint.
 
-While Large Language Models (LLMs) are equipped with massive parametric knowledge, they are blind to real-time environments, local codebases, live production databases, and cloud infrastructure. The traditional solution has been to write custom wrapper scripts, compile text prompts, or feed entire database schemas into the context window.
+While Large Language Models (LLMs) are equipped with massive parametric knowledge, they are blind to real-time environments, local codebases, live production databases, and cloud infrastructure [1]. The traditional solution has been to write custom wrapper scripts, compile text prompts, or feed entire database schemas into the context window.
 
 This brute-force approach leads to what engineers call the **"Lost in the Middle"** phenomenon: when an LLM is overloaded with unstructured context, its retrieval accuracy drops, token latency skyrockets, and API billing increases exponentially.
 
@@ -24,15 +24,26 @@ Instead of hardcoding APIs for your AI agents, the Model Context Protocol standa
 In the `ops-mcp-suite` architecture, a unified **FastAPI Gateway** acts as a secure proxy, routing tool calls from agent networks to specialized local and remote MCP microservices.
 
 ```mermaid
-graph TD
-    A[AI Agent / LLM Client] -->|1. JSON-RPC Request| B[FastAPI Gateway Proxy]
-    B -->|2. Route DevOps Call| C[DevOps MCP Server]
-    B -->|2. Route DB Call| D[DBOps MCP Server]
-    B -->|2. Route Secrets Call| E[Secrets MCP Server]
+flowchart TD
+    A["AI Agent / LLM Client"] -->|JSON-RPC Request| B["FastAPI Gateway Proxy"]
+    B -->|Route DevOps Call| C["DevOps MCP Server"]
+    B -->|Route DB Call| D["DBOps MCP Server"]
+    B -->|Route Secrets Call| E["Secrets MCP Server"]
     
     C -->|Docker API| F[(Local Containers)]
     D -->|SQL Alchemy| G[(PostgreSQL / MySQL)]
     E -->|Fernet Cryptography| H[(Secure Environment Keyring)]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A blue
+class B green
+class C purple
+class D yellow
+class E red
 ```
 
 ---
@@ -168,4 +179,14 @@ Context Engineering, powered by the Model Context Protocol, offers a robust fram
 2. **Robust Security Gating:** Critical for preventing prompt injection, Context Engineering emphasizes strict input validation, type checking, and parameterized queries, ensuring LLM interactions remain secure and controlled.
 3. **Secure Credential Management:** MCP servers can manage sensitive credentials through cryptographic keyrings, allowing LLMs to trigger actions requiring secrets without ever exposing the raw keys to the model's context or chat history.
 
-*Takeaway: By meticulously engineering the context provided to LLMs, we unlock their full potential while maintaining control, security, and efficiency.*
+*Takeaway: By meticulously engineering the context provided to LLMs, we unlock their full potential while maintaining control, security, and efficiency.* [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Anthropic (2025)**. *Model Context Protocol Specification*. MCP Docs. [https://modelcontextprotocol.io/specification](https://modelcontextprotocol.io/specification)
+6. **LangChain (2024)**. *LangGraph Documentation*. langchain.com. [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+7. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

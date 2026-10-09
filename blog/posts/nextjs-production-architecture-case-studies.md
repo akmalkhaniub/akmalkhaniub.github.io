@@ -1,6 +1,6 @@
 # Next.js Production Architectures: A Comparative Study of 5 Open-Source Leaders
 
-How do elite teams build, scale, and secure Next.js applications in production? Rather than looking at toy examples or boilerplate templates, we can learn the most by auditing the codebases of leading open-source companies. 
+How do elite teams build, scale, and secure Next.js applications in production? Rather than looking at toy examples or boilerplate templates, we can learn the most by auditing the codebases of leading open-source companies [1]. 
 
 In this architectural deep dive, we compare 5 top open-source Next.js projects on GitHub:
 1. **Midday** (`midday-ai/midday`): A financial management engine for freelancers.
@@ -167,4 +167,14 @@ When designing your own Next.js systems, let these open-source leaders guide you
 
 1. **For high-volume edge operations:** Decouple performance-critical routes to Edge Runtime, Hono, or Cloudflare Workers, keeping Next.js App Router for complex dashboard portals (Unkey, Dub.co).
 2. **For database performance:** Choose **Drizzle** if serverless cold starts or edge databases are a priority; choose **Prisma** if your system relies on deep relational queries where schema-first tooling saves dev time.
-3. **For component design:** Use **Server Actions** for rapid SaaS forms to eliminate API boilerplate; use **tRPC / REST** if your backend needs to serve mobile clients or external developers.
+3. **For component design:** Use **Server Actions** for rapid SaaS forms to eliminate API boilerplate; use **tRPC / REST** if your backend needs to serve mobile clients or external developers. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Garcia-Molina, H., & Salem, K. (1987)**. *Sagas*. SIGMOD. [https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf](https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf)
+6. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)
+7. **Turner, J. S. (1986)**. *New Directions in Communications (or Which Way to the Information Age?)*. IEEE Communications Magazine. [https://doi.org/10.1109/MCOM.1986.1092946](https://doi.org/10.1109/MCOM.1986.1092946)

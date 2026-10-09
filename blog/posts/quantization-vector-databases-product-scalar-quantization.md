@@ -1,6 +1,6 @@
 # Quantization in Vector Databases: Product Quantization (PQ) & Scalar Quantization (SQ)
 
-Storing and searching billion-scale vector collections presents a formidable RAM infrastructure bottleneck.
+Storing and searching billion-scale vector collections presents a formidable RAM infrastructure bottleneck [1].
 
 Each $1536$-dimensional vector embedding represented as 32-bit single-precision floating-point numbers (`float32`) consumes $6,144$ bytes ($1536 \times 4$ bytes). Storing 100 million uncompressed vectors requires **$614.4$ GB of high-speed RAM**—excluding graph index overhead!
 
@@ -19,22 +19,33 @@ This article explores the mathematical mechanics of SQ8, Product Quantization, a
 How Product Quantization splits high-dimensional vectors into sub-vectors and encodes them into byte codes:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RawFloat32Vector ["Raw Float32 Vector (D = 1536 dims, 6144 bytes)"]
-    V[Raw Vector: 1536 float32 values] -->|1. Decompose into M=8 Sub-vectors| SV1[Sub-vector 1: 192 dims]
-    V --> SV2[Sub-vector 2: 192 dims]
-    V --> SV8[Sub-vector 8: 192 dims]
+    V["Raw Vector: 1536 float32 values"] -->|Decompose into M=8 Sub-vectors| SV1["Sub-vector 1: 192 dims"]
+    V --> SV2["Sub-vector 2: 192 dims"]
+    V --> SV8["Sub-vector 8: 192 dims"]
   end
   
   subgraph SG2_SubSpaceK ["Sub-space K-Means Codebooks (256 Centroids per Sub-space)"]
-    SV1 -->|2. Find Nearest Centroid| CB1[Codebook 1: Centroid ID #42]
-    SV2 -->|2. Find Nearest Centroid| CB2[Codebook 2: Centroid ID #189]
-    SV8 -->|2. Find Nearest Centroid| CB8[Codebook 8: Centroid ID #7]
+    SV1 -->|Find Nearest Centroid| CB1["Codebook 1: Centroid ID #42"]
+    SV2 -->|Find Nearest Centroid| CB2["Codebook 2: Centroid ID #189"]
+    SV8 -->|Find Nearest Centroid| CB8["Codebook 8: Centroid ID #7"]
   end
   
   subgraph SG3_CompressedByteCode ["Compressed Byte Code Output (8 bytes total! 99.87% Memory Savings)"]
-    CB1 & CB2 & CB8 -->|3. Assemble Byte Code| Quantized[Quantized Byte Array: [42, 189, ..., 7]]
+    CB1 & CB2 & CB8 -->|Assemble Byte Code| Quantized["Quantized Byte Array: [42, 189, ..., 7"]]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class V,CB2 blue
+class SV1,CB8 green
+class SV2,Quantized purple
+class SV8 yellow
+class CB1 red
 ```
 
 ### Core Quantization Techniques
@@ -188,4 +199,13 @@ When configuring vector database quantization:
 ## Real-World Enterprise Impact
 Vector database deployments utilizing Product Quantization report:
 * **Over 90% RAM Cost Reduction**: Compressing 100M float32 vectors from $614\text{ GB}$ down to $25\text{ GB}$ allows hosting billion-scale vector indexes on modest single-node servers.
-* **$5\times$ Faster Query Latencies**: Smaller byte code sizes fit entirely within CPU L3 cache lines, eliminating RAM bus memory bandwidth bottlenecks during SIMD matrix evaluations.
+* **$5\times$ Faster Query Latencies**: Smaller byte code sizes fit entirely within CPU L3 cache lines, eliminating RAM bus memory bandwidth bottlenecks during SIMD matrix evaluations. [2]
+
+## References & Further Reading
+
+1. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+2. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Lin, J., et al. (2024)**. *AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration*. MLSys. [https://arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)
+5. **Frantar, E., et al. (2023)**. *GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers*. ICLR. [https://arxiv.org/abs/2210.17323](https://arxiv.org/abs/2210.17323)
+6. **Wang, H., et al. (2023)**. *BitNet: Scaling 1-bit Transformers for Large Language Models*. arXiv. [https://arxiv.org/abs/2310.11453](https://arxiv.org/abs/2310.11453)

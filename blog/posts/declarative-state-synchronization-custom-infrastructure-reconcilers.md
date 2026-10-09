@@ -1,6 +1,6 @@
 # Declarative State Synchronization: Building Custom Infrastructure Reconcilers
 
-Traditional infrastructure automation relied on **Imperative Scripting** (such as Bash scripts or step-by-step Ansible playbooks). Imperative automation tells the system *how* to execute actions (`create VM`, `attach volume`, `open port 80`). If a script fails midway due to a transient network error, re-running the script often causes duplicate resource errors or partial, broken states.
+Traditional infrastructure automation relied on **Imperative Scripting** (such as Bash scripts or step-by-step Ansible playbooks) [1]. Imperative automation tells the system *how* to execute actions (`create VM`, `attach volume`, `open port 80`). If a script fails midway due to a transient network error, re-running the script often causes duplicate resource errors or partial, broken states.
 
 Modern Cloud-Native Control Planes adopt **Declarative State Synchronization**.
 
@@ -15,27 +15,38 @@ This article details how to build custom declarative reconcilers using Level-Tri
 How a Declarative Reconciler evaluates Level-Triggered state diffs and drives infrastructure convergence:
 
 ```mermaid
-graph TD
-  User[Declarative Spec: YAML / JSON] -->|1. Submit Desired State| Store[(State Store: Desired State)]
+flowchart TD
+  User["Declarative Spec: YAML / JSON"] -->|Submit Desired State| Store[(State Store: Desired State)]
   
   subgraph SG1_LevelTriggeredReconciliation ["Level-Triggered Reconciliation Engine"]
-    Store -->|2. Read Desired State| DiffEngine[Three-Way Diff Engine]
-    Live[Cloud API: Actual Live State] -->|3. Query Actual State| DiffEngine
-    Last[Last-Applied Configuration] -->|4. Read Last Applied| DiffEngine
+    Store -->|Read Desired State| DiffEngine["Three-Way Diff Engine"]
+    Live["Cloud API: Actual Live State"] -->|Query Actual State| DiffEngine
+    Last["Last-Applied Configuration"] -->|Read Last Applied| DiffEngine
     
-    DiffEngine -->|5. Compute Minimal Delta CRUD| ActionPlan{Delta Required?}
+    DiffEngine -->|Compute Minimal Delta CRUD| ActionPlan{Delta Required?}
   end
   
   subgraph SG2_AutomatedInfrastructureProvisioner ["Automated Infrastructure Provisioner"]
-    ActionPlan -->|Create Missing Resources| Provision[Cloud API: Create Resource]
-    ActionPlan -->|Update Drifted Resources| Update[Cloud API: Update Resource]
-    ActionPlan -->|Delete Orphaned Resources| Purge[Cloud API: Delete Resource]
-    ActionPlan -->|In Sync| Sleep[Sleep & Re-Evaluate on Next Level Trigger]
+    ActionPlan -->|Create Missing Resources| Provision["Cloud API: Create Resource"]
+    ActionPlan -->|Update Drifted Resources| Update["Cloud API: Update Resource"]
+    ActionPlan -->|Delete Orphaned Resources| Purge["Cloud API: Delete Resource"]
+    ActionPlan -->|In Sync| Sleep["Sleep & Re-Evaluate on Next Level Trigger"]
     
     Provision --> Live
     Update --> Live
     Purge --> Live
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,Update blue
+class DiffEngine,Purge green
+class Live,Sleep purple
+class Last yellow
+class Provision red
 ```
 
 ### Core Declarative Principles
@@ -175,4 +186,10 @@ When engineering declarative state sync engines:
 ## Real-World Enterprise Impact
 Teams deploying declarative state synchronization report:
 * **Zero Configuration Drift**: Continuous level-triggered reconciliation automatically resets unauthorized manual changes back to verified code specifications.
-* **100% Idempotent Provisioning**: Reconcilers can be executed thousands of times safely without duplicate resource creation or infrastructure corruption.
+* **100% Idempotent Provisioning**: Reconcilers can be executed thousands of times safely without duplicate resource creation or infrastructure corruption. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

@@ -9,22 +9,33 @@
 ## Eliminating Container Boot Latency
 
 In traditional cold-start container architectures:
-* **The Cold Start Delay**: Booting container runtimes, initializing Python virtual environments, and mounting file volumes takes 1500–3000ms.
+* **The Cold Start Delay**: Booting container runtimes, initializing Python virtual environments, and mounting file volumes takes 1500–3000ms [1].
 * **CPU Spikes during Burst Boots**: Spin-up bursts of multiple concurrent containers exhaust host CPU cores during peak agent traffic.
 * **The Solution**: **Pre-Warmed Instance Pools**. We maintain an active memory ring buffer of initialized, clean container instances ready for assignment. When an agent requests a sandbox, the pool manager pops a warm instance instantly in <10ms.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Code Agent Worker] -->|Request Sandbox: <10ms| PoolMgr[Pre-Warmed Pool Manager]
+    Agent["Code Agent Worker"] -->|Request Sandbox - <10ms| PoolMgr["Pre-Warmed Pool Manager"]
     
     subgraph SG1_PreWarmedSandbox ["Pre-Warmed Sandbox Ring Buffer"]
-        PoolMgr -->|Pop Active Warm Instance| Instance1[Warm Sandbox Instance 1 (IDLE)]
-        PoolMgr -->|Background Replenish| PoolWorker[Pool Replenisher Task]
-        PoolWorker -->|Boot fresh instance| Instance2[Warm Sandbox Instance 2 (READY)]
+        PoolMgr -->|Pop Active Warm Instance| Instance1["Warm Sandbox Instance 1 (IDLE)"]
+        PoolMgr -->|Background Replenish| PoolWorker["Pool Replenisher Task"]
+        PoolWorker -->|Boot fresh instance| Instance2["Warm Sandbox Instance 2 (READY)"]
     end
     
     Instance1 -->|Assign to Agent| Execution([Execute Code Payload])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent blue
+class PoolMgr green
+class Instance1 purple
+class PoolWorker yellow
+class Instance2 red
 ```
 
 ---
@@ -125,4 +136,10 @@ if __name__ == "__main__":
 
 * **Decouple Boot from Checkout**: Pre-initialize container environments in background buffers to achieve sub-10ms instance checkout times.
 * **Replenish Asynchronously**: Trigger background creation routines immediately after an instance is assigned to maintain pool target size.
-* **Audit Warm Pool Health**: Periodically recycle idle pre-warmed instances to prevent memory fragmentation and stale state accumulation.
+* **Audit Warm Pool Health**: Periodically recycle idle pre-warmed instances to prevent memory fragmentation and stale state accumulation. [2]
+
+## References & Further Reading
+
+1. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+2. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+3. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

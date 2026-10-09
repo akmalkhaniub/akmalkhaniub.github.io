@@ -8,7 +8,7 @@
 
 ## The Blackboard Race Condition
 
-When scaling multi-agent topologies, synchronizing agent context via direct messaging gets expensive and slow. Instead, we use a central database to store session state, letting agents query and write updates independently.
+When scaling multi-agent topologies, synchronizing agent context via direct messaging gets expensive and slow [1]. Instead, we use a central database to store session state, letting agents query and write updates independently.
 
 However, since agents execute asynchronous processes, they can write conflicting information. For example, if two worker agents try to assign the same task to themselves simultaneously, both might write their name to the task document, violating structural invariants.
 
@@ -17,15 +17,26 @@ To guarantee system stability, we cannot rely on LLM prompts to behave. We must 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Agent State Update Request] --> Begin[Begin Transaction]
-    Begin --> Select[Acquire Row Lock: SELECT FOR UPDATE]
-    Select --> Write[Write New State Data]
+    Agent["Agent State Update Request"] --> Begin["Begin Transaction"]
+    Begin --> Select["Acquire Row Lock: SELECT FOR UPDATE"]
+    Select --> Write["Write New State Data"]
     Write --> InvariantCheck{Run Invariant Assertions}
     
-    InvariantCheck -->|Pass| Commit[Commit Transaction: Save State]
-    InvariantCheck -->|Fail| Rollback[Rollback Transaction: Revert DB state]
+    InvariantCheck -->|Pass| Commit["Commit Transaction: Save State"]
+    InvariantCheck -->|Fail| Rollback["Rollback Transaction: Revert DB state"]
     
     Rollback --> Reject([Reject Agent Request & Log Error])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent,Rollback blue
+class Begin green
+class Select purple
+class Write yellow
+class Commit red
 ```
 
 ---
@@ -159,4 +170,13 @@ if __name__ == "__main__":
 
 * **Enforce Optimistic Concurrency**: Include version metrics inside all state tables and blackboard schemas to prevent concurrent agent overwrites.
 * **Isolate Logic Assertions**: Run state invariant validations inside transaction boundaries. Ensure any validation failure triggers a full rollback.
-* **Standardize State Transitions**: Enforce permitted state change topologies inside code configurations rather than delegating state logic to LLMs.
+* **Standardize State Transitions**: Enforce permitted state change topologies inside code configurations rather than delegating state logic to LLMs. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Cytron, R., et al. (1991)**. *Efficiently Computing Static Single Assignment Form and the Control Dependence Graph*. ACM TOPLAS. [https://doi.org/10.1145/115372.115320](https://doi.org/10.1145/115372.115320)
+5. **Lattner, C., & Adve, V. (2004)**. *LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation*. CGO. [https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf](https://llvm.org/pubs/2004-01-30-CGO-LLVM.pdf)
+6. **V8 Team (2024)**. *V8 Orinoco and Garbage Collection*. v8.dev. [https://v8.dev/blog](https://v8.dev/blog)

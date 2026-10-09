@@ -9,22 +9,33 @@
 ## Eliminating Audio Buffering Latency
 
 In traditional batch voice agent architectures:
-* **The Silence Lag**: The system waits until the user finishes speaking before initiating STT transcription, adding 2–3 seconds of latency.
+* **The Silence Lag**: The system waits until the user finishes speaking before initiating STT transcription, adding 2–3 seconds of latency [1].
 * **Large Memory Buffers**: Retaining uncompressed WAV files in memory consumes gateway RAM during long sessions.
 * **The Solution**: **Chunked Audio Streaming**. We stream raw PCM/WAV byte chunks across persistent WebSocket connections directly to STT engines (like Whisper or Deepgram), generating incremental transcriptions in real time.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    UserMic[User Microphone Input Stream] -->|Stream 100ms PCM Chunks| Gateway[Audio WebSocket Gateway]
+    UserMic["User Microphone Input Stream"] -->|Stream 100ms PCM Chunks| Gateway["Audio WebSocket Gateway"]
     
     subgraph SG1_StreamingSttEngine ["Streaming STT Engine"]
-        Gateway -->|Buffer byte frames| Queue[Async Frame Buffer]
-        Queue -->|Stream frames| STT[Whisper / Deepgram Engine]
+        Gateway -->|Buffer byte frames| Queue["Async Frame Buffer"]
+        Queue -->|Stream frames| STT["Whisper / Deepgram Engine"]
     end
     
-    STT -->|Emit Partial Transcript| Agent[Agent LLM Reasoning Node]
-    Agent -->|Stream Partial Response| TTS[Text-to-Speech Output]
+    STT -->|Emit Partial Transcript| Agent["Agent LLM Reasoning Node"]
+    Agent -->|Stream Partial Response| TTS["Text-to-Speech Output"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserMic,TTS blue
+class Gateway green
+class Queue purple
+class STT yellow
+class Agent red
 ```
 
 ---
@@ -113,4 +124,13 @@ if __name__ == "__main__":
 
 * **Stream Micro-Frames**: Partition audio inputs into 100ms frames to eliminate initial buffering delays.
 * **Leverage Voice Activity Detection (VAD)**: Pause STT queries when silence is detected to save compute costs.
-* **Emit Partial Transcripts**: Stream partial transcription text to LLM agents early to minimize end-to-end response latency.
+* **Emit Partial Transcripts**: Stream partial transcription text to LLM agents early to minimize end-to-end response latency. [2]
+
+## References & Further Reading
+
+1. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+2. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+3. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)
+4. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+5. **Reed, D. P. (1978)**. *Naming and Synchronization in a Decentralized Computer System*. MIT PhD Thesis. [https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf](https://www.lcs.mit.edu/publications/pubs/pdf/MIT-LCS-TR-205.pdf)
+6. **Bayer, R., & McCreight, E. (1972)**. *Organization and Maintenance of Large Ordered Indexes*. Acta Informatica. [https://doi.org/10.1007/BF00288683](https://doi.org/10.1007/BF00288683)

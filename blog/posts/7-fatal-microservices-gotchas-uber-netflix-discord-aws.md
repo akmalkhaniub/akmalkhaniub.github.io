@@ -1,6 +1,6 @@
 # 7 Fatal Microservices Architecture Gotchas & How High-Scale Platforms (Uber, Netflix, Discord, AWS) Survived Them
 
-When engineering teams transition from a monolithic architecture to microservices (**Uber**, **Netflix**, **Discord**, **AWS**, **Shopify**, **DoorDash**, **Stripe**), they are often promised independent deployability, team autonomy, and horizontal scalability.
+When engineering teams transition from a monolithic architecture to microservices (**Uber**, **Netflix**, **Discord**, **AWS**, **Shopify**, **DoorDash**, **Stripe**), they are often promised independent deployability, team autonomy, and horizontal scalability [1].
 
 However, distributed microservices introduce failure modes that do not exist in single-process monoliths.
 
@@ -9,7 +9,7 @@ Network latency, partial failures, asynchronous race conditions, and uncontrolle
 This deep-dive architectural guide dissects the **7 most lethal microservices gotchas**, analyzes the underlying distributed systems mechanics that cause them, and provides production-tested solutions backed by real-world engineering case studies.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_ProductionMicroserviceOutage ["Production Microservice Outage Antipatterns"]
     G1["1. Cascading Retry Storms & 9x Amplification (AWS)"]
     G2["2. The Distributed Dual-Write Trap (Shopify / Stripe)"]
@@ -19,6 +19,17 @@ graph TD
     G6["6. Connection Pool Multiplication under K8s HPA (DoorDash)"]
     G7["7. W3C Trace Context Loss in Async Pipelines (Airbnb / Uber)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class G1,G6 blue
+class G2,G7 green
+class G3 purple
+class G4 yellow
+class G5 red
 ```
 
 ---
@@ -91,13 +102,22 @@ Distributed computing guarantees that one of these two network operations will e
 * **Failure Mode B**: Reversing the order (`kafka.send()` first, `db.commit()` second). Kafka publishes the event, but the database transaction aborts due to a constraint violation. Result: **Warehouse ships items for an order that was never paid for.**
 
 ```mermaid
-graph LR
+flowchart TD
   subgraph SG2_TheDualWrite ["The Dual-Write Vulnerability"]
-    App[Application Pod] -->|1. Commit DB| DB[(PostgreSQL)]
-    App -->|💥 Crash / Network Drop| Kafka[Apache Kafka]
-    DB -.->|State: PAID| Desync[Data Divergence & Lost Revenue]
-    Kafka -.->|State: Missing Event| Desync
+    App["Application Pod"] -->|Commit DB| DB[(PostgreSQL)]
+    App -->|Crash / Network Drop| Kafka["Apache Kafka"]
+    DB -.->|State - PAID| Desync["Data Divergence & Lost Revenue"]
+    Kafka -.->|State - Missing Event| Desync
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class App blue
+class Kafka green
+class Desync purple
 ```
 
 ### The Production Fix: Transactional Outbox Pattern + CDC
@@ -151,9 +171,9 @@ In real-world social and communication graphs:
 * When a celebrity user with 100M followers posts, the single database node holding that partition receives **1,000,000x the write and read throughput**, maxing out CPU and I/O while the other 127 shards sit at $2\%$ utilization.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG3_TheHotShard ["The Hot Shard Problem"]
-    Users[100M Active Followers] -->|Simultaneous Timeline Reads| Shard1[(Shard 1: Celebrity User)]
+    Users["100M Active Followers"] -->|Simultaneous Timeline Reads| Shard1[(Shard 1: Celebrity User)]
     Users -.->|Idle| Shard2[(Shard 2: Regular Users)]
     Users -.->|Idle| Shard3[(Shard 3: Regular Users)]
   end
@@ -161,6 +181,13 @@ graph TD
   style Shard1 fill:#ef4444,stroke:#7f1d1d,color:#ffffff
   style Shard2 fill:#22c55e,stroke:#14532d,color:#ffffff
   style Shard3 fill:#22c55e,stroke:#14532d,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Users blue
 ```
 
 ### The Production Fix: Two-Tier Hybrid Fan-Out
@@ -233,13 +260,23 @@ When Service $A$ passes work to an asynchronous background worker (e.g. Celery, 
 The async worker executes with an unlinked `trace_id`, creating an invisible "black box" in distributed telemetry.
 
 ```mermaid
-graph LR
-  API[API Gateway] -->|trace_id: 00-4bf92f...| SvcA[Order Service]
-  SvcA -->|trace_id: 00-4bf92f...| SvcB[Payment Service]
-  SvcB -->|❌ Missing Header Carrier| Kafka[(Kafka Topic)]
-  Kafka -->|New random trace_id: 00-99aa11...| Worker[Async Fulfillment Worker]
+flowchart TD
+  API["API Gateway"] -->|trace_id - 00-4bf92f...| SvcA["Order Service"]
+  SvcA -->|trace_id - 00-4bf92f...| SvcB["Payment Service"]
+  SvcB -->|Missing Header Carrier| Kafka[(Kafka Topic)]
+  Kafka -->|New random trace_id - 00-99aa11...| Worker["Async Fulfillment Worker"]
   
   style Worker fill:#f43f5e,stroke:#881337,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class API blue
+class SvcA green
+class SvcB purple
+class Worker yellow
 ```
 
 ### The Production Fix
@@ -357,4 +394,10 @@ if (require.main === module) {
 ## Final Architectural Takeaway
 Microservices do not eliminate complexity; they **shift complexity from compiler-checked in-memory calls to untrusted, non-deterministic distributed networks**.
 
-By designing for partial failure with **retry budgets, transactional outboxes, monotonic state guards, and connection multiplexers**, engineering teams can build resilient distributed systems that thrive at internet scale.
+By designing for partial failure with **retry budgets, transactional outboxes, monotonic state guards, and connection multiplexers**, engineering teams can build resilient distributed systems that thrive at internet scale. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

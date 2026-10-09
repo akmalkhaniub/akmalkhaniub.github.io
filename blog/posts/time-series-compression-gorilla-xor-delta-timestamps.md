@@ -1,6 +1,6 @@
 # Time-Series Compression Internals: Gorilla XOR Float Compression & Delta-of-Delta Timestamps
 
-In cloud telemetry platforms (**Prometheus**, **VictoriaMetrics**, **InfluxDB**, **Datadog**), systems ingest billions of time-series metric data points every minute.
+In cloud telemetry platforms (**Prometheus**, **VictoriaMetrics**, **InfluxDB**, **Datadog**), systems ingest billions of time-series metric data points every minute [1].
 
 Each data point consists of a 64-bit Unix timestamp ($8\text{ Bytes}$) and a 64-bit IEEE 754 floating-point value ($8\text{ Bytes}$).
 
@@ -19,9 +19,9 @@ This article details Gorilla **Delta-of-Delta Timestamp Encoding**, **IEEE 754 F
 How Gorilla combines Delta-of-Delta Timestamp Encoding and Floating-Point XOR Bit-Packing to achieve $12\times$ compression:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_RawMetricIngestion ["Raw Metric Ingestion Stream"]
-    Raw[Raw Data Points: timestamp t_n, float v_n] --> Split[Split Channel Pipeline]
+    Raw["Raw Data Points: timestamp t_n, float v_n"] --> Split["Split Channel Pipeline"]
   end
   
   subgraph SG2_Channel1Delta ["Channel 1: Delta-of-Delta Timestamp Encoding"]
@@ -36,6 +36,17 @@ graph TD
     XORVal -->|XOR = 0| ValueZero["Emit '0' Bit (Identical Value!)"]
     XORVal -->|XOR != 0| BitXOR["Emit '1' + Leading/Trailing Zero Bit Payload"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Raw,BitPacked blue
+class Split,XORVal green
+class Timedelta,ValueZero purple
+class DeltaDelta,BitXOR yellow
+class BitZero red
 ```
 
 ### Core Time-Series Compression Mechanics
@@ -186,4 +197,12 @@ When configuring time-series telemetry storage:
 ## Real-World Enterprise Impact
 Time-series compression algorithms (such as **Gorilla**, powering **Prometheus**, **VictoriaMetrics**, and **InfluxDB**) report:
 * **Over $12\times$ Reduction in Memory & Disk Footprint**: Shrinks raw metric data points from $16\text{ Bytes}$ down to an average of $1.37\text{ Bytes}$.
-* **$10\times$ Faster Metric Query Scan Speeds**: Smaller compressed block sizes allow CPU caches to scan millions of metric data points per second with minimal memory bus traffic.
+* **$10\times$ Faster Metric Query Scan Speeds**: Smaller compressed block sizes allow CPU caches to scan millions of metric data points per second with minimal memory bus traffic. [2]
+
+## References & Further Reading
+
+1. **Pelkonen, T., et al. (2015)**. *Gorilla: A Fast, Scalable, In-Memory Time Series Database*. VLDB. [https://www.vldb.org/pvldb/vol8/p1816-teller.pdf](https://www.vldb.org/pvldb/vol8/p1816-teller.pdf)
+2. **Prometheus Authors (2024)**. *Prometheus Documentation*. CNCF. [https://prometheus.io/docs/introduction/overview/](https://prometheus.io/docs/introduction/overview/)
+3. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+4. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+5. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

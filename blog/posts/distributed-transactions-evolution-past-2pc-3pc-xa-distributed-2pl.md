@@ -1,6 +1,6 @@
 # The Evolution of Distributed Transactions Part 1: The Past — Classical 2PC/3PC, X/Open XA, Distributed 2PL & Why E-Commerce Abandoned Monolithic Coordination
 
-In the early decades of distributed systems and enterprise software (**Amazon**, **eBay**, **Oracle**, **Tuxedo**, **Java JTA/XA**), maintaining transactional integrity across multiple physical databases was treated as an all-or-nothing requirement.
+In the early decades of distributed systems and enterprise software (**Amazon**, **eBay**, **Oracle**, **Tuxedo**, **Java JTA/XA**), maintaining transactional integrity across multiple physical databases was treated as an all-or-nothing requirement [1].
 
 Engineers demanded the same strict **ACID** guarantees (Atomicity, Consistency, Isolation, Durability) across distributed networks that they enjoyed on a single mainframe.
 
@@ -9,18 +9,27 @@ However, as internet-scale e-commerce platforms scaled from thousands to million
 This article examines the foundational mathematical protocols of distributed transactions, analyzes why the coordinator blocking vulnerability paralyzed early e-commerce architectures, and uncovers the real-world lessons that forced the industry to rethink data consistency.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_TheClassicalDistributed ["The Classical Distributed Transaction Era (1970s - 2000s)"]
-    App[Monolithic Application Server] --> TM[XA Transaction Manager / Coordinator]
-    TM -->|1. PREPARE| DB1[(Database 1: Order DB)]
-    TM -->|1. PREPARE| DB2[(Database 2: Inventory DB)]
-    TM -->|1. PREPARE| DB3[(Database 3: Payment DB)]
-    DB1 & DB2 & DB3 -->|Acquire Strict Exclusive Locks 2PL| Locks[Held Exclusive Row Locks]
-    DB1 & DB2 & DB3 -->|2. VOTE COMMIT| TM
-    TM -->|3. GLOBAL COMMIT| DB1 & DB2 & DB3
+    App["Monolithic Application Server"] --> TM["XA Transaction Manager / Coordinator"]
+    TM -->|PREPARE| DB1[(Database 1: Order DB)]
+    TM -->|PREPARE| DB2[(Database 2: Inventory DB)]
+    TM -->|PREPARE| DB3[(Database 3: Payment DB)]
+    DB1 & DB2 & DB3 -->|Acquire Strict Exclusive Locks 2PL| Locks["Held Exclusive Row Locks"]
+    DB1 & DB2 & DB3 -->|VOTE COMMIT| TM
+    TM -->|GLOBAL COMMIT| DB1 & DB2 & DB3
   end
   
   style Locks fill:#f43f5e,stroke:#881337,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class App blue
+class TM green
+class Locks purple
 ```
 
 ---
@@ -124,12 +133,22 @@ In 1991, the Open Group published the **X/Open Distributed Transaction Processin
 XA standardized the interface between an AP (Application Program), a TM (Transaction Manager, like BEA Tuxedo or IBM CICS), and multiple RMs (Resource Managers, like Oracle, DB2, or Sybase).
 
 ```mermaid
-graph TD
+flowchart TD
   AP["Application Program (AP)"] -->|tx_begin / tx_commit| TM["Transaction Manager (TM)"]
   AP -->|SQL Queries| RM1["Resource Manager 1 (Oracle)"]
   AP -->|SQL Queries| RM2["Resource Manager 2 (DB2)"]
   TM -->|xa_open / xa_prepare / xa_commit| RM1
   TM -->|xa_open / xa_prepare / xa_commit| RM2
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class AP blue
+class TM green
+class RM1 purple
+class RM2 yellow
 ```
 
 ### Distributed Two-Phase Locking (2PL) & Distributed Deadlocks
@@ -142,7 +161,7 @@ XA enforced serializability across databases using **Strict Distributed Two-Phas
 In a single database, deadlocks are detected via an in-memory Wait-For-Graph (WFG) cycle detector. In distributed XA transactions across distinct database instances, deadlocks form **distributed cycles**:
 
 ```mermaid
-graph LR
+flowchart TD
   Tx1((Tx 1)) -->|Holds Lock on Table A, Waits for Table B| DB2[(Oracle Node 2)]
   DB2 -->|Holds Lock on Table B| Tx2((Tx 2))
   Tx2 -->|Holds Lock on Table C, Waits for Table A| DB1[(Oracle Node 1)]
@@ -150,6 +169,13 @@ graph LR
   
   style Tx1 fill:#f59e0b,stroke:#b45309,color:#ffffff
   style Tx2 fill:#f59e0b,stroke:#b45309,color:#ffffff
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+
 ```
 
 Neither Oracle Node 1 nor Oracle Node 2 has the global graph in its local memory. Without expensive global deadlock detection algorithms (like Obermarck’s path-pushing algorithm or Chandy-Misra-Haas probe computation), systems were forced to rely on **lock wait timeouts**.
@@ -292,4 +318,13 @@ if __name__ == "__main__":
 ---
 
 ## Next in the Series
-In **Part 2**, we will explore **The Present (2010s–2020s)**: How Google solved distributed consistency at global scale with **Spanner and TrueTime**, how CockroachDB & YugabyteDB implement **Multi-Raft with Hybrid Logical Clocks**, and how **Uber & Netflix** revolutionized microservices using **Event-Driven Sagas (Cadence / Conductor)**.
+In **Part 2**, we will explore **The Present (2010s–2020s)**: How Google solved distributed consistency at global scale with **Spanner and TrueTime**, how CockroachDB & YugabyteDB implement **Multi-Raft with Hybrid Logical Clocks**, and how **Uber & Netflix** revolutionized microservices using **Event-Driven Sagas (Cadence / Conductor)**. [2]
+
+## References & Further Reading
+
+1. **Peng, D., & Dabek, F. (2010)**. *Large-scale Incremental Processing Using Distributed Transactions and Notifications*. OSDI. [https://research.google/pubs/pub36726/](https://research.google/pubs/pub36726/)
+2. **Thomson, A., et al. (2012)**. *Calvin: Fast Distributed Transactions for Partitioned Database Systems*. SIGMOD. [https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf](https://cs.yale.edu/homes/thomson/publications/calvin-sigmod12.pdf)
+3. **Corbett, J. C., et al. (2012)**. *Spanner: Google's Globally-Distributed Database*. OSDI. [https://research.google/pubs/pub39966/](https://research.google/pubs/pub39966/)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

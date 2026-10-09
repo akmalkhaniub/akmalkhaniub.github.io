@@ -7,7 +7,7 @@
 > * **What we synthesized:** We reviewed MCP's client-server architecture, walked through a practical TypeScript implementation for a secure database tool, and highlighted critical security best practices for deploying such services.
 
 ---
-In the early days of building AI applications, developers wrote custom API wrappers for every new tool they integrated. If you wanted an LLM to read files, search the web, and run SQL queries, you had to write custom glue code to translate the model's text outputs into specific API calls.
+In the early days of building AI applications, developers wrote custom API wrappers for every new tool they integrated [1]. If you wanted an LLM to read files, search the web, and run SQL queries, you had to write custom glue code to translate the model's text outputs into specific API calls.
 
 If you swapped models (e.g., from GPT-4 to Claude 3.5), you often had to rewrite your tool definitions and parsing logic from scratch.
 
@@ -22,25 +22,36 @@ This article reviews the MCP architecture and walks through building a secure, c
 MCP operates on a clean **Client-Server model** over standardized communication channels (Standard Input/Output or Server-Sent Events). The LLM engine is decoupled from tool execution, meaning the model never runs raw system commands directly; instead, it issues structured JSON-RPC requests to the local MCP server.
 
 ```mermaid
-graph LR
+flowchart TD
     subgraph SG1_ClienthostMcpClient ["ClientHost [MCP Client: Cursor / Claude Desktop / Custom App]"]
-        User[User Interface] -->|Prompt query| ModelEngine[LLM Engine]
+        User["User Interface"] -->|Prompt query| ModelEngine["LLM Engine"]
     end
 
     subgraph SG2_RouterMcpProtocol ["Router [MCP Protocol Layer / JSON-RPC]"]
-        ModelEngine -->|1. List Tools| MCPClient[MCP Client SDK]
-        MCPClient -->|2. callTool: query_database| MCPServer[MCP Server SDK]
+        ModelEngine -->|List Tools| MCPClient["MCP Client SDK"]
+        MCPClient -->|callTool - query_database| MCPServer["MCP Server SDK"]
     end
 
     subgraph SG3_ServicesMcpServer ["Services [MCP Server Layer]"]
-        MCPServer -->|3. Query database| DB[(PostgreSQL Database)]
-        MCPServer -->|3. Fetch log files| FS[Filesystem Logs]
-        MCPServer -->|3. Fetch git commits| Git[GitHub API]
+        MCPServer -->|Query database| DB[(PostgreSQL Database)]
+        MCPServer -->|Fetch log files| FS["Filesystem Logs"]
+        MCPServer -->|Fetch git commits| Git["GitHub API"]
     end
 
     style ClientHost fill:#f8fafc,stroke:#64748b,stroke-width:2px
     style Router fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px
     style Services fill:#fffbeb,stroke:#d97706,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,Git blue
+class ModelEngine green
+class MCPClient purple
+class MCPServer yellow
+class FS red
 ```
 
 1. **Protocol Negotiation**: Upon startup, the Client handshake queries the Server to inspect available `resources` (static files or databases), `tools` (dynamic executable actions), and `prompts` (pre-defined instruction templates).

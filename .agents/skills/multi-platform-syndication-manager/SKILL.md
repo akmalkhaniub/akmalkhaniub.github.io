@@ -43,7 +43,7 @@ flowchart TD
 
 ## 📦 Syndication Package Generation (`SYNDICATION.md`)
 
-For every published article, this skill automatically generates a complete `SYNDICATION.md` inside `blog/articles/<slug>/` containing:
+For every published article, this skill generates `blog/posts/<slug>.syndication.md` (the `blog/articles/` tree is not part of this repo) containing:
 
 1. **Paid Editorial Pitch Template**:
    - Ready-to-email pitch for editors at **LogRocket**, **Smashing Magazine**, or **web.dev** with an executive summary, outline, and target audience.

@@ -52,35 +52,31 @@ Every major engineering essay must include at least two rich visual diagrams adh
 ### 1. Step-by-Step Numbered Request Flow
 Trace the exact packet lifecycle across physical boundaries:
 ```mermaid
-graph TD
-  subgraph SG1_ClientLifecycle ["Client Browser Runtime"]
-    A["User Triggers Navigation Event"] -->|1. Intercept Link Click| B["Service Worker / Next.js Router"]
-    B -->|2. Instant Local Cache Lookup| C["Render Prewarmed App Shell (0ms Paint)"]
+flowchart TD
+  subgraph SG1_Client ["Client Runtime"]
+    A["User Triggers Navigation"] -->|Intercept Click| B["Next.js Router"]
+    B -->|Local Cache Lookup| C["Render App Shell"]
   end
 
-  subgraph SG2_NetworkFlight ["HTTP/3 Multiplexed Connection"]
-    B -->|3. Dispatch Lightweight Hole Request| D["Edge CDN / Origin Gateway"]
+  subgraph SG2_Origin ["Origin Runtime"]
+    B -->|Hole Request| D["Edge Gateway"]
+    D -->|Dynamic RSC| E["Flight Chunks"]
+    E -->|Hydrate Slots| F["Browser Paint"]
   end
-
-  subgraph SG3_ServerStreaming ["Origin Server Runtime"]
-    D -->|4. Execute Dynamic RSC Component| E["Stream React Flight Bytecode Chunks"]
-  end
-
-  E -->|5. Stream Chunks to Browser| F["Hydrate Targeted Dynamic Slots"]
 ```
 
 ### 2. Side-by-Side Trade-off Topology
 Contrast legacy vs next-generation architectures:
 ```mermaid
-graph TD
-  subgraph SG1_Legacy ["Legacy Full Page Prefetch (Wasteful Churn)"]
-    A1["Link Enters Viewport"] --> B1["Prefetch Entire HTML + JSON Subtree"]
-    B1 --> C1["Massive Bandwidth & Edge Cache Invalidation"]
+flowchart TD
+  subgraph SG1_Legacy ["Legacy Full Page Prefetch"]
+    A1["Link Enters Viewport"] --> B1["Prefetch Entire HTML Subtree"]
+    B1 --> C1["Bandwidth and Cache Churn"]
   end
 
-  subgraph SG2_Modern ["Next.js 16 Partial Prefetch (App Shell + Holes)"]
-    A2["Link Enters Viewport"] --> B2["Prefetch Reusable Static App Shell"]
-    B2 --> C2["0ms Instant Layout + On-Demand Dynamic Streaming"]
+  subgraph SG2_Modern ["Next.js 16 Partial Prefetch"]
+    A2["Link Enters Viewport"] --> B2["Prefetch Static App Shell"]
+    B2 --> C2["Layout Paint plus Dynamic Holes"]
   end
 ```
 
@@ -93,7 +89,8 @@ Dissect raw headers, frame boundaries, or serialized bytecode tokens.
 
 To guarantee 100% error-free rendering in Mermaid v10:
 * **Node Labels**: Always use square brackets with quotes: `NodeID["Clean Label"]`. Never put quotes inside curly braces (`Node{"..."}` causes lexer failure).
-* **Edge Labels**: Keep edge text clean: `-->|Cache Hit|` instead of `-->|Cache Hit: 0 Allocations|`.
+* **Direction**: Always `flowchart TD`. Never `graph TD`, `graph LR`, or `flowchart LR`.
+* **Edge Labels**: Keep edge text clean: `-->|Cache Hit|` instead of `-->|Cache Hit: 0 Allocations|`. No digits in edge labels.
 * **Subgraph IDs**: Format as `subgraph SG1_Name ["Descriptive Name (Extra Info)"]`. Avoid colons inside the title string.
 * **Alphanumeric IDs**: Node identifiers must start with an alphabet character (use `ZeroVDOM` rather than `0VDOM`).
 

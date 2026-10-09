@@ -5,7 +5,7 @@
 > * **Why it matters:** Separating agentic labor prevents cognitive bias in LLMs, reduces token costs, secures systems against prompt injection, and guarantees reliable code execution in production.
 > * **What we synthesized:** We synthesized the core mechanics of the Orchestrator-Worker-Validator loop, key implementation rules for context isolation, and strategies for combining rule-based and model-based validation.
 
-One of the most persistent failure modes in early agent deployments is the **Self-Review Loop**. Developers write a prompt that instructs a single LLM to:
+One of the most persistent failure modes in early agent deployments is the **Self-Review Loop** [1]. Developers write a prompt that instructs a single LLM to:
 1. Write a Python script.
 2. Read the script it just wrote.
 3. Fix any errors in the script.
@@ -21,20 +21,31 @@ This pattern, popularized by enterprise AI engineering teams like Factory, struc
 ## The Three-Tier Architecture Loop
 
 ```mermaid
-graph TD
-    UserReq[User Goal / Issue] -->|1. Request| Orch[Orchestrator Agent]
-    Orch -->|2. Create Plan & Verification Contract| Worker[Worker Agent]
-    Worker -->|3. Produce Execution / Code| Val[Validator Agent]
+flowchart TD
+    UserReq["User Goal / Issue"] -->|Request| Orch["Orchestrator Agent"]
+    Orch -->|Create Plan & Verification Contract| Worker["Worker Agent"]
+    Worker -->|Produce Execution / Code| Val["Validator Agent"]
     
     subgraph SG1_ValidationGateValidation ["Validation Gate [Validation Gate]"]
-        Val -->|4. Run Verification Suite| VerifyCheck{Passes Contract?}
+        Val -->|Run Verification Suite| VerifyCheck{Passes Contract?}
     end
     
-    VerifyCheck -->|No: Generate Critique| Worker
-    VerifyCheck -->|Yes: Commit Code| Finish[Approved Output]
+    VerifyCheck -->|No - Generate Critique| Worker
+    VerifyCheck -->|Yes - Commit Code| Finish["Approved Output"]
 
     style ValidationGate fill:#fffbeb,stroke:#d97706,stroke-width:1px
     style Finish fill:#f0fdf4,stroke:#16a34a,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserReq blue
+class Orch green
+class Worker purple
+class Val yellow
+class Finish red
 ```
 
 ### 1. The Orchestrator (The Planner)

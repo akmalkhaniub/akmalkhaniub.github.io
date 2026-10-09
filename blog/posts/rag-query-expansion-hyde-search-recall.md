@@ -9,22 +9,33 @@
 ## The Vocabulary Mismatch Challenge
 
 In basic semantic search systems:
-* **Literal Word Dependency**: While embeddings parse semantics, queries like "how to fix memory issues" might not match document chunks explaining "VRAM KV Cache budgeting policies" due to keyword gaps.
+* **Literal Word Dependency**: While embeddings parse semantics, queries like "how to fix memory issues" might not match document chunks explaining "VRAM KV Cache budgeting policies" due to keyword gaps [1].
 * **Short Query Limitations**: Three-word queries generate compact embedding profiles that contain insufficient semantic detail to query complex databases.
 * **The Solution**: **HyDE and Query Expansion**. We expand raw queries into multiple variations and generate a hypothetical response (HyDE) to construct a richer vector profile.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    UserQuery[User Query: speed up models] --> Expand[Query Expansion: Generate Variations]
-    UserQuery --> HyDEGen[HyDE: Generate Hypothetical Document]
+    UserQuery["User Query: speed up models"] --> Expand["Query Expansion: Generate Variations"]
+    UserQuery --> HyDEGen["HyDE: Generate Hypothetical Document"]
     
-    Expand -->|Combine| SearchPool[Enriched Query Vector Pool]
+    Expand -->|Combine| SearchPool["Enriched Query Vector Pool"]
     HyDEGen -->|Combine| SearchPool
     
     SearchPool -->|Execute Search| VectorDB[(Vector Database)]
-    VectorDB -->|Match Chunks| Rerank[Rerank & Deduplicate results]
+    VectorDB -->|Match Chunks| Rerank["Rerank & Deduplicate results"]
     Rerank --> LLM([Generate Final Answer])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class UserQuery blue
+class Expand green
+class HyDEGen purple
+class SearchPool yellow
+class Rerank red
 ```
 
 ---
@@ -124,4 +135,10 @@ if __name__ == "__main__":
 
 * **Expand Short Queries**: Generate query variations using synonyms to capture alternate phrasing.
 * **Leverage Answer Patterns (HyDE)**: Embed a hypothetical answer rather than the raw question to increase similarity matches.
-* **Rerank & Deduplicate**: Merge multi-query results and apply reranking models to isolate the most relevant context blocks.
+* **Rerank & Deduplicate**: Merge multi-query results and apply reranking models to isolate the most relevant context blocks. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

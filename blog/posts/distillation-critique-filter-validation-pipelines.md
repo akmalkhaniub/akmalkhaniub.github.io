@@ -9,22 +9,33 @@
 ## The Danger of Garbage-In, Garbage-Out
 
 When generating agent trajectories using frontier models:
-* **Silent Failure Modes**: The agent's final answer might sound correct, but the intermediate tool code failed, meaning the model learns invalid API parameters.
+* **Silent Failure Modes**: The agent's final answer might sound correct, but the intermediate tool code failed, meaning the model learns invalid API parameters [1].
 * **Syntax Hallucinations**: Models occasionally output invalid JSON tool configurations or malformed syntax.
 * **The Solution**: An **Automated Critique Gate**. We parse each candidate trajectory, execute proposed code changes inside isolated test sandboxes, verify compilation, and discard any trace that fails unit assertions.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Raw[Raw Synthetic Trajectory Record] --> Parse[Parse code blocks & JSON tool calls]
-    Parse --> AST[Run AST Syntax Compiler]
+    Raw["Raw Synthetic Trajectory Record"] --> Parse["Parse code blocks & JSON tool calls"]
+    Parse --> AST["Run AST Syntax Compiler"]
     
-    AST -->|Fail: Syntax Error| Discard([Discard Record])
-    AST -->|Pass| Sandbox[Execute Code inside Sandbox]
+    AST -->|Fail - Syntax Error| Discard([Discard Record])
+    AST -->|Pass| Sandbox["Execute Code inside Sandbox"]
     
     Sandbox --> CheckTests{Did all Unit Tests Pass?}
     CheckTests -->|No| Discard
-    CheckTests -->|Yes| Save[Approve: Add to Training Set]
+    CheckTests -->|Yes| Save["Approve: Add to Training Set"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Raw blue
+class Parse green
+class AST purple
+class Sandbox yellow
+class Save red
 ```
 
 ---
@@ -124,4 +135,10 @@ def divide_numbers(x, y)
 
 * **Enforce AST Checks**: Never add uncompiled code trajectories to your training datasets. Run syntax checks on every candidate record.
 * **Isolate Execution**: Run unit tests inside sandbox docker nodes to verify agent output safely.
-* **Filter Redundant Data**: Remove duplicate code structures to build diverse instruction sets.
+* **Filter Redundant Data**: Remove duplicate code structures to build diverse instruction sets. [2]
+
+## References & Further Reading
+
+1. **Hu, E. J., et al. (2021)**. *LoRA: Low-Rank Adaptation of Large Language Models*. ICLR. [https://arxiv.org/abs/2106.09685](https://arxiv.org/abs/2106.09685)
+2. **Dettmers, T., et al. (2023)**. *QLoRA: Efficient Finetuning of Quantized LLMs*. NeurIPS. [https://arxiv.org/abs/2305.14314](https://arxiv.org/abs/2305.14314)
+3. **Lin, J., et al. (2024)**. *AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration*. MLSys. [https://arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)

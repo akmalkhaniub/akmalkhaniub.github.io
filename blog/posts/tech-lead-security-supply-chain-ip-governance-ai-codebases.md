@@ -1,6 +1,6 @@
 # Security, Supply Chain & IP Governance for AI Codebases
 
-As autonomous AI agents gain write access to corporate repositories, technical risk management undergoes a seismic shift. In traditional development, security focused primarily on human authentication, secret management, and code reviews before production deployments.
+As autonomous AI agents gain write access to corporate repositories, technical risk management undergoes a seismic shift [1]. In traditional development, security focused primarily on human authentication, secret management, and code reviews before production deployments.
 
 In an AI-first development lifecycle, AI agents actively ingest untrusted external context (web pages, third-party API documentation, open-source packages) and generate code autonomously. This creates three critical enterprise security threats:
 
@@ -17,15 +17,26 @@ This article details how modern Tech Leads construct an **Automated Security, Su
 To protect proprietary software from AI-introduced vulnerabilities, every agent-generated pull request must pass through a strict security boundary:
 
 ```mermaid
-graph TD
-  A[Untrusted Context / Web Ingestion] --> B[Sanitizer: Prompt Injection Firewall]
-  B --> C[Agent Execution Sandbox: Network Egress Locked]
-  C --> D[Agent Outputs Generated PR]
-  D --> E[Gate 1: Dependency Lockfile Auditor]
-  E -->|Pass| F[Gate 2: License Compliance AST Scanner]
-  E -->|Fail: Typosquatted Package| X[Block PR & Trigger Security Alert]
-  F -->|Pass: Approved License| G[Production Verification & Merge]
-  F -->|Fail: Copyleft GPL Violation| X
+flowchart TD
+  A["Untrusted Context / Web Ingestion"] --> B["Sanitizer: Prompt Injection Firewall"]
+  B --> C["Agent Execution Sandbox: Network Egress Locked"]
+  C --> D["Agent Outputs Generated PR"]
+  D --> E["Gate 1: Dependency Lockfile Auditor"]
+  E -->|Pass| F["Gate 2: License Compliance AST Scanner"]
+  E -->|Fail - Typosquatted Package| X["Block PR & Trigger Security Alert"]
+  F -->|Pass - Approved License| G["Production Verification & Merge"]
+  F -->|Fail - Copyleft GPL Violation| X
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,X green
+class C,G purple
+class D yellow
+class E red
 ```
 
 ### The Three Core Security Controls
@@ -142,4 +153,10 @@ When securing AI-driven codebases, enforce these non-negotiable boundaries:
 ## Real-World Enterprise Impact
 Organizations implementing AI Supply Chain & IP Governance achieve:
 * **Zero Malicious Package Injections**: Automated lockfile scanners prevent typosquatted dependencies from reaching production servers.
-* **100% License Compliance Assurance**: Copyleft licensing audits ensure proprietary IP is protected against open-source legal disputes.
+* **100% License Compliance Assurance**: Copyleft licensing audits ensure proprietary IP is protected against open-source legal disputes. [2]
+
+## References & Further Reading
+
+1. **Forsgren, N., Humble, J., & Kim, G. (2018)**. *Accelerate: The Science of Lean Software and DevOps*. IT Revolution / DORA. [https://dora.dev/research/](https://dora.dev/research/)
+2. **Brooks, F. P. (1975)**. *The Mythical Man-Month*. Addison-Wesley. [https://en.wikipedia.org/wiki/The_Mythical_Man-Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
+3. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)

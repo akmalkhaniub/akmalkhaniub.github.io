@@ -1,4 +1,4 @@
-In rural or developing regions, smartphones and mobile data networks are luxuries. While a local clinic might have an offline server running local LLMs, patients in remote villages are completely cut off if they only have access to 2G feature phones.
+In rural or developing regions, smartphones and mobile data networks are luxuries [1]. While a local clinic might have an offline server running local LLMs, patients in remote villages are completely cut off if they only have access to 2G feature phones.
 
 > ### 📖 Article Overview
 > * **What this article is about:** Designing and building a 2G SMS Fallback Bridge to connect feature phone users to local AI services using Node.js, Express, and Africa's Talking API.
@@ -16,26 +16,36 @@ This article details how to design and build an SMS-to-AI bridge using **Node.js
 The SMS bridge translates incoming cellular text messages into standard HTTP requests, routes them to our local offline AI server, and converts the model's text response back into an outgoing SMS payload.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_VillageVillageLevel ["Village [Village Level / 2G Network]"]
-        Patient[Patient Feature Phone] -->|1. SMS Text: 'Status 129'| Telco((Cellular Telco tower))
+        Patient["Patient Feature Phone"] -->|SMS Text - 'Status 129'| Telco((Cellular Telco tower))
     end
     
     subgraph SG2_GatewayCloudGateway ["Gateway [Cloud Gateway]"]
-        Telco -->|2. Webhook payload| AT[Africa's Talking API Gateway]
+        Telco -->|Webhook payload| AT["Africa's Talking API Gateway"]
     end
     
     subgraph SG3_ClinicLocalClinic ["Clinic [Local Clinic / Offline Server]"]
-        AT -->|3. HTTP Post: Ngrok tunnel| Express[Express Server Gateway]
-        Express -->|4. Parse Message & Query| LLM[Ollama Local LLM]
-        LLM -->|5. SOAP Status / Summary| Express
-        Express -->|6. POST JSON reply| AT
-        AT -->|7. Deliver SMS| Patient
+        AT -->|HTTP Post - Ngrok tunnel| Express["Express Server Gateway"]
+        Express -->|Parse Message & Query| LLM["Ollama Local LLM"]
+        LLM -->|SOAP Status / Summary| Express
+        Express -->|POST JSON reply| AT
+        AT -->|Deliver SMS| Patient
     end
 
     style Village fill:#fffbeb,stroke:#d97706,stroke-width:2px
     style Gateway fill:#f8fafc,stroke:#64748b,stroke-width:2px
     style Clinic fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Patient blue
+class AT green
+class Express purple
+class LLM yellow
 ```
 
 1.  **Patient Request**: A patient sends an SMS like `"Status 129"` (representing their patient ID) to a dedicated shortcode.

@@ -10,7 +10,7 @@
 
 A broken SQL query throws an exception. A broken embedding pipeline returns results — just wrong ones. Cosine similarity between a garbage vector and a real one is still a number. Your API returns 200 OK. Your users get irrelevant answers. Your eval metrics don't catch it because the eval dataset was embedded with the same broken model.
 
-This is the danger zone: **silent correctness failures** with no stack traces.
+This is the danger zone: **silent correctness failures** with no stack traces [1].
 
 ---
 
@@ -19,23 +19,23 @@ This is the danger zone: **silent correctness failures** with no stack traces.
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    D[Document] --> T[Tokeniser]
-    T -->|Truncated silently| F1[💥 Trap 1: Silent truncation<br/>at 512 tokens]
-    T -->|OK| E[Embedding Model]
+    D["Document"] --> T["Tokeniser"]
+    T -->|Truncated silently| F1[" Trap 1: Silent truncation<br/>at 512 tokens"]
+    T -->|OK| E["Embedding Model"]
     
-    E -->|Model version changed| F2[💥 Trap 2: Stale index<br/>after model upgrade]
+    E -->|Model version changed| F2[" Trap 2: Stale index<br/>after model upgrade"]
     E -->|OK| V[(Vector Store)]
     
-    V -->|Wrong metric configured| F3[💥 Trap 3: Cosine vs<br/>dot product mismatch]
-    V -->|No normalisation| F4[💥 Trap 4: L2 distance<br/>on unnormalised vectors]
-    V -->|OK| Q[Query Embedding]
+    V -->|Wrong metric configured| F3[" Trap 3: Cosine vs<br/>dot product mismatch"]
+    V -->|No normalisation| F4[" Trap 4: L2 distance<br/>on unnormalised vectors"]
+    V -->|OK| Q["Query Embedding"]
     
-    Q -->|Different model than index| F5[💥 Trap 5: Query/index<br/>model mismatch]
-    Q -->|OK| R[Search Results]
+    Q -->|Different model than index| F5[" Trap 5: Query/index<br/>model mismatch"]
+    Q -->|OK| R["Search Results"]
     
-    R -->|No re-embedding on update| F6[💥 Trap 6: Stale doc<br/>embeddings after edit]
-    R -->|Multilingual mismatch| F7[💥 Trap 7: Cross-lingual<br/>query on mono model]
-    R -->|Batch dim mismatch| F8[💥 Trap 8: Dimension<br/>mismatch on insert]
+    R -->|No re-embedding on update| F6[" Trap 6: Stale doc<br/>embeddings after edit"]
+    R -->|Multilingual mismatch| F7[" Trap 7: Cross-lingual<br/>query on mono model"]
+    R -->|Batch dim mismatch| F8[" Trap 8: Dimension<br/>mismatch on insert"]
 
     style F1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style F2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -45,6 +45,17 @@ flowchart TD
     style F6 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style F7 fill:#1e3a5f,stroke:#3b82f6,stroke-width:2px
     style F8 fill:#78350f,stroke:#f59e0b,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class D,F3,F6 blue
+class T,F4,F7 green
+class F1,Q,F8 purple
+class E,F5 yellow
+class F2,R red
 ```
 
 ---
@@ -388,7 +399,7 @@ Vector embeddings are deceptively fragile at the boundaries — tokenisation lim
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 *   **OpenAI Embeddings Guide**: [Best practices for using embeddings](https://platform.openai.com/docs/guides/embeddings)
 *   **Sentence Transformers**: [Pretrained Models Reference](https://www.sbert.net/docs/pretrained_models.html)
 *   **pgvector Distance Operators**: [pgvector README](https://github.com/pgvector/pgvector#distance-functions)

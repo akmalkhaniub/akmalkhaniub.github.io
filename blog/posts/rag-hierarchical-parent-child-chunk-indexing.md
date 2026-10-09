@@ -9,26 +9,37 @@
 ## The Limitations of Single-Scale Chunking
 
 In flat vector databases:
-* **Embedding Dilution**: High-dimensional vector search struggles to match specific facts when they are buried inside large paragraphs.
+* **Embedding Dilution**: High-dimensional vector search struggles to match specific facts when they are buried inside large paragraphs [1].
 * **Context Deprivation**: Matching small sentences directly yields high similarity scores, but the model cannot answer questions because it lacks the surrounding paragraphs.
 * **The Solution**: **Parent-Child Scoping**. We decouple the retrieval index from the context generation index. We run vector searches on child nodes, identify matches, and retrieve their parent records to supply context.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Doc[Source Document] --> Parent[Large Parent Chunk: 1000 tokens]
+    Doc["Source Document"] --> Parent["Large Parent Chunk: 1000 tokens"]
     
     subgraph SG1_ChunkHierarchy ["Chunk Hierarchy"]
-        Parent --> Child1[Child Chunk 1: 128 tokens]
-        Parent --> Child2[Child Chunk 2: 128 tokens]
+        Parent --> Child1["Child Chunk 1: 128 tokens"]
+        Parent --> Child2["Child Chunk 2: 128 tokens"]
     end
     
     Child1 -->|Embed & Index| VectorDB[(Vector DB: Child Embeddings)]
     
-    Query[User Search Query] -->|Similarity Search| VectorDB
-    VectorDB -->|Match Child 2| Resolve[Lookup Parent ID]
+    Query["User Search Query"] -->|Similarity Search| VectorDB
+    VectorDB -->|Match Child 2| Resolve["Lookup Parent ID"]
     
-    Resolve -->|Return Context| LLM[LLM Generator Prompt]
+    Resolve -->|Return Context| LLM["LLM Generator Prompt"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Doc,Resolve blue
+class Parent,LLM green
+class Child1 purple
+class Child2 yellow
+class Query red
 ```
 
 ---
@@ -131,4 +142,10 @@ if __name__ == "__main__":
 
 * **Decouple Matching from Context**: Run vector similarity matches on small child chunks while providing large parent blocks to the LLM.
 * **Apply Chunk Overlaps**: Implement overlapping character windows on child chunks to prevent key facts from being cut off.
-* **De-duplicate Matches**: Keep track of matching parent IDs to avoid sending redundant text blocks to the LLM.
+* **De-duplicate Matches**: Keep track of matching parent IDs to avoid sending redundant text blocks to the LLM. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

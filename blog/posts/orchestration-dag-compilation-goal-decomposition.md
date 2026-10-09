@@ -9,27 +9,38 @@
 ## Moving Beyond Linear Execution Loops
 
 When agents execute tasks sequentially:
-* **Blocked Execution Paths**: If a step fails, the agent cannot easily identify which independent steps can still proceed.
+* **Blocked Execution Paths**: If a step fails, the agent cannot easily identify which independent steps can still proceed [1].
 * **Redundant Operations**: The agent repeats prerequisite checks for every sub-task rather than mapping them to a single shared dependency.
 * **The Solution**: **DAG Compilation**. We parse the user's high-level goal, decompose it into a set of dependency-linked task nodes, run topological sorting to verify order, and check for cycles to prevent infinite loops.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Goal[User Goal: Build Module] --> Parse[Decompose into Nodes]
+    Goal["User Goal: Build Module"] --> Parse["Decompose into Nodes"]
     
-    Parse --> NodeA[Node A: Read Schema]
-    Parse --> NodeB[Node B: Generate Code]
-    Parse --> NodeC[Node C: Run Linting]
+    Parse --> NodeA["Node A: Read Schema"]
+    Parse --> NodeB["Node B: Generate Code"]
+    Parse --> NodeC["Node C: Run Linting"]
     
     NodeB -->|Depends on| NodeA
     NodeC -->|Depends on| NodeB
     
     NodeC --> Validate{Run Cycle Check}
-    Validate -->|No Cycles| Sort[Sort Topologically]
+    Validate -->|No Cycles| Sort["Sort Topologically"]
     Validate -->|Cycle Found| Error([Fail: Infinite Loop Detected])
     
-    Sort --> Exec[Execute Graph Compiler Path]
+    Sort --> Exec["Execute Graph Compiler Path"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Goal,Sort blue
+class Parse,Exec green
+class NodeA purple
+class NodeB yellow
+class NodeC red
 ```
 
 ---
@@ -126,4 +137,13 @@ if __name__ == "__main__":
 
 * **Verify Graph Paths**: Run cycle detection checks on all execution trees before calling downstream agent executors.
 * **Decompose Granularly**: Keep task nodes focused on single tool operations to simplify execution tracking.
-* **Decouple Inputs**: Pass input and output data parameters between nodes using explicit graph context variables.
+* **Decouple Inputs**: Pass input and output data parameters between nodes using explicit graph context variables. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

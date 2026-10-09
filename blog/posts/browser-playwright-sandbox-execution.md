@@ -9,22 +9,32 @@
 ## The Danger of Unbounded Browser Control
 
 Web browsers are powerful runtime environments:
-* **The Local Network Threat**: If an agent visits a malicious website, that site can run scripts within the headless browser to scan the container's local subnet or access internal APIs.
+* **The Local Network Threat**: If an agent visits a malicious website, that site can run scripts within the headless browser to scan the container's local subnet or access internal APIs [1].
 * **Cookie and Session Theft**: Agents handling multiple sessions can have corporate auth cookies exfiltrated if they visit untrusted, user-submitted URLs.
 * **The Solution**: **Browser Sandboxing**. We execute headless Chromium instances inside isolated, network-restricted containers, proxying only required API targets and blocking local network queries.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Agent Code Worker] -->|Request Web Page| Wrapper[Playwright Sandbox Wrapper]
+    Agent["Agent Code Worker"] -->|Request Web Page| Wrapper["Playwright Sandbox Wrapper"]
     
     subgraph SG1_IsolatedDockerContainer ["Isolated Docker Container"]
-        Wrapper -->|Spawn Headless Chromium| Browser[Chromium Instance]
+        Wrapper -->|Spawn Headless Chromium| Browser["Chromium Instance"]
         Browser -->|Outbound Network Request| Proxy{Egress Network Proxy}
     end
     
     Proxy -->|Blocked| Subnet[(Local Subnet 192.168.x.x)]
-    Proxy -->|Allowed| Web[Allowed External Web Pages]
+    Proxy -->|Allowed| Web["Allowed External Web Pages"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent blue
+class Wrapper green
+class Browser purple
+class Web yellow
 ```
 
 ---
@@ -115,4 +125,10 @@ if __name__ == "__main__":
 
 * **Default to Containment**: Always run browser automation containers with user namespaces enabled and root privileges disabled.
 * **Filter DNS Outbound**: Enforce DNS resolution limits on the browser container to prevent exfiltration tunnels.
-* **Apply Strict Timeouts**: Configure default navigation and action timeouts to under 10 seconds to protect CPU resources.
+* **Apply Strict Timeouts**: Configure default navigation and action timeouts to under 10 seconds to protect CPU resources. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

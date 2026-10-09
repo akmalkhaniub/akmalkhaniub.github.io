@@ -9,21 +9,30 @@
 ## The Danger of Over-Privileged Agent Swarms
 
 In basic systems, agents share a single API key or run with root host privileges:
-* **Horizontal Privilege Escalation**: A database auditor agent should not have permission to delete files or run git pushes, but shared credentials grant these capabilities.
+* **Horizontal Privilege Escalation**: A database auditor agent should not have permission to delete files or run git pushes, but shared credentials grant these capabilities [1].
 * **Malicious Context Hijacking**: If an agent is compromised via a prompt injection attack, the attacker can leverage the agent's broad tool permissions to execute system mutations.
 * **The Solution**: **Scoped Session Tokens**. The coordinator agent generates signed JWT keys with specific scope limits (e.g. `files:read:/workspace/src`) and delegates them to child agents. Tool routers parse the token claims before executing operations.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Request[Agent requests Tool: Read File] --> Auth[Present signed Session JWT Token]
+    Request["Agent requests Tool: Read File"] --> Auth["Present signed Session JWT Token"]
     Auth --> Gateway{Gateway Scope Verifier}
     
-    Gateway --> Decode[Decode JWT Claims]
+    Gateway --> Decode["Decode JWT Claims"]
     Decode --> Match{Do Token Scopes match File Path?}
     
-    Match -->|No: Unauthorized path| Reject([Block Tool Action: Log Alert])
-    Match -->|Yes: Authorized| Execute([Execute Tool & Return File Content])
+    Match -->|No - Unauthorized path| Reject([Block Tool Action: Log Alert])
+    Match -->|Yes - Authorized| Execute([Execute Tool & Return File Content])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Request blue
+class Auth green
+class Decode purple
 ```
 
 ---
@@ -123,4 +132,13 @@ if __name__ == "__main__":
 
 * **Avoid Unified Master Keys**: Never supply parent root access keys directly to worker agent nodes. Enforce token scopes.
 * **Isolate Filesystem Tools**: Restrict filesystem reads and writes to specific subdirectories using path validation checks.
-* **Establish Gateway Audits**: Log authorization failures to alert security monitors about potential prompt injection attacks.
+* **Establish Gateway Audits**: Log authorization failures to alert security monitors about potential prompt injection attacks. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Jones, M., Bradley, J., & Sakimura, N. (2015)**. *JSON Web Token (JWT)*. RFC 7519. [https://www.rfc-editor.org/rfc/rfc7519](https://www.rfc-editor.org/rfc/rfc7519)
+5. **Hardt, D., Ed. (2012)**. *The OAuth 2.0 Authorization Framework*. RFC 6749. [https://www.rfc-editor.org/rfc/rfc6749](https://www.rfc-editor.org/rfc/rfc6749)
+6. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)

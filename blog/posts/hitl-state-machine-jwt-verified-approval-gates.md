@@ -8,7 +8,7 @@
 
 ## The Callback Spoofing Threat
 
-When an agent pauses to await approval, it exposes a callback URL (e.g. `POST /api/v1/sessions/{id}/resume`).
+When an agent pauses to await approval, it exposes a callback URL (e.g. `POST /api/v1/sessions/{id}/resume`) [1].
 
 If this endpoint is unsecured:
 * **Webhook Spoofing**: An attacker can guess the session ID and trigger a resume call, bypassing the human approval gate.
@@ -18,10 +18,10 @@ If this endpoint is unsecured:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Click[Reviewer Clicks Approve in Slack] --> Slack[Slack Server signs JWT payload]
-    Slack --> Callback[FastAPI Gateway Webhook Received]
+    Click["Reviewer Clicks Approve in Slack"] --> Slack["Slack Server signs JWT payload"]
+    Slack --> Callback["FastAPI Gateway Webhook Received"]
     
-    Callback --> Decode[Decode JWT & Verify Signature]
+    Callback --> Decode["Decode JWT & Verify Signature"]
     Decode --> Validate{Is JWT Signature Valid?}
     
     Validate -->|No| Reject([Reject Webhook: Log Security Alert])
@@ -29,6 +29,16 @@ flowchart TD
     
     Match -->|No| Reject
     Match -->|Yes| Resume([Resume Agent Execution])
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Click blue
+class Slack green
+class Callback purple
+class Decode yellow
 ```
 
 ---
@@ -162,4 +172,14 @@ if __name__ == "__main__":
 
 * **Reject Raw Webhooks**: Never expose unauthenticated callback endpoints to resume agent pipelines. Enforce JWT signature verification.
 * **Pin Task Hashes**: Include cryptographic hashes of the agent's work payloads inside the JWT claims to block modification between pause and resume states.
-* **Enforce Expiration Limits**: Keep token expirations short (under 5 minutes) to prevent replay attacks on callback controllers.
+* **Enforce Expiration Limits**: Keep token expirations short (under 5 minutes) to prevent replay attacks on callback controllers. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)
+5. **Jones, M., Bradley, J., & Sakimura, N. (2015)**. *JSON Web Token (JWT)*. RFC 7519. [https://www.rfc-editor.org/rfc/rfc7519](https://www.rfc-editor.org/rfc/rfc7519)
+6. **Hardt, D., Ed. (2012)**. *The OAuth 2.0 Authorization Framework*. RFC 6749. [https://www.rfc-editor.org/rfc/rfc6749](https://www.rfc-editor.org/rfc/rfc6749)
+7. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)

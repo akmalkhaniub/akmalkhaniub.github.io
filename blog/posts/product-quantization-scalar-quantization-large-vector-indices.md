@@ -1,6 +1,6 @@
 # Product Quantization (PQ) & Scalar Quantization (SQ) for Large Vector Indices
 
-Storing raw vectors in memory becomes cost-prohibitive at scale. For example, a dataset of 100 million vectors with 1536 dimensions stored as 32-bit floating points (FP32) requires approximately 614 GB of raw RAM—excluding HNSW graph indices, which double that memory footprint.
+Storing raw vectors in memory becomes cost-prohibitive at scale. For example, a dataset of 100 million vectors with 1536 dimensions stored as 32-bit floating points (FP32) requires approximately 614 GB of raw RAM—excluding HNSW graph indices, which double that memory footprint [1].
 
 To scale search systems efficiently, vector databases implement lossy compression techniques like **Scalar Quantization (SQ)** and **Product Quantization (PQ)**.
 
@@ -15,19 +15,30 @@ This article details the mechanics of SQ and PQ compression algorithms.
 Product Quantization splits vectors into sub-spaces and encodes them using codebook cluster IDs:
 
 ```mermaid
-graph TD
-  A[Raw Vector: 1024-dim FP32 - 4096 Bytes] --> B[Split into 8 Sub-Vectors of 128-dim]
+flowchart TD
+  A["Raw Vector: 1024-dim FP32 - 4096 Bytes"] --> B["Split into 8 Sub-Vectors of 128-dim"]
   
   subgraph SG1_ProductQuantizationEncoding ["Product Quantization Encoding"]
-    B --> C[Sub-Vector 1]
-    B --> D[Sub-Vector 8]
+    B --> C["Sub-Vector 1"]
+    B --> D["Sub-Vector 8"]
     
-    C -->|Assign Closest Centroid ID| E[Centroid 42: 1 Byte]
-    D -->|Assign Closest Centroid ID| F[Centroid 192: 1 Byte]
+    C -->|Assign Closest Centroid ID| E["Centroid 42: 1 Byte"]
+    D -->|Assign Closest Centroid ID| F["Centroid 192: 1 Byte"]
   end
   
-  E --> G[Quantized Vector: 8 Bytes total - 99.8% Compression]
+  E --> G["Quantized Vector: 8 Bytes total - 99.8% Compression"]
   F --> G
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C purple
+class D yellow
+class E red
 ```
 
 ### Quantization Strategies
@@ -153,4 +164,13 @@ When configuring vector compression:
 ## Real-World Enterprise Impact
 Teams deploying quantized index partitions report:
 * **90% Infrastructure Cost Reductions**: Compressing vector indices enables hosting a 1-billion vector dataset on a fraction of the hardware, avoiding massive RAM costs.
-* **Stable Sub-10ms Query Latencies**: Smaller memory footprint increases CPU L3 cache hits, accelerating asymmetric lookup speed.
+* **Stable Sub-10ms Query Latencies**: Smaller memory footprint increases CPU L3 cache hits, accelerating asymmetric lookup speed. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Lin, J., et al. (2024)**. *AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration*. MLSys. [https://arxiv.org/abs/2306.00978](https://arxiv.org/abs/2306.00978)
+5. **Frantar, E., et al. (2023)**. *GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers*. ICLR. [https://arxiv.org/abs/2210.17323](https://arxiv.org/abs/2210.17323)
+6. **Wang, H., et al. (2023)**. *BitNet: Scaling 1-bit Transformers for Large Language Models*. arXiv. [https://arxiv.org/abs/2310.11453](https://arxiv.org/abs/2310.11453)

@@ -1,6 +1,6 @@
 # Modern Data Lakehouse File Formats: Apache Iceberg, Delta Lake & ACID Table Metadata Transactions
 
-In modern cloud data architecture, the **Data Lakehouse** (**Apache Iceberg**, **Delta Lake**, **Apache Hudi**) combines the low-cost scalability of cloud object storage (AWS S3, Google Cloud Storage) with the strict **ACID Transaction Guarantees** of traditional relational databases.
+In modern cloud data architecture, the **Data Lakehouse** (**Apache Iceberg**, **Delta Lake**, **Apache Hudi**) combines the low-cost scalability of cloud object storage (AWS S3, Google Cloud Storage) with the strict **ACID Transaction Guarantees** of traditional relational databases [1].
 
 Legacy data lakes (such as **Apache Hive**) defined tables as directory paths on S3 (`s3://bucket/table/year=2026/`).
 
@@ -21,9 +21,9 @@ This article details the Apache Iceberg metadata tree, Optimistic Concurrency Co
 How Apache Iceberg organizes table metadata into an immutable tree hierarchy to deliver atomic transactions on object storage:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_IcebergCatalogPointer ["Iceberg Catalog Pointer Layer"]
-    Catalog[Iceberg Catalog / Metastore] -->|Atomic Pointer Swap: v2.metadata.json| MetaJSON["1. Table Metadata JSON (v2.metadata.json)"]
+    Catalog["Iceberg Catalog / Metastore"] -->|Atomic Pointer Swap - v2.metadata.json| MetaJSON["1. Table Metadata JSON (v2.metadata.json)"]
   end
   
   subgraph SG2_SnapshotMetadataHierarchy ["Snapshot Metadata Hierarchy"]
@@ -37,6 +37,17 @@ graph TD
     Manifest1 --> Data2["4. Data File (part-002.parquet)"]
     Manifest2 --> Data3["4. Data File (part-003.parquet)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Catalog,Data1 blue
+class MetaJSON,Data2 green
+class ManifestList,Data3 purple
+class Manifest1 yellow
+class Manifest2 red
 ```
 
 ### Core Data Lakehouse Formats Mechanics
@@ -202,4 +213,10 @@ When operating Apache Iceberg or Delta Lake tables:
 ## Real-World Enterprise Impact
 Modern Data Lakehouse table formats (such as **Apache Iceberg**, **Delta Lake**, and **Apache Hudi**) report:
 * **100% ACID Concurrency Safety**: Eliminates dirty reads and corrupted table states on AWS S3 / Google Cloud Storage.
-* **$100\times$ Faster Metadata Queries**: Column-level min/max statistics in manifest files prune unneeded Parquet files without making expensive cloud S3 LIST calls.
+* **$100\times$ Faster Metadata Queries**: Column-level min/max statistics in manifest files prune unneeded Parquet files without making expensive cloud S3 LIST calls. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

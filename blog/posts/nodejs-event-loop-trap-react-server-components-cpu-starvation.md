@@ -4,7 +4,7 @@ Because Node.js operates on a single-threaded event loop (`libuv`), it excels at
 
 Then came React Server Components.
 
-In traditional client-side React, component rendering takes place inside the user’s personal web browser. If an engineer writes an un-optimized component that performs an expensive array filter, parses a massive JSON document, or runs an un-memoized regular expression:
+In traditional client-side React, component rendering takes place inside the user’s personal web browser [1]. If an engineer writes an un-optimized component that performs an expensive array filter, parses a massive JSON document, or runs an un-memoized regular expression:
 * The user’s laptop fan spins up for 80 milliseconds.
 * A single frame drops on one browser viewport.
 * **Zero other users are affected.**
@@ -18,19 +18,30 @@ If ten users simultaneously visit a page containing a CPU-intensive Server Compo
 This is **The Node.js Event Loop Trap in Server Components**. Here is the systems engineering analysis of CPU starvation in modern full-stack React, and how to protect multi-tenant servers from collapse.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_NodeJsSingle ["Node.js Single-Threaded Event Loop Saturation"]
-    Client1[User 1: GET /analytics] --> Ingress[Single-Threaded Node.js Event Loop]
-    Client2[User 2: GET /healthz] --> Ingress
-    Client3[User 3: GET /checkout] --> Ingress
+    Client1["User 1: GET /analytics"] --> Ingress["Single-Threaded Node.js Event Loop"]
+    Client2["User 2: GET /healthz"] --> Ingress
+    Client3["User 3: GET /checkout"] --> Ingress
 
     Ingress --> HeavyRSC["Synchronous Server Component Rendering<br/>(Traversing 5,000 VDOM Fiber Nodes + JSON Serialization)"]
     
-    HeavyRSC -->|EVENT LOOP BLOCKED FOR 250ms| ThreadFreeze[CPU Execution Freeze: 100% Core Saturation]
+    HeavyRSC -->|EVENT LOOP BLOCKED FOR 250ms| ThreadFreeze["CPU Execution Freeze: 100% Core Saturation"]
     
     ThreadFreeze -.->|Health check timed out!| K8sKill["Kubernetes SIGKILL: Container Terminated"]
     ThreadFreeze -.->|Client 3 socket buffer overflows!| SocketDrop["HTTP 504 Gateway Timeout on Checkout"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client1,ThreadFreeze blue
+class Ingress,K8sKill green
+class Client2,SocketDrop purple
+class Client3 yellow
+class HeavyRSC red
 ```
 *Figure 1: The Node.js event loop phases and CPU thread starvation induced by synchronous Virtual DOM stringification and recursive Flight serialization. Source: Node.js Diagnostics Working Group [2, 3].*
 
@@ -93,13 +104,24 @@ When Server Actions encrypt closure payloads and Server Components resolve datab
 To run React Server Components safely at scale, systems architects must establish a strict boundary: **the main Node.js event loop must only route I/O; heavy computation must be isolated**.
 
 ```mermaid
-graph LR
+flowchart TD
   MainThread["Node.js Main Event Loop"] -->|Dispatches CPU Work| WorkerPool["Node.js worker_threads or Piscina Pool"]
   WorkerPool --> Thread1["Worker Core 1"]
   WorkerPool --> Thread2["Worker Core 2"]
   WorkerPool --> Thread3["Worker Core 3"]
   
   MainThread -->|Instant Non-Blocking Response| HealthCheck["Responds to K8s health check in under 2ms"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class MainThread,HealthCheck blue
+class WorkerPool green
+class Thread1 purple
+class Thread2 yellow
+class Thread3 red
 ```
 
 ### Pattern 1: Worker Thread Offloading (`worker_threads`)

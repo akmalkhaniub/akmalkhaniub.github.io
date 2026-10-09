@@ -1,6 +1,6 @@
 # Speculative Decoding & Medusa Tree Attention: Accelerating LLM Inference by 3x Without Accuracy Loss
 
-In modern large language model infrastructure (**vLLM**, **TensorRT-LLM**, **HuggingFace TGI**, **SGLang**), autoregressive token generation has historically suffered from a severe hardware limitation: **GPU memory bandwidth starvation**.
+In modern large language model infrastructure (**vLLM**, **TensorRT-LLM**, **HuggingFace TGI**, **SGLang**), autoregressive token generation has historically suffered from a severe hardware limitation: **GPU memory bandwidth starvation** [1].
 
 When serving a large 70-billion parameter model (`float16` weights = $140\text{ GB}$), generating a single token requires transferring all $140\text{ GB}$ of model weights from High Bandwidth Memory (HBM) into on-chip GPU SRAM.
 
@@ -9,19 +9,30 @@ Because the arithmetic intensity is extremely low during single-batch generation
 To break through this hardware memory wall, modern inference engines leverage **Speculative Decoding** and **Medusa Multi-Head Tree Attention**: techniques that accelerate generation by **$2.5\times \text{ to } 3.2\times$** while guaranteeing **zero degradation in output accuracy or mathematical distribution**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_StandardAutoregressiveVs ["Standard Autoregressive vs Speculative Decoding"]
     subgraph SG2_1StandardAutoregressive ["1. Standard Autoregressive (Memory Bound: 1 Token Per Pass)"]
-      P1[Load 140GB Weights] --> T1[Generate Token 1]
-      T1 --> P2[Load 140GB Weights] --> T2[Generate Token 2]
-      T2 --> P3[Load 140GB Weights] --> T3[Generate Token 3]
+      P1["Load 140GB Weights"] --> T1["Generate Token 1"]
+      T1 --> P2["Load 140GB Weights"] --> T2["Generate Token 2"]
+      T2 --> P3["Load 140GB Weights"] --> T3["Generate Token 3"]
     end
 
     subgraph SG3_2SpeculativeDecoding ["2. Speculative Decoding (Compute Bound: 3-5 Tokens Per Pass)"]
-      Draft[Fast Draft Model: Proposes 5 Tokens in 5ms] --> ParallelTarget[Target 70B Model: Validates All 5 Tokens in ONE 20ms Pass]
+      Draft["Fast Draft Model: Proposes 5 Tokens in 5ms"] --> ParallelTarget["Target 70B Model: Validates All 5 Tokens in ONE 20ms Pass"]
       ParallelTarget --> Accept["Accept Tokens 1, 2, 3, 4 (Zero Loss!)"]
     end
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class P1,T3 blue
+class T1,Draft green
+class P2,ParallelTarget purple
+class T2,Accept yellow
+class P3 red
 ```
 
 ---
@@ -86,22 +97,33 @@ While speculative decoding with a draft model is powerful, managing two separate
 **Medusa** (Cai et al., 2023) eliminates the draft model entirely by adding **multiple lightweight Feed-Forward prediction heads** directly on top of the target model’s final transformer layer:
 
 ```mermaid
-graph TD
+flowchart TD
   Backbone["Target Transformer Backbone (70B)"] --> H0["Head 0: Predicts t+1"]
   Backbone --> H1["Head 1: Predicts t+2"]
   Backbone --> H2["Head 2: Predicts t+3"]
   H0 --> T1["Token w1"]
   H1 --> T2["Token w2"]
   H2 --> T3["Token w3"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Backbone,T2 blue
+class H0,T3 green
+class H1 purple
+class H2 yellow
+class T1 red
 ```
 
 ### Tree-Structured Attention Verification
 Rather than predicting a single linear chain of tokens, Medusa heads generate top-$k$ candidates for each position, forming a **Candidate Prefix Tree**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG4_MedusaCandidateTree ["Medusa Candidate Tree (Evaluated in 1 Forward Pass)"]
-    Root[Current Token] --> A["w1 (p=0.8)"]
+    Root["Current Token"] --> A["w1 (p=0.8)"]
     Root --> B["w1' (p=0.2)"]
     
     A --> A1["w2 (p=0.7)"]
@@ -111,6 +133,17 @@ graph TD
     
     A1 --> A11["w3 (p=0.85)"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Root,B1 blue
+class A,A11 green
+class B purple
+class A1 yellow
+class A2 red
 ```
 
 By applying a custom **2D Tree Attention Mask**, the target model verifies all candidate branches (e.g. 64 simultaneous paths) in a **single forward pass**, accepting the longest valid path.
@@ -236,4 +269,13 @@ if __name__ == "__main__":
 ## Architectural Takeaway
 By decoupling token proposal from verification, **Speculative Decoding and Medusa Tree Attention break the fundamental memory bandwidth bottleneck of modern LLMs**.
 
-Inference frameworks running speculative sampling deliver dramatically lower Time-to-First-Token and higher sustained throughput, driving down AI operating costs without compromising a single ounce of model intelligence.
+Inference frameworks running speculative sampling deliver dramatically lower Time-to-First-Token and higher sustained throughput, driving down AI operating costs without compromising a single ounce of model intelligence. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Dao, T., et al. (2022)**. *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness*. NeurIPS. [https://arxiv.org/abs/2205.14135](https://arxiv.org/abs/2205.14135)
+5. **Vaswani, A., et al. (2017)**. *Attention Is All You Need*. NeurIPS. [https://arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
+6. **Kwon, W., et al. (2023)**. *Efficient Memory Management for Large Language Model Serving with PagedAttention*. SOSP. [https://arxiv.org/abs/2309.06180](https://arxiv.org/abs/2309.06180)

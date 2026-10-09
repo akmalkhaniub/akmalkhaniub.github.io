@@ -12,22 +12,33 @@ A JWT looks trustworthy. It's base64-encoded, has a signature, and is issued by 
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#ef4444', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#f87171', 'lineColor': '#ef4444', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
-flowchart LR
-    T[JWT Token] --> H[Header]
-    T --> P[Payload]
-    T --> S[Signature]
+flowchart TD
+    T["JWT Token"] --> H["Header"]
+    T --> P["Payload"]
+    T --> S["Signature"]
 
-    H --> A1[💥 Attack 1: alg:none<br/>Signature bypassed entirely]
-    H --> A2[💥 Attack 2: RS256→HS256<br/>Public key used as secret]
-    P --> A3[💥 Attack 3: No exp validation<br/>Tokens live forever]
-    P --> A4[💥 Attack 4: No aud check<br/>Token accepted on wrong service]
-    S --> A5[💥 Attack 5: Weak secret<br/>Brute-forced offline]
+    H --> A1[" Attack 1: alg:none<br/>Signature bypassed entirely"]
+    H --> A2[" Attack 2: RS256→HS256<br/>Public key used as secret"]
+    P --> A3[" Attack 3: No exp validation<br/>Tokens live forever"]
+    P --> A4[" Attack 4: No aud check<br/>Token accepted on wrong service"]
+    S --> A5[" Attack 5: Weak secret<br/>Brute-forced offline"]
 
     style A1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style A2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style A3 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style A4 fill:#78350f,stroke:#f59e0b,stroke-width:2px
     style A5 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class T,A2 blue
+class H,A3 green
+class P,A4 purple
+class S,A5 yellow
+class A1 red
 ```
 
 ---
@@ -36,7 +47,7 @@ flowchart LR
 
 **Severity**: Critical. Allows complete auth bypass.
 
-The JWT spec allows an `alg` field of `"none"` — meaning no signature is required. An attacker can:
+The JWT spec allows an `alg` field of `"none"` — meaning no signature is required [1]. An attacker can:
 1. Take any valid JWT
 2. Change the payload to any user ID (e.g., admin)
 3. Set `alg: none` in the header
@@ -367,7 +378,7 @@ JWT security is not about the library you choose — it's about whether you unde
 
 ---
 
-### Research References & Resources
+## References & Further Reading
 - **OWASP JWT Security Cheatsheet**: [JWT Security Considerations](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html)
 - **jwt.io Debugger**: [Inspect and decode JWTs](https://jwt.io/)
 - **PyJWT Documentation**: [Encoding and Decoding Tokens](https://pyjwt.readthedocs.io/en/stable/)

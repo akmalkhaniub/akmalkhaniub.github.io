@@ -8,7 +8,7 @@
 
 ## The Hydration Tax: Why Pages Load Slowly
 
-In a classic hydrated framework (like Next.js or Nuxt), rendering is a two-step process:
+In a classic hydrated framework (like Next.js or Nuxt), rendering is a two-step process [1]:
 
 1. **Server-Side Render (SSR)**: The server runs the JS components to generate static HTML, which is sent to the client. The user sees the page layout instantly.
 2. **Hydration**: The browser downloads the framework bundle and component code, parses it, executes it from the root component down, reconstructs the virtual DOM, and attaches event listeners to the rendered HTML.
@@ -115,4 +115,10 @@ When architecting high-performance web systems:
 * [ ] **Avoid monolithic SPA frameworks for landing pages**: Standard hydration kills mobile performance and SEO page speed scores.
 * [ ] **Leverage client directives in Astro**: Use `client:visible` or `client:idle` to defer JS loading until absolutely necessary.
 * [ ] **Consider Resumability for heavy traffic**: If you need instant interactivity on pages with rich media, Qwik's chunk-on-click approach is ideal.
-* [ ] **Audit your bundle sizes**: Use Webpack/Vite bundle analyzers to ensure third-party scripts are not inflating the hydration tax on page boot.
+* [ ] **Audit your bundle sizes**: Use Webpack/Vite bundle analyzers to ensure third-party scripts are not inflating the hydration tax on page boot. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

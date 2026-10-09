@@ -9,22 +9,33 @@
 ## The Limitations of Vector-Only Retrieval
 
 Naive vector retrieval divides documents into static text chunks and converts them into embeddings:
-* **Missing Relational Context**: If information about an entity is scattered across multiple pages, a similarity search returns disjointed chunks, missing the underlying connections.
+* **Missing Relational Context**: If information about an entity is scattered across multiple pages, a similarity search returns disjointed chunks, missing the underlying connections [1].
 * **The Multi-Hop Failure**: Queries that require joining facts across different modules fail because the vector search cannot traverse dependencies.
 * **The Solution**: **Entity-Graph RAG**. We extract key entities (e.g. classes, authors, modules) and their relationships, compile them into a knowledge graph, and perform multi-hop traversals to gather comprehensive context.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[Query: Find dependencies of Team A's modules] --> Identify[1. Identify Root Entity: Team A]
-    Identify --> Traverse[2. Graph Traversal: Look up related nodes]
+    Query["Query: Find dependencies of Team A's modules"] --> Identify["1. Identify Root Entity: Team A"]
+    Identify --> Traverse["2. Graph Traversal: Look up related nodes"]
     
-    Traverse --> Node1[Team A -> writes -> Module 1]
-    Traverse --> Node2[Module 1 -> depends_on -> DB Schema]
+    Traverse --> Node1["Team A -> writes -> Module 1"]
+    Traverse --> Node2["Module 1 -> depends_on -> DB Schema"]
     
-    Node1 --> Compile[3. Assemble Trajectory Context Map]
+    Node1 --> Compile["3. Assemble Trajectory Context Map"]
     Node2 --> Compile
-    Compile --> Prompt[4. Feed Context into LLM Prompt]
+    Compile --> Prompt["4. Feed Context into LLM Prompt"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query,Compile blue
+class Identify,Prompt green
+class Traverse purple
+class Node1 yellow
+class Node2 red
 ```
 
 ---
@@ -115,4 +126,13 @@ if __name__ == "__main__":
 
 * **Structure Relational Data**: Use graph databases (e.g. Neo4j) or network-graph models to map code dependencies and document hierarchies.
 * **Combine Vector and Graph**: Use vector similarity searches to locate entry-point nodes, then use graph traversals to extract surrounding context.
-* **Enforce Traversal Limits**: Set strict search depth limits (e.g. `max_depth = 2`) to prevent graphs from returning overly large context maps.
+* **Enforce Traversal Limits**: Set strict search depth limits (e.g. `max_depth = 2`) to prevent graphs from returning overly large context maps. [2]
+
+## References & Further Reading
+
+1. **Edge, D., et al. (2024)**. *From Local to Global: A Graph RAG Approach to Query-Focused Summarization*. arXiv. [https://arxiv.org/abs/2404.16130](https://arxiv.org/abs/2404.16130)
+2. **Francis, N., et al. (2018)**. *Cypher: An Evolving Query Language for Property Graphs*. SIGMOD. [https://doi.org/10.1145/3183713.3190657](https://doi.org/10.1145/3183713.3190657)
+3. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+4. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+5. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+6. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)

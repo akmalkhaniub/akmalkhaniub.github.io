@@ -1,6 +1,6 @@
 # Enterprise RAG & Context Storage on GCP: AlloyDB, Vertex Search & BigQuery Vector Analytics
 
-As enterprise engineering teams deploy agentic software applications, providing agents with accurate context becomes the primary bottleneck. Naive Retrieval-Augmented Generation (RAG) setups using external, standalone vector databases often fail enterprise compliance standards. 
+As enterprise engineering teams deploy agentic software applications, providing agents with accurate context becomes the primary bottleneck [1]. Naive Retrieval-Augmented Generation (RAG) setups using external, standalone vector databases often fail enterprise compliance standards. 
 
 Standalone vector stores create isolated data silos, lack ACID transactional guarantees, and make **multi-tenant Row-Level Security (RLS)** difficult to enforce across relational enterprise database tables.
 
@@ -15,28 +15,39 @@ This article details how to architect and implement an enterprise context engine
 The platform unifies structured relational data, vector embeddings, and analytical telemetry across Google Cloud's data stack:
 
 ```mermaid
-graph TD
-  A[Agent Worker Context Request] --> B{Context Type?}
+flowchart TD
+  A["Agent Worker Context Request"] --> B{Context Type?}
   
   subgraph SG1_RelationalVectorContext ["Relational Vector & Context (AlloyDB AI)"]
-    B -->|Structured Code & Tenant Data| C[AlloyDB PostgreSQL Instance]
-    C --> D[pgvector + ScaNN Indexing]
-    D --> E[Tenant Row-Level Security RLS Filter]
+    B -->|Structured Code & Tenant Data| C["AlloyDB PostgreSQL Instance"]
+    C --> D["pgvector + ScaNN Indexing"]
+    D --> E["Tenant Row-Level Security RLS Filter"]
   end
   
   subgraph SG2_UnstructuredDocumentSearch ["Unstructured Document Search (Vertex AI Search)"]
-    B -->|Enterprise Docs & Specifications| F[Vertex AI Search Datastore]
-    F --> G[Hybrid Dense/Sparse Semantic Search]
+    B -->|Enterprise Docs & Specifications| F["Vertex AI Search Datastore"]
+    F --> G["Hybrid Dense/Sparse Semantic Search"]
   end
   
-  E --> H[Ranked Context Bundle]
+  E --> H["Ranked Context Bundle"]
   G --> H
-  H --> I[Agent Model Prompt]
+  H --> I["Agent Model Prompt"]
   
   subgraph SG3_TrajectoryAnalyticsDrift ["Trajectory Analytics & Drift Evaluation"]
-    I --> J[BigQuery Streaming Ingestion]
-    J --> K[BigQuery Vector Distance & Quality Analytics]
+    I --> J["BigQuery Streaming Ingestion"]
+    J --> K["BigQuery Vector Distance & Quality Analytics"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,G blue
+class C,H green
+class D,I purple
+class E,J yellow
+class F,K red
 ```
 
 ### Infrastructure Components
@@ -175,4 +186,10 @@ When configuring RLS and vector search on GCP:
 ## Real-World Enterprise Impact
 Teams building GCP RAG pipelines report:
 * **Zero Cross-Tenant Data Leaks**: Relational SQL Row-Level Security guarantees 100% tenant context separation.
-* **4x Faster Query Speeds**: AlloyDB ScaNN indexing reduces P99 vector search latency under 15 milliseconds.
+* **4x Faster Query Speeds**: AlloyDB ScaNN indexing reduces P99 vector search latency under 15 milliseconds. [2]
+
+## References & Further Reading
+
+1. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+2. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+3. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

@@ -3,7 +3,7 @@
 > * **Why it matters:** Unoptimized agentic workflows incur exponential API costs and latency spikes, making strict token tracking and cache-friendly prompt design critical for sustainable, enterprise-grade AI deployment.
 > * **What we synthesized:** We synthesized a complete telemetry and cost-routing pipeline, prefix caching rules for maximizing hit rates, and a Node.js middleware implementation to track and log real-time token metrics.
 
-When deploying large-scale Generative AI applications, API costs and latency compound exponentially. In a multi-agent system, agents repeatedly pass long conversations, document contexts, and tool definitions back and forth. This "agentic tax" can quickly run up thousands of dollars in cloud API fees and slow system response times to an crawl.
+When deploying large-scale Generative AI applications, API costs and latency compound exponentially [1]. In a multi-agent system, agents repeatedly pass long conversations, document contexts, and tool definitions back and forth. This "agentic tax" can quickly run up thousands of dollars in cloud API fees and slow system response times to an crawl.
 
 To operate enterprise-grade AI products sustainably, we must transition from basic prompt templates to strict **Context Engineering** and **Token Economics Telemetry**. 
 
@@ -16,24 +16,34 @@ This article details how to optimize prompt structures for **Prompt Caching**, t
 To audit and optimize costs, every single model call must pass through a wrapper that logs token metrics and latency data into an analytical database before resolving back to the agent application.
 
 ```mermaid
-graph TD
+flowchart TD
     subgraph SG1_ClientappAgentApplication ["ClientApp [Agent Application Layer]"]
-        Agent[Agent Orchestrator] -->|1. Generate Request| MW[Telemetry Middleware]
+        Agent["Agent Orchestrator"] -->|Generate Request| MW["Telemetry Middleware"]
     end
 
     subgraph SG2_GatewayInferenceTelemetry ["Gateway [Inference & Telemetry Gateway]"]
-        MW -->|2. Route to LLM API| LLM[LLM API: Claude / GPT-4o]
-        LLM -->|3. Return Completion + Usage Metrics| MW
-        MW -->|4. Log usage as async job| DB[(PostgreSQL Telemetry DB)]
+        MW -->|Route to LLM API| LLM["LLM API: Claude / GPT-4o"]
+        LLM -->|Return Completion + Usage Metrics| MW
+        MW -->|Log usage as async job| DB[(PostgreSQL Telemetry DB)]
     end
 
     subgraph SG3_MonitorObservabilityLayer ["Monitor [Observability Layer]"]
-        Dash[Grafana / Cost Dashboard] -->|5. Query aggregate analytics| DB
+        Dash["Grafana / Cost Dashboard"] -->|Query aggregate analytics| DB
     end
 
     style ClientApp fill:#f8fafc,stroke:#64748b,stroke-width:2px
     style Gateway fill:#ecfeff,stroke:#0ea5e9,stroke-width:2px
     style Monitor fill:#fffbeb,stroke:#d97706,stroke-width:2px
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent blue
+class MW green
+class LLM purple
+class Dash yellow
 ```
 
 1. **Agent Request**: The orchestrator triggers an API call with static tools, system instructions, and dynamic context.

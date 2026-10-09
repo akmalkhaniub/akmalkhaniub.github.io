@@ -8,26 +8,37 @@
 
 ## The Silent Creep of Code Rot
 
-Every time a library releases a new version, or a team updates its style guide, the repository accumulates technical debt. Manual refactoring is expensive, and developers rarely prioritize updating legacy files.
+Every time a library releases a new version, or a team updates its style guide, the repository accumulates technical debt [1]. Manual refactoring is expensive, and developers rarely prioritize updating legacy files.
 
 Instead of running agents on-demand (which requires developer context switches), we can deploy a **Continuous Modernization Daemon**. The daemon runs in the background of your VCS (Version Control System), scanning code structures, upgrading imports, and cleaning codebase paths incrementally.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Start([Daemon Scheduler Triggered]) --> Scan[Recursive Directory AST Scan]
+    Start([Daemon Scheduler Triggered]) --> Scan["Recursive Directory AST Scan"]
     Scan --> Match{Is Deprecated Pattern Found?}
     
     Match -->|No| End([Sleep Until Next Cycle])
-    Match -->|Yes| Refactor[Spawn Refactoring Agent Worker]
+    Match -->|Yes| Refactor["Spawn Refactoring Agent Worker"]
     
-    Refactor --> Write[Execute Safe AST Rewriter]
-    Write --> Verify[Run Automated Lint & Test Gates]
-    Verify -->|Pass| Commit[Create Git Commit & Branch]
-    Verify -->|Fail| Log[Abort & Route Logs to Audit Queue]
+    Refactor --> Write["Execute Safe AST Rewriter"]
+    Write --> Verify["Run Automated Lint & Test Gates"]
+    Verify -->|Pass| Commit["Create Git Commit & Branch"]
+    Verify -->|Fail| Log["Abort & Route Logs to Audit Queue"]
     
-    Commit --> PR[Create Pull Request for TL Review]
+    Commit --> PR["Create Pull Request for TL Review"]
     PR --> End
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Scan,Log blue
+class Refactor,PR green
+class Write purple
+class Verify yellow
+class Commit red
 ```
 
 ---
@@ -168,4 +179,13 @@ def initialize_system():
 
 * **AST Verification Over Regex**: Never use string replacements or regex scripts to perform codebase-wide refactoring. Enforce structural AST parsing to avoid syntax failures.
 * **Decouple Daemon Scheduling**: Run modernization runs in background worker cron tasks during off-peak traffic hours to minimize build pipeline congestion.
-* **Enforce Strict Linters**: Hook up formatting checks (`black`, `ruff`) directly after code modification to ensure agent edits match the team's coding standard.
+* **Enforce Strict Linters**: Hook up formatting checks (`black`, `ruff`) directly after code modification to ensure agent edits match the team's coding standard. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+5. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+6. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)

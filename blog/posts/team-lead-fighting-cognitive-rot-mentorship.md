@@ -8,7 +8,7 @@
 
 ## The Threat of Cognitive Rot
 
-In a traditional development environment, junior developers grow by writing, struggling with, and debugging their own code. This friction builds a deep understanding of data structures, runtime complexity, and memory management.
+In a traditional development environment, junior developers grow by writing, struggling with, and debugging their own code [1]. This friction builds a deep understanding of data structures, runtime complexity, and memory management.
 
 In the era of AI copilot autocompletion, this friction is eliminated. A junior developer can tab-complete complex algorithms, APIs, or database scripts without understanding *how* they function. This leads to several failure modes:
 * **The "Accept Tab" Syndrome**: Blindly accepting suggestions, leading to silent logical errors or resource leaks.
@@ -19,17 +19,28 @@ In the era of AI copilot autocompletion, this friction is eliminated. A junior d
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     subgraph SG1_PassiveLoop1 ["Passive Loop [1. The Copy-Paste Trap]"]
-        C1[Prompt Generator] -->|Autocomplete| C2[Accept Code Suggestion]
-        C2 -->|No verification| C3[Merge to Staging]
-        C3 --> note1[Result: Zero learning, high technical debt]
+        C1["Prompt Generator"] -->|Autocomplete| C2["Accept Code Suggestion"]
+        C2 -->|No verification| C3["Merge to Staging"]
+        C3 --> note1["Result: Zero learning, high technical debt"]
     end
 
     subgraph SG2_ActiveLoop2 ["Active Loop [2. The Critical Audit Cycle]"]
-        A1[AI Suggests Code] -->|TL Policy| A2[Reverse Review: Explain logic]
-        A2 -->|Verify constraints| A3[Test & Execute AST audit]
-        A3 -->|Refactor manually| A4[Commit with confidence]
-        A4 --> note2[Result: Active learning, robust systems]
+        A1["AI Suggests Code"] -->|TL Policy| A2["Reverse Review: Explain logic"]
+        A2 -->|Verify constraints| A3["Test & Execute AST audit"]
+        A3 -->|Refactor manually| A4["Commit with confidence"]
+        A4 --> note2["Result: Active learning, robust systems"]
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class C1,A2 blue
+class C2,A3 green
+class C3,A4 purple
+class note1,note2 yellow
+class A1 red
 ```
 
 ---
@@ -143,4 +154,10 @@ if __name__ == "__main__":
 
 * **Avoid Passive Reviews**: Do not merge PRs simply because the CI/CD pipeline passes. Make reverse code-reviews a standard practice.
 * **Practice Friction**: Inject intentional code audits and run drills to keep your junior developers' analytical thinking sharp.
-* **Standardize Documentation Reading**: Ensure developers rely on primary sources (API documentations, official specs) rather than asking conversational models for shortcuts.
+* **Standardize Documentation Reading**: Ensure developers rely on primary sources (API documentations, official specs) rather than asking conversational models for shortcuts. [2]
+
+## References & Further Reading
+
+1. **Forsgren, N., Humble, J., & Kim, G. (2018)**. *Accelerate: The Science of Lean Software and DevOps*. IT Revolution / DORA. [https://dora.dev/research/](https://dora.dev/research/)
+2. **Brooks, F. P. (1975)**. *The Mythical Man-Month*. Addison-Wesley. [https://en.wikipedia.org/wiki/The_Mythical_Man-Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
+3. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)

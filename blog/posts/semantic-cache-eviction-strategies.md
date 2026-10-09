@@ -8,22 +8,33 @@
 
 ## The Stale Embedding Problem
 
-In traditional web development, we evict caches using direct keys (e.g. `DEL user:99`). In semantic caching, we search for matching keys using vector similarity.
+In traditional web development, we evict caches using direct keys (e.g. `DEL user:99`) [1]. In semantic caching, we search for matching keys using vector similarity.
 
 If the prompt template changes from *"Summarize this text in 3 sentences"* to *"Summarize this text in 5 bullet points"*, a naive vector lookup will match the new user query with the old 3-sentence summary cached under the previous template. The cache is stale, but because the user query embedding is similar, the system returns the wrong output style.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Query[User Query] --> HashGen[1. Generate Query Hash + Embedding]
+    Query["User Query"] --> HashGen["1. Generate Query Hash + Embedding"]
     HashGen --> CheckNamespace{2. Check Namespace in Cache}
     
     CheckNamespace -- Match Found --> Similarity{3. Cosine Similarity > 0.96?}
-    Similarity -- Yes --> ReturnCache[Return Cached Completion]
-    Similarity -- No --> CallLLM[4. Invoke LLM API]
+    Similarity -- Yes --> ReturnCache["Return Cached Completion"]
+    Similarity -- No --> CallLLM["4. Invoke LLM API"]
     
     CheckNamespace -- Prompt/Model changed or Cache Purged --> CallLLM
-    CallLLM --> SaveCache[5. Save to Cache Namespace]
+    CallLLM --> SaveCache["5. Save to Cache Namespace"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Query blue
+class HashGen green
+class ReturnCache purple
+class CallLLM yellow
+class SaveCache red
 ```
 
 ---
@@ -146,4 +157,12 @@ An invalidation strategy is the difference between a secure cache and a stale sy
 * [ ] **Hash the system parameters**: Always include the system prompt template and model name inside the cache key prefix.
 * [ ] **Add metadata namespaces**: Tag cache entries with database tenancy and data versions to allow targeted invalidation.
 * [ ] **Use transaction local variables**: Set TTLs on all cache writes to naturally phase out unused historical entries.
-* [ ] **Soft evict ambiguous matches**: Build re-evaluation ranges to run asynchronous background LLM queries for mid-similarity hits.
+* [ ] **Soft evict ambiguous matches**: Build re-evaluation ranges to run asynchronous background LLM queries for mid-similarity hits. [2]
+
+## References & Further Reading
+
+1. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+2. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+3. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+4. **Redis Ltd. (2024)**. *Redis Documentation*. redis.io. [https://redis.io/docs/](https://redis.io/docs/)
+5. **Kreps, J., Narkhede, N., & Rao, J. (2011)**. *Kafka: a Distributed Messaging System for Log Processing*. NetDB. [https://notes.stephenholiday.com/Kafka.pdf](https://notes.stephenholiday.com/Kafka.pdf)

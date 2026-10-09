@@ -1,6 +1,6 @@
 # Immutable Infrastructure Deployment: Zero-Downtime Blue-Green & Canary Rollouts
 
-In legacy IT operations, deploying application updates involved SSHing into live servers and applying patches in-place (**Mutable Infrastructure**). Over time, small differences between servers created severe configuration drift, making deployments unpredictable and prone to extended downtime.
+In legacy IT operations, deploying application updates involved SSHing into live servers and applying patches in-place (**Mutable Infrastructure**) [1]. Over time, small differences between servers created severe configuration drift, making deployments unpredictable and prone to extended downtime.
 
 Modern DevOps and SRE teams adhere to the **Immutable Infrastructure** paradigm.
 
@@ -15,24 +15,35 @@ This article details how to design automated Canary deployments with real-time e
 Progressive traffic shifting and automated rollback monitoring across application versions:
 
 ```mermaid
-graph TD
-  User[Client Production Traffic] --> Router[Ingress Load Balancer / Router]
+flowchart TD
+  User["Client Production Traffic"] --> Router["Ingress Load Balancer / Router"]
   
   subgraph SG1_ProductionEnvironments ["Production Environments"]
-    Router -->|90% Traffic| Blue[Blue Version v1.4: Stable Live Cluster]
-    Router -->|10% Traffic| Canary[Canary Version v1.5: New Release Cluster]
+    Router -->|90% Traffic| Blue["Blue Version v1.4: Stable Live Cluster"]
+    Router -->|10% Traffic| Canary["Canary Version v1.5: New Release Cluster"]
   end
   
   subgraph SG2_AutomatedCanaryMetric ["Automated Canary Metric Monitor"]
     Canary -->|Emit HTTP Telemetry| Prometheus[(Prometheus / CloudWatch Metrics)]
-    Prometheus -->|Poll Error Rate & Latency| Controller[Canary Rollout Controller]
+    Prometheus -->|Poll Error Rate & Latency| Controller["Canary Rollout Controller"]
     
-    Controller -->|Error Rate < 0.1%: Healthy| StepUp[Increment Traffic: 10% -> 50% -> 100%]
-    Controller -->|Error Rate > 1.0%: Outage!| Rollback[AUTOMATED ROLLBACK: Shift 0% Traffic to Canary]
+    Controller -->|Error Rate < 0.1% - Healthy| StepUp["Increment Traffic: 10% -> 50% -> 100%"]
+    Controller -->|Error Rate > 1.0% - Outage!| Rollback["AUTOMATED ROLLBACK: Shift 0% Traffic to Canary"]
   end
   
   StepUp --> Router
   Rollback --> Router
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,StepUp blue
+class Router,Rollback green
+class Blue purple
+class Canary yellow
+class Controller red
 ```
 
 ### Core Deployment Strategies
@@ -162,4 +173,10 @@ When engineering immutable canary deployment pipelines:
 ## Real-World Enterprise Impact
 Teams adopting immutable deployments and automated canary rollbacks report:
 * **Zero System Outages from Bad Code Deploys**: Automated metric analyzers catch bugs during 5% canary shifts and roll back within seconds before most users notice.
-* **100% Reproducible Production Releases**: Immutable container images eliminate "works on my machine" server configuration drift.
+* **100% Reproducible Production Releases**: Immutable container images eliminate "works on my machine" server configuration drift. [2]
+
+## References & Further Reading
+
+1. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+2. **Gilbert, S., & Lynch, N. (2002)**. *Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services*. ACM SIGACT News. [https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf](https://web.mit.edu/6.033/www/papers/p80-gilbert.pdf)
+3. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)

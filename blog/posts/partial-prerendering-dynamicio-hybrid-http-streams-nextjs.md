@@ -1,6 +1,6 @@
 For two decades, the architecture of the web has been trapped in a binary compromise:
 
-You could choose **Static Site Generation (SSG)**: build your HTML files at compile time, deploy them to an edge Content Delivery Network (CDN), and deliver sub-50ms Time to First Byte (TTFB) anywhere on Earth. But the moment a user logs in, or an e-commerce page displays real-time inventory counts, the model fractures. You are forced to ship skeleton loaders, execute client-side waterfalls, and watch Cumulative Layout Shift (CLS) degrade user experience.
+You could choose **Static Site Generation (SSG)**: build your HTML files at compile time, deploy them to an edge Content Delivery Network (CDN), and deliver sub-50ms Time to First Byte (TTFB) anywhere on Earth [1]. But the moment a user logs in, or an e-commerce page displays real-time inventory counts, the model fractures. You are forced to ship skeleton loaders, execute client-side waterfalls, and watch Cumulative Layout Shift (CLS) degrade user experience.
 
 Or you could choose **Server-Side Rendering (SSR)**: dynamically compute HTML on every inbound request with fresh database state. But now your TTFB is held hostage by your slowest database query. If a personalized recommendation engine takes 400 milliseconds to calculate, the user stares at a completely blank white screen for nearly half a second before receiving a single byte of HTML.
 

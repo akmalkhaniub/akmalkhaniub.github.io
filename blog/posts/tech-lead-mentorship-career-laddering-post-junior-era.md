@@ -1,6 +1,6 @@
 # Mentorship & Career Laddering in the Post-Junior Era: Nurturing System Architects
 
-Historically, software engineers advanced their careers through a well-defined progression. Junior developers spent their first few years writing routine CRUD endpoints, fixing minor bugs, writing boilerplate unit tests, and learning framework syntax line by line.
+Historically, software engineers advanced their careers through a well-defined progression [1]. Junior developers spent their first few years writing routine CRUD endpoints, fixing minor bugs, writing boilerplate unit tests, and learning framework syntax line by line.
 
 In 2026, autonomous AI coding tools handle nearly all routine boilerplate, initial bug triage, and test expansion instantly. This has created a critical career growth paradox for engineering leaders:
 
@@ -15,15 +15,26 @@ To prevent a future shortage of senior engineering talent, modern Tech Leads hav
 In the post-junior era, developer growth shifts from *syntax mastery* to *systems & architectural mastery*:
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_LegacyEngineeringLadder ["Legacy Engineering Ladder"]
-    L1[Junior: Syntax & Boilerplate] --> L2[Mid: Feature Implementation]
-    L2 --> L3[Senior: System Design & Architecture]
+    L1["Junior: Syntax & Boilerplate"] --> L2["Mid: Feature Implementation"]
+    L2 --> L3["Senior: System Design & Architecture"]
   end
   subgraph SG2_ModernAiFirst ["Modern AI-First Engineering Ladder"]
-    M1[Level 1: Agent Operator & Spec Author] --> M2[Level 2: Verification & Drift Governor]
-    M2 --> M3[Level 3: System Architect & Infrastructure Lead]
+    M1["Level 1: Agent Operator & Spec Author"] --> M2["Level 2: Verification & Drift Governor"]
+    M2 --> M3["Level 3: System Architect & Infrastructure Lead"]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class L1,M3 blue
+class L2 green
+class L3 purple
+class M1 yellow
+class M2 red
 ```
 
 ### The Three Levels of Modern Engineering Growth
@@ -134,4 +145,13 @@ When updating career growth structures for AI-native teams, maintain these princ
 ## Real-World Enterprise Impact
 Organizations implementing AI-first mentorship models report:
 * **2x Accelerated Time-to-Senior**: Early-career developers reach system architect capability years faster by focusing on architecture and verification from day one.
-* **Resilient Talent Pipeline**: Teams build sustainable, highly skilled engineering cultures capable of designing complex systems for decades to come.
+* **Resilient Talent Pipeline**: Teams build sustainable, highly skilled engineering cultures capable of designing complex systems for decades to come. [2]
+
+## References & Further Reading
+
+1. **Axboe, J. (2019)**. *Efficient IO with io_uring*. kernel.dk. [https://kernel.dk/io_uring.pdf](https://kernel.dk/io_uring.pdf)
+2. **Linux Kernel Community (2024)**. *BPF Documentation*. kernel.org. [https://docs.kernel.org/bpf/](https://docs.kernel.org/bpf/)
+3. **Høiland-Jørgensen, T., et al. (2018)**. *The eXpress Data Path: Fast Programmable Packet Processing in the Operating System Kernel*. CoNEXT. [https://dl.acm.org/doi/10.1145/3281411.3281443](https://dl.acm.org/doi/10.1145/3281411.3281443)
+4. **Forsgren, N., Humble, J., & Kim, G. (2018)**. *Accelerate: The Science of Lean Software and DevOps*. IT Revolution / DORA. [https://dora.dev/research/](https://dora.dev/research/)
+5. **Brooks, F. P. (1975)**. *The Mythical Man-Month*. Addison-Wesley. [https://en.wikipedia.org/wiki/The_Mythical_Man-Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
+6. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)

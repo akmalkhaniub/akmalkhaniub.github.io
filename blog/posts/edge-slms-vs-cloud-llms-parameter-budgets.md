@@ -7,7 +7,7 @@
 
 ---
 
-For years, the gold standard of large language model (LLM) engineering was simple: bigger is better. Trillion-parameter dense models (like GPT-4) dominated benchmarks, leading developers to route every single text extraction, summary, or query through cloud-hosted APIs.
+For years, the gold standard of large language model (LLM) engineering was simple: bigger is better [1]. Trillion-parameter dense models (like GPT-4) dominated benchmarks, leading developers to route every single text extraction, summary, or query through cloud-hosted APIs.
 
 In 2026, this approach is increasingly seen as an architectural anti-pattern. 
 
@@ -22,26 +22,26 @@ This article synthesizes the trade-offs of Edge SLMs vs. Cloud LLMs, detailing *
 Deploying a hybrid model requires an intelligent router that evaluates security, network state, and query complexity to decide whether to dispatch a job to a local SLM or trigger a cloud API.
 
 ```mermaid
-graph TD
+flowchart TD
     classDef start fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
     classDef check fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1;
     classDef edge fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
     classDef cloud fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
     classDef route fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#92400e;
 
-    Input[User Query Input] --> NetworkCheck{Network Status?}
+    Input["User Query Input"] --> NetworkCheck{Network Status?}
     
-    NetworkCheck -->|Offline| LocalSLM[Route to Edge SLM: Gemma/Phi]
+    NetworkCheck -->|Offline| LocalSLM["Route to Edge SLM: Gemma/Phi"]
     NetworkCheck -->|Online| PrivacyCheck{Contains Sensitive PII?}
     
     PrivacyCheck -->|Yes| LocalSLM
     PrivacyCheck -->|No| ComplexityCheck{Requires Complex Reasoning?}
     
-    ComplexityCheck -->|Yes| CloudLLM[Route to Cloud LLM: Claude 3.5]
+    ComplexityCheck -->|Yes| CloudLLM["Route to Cloud LLM: Claude 3.5"]
     ComplexityCheck -->|No| LocalSLM
     
-    LocalSLM --> ReturnLocal[Execute locally via Ollama / 0ms network latency]
-    CloudLLM --> ReturnCloud[Execute via API / ~1200ms network latency]
+    LocalSLM --> ReturnLocal["Execute locally via Ollama / 0ms network latency"]
+    CloudLLM --> ReturnCloud["Execute via API / ~1200ms network latency"]
 
     class Input start;
     class NetworkCheck,PrivacyCheck,ComplexityCheck check;

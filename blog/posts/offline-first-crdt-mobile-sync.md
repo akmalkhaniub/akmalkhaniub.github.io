@@ -9,7 +9,7 @@
 ## The Conflict Problem in Distributed State
 
 When two clients edit the same document offline, they generate conflicting versions:
-* **Client A** updates the project description.
+* **Client A** updates the project description [1].
 * **Client B** updates the project status.
 
 Under a naive Last-Write-Wins (LWW) strategy, whichever client connects last overwrites the other client's changes completely. CRDTs solve this by treating data structures as trees of operations. Every edit (character typed, property changed) is registered as a unique operation tagged with a logical clock. These operations can be merged in any order and will mathematically produce the exact same final state.
@@ -152,4 +152,13 @@ Implementing CRDTs ensures seamless data synchronization across unreliable mobil
 * [ ] **Avoid Last-Write-Wins**: Traditional database updates discard user data during offline sync cycles; CRDTs merge them mathematically.
 * [ ] **Store incremental updates locally**: Store Yjs binary updates in a SQLite blob table, and merge them at startup to rebuild the active document state.
 * [ ] **Optimize network bandwidth**: Use State Vectors (`Y.encodeStateVector`) to exchange only the missing updates during synchronization, keeping payload sizes small.
-* [ ] **Throttle database writes**: Group rapid keypress updates into a single transaction to prevent SQLite connection pool write locks.
+* [ ] **Throttle database writes**: Group rapid keypress updates into a single transaction to prevent SQLite connection pool write locks. [2]
+
+## References & Further Reading
+
+1. **Shapiro, M., Preguiça, N., Baquero, C., & Zawirski, M. (2011)**. *Conflict-free Replicated Data Types*. SSS. [https://hal.inria.fr/inria-00609399v1/document](https://hal.inria.fr/inria-00609399v1/document)
+2. **Lamport, L. (1978)**. *Time, Clocks, and the Ordering of Events in a Distributed System*. CACM. [https://lamport.azurewebsites.net/pubs/time-clocks.pdf](https://lamport.azurewebsites.net/pubs/time-clocks.pdf)
+3. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
+4. **Kubernetes Authors (2024)**. *Kubernetes Documentation*. CNCF. [https://kubernetes.io/docs/home/](https://kubernetes.io/docs/home/)
+5. **Ongaro, D., & Ousterhout, J. (2014)**. *In Search of an Understandable Consensus Algorithm*. USENIX ATC. [https://raft.github.io/raft.pdf](https://raft.github.io/raft.pdf)
+6. **Burrows, M. (2006)**. *The Chubby Lock Service for Loosely-Coupled Distributed Systems*. OSDI. [https://research.google/pubs/pub27897/](https://research.google/pubs/pub27897/)

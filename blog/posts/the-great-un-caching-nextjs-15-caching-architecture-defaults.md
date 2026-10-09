@@ -1,4 +1,7 @@
-There is a famous adage in computer science, coined by Phil Karlton: *"There are only two hard things in Computer Science: cache invalidation and naming things."*
+> [!NOTE]
+> **Update (September 2026)**: Next.js **16.3 is Active LTS**. Next.js 15 is Maintenance LTS until 21 October 2026. Next.js 14 reached EOL on 26 October 2025. The 15 `fetch` inversion described below still holds; Next.js 16 adds explicit `'use cache'` / `cacheLife` on top of it. For the four-layer trap map, see [Hidden Traps in Next.js App Router Caching](nextjs-app-router-caching-traps.html).
+
+There is a famous adage in computer science, coined by Phil Karlton: *"There are only two hard things in Computer Science: cache invalidation and naming things [1]."*
 
 In October 2022, with the release of Next.js 13 and the App Router, Vercel decided to take on the first hard problem. Their thesis was audacious: modern web applications are too slow because developers forget to configure caching. Therefore, Next.js would make caching **opt-out rather than opt-in**.
 
@@ -16,7 +19,7 @@ In October 2024, Next.js 15 was released. At the top of the release notes was an
 Why did Next.js make caching the default in the first place? Why did it fail so spectacularly in production? And how does the redesigned four-layer caching architecture work today?
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph CachingArch ["The 4-Layer Caching Architecture of Next.js"]
     Client["Browser Client"] --> L1["1. Router Cache: In-Memory Client Cache"]
     L1 --> L2["2. Full Route Cache: Static HTML and RSC Payload on Server"]
@@ -24,6 +27,17 @@ graph TD
     L3 --> L4["4. Data Cache: Persistent Cross-Request Key-Value Store"]
     L4 --> Database[("Primary Database or Upstream API")]
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client blue
+class L1 green
+class L2 purple
+class L3 yellow
+class L4 red
 ```
 *Figure 1: The four-tier caching topology of Next.js 14 vs Next.js 15, illustrating the inversion from aggressive build-time caching to dynamic-by-default execution. Source: Next.js Architectural RFCs [1, 2].*
 

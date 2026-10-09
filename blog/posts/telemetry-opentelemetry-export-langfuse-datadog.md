@@ -9,22 +9,33 @@
 ## Centralizing Trace Observability
 
 When managing distributed agent operations:
-* **The Monitoring Challenge**: Aggregating logs across isolated containers makes it difficult to diagnose runtime errors.
+* **The Monitoring Challenge**: Aggregating logs across isolated containers makes it difficult to diagnose runtime errors [1].
 * **The Latency Cost**: Sending HTTP log payloads synchronously blocks response threads, increasing latency.
 * **The Solution**: **OpenTelemetry Exporters**. We intercept parent-child trace spans and publish them asynchronously to central tracing collectors using the standard OpenTelemetry protocol (OTLP).
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Agent[Agent Swarm Node] -->|Execute Tool / LLM Call| Interceptor[OTel Span Interceptor]
+    Agent["Agent Swarm Node"] -->|Execute Tool / LLM Call| Interceptor["OTel Span Interceptor"]
     
     subgraph SG1_AsynchronousExportPipeline ["Asynchronous Export Pipeline"]
-        Interceptor -->|Queue Span metrics| Buffer[Memory Buffer Queue]
-        Buffer -->|Batch Export via OTLP| Exporter[OpenTelemetry Collector Daemon]
+        Interceptor -->|Queue Span metrics| Buffer["Memory Buffer Queue"]
+        Buffer -->|Batch Export via OTLP| Exporter["OpenTelemetry Collector Daemon"]
     end
     
-    Exporter -->|Visualize Traces| Langfuse[Langfuse Dashboard]
-    Exporter -->|Infrastructure Alerting| Datadog[Datadog APM]
+    Exporter -->|Visualize Traces| Langfuse["Langfuse Dashboard"]
+    Exporter -->|Infrastructure Alerting| Datadog["Datadog APM"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Agent,Datadog blue
+class Interceptor green
+class Buffer purple
+class Exporter yellow
+class Langfuse red
 ```
 
 ---
@@ -126,4 +137,10 @@ if __name__ == "__main__":
 
 * **Export Asynchronously**: Buffer span logs in memory and ship them in batches to prevent latency bottlenecks.
 * **Standardize Attributes**: Use semantic tags (e.g., `gen_ai.prompt`) to enable consistent filtering in trace dashboards.
-* **Monitor Collectors**: Implement local file fallback logging to protect logs if connection drops occur.
+* **Monitor Collectors**: Implement local file fallback logging to protect logs if connection drops occur. [2]
+
+## References & Further Reading
+
+1. **W3C Distributed Tracing Working Group (2021)**. *Trace Context*. W3C Recommendation. [https://www.w3.org/TR/trace-context/](https://www.w3.org/TR/trace-context/)
+2. **OpenTelemetry Authors (2024)**. *OpenTelemetry Specification*. CNCF. [https://opentelemetry.io/docs/specs/otel/](https://opentelemetry.io/docs/specs/otel/)
+3. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)

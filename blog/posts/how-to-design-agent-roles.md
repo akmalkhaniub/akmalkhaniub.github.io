@@ -1,4 +1,4 @@
-In multi-agent systems, naming agents "Expert Helper" or "Smart Writer" is a recipe for system drift. When agent roles are fuzzy, their system prompts overlap. The resulting system suffers from **cognitive duplication** and **"agent soup"**—where agents pass context back and forth, consuming tokens without resolving the task.
+In multi-agent systems, naming agents "Expert Helper" or "Smart Writer" is a recipe for system drift [1]. When agent roles are fuzzy, their system prompts overlap. The resulting system suffers from **cognitive duplication** and **"agent soup"**—where agents pass context back and forth, consuming tokens without resolving the task.
 
 To build reliable systems, we must treat agent roles as strict **software interfaces** with defined scopes, tool permissions, and communication contracts.
 
@@ -25,17 +25,28 @@ When agents have overlapping domains of responsibility:
 A good multi-agent system operates like a Michelin-starred restaurant kitchen. There is no generic "helper." Instead, roles are highly specialized and bounded:
 
 ```mermaid
-graph TD
-    User[Customer Order] --> Expeditor[Expeditor / Supervisor]
-    Expeditor -->|Assign Prep| PrepCook[Prep Cook Agent]
-    Expeditor -->|Assign Baking| PastryChef[Pastry Chef Agent]
+flowchart TD
+    User["Customer Order"] --> Expeditor["Expeditor / Supervisor"]
+    Expeditor -->|Assign Prep| PrepCook["Prep Cook Agent"]
+    Expeditor -->|Assign Baking| PastryChef["Pastry Chef Agent"]
     
-    PrepCook -->|Output: Raw Ingredients| Expeditor
-    PastryChef -->|Output: Baked Pastry| Expeditor
+    PrepCook -->|Output - Raw Ingredients| Expeditor
+    PastryChef -->|Output - Baked Pastry| Expeditor
     
-    Expeditor -->|Verification Check| QualityInspector[Quality Inspector Agent]
+    Expeditor -->|Verification Check| QualityInspector["Quality Inspector Agent"]
     QualityInspector -->|Pass/Fail| Expeditor
-    Expeditor --> Plate[Served Dish]
+    Expeditor --> Plate["Served Dish"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class User,Plate blue
+class Expeditor green
+class PrepCook purple
+class PastryChef yellow
+class QualityInspector red
 ```
 
 *   **Prep Cook (Researcher)**: Has access to knife tools (search APIs). Only responsible for raw ingredient cleaning (data cleaning).

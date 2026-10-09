@@ -9,21 +9,32 @@
 ## The Danger of Shared Kernels
 
 In basic setups, developers execute code tools directly inside standard Docker containers:
-* **Kernel Escape Vectors**: Standard containers share the host OS kernel. A kernel exploit (e.g. privilege escalation) allows an agent-generated script to break out of the container boundary.
+* **Kernel Escape Vectors**: Standard containers share the host OS kernel [1]. A kernel exploit (e.g. privilege escalation) allows an agent-generated script to break out of the container boundary.
 * **Network Access Bloat**: Unsecured container setups let agents access local network sockets, exposing internal databases to injection attacks.
 * **The Solution**: **MicroVM Isolation**. By wrapping code execution steps inside microVM layers that block direct system calls (syscalls) to the host kernel, we create a secure, isolated sandbox. Tool triggers and outputs are exchanged across this boundary using gRPC sockets.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Host[Host Agent Runner] --> gRPC[Serialize Command: gRPC Request]
+    Host["Host Agent Runner"] --> gRPC["Serialize Command: gRPC Request"]
     gRPC --> Sandbox{MicroVM Sandbox Gate: gVisor / Firecracker}
     
-    Sandbox -->|Execute Code| IsolatedVM[Isolated Kernel Space Runtime]
-    IsolatedVM --> Result[Capture Execution stdout/stderr]
+    Sandbox -->|Execute Code| IsolatedVM["Isolated Kernel Space Runtime"]
+    IsolatedVM --> Result["Capture Execution stdout/stderr"]
     
-    Result --> gRPC_Response[Serialize Output: gRPC Response]
+    Result --> gRPC_Response["Serialize Output: gRPC Response"]
     gRPC_Response --> Host
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Host blue
+class gRPC green
+class IsolatedVM purple
+class Result yellow
+class gRPC_Response red
 ```
 
 ---
@@ -123,4 +134,13 @@ os.system("rm -rf /")
 
 * **Deploy MicroVMs**: Run agent tools inside gVisor or Firecracker environments to block host kernel escapes.
 * **Isolate Networking**: Block external network sockets inside tool runners unless explicitly whitelisted via proxy routing gateways.
-* **Enforce CPU/Memory Quotas**: Set hard resource limits on sandbox environments to prevent CPU/memory exhaustion attacks.
+* **Enforce CPU/Memory Quotas**: Set hard resource limits on sandbox environments to prevent CPU/memory exhaustion attacks. [2]
+
+## References & Further Reading
+
+1. **Belshe, M., Peon, R., & Thomson, M. (2015)**. *Hypertext Transfer Protocol Version 2 (HTTP/2)*. RFC 7540. [https://www.rfc-editor.org/rfc/rfc7540](https://www.rfc-editor.org/rfc/rfc7540)
+2. **gRPC Authors (2024)**. *gRPC Documentation*. grpc.io. [https://grpc.io/docs/](https://grpc.io/docs/)
+3. **Google (2024)**. *Protocol Buffers Language Guide*. protobuf.dev. [https://protobuf.dev/programming-guides/proto3/](https://protobuf.dev/programming-guides/proto3/)
+4. **Apache Parquet Community (2024)**. *Apache Parquet Format*. Apache Software Foundation. [https://parquet.apache.org/docs/](https://parquet.apache.org/docs/)
+5. **Apache Arrow Community (2024)**. *Apache Arrow Columnar Format*. Apache Software Foundation. [https://arrow.apache.org/docs/format/Columnar.html](https://arrow.apache.org/docs/format/Columnar.html)
+6. **Apache Iceberg Community (2024)**. *Iceberg Table Spec*. Apache Software Foundation. [https://iceberg.apache.org/spec/](https://iceberg.apache.org/spec/)

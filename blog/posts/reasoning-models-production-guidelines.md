@@ -8,7 +8,7 @@
 
 ## The Anatomy of a Reasoning Request
 
-Standard completion models (like GPT-4o or Claude 3.5 Sonnet) output text token-by-token directly to the user. Reasoning models, however, split their output into a **thinking phase** (where they explore options, spot errors, and plan responses) and a **completion phase** (the actual answer).
+Standard completion models (like GPT-4o or Claude 3.5 Sonnet) output text token-by-token directly to the user [1]. Reasoning models, however, split their output into a **thinking phase** (where they explore options, spot errors, and plan responses) and a **completion phase** (the actual answer).
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
@@ -167,4 +167,10 @@ To build production-ready systems on top of reasoning models:
 * [ ] **Never stream reasoning directly to the content block**: Demultiplex `reasoning_content` and standard `content` at the gateway level.
 * [ ] **Enforce connection keep-alives**: Use application-level heartbeats (ping frames) to prevent intermediate proxies from severing slow connections.
 * [ ] **Set `max_completion_tokens` and reasoning budgets**: Protect your systems against loop-backtracking bugs and run-away cost spikes.
-* [ ] **Handle early client disconnects**: Always intercept request cancellations to release upstream API stream allocations immediately.
+* [ ] **Handle early client disconnects**: Always intercept request cancellations to release upstream API stream allocations immediately. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)

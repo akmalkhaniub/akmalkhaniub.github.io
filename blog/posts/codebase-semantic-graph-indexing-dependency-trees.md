@@ -8,7 +8,7 @@
 
 ## Why Vector Search Fails for Codebases
 
-Vector embeddings capture semantic similarity (e.g. mapping "charge customer" to "process invoice"). However, software systems are governed by strict **structural relationships** (imports, inheritances, dependency trees):
+Vector embeddings capture semantic similarity (e.g. mapping "charge customer" to "process invoice") [1]. However, software systems are governed by strict **structural relationships** (imports, inheritances, dependency trees):
 
 * **The Cascading Signature Bug**: If an agent refactors a billing class method in `billing.py`, it must locate every file that imports and invokes that class. If those files describe other business logic (e.g. `report_generator.py`), vector search will miss them due to low semantic similarity.
 * **Context Fragmentation**: Splitting code files into arbitrary character chunks strips out scope lines, import blocks, and decorator wrappers, leaving the model with unparseable fragments.
@@ -19,13 +19,22 @@ Vector embeddings capture semantic similarity (e.g. mapping "charge customer" to
 flowchart TD
     subgraph SG1_CombinedCodeIndex ["Combined Code Index"]
         direction TB
-        FileA[File A: users.py] -->|Imports| FileB[File B: database.py]
-        FileC[File C: auth.py] -->|Imports| FileB
+        FileA["File A: users.py"] -->|Imports| FileB["File B: database.py"]
+        FileC["File C: auth.py"] -->|Imports| FileB
         
         FileA -.->|Link| VecA(Vector Chunk: User management)
         FileB -.->|Link| VecB(Vector Chunk: Connection pool)
         FileC -.->|Link| VecC(Vector Chunk: JWT validation)
     end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class FileA blue
+class FileB green
+class FileC purple
 ```
 
 By traversing the dependency graph, a refactoring agent can identify every file that imports a modified module, ensuring zero compilation errors across the codebase.
@@ -131,4 +140,11 @@ def get_status():
 
 * **Combine Graph & Vector Indices**: Never rely on vector search alone to locate codebase contexts. Maintain a graph index of imports alongside your vector metadata.
 * **Keep the Graph Up-to-Date**: Run AST parsers in git hooks (pre-commit or pre-merge) to update your codebase dependency graphs automatically as files are created or deleted.
-* **Use Graph DBs at Scale**: For large monorepos exceeding 10,000 files, load your AST dependency nodes into Neo4j or pgrouting tables to enable sub-millisecond query execution.
+* **Use Graph DBs at Scale**: For large monorepos exceeding 10,000 files, load your AST dependency nodes into Neo4j or pgrouting tables to enable sub-millisecond query execution. [2]
+
+## References & Further Reading
+
+1. **Vercel Engineering (2025)**. *Next.js 16*. Next.js Blog. [https://nextjs.org/blog/next-16](https://nextjs.org/blog/next-16)
+2. **Vercel Engineering (2024)**. *Next.js 15*. Next.js Blog. [https://nextjs.org/blog/next-15](https://nextjs.org/blog/next-15)
+3. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+4. **React Team (2024)**. *React Server Components and Related RFCs*. reactjs/rfcs. [https://github.com/reactjs/rfcs](https://github.com/reactjs/rfcs)

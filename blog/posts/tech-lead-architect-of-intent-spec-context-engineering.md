@@ -1,6 +1,6 @@
 # The Architect of Intent: Transitioning from Code Author to Context & Spec Engineer
 
-For decades, the standard measure of a Tech Lead's value was technical execution volume: how many lines of complex boilerplate they could write, how quickly they could fix tricky bugs, and how directly they guided team members through syntax and framework mechanics.
+For decades, the standard measure of a Tech Lead's value was technical execution volume: how many lines of complex boilerplate they could write, how quickly they could fix tricky bugs, and how directly they guided team members through syntax and framework mechanics [1].
 
 In 2026, autonomous AI coding agents generate over 70% of production code lines. As a result, the role of the Tech Lead has undergone a fundamental transformation. The primary engineering bottleneck is no longer *writing implementation code*, but rather **framing unambiguous technical intent**. 
 
@@ -13,15 +13,26 @@ Tech Leads have evolved into **Architects of Intent**. This article details how 
 Instead of jumping straight into IDE code files, the modern Tech Lead operates at a higher level of abstraction:
 
 ```mermaid
-graph TD
-  A[Business Objective / User Request] --> B[Tech Lead: Intent Engineering]
-  B --> C[Machine-Readable Spec: JSON Schema / OpenAPI]
-  B --> D[Context Curation: AST Maps & Boundary Constraints]
-  C --> E[Agent Swarms & Human Engineers]
+flowchart TD
+  A["Business Objective / User Request"] --> B["Tech Lead: Intent Engineering"]
+  B --> C["Machine-Readable Spec: JSON Schema / OpenAPI"]
+  B --> D["Context Curation: AST Maps & Boundary Constraints"]
+  C --> E["Agent Swarms & Human Engineers"]
   D --> E
-  E --> F[Automated Verification Sandbox Gates]
-  F -->|Pass| G[Production Deployment]
+  E --> F["Automated Verification Sandbox Gates"]
+  F -->|Pass| G["Production Deployment"]
   F -->|Fail| E
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class A,F blue
+class B,G green
+class C purple
+class D yellow
+class E red
 ```
 
 ### The Three Core Leadership Pillars
@@ -149,4 +160,13 @@ When transitioning from code author to architect of intent, avoid these operatio
 ## Real-World Enterprise Impact
 Engineering teams implementing "Architect of Intent" workflows report dramatic improvements:
 * **80% Reduction in PR Rejections**: Tasks defined with clear AST context bundles pass automated verification checks on the first attempt.
-* **10x Scaling of Engineering Output**: A single Tech Lead can effectively orchestrate 5 concurrent agent execution runs, maintaining complete control over code quality and system architecture.
+* **10x Scaling of Engineering Output**: A single Tech Lead can effectively orchestrate 5 concurrent agent execution runs, maintaining complete control over code quality and system architecture. [2]
+
+## References & Further Reading
+
+1. **Bishop, M., Ed. (2022)**. *HTTP/3*. RFC 7541 / RFC 9114. [https://www.rfc-editor.org/rfc/rfc9114](https://www.rfc-editor.org/rfc/rfc9114)
+2. **Belshe, M., Peon, R., & Thomson, M. (2015)**. *Hypertext Transfer Protocol Version 2 (HTTP/2)*. RFC 7540. [https://www.rfc-editor.org/rfc/rfc7540](https://www.rfc-editor.org/rfc/rfc7540)
+3. **Fielding, R., Ed., Nottingham, M., Ed., & Reschke, J., Ed. (2022)**. *HTTP Semantics*. RFC 9110. [https://www.rfc-editor.org/rfc/rfc9110](https://www.rfc-editor.org/rfc/rfc9110)
+4. **Forsgren, N., Humble, J., & Kim, G. (2018)**. *Accelerate: The Science of Lean Software and DevOps*. IT Revolution / DORA. [https://dora.dev/research/](https://dora.dev/research/)
+5. **Brooks, F. P. (1975)**. *The Mythical Man-Month*. Addison-Wesley. [https://en.wikipedia.org/wiki/The_Mythical_Man-Month](https://en.wikipedia.org/wiki/The_Mythical_Man-Month)
+6. **Nygard, M. (2018)**. *Release It! Design and Deploy Production-Ready Software (2nd ed.)*. Pragmatic Bookshelf. [https://pragprog.com/titles/mnee2/release-it-second-edition/](https://pragprog.com/titles/mnee2/release-it-second-edition/)

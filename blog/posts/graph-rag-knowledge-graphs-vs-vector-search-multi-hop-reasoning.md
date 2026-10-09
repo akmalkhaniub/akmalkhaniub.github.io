@@ -1,4 +1,4 @@
-If you ask a standard enterprise Retrieval-Augmented Generation (RAG) system a localized question—*"What is the severance multiplier in Section 4.2 of the employee handbook?"*—it succeeds with surgical precision. It calculates cosine similarities between your query and thousands of 512-token chunks, extracts the top three snippets, and summarizes them cleanly.
+If you ask a standard enterprise Retrieval-Augmented Generation (RAG) system a localized question—*"What is the severance multiplier in Section 4 [1].2 of the employee handbook?"*—it succeeds with surgical precision. It calculates cosine similarities between your query and thousands of 512-token chunks, extracts the top three snippets, and summarizes them cleanly.
 
 Now ask that same system a question that actually matters to executive leadership:
 
@@ -13,10 +13,10 @@ This failure is not an accident of model scale. It is a mathematical consequence
 To reason across interconnected domains, modern AI architectures must graduate from flat vector similarity to **Graph-RAG**: the synthesis of knowledge graph entity-relationship extraction, hierarchical community clustering, and graph traversal algorithms.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_VectorRagVs ["Vector RAG vs Graph-RAG Architecture"]
     subgraph SG2_1FlatVector ["1. Flat Vector RAG (Isolated Chunks)"]
-      Q1["Holistic Query: 'Identify cross-service failure modes'"] --> VectorSearch[Top-K Cosine Similarity]
+      Q1["Holistic Query: 'Identify cross-service failure modes'"] --> VectorSearch["Top-K Cosine Similarity"]
       VectorSearch --> ChunkA["Chunk 42 (Unlinked)"]
       VectorSearch --> ChunkB["Chunk 118 (Unlinked)"]
       VectorSearch --> ChunkC["Chunk 804 (Unlinked)"]
@@ -24,13 +24,24 @@ graph TD
     end
 
     subgraph SG3_2GraphRag ["2. Graph-RAG (Connected Knowledge Graph)"]
-      Q2["Holistic Query: 'Identify cross-service failure modes'"] --> GraphEngine[Graph Retrieval Engine]
+      Q2["Holistic Query: 'Identify cross-service failure modes'"] --> GraphEngine["Graph Retrieval Engine"]
       GraphEngine --> Nodes["Entity Extraction: Services, Databases, Gateways"]
       Nodes --> Edges["Directed Edges: CALLS, DEPENDS_ON, WRITES_TO"]
       Edges --> Clusters["Leiden Community Summaries"]
       Clusters --> SynthesizedAnswer["Synthesized Multi-Hop Causal Discovery"]
     end
   end
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Q1,FailNote,Clusters blue
+class VectorSearch,Q2,SynthesizedAnswer green
+class ChunkA,GraphEngine purple
+class ChunkB,Nodes yellow
+class ChunkC,Edges red
 ```
 
 ---
@@ -212,4 +223,14 @@ if __name__ == "__main__":
 
 Vector embeddings treat human knowledge as a bag of coordinates in high-dimensional space. But human knowledge is not a cloud of points; it is a web of relationships, hierarchies, and causal laws.
 
-For production AI agents tasked with navigating enterprise architectures, codebases, or legal contracts, **connectivity is intelligence**. By anchoring agent memory in structured knowledge graphs, engineers replace stochastic guessing with deterministic, traversable truth.
+For production AI agents tasked with navigating enterprise architectures, codebases, or legal contracts, **connectivity is intelligence**. By anchoring agent memory in structured knowledge graphs, engineers replace stochastic guessing with deterministic, traversable truth. [2]
+
+## References & Further Reading
+
+1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)
+2. **Jégou, H., Douze, M., & Schmid, C. (2011)**. *Product Quantization for Nearest Neighbor Search*. IEEE TPAMI. [https://hal.inria.fr/inria-00514462v2/document](https://hal.inria.fr/inria-00514462v2/document)
+3. **Johnson, J., Douze, M., & Jégou, H. (2019)**. *Billion-scale Similarity Search with GPUs*. IEEE Transactions on Big Data. [https://arxiv.org/abs/1702.08734](https://arxiv.org/abs/1702.08734)
+4. **Edge, D., et al. (2024)**. *From Local to Global: A Graph RAG Approach to Query-Focused Summarization*. arXiv. [https://arxiv.org/abs/2404.16130](https://arxiv.org/abs/2404.16130)
+5. **Francis, N., et al. (2018)**. *Cypher: An Evolving Query Language for Property Graphs*. SIGMOD. [https://doi.org/10.1145/3183713.3190657](https://doi.org/10.1145/3183713.3190657)
+6. **Redis Ltd. (2024)**. *Redis Documentation*. redis.io. [https://redis.io/docs/](https://redis.io/docs/)
+7. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)

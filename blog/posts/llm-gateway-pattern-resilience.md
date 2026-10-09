@@ -17,15 +17,26 @@ As your AI application scales, calling APIs directly creates several systemic is
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#38bdf8', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0ea5e9', 'lineColor': '#38bdf8', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Client[Client App] --> Gateway[LLM Gateway Router]
+    Client["Client App"] --> Gateway["LLM Gateway Router"]
     Gateway --> Cache{Redis Cache Check}
-    Cache -- Hit --> ReturnCache[Return Cached Completion]
-    Cache -- Miss --> Router[Circuit Breaker / Load Balancer]
-    Router --> Primary[Primary Provider: OpenAI]
-    Primary -- Timeout / 429 / 500 --> Secondary[Fallback Provider: Anthropic]
-    Primary -- Success --> SaveCache[Save to Redis]
+    Cache -- Hit --> ReturnCache["Return Cached Completion"]
+    Cache -- Miss --> Router["Circuit Breaker / Load Balancer"]
+    Router --> Primary["Primary Provider: OpenAI"]
+    Primary -- Timeout / 429 / 500 --> Secondary["Fallback Provider: Anthropic"]
+    Primary -- Success --> SaveCache["Save to Redis"]
     Secondary -- Success --> SaveCache
-    Secondary -- Fail --> Local[Local Fallback: vLLM]
+    Secondary -- Fail --> Local["Local Fallback: vLLM"]
+
+classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
+classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
+classDef blue fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+classDef yellow fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+classDef purple fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#4c1d95;
+class Client,Secondary blue
+class Gateway,SaveCache green
+class ReturnCache,Local purple
+class Router yellow
+class Primary red
 ```
 
 ---
@@ -35,7 +46,7 @@ flowchart TD
 A production-grade LLM Gateway handles four essential operations:
 
 ### 1. Semantic Caching
-Before routing to the upstream API, the gateway runs a vector search on a cache database (like Redis or Qdrant) to see if a semantically identical query has already been answered. If the cosine similarity matches above `0.96`, it returns the cached response in `<10ms`, bypassing LLM generation completely.
+Before routing to the upstream API, the gateway runs a vector search on a cache database (like Redis or Qdrant) to see if a semantically identical query has already been answered [1]. If the cosine similarity matches above `0.96`, it returns the cached response in `<10ms`, bypassing LLM generation completely.
 
 ### 2. Failover Orchestration
 The gateway maintains a prioritised list of backup endpoints. If a request to OpenAI fails or times out (e.g. after 8 seconds), the router catches the exception, switches to Anthropic or a self-hosted vLLM engine, translates the payload schema, and completes the request seamlessly.
@@ -190,4 +201,13 @@ To build resilient, scale-ready AI platform backends:
 * [ ] **Decouple upstream APIs**: Never let your product code communicate directly with provider APIs. Route everything through a gateway layer.
 * [ ] **Enforce strict request timeouts**: Upstream model latencies can stall connections indefinitely. Cap wait times between `6s` and `12s` and failover immediately.
 * [ ] **Implement semantic caching**: Prevent duplicate queries from hitting LLMs. Save token costs and reduce round-trip latency to milliseconds.
-* [ ] **Add a circuit breaker**: Detect consecutive failures and temporarily redirect traffic to prevent cascading app failures.
+* [ ] **Add a circuit breaker**: Detect consecutive failures and temporarily redirect traffic to prevent cascading app failures. [2]
+
+## References & Further Reading
+
+1. **Mohan, C., et al. (1992)**. *ARIES: A Transaction Recovery Method Supporting Fine-Granularity Locking and Partial Rollbacks*. ACM TODS. [https://doi.org/10.1145/128765.128770](https://doi.org/10.1145/128765.128770)
+2. **O'Neil, P., Cheng, E., Gawlick, D., & O'Neil, E. (1996)**. *The Log-Structured Merge-Tree (LSM-Tree)*. Acta Informatica. [https://www.cs.umb.edu/~poneil/lsmtree.pdf](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+3. **PostgreSQL Global Development Group (2024)**. *PostgreSQL Documentation*. postgresql.org. [https://www.postgresql.org/docs/current/](https://www.postgresql.org/docs/current/)
+4. **Fielding, R., Nottingham, M., & Reschke, J. (2014)**. *Hypertext Transfer Protocol (HTTP/1.1): Caching*. RFC 7234. [https://www.rfc-editor.org/rfc/rfc7234](https://www.rfc-editor.org/rfc/rfc7234)
+5. **Vercel Documentation (2026)**. *Caching in Next.js*. Next.js Docs. [https://nextjs.org/docs/app/getting-started/caching](https://nextjs.org/docs/app/getting-started/caching)
+6. **DeCandia, G., et al. (2007)**. *Dynamo: Amazon's Highly Available Key-value Store*. SOSP. [https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf](https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf)
