@@ -17,7 +17,7 @@
   <meta property="og:description" content="Why traditional cloud IAM fails AI agent swarms: indirect prompt injections, confused deputy exploits, ephemeral SPIFFE/SPIRE SVIDs, Biscuit token attenuation, and Merkle audit trees.">
   <meta property="og:image" content="https://akmalkhaniub.github.io/blog/assets/covers/iam-autonomous-ai-agents-spiffe-spire-tool-scopes-audit-trails.jpg">
   <meta property="og:site_name" content="Akmal Khan">
-  <meta property="article:published_time" content="2026-09-30">
+  <meta property="article:published_time" content="2026-10-01">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +32,8 @@
   "headline": "IAM for Autonomous AI Agents in Production Swarms: Ephemeral SPIFFE/SPIRE Identities, Tool Scopes, and Cryptographic Audit Trails",
   "description": "Why traditional cloud IAM fails AI agent swarms: indirect prompt injections, confused deputy exploits, ephemeral SPIFFE/SPIRE SVIDs, Biscuit token attenuation, and Merkle audit trees.",
   "url": "https://akmalkhaniub.github.io/blog/iam-autonomous-ai-agents-spiffe-spire-tool-scopes-audit-trails.html",
-  "datePublished": "2026-09-30",
+  "image": "https://akmalkhaniub.github.io/blog/assets/covers/iam-autonomous-ai-agents-spiffe-spire-tool-scopes-audit-trails.jpg",
+  "datePublished": "2026-10-01",
   "keywords": "AI Security, Agent Swarms, IAM, SPIFFE/SPIRE, Zero Trust, Distributed Systems, Cloud Architecture",
   "author": {
     "@type": "Person",
@@ -108,12 +109,29 @@
               <summary><i class="fa-solid fa-list-ol"></i> Table of Contents</summary>
               <ul class="mobile-toc-list">
                 <li><a href="#1-why-traditional-cloud-iam-fails-autonomous-agent-swarms">1. Why Traditional Cloud IAM Fails Autonomous Agent Swarms</a></li>
+                <li><a href="#the-dynamic-identity-problem">The Dynamic Identity Problem</a></li>
+                <li><a href="#the-non-deterministic-intent-problem">The Non-Deterministic Intent Problem</a></li>
+                <li><a href="#the-delegation-chain-paradox">The Delegation Chain Paradox</a></li>
                 <li><a href="#2-the-zero-trust-agent-architecture-ephemeral-spiffespire-svids">2. The Zero-Trust Agent Architecture: Ephemeral SPIFFE/SPIRE SVIDs</a></li>
+                <li><a href="#the-geometry-of-an-agent-spiffe-id">The Geometry of an Agent SPIFFE ID</a></li>
+                <li><a href="#svid-workload-attestation">SVID Workload Attestation</a></li>
                 <li><a href="#3-capability-based-delegation-attenuated-caveats-biscuit-macaroons">3. Capability-Based Delegation: Attenuated Caveats (Biscuit &amp; Macaroons)</a></li>
+                <li><a href="#the-mathematical-invariant-of-attenuation">The Mathematical Invariant of Attenuation</a></li>
+                <li><a href="#cryptographic-security-properties">Cryptographic Security Properties:</a></li>
+                <li><a href="#production-caveat-chain-example">Production Caveat Chain Example:</a></li>
                 <li><a href="#4-the-zero-trust-model-context-protocol-mcp-gateway">4. The Zero-Trust Model Context Protocol (MCP) Gateway</a></li>
                 <li><a href="#5-tamper-proof-audit-trails-merkle-transparency-trees">5. Tamper-Proof Audit Trails: Merkle Transparency Trees</a></li>
+                <li><a href="#rfc-6962-sigstore-rekor-architecture">RFC 6962 / Sigstore Rekor Architecture</a></li>
+                <li><a href="#mathematical-audit-verification">Mathematical Audit Verification:</a></li>
                 <li><a href="#6-empirical-benchmark-results">6. Empirical Benchmark Results</a></li>
+                <li><a href="#benchmark-topology">Benchmark Topology:</a></li>
+                <li><a href="#summary-results-table">Summary Results Table:</a></li>
+                <li><a href="#latency-overhead-analysis">Latency Overhead Analysis</a></li>
                 <li><a href="#7-enterprise-implementation-roadmap">7. Enterprise Implementation Roadmap</a></li>
+                <li><a href="#phase-1-ingest-attestation-days-115">Phase 1: Ingest Attestation (Days 1–15)</a></li>
+                <li><a href="#phase-2-intercept-via-mcp-gateway-days-1630">Phase 2: Intercept via MCP Gateway (Days 16–30)</a></li>
+                <li><a href="#phase-3-enforce-capability-attenuation-days-3145">Phase 3: Enforce Capability Attenuation (Days 31–45)</a></li>
+                <li><a href="#phase-4-cryptographic-merkle-auditing-days-4660">Phase 4: Cryptographic Merkle Auditing (Days 46–60)</a></li>
                 <li><a href="#8-conclusion-the-invariant-of-autonomous-trust">8. Conclusion: The Invariant of Autonomous Trust</a></li>
                 <li><a href="#references-scholarly-literature">References &amp; Scholarly Literature</a></li>
               </ul>
@@ -550,12 +568,29 @@ export class ZeroTrustMCPGateway {
           <nav class="article-toc">
             <ul class="toc-list">
               <li class="toc-item toc-h2"><a href="#1-why-traditional-cloud-iam-fails-autonomous-agent-swarms" class="toc-link">1. Why Traditional Cloud IAM Fails Autonomous Agent Swarms</a></li>
+              <li class="toc-item toc-h3"><a href="#the-dynamic-identity-problem" class="toc-link">The Dynamic Identity Problem</a></li>
+              <li class="toc-item toc-h3"><a href="#the-non-deterministic-intent-problem" class="toc-link">The Non-Deterministic Intent Problem</a></li>
+              <li class="toc-item toc-h3"><a href="#the-delegation-chain-paradox" class="toc-link">The Delegation Chain Paradox</a></li>
               <li class="toc-item toc-h2"><a href="#2-the-zero-trust-agent-architecture-ephemeral-spiffespire-svids" class="toc-link">2. The Zero-Trust Agent Architecture: Ephemeral SPIFFE/SPIRE SVIDs</a></li>
+              <li class="toc-item toc-h3"><a href="#the-geometry-of-an-agent-spiffe-id" class="toc-link">The Geometry of an Agent SPIFFE ID</a></li>
+              <li class="toc-item toc-h3"><a href="#svid-workload-attestation" class="toc-link">SVID Workload Attestation</a></li>
               <li class="toc-item toc-h2"><a href="#3-capability-based-delegation-attenuated-caveats-biscuit-macaroons" class="toc-link">3. Capability-Based Delegation: Attenuated Caveats (Biscuit &amp; Macaroons)</a></li>
+              <li class="toc-item toc-h3"><a href="#the-mathematical-invariant-of-attenuation" class="toc-link">The Mathematical Invariant of Attenuation</a></li>
+              <li class="toc-item toc-h3"><a href="#cryptographic-security-properties" class="toc-link">Cryptographic Security Properties:</a></li>
+              <li class="toc-item toc-h3"><a href="#production-caveat-chain-example" class="toc-link">Production Caveat Chain Example:</a></li>
               <li class="toc-item toc-h2"><a href="#4-the-zero-trust-model-context-protocol-mcp-gateway" class="toc-link">4. The Zero-Trust Model Context Protocol (MCP) Gateway</a></li>
               <li class="toc-item toc-h2"><a href="#5-tamper-proof-audit-trails-merkle-transparency-trees" class="toc-link">5. Tamper-Proof Audit Trails: Merkle Transparency Trees</a></li>
+              <li class="toc-item toc-h3"><a href="#rfc-6962-sigstore-rekor-architecture" class="toc-link">RFC 6962 / Sigstore Rekor Architecture</a></li>
+              <li class="toc-item toc-h3"><a href="#mathematical-audit-verification" class="toc-link">Mathematical Audit Verification:</a></li>
               <li class="toc-item toc-h2"><a href="#6-empirical-benchmark-results" class="toc-link">6. Empirical Benchmark Results</a></li>
+              <li class="toc-item toc-h3"><a href="#benchmark-topology" class="toc-link">Benchmark Topology:</a></li>
+              <li class="toc-item toc-h3"><a href="#summary-results-table" class="toc-link">Summary Results Table:</a></li>
+              <li class="toc-item toc-h3"><a href="#latency-overhead-analysis" class="toc-link">Latency Overhead Analysis</a></li>
               <li class="toc-item toc-h2"><a href="#7-enterprise-implementation-roadmap" class="toc-link">7. Enterprise Implementation Roadmap</a></li>
+              <li class="toc-item toc-h3"><a href="#phase-1-ingest-attestation-days-115" class="toc-link">Phase 1: Ingest Attestation (Days 1–15)</a></li>
+              <li class="toc-item toc-h3"><a href="#phase-2-intercept-via-mcp-gateway-days-1630" class="toc-link">Phase 2: Intercept via MCP Gateway (Days 16–30)</a></li>
+              <li class="toc-item toc-h3"><a href="#phase-3-enforce-capability-attenuation-days-3145" class="toc-link">Phase 3: Enforce Capability Attenuation (Days 31–45)</a></li>
+              <li class="toc-item toc-h3"><a href="#phase-4-cryptographic-merkle-auditing-days-4660" class="toc-link">Phase 4: Cryptographic Merkle Auditing (Days 46–60)</a></li>
               <li class="toc-item toc-h2"><a href="#8-conclusion-the-invariant-of-autonomous-trust" class="toc-link">8. Conclusion: The Invariant of Autonomous Trust</a></li>
               <li class="toc-item toc-h2"><a href="#references-scholarly-literature" class="toc-link">References &amp; Scholarly Literature</a></li>
             </ul>
@@ -572,6 +607,12 @@ export class ZeroTrustMCPGateway {
             </li>
             <li class="sidebar-post-item">
               <a href="split-brain-disasters-raft-paxos-network-partitions-financial-ledgers.html">The 4:00 AM Split-Brain Disaster: How Raft, Paxos, and Network Partitions Silently Corrupt Financial Ledgers<span class="sidebar-post-date">October 1, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="nextjs-16-3-instant-navigations-app-shell-partial-prefetch.html">Why Next.js 16.3 Prefetches One App Shell Per Route Instead of One Payload Per Link<span class="sidebar-post-date">September 16, 2026</span></a>
+            </li>
+            <li class="sidebar-post-item">
+              <a href="firecracker-cow-snapshot-fork-vs-jailer-isolation.html">Snapshot Restore Is Not Live Fork: Firecracker MAP_PRIVATE vs Jailer Isolation<span class="sidebar-post-date">September 16, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="react-compiler-vs-signals-fine-grained-reactivity-ast-tradeoffs.html">The React Compiler vs Signals: Why React Refused the Fine-Grained Reactivity Train<span class="sidebar-post-date">September 6, 2026</span></a>
@@ -1405,13 +1446,7 @@ export class ZeroTrustMCPGateway {
               <a href="event-driven-websocket-broker-realtime-telemetry.html">WebSocket Broker Gateways: Streaming Live Agent Status Updates to UI Clients<span class="sidebar-post-date">July 8, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="event-driven-kafka-streaming-agent-topics.html">Kafka Event Streams: Designing Event Schemas for Swarms<span class="sidebar-post-date">July 7, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="slm-quantization-aware-training-precision-preservation.html">Quantization-Aware Training: Protecting Model Precision against Bit Loss<span class="sidebar-post-date">July 6, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="slm-parameter-efficient-fine-tuning-lora-qlora.html">LoRA &amp; QLoRA: Parameter-Efficient Fine-Tuning on Local Hardware<span class="sidebar-post-date">July 5, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="slm-fine-tuning-synthetic-dataset-curation.html">Dataset Curation: Formatting High-Quality Synthetic Instruction Sets<span class="sidebar-post-date">July 4, 2026</span></a>
@@ -1480,13 +1515,7 @@ export class ZeroTrustMCPGateway {
               <a href="security-indirect-prompt-injections-untrusted-contexts.html">Indirect Prompt Injections: Auditing Agents Against Untrusted Contexts<span class="sidebar-post-date">June 13, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="vector-db-metadata-filtering-pre-vs-post-optimization.html">Metadata Filtering Bottlenecks: Optimizing Pre-Filtering vs. Post-Filtering<span class="sidebar-post-date">June 12, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="vector-db-multi-tenant-namespace-isolation-rag.html">Multi-Tenant Vector Isolation: Designing Secure Namespace Queries for Swarms<span class="sidebar-post-date">June 11, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="vector-db-hnsw-index-tuning-pgvector-qdrant.html">HNSW Index Tuning: Optimizing Recall vs. Latency in pgvector and Qdrant<span class="sidebar-post-date">June 10, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="gateway-distributed-token-auditing-redis-streams.html">Distributed Token Auditing: Real-Time Cost Tracking via Redis Streams<span class="sidebar-post-date">June 9, 2026</span></a>
@@ -1528,13 +1557,7 @@ export class ZeroTrustMCPGateway {
               <a href="day-in-the-life-ai-software-engineer-2026.html">A Day in the Life of an AI Software Engineer in 2026<span class="sidebar-post-date">May 28, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
-              <a href="distillation-model-serving-quantization-vllm-ollama.html">Fine-Tuning Runtimes: Quantizing and Exporting Distilled Edge Agents<span class="sidebar-post-date">May 27, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
               <a href="distillation-critique-filter-validation-pipelines.html">Critique and Filter Pipelines: Cleaning Synthetic Datasets with Local Judges<span class="sidebar-post-date">May 26, 2026</span></a>
-            </li>
-            <li class="sidebar-post-item">
-              <a href="distillation-synthetic-agent-trajectory-fine-tuning.html">Synthetic Trajectory Generation: Compiling Frontier Agent Traces for Distillation<span class="sidebar-post-date">May 25, 2026</span></a>
             </li>
             <li class="sidebar-post-item">
               <a href="database-transaction-locking-deadlock-guardrails.html">Transaction Locking Guardrails: Preventing Deadlocks during Agent-Driven SQL Operations<span class="sidebar-post-date">May 24, 2026</span></a>
