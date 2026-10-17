@@ -10,15 +10,36 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
-POSTS = json.loads((ROOT / "blog" / "posts.json").read_text())
+POSTS = json.loads((ROOT / "blog" / "posts.json").read_text(encoding="utf-8"))
 OUT = ROOT / "blog" / "assets" / "covers"
 OUT.mkdir(parents=True, exist_ok=True)
 
 W, H = 1200, 675
 BG = (10, 15, 29)
-FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_REG = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-FONT_MONO = "/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Regular.ttf"
+
+
+def pick_font(candidates: list[str]) -> str:
+    for c in candidates:
+        if Path(c).exists():
+            return c
+    return candidates[0]
+
+
+FONT_BOLD = pick_font([
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    "C:/Windows/Fonts/segoeuib.ttf",
+    "C:/Windows/Fonts/arialbd.ttf",
+])
+FONT_REG = pick_font([
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "C:/Windows/Fonts/segoeui.ttf",
+    "C:/Windows/Fonts/arial.ttf",
+])
+FONT_MONO = pick_font([
+    "/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-Regular.ttf",
+    "C:/Windows/Fonts/consola.ttf",
+    "C:/Windows/Fonts/cour.ttf",
+])
 
 PALETTES = [
     ((56, 189, 248), (167, 139, 250)),  # cyan / purple
