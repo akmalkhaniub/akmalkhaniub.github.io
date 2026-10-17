@@ -431,6 +431,8 @@ ${currentHeadings.map(h => `                <li><a href="#${h.id}">${escapeHtml(
 const today = new Date().toISOString().split('T')[0];
 const urls = [
   { loc: `${SITE}/`, lastmod: today, priority: '1.0' },
+  { loc: `${SITE}/projects.html`, lastmod: today, priority: '0.9' },
+  { loc: `${SITE}/hackathons.html`, lastmod: today, priority: '0.8' },
   { loc: `${SITE}/blog/`, lastmod: today, priority: '0.8' },
   { loc: `${SITE}/certifications.html`, lastmod: today, priority: '0.7' },
   { loc: `${SITE}/publications.html`, lastmod: today, priority: '0.7' },

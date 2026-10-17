@@ -3,7 +3,7 @@
 **Document Date:** September 10, 2026  
 **Author:** Akmal Khan, PhD — Senior Full Stack AI Engineer & Systems Architect  
 **Profile:** [github.com/akmalkhaniub](https://github.com/akmalkhaniub) | [linkedin.com/in/akmal-khan-332000250](https://www.linkedin.com/in/akmal-khan-332000250/) | [akmalkhaniub.github.io](https://akmalkhaniub.github.io)  
-**Total Documented Systems:** 70 Production Projects, Architectures, and Microservices  
+**Total Documented Systems:** 102 Production Projects, Architectures, and Microservices  
 **Primary Purpose:** Complete technical audit, architectural descriptions, tech stack inventory, and copy-paste ready bullet points for Curriculum Vitae (CV), executive resumes, and technical interviews.
 
 ---
@@ -27,7 +27,7 @@
 
 This master technical portfolio review represents over **20 years of software systems engineering** and **3+ years dedicated to architecting and shipping production AI platforms** by **Akmal Khan, PhD**.
 
-Covering **70 complete systems, tools, and microservices**, this inventory details end-to-end capabilities across:
+Covering **102 complete systems, tools, and microservices**, this inventory details end-to-end capabilities across:
 - **Real-Time Conversational Voice & Audio DSP Platforms:** Full-duplex speech AI (Next.js 16 AudioWorklet, sub-300ms roundtrip latency, Silero VAD v5 ONNX barge-in), carrier-grade SIP/RTP media gateways in Go (`telephony-bridge-go`), ultra-high throughput audio DSP engines in Rust (`audio-dsp-rs`, 232M samples/sec), automated speech MLOps benchmarking (`voice-eval`), interactive 30 FPS video avatars (`avatarpilot-ai`), and hardware telemetry support (`visioncall-ai`).
 - **Autonomous Multi-Agent Orchestration & MCP:** Production Model Context Protocol (MCP) servers, topological task DAGs (LangGraph, CrewAI, AutoGen), git-worktree sandboxing, and closed-loop AST verification.
 - **Enterprise Multimodal & RAG Pipelines:** Hybrid semantic search (pgvector HNSW, Qdrant, Pinecone), Claude 3.5/3.7 two-pass structured extraction, Zod validation, circuit-breaker fallback cascades, and FinOps prompt caching.
@@ -1061,6 +1061,490 @@ Covering **70 complete systems, tools, and microservices**, this inventory detai
 
 ---
 
+
+## 🚀 Section 8: Newly Synced Flagship Platforms, FinTech Engines & Hackathon Systems (October 2026 Sync)
+
+### 1. TrafficSentinel Suite: Ad-Tech IVT Investigator & MCP Platform
+- **Repository:** [`github.com/akmalkhaniub/trafficsentinel-suite`](https://github.com/akmalkhaniub/trafficsentinel-suite)
+- **Architectural Role:** Autonomous Invalid Traffic (IVT) Investigator, FastMCP Telemetry Server & PromptEval Studio
+- **Overview:** An enterprise-grade monorepo combining an interactive clarifying investigator agent, an in-process DuckDB bidstream analytics FastMCP server, and a 50-scenario ground-truth evaluation harness catching prompt regressions in CI/CD.
+- **Key Technical Details:**
+  - Interactive Clarification Engine: Programmatic AmbiguityGate evaluating slot completeness (threshold >= 0.85) to pause and clarify underspecified queries before executing expensive queries (100% precision on benchmarks).
+  - AdStream MCP Server: FastMCP server exposing high-throughput DuckDB telemetry queries over 500k+ Parquet bidstream records with strict 800-token context budgeting.
+  - PromptEval Studio: 50-scenario golden evaluation suite benchmarking Clarification Trigger Rate (CTR), Tool Selection Accuracy (TSA), and Non-Overstatement.
+  - Angular 21 SPA Dashboard: Modern Signal-based reactive frontend with interactive clarification pills, live DuckDB telemetry explorer, and side-by-side regression diff viewer.
+  - Caught Production Regression (REG-2026-IVT-04): Proved automated CI quality gate blocking candidate prompts that collapse clarification behavior and guess parameters.
+- **Tech Stack:** Angular 21, Python 3.11+, FastAPI, FastMCP, DuckDB, Claude Skills, Pydantic v2, Parquet, Pytest, CI/CD Gates
+- **CV Bullet Point:**
+  > *"Architected TrafficSentinel Suite, an enterprise AI Agent, FastMCP server, and evaluation platform for ad-tech trust & safety and IVT investigation. Built an Interactive Clarification Engine (100% CTR), an in-process DuckDB telemetry MCP surface with <800-token budgeting, and a 50-scenario eval harness that caught a tool-selection regression (REG-2026-IVT-04) in CI/CD."*
+
+---
+
+### 2. SawtOS: Carrier-Grade Real-Time LiveKit Voice, Telephony & Analytics Engine
+- **Repository:** [`github.com/akmalkhaniub/sawt-os`](https://github.com/akmalkhaniub/sawt-os)
+- **Architectural Role:** Dual-Engine Voice Router (Native S2S + Cascaded), LiveKit SIP Trunking & HIPAA Clinical ETL
+- **Overview:** An enterprise-grade real-time conversational voice and carrier telephony platform for US and Gulf (Arabic/English) markets, uniting a Dual-Engine Voice Router, sub-4ms in-call pgvector RAG, post-call LLM-as-a-Judge QA, and Apache Airflow 3.0 clinical de-identification.
+- **Key Technical Details:**
+  - Dual-Engine Voice Router dynamically switching between Gemini 2.5 Flash Native Speech-to-Speech (Gulf Arabic nuance) and an ultra-fast cascaded pipeline (Silero VAD v5 + Deepgram Nova-3 + Groq Llama 3.3 70B + Cartesia Sonic 3.5) at ~285ms E2E latency.
+  - Instant barge-in detection (<1.5ms Silero ONNX) tripping cancellation tokens to flush WebRTC audio playback buffers within 35ms.
+  - LiveKit SIP Dispatcher v1.1+ with Twilio/Telnyx carrier reconciliation, DID routing (+1 US / +966 KSA / +971 UAE), and deterministic call FSM.
+  - Sub-4ms in-call HNSW cosine RAG over PostgreSQL 17 pgvector, post-call LLM-as-a-Judge QA scoring via Langfuse OTel spans, and Airflow 3.0 HIPAA Safe Harbor ETL.
+- **Tech Stack:** LiveKit Agents, LiveKit SIP, Python 3.12+, Next.js 16, PostgreSQL 17, pgvector, Airflow 3.0, Silero VAD, Deepgram Nova-3, Groq, Cartesia Sonic, HIPAA
+- **CV Bullet Point:**
+  > *"Architected SawtOS, a carrier-grade LiveKit voice and SIP telephony engine achieving 285ms E2E latency across native Speech-to-Speech (Gulf Arabic/English) and cascaded pipelines, with sub-4ms pgvector RAG, Langfuse LLM-as-a-Judge QA, and Airflow 3.0 HIPAA de-identification."*
+
+---
+
+### 3. OmniCast Studio: Autonomous Multimodal Research, Graph RAG & Broadcast Platform
+- **Repository:** [`github.com/akmalkhaniub/omnicast-studio`](https://github.com/akmalkhaniub/omnicast-studio)
+- **Architectural Role:** Interactive Concept Mind Maps, Dual-Host Podcasts, Remotion Video Studio & Full-Duplex Voice Chat
+- **Overview:** An enterprise-grade, spec-driven multimodal research and broadcast studio (open-source NotebookLM alternative) that transforms dense documents, papers, and repos into interactive GraphDB mind maps, dual-host podcasts, Remotion videos, and interruptible real-time voice conversations.
+- **Key Technical Details:**
+  - Interactive Concept Mind Map canvas (@xyflow/react + ELKjs + Memgraph/Kùzu GraphDB) with 1-click source paragraph citation jumping.
+  - Dual-host conversational podcast generator powered by Gemini 3.8 Flash and local Kokoro-82M ONNX / Cartesia Sonic TTS mastered to EBU R128 (-16 LUFS) via Rust SIMD DSP.
+  - Full-duplex &#x27;Interrupt & Ask&#x27; voice mode via Web Audio API AudioWorklet and Gemini Multimodal Live WebSockets (<20ms barge-in cutoff).
+  - Programmatic Remotion 4.x video studio rendering 16:9 presentation decks and 9:16 vertical Shorts alongside iTunes/Spotify RSS 2.0 syndication.
+- **Tech Stack:** Next.js 16.3, React 19, FastAPI, Python 3.14, Strawberry GraphQL, MongoDB, GraphDB, Gemini Live API, Kokoro-82M ONNX, Remotion 4.x, AudioWorklet
+- **CV Bullet Point:**
+  > *"Engineered OmniCast Studio, a multimodal Graph RAG and broadcast platform combining React Flow knowledge graphs, EBU R128 mastered dual-host podcasts, Remotion 4.x programmatic video rendering, and sub-300ms interruptible AudioWorklet voice chat."*
+
+---
+
+### 4. OmniCard & FX: Virtual Card Issuing & Sub-10ms JIT Authorization Gateway
+- **Repository:** [`github.com/akmalkhaniub/omnicard-fx`](https://github.com/akmalkhaniub/omnicard-fx)
+- **Architectural Role:** Spec-Driven ISO 8583 Card Authorization, Multi-Currency FX Engine & Maker-Checker Governance in Go
+- **Overview:** A high-performance, spec-driven virtual card issuing and Just-In-Time (JIT) transaction authorization gateway built in Go 1.22+, mirroring core issuing infrastructure at leading neobanks (Lithic, Stripe Issuing, Marqeta, Wise).
+- **Key Technical Details:**
+  - Contract-first OpenAPI 3.1 architecture governing Luhn PAN virtual card issuance, per-transaction/daily/monthly velocity limits, and MCC category controls.
+  - Sub-10ms real-time JIT authorization pipeline evaluating card state, MCC rules, velocity caps, and atomic wallet holds with standardized ISO 8583 response codes (00, 51, 54, 57, 61).
+  - Dynamic multi-currency FX engine providing guaranteed 60-second rate-locked quotes with configurable basis-point spread buffers for cross-currency settlement.
+  - Maker-Checker dual-control compliance engine enforcing strict separation of duties (maker_id != checker_id) on high-value limit raises with immutable audit logs.
+- **Tech Stack:** Go 1.22+, OpenAPI 3.1, ISO 8583, JIT Authorization, Multi-Currency FX, Maker-Checker, FinTech
+- **CV Bullet Point:**
+  > *"Engineered OmniCard & FX in Go 1.22+, a spec-driven virtual card issuing and ISO 8583 JIT authorization gateway achieving sub-10ms decision latency, 60-second rate-locked multi-currency FX conversion, and Maker-Checker governance."*
+
+---
+
+### 5. ReconMesh: High-Performance EOD 3-Way Financial Reconciliation Engine
+- **Repository:** [`github.com/akmalkhaniub/recon-mesh`](https://github.com/akmalkhaniub/recon-mesh)
+- **Architectural Role:** Sub-50ms 3-Way Ledger/Bank/Processor Matching & Automated Suspense Accounting in Go
+- **Overview:** A spec-driven End-of-Day (EOD) 3-way financial reconciliation and break resolution engine built in Go 1.22+ that verifies transactional integrity across internal double-entry ledgers, bank statements (CAMT.053, BAI2, CSV), and payment processor feeds.
+- **Key Technical Details:**
+  - Multi-tier deterministic matching engine: Tier 1 exact 1-to-1 match, Tier 2 time-windowed heuristic token match, and Tier 3 batch aggregate settlement (Gross - Fees == Net Bank Payout).
+  - Automated break classification isolating UNMATCHED_INTERNAL phantom entries, UNMATCHED_EXTERNAL bank wires/fees, and AMOUNT_MISMATCH FX/interchange slippage.
+  - Automated double-entry suspense ledger generator (Assets:Suspense vs Liabilities:Reserve) keeping balance sheets balanced during break investigation.
+  - High-throughput zero-allocation pipeline reconciling 10,000 multi-party transactions in under 50 milliseconds.
+- **Tech Stack:** Go 1.22+, OpenAPI 3.1, CAMT.053 / BAI2, 3-Way Reconciliation, Suspense Accounting, Double-Entry Ledger, FinTech
+- **CV Bullet Point:**
+  > *"Built ReconMesh in Go 1.22+, an End-of-Day 3-way financial reconciliation engine across internal ledgers, CAMT.053/BAI2 bank feeds, and processor webhooks, reconciling 10,000 transactions in <50ms with automated suspense journal generation."*
+
+---
+
+### 6. IntentGuard: Autonomous AI Coding Control Plane & 1-Click Rollback Suite
+- **Repository:** [`github.com/akmalkhaniub/intentguard`](https://github.com/akmalkhaniub/intentguard)
+- **Architectural Role:** Inline Governance, Blast-Radius Circuit Breakers & Scope-Spill Rollbacks for Coding Agents
+- **Overview:** An inline governance control plane and observability suite for autonomous coding agents (Google Antigravity, Claude Code, OpenAI Codex) providing real-time scope enforcement, thrashing circuit breakers, and 1-click surgical rollbacks across VS Code, CLI, and GitHub Actions.
+- **Key Technical Details:**
+  - 4 in-flight governance interventions: Semantic Scope Boundary (checks touched files against implementation_plan.md), Blast-Radius Circuit Breaker (halts >=3 hotspot loops or >25% file truncation), Context Poisoning Gateway, and Secret Shield.
+  - Decoupled hexagonal architecture (@intentguard/core) serving 3 surfaces: VS Code/Cursor Cockpit extension, headless CLI (ig list/inspect/audit/rollback/compare), and GitHub Action PR Gatekeeper.
+  - Time-Travel VCR player stepping through agent tool calls and Monaco side-by-side diffs with 1-click out-of-scope file revert (--spill-only).
+  - Cross-agent hand-off exporter packaging clean session context and diffs between Antigravity, Claude Code, and OpenAI Codex.
+- **Tech Stack:** TypeScript, VS Code Extension, Headless CLI, GitHub Actions, Monaco Diff, Agent Governance, Node.js
+- **CV Bullet Point:**
+  > *"Created IntentGuard, an inline governance control plane for autonomous coding agents (Claude Code, Antigravity, Codex) featuring blast-radius circuit breakers, semantic scope-spill detection, a VS Code VCR cockpit, headless CLI, and GitHub Action gatekeeper."*
+
+---
+
+### 77. StudioForge: Enterprise GenAI Diffusion Studio Turborepo
+- **Repository:** [`github.com/akmalkhaniub/studioforge`](https://github.com/akmalkhaniub/studioforge)
+- **Architectural Role:** Enterprise Image & Video Diffusion Pipeline with Zero-Allocation Transcoding
+- **Overview:** An enterprise GenAI image & video generation studio suite engineered with Go 1.26, Next.js 16, Expo SDK 56, and Redis Streams, delivering zero-allocation ring buffers, warm-cache GPU affinity routing, dynamic admission backpressure, and zero-disk streaming AV1 transcoding.
+- **Key Technical Details:**
+  - Turborepo monorepo uniting Next.js 16 web studio, Expo SDK 56 mobile app, Go 1.26 media pipeline, and shared GraphQL codegen packages.
+  - Zero-disk streaming transcoding engine via FFmpeg 7.x AV1 with dynamic admission backpressure and queue priority arbitration.
+  - Warm-cache GPU worker affinity routing reducing cold-start diffusion model load overhead by 80%.
+  - Real-time GraphQL subscriptions and AsyncAPI event bus over Redis 7.4 Streams for distributed generation state machine sync.
+- **Tech Stack:** Turborepo, Go 1.26, Next.js 16, Expo SDK 56, Redis Streams, FFmpeg AV1, GraphQL, Three.js, Docker
+- **CV Bullet Point:**
+  > *"Architected StudioForge, an enterprise GenAI diffusion studio Turborepo (Go 1.26, Next.js 16, Expo SDK 56, Redis 7.4 Streams) featuring zero-allocation ring buffers, GPU affinity routing, and real-time streaming AV1 transcoding."*
+
+---
+
+### 78. PulseOps AI: Autonomous GPU Inference Fleet Triage & Incident Commander
+- **Repository:** [`github.com/akmalkhaniub/pulseops-ai`](https://github.com/akmalkhaniub/pulseops-ai)
+- **Architectural Role:** Real-Time Incident Commander & GPU Fleet Triage for High-Throughput GenAI Clusters
+- **Overview:** An autonomous GPU inference cluster observability and incident triage platform engineered for ultra-scale GenAI infrastructure ($35M+ ARR scale), featuring sub-millisecond telemetry ingestion, zero-allocation memory pools, and live incident war rooms.
+- **Key Technical Details:**
+  - High-throughput Go 1.25 metric stream ingester with zero-allocation buffers (sync.Pool) handling 100K+ metrics/sec.
+  - PostgreSQL 17 TimescaleDB hypertable partitioning for sub-second analytical queries across millions of GPU telemetry points.
+  - Real-time incident war room with live multi-agent triage logs streaming via GraphQL Subscriptions to Web and Mobile.
+  - Autonomous root cause isolation correlating NVLink degradation, thermal throttling, and VRAM memory fragmentation.
+- **Tech Stack:** Go 1.25, TimescaleDB, PostgreSQL 17, Next.js 16, GraphQL, OpenTelemetry, Docker
+- **CV Bullet Point:**
+  > *"Architected PulseOps AI, an autonomous GPU inference fleet triage platform in Go 1.25 and TimescaleDB with zero-allocation buffers, handling 100K+ metrics/sec and streaming live incident mitigation trees via GraphQL Subscriptions."*
+
+---
+
+### 79. MediScribe AI: Clinical Multimodal Audio Processing & FHIR SOAP Platform
+- **Repository:** [`github.com/akmalkhaniub/mediscribe-ai`](https://github.com/akmalkhaniub/mediscribe-ai)
+- **Architectural Role:** Sub-Second Clinical Audio Slicing & FHIR-Compliant SOAP Encounter Generation
+- **Overview:** A high-throughput clinical ambient scribe and multimodal processing platform executing sub-millisecond silence boundary slicing, parallel GPU Whisper v3 Turbo fan-out, and FHIR-compliant clinical SOAP note generation.
+- **Key Technical Details:**
+  - Low-latency audio chunking daemon in Go with FFmpeg silence boundary detection slicing encounters in under 5ms.
+  - 60x parallel Whisper v3 Turbo fan-out architecture transcribing a 30-minute encounter in under 4 seconds.
+  - Smith-Waterman overlap boundary alignment eliminating hallucinated boundary artifacts between chunk boundaries.
+  - HIPAA-compliant, structured FHIR JSON output and reactive SOAP note review workspace with clinician audit trails.
+- **Tech Stack:** Go 1.25, Whisper v3 Turbo, Next.js 16, Expo SDK 56, FFmpeg, FHIR, HIPAA, Docker
+- **CV Bullet Point:**
+  > *"Engineered MediScribe AI, a clinical audio processing platform achieving 60x parallel Whisper v3 Turbo fan-out (<4s for 30m encounter) with Smith-Waterman overlap alignment and HIPAA-compliant FHIR SOAP generation."*
+
+---
+
+### 80. CrawlPulse: Distributed High-Concurrency Web Scraping Architecture
+- **Repository:** [`github.com/akmalkhaniub/crawlpulse-worker`](https://github.com/akmalkhaniub/crawlpulse-worker)
+- **Architectural Role:** Enterprise Distributed Web Scraping, Proxy Arbitration & Ingestion Pipeline
+- **Overview:** An enterprise-grade distributed web scraping engine comprising a NestJS API gateway, high-concurrency Go worker daemons, and Redis queue topology with Kubernetes HPA auto-scaling, handling high-volume page crawling with dynamic rate limiting.
+- **Key Technical Details:**
+  - Modular microservices architecture separating NestJS API ingest, Valkey/Redis task queue, and Go worker scrapers.
+  - High-concurrency Go worker runtime converting complex HTML DOM trees to clean Markdown in sub-10ms.
+  - Dynamic per-domain token bucket rate limiting, automated proxy rotation, and exponential backoff retry policies.
+  - Kubernetes Horizontal Pod Autoscaler (HPA) scaling worker fleet based on queue backlog depth and latency SLAs.
+- **Tech Stack:** Go, NestJS, Redis, Kubernetes, Docker, TypeScript, Markdown
+- **CV Bullet Point:**
+  > *"Architected CrawlPulse, an enterprise distributed web scraping engine featuring NestJS, high-concurrency Go workers, and Redis queue topology with Kubernetes HPA autoscaling and sub-10ms Markdown DOM conversion."*
+
+---
+
+### 81. CrisisHub: Distributed Emergency Dispatch & Case Management Platform
+- **Repository:** [`github.com/akmalkhaniub/crisishub`](https://github.com/akmalkhaniub/crisishub)
+- **Architectural Role:** Enterprise Crisis Response, Audit Trail & Incident Case Management Microservices
+- **Overview:** A high-reliability emergency response and case management distributed platform engineered with Spring Boot, Keycloak OIDC/OAuth2 security, audit service streaming, and immutable incident event ledgers.
+- **Key Technical Details:**
+  - Domain-driven microservices architecture decoupling case management, audit event logging, and emergency dispatch.
+  - Centralized Keycloak realm authentication with granular RBAC for first responders, dispatchers, and medical coordinators.
+  - High-throughput asynchronous audit logging daemon capturing cryptographic SHA-256 state transitions for regulatory compliance.
+  - Containerized multi-service deployment with Docker Compose, automated health probes, and PostgreSQL connection pooling.
+- **Tech Stack:** Java 21, Spring Boot, Keycloak, PostgreSQL, Docker, Microservices, Maven
+- **CV Bullet Point:**
+  > *"Architected CrisisHub, an emergency dispatch and crisis case management microservices platform with Spring Boot, Keycloak OIDC RBAC, and immutable audit service streaming for mission-critical disaster response."*
+
+---
+
+### 82. GeoPulse: Real-Time Fleet & IoT Geospatial Telemetry Ingestion
+- **Repository:** [`github.com/akmalkhaniub/geopulse`](https://github.com/akmalkhaniub/geopulse)
+- **Architectural Role:** Sub-Second IoT Telemetry Gateway & Geofence Alerting Microservices
+- **Overview:** A real-time IoT device telemetry and geospatial asset tracking platform featuring sub-second GPS coordinate ingestion, polygon geofence evaluation, and automated alert dispatch.
+- **Key Technical Details:**
+  - High-throughput ingestion service processing streaming GPS coordinates and sensor payloads from distributed hardware devices.
+  - Sub-millisecond point-in-polygon geofencing engine triggering real-time enter/exit alerts across dynamic geographical boundaries.
+  - Keycloak OAuth2 device authorization protecting device telemetry endpoints and management APIs.
+  - Time-series geospatial queries optimized for trajectory replay and asset utilization analytics.
+- **Tech Stack:** Go, Java, Keycloak, TimescaleDB, PostgreSQL, Docker, IoT, Geospatial
+- **CV Bullet Point:**
+  > *"Engineered GeoPulse, a real-time IoT fleet telemetry platform featuring high-concurrency coordinate ingestion, sub-millisecond point-in-polygon geofence evaluation, and Keycloak device authorization."*
+
+---
+
+### 83. VoxDive: Real-Time Conversational Voice Agent Over Video & Podcast Knowledge
+- **Repository:** [`github.com/akmalkhaniub/voxdive`](https://github.com/akmalkhaniub/voxdive)
+- **Architectural Role:** Full-Duplex Grounded Video/Audio Voice Agent with Timestamp Citation Seeking
+- **Overview:** An interactive voice intelligence platform built for the AssemblyAI Voice Agent Hackathon that turns long-form videos, webinars, and podcasts into full-duplex conversational partners with spoken answers grounded in exact transcript timestamps.
+- **Key Technical Details:**
+  - Combines AssemblyAI asynchronous STT, speaker diarization, auto-chapters, and LeMUR (Claude reasoning) with real-time Voice Agent WebSockets.
+  - Browser AudioWorklet circular ring buffers with instant playback halt flags on speech onset for zero-echo conversational barge-in.
+  - Deterministic search_transcript tool calling that grounds every spoken response in verified transcript segments with click-to-seek video synchronization.
+  - Sub-300ms turnaround latency with live latency HUD telemetry and a 20-assertion offline test suite.
+- **Tech Stack:** AssemblyAI Voice Agent, LeMUR Claude, AudioWorklet, WebSockets, TypeScript, Node.js, Speaker Diarization
+- **CV Bullet Point:**
+  > *"Built VoxDive, a full-duplex voice agent over video and podcast archives using AssemblyAI STT, speaker diarization, LeMUR Claude tool calling, and Web Audio API AudioWorklet buffers for sub-300ms grounded spoken answers with timestamp citations."*
+
+---
+
+### 84. DispatchAgent.AI: Autonomous AWS Telephony Voice & Strands A2A Incident Response
+- **Repository:** [`github.com/akmalkhaniub/dispatch-agent-ai`](https://github.com/akmalkhaniub/dispatch-agent-ai)
+- **Architectural Role:** Outbound AWS Chime SIP Incident Paging, Spoken Command Triage & Multi-Agent ECS Rollback Swarm
+- **Overview:** An autonomous P1 outage response system built for the AWS Cloud Development Series Agentic AI Hackathon that replaces silent push alerts with interactive outbound AWS Chime SIP phone calls and multi-agent remediation via the AWS Strands A2A protocol.
+- **Key Technical Details:**
+  - Places outbound phone calls via AWS Chime Voice Connector SIP trunking to brief on-call engineers and parse spoken natural-language remediation commands.
+  - Coordinates a 4-agent swarm over the open AWS Strands Agent-to-Agent (A2A) protocol: TriageSupervisorAgent, TelephonyVoiceAgent, DevOpsRemediationAgent, and IncidentReporterAgent.
+  - Executes automated canary traffic drains and Amazon ECS service rollbacks in seconds upon voice confirmation.
+  - Synthesizes structured executive post-mortem Markdown logs with 100% unit test verification (7/7 test suite passing).
+- **Tech Stack:** AWS Strands A2A, AWS Chime SIP, Amazon Bedrock, Claude 3.5 Sonnet, TypeScript, Amazon ECS, CloudWatch
+- **CV Bullet Point:**
+  > *"Architected DispatchAgent.AI, an autonomous incident commander integrating AWS Chime SIP voice trunking, Amazon Bedrock tool use, and the AWS Strands A2A multi-agent protocol to execute spoken-command ECS rollbacks and automated post-mortems."*
+
+---
+
+### 85. Antigravity Transcript & File Edit Visualizer: Agent Observability Dashboard
+- **Repository:** [`github.com/akmalkhaniub/antigravity-transcript-viewer`](https://github.com/akmalkhaniub/antigravity-transcript-viewer)
+- **Architectural Role:** Zero-Dependency Session Search, Mermaid Edit-Sequence Generator & Subagent Swarm Tracker
+- **Overview:** A lightweight, zero-dependency observability dashboard and file modification visualizer for Google Antigravity AI agent sessions that parses multi-thousand-line JSONL trajectories into interactive timelines and Mermaid flowcharts.
+- **Key Technical Details:**
+  - Built 100% on Python&#x27;s standard library (http.server, sqlite3, json, pathlib) with zero external pip dependencies and instant desktop app mode launcher.
+  - Indexes conversation_summaries.db and transcript.jsonl to render chronological file edit sequences ([NEW] -> [EDIT] -> [READ]) and automated Mermaid flowcharts.
+  - In-app syntax-highlighted code reviewer with 1-click &#x27;Open in VS Code&#x27; (exact line jump) and &#x27;Reveal in File Explorer&#x27; OS hooks.
+  - Subagent Swarm tracker inspecting invoke_subagent delegations, tool error distributions, universal drag-and-drop JSONL parsing, and secret-scrubbed trace export.
+- **Tech Stack:** Python 3.12+, SQLite, Mermaid.js, HTML5 / CSS3, Zero-Dependency, Agent Observability, VS Code Hooks
+- **CV Bullet Point:**
+  > *"Developed Antigravity Transcript Visualizer, a zero-dependency Python observability dashboard indexing SQLite agent summaries and JSONL traces into Mermaid file-edit sequence diagrams, subagent swarm trees, and 1-click VS Code line jumpers."*
+
+---
+
+### 86. AgentCrawl: Autonomous Multi-Agent Web Crawler & Anti-Bot SPA Extractor
+- **Repository:** [`github.com/akmalkhaniub/AgentCrawl`](https://github.com/akmalkhaniub/AgentCrawl)
+- **Architectural Role:** Local-First CrewAI Scraper with JA4 TLS Impersonation, Selectolax C-Parser & Stealth Playwright
+- **Overview:** A distributed, local-first multi-agent web crawling and structured data extraction platform engineered to bypass modern anti-bot WAFs (Cloudflare, Akamai, DataDome), hydrate dynamic SPAs, and enforce self-healing Pydantic v2 schemas.
+- **Key Technical Details:**
+  - 3-agent CrewAI pipeline: Reconnaissance Scout Agent (WAF/header probing), Stealth Browser Navigator Agent (interactive SPA hydration), and Data QA Validator Agent.
+  - Low-level curl_cffi HTTP client spoofing Chrome JA3/JA4 TLS handshakes and HTTP/2 frame parameters alongside a selectolax C-engine HTML parser (30x faster than BS4).
+  - Pluggable LLM router toggling seamlessly between $0 local GPU Ollama models (qwen2.5-coder, llama3.1) and Google Gemini 2.5 Flash.
+  - SQLite WAL persistence with an automated Dead-Letter Queue (DLQ) capturing DOM dumps and stack traces for self-healing schema recovery.
+- **Tech Stack:** Python 3.13, CrewAI, Playwright Stealth, curl_cffi (JA4 TLS), selectolax, Pydantic v2, SQLite WAL, Ollama / Gemini
+- **CV Bullet Point:**
+  > *"Architected AgentCrawl, an autonomous CrewAI web extraction platform combining curl_cffi JA4 TLS fingerprint spoofing, selectolax C-engine DOM parsing, stealth Playwright SPA navigation, and SQLite WAL Dead-Letter Queues."*
+
+---
+
+### 87. OmniMesh-ROCm: Enterprise Multi-Agent MCP Mesh on AMD Instinct MI300X
+- **Repository:** [`github.com/akmalkhaniub/omnimesh-rocm`](https://github.com/akmalkhaniub/omnimesh-rocm)
+- **Architectural Role:** High-Throughput Model Context Protocol (MCP) Swarm & FP8 vLLM-ROCm Inference Engine
+- **Overview:** A high-performance Model Context Protocol (MCP) multi-agent orchestration engine built for the AMD Developer Hackathon (ACT III), optimized for AMD Instinct MI300X GPU accelerators and ROCm 6.2 high-throughput inference.
+- **Key Technical Details:**
+  - Dynamic MCP tool registry allowing autonomous subagent swarms to discover and invoke ROCm tensor auditors and AST grounding validators.
+  - Optimized for AMD Instinct MI300X (ROCm 6.2) with FP8 quantized vLLM inference delivering 284.5 tokens/sec and 38.2ms Time-to-First-Token (TTFT).
+  - Deterministic execution trace verifier asserting 100% AST and tool-call provenance across multi-agent delegations.
+  - Strict TypeScript implementation with interactive telemetry dashboard and 100% passing offline test suite.
+- **Tech Stack:** TypeScript, AMD ROCm 6.2, Instinct MI300X, Model Context Protocol, vLLM FP8, Multi-Agent Mesh
+- **CV Bullet Point:**
+  > *"Engineered OmniMesh-ROCm, an enterprise Model Context Protocol (MCP) multi-agent orchestration mesh optimized for AMD Instinct MI300X and ROCm 6.2 FP8 inference (284.5 tok/s, 38.2ms TTFT) with deterministic AST trace grounding."*
+
+---
+
+### 88. VultrSwarm-Agentic: Autonomous CloudOps & Multi-Agent Infrastructure Swarm
+- **Repository:** [`github.com/akmalkhaniub/vultr-swarm-agentic`](https://github.com/akmalkhaniub/vultr-swarm-agentic)
+- **Architectural Role:** Real-Time Cluster Anomaly Detection, Autonomous Instance Scaling & Serverless Worker Dispatch
+- **Overview:** An autonomous multi-agent CloudOps infrastructure orchestrator built for the Vultr Agent Rush Hackathon that monitors compute clusters, detects CPU/memory anomalies, and dispatches serverless workers and instance resizing without human intervention.
+- **Key Technical Details:**
+  - Multi-agent coordination loop pairing a Telemetry Anomaly Detection Subagent with an Autonomous CloudOps Remediation Engine.
+  - Automated Vultr compute actions including vertical instance resizing (vc2-8c-16gb) and horizontal serverless worker container spawning.
+  - Immutable CloudOps audit log recording anomaly triggers, confidence scores, and remediation execution latencies.
+  - Zero-dependency TypeScript architecture with real-time cluster health HUD and deterministic test suite.
+- **Tech Stack:** TypeScript, Vultr Cloud API, Multi-Agent Swarm, CloudOps, Auto-Scaling, SRE Automation
+- **CV Bullet Point:**
+  > *"Built VultrSwarm-Agentic, an autonomous multi-agent CloudOps orchestrator that detects compute telemetry anomalies and executes automated Vultr instance scaling and serverless worker dispatch with immutable audit logging."*
+
+---
+
+### 89. CloudPulse AI: Autonomous AWS Well-Architected & FinOps Governance Agent
+- **Repository:** [`github.com/akmalkhaniub/cloudpulse-ai`](https://github.com/akmalkhaniub/cloudpulse-ai)
+- **Architectural Role:** Bedrock Converse API IaC Auditor, Graviton3 FinOps Modeler & Zero-Downtime Git Patch Synthesizer
+- **Overview:** An autonomous cloud governance and FinOps engine built for the Amazon Developer Hackathon using the Amazon Bedrock Converse API to audit Terraform/OpenTofu HCL manifests against the AWS Well-Architected Framework and synthesize reviewable Git remediation diffs.
+- **Key Technical Details:**
+  - Built on the AWS Bedrock Converse API standard with Claude 3.5 Sonnet v2 cross-region inference profiles and strict JSON Schema tool calling (audit_iac_manifest, estimate_finops_savings, synthesize_remediation_diff).
+  - AST-tolerant HCL lexer detecting unrestricted 0.0.0.0/0 SSH/RDP ingress, unencrypted storage volumes, and oversized x86 instances without requiring a live Terraform binary.
+  - Projects annualized FinOps savings ($4,080/yr per cluster benchmarked) and AWS Graviton3 carbon offset reductions.
+  - Synthesizes zero-downtime unified Git patches with a side-by-side diff viewer and companion sample IaC repository (cloudpulse-sample-iac).
+- **Tech Stack:** Amazon Bedrock, Claude 3.5 Sonnet, Converse API, TypeScript, Terraform HCL, OpenTofu, FinOps
+- **CV Bullet Point:**
+  > *"Architected CloudPulse AI using the Amazon Bedrock Converse API and Claude 3.5 Sonnet to audit Terraform/OpenTofu manifests across Security, FinOps, and Sustainability pillars, identifying $4,080/yr cluster savings and generating unified Git remediation patches."*
+
+---
+
+### 90. Triage Inbox: Evidence-First Multi-Agent Maintainer Copilot for GitHub PRs
+- **Repository:** [`github.com/akmalkhaniub/triage-inbox`](https://github.com/akmalkhaniub/triage-inbox)
+- **Architectural Role:** Deterministic Git Diff & AST Grounded Release Note & Pull Request Auditor
+- **Overview:** An evidence-first multi-agent system built for the micro1 AI Hackathon that audits software release notes and pull request reviews by grounding every single finding in physical Git commits, diffs, and AST changes before alerting maintainers.
+- **Key Technical Details:**
+  - Router Agent classifies incoming repository queue items and delegates to specialized auditors (Specialist G for Changelogs, Specialist E for PR Reviews).
+  - Eliminates LLM hallucinations by requiring deterministic Git commit hash and line-level diff verification prior to surfacing findings.
+  - Achieved 1.00 Precision (zero false alarms) vs 0.70 baseline and 0.87 Mean F1 score across live benchmark runs.
+  - Multi-provider LLM routing (OpenAI, Anthropic, Groq, OpenRouter) with mandatory human-in-the-loop approval gates.
+- **Tech Stack:** TypeScript, Python, Multi-Agent Swarm, Git Diff Grounding, AST Verification, OpenAI / Claude, CI Quality Gate
+- **CV Bullet Point:**
+  > *"Engineered Triage Inbox, an evidence-first multi-agent GitHub PR and release auditor that grounds every claim in physical Git diffs and AST changes, achieving 1.00 precision (zero false alarms) and 0.87 F1 vs 0.70 baseline."*
+
+---
+
+### 91. NexusGraph Enterprise: Hybrid GraphRAG Knowledge Mesh & Root-Cause Lineage
+- **Repository:** [`github.com/akmalkhaniub/nexusgraph-enterprise`](https://github.com/akmalkhaniub/nexusgraph-enterprise)
+- **Architectural Role:** Cross-Silo Enterprise Knowledge Graph with Weighted Reciprocal Rank Fusion (WRRF k=60)
+- **Overview:** An enterprise Hybrid GraphRAG knowledge mesh built for the Galuxium Nexus V2 Hackathon that unifies fragmented SaaS silos (Jira tickets, GitHub PRs, Datadog APM traces, and Workday org graphs) to perform multi-hop causal root-cause investigation.
+- **Key Technical Details:**
+  - Typed enterprise knowledge graph connecting Incidents -> Affected Services -> Merged PRs -> Commit Authors across corporate data silos.
+  - Dual-retrieval pipeline fusing dense cosine vector search with degree-constrained multi-hop breadth-first graph traversal via Weighted Reciprocal Rank Fusion (WRRF k=60).
+  - Demonstrates 3-hop causal root-cause discovery from production outage alarm to offending pull request in under 45ms with 100% provenance verification.
+  - TypeScript implementation with 5/5 passing unit assertions and zero hallucinated citations.
+- **Tech Stack:** TypeScript, Hybrid GraphRAG, WRRF Fusion (k=60), Multi-Hop BFS, Vector Search, Knowledge Graph, Root-Cause Analysis
+- **CV Bullet Point:**
+  > *"Built NexusGraph Enterprise, a Hybrid GraphRAG engine uniting Jira, GitHub, and Datadog silos via Weighted Reciprocal Rank Fusion (WRRF k=60) of dense vector search and 3-hop graph traversal for sub-45ms root-cause lineage."*
+
+---
+
+### 92. TensorMesh RPA: Ultra-Low-Latency Visual Desktop Automation on H100 GPUs
+- **Repository:** [`github.com/akmalkhaniub/tensormesh-rpa`](https://github.com/akmalkhaniub/tensormesh-rpa)
+- **Architectural Role:** Sub-50ms TTFT Visual Grounding & Zero-Drift OS Desktop Automation via Nebius & NVIDIA NIM
+- **Overview:** An autonomous OS-level Robotic Process Automation (RPA) platform powered by Nebius Token Factory and NVIDIA NIM on H100 SXM GPU clusters, grounding natural-language instructions into 1920x1080 screen coordinates for zero-drift GUI automation without APIs.
+- **Key Technical Details:**
+  - Dual-engine inference orchestrator running Meta-Llama-3.1-70B-Instruct on Nebius H100 80GB SXM with automatic failover to NVIDIA NIM (Llama-3.3-70B).
+  - FP8 TensorRT-LLM quantization delivering sub-50ms Time-to-First-Token (TTFT) and 186.5 tokens/sec sustained throughput (>70% latency reduction vs FP16).
+  - Visual Grounding Engine computing UI element centroids with strict spatial safety bounding boxes to prevent out-of-bounds OS clicks.
+  - 100% passing test suite verifying coordinate grounding, failover routing, and multi-step desktop action sequences.
+- **Tech Stack:** TypeScript, Nebius Token Factory, NVIDIA NIM, TensorRT-LLM FP8, H100 GPU, Llama 3.1 70B, Visual Grounding
+- **CV Bullet Point:**
+  > *"Engineered TensorMesh RPA, an OS-level visual desktop automation agent powered by Nebius Token Factory and NVIDIA NIM FP8 TensorRT-LLM on H100 GPUs, achieving sub-50ms TTFT and 186.5 tok/s with spatial boundary safety assertions."*
+
+---
+
+### 93. EdgeSentry: Edge Computer Vision Workplace Safety & Restricted Hazard Monitor
+- **Repository:** [`github.com/akmalkhaniub/edgesentry-cv`](https://github.com/akmalkhaniub/edgesentry-cv)
+- **Architectural Role:** 30+ FPS OpenCV ONNX Spatial Hazard Detection, HSV PPE Verification & AWS S3/SNS Alerting
+- **Overview:** An industrial edge computer vision safety monitoring pipeline built for the OpenCV AI Competition 2026 (powered by AWS) that analyzes RTSP camera feeds at 30+ FPS to detect restricted danger-zone intrusions and PPE compliance violations.
+- **Key Technical Details:**
+  - Real-time edge detection using OpenCV cv2.dnn ONNX object detectors paired with HOG pedestrian fallback and pinhole camera depth estimation.
+  - Polygonal hazard zone assertion via cv2.pointPolygonTest and high-visibility PPE vest inspection in HSV color space (cv2.inRange).
+  - Temporal persistence debounce filter requiring multi-frame confirmation to eliminate false alarms from camera flicker or brief occlusions.
+  - Automated incident snapshot dispatch to AWS S3 and real-time push alerting via Amazon SNS with full offline synthetic-frame test coverage.
+- **Tech Stack:** Python 3.10+, OpenCV cv2.dnn, ONNX / YOLO, AWS S3 / SNS, Spatial Geometry, HSV PPE Inspection, Edge AI
+- **CV Bullet Point:**
+  > *"Developed EdgeSentry, a 30+ FPS edge computer vision workplace safety monitor using OpenCV cv2.dnn ONNX detection, pointPolygonTest spatial hazard checks, HSV PPE verification, temporal debounce filtering, and AWS S3/SNS alerting."*
+
+---
+
+### 94. Memorial Storyteller & Milestone Companion: Child-Safe Generative Video Platform
+- **Repository:** [`github.com/akmalkhaniub/memorial-storyteller`](https://github.com/akmalkhaniub/memorial-storyteller)
+- **Architectural Role:** Audio Denoising, Few-Shot Voice Cloning, Talking Portrait Animation & Guardian PIN Gate
+- **Overview:** A child-safe generative AI mobile and backend platform enabling bereaved families to transform preserved WhatsApp voice notes and portrait photos into guardian-approved bedtime stories and milestone tribute videos.
+- **Key Technical Details:**
+  - 4-stage generative media pipeline: DeepFilterNet3 + Silero VAD audio restoration -> F5-TTS / ElevenLabs few-shot voice cloning -> LivePortrait / Hedra talking portrait animation -> FFmpeg 7 watermarking.
+  - Mandatory Guardian Review Gate requiring parental biometric or 4-digit PIN approval before any synthesized video enters the child&#x27;s storybook player.
+  - Audio SNR and harmonic clarity analyzer scoring noisy mobile recordings (.m4a, .ogg) prior to voice synthesis.
+  - React Native (Expo SDK 52) mobile app paired with an asynchronous FastAPI / Pydantic v2 backend and encrypted S3/R2 media vault.
+- **Tech Stack:** React Native, Expo SDK 52, FastAPI, Python 3.12+, DeepFilterNet3, F5-TTS / ElevenLabs, LivePortrait, FFmpeg 7, PostgreSQL
+- **CV Bullet Point:**
+  > *"Architected Memorial Storyteller, a child-safe generative audio/video platform combining DeepFilterNet3 speech enhancement, few-shot voice cloning, LivePortrait facial animation, and a PIN-protected Guardian Review Gate on Expo SDK 52 and FastAPI."*
+
+---
+
+### 95. Neuro-Symbolic ARC Solver: Program-Synthesis DSL Engine for ARC-AGI
+- **Repository:** [`github.com/akmalkhaniub/arc-prize-solver-2026`](https://github.com/akmalkhaniub/arc-prize-solver-2026)
+- **Architectural Role:** Zero-GPU Symbolic Program Synthesis & Exact-Match Grid Reasoning (91.7% Benchmark Solve Rate)
+- **Overview:** A neuro-symbolic program-synthesis engine built for the Kaggle ARC Prize 2026 Code Competition that solves abstract visual reasoning tasks by searching compositions of pure NumPy Domain-Specific Language (DSL) grid transformations.
+- **Key Technical Details:**
+  - Rich NumPy DSL primitive library covering dihedral rotations, reflections, transpositions, gravity projection, flood-fill object extraction, periodic tiling, and bijective color re-mapping.
+  - Depth-first iterative deepening program synthesizer with intermediate grid state hashing and pruning to eliminate redundant sub-trees.
+  - Exact-match verification gate requiring 100% pixel identity across all demonstration pairs before emitting candidate test predictions.
+  - Achieved a 91.7% solve rate (88/96 benchmark tasks) running purely on CPU with zero GPU dependency and valid Kaggle submission.json export.
+- **Tech Stack:** Python 3.10+, NumPy DSL, Program Synthesis, ARC-AGI, Symbolic Search, Kaggle Competition
+- **CV Bullet Point:**
+  > *"Engineered a Neuro-Symbolic ARC-AGI Solver using pure NumPy DSL program synthesis and state-hashed depth-first search, achieving a 91.7% solve rate (88/96 benchmark tasks) with exact demonstration verification and zero GPU overhead."*
+
+---
+
+### 96. 3D Spatiotemporal Cell Tracker: Kalman-Assisted Hungarian Lineage Engine
+- **Repository:** [`github.com/akmalkhaniub/biohub-cell-tracker`](https://github.com/akmalkhaniub/biohub-cell-tracker)
+- **Architectural Role:** Anisotropic 3D Kalman Filtering, Hungarian Optimal Data Association & Mitosis Lineage Tracking
+- **Overview:** A 3D developmental microscopy cell segmentation and spatiotemporal lineage tracking pipeline built for the CZ Biohub Kaggle Challenge, tracking dividing cells across volumetric time-lapses with zero ID switches.
+- **Key Technical Details:**
+  - 3D connected-component volumetric segmentation extracting anisotropic (z, y, x) cell centroids, bounding volumes, and intensity profiles.
+  - Constant-velocity 6-state 3D Kalman Filter predicting inter-frame cellular motion trajectories across microscopy time steps.
+  - Optimal global frame-to-frame assignment via the Hungarian algorithm (scipy.optimize.linear_sum_assignment) with gated Euclidean/anisotropic cost matrices.
+  - Automated mitosis (cell division) parent-daughter lineage linker exporting standardized Cell Tracking Challenge (CTC res_track.txt) archives with 1.0 purity.
+- **Tech Stack:** Python, SciPy Hungarian, 3D Kalman Filter, Volumetric Microscopy, CTC Lineage Format, Bioinformatics
+- **CV Bullet Point:**
+  > *"Built a 3D Spatiotemporal Cell Tracker for developmental microscopy using 6-state anisotropic Kalman filtering, Hungarian optimal data association, and automated mitosis lineage reconstruction, achieving 1.0 tracking purity and 0 ID switches."*
+
+---
+
+### 97. RSNA Knee Abnormality Detection: Multi-Sequence 2.5D Volumetric MRI Classifier
+- **Repository:** [`github.com/akmalkhaniub/rsna-knee-classifier`](https://github.com/akmalkhaniub/rsna-knee-classifier)
+- **Architectural Role:** Multi-Plane 2.5D ResNet-18 Volumetric MRI Fusion & Quadratic Weighted Kappa Calibration
+- **Overview:** A multi-sequence volumetric knee MRI classification pipeline built for the RSNA Kaggle Competition to grade ACL tears, meniscal injuries, and cartilage defects across Sagittal, Coronal, and Axial planes.
+- **Key Technical Details:**
+  - Volumetric DICOM/NumPy preprocessing pipeline performing centre-of-mass slice selection, spatial resampling, and percentile z-score intensity normalization.
+  - 2.5D multi-view ResNet-18 architecture fusing adjacent volumetric slices across Sagittal T2, Coronal PD, and Axial fat-suppressed MRI sequences.
+  - End-to-end threshold calibration optimizing directly for the competition&#x27;s Quadratic Weighted Kappa (QWK) ordinal grading metric.
+  - Deterministic inference pipeline outputting calibrated multi-class severity probabilities to Kaggle submission.csv.
+- **Tech Stack:** Python, PyTorch, 2.5D ResNet-18, Volumetric MRI, DICOM Processing, Quadratic Weighted Kappa
+- **CV Bullet Point:**
+  > *"Developed a Multi-Sequence 2.5D Volumetric MRI Classifier in PyTorch for the RSNA Knee Abnormality Detection challenge, fusing Sagittal, Coronal, and Axial slices with Quadratic Weighted Kappa (QWK) threshold calibration."*
+
+---
+
+### 98. Kaggriculture MCTS: UCT Monte-Carlo Tree Search Digital-Twin Farming Agent
+- **Repository:** [`github.com/akmalkhaniub/kaggriculture-mcts-agent`](https://github.com/akmalkhaniub/kaggriculture-mcts-agent)
+- **Architectural Role:** Stochastic Forward-Model Agricultural Digital Twin & UCT Tree Search Policy Engine
+- **Overview:** An autonomous agricultural planning agent built for the Kaggriculture Kaggle Simulation Competition that maximizes seasonal crop yield, revenue, and soil sustainability under stochastic weather and market dynamics.
+- **Key Technical Details:**
+  - Cloneable digital-twin forward simulation environment modeling soil moisture depletion, NPK nutrient balance, rainfall stochasticity, and crop growth stages.
+  - Upper Confidence Bound for Trees (UCT) Monte-Carlo Tree Search (MCTS) planner evaluating multi-step irrigation, fertilization, and harvest policies.
+  - Time-capped 40-iteration rollout horizon with domain-informed heuristic pruning to meet strict competition per-turn compute budgets.
+  - Multi-objective reward shaping balancing net seasonal revenue against long-term soil health and water conservation penalties.
+- **Tech Stack:** Python, MCTS UCT, Digital Twin, Stochastic Simulation, Sequential Decision AI, Kaggle
+- **CV Bullet Point:**
+  > *"Engineered Kaggriculture MCTS, an autonomous agricultural planning agent pairing a cloneable digital-twin crop simulator with Upper Confidence Bound for Trees (UCT) Monte-Carlo Tree Search to optimize yield under stochastic weather."*
+
+---
+
+### 99. Enterprise Procurement Agent: Multi-Agent Sourcing & ChromaDB RAG Workspace
+- **Repository:** [`github.com/akmalkhaniub/enterprise-procurement-agent`](https://github.com/akmalkhaniub/enterprise-procurement-agent)
+- **Architectural Role:** Autonomous Vendor Evaluation, Contract RAG & SQL Spend Analytics Dashboard
+- **Overview:** A full-stack multi-agent enterprise procurement workspace combining a FastAPI backend, interactive Streamlit executive portal, LangChain agent orchestration, SQLite transactional spend analytics, and ChromaDB contract RAG.
+- **Key Technical Details:**
+  - Multi-agent procurement workflow coordinating vendor risk scoring, RFP clause comparison, and purchase order compliance checks.
+  - Semantic vector retrieval over vendor master service agreements (MSAs) and SLA documents using ChromaDB embeddings.
+  - Natural-language SQL spend analytics querying historical vendor pricing, delivery SLAs, and category budgets stored in SQLite.
+  - Interactive Streamlit operations dashboard with real-time agent reasoning traces and downloadable audit reports.
+- **Tech Stack:** Python, FastAPI, Streamlit, LangChain, ChromaDB RAG, SQLite, Procurement AI
+- **CV Bullet Point:**
+  > *"Built an Enterprise Procurement Agent workspace integrating FastAPI, LangChain, ChromaDB contract RAG, SQLite spend analytics, and a Streamlit operations portal to automate vendor evaluation and SLA compliance."*
+
+---
+
+### 100. HabitFlow Pro: Adaptive AI Habit Coach with Native RevenueCat Subscriptions
+- **Repository:** [`github.com/akmalkhaniub/habitflow-pro`](https://github.com/akmalkhaniub/habitflow-pro)
+- **Architectural Role:** Cross-Platform Expo / React Native Mobile App with Adaptive Coaching & In-App Entitlements
+- **Overview:** A shipped cross-platform mobile application built for the RevenueCat Shipaton 2026 on Expo and React Native, featuring an adaptive habit intelligence engine, streak-shielding burnout defense, and native RevenueCat subscription paywalls.
+- **Key Technical Details:**
+  - Adaptive coaching engine analyzing completion velocity, time-of-day friction, and streak risk to recommend habit stacking and burnout recovery.
+  - Native RevenueCat SDK (react-native-purchases) integration gating pro_access entitlements across Monthly, Annual, and Lifetime paywall offerings.
+  - Abstracted purchase provider architecture toggling seamlessly between live App Store / Play Store billing and a deterministic simulator store for CI/CD.
+  - Offline-first AsyncStorage state persistence with 36/36 unit tests passing across habit logic, entitlement gating, and coaching heuristics.
+- **Tech Stack:** Expo, React Native, RevenueCat SDK, TypeScript, AsyncStorage, Mobile Paywalls, Vitest
+- **CV Bullet Point:**
+  > *"Shipped HabitFlow Pro for RevenueCat Shipaton 2026, a cross-platform Expo and React Native mobile app with an adaptive habit coaching engine, offline-first AsyncStorage sync, RevenueCat pro_access entitlement paywalls, and 36/36 passing unit tests."*
+
+---
+
+### 101. System Design Master Vault: Distributed Systems Knowledge Base & SM-2 Trainer
+- **Repository:** [`github.com/akmalkhaniub/sysdesign-vault`](https://github.com/akmalkhaniub/sysdesign-vault)
+- **Architectural Role:** Interactive Architecture Canvas, Time-Synced Transcript Search, SM-2 Flashcards & Obsidian Exporter
+- **Overview:** An interactive full-stack distributed systems curriculum, spaced-repetition trainer, and architectural interview simulator built with Next.js 14 and FastAPI 2.0 Async.
+- **Key Technical Details:**
+  - Curated system design catalog covering Rate Limiters, Raft/Paxos Consensus, Consistent Hashing, Sharding, Kafka Queues, and API Gateways with Mermaid/Cytoscape canvases.
+  - SuperMemo-2 (SM-2) spaced repetition engine computing dynamic easiness factors (EF) and optimal review intervals from user confidence ratings (0-5).
+  - Time-synchronized video transcript parser and full-text chapter search engine powered by asynchronous SQLAlchemy and PostgreSQL/SQLite.
+  - 1-click Obsidian Vault ZIP exporter generating cross-linked Markdown notes with YAML frontmatter, plus a 45-minute FAANG mock interview simulator.
+- **Tech Stack:** Next.js 14, TypeScript, FastAPI, SQLAlchemy Async, PostgreSQL / SQLite, Mermaid.js, SM-2 Algorithm, Obsidian Export
+- **CV Bullet Point:**
+  > *"Architected System Design Master Vault, a full-stack distributed systems platform in Next.js 14 and FastAPI featuring time-synced transcript search, an SM-2 spaced repetition engine, interactive Mermaid canvases, and 1-click Obsidian vault export."*
+
+---
+
+### 102. OpenAI Codex Engineering Curriculum & Production Video Audition Suite
+- **Repository:** [`github.com/akmalkhaniub/pluralsight-openai-codex-auditions`](https://github.com/akmalkhaniub/pluralsight-openai-codex-auditions)
+- **Architectural Role:** 10 End-to-End Instructional Packages on Autonomous TDD Loops, MCP Servers, Custom Skills & AGENTS.md
+- **Overview:** A comprehensive suite of 10 production-ready instructional engineering packages and working codebases demonstrating advanced software engineering workflows with the OpenAI Codex CLI and VS Code Extension.
+- **Key Technical Details:**
+  - 10 complete hands-on modules covering Autonomous TDD Loops, Custom Reusable Skills (.codex/skills), Visual Multi-File Refactoring, and Model Context Protocol (MCP) database inspection.
+  - Deterministic agent governance patterns using hierarchical AGENTS.md rules to enforce package whitelists, error hierarchies, and pytest execution gates.
+  - Automated AI Code Review workflows (&#x27;Who Reviews the AI?&#x27;) catching SQL injection, race conditions, and subtle regressions in AI-generated pull requests.
+  - Includes working Python/FastAPI demo repositories, pytest verification suites, slide decks, and second-by-second narration scripts.
+- **Tech Stack:** OpenAI Codex, Model Context Protocol, AGENTS.md, Python, FastAPI, Pytest, VS Code Extension
+- **CV Bullet Point:**
+  > *"Authored a 10-module OpenAI Codex Engineering Curriculum covering autonomous TDD loops, custom .codex/skills, live MCP database inspection, AGENTS.md governance invariants, and automated AI PR security code reviews."*
+
+---
+
 ## 🎯 CV Update Strategy & Placement Guide
 
 ### Recommended Placement for Different Senior Job Roles:
@@ -1078,4 +1562,4 @@ Covering **70 complete systems, tools, and microservices**, this inventory detai
 - **Emphasize:** Double-entry ledger invariants, zero-allocation memory pooling (`sync.Pool`), SIMD DSP processing, LuaJIT crypto validation, and sub-millisecond tail latencies.
 
 ---
-*Master report updated on September 10, 2026. Maintained by Akmal Khan, PhD.*
+*Master report updated on October 17, 2026 (102 Verified Systems). Maintained by Akmal Khan, PhD.*
