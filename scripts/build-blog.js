@@ -237,7 +237,8 @@ ${jsonLd}
         <ul>
           <li><a href="../#about" class="nav-link">About</a></li>
           <li><a href="../#skills" class="nav-link">Skills</a></li>
-          <li><a href="../#projects" class="nav-link">Projects</a></li>
+          <li><a href="../projects.html" class="nav-link">All Projects (108)</a></li>
+          <li><a href="../hackathons.html" class="nav-link">Hackathons</a></li>
           <li><a href="../certifications.html" class="nav-link">Certs</a></li>
           <li><a href="../publications.html" class="nav-link">Research</a></li>
           <li><a href="index.html" class="nav-link active-nav">Blog</a></li>

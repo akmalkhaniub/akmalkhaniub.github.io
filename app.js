@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
         featured.querySelector('.featured-readtime').innerHTML = `<i class="fa-regular fa-clock"></i> ${latest.readTime}`;
         featured.querySelector('.featured-read-btn').href = url;
       })
+      .catch(() => { /* fallback to static featured post in HTML */ });
+  }
+
   // Project Category Filter Handler
   const filterBtns = document.querySelectorAll('.filter-btn');
   const projectCards = document.querySelectorAll('.project-box[data-category]');
