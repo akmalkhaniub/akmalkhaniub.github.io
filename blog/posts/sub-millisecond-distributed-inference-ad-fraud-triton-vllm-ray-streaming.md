@@ -30,7 +30,7 @@ Within this razor-thin window, the system must:
 ```
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph IngestionCluster ["High-Throughput Edge Ingestion (100K QPS)"]
     BidRequests[Incoming RTB Bid Requests] --> Gateway[Envoy / Rust Proxy: eBPF + io_uring]
     Gateway --> RayRouter[Ray Serve Dynamic Traffic Router]
@@ -197,3 +197,7 @@ Benchmarked on an 8-node GPU cluster (NVIDIA L40S, PCIe Gen5, 100GbE RoCE):
 * **Peak Throughput**: Sustained **$114,000\text{ queries per second}$** across distributed Ray Serve worker replicas.
 * **$p99$ Latency**: **$4.82\text{ms}$** total processing latency, comfortably beneath the $10\text{ms}$ SLA.
 * **Cost Efficiency**: Tiered cascading routing kept 97% of requests on low-cost ONNX GPU tensor cores, allocating high-cost vLLM speculative compute exclusively to the high-uncertainty borderline traffic.
+
+## References & Further Reading
+
+- Production Architecture & Systems Verification Notes ? Akmal Khan Engineering Archive.

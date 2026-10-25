@@ -32,6 +32,10 @@ Whenever the user asks to write, research, draft, or publish a blog post or tech
 
 6. **Fleet Order**: Follow `DEEP_TECH_RESEARCH_AND_VISUAL_BLOG_FRAMEWORK_2026-09-07.md` §6. `community-feedback-and-errata-manager` and `evergreen-lifecycle-and-analytics-monitor` run **after** Gate 3, never instead of it. Mechanical gate: `npm run pipeline`.
 
+7. **Organic Publication Cadence (No Same-Date Batch Dumping)**:
+   - **BANNED**: Assigning the exact same `"date"` in `blog/posts.json` to multiple blog posts. Same-date clustering looks like an automated batch dump and dilutes RSS/syndication visibility.
+   - **MANDATORY**: Every blog post must have a unique publication date spaced at least 2–3 days apart, aligned with the actual git commit timeline of the underlying engineering repository.
+
 ---
 
 ## 🌟 Mandatory Project Release & GitHub Discoverability Standard

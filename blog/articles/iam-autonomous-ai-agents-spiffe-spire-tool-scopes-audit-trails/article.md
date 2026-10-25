@@ -422,7 +422,7 @@ By combining **SPIFFE/SPIRE workload attestation**, **cryptographic caveat chain
 
 ---
 
-## References & Scholarly Literature
+## References & Further Reading
 
 1. **Birgisson, A., Politz, J. G., Erlingsson, Ú., Taly, A., & Vrable, M. (2014)**. *Macaroons: Cookies with Contextual Caveats for Decentralized Authorization in the Cloud*. Proceedings of the Network and Distributed System Security Symposium (NDSS). [https://doi.org/10.14722/ndss.2014.23212](https://doi.org/10.14722/ndss.2014.23212)
 2. **Scarfone, K., & Souppaya, M. (NIST SP 800-207, 2020)**. *Zero Trust Architecture*. National Institute of Standards and Technology. [https://doi.org/10.6028/NIST.SP.800-207](https://doi.org/10.6028/NIST.SP.800-207)

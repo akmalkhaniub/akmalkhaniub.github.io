@@ -25,7 +25,7 @@ When applied to multi-hop fraud forensics, ORMs suffer from **Step-Level Credit 
 2. **Exponential Branching**: In deep investigation graphs, the space of possible telemetry queries grows exponentially. An unguided agent burns thousands of tokens exploring dead ends or hallucinating threat associations.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph SG1_SearchTree ["MCTS Search Space with Step-Level Verification"]
     Root["Root: Anomalous Traffic Cluster (1.2M reqs/hr)"] --> Step1A["Hypothesis A: Residential Proxy Farm"]
     Root --> Step1B["Hypothesis B: Datacenter SSAI Node"]
@@ -296,3 +296,7 @@ Deploying MCTS-guided test-time reasoning with a calibrated PRM over a benchmark
 * **Compute Efficiency**: Adaptive step pruning eliminated **$63\%$ of speculative token generations**, keeping median verification latency within 850ms on distributed GPU clusters.
 
 By anchoring inference-time compute scaling to strict mathematical Process Reward Models, AI teams can deploy autonomous agents into mission-critical digital safety workflows without fear of hallucinated punitive actions.
+
+## References & Further Reading
+
+- Production Architecture & Systems Verification Notes ? Akmal Khan Engineering Archive.

@@ -30,7 +30,7 @@ In ad fraud forensics—where an agent must dissect SDK decompilation, verify TL
 If the final outcome reward is positive ($R=1$), standard GRPO applies positive advantage $A_i > 0$ to **every single token**, actively reinforcing the hallucinated intermediate deduction. This creates **Reward Hacking** and makes automated takedowns legally indefensible.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph StandardGRPO ["Standard GRPO: Coarse Trajectory Reward"]
     Prompt["Prompt: Investigate 500k anomalous CTV impressions"] --> Rollout["1500-Token Reasoning Trace"]
     Rollout --> FinalORM["Terminal Outcome Check: Correct Verdict (+1.0)"]
@@ -172,7 +172,7 @@ We evaluated BoT-GRPO against standard GRPO on a test suite of 2,400 multi-hop a
 
 ---
 
-## References & ArXiv Literature
+## References & Further Reading
 1. Yang, Y., Xiao, W., & Wang, Z. (2026). *BoT-GRPO: Efficient Process-Reward RL for Reasoning via Bag-of-Token Aggregation*. [arXiv:2610.09804](https://arxiv.org/pdf/2610.09804v1)
 2. Gan, K., Zhou, Z. H., & Ye, B. (2026). *Learning Process Rewards via Reasoning State Propagation*. [arXiv:2609.39220](https://arxiv.org/pdf/2609.39220v1)
 3. Chen, H. (2026). *MAD-Guard: Controlled Study of Autoregressive Generation versus Direct Decision Interfaces for Closed Multimodal Forensic Tasks*. [arXiv:2609.33683](https://arxiv.org/pdf/2609.33683v1)

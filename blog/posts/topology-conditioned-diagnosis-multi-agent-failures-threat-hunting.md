@@ -18,7 +18,7 @@ When engineering autonomous multi-agent systems for high-stakes cybersecurity an
 However, as demonstrated by Liu et al. ([arXiv:2610.10126v1](https://arxiv.org/pdf/2610.10126v1)), **similar failure symptoms in execution logs often stem from radically different communication graph pathologies**. When an autonomous swarm falsely flags or fails to catch an ad fraud campaign, naive prompt debugging fails because the bug resides in the **topology of information exchange**.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph Pathologies ["Multi-Agent Communication Pathologies"]
     subgraph P1 ["1. Echo Chamber Amplification"]
       AgentA["Agent A (BGP)"] -->|Weak clue| AgentB["Agent B (DNS)"]
@@ -187,7 +187,7 @@ Before deploying autonomous multi-agent swarms into live threat detection pipeli
 
 ---
 
-## References & ArXiv Literature
+## References & Further Reading
 1. Liu, X., Pan, Z., & Zhu, I. (2026). *Know the Shape, Find the Fault: Topology-Conditioned Diagnosis of Multi-Agent LLM Failures*. [arXiv:2610.10126](https://arxiv.org/pdf/2610.10126v1)
 2. Chen, H. (2026). *MAD-Guard: Controlled Study of Autoregressive Generation versus Direct Decision Interfaces for Closed Multimodal Forensic Tasks*. [arXiv:2609.33683](https://arxiv.org/pdf/2609.33683v1)
 3. Wu, J., et al. (2026). *When Ad Networks Misbehave: Understanding Risks of Semi-Drive-By Splash Ads*. [arXiv:2609.09574](https://arxiv.org/pdf/2609.09574v1)

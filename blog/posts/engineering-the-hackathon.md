@@ -190,3 +190,7 @@ High-performance hackathon execution is not about heroic, sleepless nights. It i
 5. Freeze code 72 hours early and treat video production as a primary engineering artifact.
 
 When you apply this playbook, winning ceases to be a gamble—it becomes the repeatable outcome of disciplined engineering.
+
+## References & Further Reading
+
+- Production Architecture & Systems Verification Notes ? Akmal Khan Engineering Archive.

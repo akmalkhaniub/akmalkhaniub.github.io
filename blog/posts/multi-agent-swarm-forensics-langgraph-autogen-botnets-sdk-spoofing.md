@@ -18,7 +18,7 @@ When an investigator encounters an enterprise-level ad fraud campaign (such as a
 A single LLM agent given 20+ specialized tools quickly suffers from **context pollution**, **tool hallucinations**, and **catastrophic backtracking**. By decomposing the investigation into a **Hierarchical Multi-Agent Graph**, each agent operates within a bounded, tool-scoped cognitive boundary.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph Swarm ["LangGraph Autonomous Forensics Swarm"]
     Coordinator["Supervisor Coordinator Agent"] -->|1. Dispatch Artifacts| Decompiler["APK/SDK Decompiler Agent (Sandboxed)"]
     Coordinator -->|2. Dispatch Graph Query| GraphAgent["Network Graph & BGP Analyst"]
@@ -30,7 +30,7 @@ graph TD
 
     Blackboard --> Auditor["Adversarial Auditor & Alignment Guard"]
     Auditor -->|Verified Evidentiary Chain| Consensus["Byzantine Consensus Arbitration"]
-    Consensus --> Decision{"Confidence >= 99.2%?"}
+    Consensus --> Decision["Confidence >= 99.2%?"]
     
     Decision -->|Yes| Takedown["Publish Takedown Advisory & IOCs"]
     Decision -->|No| Escalation["Escalate to Human-in-the-Loop (HITL)"]
@@ -207,3 +207,7 @@ Deploying multi-agent systems for high-stakes fraud investigation requires movin
 * **Decouple Roles by Modality**: Give reverse-engineering agents specialized AST tools, and network agents graph databases.
 * **Integrate an Adversarial Auditor**: Ensure an explicit "devil's advocate" agent tries to refute the fraud hypothesis to maintain sub-0.5% false-positive rates.
 * **Deterministic LangGraph Control**: Prevent agent wanderlust by enforcing rigid state transition schemas and termination budgets.
+
+## References & Further Reading
+
+- Production Architecture & Systems Verification Notes ? Akmal Khan Engineering Archive.

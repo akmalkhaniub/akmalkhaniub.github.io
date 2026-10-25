@@ -18,7 +18,7 @@ Ad cloaking operates across disjoint operational modalities:
 Unimodal classification models fail because each single stream appears benign in isolation. Detection requires a **Joint Cross-Modal Embedding Space** where disparate modalities project into a shared metric latent vector $\mathbf{z} \in \mathbb{R}^D$.
 
 ```mermaid
-graph TD
+flowchart TD
   subgraph Ingestion ["Multi-Modal Telemetry Streams"]
     Video["Video Frames (ViT / CLIP Vision)"]
     DOM["Rendered DOM Tree & JS AST (CodeBERT)"]
@@ -199,3 +199,7 @@ One critical failure point in RAG systems applied to cybersecurity is naive fixe
 1. **Unimodal Scanners Are Obsolete**: Threat actors intentionally design each individual stream to appear harmless. Multi-modal attention is required to detect semantic mismatch between appearance and behavior.
 2. **Graph-RAG Outperforms Flat Vector DBs**: Ad fraud is fundamentally relational. Combining HNSW vector retrieval with Neo4j graph entity hops via Reciprocal Rank Fusion eliminates the blind spots of vector-only search.
 3. **Sub-50ms SLA Execution**: By projecting all modalities down to normalized 768-D vectors and using product quantization, billions of historical threat signatures can be queried in real time within ad auction bidding pipelines.
+
+## References & Further Reading
+
+- Production Architecture & Systems Verification Notes ? Akmal Khan Engineering Archive.
