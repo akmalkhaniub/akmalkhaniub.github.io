@@ -31,3 +31,16 @@ Whenever the user asks to write, research, draft, or publish a blog post or tech
    - All downstream cross-posts to Dev.to, Hashnode, or Medium must include canonical URL tags pointing to `https://akmalkhaniub.github.io/blog/<slug>.html`.
 
 6. **Fleet Order**: Follow `DEEP_TECH_RESEARCH_AND_VISUAL_BLOG_FRAMEWORK_2026-09-07.md` §6. `community-feedback-and-errata-manager` and `evergreen-lifecycle-and-analytics-monitor` run **after** Gate 3, never instead of it. Mechanical gate: `npm run pipeline`.
+
+---
+
+## 🌟 Mandatory Project Release & GitHub Discoverability Standard
+
+Whenever a new engineering project or hackathon repository is added to the workspace (`g:\ReplitProjects`) or to this portfolio (`index.html`, `projects.html`, `hackathons.html`), you MUST execute all 5 steps in [`g:\ReplitProjects\GITHUB_PUBLISH_CHECKLIST.md`](file:///g:/ReplitProjects/GITHUB_PUBLISH_CHECKLIST.md):
+
+1. **Zero Dead Links:** Verify that the target `https://github.com/akmalkhaniub/<repo>` repository exists publicly on GitHub and has its latest commits pushed (`main`).
+2. **Synchronize Page Counters:** Keep total project counts (`All Projects (N)`) and hackathon counts (`N Hackathons`) synchronized across `index.html`, `projects.html`, `hackathons.html`, `publications.html`, `certifications.html`, `blog/index.html`, and `scripts/build-blog.js`.
+3. **Run Automated GitHub Metadata Sync (`sync_github_metadata.py`):**
+   - Run `python g:\ReplitProjects\sync_github_metadata.py` to ensure every public GitHub repository has a non-empty `description`, a `homepage` URL (pointing to its case-study blog post or `https://akmalkhaniub.github.io/projects.html`), and 6–10 searchable `repositoryTopics` (`mcp`, `langgraph`, `voice-ai`, `golang`, `rust`, `agentic-ai`, etc.).
+4. **Update Profile README (`g:\ReplitProjects\akmalkhaniub\README.md`):** When adding a new flagship system, update and push the GitHub profile README so visitors landing on `github.com/akmalkhaniub` immediately see current flagship work and the latest blog count.
+5. **Companion Case-Study Article:** Every new flagship project should be paired with a deep-dive architectural case study in `blog/posts/<slug>.md` with reproducible benchmarks, generated cover art (`python scripts/generate-covers.py`), and rebuilt feeds (`node scripts/build-blog.js`).
