@@ -15,7 +15,9 @@ flowchart TD
     ColdKvm["New Firecracker process"]:::red
     ColdInit["Kernel, runtime, model load"]:::yellow
     ColdWait["Seconds stacked on the tool loop"]:::red
-    ColdBanner --> ColdKvm --> ColdInit --> ColdWait
+    ColdBanner --> ColdKvm
+    ColdKvm --> ColdInit
+    ColdInit --> ColdWait
   end
 
   subgraph SG2_Snap ["Snapshot MAP PRIVATE Restore"]
@@ -23,7 +25,9 @@ flowchart TD
     SnapMmap["Private mapping of guest RAM"]:::green
     SnapShare["Clean pages shared until write"]:::green
     SnapDirty["Writes become private copies"]:::purple
-    SnapBanner --> SnapMmap --> SnapShare --> SnapDirty
+    SnapBanner --> SnapMmap
+    SnapMmap --> SnapShare
+    SnapShare --> SnapDirty
   end
 
   Need --> ColdBanner
@@ -65,7 +69,9 @@ flowchart TD
     JailChroot["pivot root, namespaces, dropped uid"]:::green
     JailCow["MAP PRIVATE still shares clean pages"]:::green
     JailIso["Sibling VMM crash stays in its jail"]:::blue
-    JailBanner --> JailChroot --> JailCow --> JailIso
+    JailBanner --> JailChroot
+    JailChroot --> JailCow
+    JailCow --> JailIso
   end
 
   subgraph SG2_Live ["Live CoW Fork"]
@@ -73,7 +79,9 @@ flowchart TD
     LiveWp["Write-protect then copy dirty pages"]:::yellow
     LiveMs["Pause window in milliseconds"]:::green
     LiveTax["Weaker isolation between sibling forks"]:::red
-    LiveBanner --> LiveWp --> LiveMs --> LiveTax
+    LiveBanner --> LiveWp
+    LiveWp --> LiveMs
+    LiveMs --> LiveTax
   end
 
   Parent --> JailBanner
@@ -197,6 +205,21 @@ Live CoW remains the temptation. k7d and forkd publish pause windows we did not 
 The 2026 agent-sandbox market is a race to hide boot. E2B-style products, Mitos CRDs, k7d cluster forks, forkd live BRANCH—all of them discovered that users will forgive a jail if the first `exec` feels like `fork`. Lambda’s threat model went the other way: strangers on a multi-tenant host, one process per VM, uniqueness restored in microseconds [1][4][5]. Both answers are coherent. Mixing them is how you ship a “Firecracker sandbox” that is actually eight mappings in one address space with a marketing diagram of a jail.
 
 Fork memory for tenants you trust. Jail processes for tenants you do not. Milliseconds are a property of the isolation story you chose, not a number you can steal from someone else’s pause window.
+
+---
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Firecracker, Copy-on-Write** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
 
 ---
 

@@ -16,7 +16,8 @@ Choosing the optimal quantization scheme depends on your deployment target and h
 
 ```mermaid
 flowchart TD
-  A["Target Model & Hardware Deployment"] --> B{Hardware Infrastructure?}
+  A["Target Model --> B{Hardware Infrastructure?}
+  Hardware Deployment"] --> B
   
   subgraph SG1_GpuServerInference ["GPU Server Inference vLLM / TensorRT-LLM"]
     B -->|NVIDIA Hopper / Ada H100, L40S| C["FP8 E4M3 Precision"]
@@ -24,7 +25,7 @@ flowchart TD
   end
   
   subgraph SG2_CpuEdgeApple ["CPU & Edge / Apple Silicon"]
-    B -->|Apple Metal / CPU Offloading| E["GGUF Q4_K_M / Q5_K_M"]
+    C --> |Apple Metal / CPU Offloading| E["GGUF Q4_K_M / Q5_K_M"]
   end
   
   C --> F["2x Tensor Core Compute Speedup"]

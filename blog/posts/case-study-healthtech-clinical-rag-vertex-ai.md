@@ -49,11 +49,11 @@ flowchart TD
     E["Clinician Diagnostic Query"] --> F["Cloud Run: Authenticated Clinical Agent Worker"]
     F -->|Row-Level Security RLS| D
     F -->|Hybrid Search| G["Vertex AI Search: Medical Knowledgebase"]
-    F --> H["Vertex AI: MedLM / Gemini 1.5 Pro"]
+    D --> H["Vertex AI: MedLM / Gemini 1.5 Pro"]
   end
   
   H --> I["Diagnostic Summary + Citation Verification"]
-  F --> J["Cloud Audit Logs + Cloud KMS Audit Trail"]
+  G --> J["Cloud Audit Logs + Cloud KMS Audit Trail"]
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
 classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;

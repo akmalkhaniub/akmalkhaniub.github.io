@@ -25,11 +25,11 @@ flowchart TD
   end
   
   subgraph SG2_Tier0Local ["Tier 0: Local DDR5 DRAM (Fastest)"]
-    DRAM["Tier 0: Local DDR5 RAM - 100ns Latency"] <--> CPUCore
+    DRAM["Tier 0: Local DDR5 RAM - 100ns Latency"] --> CPUCore
   end
   
   subgraph SG3_Tier1Cxl ["Tier 1: CXL 3.0 Memory Expander (High Capacity)"]
-    CXL["Tier 1: CXL Memory Pool - 180ns Latency"] <-->|Cache-Coherent PCIe 6.0 Bus| CPUCore
+    CXL["Tier 1: CXL Memory Pool - 180ns Latency"] -->|Cache-Coherent PCIe 6.0 Bus| CPUCore
   end
   
   subgraph SG4_Tier2Nvme ["Tier 2: NVMe SSD Storage Engine (Massive Scale)"]
@@ -40,7 +40,7 @@ flowchart TD
     DRAM -->|Cold Page Demotion - Un-accessed 100s| CXL
     CXL -->|Cold Page Demotion| NVMe
     NVMe -->|Hot Page Promotion - Access Spike| CXL
-    CXL -->|Hot Page Promotion| DRAM
+    CPUCore --> |Hot Page Promotion| DRAM
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

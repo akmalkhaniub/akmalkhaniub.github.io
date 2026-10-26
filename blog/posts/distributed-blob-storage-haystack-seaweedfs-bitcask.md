@@ -28,7 +28,7 @@ flowchart TD
   end
   
   subgraph SG2_HighDensityBlob ["High-Density Blob Storage (Haystack / Bitcask)"]
-    BlobReq["Read Photo ID 1042"] -->|O(1) RAM Lookup| KeyDir["In-Memory KeyDir: File #3 | Offset: 0x0F40 | Size: 16 KB"]
+    BlobReq["Read Photo ID 1042"] -->|O(1) RAM Lookup| KeyDir["In-Memory KeyDir: File #3 | Offset - 0x0F40 | Size: 16 KB"]
     KeyDir -->|Issue pread() at Exact Offset| SingleSeek[" Single Disk Seek on Volume File #3 (1 Seek!)"]
   end
 
@@ -194,6 +194,21 @@ When engineering blob storage systems:
 Distributed blob storage engines (such as **Facebook Haystack**, **SeaweedFS**, and **Riak Bitcask**) report:
 * **Over $10\times$ Higher Photo Throughput**: Bundling small files into large volume files eliminates OS inode lock contention and directory traversal penalties.
 * **$O(1)$ Single Disk Seek Latency**: Reading any small file from disk requires exactly 1 physical seek, serving billions of media files with sub-millisecond P99 response times. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Blob Storage, Haystack** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

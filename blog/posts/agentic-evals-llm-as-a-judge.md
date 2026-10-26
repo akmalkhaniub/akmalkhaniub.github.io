@@ -26,8 +26,9 @@ flowchart TD
     Judge -->|Evaluate JSON Schema Criteria| Scores["4. Grade: Faithfulness, Tool compliance"]
     
     Scores --> Assert{5. Assert Score >= 0.85}
-    Assert -- Pass --> Deploy["Deploy Code"]
-    Assert -- Fail --> Block["Block Build & Alert Dev"]
+    Assert -->|Pass| Deploy["Deploy Code"]
+    Assert --> |Fail| Block["Block Build
+    Deploy --> |Fail| Alert Dev"]
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
 classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
@@ -148,6 +149,21 @@ Automating agent evaluations is the only way to ship changes with confidence:
 * [ ] **Verify schemas with Structured Outputs**: Always force the Judge LLM to return scores in a strict JSON format (using Pydantic parser) to ensure assertion parsing never fails.
 * [ ] **Set quality thresholds in CI**: Enforce quality gates (e.g. score >= 0.85) in your pipeline to catch regression errors before they go to staging.
 * [ ] **Run evals in parallel**: Run evaluation tests asynchronously to keep CI pipeline build times under 5 minutes. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Agents, Testing** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

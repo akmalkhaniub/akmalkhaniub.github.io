@@ -43,7 +43,7 @@ flowchart TD
     ContextPruner --> PromptAssembler
     PromptAssembler -->|Run Inference| LLM["LLM / Gemini 1.5 Pro"]
     
-    LLM -->|Return Output| SaveCache["Store Prompt Embedding & LLM Output"]
+    LLM --> |Return Output| SaveCache["Store Prompt Embedding
     SaveCache -->|Write Async| RedisVec
     SaveCache --> Gateway
     

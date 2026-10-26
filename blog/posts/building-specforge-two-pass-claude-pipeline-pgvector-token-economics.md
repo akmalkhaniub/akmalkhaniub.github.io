@@ -24,9 +24,11 @@ flowchart TD
   end
   
   subgraph SG2_TwoPassClaude ["Two-Pass Claude 3.5 Extraction Engine"]
-    Chunks --> Pass1["Pass 1: Macro Domain & Epic Discovery (Claude 3.5 Sonnet)"]
+    Chunks --> Pass1["Pass 1: Macro Domain
+    Chunks --> Epic Discovery (Claude 3.5 Sonnet)"]
     Pass1 --> Epics["Structured Epic Hierarchy (JSON Schema)"]
-    Epics --> Pass2["Pass 2: Granular User Story & Gherkin Synthesis (Parallel Tool Loops)"]
+    Epics --> Pass2["Pass 2: Granular User Story
+    Epics --> Gherkin Synthesis (Parallel Tool Loops)"]
     Pass2 --> Stories["User Stories + Given-When-Then Acceptance Criteria"]
   end
   
@@ -35,7 +37,8 @@ flowchart TD
     Embedder --> PGVector["PostgreSQL pgvector (Cosine Sim > 0.85 Check)"]
     PGVector -->|Duplicate Detected| Merge["Automated Merge Recommendation"]
     PGVector -->|New Unique Story| Backlog["Persistent Jira / Linear Backlog"]
-    Pass1 & Pass2 --> Metering["Token Economics Metering ($ / session)"]
+    Pass1 --> Metering["Token Economics Metering ($ / session)"]
+    Pass2 --> Metering
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

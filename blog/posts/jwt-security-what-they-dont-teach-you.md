@@ -15,10 +15,10 @@ A JWT looks trustworthy. It's base64-encoded, has a signature, and is issued by 
 flowchart TD
     T["JWT Token"] --> H["Header"]
     T --> P["Payload"]
-    T --> S["Signature"]
+    H --> S["Signature"]
 
     H --> A1[" Attack 1: alg:none<br/>Signature bypassed entirely"]
-    H --> A2[" Attack 2: RS256→HS256<br/>Public key used as secret"]
+    S --> A2[" Attack 2: RS256→HS256<br/>Public key used as secret"]
     P --> A3[" Attack 3: No exp validation<br/>Tokens live forever"]
     P --> A4[" Attack 4: No aud check<br/>Token accepted on wrong service"]
     S --> A5[" Attack 5: Weak secret<br/>Brute-forced offline"]
@@ -375,6 +375,21 @@ JWT security is not about the library you choose — it's about whether you unde
 - **Pin your algorithm explicitly** — never accept the algorithm from the token's own header. Whitelist exactly one algorithm per token type.
 - **Keep access tokens short-lived (15 min)** and use long-lived refresh tokens with rotation + grace periods to balance security and UX.
 - **Always check `aud`, `iss`, `exp`, and `jti`** — these four claims together prevent replay attacks, cross-service abuse, and token reuse after revocation.
+
+---
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Security, JWT** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
 
 ---
 

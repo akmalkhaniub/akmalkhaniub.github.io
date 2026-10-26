@@ -12,7 +12,8 @@ This article examines the cutting-edge architectural frontiers that define the f
 flowchart TD
   subgraph SG1_TheFutureFrontier ["The Future Frontier (2026 & Beyond)"]
     F1["1. Deterministic Scheduling"] --> Calvin["Calvin / FaunaDB: Pre-Sequencing Log (Zero 2PC Aborts)"]
-    F2["2. Hardware Acceleration"] --> RDMA["RDMA & CXL 3.0: Pooled Memory (1µs Atomic Commits)"]
+    F2["2. Hardware Acceleration"] --> RDMA["RDMA
+    F2 --> CXL 3.0: Pooled Memory (1µs Atomic Commits)"]
     F3["3. Autonomous Agentic Sagas"] --> Agents["Multi-Agent Swarm DAGs: Dynamic Semantic Compensation"]
   end
 
@@ -111,15 +112,16 @@ flowchart TD
     Mission["User Business Mission"] --> AgentCoordinator["Agent Transaction Supervisor"]
     AgentCoordinator --> TaskA["1. Provision AWS GPU Cluster"]
     AgentCoordinator --> TaskB["2. Charge Corporate Credit Card"]
-    AgentCoordinator --> TaskC["3. Send Email Confirmation"]
-    AgentCoordinator --> TaskD["4. Deploy Containerized Microservices"]
+    TaskA --> TaskC["3. Send Email Confirmation"]
+    TaskB --> TaskD["4. Deploy Containerized Microservices"]
     
     TaskD -->|API Deployment Error 500| Failure["Failure Detection"]
     Failure --> SemanticPlanner["LLM Semantic Compensation Planner"]
     
     SemanticPlanner --> CompA["↩ Terminate AWS GPU Cluster"]
     SemanticPlanner --> CompB["↩ Issue Stripe Partial Refund"]
-    SemanticPlanner --> CompC["↩ Send Apology & Status Email"]
+    CompA --> CompC["↩ Send Apology
+    CompB --> Status Email"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

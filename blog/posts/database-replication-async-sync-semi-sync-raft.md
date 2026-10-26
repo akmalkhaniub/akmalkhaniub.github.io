@@ -28,15 +28,16 @@ flowchart TD
   end
   
   subgraph SG3_SemiSynchronousReplication ["Semi-Synchronous Replication (1 Slave Ack)"]
-    Primary -->|Stream Binlog| RelayLog["Replica 1 Relay Log"]
+    Client --> |Stream Binlog| RelayLog["Replica 1 Relay Log"]
     RelayLog -->|Ack Received| Primary
-    Primary -->|Return Ack to Client| Client
+    Replica1 --> |Return Ack to Client| Client
   end
   
   subgraph SG4_RaftConsensusMajority ["Raft Consensus Majority Quorum (CockroachDB / TiKV)"]
-    Primary -->|Broadcast AppendEntries| NodeB["Raft Node B"] & NodeC["Raft Node C"]
+    RelayLog --> |Broadcast AppendEntries| NodeB["Raft Node B"]
+    Replica1 --> |Broadcast AppendEntries| NodeC["Raft Node C"]
     NodeB -->|Majority Ack (2 of 3 Nodes)| Primary
-    Primary -->|Commit Majority Entry!| Client
+    NodeB --> |Commit Majority Entry!| Client
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

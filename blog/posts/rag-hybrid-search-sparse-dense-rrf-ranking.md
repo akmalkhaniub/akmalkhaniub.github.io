@@ -123,6 +123,21 @@ if __name__ == "__main__":
 * **Isolate Query Runtimes**: Run sparse and dense queries concurrently using async task wrappers to minimize search latencies.
 * **Standardize Document Keys**: Maintain consistent document ID indexing patterns across your BM25 and vector stores to ensure accurate rank merging. [2]
 
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Search, RAG** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
+
 ## References & Further Reading
 
 1. **Malkov, Y. A., & Yashunin, D. A. (2018)**. *Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs*. IEEE TPAMI. [https://arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320)

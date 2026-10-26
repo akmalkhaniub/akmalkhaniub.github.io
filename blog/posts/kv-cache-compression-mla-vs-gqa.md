@@ -28,13 +28,15 @@ flowchart TD
     classDef mlaStyle fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534;
     classDef label fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#5b21b6;
 
-    Start["Inference: Parse Keys & Values"] --> Compression{Attention Method}
+    Start["Inference: Parse Keys --> Compression{Attention Method}
+    Values"] --> Compression
     
     Compression -->|Meta GQA - LLaMA-3| PathGQA["Grouped-Query Attention"]
     Compression -->|DeepSeek MLA - V3/R1| PathMLA["Multi-head Latent Attention"]
     
     PathGQA -->|8 -1 Ratio| HBM_Save1["Key-Value heads grouped / Reduces cache size by 8x"]
-    PathMLA -->|Low-Rank Latent| HBM_Save2["Compresses K & V into latent vector dc / Reduces cache size by 14x"]
+    PathMLA --> |Low-Rank Latent| HBM_Save2["Compresses K
+    PathMLA --> |Low-Rank Latent| V into latent vector dc / Reduces cache size by 14x"]
 
     class Start,Compression check;
     class PathGQA,HBM_Save1 gqaStyle;

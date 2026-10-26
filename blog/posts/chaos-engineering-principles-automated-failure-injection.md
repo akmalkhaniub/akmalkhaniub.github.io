@@ -33,7 +33,8 @@ flowchart TD
     GuardrailCheck -->|Yes - System Resilient!| Pass["5. Record Chaos Experiment Success"]
     GuardrailCheck -->|No - HTTP Errors Spike > 0.5%| EmergencyAbort[" EMERGENCY ABORT TRIGGERED!"]
     
-    EmergencyAbort --> Rollback["6. Revert Netem Delay & Restore Baseline Topology"]
+    EmergencyAbort --> Rollback["6. Revert Netem Delay
+    EmergencyAbort --> Restore Baseline Topology"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -180,6 +181,21 @@ When running chaos experiments:
 Organizations practicing automated Chaos Engineering (such as **Netflix**, **AWS**, and **Uber**) report:
 * **Over 50% Reduction in Unplanned Outages**: Uncovering hidden configuration bugs and retry storms before they manifest as customer-facing incidents.
 * **$10\times$ Faster Incident Recovery**: On-call engineers build confidence and familiarity with automated failover mechanics. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Chaos Engineering, Resilience** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

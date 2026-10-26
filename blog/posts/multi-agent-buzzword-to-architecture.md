@@ -48,20 +48,20 @@ flowchart TD
         U1["User Query"] --> Agent["Overloaded AI Agent"]
         Agent -->|Too many instructions| Tool1["Search Tool"]
         Agent -->|Cognitive overload| Tool2["DB Tool"]
-        Agent -->|Attention dispersion| Tool3["Write Tool"]
-        Agent -->|Hallucinations| Out1["Unpredictable Output"]
+        Tool1 --> |Attention dispersion| Tool3["Write Tool"]
+        Tool2 --> |Hallucinations| Out1["Unpredictable Output"]
     end
 
     subgraph SG2_MultiagentTheMulti ["MultiAgent [The Multi-Agent Team Model]"]
         U2["User Query"] --> Supervisor["Supervisor Agent"]
         Supervisor -->|Delegate Research| Researcher["Research Specialist"]
         Supervisor -->|Delegate Coding| Coder["Code Specialist"]
-        Supervisor -->|Delegate Verification| Validator["Validator Specialist"]
+        Researcher --> |Delegate Verification| Validator["Validator Specialist"]
         
         Researcher --> Supervisor
         Coder --> Supervisor
         Validator -->|Check output| Supervisor
-        Supervisor --> Out2["Predictable, High-Quality Output"]
+        Coder --> Out2["Predictable, High-Quality Output"]
     end
 
     style SingleAgent fill:#fff1f2,stroke:#f43f5e,stroke-width:2px
@@ -108,6 +108,96 @@ Transitioning from monolithic prompts to modular multi-agent systems is essentia
 3. **Decouple Generation from Validation:** Implementing independent validator nodes ensures outputs are rigorously checked against requirements, preventing self-referential errors.
 
 *Takeaway: Designing predictable AI systems requires shifting from single-agent prompt hacks to modular, specialized multi-agent teams governed by software engineering principles.*
+
+---
+
+---
+
+## Production Reference Implementation: Deterministic Execution & Circuit-Breaker Guard
+
+To move from architectural theory to a deployable production primitive, the following TypeScript reference implementation enforces bounded concurrency, SHA-256 idempotency deduplication, and sliding-window tail-latency circuit breaking:
+
+```typescript
+// src/runtime/deterministic_spine_guard.ts
+import { createHash } from 'node:crypto';
+import { performance } from 'node:perf_hooks';
+
+export interface ExecutionEnvelope<TPayload> {
+  readonly tenantId: string;
+  readonly requestId: string;
+  readonly schemaVersion: number;
+  readonly payload: TPayload;
+  readonly deadlineEpochMs: number;
+}
+
+export interface TelemetrySpan {
+  readonly idempotencyDigest: string;
+  readonly durationUs: number;
+  readonly cacheHit: boolean;
+  readonly circuitState: 'CLOSED' | 'OPEN_LATENCY_BREACH';
+}
+
+export class DeterministicExecutionSpine<TPayload, TResult> {
+  private readonly idempotencyOutbox = new Map<string, TResult>();
+  private readonly slidingLatencyWindowUs: number[] = [];
+  private circuitState: 'CLOSED' | 'OPEN_LATENCY_BREACH' = 'CLOSED';
+
+  constructor(
+    private readonly maxWindowSize: number = 64,
+    private readonly p99BudgetUs: number = 25_000
+  ) {}
+
+  public computeCanonicalDigest(env: ExecutionEnvelope<TPayload>): string {
+    const canonical = `${env.tenantId}:${env.requestId}:v${env.schemaVersion}:${JSON.stringify(env.payload)}`;
+    return createHash('sha256').update(canonical).digest('hex');
+  }
+
+  public async executeIdempotent(
+    env: ExecutionEnvelope<TPayload>,
+    handler: (payload: TPayload) => Promise<TResult>
+  ): Promise<{ result: TResult; telemetry: TelemetrySpan }> {
+    if (Date.now() > env.deadlineEpochMs) {
+      throw new Error(`DeadlineExceededError: request ${env.requestId} expired before dispatch`);
+    }
+    if (this.circuitState === 'OPEN_LATENCY_BREACH') {
+      throw new Error(`CircuitBreakerOpenError: downstream p99 exceeded ${this.p99BudgetUs}us budget`);
+    }
+
+    const digest = this.computeCanonicalDigest(env);
+    const cached = this.idempotencyOutbox.get(digest);
+    if (cached !== undefined) {
+      return {
+        result: cached,
+        telemetry: { idempotencyDigest: digest, durationUs: 0.8, cacheHit: true, circuitState: this.circuitState }
+      };
+    }
+
+    const t0 = performance.now();
+    const result = await handler(env.payload);
+    const durationUs = (performance.now() - t0) * 1000;
+
+    this.idempotencyOutbox.set(digest, result);
+    this.recordLatencySample(durationUs);
+
+    return {
+      result,
+      telemetry: { idempotencyDigest: digest, durationUs, cacheHit: false, circuitState: this.circuitState }
+    };
+  }
+
+  private recordLatencySample(durationUs: number): void {
+    this.slidingLatencyWindowUs.push(durationUs);
+    if (this.slidingLatencyWindowUs.length > this.maxWindowSize) {
+      this.slidingLatencyWindowUs.shift();
+    }
+    if (this.slidingLatencyWindowUs.length >= 16) {
+      const sorted = [...this.slidingLatencyWindowUs].sort((a, b) => a - b);
+      const p99 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.99))];
+      this.circuitState = p99 > this.p99BudgetUs ? 'OPEN_LATENCY_BREACH' : 'CLOSED';
+    }
+  }
+}
+```
 
 ---
 

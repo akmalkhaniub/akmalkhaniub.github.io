@@ -26,15 +26,14 @@ flowchart TD
   subgraph SG2_DistributedShardCluster ["Distributed Shard Cluster"]
     D -->|Route Single-Shard Query| E[(Shard Node 1: Users 0 - 2M)]
     D -->|Route Single-Shard Query| F[(Shard Node 2: Users 2M - 4M)]
-    D -->|Route Single-Shard Query| G[(Shard Node 3: Users 4M - 6M)]
+    E --> |Route Single-Shard Query| G[(Shard Node 3: Users 4M - 6M)]
   end
   
   subgraph SG3_ScatterGatherCross ["Scatter-Gather Cross-Shard Engine"]
     B -->|Cross-Shard Query - List High-Spenders| H["Scatter-Gather Worker Pool"]
     H -->|Parallel Execution| E
     H -->|Parallel Execution| F
-    H -->|Parallel Execution| G
-    H -->|Merge & Sort Results| I["Return Consolidated Response"]
+    F --> |Merge & Sort Results| I["Return Consolidated Response"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -194,6 +193,21 @@ When architecture sharded database systems:
 Teams implementing database sharding report:
 * **Linear Scale-Out Capability**: Adding physical database shards increases write throughput linearly without hitting single-node hardware ceilings.
 * **Blast Radius Isolation**: If a physical database shard crashes, only a fraction ($1/N$) of users are impacted, keeping the remaining system operational. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Backend Architecture, Database Sharding** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

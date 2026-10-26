@@ -31,7 +31,7 @@ flowchart TD
     Node305 -->|Drop Down to Layer 0| Node305_L0["Vector 305"]
     Node305_L0 -->|Dense Local Neighbors| NN1["Nearest Neighbor 1"]
     Node305_L0 -->|Dense Local Neighbors| NN2["Nearest Neighbor 2"]
-    Node305_L0 -->|Dense Local Neighbors| NN3["Nearest Neighbor 3"]
+    NN1 --> |Dense Local Neighbors| NN3["Nearest Neighbor 3"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

@@ -14,11 +14,14 @@ This deep-dive architectural analysis explores the internal mechanics of B+Trees
 ```mermaid
 flowchart TD
   subgraph SG1_StorageEngineTrade ["Storage Engine Trade-Off (The RUM Conjecture)"]
-    BTree["B+Tree (WiredTiger / InnoDB)"] -->|Pros| LowRAF["Lowest Read Amplification (Point & Range Lookups)"]
-    BTree -->|Cons| HighWAF["High Write Amplification (Random Page Writes & Doublewrite)"]
+    BTree["B+Tree (WiredTiger / InnoDB)"] --> |Pros| LowRAF["Lowest Read Amplification (Point
+    BTree --> |Pros| Range Lookups)"]
+    LowRAF --> |Cons| HighWAF["High Write Amplification (Random Page Writes
+    Range --> |Cons| Doublewrite)"]
     
     LSM["LSM-Tree (RocksDB / Cassandra)"] -->|Pros| LowWriteWAF["Lowest Write Amplification (Sequential Appends)"]
-    LSM -->|Cons| CompactionOverhead["Compaction I/O & Background Read Amplification"]
+    LSM --> |Cons| CompactionOverhead["Compaction I/O
+    LowWriteWAF --> |Cons| Background Read Amplification"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

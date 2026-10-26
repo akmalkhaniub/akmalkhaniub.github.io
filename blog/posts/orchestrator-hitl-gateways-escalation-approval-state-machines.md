@@ -18,13 +18,17 @@ When a task node inside an orchestrator DAG is marked as `REQUIRES_HUMAN_APPROVA
 flowchart TD
   A["Orchestrator DAG Execution"] --> B["Task Node: Apply Database Migration"]
   B --> C{Orchestrator Boundary Check}
-  C -->|Marked - REQUIRES_HUMAN_APPROVAL| D["Pause DAG & Generate JWT Approval Token"]
+  C --> |Marked - REQUIRES_HUMAN_APPROVAL| D["Pause DAG
+  C --> |Marked - REQUIRES_HUMAN_APPROVAL| Generate JWT Approval Token"]
   D --> E["Dispatch Alert to Slack / Dashboard"]
   
   E --> F{Human Reviewer Action}
-  F -->|Signed Approval Received| G["Verify Token Signature & Resume DAG Node"]
-  F -->|Human Rejects| H["Abort DAG Node & Trigger Rollback"]
-  F -->|TTL Timeout Exceeded 30 mins| I["Escalate to Lead & Auto-Pause"]
+  F --> |Signed Approval Received| G["Verify Token Signature
+  F --> |Signed Approval Received| Resume DAG Node"]
+  G --> |Human Rejects| H["Abort DAG Node
+  Resume --> |Human Rejects| Trigger Rollback"]
+  H --> |TTL Timeout Exceeded 30 mins| I["Escalate to Lead
+  Trigger --> |TTL Timeout Exceeded 30 mins| Auto-Pause"]
   
   G --> J["Execution Completed"]
 
@@ -179,6 +183,21 @@ When building HITL Gateways, enforce these critical security boundaries:
 Organizations implementing HITL Orchestrator Gateways report:
 * **Zero Accidental Destructive Operations**: 100% of sensitive operations (schema drops, payment transfers) require cryptographic human sign-off.
 * **Seamless Automation Balance**: Routine code generation runs autonomously, while high-risk boundaries remain safely controlled by human leads. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Agentic Engineering, Human-in-the-Loop** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

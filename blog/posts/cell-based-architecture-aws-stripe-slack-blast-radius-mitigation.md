@@ -22,8 +22,8 @@ flowchart TD
       Clients2["100,000 Tenants"] --> CellRouter["Stateless Thin Cell Router"]
       CellRouter -->|Tenants 1-5,000| Cell1["Cell 1: Isolated K8s + Dedicated DB"]
       CellRouter -->|Tenants 5,001-10,000| Cell2["Cell 2: Isolated K8s + Dedicated DB"]
-      CellRouter -->|Tenants 10,001-15,000| Cell3["Cell 3: Isolated K8s + Dedicated DB (Degraded)"]
-      CellRouter -->|Tenants 15,001-20,000| Cell4["Cell 4: Isolated K8s + Dedicated DB"]
+      Cell1 --> |Tenants 10,001-15,000| Cell3["Cell 3: Isolated K8s + Dedicated DB (Degraded)"]
+      Cell2 --> |Tenants 15,001-20,000| Cell4["Cell 4: Isolated K8s + Dedicated DB"]
       
       Cell3 --> LimitedImpact["Strict Blast Radius: Only 5% impacted, 95% fully online"]
     end

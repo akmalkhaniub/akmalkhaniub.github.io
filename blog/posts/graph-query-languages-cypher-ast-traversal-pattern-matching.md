@@ -21,14 +21,16 @@ How graph engines parse Cypher ASTs and use VF2 Subgraph Isomorphism backtrackin
 ```mermaid
 flowchart TD
   subgraph SG1_CypherAstQuery ["Cypher AST Query Compilation"]
-    Cypher["Query: MATCH (a:User)-[:KNOWS]->(b:User) WHERE a.age > 25 RETURN b.name"] --> Lexer["Lexer & Parser"]
+    Cypher["Query: MATCH (a:User)-[:KNOWS]->(b:User) WHERE a.age > 25 RETURN b.name"] --> Lexer["Lexer
+    Cypher --> Parser"]
     Lexer --> AST["1. Cypher AST: [MatchPatternNode | WhereFilterNode | ProjectionNode]"]
     AST --> Planner["Logical Query Planner"]
   end
   
   subgraph SG2_SubgraphIsomorphismVf2 ["Subgraph Isomorphism (VF2 Backtracking Engine)"]
     Planner -->|Expand Candidate State Space| VF2["VF2 State Space Search Tree"]
-    VF2 -->|Evaluate Feasibility Rules| LabelCheck{Check Label & Direction match?}
+    VF2 --> |Evaluate Feasibility Rules| LabelCheck{Check Label
+    VF2 --> |Evaluate Feasibility Rules| Direction match?}
     LabelCheck -->|Yes - Extend Mapping| ExtendState["Extend Target State Pair: (QueryNode_A -> RealNode_101)"]
     LabelCheck -->|No - Backtrack| Backtrack["Backtrack State Tree"]
     ExtendState --> OutputMatches[" Matched Subgraph Results!"]
@@ -204,6 +206,21 @@ When writing Cypher graph queries:
 Declarative graph query engines (such as **Neo4j openCypher**, **Memgraph**, and **FalkorDB**) report:
 * **Over $100\times$ Faster Graph Pattern Queries**: VF2 Subgraph Isomorphism backtracking prunes invalid search branches early.
 * **Declarative Developer Productivity**: Replaces 50-line SQL nested JOIN queries with intuitive 3-line Cypher ASCII graph pattern expressions. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Cypher Query, Pattern Matching** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

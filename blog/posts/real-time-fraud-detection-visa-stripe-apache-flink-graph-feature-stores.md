@@ -17,17 +17,22 @@ flowchart TD
     
     subgraph SG2_ParallelStatefulFeature ["Parallel Stateful Feature Computation (2-4ms)"]
       Kafka --> Flink["1. Apache Flink: Stateful Sliding Velocity Windows (RocksDB Backend)"]
-      Kafka --> GraphStore["2. In-Memory Graph Feature Store (Device & IP Ring Detection)"]
+      Kafka --> GraphStore["2. In-Memory Graph Feature Store (Device
+      Flink --> IP Ring Detection)"]
     end
     
-    Flink & GraphStore --> FeatureAggregator["Real-Time Feature Vector Assembly"]
+    Flink --> FeatureAggregator["Real-Time Feature Vector Assembly"]
+    GraphStore --> FeatureAggregator
     
     subgraph SG3_LowLatencyDecision ["Low-Latency Decision Core (3-5ms)"]
       FeatureAggregator --> DeterministicRules["3. Deterministic Hard Rules Engine (OFAC, Impossible Velocity)"]
       FeatureAggregator --> MLInference["4. Sub-Millisecond ML Ensemble (Treelite / ONNX Engine)"]
     end
     
-    DeterministicRules & MLInference --> DecisionGate["Unified Risk Score & Decision: APPROVE / DECLINE / 3DS CHALLENGE"]
+    DeterministicRules --> DecisionGate["Unified Risk Score
+    DeterministicRules --> Decision: APPROVE / DECLINE / 3DS CHALLENGE"]
+    MLInference --> DecisionGate
+    MLInference --> Decision
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -300,6 +305,21 @@ if __name__ == "__main__":
 Real-time fraud detection at Visa and Stripe scale is the ultimate test of **event-driven distributed stream processing and microsecond machine learning inference**.
 
 By leveraging **Apache Flink stateful windows**, **in-memory identity graphs**, and **compiled C++ decision trees**, fintech platforms protect billions of dollars in daily transaction volume while preserving seamless, sub-second checkout experiences for global consumers. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Fraud Detection, Apache Flink** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

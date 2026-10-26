@@ -26,13 +26,21 @@ const articlesDir = path.join(ROOT, 'blog', 'articles');
 const postsJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'blog', 'posts.json'), 'utf8'));
 
 const slugCounts = new Map();
+const dateCounts = new Map();
 for (const p of postsJson) {
   slugCounts.set(p.slug, (slugCounts.get(p.slug) || 0) + 1);
+  dateCounts.set(p.date, (dateCounts.get(p.date) || 0) + 1);
 }
 const dupes = [...slugCounts.entries()].filter(([, n]) => n > 1);
 if (dupes.length) {
   console.error('Duplicate slugs in posts.json:');
   for (const [slug, n] of dupes) console.error(`  ${slug} x${n}`);
+  process.exit(1);
+}
+const dupeDates = [...dateCounts.entries()].filter(([, n]) => n > 1);
+if (dupeDates.length) {
+  console.error('Duplicate publication dates in posts.json (violates AGENTS.md Rule #7):');
+  for (const [dt, n] of dupeDates) console.error(`  ${dt} x${n}`);
   process.exit(1);
 }
 

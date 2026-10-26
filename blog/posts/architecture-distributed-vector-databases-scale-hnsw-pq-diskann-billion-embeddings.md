@@ -21,10 +21,11 @@ flowchart TD
     subgraph SG2_QuantizationTraversalEngine ["Quantization & Traversal Engine"]
       Shards --> ADC["1. Asymmetric Distance Computation (Precomputed Lookup Tables)"]
       Shards --> DiskANN["2. DiskANN / Vamana Graph Traversal (NVMe SSD Block Reads)"]
-      Shards --> Rerank["3. Top-K Full Precision Re-Ranking (Float32 Vector Cache)"]
+      ADC --> Rerank["3. Top-K Full Precision Re-Ranking (Float32 Vector Cache)"]
     end
     
-    Rerank --> Reduce["K-Way Merge & Top-K Results"]
+    Rerank --> Reduce["K-Way Merge
+    Rerank --> Top-K Results"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -125,7 +126,7 @@ flowchart TD
   subgraph SG6_StorageConsensusBrokers ["Storage & Consensus Brokers"]
     Proxy -->|Append Insert WAL| LogBroker["Apache Kafka / Pulsar WAL Broker"]
     Proxy -->|Parallel Scatter Search| QueryNode1["Query Worker Node 1"]
-    Proxy -->|Parallel Scatter Search| QueryNode2["Query Worker Node 2"]
+    LogBroker --> |Parallel Scatter Search| QueryNode2["Query Worker Node 2"]
   end
   
   subgraph SG7_BackgroundProcessingObject ["Background Processing & Object Store"]
@@ -133,7 +134,8 @@ flowchart TD
     DataNode --> S3[(Cloud Object Storage: AWS S3 / MinIO)]
     S3 --> IndexNode["Indexer Node: Builds DiskANN / HNSW SSTs"]
     IndexNode --> S3
-    S3 -.->|Mmap / Cache Segments| QueryNode1 & QueryNode2
+    S3 -.-> |Mmap / Cache Segments| QueryNode1
+    IndexNode -.-> |Mmap / Cache Segments| QueryNode2
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

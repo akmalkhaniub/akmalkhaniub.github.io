@@ -11,6 +11,36 @@ In this architectural deep dive, we compare 5 top open-source Next.js projects o
 
 We will break down their patterns across three progressive levels: **Beginner (Structure & Routing)**, **Intermediate (Data Access & API Layers)**, and **Advanced (Edge Runtimes & Topologies)**.
 
+
+```mermaid
+flowchart TD
+    Req["Incoming Next.js Workload<br/>High-Concurrency Production Traffic"] --> Gate["Architectural Execution Spine<br/>Naive Path vs Engineered Path"]
+
+    subgraph PartitionA["Partition A — Naive Baseline Architecture"]
+        direction TB
+        A1["Unbounded Synchronous Execution<br/>Implicit Heuristics + Shared State"] --> A2["Tail-Latency Amplification<br/>Lock Contention + Memory Thrashing"]
+        A2 --> A3["Failure Mode<br/>SLA Breach under p99 Traffic Spikes"]
+    end
+
+    subgraph PartitionB["Partition B — Production Engineered Architecture"]
+        direction TB
+        B1["Deterministic Boundary Enforcement<br/>Explicit Contracts + Bounded Queues"] --> B2["Zero-Copy / Cache-Aligned Execution<br/>Sub-Millisecond Fast Path"]
+        B2 --> B3["Verified Production Outcome<br/>Predictable p99 Latency + Zero Drift"]
+    end
+
+    Gate -->|Baseline Path| A1
+    Gate -->|Engineered Path| B1
+
+    style Req fill:#1e293b,stroke:#475569,color:#f8fafc
+    style Gate fill:#334155,stroke:#64748b,color:#f8fafc
+    style A1 fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    style A2 fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    style A3 fill:#fecaca,stroke:#b91c1c,color:#7f1d1d
+    style B1 fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    style B2 fill:#dcfce7,stroke:#16a34a,color:#14532d
+    style B3 fill:#bbf7d0,stroke:#15803d,color:#14532d
+```
+
 ---
 
 ## 1. The Beginner Layer: Repository Structure & Routing Layouts

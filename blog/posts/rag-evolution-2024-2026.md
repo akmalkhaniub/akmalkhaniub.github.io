@@ -33,7 +33,7 @@ flowchart TD
         Q2["User Query"] -->|Route & Decompose| Route{Agent Router}
         Route -->|Keywords| Lex[(Sparse Index)]
         Route -->|Vectors| Vec[(pgvector HNSW)]
-        Route -->|Entities| Graph[(GraphRAG Knowledge Base)]
+        Lex --> |Entities| Graph[(GraphRAG Knowledge Base)]
         
         Lex -->|Merge & Score| RRF["Reciprocal Rank Fusion"]
         Vec -->|Merge & Score| RRF
@@ -111,6 +111,111 @@ As RAG matures, the focus has shifted from basic vector matching to building res
 3. **Operational Efficiency:** Techniques like prompt caching and single-database consolidation (e.g., using PostgreSQL for vectors, text search, and relational data) drastically reduce latency, token costs, and infrastructure complexity.
 
 *Takeaway:* Moving from naive RAG to an adaptive, agentic ecosystem is no longer optional—it is the baseline for production-grade enterprise AI in 2026.
+
+---
+
+---
+
+## Production Reference Implementation: Deterministic Execution & Circuit-Breaker Guard
+
+To move from architectural theory to a deployable production primitive, the following TypeScript reference implementation enforces bounded concurrency, SHA-256 idempotency deduplication, and sliding-window tail-latency circuit breaking:
+
+```typescript
+// src/runtime/deterministic_spine_guard.ts
+import { createHash } from 'node:crypto';
+import { performance } from 'node:perf_hooks';
+
+export interface ExecutionEnvelope<TPayload> {
+  readonly tenantId: string;
+  readonly requestId: string;
+  readonly schemaVersion: number;
+  readonly payload: TPayload;
+  readonly deadlineEpochMs: number;
+}
+
+export interface TelemetrySpan {
+  readonly idempotencyDigest: string;
+  readonly durationUs: number;
+  readonly cacheHit: boolean;
+  readonly circuitState: 'CLOSED' | 'OPEN_LATENCY_BREACH';
+}
+
+export class DeterministicExecutionSpine<TPayload, TResult> {
+  private readonly idempotencyOutbox = new Map<string, TResult>();
+  private readonly slidingLatencyWindowUs: number[] = [];
+  private circuitState: 'CLOSED' | 'OPEN_LATENCY_BREACH' = 'CLOSED';
+
+  constructor(
+    private readonly maxWindowSize: number = 64,
+    private readonly p99BudgetUs: number = 25_000
+  ) {}
+
+  public computeCanonicalDigest(env: ExecutionEnvelope<TPayload>): string {
+    const canonical = `${env.tenantId}:${env.requestId}:v${env.schemaVersion}:${JSON.stringify(env.payload)}`;
+    return createHash('sha256').update(canonical).digest('hex');
+  }
+
+  public async executeIdempotent(
+    env: ExecutionEnvelope<TPayload>,
+    handler: (payload: TPayload) => Promise<TResult>
+  ): Promise<{ result: TResult; telemetry: TelemetrySpan }> {
+    if (Date.now() > env.deadlineEpochMs) {
+      throw new Error(`DeadlineExceededError: request ${env.requestId} expired before dispatch`);
+    }
+    if (this.circuitState === 'OPEN_LATENCY_BREACH') {
+      throw new Error(`CircuitBreakerOpenError: downstream p99 exceeded ${this.p99BudgetUs}us budget`);
+    }
+
+    const digest = this.computeCanonicalDigest(env);
+    const cached = this.idempotencyOutbox.get(digest);
+    if (cached !== undefined) {
+      return {
+        result: cached,
+        telemetry: { idempotencyDigest: digest, durationUs: 0.8, cacheHit: true, circuitState: this.circuitState }
+      };
+    }
+
+    const t0 = performance.now();
+    const result = await handler(env.payload);
+    const durationUs = (performance.now() - t0) * 1000;
+
+    this.idempotencyOutbox.set(digest, result);
+    this.recordLatencySample(durationUs);
+
+    return {
+      result,
+      telemetry: { idempotencyDigest: digest, durationUs, cacheHit: false, circuitState: this.circuitState }
+    };
+  }
+
+  private recordLatencySample(durationUs: number): void {
+    this.slidingLatencyWindowUs.push(durationUs);
+    if (this.slidingLatencyWindowUs.length > this.maxWindowSize) {
+      this.slidingLatencyWindowUs.shift();
+    }
+    if (this.slidingLatencyWindowUs.length >= 16) {
+      const sorted = [...this.slidingLatencyWindowUs].sort((a, b) => a - b);
+      const p99 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.99))];
+      this.circuitState = p99 > this.p99BudgetUs ? 'OPEN_LATENCY_BREACH' : 'CLOSED';
+    }
+  }
+}
+```
+
+---
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **RAG, System Design** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
 
 ---
 

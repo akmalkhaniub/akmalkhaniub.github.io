@@ -20,7 +20,10 @@ flowchart TD
     G1840["1840s: Proprietary Track Gauges (Brunel 7ft vs Stephenson 4ft 8.5in)"] <---> G2026["2026: Proprietary APIs vs Open Protocols (MCP, ONNX, W3C)"]
     L1840["1840s: Hundreds of Competing Steam Locomotives (Commoditized)"] <---> L2026["2026: Competing Foundation Model Weights (Rapidly Commoditizing)"]
     R1840["1840s: National Standard Rail Gauge Mandate (1846 Act)"] <---> R2026["2026: Universal Tool Interoperability Standard (Model Context Protocol)"]
-    V1840["1840s: Enduring Fortunes in Freight Logistics & Regional Commerce"] <---> V2026["2026: Enduring Fortunes in Enterprise Data Pipelines & Vertical Workflows"]
+    V1840["1840s: Enduring Fortunes in Freight Logistics --> V2026["2026: Enduring Fortunes in Enterprise Data Pipelines
+    V1840 --> Vertical Workflows"]
+    Regional Commerce"] <- --> V2026
+    Regional --> Vertical
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -229,6 +232,21 @@ if __name__ == "__main__":
 The lesson of the 1840s Railway Mania is clear: **do not build your enterprise on proprietary track gauges**.
 
 By architecting systems around open, model-agnostic protocols like **MCP**, **ONNX**, and **OpenTelemetry**, engineering teams insulate themselves against foundation model commoditization and ensure their software assets remain agile, interoperable, and enduring. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Model Context Protocol, MCP** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

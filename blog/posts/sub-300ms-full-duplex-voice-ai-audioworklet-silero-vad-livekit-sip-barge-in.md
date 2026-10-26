@@ -28,7 +28,9 @@ flowchart TD
     RmsCheck["Single-Frame RMS Threshold Check"]:::red
     TcpSocket["TCP WebSocket Queue Head-of-Line Stall"]:::red
     LateFlush["Delayed Playout Drain 650ms to 900ms"]:::red
-    CloneMsg --> RmsCheck --> TcpSocket --> LateFlush
+    CloneMsg --> RmsCheck
+    RmsCheck --> TcpSocket
+    TcpSocket --> LateFlush
   end
 
   subgraph SG2_Duplex ["SawtOS Lock-Free Full-Duplex Path"]
@@ -36,7 +38,9 @@ flowchart TD
     SileroFsm["Silero VAD v5 Dual-Threshold Hysteresis"]:::green
     PtrReset["Atomic Playout Read-Pointer Collapse"]:::green
     SipRtc["LiveKit WebRTC UDP and SIP RTP Trunk"]:::blue
-    SabRing --> SileroFsm --> PtrReset --> SipRtc
+    SabRing --> SileroFsm
+    SileroFsm --> PtrReset
+    PtrReset --> SipRtc
   end
 
   MicInput -->|UI Thread Contention| CloneMsg
@@ -163,14 +167,16 @@ flowchart TD
     SileroInfer["Silero VAD v5 ONNX Posterior P_speech"]:::headerAmber
     SchmittGate["Dual-Threshold Gate Onset 0.65 Offset 0.35"]:::yellow
     ConfirmWin["2-Frame 64ms Confirmation Counter"]:::yellow
-    SileroInfer --> SchmittGate --> ConfirmWin
+    SileroInfer --> SchmittGate
+    SchmittGate --> ConfirmWin
   end
 
   subgraph SG2_Cancel ["Parallel Cancellation Fan-Out"]
     CancelToken["Abort Active LLM and TTS Streams"]:::headerGreen
     RtcClear["Clear LiveKit RTC and SIP RTP Playout"]:::green
     TurnCommit["Speculative ASR Prefix Promoted to Turn"]:::blue
-    CancelToken --> RtcClear --> TurnCommit
+    CancelToken --> RtcClear
+    RtcClear --> TurnCommit
   end
 
   AudioFrame -->|Zero-Copy Read| SileroInfer

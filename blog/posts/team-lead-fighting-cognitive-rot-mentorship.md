@@ -26,7 +26,8 @@ flowchart TD
 
     subgraph SG2_ActiveLoop2 ["Active Loop [2. The Critical Audit Cycle]"]
         A1["AI Suggests Code"] -->|TL Policy| A2["Reverse Review: Explain logic"]
-        A2 -->|Verify constraints| A3["Test & Execute AST audit"]
+        A2 --> |Verify constraints| A3["Test
+        A2 --> |Verify constraints| Execute AST audit"]
         A3 -->|Refactor manually| A4["Commit with confidence"]
         A4 --> note2["Result: Active learning, robust systems"]
     end

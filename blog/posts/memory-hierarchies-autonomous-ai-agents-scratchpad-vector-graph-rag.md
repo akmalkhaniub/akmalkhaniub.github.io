@@ -16,9 +16,9 @@ flowchart TD
     Tier3["Tier 3: Semantic Long-Term Knowledge (Graph-RAG Entity Triples & MemGPT Paging)"]
   end
   
-  LLM["Agent Reasoning Core"] <-->|Active Prompt & Tool Buffer| Tier1
-  Tier1 <-->|Async Paging & Summarization| Tier2
-  Tier2 <-->|Background Knowledge Consolidation| Tier3
+  LLM["Agent Reasoning Core"] -->|Active Prompt & Tool Buffer| Tier1
+  Tier1 -->|Async Paging & Summarization| Tier2
+  Tier2 -->|Background Knowledge Consolidation| Tier3
   Tier3 -.->|High-Relevance Entity Injections| Tier1
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

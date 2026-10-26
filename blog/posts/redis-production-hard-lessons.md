@@ -24,7 +24,7 @@ flowchart TD
     L2 -->|No| L3{Cluster Mode?}
     L3 -->|Lua across slots| E3[" Lesson 3: Lua not<br/>atomic across nodes"]
     L3 -->|Wrong keyslot| E4[" Lesson 4: MGET fails<br/>on different slots"]
-    L3 -->|No| L4{Persistence<br/>Config?}
+    E3 --> |No| L4{Persistence<br/>Config?}
     L4 -->|No AOF or RDB| E5[" Lesson 5: All data<br/>lost on restart"]
     L4 -->|OK| L5{Connection<br/>Pool?}
     L5 -->|No pool / wrong size| E6[" Lesson 6: Connection<br/>exhaustion under load"]

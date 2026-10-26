@@ -31,7 +31,8 @@ flowchart TD
     Start["Inference Matrix Multiplication"] --> Representation{Weight Representation}
     
     Representation -->|Standard FP16 / 16-Bit| FloatKernel["Floating-Point Multiply-Accumulate / MAC"]
-    Representation -->|BitNet 1.58b / 1.58-Bit| TernaryKernel["Sign-Swap & Addition / Additive Accumulate"]
+    Representation --> |BitNet 1.58b / 1.58-Bit| TernaryKernel["Sign-Swap
+    FloatKernel --> |BitNet 1.58b / 1.58-Bit| Addition / Additive Accumulate"]
     
     FloatKernel -->|High Cost| FP_Mult["Requires complex silicon GPU floating-point multipliers / High Wattage"]
     TernaryKernel -->|Low Cost| INT_Add["Requires simple integer additions / ~10x lower hardware power footprint"]

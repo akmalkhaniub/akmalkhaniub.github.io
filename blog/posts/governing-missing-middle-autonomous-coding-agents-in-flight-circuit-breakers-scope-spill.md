@@ -27,7 +27,9 @@ flowchart TD
     BlindExec["Unchecked Filesystem Write Outside Declared Scope"]:::red
     Oscillate["Edit-Test Oscillation Loop Across 15 Extra Steps"]:::red
     LateCi["Post-Hoc CI Failure After 90k Tokens Burned"]:::red
-    PromptRule --> BlindExec --> Oscillate --> LateCi
+    PromptRule --> BlindExec
+    BlindExec --> Oscillate
+    Oscillate --> LateCi
   end
 
   subgraph SG2_ClosedLoop ["IntentGuard and TrafficSentinel In-Flight Breaker"]
@@ -35,7 +37,9 @@ flowchart TD
     CycleHash["Symbol-Level Mutation Cycle Detector"]:::green
     WindowBudget["Sliding-Window Token and Latency Surge Breaker"]:::green
     SafeCommit["Execute Bounded Tool Call or Trip Half-Open Re-Anchor"]:::blue
-    ScopeGate --> CycleHash --> WindowBudget --> SafeCommit
+    ScopeGate --> CycleHash
+    CycleHash --> WindowBudget
+    WindowBudget --> SafeCommit
   end
 
   AgentIntent -->|Soft Prompt Only| PromptRule
@@ -205,14 +209,16 @@ flowchart TD
     BlockWrite["Reject Disk Write in 2.0 Microseconds"]:::headerAmber
     CompactCtx["Prune Intermediate Stack-Trace Bloat Steps 12 to 20"]:::yellow
     InjectErr["Inject High-Salience Scope Manifest Violation Error"]:::yellow
-    BlockWrite --> CompactCtx --> InjectErr
+    BlockWrite --> CompactCtx
+    CompactCtx --> InjectErr
   end
 
   subgraph SG2_Probe ["Half-Open Recovery Probe"]
     NextStep["Evaluate Agent Step 22 Recovery Action"]:::headerGreen
     CloseLoop["In-Scope Fix Converges Reset Breaker to CLOSED"]:::green
     HardHalt["Second Violation Lock Breaker OPEN and Alert Human"]:::red
-    NextStep --> CloseLoop --> HardHalt
+    NextStep --> CloseLoop
+    CloseLoop --> HardHalt
   end
 
   ToolCall -->|Violates Allowed Prefix| BlockWrite

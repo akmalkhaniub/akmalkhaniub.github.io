@@ -25,7 +25,9 @@ flowchart TD
     FxWaterfall["Fixed-Point Basis-Point FX Pocket Waterfall"]:::green
     LedgerHold["Atomic Pending Hold in Double-Entry Memory Ring"]:::green
     IsoResp["Emit ISO 8583 0110 DE39 Approved 00"]:::blue
-    ZeroParse --> FxWaterfall --> LedgerHold --> IsoResp
+    ZeroParse --> FxWaterfall
+    FxWaterfall --> LedgerHold
+    LedgerHold --> IsoResp
   end
 
   subgraph SG2_ColdPath ["ReconMesh 3-Way EOD Settlement Plane"]
@@ -33,7 +35,9 @@ flowchart TD
     HashJoin["3-Way STAN and RRN Hash-Indexed Join Engine"]:::yellow
     DriftGate["FX Drift Tolerance Window Within 5 Minor Units"]:::yellow
     ExceptionQ["Auto-Post FX Variance or Flag Force-Post Anomaly"]:::red
-    IngestStreams --> HashJoin --> DriftGate --> ExceptionQ
+    IngestStreams --> HashJoin
+    HashJoin --> DriftGate
+    DriftGate --> ExceptionQ
   end
 
   IsoPacket -->|Real-Time TCP Socket| ZeroParse
@@ -209,14 +213,16 @@ flowchart TD
     CheckProc["Lookup STAN in Processor Auth Index"]:::headerAmber
     CheckLedger["Lookup STAN in Internal Double-Entry Ledger"]:::yellow
     ExactCheck["Compare SettledMinor against AuthMinor"]:::yellow
-    CheckProc --> CheckLedger --> ExactCheck
+    CheckProc --> CheckLedger
+    CheckLedger --> ExactCheck
   end
 
   subgraph SG2_Resolution ["Deterministic Classification Engine"]
     AutoClear["Exact Match Release Hold to Settled"]:::headerGreen
     FxVariance["Delta Within 5 Minor Units Auto-Post FX Adjustment"]:::green
     ForcePost["Missing Auth Record Escalate Force-Post Exception"]:::red
-    AutoClear --> FxVariance --> ForcePost
+    AutoClear --> FxVariance
+    FxVariance --> ForcePost
   end
 
   ClearingRow -->|O-1 Hash Probe| CheckProc

@@ -19,7 +19,7 @@ flowchart TD
       Q1["Holistic Query: 'Identify cross-service failure modes'"] --> VectorSearch["Top-K Cosine Similarity"]
       VectorSearch --> ChunkA["Chunk 42 (Unlinked)"]
       VectorSearch --> ChunkB["Chunk 118 (Unlinked)"]
-      VectorSearch --> ChunkC["Chunk 804 (Unlinked)"]
+      ChunkA --> ChunkC["Chunk 804 (Unlinked)"]
       FailNote["Fails: Blind to transitive causal links"]
     end
 

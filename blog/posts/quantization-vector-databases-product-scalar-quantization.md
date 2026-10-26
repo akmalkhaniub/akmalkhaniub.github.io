@@ -23,7 +23,7 @@ flowchart TD
   subgraph SG1_RawFloat32Vector ["Raw Float32 Vector (D = 1536 dims, 6144 bytes)"]
     V["Raw Vector: 1536 float32 values"] -->|Decompose into M=8 Sub-vectors| SV1["Sub-vector 1: 192 dims"]
     V --> SV2["Sub-vector 2: 192 dims"]
-    V --> SV8["Sub-vector 8: 192 dims"]
+    SV1 --> SV8["Sub-vector 8: 192 dims"]
   end
   
   subgraph SG2_SubSpaceK ["Sub-space K-Means Codebooks (256 Centroids per Sub-space)"]
@@ -33,7 +33,9 @@ flowchart TD
   end
   
   subgraph SG3_CompressedByteCode ["Compressed Byte Code Output (8 bytes total! 99.87% Memory Savings)"]
-    CB1 & CB2 & CB8 -->|Assemble Byte Code| Quantized["Quantized Byte Array: [42, 189, ..., 7"]]
+    CB1 --> |Assemble Byte Code| Quantized["Quantized Byte Array: [42, 189, ..., 7"]]
+    CB2 --> |Assemble Byte Code| Quantized
+    CB8 --> |Assemble Byte Code| Quantized
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -200,6 +202,21 @@ When configuring vector database quantization:
 Vector database deployments utilizing Product Quantization report:
 * **Over 90% RAM Cost Reduction**: Compressing 100M float32 vectors from $614\text{ GB}$ down to $25\text{ GB}$ allows hosting billion-scale vector indexes on modest single-node servers.
 * **$5\times$ Faster Query Latencies**: Smaller byte code sizes fit entirely within CPU L3 cache lines, eliminating RAM bus memory bandwidth bottlenecks during SIMD matrix evaluations. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Vector Databases, Quantization** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

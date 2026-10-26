@@ -19,21 +19,20 @@ flowchart TD
   A["Transactional Producer"] -->|InitTransactions| B["Kafka Transaction Coordinator"]
   
   subgraph SG1_Phase1Begin ["Phase 1: Begin & Produce"]
-    A -->|AddPartitionsToTxn| B
-    A -->|Produce Messages with PID + SeqNum| C["Kafka Topic Partition A"]
-    A -->|Send Consumer Offsets| D["Kafka Topic Partition B"]
+    B --> |Produce Messages with PID + SeqNum| C["Kafka Topic Partition A"]
+    B --> |Send Consumer Offsets| D["Kafka Topic Partition B"]
   end
   
   subgraph SG2_Phase2Commit ["Phase 2: Commit / Abort Protocol"]
-    A -->|EndTxn - COMMIT| B
-    B -->|Write PREPARE_COMMIT Marker| E["__transaction_state Topic"]
-    B -->|Write Commit Control Markers| C
-    B -->|Write Commit Control Markers| D
-    B -->|Write COMMITTED Marker| E
+    C --> |EndTxn - COMMIT| B
+    F --> |Write PREPARE_COMMIT Marker| E["__transaction_state Topic"]
+    D --> |Write Commit Control Markers| C
+    E --> |Write Commit Control Markers| D
+    C --> |Write COMMITTED Marker| E
   end
   
-  C -->|Filter Control Markers| F["Read-Committed Consumer: Sees only committed events"]
-  D --> F
+  D --> |Filter Control Markers| F["Read-Committed Consumer: Sees only committed events"]
+  E --> F
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
 classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
@@ -173,6 +172,21 @@ When configuring Exactly-Once Semantics:
 Teams deploying EOS pipelines with Kafka report:
 * **Zero Duplicate Payments**: Idempotent producers and transactional commit markers prevent duplicate financial charges during network socket drops.
 * **Flawless Multi-Topic Consistency**: Atomic transactions guarantee that downstream read databases remain perfectly synchronized with upstream message streams. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Kafka, Exactly-Once** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

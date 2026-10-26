@@ -21,7 +21,8 @@ flowchart TD
   subgraph SG1_ServiceMeshControl ["Service Mesh Control Plane (Istiod)"]
     ControlPlane["Control Plane: xDS gRPC Server"] -->|Stream Dynamic Config (xDS APIs - LDS, RDS, CDS, EDS)| Sidecar1
     ControlPlane -->|Stream Dynamic Config| Sidecar2
-    CA["SPIFFE / SPIRE CA"] -->|Issue mTLS X.509 Certs| Sidecar1 & Sidecar2
+    CA["SPIFFE / SPIRE CA"] --> |Issue mTLS X.509 Certs| Sidecar1
+    CA --> |Issue mTLS X.509 Certs| Sidecar2
   end
   
   subgraph SG2_DataPlaneKubernetes ["Data Plane: Kubernetes Pod A"]
@@ -158,6 +159,21 @@ When deploying a Service Mesh:
 Platforms adopting Service Meshes (such as **Istio** and **Cilium**) report:
 * **Zero-Trust Security Alignment**: Automated mTLS and SPIFFE identities encrypt 100% of internal microservice traffic with dynamic certificate rotation.
 * **Instant Canary Rollouts**: Shifting 1% of live production traffic to new microservice releases using xDS route rules without restarting pods or re-deploying code. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Service Mesh, Envoy** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

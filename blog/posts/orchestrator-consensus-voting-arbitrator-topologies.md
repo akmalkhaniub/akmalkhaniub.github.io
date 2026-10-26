@@ -19,7 +19,7 @@ flowchart TD
   subgraph SG2_DebateConsensusTopology ["Debate & Consensus Topology"]
     D["Orchestrator Task Dispatcher"] --> E["Worker Agent A: Model 1"]
     D --> F["Worker Agent B: Model 2"]
-    D --> G["Worker Agent C: Model 3"]
+    E --> G["Worker Agent C: Model 3"]
     E --> H["Competing Proposal A"]
     F --> I["Competing Proposal B"]
     G --> J["Competing Proposal C"]
@@ -167,6 +167,21 @@ When building consensus arbitrator loops, keep these operational limits in mind:
 Organizations implementing Debate & Consensus Arbitrators achieve:
 * **99.2% Accuracy on Critical Tasks**: Multi-model consensus eliminates single-model bias and edge-case hallucinations.
 * **Automated Quality Filtering**: Arbitrator nodes automatically discard sub-optimal proposals before code reaches human reviewers. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Agentic Engineering, Consensus** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

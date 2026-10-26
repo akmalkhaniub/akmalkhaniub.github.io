@@ -23,7 +23,8 @@ flowchart TD
       Recorder --> ReplayBuffer["3. Time-Travel Replay Buffer (Offline Deterministic Stepping)"]
     end
     
-    ReplayBuffer --> OfflineDebugger["Zero-Cost IDE Breakpoint & Prompt Testing"]
+    ReplayBuffer --> OfflineDebugger["Zero-Cost IDE Breakpoint
+    ReplayBuffer --> Prompt Testing"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

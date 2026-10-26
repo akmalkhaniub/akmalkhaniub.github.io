@@ -16,11 +16,14 @@ Without deliberate intervention, delegating implementation leads to systemic men
 flowchart TD
   A["AI Agent Generates Complex Module"] --> B["Developer approves PR after high-level check"]
   B --> C["Loss of Mental Model of Internal Mechanics"]
-  C --> D["Cognitive Rot: Ignorance of Edge Cases & Locks"]
-  D -->|Production Outage Occurs| E["Diagnosis Paralysis & Delayed Incident Resolution"]
+  C --> D["Cognitive Rot: Ignorance of Edge Cases
+  C --> Locks"]
+  D --> |Production Outage Occurs| E["Diagnosis Paralysis
+  D --> |Production Outage Occurs| Delayed Incident Resolution"]
   
   subgraph SG1_TechLeadIntervention ["Tech Lead Intervention Loop"]
-    C --> F["Reverse Spec Drills & Adversarial PR Audits"]
+    E --> F["Reverse Spec Drills
+    Locks --> Adversarial PR Audits"]
     F --> G["Deep Systems Knowledge Preserved"]
     G --> H["Fast Incident Recovery"]
   end
@@ -136,6 +139,21 @@ When fighting cognitive rot, balance learning with engineering velocity:
 Teams implementing active anti-cognitive rot practices maintain strong operational capabilities:
 * **60% Faster Incident MTTR (Mean Time to Resolution)**: Engineers retain deep mental models of system internals, allowing them to diagnose production outages instantly.
 * **Higher Engineering Mastery**: Junior developers gain true architectural understanding rather than becoming mere "prompt operators." [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Engineering Leadership, Cognitive Rot** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

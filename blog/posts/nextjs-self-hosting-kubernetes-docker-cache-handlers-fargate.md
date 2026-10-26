@@ -22,12 +22,17 @@ flowchart TD
   subgraph K8sArch ["Self-Hosted Next.js Architecture on Kubernetes"]
     Ingress["Cloudflare or AWS ALB"] --> Pod1["Next.js Pod 1: Standalone Node"]
     Ingress --> Pod2["Next.js Pod 2: Standalone Node"]
-    Ingress --> Pod3["Next.js Pod 3: Standalone Node"]
+    Pod1 --> Pod3["Next.js Pod 3: Standalone Node"]
 
     subgraph SharedTier ["Shared Distributed State Tier"]
-      Pod1 & Pod2 & Pod3 <-->|Shared Data Cache and Tags| RedisCluster[("Central Redis Cache")]
-      Pod1 & Pod2 & Pod3 <-->|Shared HTML and Static ISR Files| S3Storage[("AWS S3 or MinIO Storage")]
-      Pod1 & Pod2 & Pod3 <-->|Synchronized Action Cipher Keys| EnvSecrets["Kubernetes Secret: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY"]
+      Pod1 --> |Shared Data Cache and Tags| RedisCluster[("Central Redis Cache")]
+      Pod2 --> |Shared Data Cache and Tags| RedisCluster
+      Pod3 --> |Shared Data Cache and Tags| RedisCluster
+      RedisCluster --> |Shared HTML and Static ISR Files| S3Storage[("AWS S3 or MinIO Storage")]
+      Pod2 --> |Shared HTML and Static ISR Files| S3Storage
+      Pod3 --> |Shared HTML and Static ISR Files| S3Storage
+      RedisCluster --> |Synchronized Action Cipher Keys| EnvSecrets["Kubernetes Secret: NEXT_SERVER_ACTIONS_ENCRYPTION_KEY"]
+      S3Storage --> |Synchronized Action Cipher Keys| EnvSecrets
     end
   end
 
@@ -253,6 +258,21 @@ Vercel provides a frictionless developer experience because it integrates the fr
 * Offload CPU-heavy image compression to edge services.
 
 Once these distributed primitives are in place, a self-hosted Next.js cluster delivers enterprise-grade reliability, data residency compliance, and massive cost savings at scale.
+
+---
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Next.js, Kubernetes** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
 
 ---
 

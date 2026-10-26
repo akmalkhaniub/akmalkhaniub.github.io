@@ -28,16 +28,15 @@ flowchart TD
   
   subgraph SG1_Phase1Prewrite ["Phase 1: Prewrite (Acquire Locks)"]
     Client -->|Lock & Prewrite Primary Key A| ShardA["Shard A: Primary Lock Column -> Primary A"]
-    Client -->|Lock & Prewrite Secondary Key B| ShardB["Shard B: Secondary Lock -> Pointer to Primary A"]
+    TSO --> |Lock & Prewrite Secondary Key B| ShardB["Shard B: Secondary Lock -> Pointer to Primary A"]
   end
   
   subgraph SG2_Phase2Commit ["Phase 2: Commit (Get Commit Timestamp T_commit=105)"]
-    Client -->|Get Commit Timestamp T_commit=105| TSO
-    Client -->|Commit Primary Key A - Remove Lock, Write Commit Data| ShardA
+    ShardA --> |Get Commit Timestamp T_commit=105| TSO
+    ShardB --> |Commit Primary Key A - Remove Lock, Write Commit Data| ShardA
     
     ShardA -.->|Primary A Committed! Transaction SUCCESS| Client
     
-    Client -->|Async Commit Secondary Key B| ShardB
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -232,6 +231,21 @@ When implementing distributed transactions:
 Distributed databases utilizing Percolator transactions (such as **TiDB** and **CockroachDB**) report:
 * **Zero Coordinator Lock Deadlocks**: Eliminating traditional 2PC blocking bugs allows automatic self-healing crash recovery.
 * **Full ACID Snapshot Isolation**: Supporting multi-key distributed transactions across thousands of server nodes with zero read-lock contention. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Distributed Transactions, 2PC** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

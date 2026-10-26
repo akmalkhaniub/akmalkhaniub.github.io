@@ -17,7 +17,9 @@ flowchart TD
     LegReq["Each chat id hits origin"]:::red
     LegPay["Cached render plus uncached holes"]:::red
     LegTax["Sidebar scroll saturates the server"]:::yellow
-    LegBanner --> LegReq --> LegPay --> LegTax
+    LegBanner --> LegReq
+    LegReq --> LegPay
+    LegPay --> LegTax
   end
 
   subgraph SG2_Shell ["Partial Prefetch App Shell"]
@@ -25,7 +27,9 @@ flowchart TD
     ShellOnce["Shared shell for inbox id"]:::green
     ShellCache["URL-free cached UI reused"]:::green
     ShellOpt["Optional per-link URL data"]:::blue
-    ShellBanner --> ShellOnce --> ShellCache --> ShellOpt
+    ShellBanner --> ShellOnce
+    ShellOnce --> ShellCache
+    ShellCache --> ShellOpt
   end
 
   Viewport --> LegBanner
@@ -78,7 +82,9 @@ flowchart TD
     ShellHit["App Shell already on the client"]:::green
     InstantSrc["Suspense fallback or use cache"]:::green
     HoleStream["URL holes stream after first paint"]:::blue
-    InstBanner --> ShellHit --> InstantSrc --> HoleStream
+    InstBanner --> ShellHit
+    ShellHit --> InstantSrc
+    InstantSrc --> HoleStream
   end
 
   subgraph SG2_Block ["Block"]
@@ -86,7 +92,9 @@ flowchart TD
     InstantOff["instant export set to false"]:::red
     ParamLeak["params read outside Suspense"]:::yellow
     Spinner["Click, then silence, then HTML"]:::red
-    BlockBanner --> InstantOff --> ParamLeak --> Spinner
+    BlockBanner --> InstantOff
+    InstantOff --> ParamLeak
+    ParamLeak --> Spinner
   end
 
   Click --> InstBanner

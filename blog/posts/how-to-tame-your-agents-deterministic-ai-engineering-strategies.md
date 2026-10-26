@@ -13,12 +13,15 @@ Here is the blueprint for transforming stochastic LLM chaos into predictable, pr
 ```mermaid
 flowchart TD
   subgraph SG1_DeterministicAgentEngineering ["Deterministic Agent Engineering Pipeline"]
-    Contract["1. Specification-First Contract (OpenAPI / Gherkin)"] --> Skills["2. Modular Agent Skills (SKILL.md & Scripts)"]
+    Contract["1. Specification-First Contract (OpenAPI / Gherkin)"] --> Skills["2. Modular Agent Skills (SKILL.md
+    Contract --> Scripts)"]
     Skills --> PlanGate["3. Two-Pass Planning Gate (plan.md Approval)"]
     PlanGate --> ScopedTools["4. Scoped Tool Sandboxes (Atomic Line Diffs)"]
-    ScopedTools --> CompilerGate["5. Compiler-in-the-Loop (AST & LSP Feedback)"]
+    ScopedTools --> CompilerGate["5. Compiler-in-the-Loop (AST
+    ScopedTools --> LSP Feedback)"]
     CompilerGate --> GoldenAnchors["6. Few-Shot Golden Trajectories"]
-    GoldenAnchors --> RollbackGate["7. Bounded Iterations & Git Rollback Checkpoints"]
+    GoldenAnchors --> RollbackGate["7. Bounded Iterations
+    GoldenAnchors --> Git Rollback Checkpoints"]
     RollbackGate --> VerifiedPR["Verified Production Output"]
   end
 
@@ -110,7 +113,7 @@ flowchart TD
   Agent["Autonomous Agent"] -->|Least-Privilege Scoped Call| Sandbox["MCP Tool Sandbox"]
   Sandbox --> ToolA["replace_file_content: Atomic Line-Bounded Diff"]
   Sandbox --> ToolB["run_test_suite: Read-Only Test Runner"]
-  Sandbox -.->|BLOCKED| Dangerous["Raw Root Shell / Unpinned npm install"]
+  ToolA -.-> |BLOCKED| Dangerous["Raw Root Shell / Unpinned npm install"]
   
   style Sandbox fill:#1e293b,stroke:#3b82f6,color:#ffffff
   style Dangerous fill:#450a0a,stroke:#ef4444,color:#f87171

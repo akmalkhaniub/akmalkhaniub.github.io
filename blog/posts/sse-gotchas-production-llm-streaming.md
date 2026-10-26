@@ -30,20 +30,20 @@ flowchart TD
     
     P1 -->|Buffering ON| G1[" Gotcha 1<br/>Tokens buffer 30s<br/>then dump all at once"]
     P1 -->|HTTP/1.1| G2[" Gotcha 2<br/>6-connection limit<br/>new tabs kill old streams"]
-    P1 -->|Auth via Header| G3[" Gotcha 3<br/>EventSource can't<br/>set Authorization header"]
-    P1 -->|Cloudflare timeout| G4[" Gotcha 4<br/>100s hard timeout<br/>kills long responses"]
-    P1 -->|Passed| S["Server"]
+    G1 --> |Auth via Header| G3[" Gotcha 3<br/>EventSource can't<br/>set Authorization header"]
+    G2 --> |Cloudflare timeout| G4[" Gotcha 4<br/>100s hard timeout<br/>kills long responses"]
+    G3 --> |Passed| S["Server"]
 
     S --> P2{Framework Layer}
     P2 -->|Next.js middleware| G5[" Gotcha 5<br/>Edge runtime buffers<br/>full response body"]
     P2 -->|Express compress()| G6[" Gotcha 6<br/>Gzip middleware<br/>swallows stream chunks"]
-    P2 -->|No keep-alive| G7[" Gotcha 7<br/>Connection closes after<br/>first event — client loops"]
-    P2 -->|Passed| L["LLM API"]
+    G5 --> |No keep-alive| G7[" Gotcha 7<br/>Connection closes after<br/>first event — client loops"]
+    G6 --> |Passed| L["LLM API"]
 
     L --> P3{Client Reconnect}
     P3 -->|No Last-Event-ID| G8[" Gotcha 8<br/>Reconnect replays<br/>full response from start"]
     P3 -->|No exponential backoff| G9[" Gotcha 9<br/>Reconnect storm on<br/>server restart"]
-    P3 -->|No done signal| G10[" Gotcha 10<br/>Client never closes —<br/>connection leak"]
+    G8 --> |No done signal| G10[" Gotcha 10<br/>Client never closes —<br/>connection leak"]
 
     style G1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style G2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -663,6 +663,21 @@ SSE is the right protocol for LLM token streaming — it's simpler than WebSocke
 *   **`X-Accel-Buffering: no` is your most important header** — set it on every SSE response and it protects you from Nginx, Varnish, and most CDN buffering with a single line.
 *   **Never use EventSource for authenticated endpoints** — use the `fetch` ReadableStream API instead; it gives you full header control and is equally well-supported.
 *   **Always send `[DONE]` and always call `source.close()`** — every unclosed SSE connection is a file descriptor leak that will eventually crash your server under load.
+
+---
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **SSE, Streaming** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
 
 ---
 

@@ -30,7 +30,7 @@ stateDiagram-v2
         [*] --> RouteSelection
         RouteSelection --> VectorSearch : Semantic Query
         RouteSelection --> LogicalSQL : Structured Filter
-        RouteSelection --> WebSearch : Out-of-Domain Gap
+        VectorSearch --> WebSearch : Out-of-Domain Gap
     }
 
     VectorSearch --> RelevanceGrader : Gather Chunks
@@ -52,8 +52,9 @@ stateDiagram-v2
     
     state HallucinationChecker {
         [*] --> CheckGrounding
-        CheckGrounding --> GroundingFailed : Regrade & Regenerate
-        CheckGrounding --> GroundingSuccess : Return Final Answer
+        CheckGrounding --> GroundingFailed : Regrade
+        CheckGrounding --> Regenerate
+        GroundingFailed --> GroundingSuccess : Return Final Answer
     }
     
     GroundingFailed --> Generator

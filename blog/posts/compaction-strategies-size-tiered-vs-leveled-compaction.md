@@ -29,8 +29,11 @@ flowchart TD
   end
   
   subgraph SG3_CompactionPriorityQueue ["Compaction Priority Queue Engine"]
-    L0_1 & L0_2 -->|N-Way Merge-Sort Stream| PriorityQueue["Heap Priority Queue: Stream K-V Pairs"]
-    PriorityQueue -->|Purge Obsolete Keys & Tombstones| L1_1 & L1_2 & L1_3
+    L0_1 --> |N-Way Merge-Sort Stream| PriorityQueue["Heap Priority Queue: Stream K-V Pairs"]
+    L0_2 --> |N-Way Merge-Sort Stream| PriorityQueue
+    PriorityQueue --> |Purge Obsolete Keys & Tombstones| L1_1
+    PriorityQueue --> |Purge Obsolete Keys & Tombstones| L1_2
+    L1_1 --> |Purge Obsolete Keys & Tombstones| L1_3
   end
   
   subgraph SG4_Level2Max ["Level 2 (Max 100MB, Non-Overlapping Ranges)"]

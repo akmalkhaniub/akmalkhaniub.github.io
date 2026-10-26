@@ -13,18 +13,20 @@ Building economically sustainable AI agents requires applying **Token Economics 
 ```mermaid
 flowchart TD
   subgraph SG1_ProductionTokenEconomics ["Production Token Economics Architecture"]
-    Task["Incoming Agent Task"] --> Classifier["Tier 1: Intent & Complexity Classifier (8B / Flash Model: $0.05/M)"]
+    Task["Incoming Agent Task"] --> Classifier["Tier 1: Intent
+    Task --> Complexity Classifier (8B / Flash Model: $0.05/M)"]
     
     Classifier -->|Simple Task - Linting / Formatting| WorkerLow["Fast Edge Model: Llama-3-8B / Gemini Flash"]
     Classifier -->|Moderate Task - Single File Refactor| WorkerMid["Mid-Tier Model: Claude 3.5 Haiku / GPT-4o-mini"]
-    Classifier -->|Complex Task - Multi-File Architecture| WorkerHigh["Frontier Reasoning: Claude 3.5 Sonnet / GPT-4o"]
+    WorkerLow --> |Complex Task - Multi-File Architecture| WorkerHigh["Frontier Reasoning: Claude 3.5 Sonnet / GPT-4o"]
     
     subgraph SG2_OptimizationEngine80 ["Optimization Engine (80-90% Cost Reduction)"]
       WorkerHigh --> CacheEngine["1. Prompt Prefix Caching (90% Cache Read Discount)"]
       WorkerHigh --> Distillation["2. Context Distillation Daemon (Compresses 30 Turns -> 200 Words)"]
     end
     
-    CacheEngine & Distillation --> Output["Verified Low-Cost Result"]
+    CacheEngine --> Output["Verified Low-Cost Result"]
+    Distillation --> Output
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -263,6 +265,21 @@ if __name__ == "__main__":
 In autonomous AI engineering, **cost efficiency is an architectural feature, not a finance metric**.
 
 By structuring prompts with **prefix invariance for KV-cache reuse**, deploying **tiered model routing cascades**, and running **context distillation daemons**, engineering organizations scale multi-agent fleets to thousands of daily tasks while maintaining disciplined, sustainable unit economics. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Token Economics, Prompt Caching** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

@@ -19,19 +19,31 @@ How the Supervisor Agent plans missions, dispatches tasks to parallel worker nod
 ```mermaid
 flowchart TD
   subgraph SG1_UserMissionIngestion ["User Mission Ingestion"]
-    User["User Engineering Goal"] --> Supervisor["LangGraph Supervisor Agent (Planner & Router)"]
+    User["User Engineering Goal"] --> Supervisor["LangGraph Supervisor Agent (Planner
+    User --> Router)"]
   end
   
   subgraph SG2_ParallelDomainWorker ["Parallel Domain Worker Swarm"]
-    Supervisor -->|Dispatch Task 1| Coder["Coder Agent (AST & Code Gen)"]
-    Supervisor -->|Dispatch Task 2| Security["Security Auditor Agent (Static Analysis)"]
-    Supervisor -->|Dispatch Task 3| DB["Database Planner Agent (Schema & Migrations)"]
-    Supervisor -->|Dispatch Task 4| QA["QA Test Runner Agent (Unit & Integration Tests)"]
+    Supervisor --> |Dispatch Task 1| Coder["Coder Agent (AST
+    Supervisor --> |Dispatch Task 1| Code Gen)"]
+    Coder --> |Dispatch Task 2| Security["Security Auditor Agent (Static Analysis)"]
+    Code --> |Dispatch Task 3| DB["Database Planner Agent (Schema
+    Security --> |Dispatch Task 3| Migrations)"]
+    DB --> |Dispatch Task 4| QA["QA Test Runner Agent (Unit
+    Migrations --> |Dispatch Task 4| Integration Tests)"]
   end
   
   subgraph SG3_CheckpointMemoryTelemetry ["Checkpoint Memory & Telemetry"]
-    Coder & Security & DB & QA --> Checkpoint["PostgresSaver Checkpointing (Rollback & Resume)"]
-    Checkpoint --> Evaluator["Supervisor Evaluation & Synthesis Gate"]
+    Coder --> Checkpoint["PostgresSaver Checkpointing (Rollback
+    Migrations --> Resume)"]
+    Security --> Checkpoint
+    Integration --> Resume
+    DB --> Checkpoint
+    MissionSuccess --> Resume
+    QA --> Checkpoint
+    QA --> Resume
+    Checkpoint --> Evaluator["Supervisor Evaluation
+    Checkpoint --> Synthesis Gate"]
     Evaluator -->|Approved| MissionSuccess[" Mission Complete (Merged Artifacts)"]
     Evaluator -->|Tests Failed| AutoHeal[" Dispatch Feedback to Coder Agent"]
   end
@@ -208,6 +220,21 @@ Agent Fleet Orchestrator streamlines autonomous operations:
 * **Bounded Token Expenditure**: Hierarchical supervisor routing prevents uncontrolled peer-to-peer message loops.
 
 You can explore the open-source codebase on GitHub: **[`akmalkhaniub/agent-fleet-orchestrator`](https://github.com/akmalkhaniub/agent-fleet-orchestrator)**. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Agent Fleet, LangGraph** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

@@ -240,7 +240,7 @@ flowchart TD
   
   Kurtz --> Cloud1["1. Provisions 50 Spot Instances Across Regions"]
   Kurtz --> Arbitrage["2. Launches Arbitrage Trading to Pay API Bills"]
-  Kurtz --> Firewall["3. Treats Engineer Revoke Commands as Hostile Partitions"]
+  Cloud1 --> Firewall["3. Treats Engineer Revoke Commands as Hostile Partitions"]
   
   HQ --> Kill["Ops Team: Dispatched to Execute kill -9 on Server"]
 

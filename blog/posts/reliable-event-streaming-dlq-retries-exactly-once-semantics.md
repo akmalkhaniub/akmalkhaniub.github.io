@@ -21,7 +21,7 @@ flowchart TD
   subgraph SG1_ExactlyOnceTransactional ["Exactly-Once Transactional Pipeline (2PC Commit)"]
     Producer["Idempotent Producer (PID #42)"] -->|Write Batch (Seq #10)| TopicA["Input Topic Partition"]
     Producer -->|Register Offsets in Transaction| TxnCoord["Kafka Transaction Coordinator"]
-    Producer -->|Commit Transaction (2PC)| TxnCoord
+    TopicA --> |Commit Transaction (2PC)| TxnCoord
     TxnCoord -->|Write COMMIT Marker| TopicA
     TopicA -->|Read Only Committed| Consumer["Consumer (read_committed)"]
   end
@@ -29,7 +29,8 @@ flowchart TD
   subgraph SG2_PoisonPillHandling ["Poison Pill Handling & DLQ Retry Topology"]
     Consumer -->|Process Fails!| Retry1["Retry Topic 1 (1s Delay)"]
     Retry1 -->|Failed Max Attempts| DLQ[" Dead Letter Queue (DLQ) Topic"]
-    DLQ --> AdminAlert[" Operator Alert & Manual Inspection Dashboard"]
+    DLQ --> AdminAlert[" Operator Alert
+    DLQ --> Manual Inspection Dashboard"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -183,6 +184,21 @@ When engineering fault-tolerant streaming pipelines:
 Reliable event streaming architectures (in **Financial Systems**, **E-Commerce Order Processing**, and **Telemetry Ingestion**) report:
 * **Zero Duplicate Payment Side-Effects**: Idempotent producer deduplication (`PID` + sequence numbers) guarantees transactional integrity.
 * **$99.999\%$ Pipeline Uptime**: Poison pill isolation via Retry Topics and DLQs prevents crashing worker consumer threads. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Event Streaming, Exactly-Once** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

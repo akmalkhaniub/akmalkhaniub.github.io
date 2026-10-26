@@ -43,7 +43,8 @@ flowchart TD
         I --> J
     end
     
-    J --> K["LLM Synthesis & Response"]
+    J --> K["LLM Synthesis
+    J --> Response"]
 
     style A fill:#1e293b,stroke:#0ea5e9,stroke-width:2px
     style B fill:#0f172a,stroke:#38bdf8,stroke-width:2px

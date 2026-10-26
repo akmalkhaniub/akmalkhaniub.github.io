@@ -33,7 +33,9 @@ flowchart TD
     K_HBM -->|Stream Tile Block Bc x d| K_SRAM["K Tile Block in SRAM"]
     V_HBM -->|Stream Tile Block Bc x d| V_SRAM["V Tile Block in SRAM"]
     
-    Q_SRAM & K_SRAM & V_SRAM -->|Compute Tile QK^T & Online Softmax| OnlineSoftmax["Online Softmax Incremental Accumulator"]
+    Q_SRAM --> |Compute Tile QK^T & Online Softmax| OnlineSoftmax["Online Softmax Incremental Accumulator"]
+    K_SRAM --> |Compute Tile QK^T & Online Softmax| OnlineSoftmax
+    V_SRAM --> |Compute Tile QK^T & Online Softmax| OnlineSoftmax
   end
   
   OnlineSoftmax -->|Write Final Output Tile Block (N x d)| Out_HBM["Final Output O in HBM"]
@@ -183,6 +185,21 @@ When integrating FlashAttention into LLM inference pipelines:
 Platforms adopting FlashAttention (such as **PyTorch 2.0 `sdpa`**, **vLLM**, and **Triton**) report:
 * **$2\times$ to $4\times$ Faster Transformer Training**: Eliminating HBM read/write bottlenecks speeds up large-scale LLM training runs.
 * **$10\times$ Memory Reduction for Long Contexts**: Enables processing $128\text{K}+$ token context windows on standard GPU clusters without OOM crashes. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **FlashAttention, CUDA** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

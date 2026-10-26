@@ -19,7 +19,8 @@ How CockroachDB and YugabyteDB combine Hybrid Logical Clocks and Multi-Raft cons
 ```mermaid
 flowchart TD
   subgraph SG1_HybridLogicalClock ["Hybrid Logical Clock (HLC) Time Engine"]
-    PhysicalClock["Physical Server Clock pt"] & RemoteHLC["Incoming Message HLC: l_m, c_m"] --> HLCUpdate["HLC Update Math: l_next = max(l_curr, pt, l_m)"]
+    PhysicalClock["Physical Server Clock pt"] --> HLCUpdate["HLC Update Math: l_next = max(l_curr, pt, l_m)"]
+    RemoteHLC["Incoming Message HLC: l_m, c_m"] --> HLCUpdate
     HLCUpdate --> HLCTuple["HLC Timestamp Tuple: (l_next, c_next)"]
   end
   
@@ -190,6 +191,21 @@ When deploying open-source Distributed SQL clusters:
 Distributed SQL internals (in **CockroachDB**, **YugabyteDB**, and **TiDB**) report:
 * **Spanner-Grade Reliability on Commodity Cloud Hardware**: Delivers multi-region ACID transactions without requiring atomic clock GPS hardware.
 * **Elastic Horizontal Auto-Scaling**: $64\text{ MB}$ Multi-Raft range splits allow clusters to scale linearly across hundreds of nodes. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **CockroachDB, YugabyteDB** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

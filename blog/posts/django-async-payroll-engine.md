@@ -32,11 +32,10 @@ flowchart TD
     A["Django API"] -->|Trigger Run| B(Redis Queue)
     B -->|Pull Task| C(Celery Worker)
     C -->|Calculate & Lock Row| D["Database"]
-    C -->|Update Status to Completed| D
-    C -->|Dispatch Fan-Out| B
+    D --> |Dispatch Fan-Out| B
     B -->|Parallel Invoices| E["Celery PDF Worker 1"]
-    B -->|Parallel Invoices| F["Celery PDF Worker 2"]
-    B -->|Parallel Invoices| G["Celery PDF Worker 3"]
+    D --> |Parallel Invoices| F["Celery PDF Worker 2"]
+    E --> |Parallel Invoices| G["Celery PDF Worker 3"]
     E -->|Upload Pay Statement| H[(Persistent Media Storage)]
     F -->|Upload Pay Statement| H
     G -->|Upload Pay Statement| H
@@ -213,6 +212,21 @@ Building robust financial software demands meticulous attention to accuracy, con
 *Takeaway: A combination of precise data types, robust transaction management, and asynchronous architecture is essential for building high-performance, reliable financial systems.*
 
 *The full source code, deployment scripts, and local test suites are available in the public [django-payroll-engine](https://github.com/akmalkhaniub/django-payroll-engine) repository.* [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Python, Django** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

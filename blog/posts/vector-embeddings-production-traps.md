@@ -28,14 +28,14 @@ flowchart TD
     
     V -->|Wrong metric configured| F3[" Trap 3: Cosine vs<br/>dot product mismatch"]
     V -->|No normalisation| F4[" Trap 4: L2 distance<br/>on unnormalised vectors"]
-    V -->|OK| Q["Query Embedding"]
+    F3 --> |OK| Q["Query Embedding"]
     
     Q -->|Different model than index| F5[" Trap 5: Query/index<br/>model mismatch"]
     Q -->|OK| R["Search Results"]
     
     R -->|No re-embedding on update| F6[" Trap 6: Stale doc<br/>embeddings after edit"]
     R -->|Multilingual mismatch| F7[" Trap 7: Cross-lingual<br/>query on mono model"]
-    R -->|Batch dim mismatch| F8[" Trap 8: Dimension<br/>mismatch on insert"]
+    F6 --> |Batch dim mismatch| F8[" Trap 8: Dimension<br/>mismatch on insert"]
 
     style F1 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
     style F2 fill:#7f1d1d,stroke:#ef4444,stroke-width:2px
@@ -396,6 +396,21 @@ Vector embeddings are deceptively fragile at the boundaries — tokenisation lim
 *   **Always store a model fingerprint alongside every vector** — it's the only way to detect index staleness after a model upgrade.
 *   **Always use cosine similarity** unless you have explicitly confirmed your model outputs normalised vectors and have benchmarked dot product against it.
 *   **Audit token counts before embedding**, not after — truncation at 512 tokens discards data with no exception raised.
+
+---
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Embeddings, RAG** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
 
 ---
 

@@ -32,13 +32,13 @@ flowchart TD
     Gateway -->|Check User Role| RoleFilter{Admin or Developer?}
     
     RoleFilter -->|No - Mask Write Tools| AgentPrompt["Expose Read-Only Tools to LLM"]
-    RoleFilter -->|Yes - Expose All Tools| AgentPrompt
     
     AgentPrompt -->|Call Code Exec Tool| CodeCheck{Contains System Injection?}
     CodeCheck -->|Always| DockerLaunch["Spawn Ephemeral Docker Container"]
     
     subgraph SG1_ContainersandboxIsolatedEnvironment ["ContainerSandbox [Isolated Environment]"]
-        DockerLaunch -->|Mount Temp Volume| RunScript["Execute Code / RAM & CPU Limited"]
+        DockerLaunch --> |Mount Temp Volume| RunScript["Execute Code / RAM
+        DockerLaunch --> |Mount Temp Volume| CPU Limited"]
         RunScript -->|Harvest Output| OutputCheck["Parse and Truncate Result"]
     end
     

@@ -21,14 +21,24 @@ How Reed-Solomon encoding generates parity blocks and reconstructs missing data 
 ```mermaid
 flowchart TD
   subgraph SG1_ReedSolomon4 ["Reed-Solomon 4+2 Encoding (K=4 Data, M=2 Parity)"]
-    File["Original File Bytes"] -->|Split into K=4 Chunks| D1["Data Chunk D1"] & D2["Data Chunk D2"] & D3["Data Chunk D3"] & D4["Data Chunk D4"]
+    File["Original File Bytes"] --> |Split into K=4 Chunks| D1["Data Chunk D1"]
+    File --> |Split into K=4 Chunks| D2["Data Chunk D2"]
+    D1 --> |Split into K=4 Chunks| D3["Data Chunk D3"]
+    D2 --> |Split into K=4 Chunks| D4["Data Chunk D4"]
     
-    D1 & D2 & D3 & D4 -->|Multiply by Encoding Matrix G over GF(2^8)| MatrixMult["Vandermonde Matrix Multiplication"]
-    MatrixMult --> P1["Parity Chunk P1"] & P2["Parity Chunk P2"]
+    D1 --> |Multiply by Encoding Matrix G over GF(2^8)| MatrixMult["Vandermonde Matrix Multiplication"]
+    D2 --> |Multiply by Encoding Matrix G over GF(2^8)| MatrixMult
+    D3 --> |Multiply by Encoding Matrix G over GF(2^8)| MatrixMult
+    D4 --> |Multiply by Encoding Matrix G over GF(2^8)| MatrixMult
+    MatrixMult --> P1["Parity Chunk P1"]
+    MatrixMult --> P2["Parity Chunk P2"]
   end
   
   subgraph SG2_DriveFailureReconstruction ["Drive Failure & Reconstruction (D2 & P1 Lost!)"]
-    D1 & D3 & D4 & P2 -->|Read Any K=4 Available Chunks| InvertMatrix["Invert Sub-Matrix G' via Gaussian Elimination"]
+    P1 --> |Read Any K=4 Available Chunks| InvertMatrix["Invert Sub-Matrix G' via Gaussian Elimination"]
+    D3 --> |Read Any K=4 Available Chunks| InvertMatrix
+    D4 --> |Read Any K=4 Available Chunks| InvertMatrix
+    P2 --> |Read Any K=4 Available Chunks| InvertMatrix
     InvertMatrix -->|Reconstruct Lost Chunks| RestoredD2[" Reconstructed Data Chunk D2!"]
   end
 
@@ -198,6 +208,21 @@ When deploying erasure coding:
 Erasure coding deployments (such as **AWS S3**, **MinIO**, **Ceph**, and **Google Cloud Storage**) report:
 * **Over $60\%$ Storage Cost Reduction**: Replacing 3-way replication ($200\%$ overhead) with $8+4$ erasure coding ($50\%$ overhead) slashes raw disk hardware expenses by millions of dollars.
 * **11 Nines of Durability ($99.999999999\%$)**: Mathematically surviving up to 4 concurrent server rack failures without data loss. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Erasure Coding, Reed-Solomon** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

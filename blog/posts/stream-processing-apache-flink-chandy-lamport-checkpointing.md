@@ -28,15 +28,16 @@ flowchart TD
     BarrierStream --> Task1["Task Operator 1: KeyBy Fraud Aggregator"]
     BarrierStream --> Task2["Task Operator 2: KeyBy Fraud Aggregator"]
     
-    Task1 <-->|Read/Write Local State < 1ms| Rocks1[(Embedded RocksDB State)]
-    Task2 <-->|Read/Write Local State < 1ms| Rocks2[(Embedded RocksDB State)]
+    Task1 -->|Read/Write Local State < 1ms| Rocks1[(Embedded RocksDB State)]
+    Task2 -->|Read/Write Local State < 1ms| Rocks2[(Embedded RocksDB State)]
   end
   
   subgraph SG3_AsynchronousBarrierSnapshotting ["Asynchronous Barrier Snapshotting (Chandy-Lamport)"]
     Task1 -->|Barrier B1 Received - Align Inputs| Snapshot1["Asynchronously Copy RocksDB State to S3/HDFS"]
     Task2 -->|Barrier B1 Received - Align Inputs| Snapshot2["Asynchronously Copy RocksDB State to S3/HDFS"]
     
-    Snapshot1 & Snapshot2 --> JobManager["Flink JobManager: Checkpoint Metadata Store"]
+    Snapshot1 --> JobManager["Flink JobManager: Checkpoint Metadata Store"]
+    Snapshot2 --> JobManager
     JobManager -->|All Operators Ack B1| ConsistentState[" CONSISTENT GLOBAL STATE SNAPSHOT COMPLETED!"]
   end
 
@@ -182,6 +183,21 @@ When operating stateful stream processing clusters:
 Streaming platforms utilizing Flink and Chandy-Lamport ABS (such as **Uber**, **Netflix**, **Alibaba**, and **Stripe**) report:
 * **Sub-10ms Processing Latency**: Continuous pipelined operators process millions of events per second with instant state updates.
 * **100% Reliable Exactly-Once Guarantees**: Automatic recovery from node failures in seconds by restoring local RocksDB states from recent ABS S3 snapshots. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Stream Processing, Apache Flink** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

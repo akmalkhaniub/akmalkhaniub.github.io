@@ -31,7 +31,7 @@ flowchart TD
     
     C -->|Score < 0.3 - Simple| T1[" Tier 1: Cheap<br/>GPT-4o-mini / Gemini Flash<br/>~$0.15/1M tokens"]
     C -->|Score 0.3–0.7 - Moderate| T2[" Tier 2: Mid<br/>Claude 3 Haiku / GPT-4o<br/>~$1.25/1M tokens"]
-    C -->|Score > 0.7 - Complex| T3[" Tier 3: Frontier<br/>Claude 3.5 Sonnet / GPT-4o<br/>~$15/1M tokens"]
+    T1 --> |Score > 0.7 - Complex| T3[" Tier 3: Frontier<br/>Claude 3.5 Sonnet / GPT-4o<br/>~$15/1M tokens"]
     
     T1 --> QC{Quality Check<br/>Score > threshold?}
     T2 --> QC

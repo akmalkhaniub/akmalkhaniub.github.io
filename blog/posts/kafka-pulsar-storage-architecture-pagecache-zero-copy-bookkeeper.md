@@ -29,7 +29,7 @@ flowchart TD
     Producer2["Pulsar Producer"] --> StatelessBroker["Stateless Pulsar Broker"]
     StatelessBroker -->|Quorum Ledger Write| Bookie1["Apache BookKeeper Node 1"]
     StatelessBroker -->|Quorum Ledger Write| Bookie2["Apache BookKeeper Node 2"]
-    StatelessBroker -->|Quorum Ledger Write| Bookie3["Apache BookKeeper Node 3"]
+    Bookie1 --> |Quorum Ledger Write| Bookie3["Apache BookKeeper Node 3"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

@@ -18,9 +18,11 @@ Today, enterprise AI agents are undergoing their own **Electric Grid Transition*
 flowchart TD
   subgraph SG1_The1890sSteam ["The 1890s Steam Factory vs The 2026 Agentic Architecture"]
     S1890["1890s: On-Site Steam Engine (Private, Isolated Boiler)"] <---> S2026["2026: Monolithic Agent Scripts (Isolated 'agent.py' Processes)"]
-    G1890["1910s: Centralized AC Electric Grid (Tesla / Westinghouse)"] <---> G2026["2026: Utility-Scale Agent Compute Fabric (Shared MCP & State Hubs)"]
+    G1890["1910s: Centralized AC Electric Grid (Tesla / Westinghouse)"] <- --> G2026["2026: Utility-Scale Agent Compute Fabric (Shared MCP
+    G1890 --> State Hubs)"]
     M1890["1910s: Fractional Electric Motors on Every Machine"] <---> M2026["2026: Modular Micro-Agents Plugging into Shared Tool Hubs"]
-    P1890["1910s: 10x Factory Productivity & Flexible Workflows"] <---> P2026["2026: Composable Multi-Agent Swarms with 99.9% Reliability"]
+    P1890["1910s: 10x Factory Productivity --> P2026["2026: Composable Multi-Agent Swarms with 99.9% Reliability"]
+    Flexible Workflows"] <- --> P2026
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -72,13 +74,21 @@ flowchart TD
     Dispatcher --> Supervisor["Centralized Orchestrator Swarm"]
     Supervisor --> Coder["Coder Micro-Agent"]
     Supervisor --> Auditor["Auditor Micro-Agent"]
-    Supervisor --> Deployer["Deployer Micro-Agent"]
+    Coder --> Deployer["Deployer Micro-Agent"]
   end
 
   subgraph SG4_EnterpriseUtilityShared ["Enterprise Utility Shared Infrastructure"]
-    Coder & Auditor & Deployer <--> SharedMCP["1. Global MCP Tool Registry (GitHub, Postgres, Stripe, AWS)"]
-    Coder & Auditor & Deployer <--> SharedState["2. Centralized State Fabric (Redis / PostgresSaver Checkpoints)"]
-    Coder & Auditor & Deployer <--> SharedMemory["3. Global Vector & Graph-RAG Memory Fabric"]
+    Coder --> SharedMCP["1. Global MCP Tool Registry (GitHub, Postgres, Stripe, AWS)"]
+    Auditor --> SharedMCP
+    Deployer --> SharedMCP
+    SharedMCP --> SharedState["2. Centralized State Fabric (Redis / PostgresSaver Checkpoints)"]
+    Auditor --> SharedState
+    Deployer --> SharedState
+    SharedMCP --> SharedMemory["3. Global Vector
+    SharedState --> Graph-RAG Memory Fabric"]
+    SharedState --> SharedMemory
+    Graph --> SharedMemory
+    SharedMemory --> Graph
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -234,6 +244,21 @@ if (require.main === module) {
 The lesson of the electrification of industry is that **true scale is unlocked by decoupling energy generation from consumption**.
 
 By retiring isolated, monolithic agent scripts and adopting **utility-scale agent compute fabrics**, engineering organizations create composable, resilient, and collaborative AI systems ready for planetary-scale operations. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **AI Agents, System Design** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

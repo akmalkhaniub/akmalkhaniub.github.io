@@ -33,8 +33,10 @@ flowchart TD
     Graph --> Dispatch["Dispatch Tasks to Workers"]
     
     subgraph SG1_WorkersParallelWorker ["Workers [Parallel Worker Processing]"]
-        W1["Refactor Agent: File A"] --> L1["Lint & Compiler Check"]
-        W2["Refactor Agent: File B"] --> L2["Lint & Compiler Check"]
+        W1["Refactor Agent: File A"] --> L1["Lint
+        W1 --> Compiler Check"]
+        W2["Refactor Agent: File B"] --> L2["Lint
+        W2 --> Compiler Check"]
     end
     
     L1 -->|Fail| W1
@@ -43,7 +45,8 @@ flowchart TD
     L1 -->|Pass| Merge["Aggregate Modifications"]
     L2 -->|Pass| Merge
     
-    Merge --> PR["Generate PR Branch & Review"]
+    Merge --> PR["Generate PR Branch
+    Merge --> Review"]
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
 classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
@@ -158,6 +161,21 @@ Automating legacy refactoring with agentic swarms:
 * **Preserves Dev Focus**: Engineers no longer have to spend weeks performing mechanical API translations. Instead, they focus on resolving high-level logic exceptions flagged during the migration test suites.
 * **Eliminates Code Rot**: Upgrading package structures monthly or refactoring deprecations instantly prevents technical debt from accumulating.
 * **Guarantees Conformity**: Multi-agent pipelines enforce 100% type safety and compiler compliance, producing highly standardized code across diverse microservice ecosystems. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Refactoring, System Architecture** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

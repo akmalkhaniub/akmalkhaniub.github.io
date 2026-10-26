@@ -13,8 +13,10 @@ flowchart TD
   subgraph SG1_StandardAutoregressiveVs ["Standard Autoregressive vs Speculative Decoding"]
     subgraph SG2_1StandardAutoregressive ["1. Standard Autoregressive (Memory Bound: 1 Token Per Pass)"]
       P1["Load 140GB Weights"] --> T1["Generate Token 1"]
-      T1 --> P2["Load 140GB Weights"] --> T2["Generate Token 2"]
-      T2 --> P3["Load 140GB Weights"] --> T3["Generate Token 3"]
+      T1 --> P2["Load 140GB Weights"]
+      P2["Load 140GB Weights"] --> T2["Generate Token 2"]
+      T2 --> P3["Load 140GB Weights"]
+      P3["Load 140GB Weights"] --> T3["Generate Token 3"]
     end
 
     subgraph SG3_2SpeculativeDecoding ["2. Speculative Decoding (Compute Bound: 3-5 Tokens Per Pass)"]
@@ -100,7 +102,7 @@ While speculative decoding with a draft model is powerful, managing two separate
 flowchart TD
   Backbone["Target Transformer Backbone (70B)"] --> H0["Head 0: Predicts t+1"]
   Backbone --> H1["Head 1: Predicts t+2"]
-  Backbone --> H2["Head 2: Predicts t+3"]
+  H0 --> H2["Head 2: Predicts t+3"]
   H0 --> T1["Token w1"]
   H1 --> T2["Token w2"]
   H2 --> T3["Token w3"]
@@ -270,6 +272,21 @@ if __name__ == "__main__":
 By decoupling token proposal from verification, **Speculative Decoding and Medusa Tree Attention break the fundamental memory bandwidth bottleneck of modern LLMs**.
 
 Inference frameworks running speculative sampling deliver dramatically lower Time-to-First-Token and higher sustained throughput, driving down AI operating costs without compromising a single ounce of model intelligence. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **LLM Inference, Speculative Decoding** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

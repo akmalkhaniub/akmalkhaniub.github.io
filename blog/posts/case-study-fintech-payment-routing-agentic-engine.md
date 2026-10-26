@@ -45,18 +45,21 @@ flowchart TD
   C --> D["Cloud Run Intelligent Router Worker"]
   
   subgraph SG1_RealTimeIntelligent ["Real-Time Intelligent Routing Engine"]
-    D --> E["AlloyDB AI: Merchant Routing Rules & History"]
-    D --> F["Vertex AI: Dynamic Fee & Approval Predictor"]
+    D --> E["AlloyDB AI: Merchant Routing Rules
+    D --> History"]
+    E --> F["Vertex AI: Dynamic Fee
+    History --> Approval Predictor"]
   end
   
-  D -->|Option A - Low Fee| G["Processor A: Adyen API"]
-  D -->|Option B - Fallback| H["Processor B: Stripe API"]
-  D -->|Option C - High Approval| I["Processor C: Chase Paymentech"]
+  F --> |Option A - Low Fee| G["Processor A: Adyen API"]
+  Approval --> |Option B - Fallback| H["Processor B: Stripe API"]
+  G --> |Option C - High Approval| I["Processor C: Chase Paymentech"]
   
   G --> J["Transaction Result Collector"]
   H --> J
   I --> J
-  J --> K["Cloud Spanner: Immutable Ledger & BigQuery Telemetry"]
+  J --> K["Cloud Spanner: Immutable Ledger
+  J --> BigQuery Telemetry"]
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
 classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;

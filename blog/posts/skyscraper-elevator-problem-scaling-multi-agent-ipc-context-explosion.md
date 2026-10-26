@@ -19,8 +19,10 @@ Today, multi-agent artificial intelligence networks face their own **Structural 
 ```mermaid
 flowchart TD
   subgraph SG1_The1850sSkyscraper ["The 1850s Skyscraper Ceiling vs The 2026 Multi-Agent Ceiling"]
-    S1850["1850s: Buildings Capped at 5 Stories (Stair Climbing Limit)"] <---> S2026["2026: Swarms Capped at 5 Agents (Context Window & O(N^2) Token Explosion)"]
-    O1850["1854: Otis Safety Elevator (Fast, Deterministic Vertical Transit)"] <---> O2026["2026: Hierarchical IPC & Delta Compaction Routing (O(N) Transit)"]
+    S1850["1850s: Buildings Capped at 5 Stories (Stair Climbing Limit)"] <- --> S2026["2026: Swarms Capped at 5 Agents (Context Window
+    S1850 --> O(N^2) Token Explosion)"]
+    O1850["1854: Otis Safety Elevator (Fast, Deterministic Vertical Transit)"] <- --> O2026["2026: Hierarchical IPC
+    O1850 --> Delta Compaction Routing (O(N) Transit)"]
     U1850["1900s: 100-Story Modern Skyscraper Skylines Unlocked"] <---> U2026["2026: 500+ Coordinated Enterprise Agent Fleets Running Concurrently"]
   end
 
@@ -113,7 +115,7 @@ flowchart TD
     
     Bus -->|Topic - event.build.*| Sub1["QA Test Agent"]
     Bus -->|Topic - event.build.success| Sub2["Security Auditor Agent"]
-    Bus -.->|Filtered Out - Ignores UI Events| Sub3["Database DBA Agent"]
+    Sub1 -.-> |Filtered Out - Ignores UI Events| Sub3["Database DBA Agent"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -245,6 +247,21 @@ if __name__ == "__main__":
 Just as the safety elevator transformed urban architecture from 5-story blocks into 100-story skyscrapers, **hierarchical IPC and semantic delta routing unlock the true scale of enterprise multi-agent swarms**.
 
 By eliminating conversational broadcast noise and enforcing structured topic-filtered communication, software architects build massive, collaborative agent fleets that operate with sub-second responsiveness and flawless coordination. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **AI Agents, Agent Swarms** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

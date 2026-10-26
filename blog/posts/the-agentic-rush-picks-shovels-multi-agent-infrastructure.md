@@ -14,9 +14,16 @@ Today, in 2026, the technology landscape is engulfed in a parallel phenomenon: *
 flowchart TD
   subgraph SG1_The1849Gold ["The 1849 Gold Rush vs The 2026 Agentic Rush"]
     P1849["1849: Prospectors Panning Rivers (High Failure Rate)"] <---> P2026["2026: Raw '1-Click' Wrapper Agents (High Hallucination Rate)"]
-    I1849["1849: Picks, Shovels, Heavy Denim & Rail"] <---> I2026["2026: Sandboxes, MCP Protocols, Checkpointing & Vector DBs"]
-    A1849["1849: Assayers & Escrow Vaults"] <---> A2026["2026: Deterministic Guardrails, Token Metering & Evals"]
-    S1849["1849: Agriculture, Cities & Manufacturing"] <---> S2026["2026: Deep Vertical Moats (Legal, Insurance, Healthcare)"]
+    I1849["1849: Picks, Shovels, Heavy Denim --> I2026["2026: Sandboxes, MCP Protocols, Checkpointing
+    I1849 --> Vector DBs"]
+    Rail"] <- --> I2026
+    Rail --> Vector
+    A1849["1849: Assayers --> A2026["2026: Deterministic Guardrails, Token Metering
+    A1849 --> Evals"]
+    Escrow Vaults"] <- --> A2026
+    Escrow --> Evals
+    S1849["1849: Agriculture, Cities --> S2026["2026: Deep Vertical Moats (Legal, Insurance, Healthcare)"]
+    Manufacturing"] <- --> S2026
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -85,7 +92,8 @@ In the Agentic Rush, the assayers are the **deterministic verification and gover
 flowchart TD
   AgentCore["Probabilistic LLM Core"] --> Guardrail["Deterministic AST Guardrail / Assayer"]
   Guardrail -->|Passed Policy Check| Sandbox["Tool Sandbox Execution"]
-  Guardrail -->|Policy Violation| CircuitBreaker["Halt & Escalate to Human"]
+  Guardrail --> |Policy Violation| CircuitBreaker["Halt
+  Sandbox --> |Policy Violation| Escalate to Human"]
   
   style Guardrail fill:#3b82f6,stroke:#1d4ed8,color:#ffffff
   style CircuitBreaker fill:#ef4444,stroke:#7f1d1d,color:#ffffff

@@ -20,7 +20,8 @@ How Slotted-Page layouts organize tuples inside $8\text{ KB}$ disk blocks and ho
 flowchart TD
   subgraph SG1_SlottedPageDisk ["Slotted-Page Disk Block Layout (8 KB Fixed Size)"]
     Header["Page Header: LSN, Slot Count, Free Space Pointer"] --> SlotArray["Slot Array: Slot 0 Offset, Slot 1 Offset..."]
-    SlotArray --> FreeSpace["<-- Free Space Gap -->"]
+    SlotArray --> FreeSpace["
+    FreeSpace[" --> |Free Space Gap|"]
     FreeSpace --> TupleData["Tuple 1 Data | Tuple 0 Data (Grows Backwards)"]
   end
   
@@ -200,6 +201,21 @@ When tuning B+Tree indexes:
 Storage engines deploying B+Tree slotted pages and latch crabbing (such as **PostgreSQL**, **MySQL InnoDB**, and **SQLite**) report:
 * **$O(\log_B N)$ Lightning-Fast Point Lookups**: Reading keys from a billion-row table in under $4$ physical disk block seeks.
 * **Deadlock-Free Concurrent Index Operations**: Latch crabbing lock coupling enables thousands of concurrent threads to traverse and modify index pages simultaneously. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **B-Tree, Indexing** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

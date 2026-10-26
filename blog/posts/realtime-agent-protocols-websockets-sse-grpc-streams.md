@@ -16,7 +16,8 @@ Selecting the right streaming protocol depends on the directional requirements a
 
 ```mermaid
 flowchart TD
-  A["Agent Server Event Core"] --> B{Client & Topology Type?}
+  A["Agent Server Event Core"] --> B{Client
+  A --> Topology Type?}
   
   subgraph SG1_ServerSentEvents ["Server-Sent Events SSE"]
     B -->|Browser UI Stream - Read-Only| C["HTTP/2 SSE Endpoint"]
@@ -25,12 +26,12 @@ flowchart TD
   
   subgraph SG2_FullDuplexWebsockets ["Full-Duplex WebSockets"]
     B -->|Interactive Human-in-the-Loop| E["WebSocket Endpoint"]
-    E <-->|Bidirectional Messaging & Approvals| F["Interactive Client Session"]
+    E -->|Bidirectional Messaging & Approvals| F["Interactive Client Session"]
   end
   
   subgraph SG3_GrpcBinaryStreaming ["gRPC Binary Streaming"]
-    B -->|Worker Swarm Inter-Agent IPC| G["gRPC HTTP/2 Protobuf Stream"]
-    G <-->|Low Latency Binary Protocol| H["Microservice Worker Nodes"]
+    C --> |Worker Swarm Inter-Agent IPC| G["gRPC HTTP/2 Protobuf Stream"]
+    G -->|Low Latency Binary Protocol| H["Microservice Worker Nodes"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;

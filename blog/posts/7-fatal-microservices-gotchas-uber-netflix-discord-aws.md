@@ -106,7 +106,8 @@ flowchart TD
   subgraph SG2_TheDualWrite ["The Dual-Write Vulnerability"]
     App["Application Pod"] -->|Commit DB| DB[(PostgreSQL)]
     App -->|Crash / Network Drop| Kafka["Apache Kafka"]
-    DB -.->|State - PAID| Desync["Data Divergence & Lost Revenue"]
+    DB -.-> |State - PAID| Desync["Data Divergence
+    DB -.-> |State - PAID| Lost Revenue"]
     Kafka -.->|State - Missing Event| Desync
   end
 
@@ -175,7 +176,7 @@ flowchart TD
   subgraph SG3_TheHotShard ["The Hot Shard Problem"]
     Users["100M Active Followers"] -->|Simultaneous Timeline Reads| Shard1[(Shard 1: Celebrity User)]
     Users -.->|Idle| Shard2[(Shard 2: Regular Users)]
-    Users -.->|Idle| Shard3[(Shard 3: Regular Users)]
+    Shard1 -.-> |Idle| Shard3[(Shard 3: Regular Users)]
   end
   
   style Shard1 fill:#ef4444,stroke:#7f1d1d,color:#ffffff

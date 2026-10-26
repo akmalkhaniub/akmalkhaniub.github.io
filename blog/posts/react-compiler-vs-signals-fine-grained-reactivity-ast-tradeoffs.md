@@ -18,7 +18,8 @@ flowchart TD
     StateChange1["State Mutation: setCount"] --> ReRenderTree["Re-evaluate Component Function Scope"]
     ReRenderTree --> CacheCheck["HIR Memo Cache Hit Check"]
     CacheCheck -->|Cache Hit| SkipVDOM["Bypass Subtree VDOM Allocation"]
-    CacheCheck -->|Cache Miss| UpdateVDOM["Reconcile Fiber Subtree & Emit DOM Patch"]
+    CacheCheck --> |Cache Miss| UpdateVDOM["Reconcile Fiber Subtree
+    SkipVDOM --> |Cache Miss| Emit DOM Patch"]
   end
 
   subgraph SG2_ReactiveGraphs ["Fine-Grained Reactive Graphs (SolidJS, Svelte 5, Signals)"]

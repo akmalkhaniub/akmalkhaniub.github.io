@@ -16,12 +16,13 @@ In unconstrained container setups:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#7c3aed', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#a78bfa', 'lineColor': '#7c3aed', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Sandbox["Agent Sandbox Instance"] --> LimitGuard{cgroup v2 & Network Egress Guard}
+    Sandbox["Agent Sandbox Instance"] --> LimitGuard{cgroup v2
+    Sandbox --> Network Egress Guard}
     
     subgraph SG1_ResourceEnforcementLayer ["Resource Enforcement Layer"]
         LimitGuard -->|Check RAM Usage <= 512MB| RAMCheck["Memory Limit Check"]
         LimitGuard -->|Check CPU Quota <= 1.0 Core| CPUCheck["CPU Quota Monitor"]
-        LimitGuard -->|Check Destination Domain| Proxy["Egress Proxy Whitelist"]
+        RAMCheck --> |Check Destination Domain| Proxy["Egress Proxy Whitelist"]
     end
     
     Proxy -->|Domain Whitelisted| Internet["Allowed API Endpoint"]
@@ -123,6 +124,21 @@ if __name__ == "__main__":
 * **Set Hard Memory Limits**: Configure Linux cgroup `memory.max` caps to prevent runaway memory allocation from crashing host nodes.
 * **Restrict Outbound Network Egress**: Implement proxy firewalls to restrict sandbox traffic to approved API domains.
 * **Monitor Resource Consumption**: Track real-time RAM and CPU usage metrics to detect infinite loops or abnormal execution patterns early. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Architecture, System Design** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

@@ -17,18 +17,20 @@ flowchart TD
     
     subgraph SG2_MultiTierDeterministic ["Multi-Tier Deterministic Verification"]
       RawCode --> Tier1["Tier 1: AST Syntax Tree Validation (< 10ms)"]
-      Tier1 -->|AST Clean| Tier2["Tier 2: Static Type Check & Linters (pyright / tsc, 150ms)"]
+      Tier1 --> |AST Clean| Tier2["Tier 2: Static Type Check
+      Tier1 --> |AST Clean| Linters (pyright / tsc, 150ms)"]
       Tier2 -->|Types Clean| Tier3["Tier 3: Sandboxed Unit Test Harness (pytest, 500ms)"]
     end
     
-    Tier1 -->|Syntax Error| RepairEngine["AST Error Diagnostic Extractor"]
-    Tier2 -->|Type Error| RepairEngine
+    Tier2 --> |Syntax Error| RepairEngine["AST Error Diagnostic Extractor"]
+    CommitGate --> |Type Error| RepairEngine
     Tier3 -->|Test Failed| RepairEngine
     
     RepairEngine --> TargetedPrompt["Targeted AST Diagnostic Prompt"]
     TargetedPrompt --> Coder
     
-    Tier3 -->|All Passed| CommitGate["Atomic Git Commit & Checkpoint"]
+    Tier3 --> |All Passed| CommitGate["Atomic Git Commit
+    RepairEngine --> |All Passed| Checkpoint"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -103,7 +105,8 @@ sequenceDiagram
   Note over Coder: Targeted Healing Loop (Attempt 1/3)
   Coder->>LSP: Submit Repaired Code (import stripe_key added)
   LSP->>LSP: Run AST Parse & Type Check
-  LSP-->>Coder:  AST Clean & Types Validated!
+  LSP --> >Coder:  AST Clean
+  LSP --> Types Validated!
   Coder->>Git: Commit State (0x88f -> 0x890)
 ```
 
@@ -229,6 +232,21 @@ if __name__ == "__main__":
 Probabilistic reasoning and deterministic compilation are not opposites—they are **complementary halves of modern autonomous software engineering**.
 
 By placing compilers, language servers, and AST parsers in the loop, software teams transform unpredictable LLM code generators into **resilient, self-healing engineering swarms** capable of delivering pristine, production-ready codebases. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **AI Agents, Compiler-in-the-Loop** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

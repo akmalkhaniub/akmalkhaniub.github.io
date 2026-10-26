@@ -25,18 +25,20 @@ In this pattern, a **Supervisor** (also called an Orchestrator) receives the hig
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#a855f7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#c084fc', 'lineColor': '#a855f7', 'secondaryColor': '#111827', 'tertiaryColor': '#0f172a'}}}%%
 flowchart TD
-    U["User Request"] --> S[" Supervisor Agent<br/>Task Decomposer & Synthesiser"]
+    U["User Request"] --> S[" Supervisor Agent<br/>Task Decomposer
+    U --> Synthesiser"]
     
     S -->|Sub-Task A - Research| W1[" Research Worker<br/>Web Search + RAG Retrieval"]
     S -->|Sub-Task B - Code| W2[" Code Worker<br/>Python Sandbox Execution"]
-    S -->|Sub-Task C - Review| W3[" Critic Worker<br/>Security & Accuracy Validator"]
+    W1 --> |Sub-Task C - Review| W3[" Critic Worker<br/>Security
+    W2 --> |Sub-Task C - Review| Accuracy Validator"]
     
     W1 -->|Structured Result A| M[" Message Bus / State Graph"]
     W2 -->|Structured Result B| M
     W3 -->|Structured Result C| M
     
     M --> S
-    S -->|Final Synthesised Answer| U
+    W3 --> |Final Synthesised Answer| U
 
     style U fill:#1e293b,stroke:#a855f7,stroke-width:2px
     style S fill:#4c1d95,stroke:#c084fc,stroke-width:2px

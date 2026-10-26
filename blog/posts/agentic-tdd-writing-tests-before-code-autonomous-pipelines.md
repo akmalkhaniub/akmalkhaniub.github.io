@@ -27,7 +27,8 @@ flowchart TD
     
     D -->|Write Production Code| F["Execute Test Runner Pytest"]
     F -->|Tests FAIL GREEN Attempt| D
-    F -->|Tests PASS GREEN| G["Phase 3: Refactoring & Quality Agent"]
+    F --> |Tests PASS GREEN| G["Phase 3: Refactoring
+    D --> |Tests PASS GREEN| Quality Agent"]
     
     G -->|Clean Code & Remove Duplication| H["Final Verification Test Run"]
     H -->|PASS| I["Pull Request / Git Commit Approved"]

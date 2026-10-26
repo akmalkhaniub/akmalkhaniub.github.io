@@ -27,7 +27,8 @@ flowchart TD
         Gate -->|State - OPEN| Failover["Route straight to Backup: Gemini 2.0"]
         
         CallPrimary -->|Success| Reset["Reset Error Counter"]
-        CallPrimary -->|Consecutive Failures > Limit| OpenBreaker["Switch State to OPEN & Start Cooldown"]
+        CallPrimary --> |Consecutive Failures > Limit| OpenBreaker["Switch State to OPEN
+        Reset --> |Consecutive Failures > Limit| Start Cooldown"]
         
         OpenBreaker --> Failover
     end

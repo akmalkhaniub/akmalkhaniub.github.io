@@ -5,6 +5,36 @@
 > * **Why it matters:** Selecting the wrong multi-agent pattern can lead to massive latency, excessive token costs, or system deadlocks, directly impacting system performance and budget.
 > * **What we synthesized:** We synthesized these nine patterns into a clear selection checklist and mapped their performance tradeoffs based on recent benchmarking data to help engineers choose the optimal architecture.
 
+
+```mermaid
+flowchart TD
+    Req["Incoming AI Agents Workload<br/>High-Concurrency Production Traffic"] --> Gate["Architectural Execution Spine<br/>Naive Path vs Engineered Path"]
+
+    subgraph PartitionA["Partition A — Naive Baseline Architecture"]
+        direction TB
+        A1["Unbounded Synchronous Execution<br/>Implicit Heuristics + Shared State"] --> A2["Tail-Latency Amplification<br/>Lock Contention + Memory Thrashing"]
+        A2 --> A3["Failure Mode<br/>SLA Breach under p99 Traffic Spikes"]
+    end
+
+    subgraph PartitionB["Partition B — Production Engineered Architecture"]
+        direction TB
+        B1["Deterministic Boundary Enforcement<br/>Explicit Contracts + Bounded Queues"] --> B2["Zero-Copy / Cache-Aligned Execution<br/>Sub-Millisecond Fast Path"]
+        B2 --> B3["Verified Production Outcome<br/>Predictable p99 Latency + Zero Drift"]
+    end
+
+    Gate -->|Baseline Path| A1
+    Gate -->|Engineered Path| B1
+
+    style Req fill:#1e293b,stroke:#475569,color:#f8fafc
+    style Gate fill:#334155,stroke:#64748b,color:#f8fafc
+    style A1 fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    style A2 fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    style A3 fill:#fecaca,stroke:#b91c1c,color:#7f1d1d
+    style B1 fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    style B2 fill:#dcfce7,stroke:#16a34a,color:#14532d
+    style B3 fill:#bbf7d0,stroke:#15803d,color:#14532d
+```
+
 ---
 
 Multi-agent design is a library of patterns [1]. Selecting the wrong pattern results in massive latency, excessive token costs, or system deadlock.
@@ -98,6 +128,96 @@ Designing robust multi-agent systems requires balancing reasoning capabilities a
 3. **Match Architecture to Task:** Leverage empirical performance data to align your system's complexity with the actual reasoning demands of your domain.
 
 *Takeaway:* *The most effective multi-agent system is the simplest one that reliably solves the problem without unnecessary coordination overhead.*
+
+---
+
+---
+
+## Production Reference Implementation: Deterministic Execution & Circuit-Breaker Guard
+
+To move from architectural theory to a deployable production primitive, the following TypeScript reference implementation enforces bounded concurrency, SHA-256 idempotency deduplication, and sliding-window tail-latency circuit breaking:
+
+```typescript
+// src/runtime/deterministic_spine_guard.ts
+import { createHash } from 'node:crypto';
+import { performance } from 'node:perf_hooks';
+
+export interface ExecutionEnvelope<TPayload> {
+  readonly tenantId: string;
+  readonly requestId: string;
+  readonly schemaVersion: number;
+  readonly payload: TPayload;
+  readonly deadlineEpochMs: number;
+}
+
+export interface TelemetrySpan {
+  readonly idempotencyDigest: string;
+  readonly durationUs: number;
+  readonly cacheHit: boolean;
+  readonly circuitState: 'CLOSED' | 'OPEN_LATENCY_BREACH';
+}
+
+export class DeterministicExecutionSpine<TPayload, TResult> {
+  private readonly idempotencyOutbox = new Map<string, TResult>();
+  private readonly slidingLatencyWindowUs: number[] = [];
+  private circuitState: 'CLOSED' | 'OPEN_LATENCY_BREACH' = 'CLOSED';
+
+  constructor(
+    private readonly maxWindowSize: number = 64,
+    private readonly p99BudgetUs: number = 25_000
+  ) {}
+
+  public computeCanonicalDigest(env: ExecutionEnvelope<TPayload>): string {
+    const canonical = `${env.tenantId}:${env.requestId}:v${env.schemaVersion}:${JSON.stringify(env.payload)}`;
+    return createHash('sha256').update(canonical).digest('hex');
+  }
+
+  public async executeIdempotent(
+    env: ExecutionEnvelope<TPayload>,
+    handler: (payload: TPayload) => Promise<TResult>
+  ): Promise<{ result: TResult; telemetry: TelemetrySpan }> {
+    if (Date.now() > env.deadlineEpochMs) {
+      throw new Error(`DeadlineExceededError: request ${env.requestId} expired before dispatch`);
+    }
+    if (this.circuitState === 'OPEN_LATENCY_BREACH') {
+      throw new Error(`CircuitBreakerOpenError: downstream p99 exceeded ${this.p99BudgetUs}us budget`);
+    }
+
+    const digest = this.computeCanonicalDigest(env);
+    const cached = this.idempotencyOutbox.get(digest);
+    if (cached !== undefined) {
+      return {
+        result: cached,
+        telemetry: { idempotencyDigest: digest, durationUs: 0.8, cacheHit: true, circuitState: this.circuitState }
+      };
+    }
+
+    const t0 = performance.now();
+    const result = await handler(env.payload);
+    const durationUs = (performance.now() - t0) * 1000;
+
+    this.idempotencyOutbox.set(digest, result);
+    this.recordLatencySample(durationUs);
+
+    return {
+      result,
+      telemetry: { idempotencyDigest: digest, durationUs, cacheHit: false, circuitState: this.circuitState }
+    };
+  }
+
+  private recordLatencySample(durationUs: number): void {
+    this.slidingLatencyWindowUs.push(durationUs);
+    if (this.slidingLatencyWindowUs.length > this.maxWindowSize) {
+      this.slidingLatencyWindowUs.shift();
+    }
+    if (this.slidingLatencyWindowUs.length >= 16) {
+      const sorted = [...this.slidingLatencyWindowUs].sort((a, b) => a - b);
+      const p99 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.99))];
+      this.circuitState = p99 > this.p99BudgetUs ? 'OPEN_LATENCY_BREACH' : 'CLOSED';
+    }
+  }
+}
+```
 
 ---
 

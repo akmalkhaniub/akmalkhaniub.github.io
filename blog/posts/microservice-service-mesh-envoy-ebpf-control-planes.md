@@ -29,7 +29,7 @@ flowchart TD
   end
   
   subgraph SG2_NextGenSidecar ["Next-Gen Sidecar-Less Service Mesh (eBPF sockmap Bypass)"]
-    PodA2["App Container A"] <-->|eBPF sk_msg Kernel Sockmap - Direct Socket-to-Socket Bypass!| PodB2["App Container B"]
+    PodA2["App Container A"] -->|eBPF sk_msg Kernel Sockmap - Direct Socket-to-Socket Bypass!| PodB2["App Container B"]
     
     subgraph SG3_LinuxKernelNetwork ["Linux Kernel Network Space (Zero iptables / Zero User-Space Context Switches)"]
       Sockmap["eBPF BPF_MAP_TYPE_SOCKMAP"] -->|Short-Circuits TCP Socket Buffers| KernelPass[" 80% Lower Latency Direct Memory Copy!"]

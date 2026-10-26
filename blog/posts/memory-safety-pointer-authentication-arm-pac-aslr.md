@@ -22,7 +22,8 @@ How ARM PAC signs 64-bit virtual pointers and catches pointer tampering before e
 flowchart TD
   subgraph SG1_FunctionEntryPrologue ["Function Entry (Prologue: PACIA Instruction)"]
     RawPtr["Unsigned 64-Bit Pointer: 0x00007FFFF7A05000"] -->|Extract Unused Upper Bits 63..48| UnusedBits["Upper Bits Field"]
-    SecretKey["Secret Hardware Key: APIAKey"] & Modifier["Context Modifier: SP"] --> QARMA["QARMA Cryptographic Hash Engine"]
+    SecretKey["Secret Hardware Key: APIAKey"] --> QARMA["QARMA Cryptographic Hash Engine"]
+    Modifier["Context Modifier: SP"] --> QARMA
     
     QARMA -->|Compute 16-Bit MAC Signature| SignPtr["Signed Pointer: 0x4F8A7FFFF7A05000 (PAC Embedded!)"]
     SignPtr -->|Push to Stack| Stack["Stack Frame Memory"]
@@ -170,6 +171,21 @@ When deploying memory safety mitigations:
 Architectures incorporating ARM PAC and Memory Tagging (such as **Apple Silicon M1/M2/M3**, **Android 14 on ARMv9**, and **AWS Graviton3**):
 * **Completely Neutralizes ROP/JOP Attack Vectors**: Cryptographic pointer verification prevents attackers from hijacking program control flow.
 * **Near-Zero Performance Penalty**: Hardware-level `PACIA`/`AUTIA` CPU instructions execute with negligible latency overhead ($<1\%$). [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Memory Safety, ARM PAC** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

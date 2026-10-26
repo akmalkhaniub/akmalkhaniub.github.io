@@ -51,10 +51,8 @@ graph TB
     end
 
     Layer 3 --> P1
-    Layer 2 --> P1
-    Layer 1 --> P2
+    P1 --> P2
     P2 --> P3
-    P1 -.->|OTEL Export| P2
 
     style P1 fill:#4c1d95,stroke:#a855f7,stroke-width:2px
     style P2 fill:#0f172a,stroke:#06b6d4,stroke-width:2px

@@ -18,11 +18,11 @@ flowchart TD
     RingBuffer --> Matcher["2. Core Matching Engine (Pinned to Isolated CPU Core)"]
     
     subgraph SG2_InCacheLob ["In-Cache LOB Structures"]
-      Matcher <--> Bids["Bid Ladder: Price-Time FIFO (Dense Cache-Aligned Buckets)"]
-      Matcher <--> Asks["Ask Ladder: Price-Time FIFO (Dense Cache-Aligned Buckets)"]
+      Matcher --> Bids["Bid Ladder: Price-Time FIFO (Dense Cache-Aligned Buckets)"]
+      Matcher --> Asks["Ask Ladder: Price-Time FIFO (Dense Cache-Aligned Buckets)"]
     end
     
-    Matcher --> ExecutionRing["3. Outbound Execution Ring Buffer"]
+    Bids --> ExecutionRing["3. Outbound Execution Ring Buffer"]
     ExecutionRing --> Gateway["Market Feed Gateway (Zero-Copy Multicast)"]
   end
 
@@ -114,7 +114,8 @@ To pass market orders from the network thread to the matching core without threa
 ```mermaid
 flowchart TD
   subgraph SG4_LockFreeCircular ["Lock-Free Circular Ring Buffer (Power of 2: 1024 slots)"]
-    Head["Producer Head Sequence (Padded 64B)"] -->|Writes Next Event| Slot["Slot [head & (Size - 1)]"]
+    Head["Producer Head Sequence (Padded 64B)"] --> |Writes Next Event| Slot["Slot [head
+    Head --> |Writes Next Event| (Size - 1)]"]
     Slot --> Tail["Consumer Tail Sequence (Padded 64B)"]
   end
 

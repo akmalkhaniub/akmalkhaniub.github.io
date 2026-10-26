@@ -25,17 +25,20 @@ flowchart TD
   end
   
   subgraph SG2_TransformationLayerPipelines ["Transformation Layer: Pipelines & Processors"]
-    Receiver1 & Receiver2 & Receiver3 --> InternalOTLP["Internal OTLP Data Model"]
+    Receiver1 --> InternalOTLP["Internal OTLP Data Model"]
+    Receiver2 --> InternalOTLP
+    Receiver3 --> InternalOTLP
     
     InternalOTLP --> Proc1["Memory Limiter Processor: Backpressure Guard"]
     Proc1 --> Proc2["Attributes Processor: Add env='prod', Scrub PII"]
-    Proc2 --> Proc3["Batch Processor: Queue & Flush Buffers"]
+    Proc2 --> Proc3["Batch Processor: Queue
+    Proc2 --> Flush Buffers"]
   end
   
   subgraph SG3_ExportationLayerExporters ["Exportation Layer: Exporters"]
     Proc3 --> Exp1["OTLP gRPC Exporter -> Jaeger / Tempo"]
     Proc3 --> Exp2["Prometheus Exporter -> Thanos / M3DB"]
-    Proc3 --> Exp3["Kafka Exporter -> Long-Term Archive"]
+    Exp1 --> Exp3["Kafka Exporter -> Long-Term Archive"]
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -180,6 +183,21 @@ When deploying the OpenTelemetry Collector:
 Organizations adopting the OpenTelemetry Collector report:
 * **Zero Vendor Lock-In**: Switching telemetry backends (e.g. from Datadog to Grafana Tempo) requires only updating collector exporter YAML configs without altering application code.
 * **40% Reduction in Telemetry Egress Costs**: Pre-scrubbing unused metrics and batching trace payloads at the collector layer reduces network egress fees significantly. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **OpenTelemetry, Observability** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

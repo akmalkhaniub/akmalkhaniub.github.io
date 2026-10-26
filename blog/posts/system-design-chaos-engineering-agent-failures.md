@@ -24,8 +24,8 @@ flowchart TD
     
     Interceptor -->|Rule - Apply Rate Limit| Mock429["Return HTTP 429 / Rate Limit"]
     Interceptor -->|Rule - Corrupt JSON| MockCorrupt["Return Malformed JSON String"]
-    Interceptor -->|Rule - Timeout Delay| Delay["Inject 5s Network Latency"]
-    Interceptor -->|Rule - Clean Bypass| API["Pass through to Real API"]
+    Mock429 --> |Rule - Timeout Delay| Delay["Inject 5s Network Latency"]
+    MockCorrupt --> |Rule - Clean Bypass| API["Pass through to Real API"]
     
     Mock429 --> Eval["Evaluate Agent Recovery Logic"]
     MockCorrupt --> Eval

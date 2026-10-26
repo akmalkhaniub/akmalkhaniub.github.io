@@ -32,7 +32,7 @@ flowchart TD
   end
   
   subgraph SG3_SharedKernelUser ["Shared Kernel-User Data Transfer"]
-    Engine -->|Atomic Updates| BPFMap[(eBPF Maps: Hash / Ring Buffer)]
+    Kprobe --> |Atomic Updates| BPFMap[(eBPF Maps: Hash / Ring Buffer)]
     BPFMap -.->|Read Telemetry Metrics| UserApp
   end
 
@@ -161,6 +161,21 @@ When writing eBPF programs:
 Platforms built on eBPF (such as **Cilium**, **Falco**, and **Pixie**) report:
 * **Zero-Sidecar Service Mesh Efficiency**: Replacing heavy Envoy sidecar proxies with kernel-level eBPF socket routing reduces CPU overhead by up to $80\%$ and eliminates sidecar memory footprints.
 * **Bare-Metal DDoS Defense**: Dropping malicious packets using XDP at the network driver layer allows single servers to drop millions of malicious packets per second without exhausting kernel CPU. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Linux Kernel, eBPF** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

@@ -24,12 +24,14 @@ flowchart TD
   end
   
   subgraph SG2_NetworkSyncSemi ["Network Sync & Semi-Lattice Join Merge (⊔)"]
-    StateA & StateB -->|Transmit Full State over Network| MergeEngine["CvRDT Monotonic Merge Function (⊔)"]
+    StateA --> |Transmit Full State over Network| MergeEngine["CvRDT Monotonic Merge Function (⊔)"]
+    StateB --> |Transmit Full State over Network| MergeEngine
   end
   
   subgraph SG3_DeterministicConvergence ["Deterministic Convergence"]
     MergeEngine -->|Max Vector Compute| ConvergedState["Merged State: {P: [5, 0], N: [0, 2]} -> Final Value = +3"]
-    ConvergedState -->|Zero Central Server!| PeerA & PeerB
+    ConvergedState --> |Zero Central Server!| PeerA
+    ConvergedState --> |Zero Central Server!| PeerB
   end
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
@@ -195,6 +197,21 @@ When building collaborative local-first applications:
 Conflict-Free Replicated Data Types (in **Figma**, **Notion**, **Linear**, **Apple Notes**, and **Redis CRDTs**) report:
 * **$100\%$ Offline Availability**: Peer-to-peer clients mutate local state instantly without waiting for network round-trips or central server lock approvals.
 * **Deterministic Real-Time Sync Convergence**: Bounded semi-lattice join operations guarantee zero data loss during multi-user concurrent document edits. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **CRDT, State Sync** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

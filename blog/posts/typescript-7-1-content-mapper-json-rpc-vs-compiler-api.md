@@ -15,7 +15,9 @@ flowchart TD
     SixImport["Import typescript and createProgram"]:::red
     SixPlugin["Language service plugin wraps the LS"]:::red
     SixTax["Native Go compiler cannot export this graph"]:::yellow
-    SixBanner --> SixImport --> SixPlugin --> SixTax
+    SixBanner --> SixImport
+    SixImport --> SixPlugin
+    SixPlugin --> SixTax
   end
 
   subgraph SG2_Native ["TypeScript Seven Mapper"]
@@ -23,7 +25,9 @@ flowchart TD
     SevenSpawn["Spawn mapper exec from the package"]:::green
     SevenInit["initialize then transform"]:::green
     SevenSpan["Span map remaps diagnostics home"]:::blue
-    SevenBanner --> SevenSpawn --> SevenInit --> SevenSpan
+    SevenBanner --> SevenSpawn
+    SevenSpawn --> SevenInit
+    SevenInit --> SevenSpan
   end
 
   VueFile --> SixBanner
@@ -160,7 +164,9 @@ flowchart TD
     Init["initialize encoding handshake"]:::yellow
     OpenProj["openProject for this tsconfig"]:::yellow
     Xform["transform original SFC text"]:::yellow
-    MapBanner --> Init --> OpenProj --> Xform
+    MapBanner --> Init
+    Init --> OpenProj
+    OpenProj --> Xform
   end
 
   subgraph SG2_Compiler ["Native Compiler"]
@@ -168,7 +174,9 @@ flowchart TD
     Text["file text is generated TypeScript"]:::green
     Orig["originalText is the Vue source"]:::blue
     Diag["Diagnostics remapped by span kind"]:::green
-    CompBanner --> Text --> Orig --> Diag
+    CompBanner --> Text
+    Text --> Orig
+    Orig --> Diag
   end
 
   Tsc -->|Spawn exec| MapBanner

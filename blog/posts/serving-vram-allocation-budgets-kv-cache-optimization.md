@@ -17,8 +17,9 @@ To run local models without OOM crashes, we budget VRAM allocation across three 
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
     GPU["Total GPU VRAM Capacity"] --> Load["Static Model Weights: 5.5 GB for 7B at 4-bit"]
-    GPU --> KV["Dynamic KV Cache Allocation: Keys & Values per token"]
-    GPU --> Sys["Execution Overhead Scratchpad"]
+    GPU --> KV["Dynamic KV Cache Allocation: Keys
+    Load --> Values per token"]
+    KV --> Sys["Execution Overhead Scratchpad"]
     
     Load --> Run{Verify Memory Allocation Fits VRAM}
     KV --> Run

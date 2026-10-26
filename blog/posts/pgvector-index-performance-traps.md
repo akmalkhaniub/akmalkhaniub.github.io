@@ -16,8 +16,8 @@ flowchart TD
     Q["Vector Query"] --> P{Index exists<br/>and usable?}
     P -->|No index| S1[" Trap 1: Sequential scan<br/>O-n — 4s on 1M rows"]
     P -->|Wrong operator| S2[" Trap 2: Wrong distance operator<br/>Index ignored silently"]
-    P -->|Filter before ANN| S3[" Trap 3: WHERE filter kills<br/>index — exact scan fallback"]
-    P -->|Index exists| C{ef_search<br/>configured?}
+    S1 --> |Filter before ANN| S3[" Trap 3: WHERE filter kills<br/>index — exact scan fallback"]
+    S2 --> |Index exists| C{ef_search<br/>configured?}
     C -->|Default ef_search=40| S4[" Trap 4: Poor recall<br/>missing relevant results"]
     C -->|OK| D{Vacuum run<br/>recently?}
     D -->|No vacuum| S5[" Trap 5: Bloat degrades<br/>HNSW graph quality"]

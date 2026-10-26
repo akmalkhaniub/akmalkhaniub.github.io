@@ -19,18 +19,20 @@ To solve this, system architects must build a **Decomposition Graph Router**:
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0284c7', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0284c7', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    UserPrompt["User Prompt: Update API & Database & Tests"] --> Decomposer["Decomposer Router Agent"]
+    UserPrompt["User Prompt: Update API --> Decomposer["Decomposer Router Agent"]
+    Database --> Decomposer
+    Tests"] --> Decomposer
     
     Decomposer -->|Compile DAG| DAG["Execution DAG Tree"]
     
     DAG --> Node1["Step 1: Check Database Schema"]
     DAG --> Node2["Step 2: Rewrite API endpoint"]
-    DAG --> Node3["Step 3: Run integration tests"]
+    Node1 --> Node3["Step 3: Run integration tests"]
     
     Node1 -->|Dependency| Node2
     Node2 -->|Dependency| Node3
     
-    Node1 -->|Route| ModelA["Route to Qwen-Coder-7B"]
+    Node3 --> |Route| ModelA["Route to Qwen-Coder-7B"]
     Node2 -->|Route| ModelB["Route to Llama-3-8B"]
     Node3 -->|Route| ModelC["Route to Mistral-7B"]
 
@@ -154,6 +156,21 @@ if __name__ == "__main__":
 * **Avoid Monolithic Processing**: Decompose compound user queries into structured execution DAGs rather than feeding them as a single prompt to a single model.
 * **Map to Specialized Models**: Route simple validation tasks to lightweight edge models, reserving larger reasoning models for complex refactoring nodes.
 * **Trace Dependencies**: Validate that execution graphs do not contain circular dependencies before routing steps to worker queues. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **System Design, AI Agents** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

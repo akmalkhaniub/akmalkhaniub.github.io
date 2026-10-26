@@ -43,9 +43,10 @@ flowchart TD
   B --> C["Cloud Run: Incident Command Agent"]
   
   subgraph SG1_AutonomousTriageDiagnostics ["Autonomous Triage & Diagnostics"]
-    C --> D["Cloud Audit Logs & Cloud Trace Inspection"]
-    C --> E["AlloyDB AI: Historical Incident Vector Memory"]
-    C --> F["Vertex AI: Gemini 1.5 Pro Diagnostics Engine"]
+    C --> D["Cloud Audit Logs
+    C --> Cloud Trace Inspection"]
+    D --> E["AlloyDB AI: Historical Incident Vector Memory"]
+    Cloud --> F["Vertex AI: Gemini 1.5 Pro Diagnostics Engine"]
   end
   
   F --> G{Remediation Risk Level?}

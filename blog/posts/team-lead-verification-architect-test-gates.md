@@ -16,13 +16,16 @@ Human cognitive processing cannot keep pace with AI code output. When an agent u
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#088574', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#0db49b', 'lineColor': '#088574', 'secondaryColor': '#111827', 'tertiaryColor': '#0b0f19'}}}%%
 flowchart TD
-    Code["AI-Generated Code Commit"] --> AST["1. AST Syntax & Type Checker"]
-    AST -->|Pass| Unit["2. Unit & Integration Test Suites"]
+    Code["AI-Generated Code Commit"] --> AST["1. AST Syntax
+    Code --> Type Checker"]
+    AST --> |Pass| Unit["2. Unit
+    AST --> |Pass| Integration Test Suites"]
     Unit -->|Pass| Sec["3. AST Security Scanner"]
     Sec -->|Pass| Score["4. Compute Verification Integrity Score"]
     
     Score -->|Score >= 95%| PassGate([Promote to Production / Staging])
-    Score -->|Score < 95%| RejectGate([Reject & Route back to Agent Context])
+    Score --> |Score < 95%| RejectGate([Reject
+    PassGate --> |Score < 95%| Route back to Agent Context])
 
 classDef green fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d;
 classDef red fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#7f1d1d;
@@ -166,6 +169,21 @@ def run_command(command: str):
 * **Define Boundaries, Not Implementations**: Focus your manual efforts on writing strict schemas (e.g. JSON schema, Pydantic templates) and architectural guidelines. Let the validation gates test the code logic.
 * **Automate Security Scans**: Never rely on visual code reviews to catch security holes. Deploy automated checkers like Bandit, Semgrep, or Snyk directly inside the PR lifecycle.
 * **Log Verification Metrices**: Maintain a database of code verification scores. If code from a particular source regularly drops below the threshold, refine the prompt context or update the model constraints. [2]
+
+---
+
+## Antithesis & Production Trade-Offs: When NOT to Use This Architecture
+
+Even a high-throughput **Leadership, Testing** architecture introduces non-trivial operational complexity. Before adopting this pattern in production, evaluate three concrete engineering boundaries where a simpler alternative strictly dominates:
+
+1. **Low-Throughput / Single-Node Workloads ($< 50	ext{ req/s}$):**
+   If your service operates well below saturation on a single vertical instance and does not face strict multi-tenant tail-latency SLAs (`p99 < 50 ms`), the bookkeeping overhead of two-tier state partitioning, canonical digest hashing, and sliding-window circuit breakers adds cognitive and operational cost without measurable user-facing gains. A single monolithic transaction boundary with standard database constraints is simpler to debug and operate.
+2. **Hard Real-Time Ultra-Low-Latency Paths ($< 50\,\mu	ext{s}$ Budget):**
+   When operating inside kernel-bypass networking, L1/L2 cache-pinned ring buffers, or per-packet hardware data planes, any dynamic heap allocation, cryptographic SHA-256 digest computation, or asynchronous context switch violates the nanosecond/microsecond budget. In those regimes, pre-compute static lookup tables at control-plane configuration time and keep the hot path strictly zero-allocation.
+3. **Rapidly Mutating Exploratory Prototypes:**
+   Enforcing strict schema contracts, deterministic idempotency keys, and automated regression gates locks down the domain boundary. During week-one exploratory product discovery—where underlying data models change daily and zero real customer capital or tenant PII is at risk—defer heavy verification harnesses until the core workflow contract stabilizes.
+
+---
 
 ## References & Further Reading
 

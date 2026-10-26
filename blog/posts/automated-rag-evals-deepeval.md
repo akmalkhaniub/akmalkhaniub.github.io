@@ -23,19 +23,16 @@ A production-grade evaluation loop executes RAG queries, captures the inputs, re
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#0ea5e9', 'primaryTextColor': '#f3f4f6', 'primaryBorderColor': '#38bdf8', 'lineColor': '#0ea5e9', 'secondaryColor': '#111827', 'tertiaryColor': '#111827'}}}%%
 flowchart TD
-    A["Test Suite Triggered"] --> B["Generate Synthetic Q&A Dataset"]
+    A["Test Suite Triggered"] --> B["Generate Synthetic Q
     B --> C["Execute RAG Pipeline"]
     
     C -->|Output| D["RAG Test Case"]
     D -->|Input Query| E["DeepEval Test Runner"]
-    D -->|Retrieved Context| E
-    D -->|Generated Output| E
-    D -->|Reference Ground Truth| E
     
     E --> F{Evaluate Metrics}
     F -->|NLI Check| G["Faithfulness Metric"]
     F -->|Semantic Alignment| H["Answer Relevance Metric"]
-    F -->|Overlap Indexing| I["Context Recall Metric"]
+    G --> |Overlap Indexing| I["Context Recall Metric"]
     
     G --> J{Verify Thresholds}
     H --> J

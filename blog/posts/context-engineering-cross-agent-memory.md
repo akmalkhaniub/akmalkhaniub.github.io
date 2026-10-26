@@ -41,10 +41,8 @@ flowchart TD
 
     CoderAgent -->|Write Code State| MemoryResource
     TesterAgent -->|Read Code / Run Tests| MemoryResource
-    TesterAgent -->|Write Test Results| MemoryResource
     
-    Supervisor -->|Check Progress| MemoryResource
-    Supervisor -->|Final Delivery| User
+    MemoryResource --> |Final Delivery| User
 
     class User start;
     class Supervisor supervisor;

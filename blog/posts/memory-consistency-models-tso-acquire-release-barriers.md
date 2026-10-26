@@ -20,7 +20,8 @@ How CPU Store Buffers cause Store-Load reordering and how Acquire-Release semant
 flowchart TD
   subgraph SG1_CpuCore0 ["CPU Core 0 (Producer Thread)"]
     W1["Write Data: data = 42"] --> W2["Release Store: flag.store(1, memory_order_release)"]
-    W1 & W2 --> SB0["Core 0 Store Buffer"]
+    W1 --> SB0["Core 0 Store Buffer"]
+    W2 --> SB0
     SB0 -->|Hardware Memory Fence - mfence / dmb| RAM["Main System Memory RAM"]
   end
   
